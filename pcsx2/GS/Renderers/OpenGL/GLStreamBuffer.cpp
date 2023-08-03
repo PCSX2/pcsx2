@@ -17,7 +17,7 @@
 
 #include "GS/Renderers/OpenGL/GLStreamBuffer.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
 

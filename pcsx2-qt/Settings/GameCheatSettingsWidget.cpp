@@ -27,10 +27,8 @@
 
 #include "common/HeterogeneousContainers.h"
 
-GameCheatSettingsWidget::GameCheatSettingsWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
+GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: m_dialog(dialog)
-	, m_serial(entry->serial)
-	, m_crc(entry->crc)
 {
 	m_ui.setupUi(this);
 	QtUtils::ResizeColumnsForTreeView(m_ui.cheatList, {300, 100, -1});
@@ -154,7 +152,7 @@ void GameCheatSettingsWidget::setStateRecursively(QTreeWidgetItem* parent, bool 
 void GameCheatSettingsWidget::reloadList()
 {
 	u32 num_unlabelled_codes = 0;
-	m_patches = Patch::GetPatchInfo(m_serial, m_crc, true, &num_unlabelled_codes);
+	m_patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), true, &num_unlabelled_codes);
 	m_enabled_patches =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 
@@ -194,7 +192,7 @@ QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_
 	if (parent.empty())
 		return nullptr;
 
-	auto it = UnorderedStringMapFind(m_parent_map, parent);
+	auto it = m_parent_map.find(parent);
 	if (it != m_parent_map.end())
 		return it->second;
 

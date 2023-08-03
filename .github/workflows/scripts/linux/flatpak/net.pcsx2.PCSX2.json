@@ -6,11 +6,12 @@
   "sdk-extensions": [
     "org.freedesktop.Sdk.Extension.llvm16"
   ],
-  "add-build-extensions": {
+  "add-extensions": {
     "org.freedesktop.Platform.ffmpeg-full": {
       "directory": "lib/ffmpeg",
       "version": "22.08",
-      "add-ld-path": "."
+      "add-ld-path": ".",
+      "autodownload": true
     }
   },
   "command": "pcsx2-qt",
@@ -21,12 +22,12 @@
     "--socket=fallback-x11",
     "--socket=wayland",
     "--socket=pulseaudio",
-    "--filesystem=host:ro"
+    "--filesystem=host:ro",
+    "--talk-name=org.freedesktop.ScreenSaver"
   ],
   "modules": [
     "modules/10-libpcap.json",
     "modules/11-libaio.json",
-    "modules/12-soundtouch.json",
     "modules/20-sdl2.json",
     "modules/21-libbacktrace.json",
     {
@@ -56,7 +57,7 @@
         "cd build && ninja unittests && cd .."
       ],
       "post-install": [
-        "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/net.pcsx2.PCSX2.png",
+        "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png",
         "install -Dm644 .github/workflows/scripts/linux/pcsx2-qt.desktop ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
         "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
         "install -Dm644 .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml ${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml"

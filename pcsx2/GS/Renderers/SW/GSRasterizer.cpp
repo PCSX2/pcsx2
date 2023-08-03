@@ -59,7 +59,7 @@ GSRasterizer::GSRasterizer(GSDrawScanline* ds, int id, int threads)
 	m_edge.buff = static_cast<GSVertexSW*>(_aligned_malloc(sizeof(GSVertexSW) * 2048, VECTOR_ALIGNMENT));
 	m_edge.count = 0;
 	if (!m_edge.buff)
-		throw std::bad_alloc();
+		pxFailRel("failed to allocate storage for m_edge.buff");
 
 	int rows = (2048 >> m_thread_height) + 16;
 	m_scanline = (u8*)_aligned_malloc(rows, 64);

@@ -17,7 +17,9 @@
 
 #include "GS/GSVector.h"
 #include "pcsx2/Config.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
+
+#include <utility>
 
 /// Like `memcmp(&a, &b, sizeof(T)) == 0` but faster
 template <typename T>
@@ -128,6 +130,9 @@ __fi static T VectorAlign(T value)
 {
 	return Common::AlignUpPow2(value, VECTOR_ALIGNMENT);
 }
+
+/// Returns the maximum alpha value across a range of data. Assumes stride is 16 byte aligned.
+std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height, u32 stride);
 
 // clang-format off
 

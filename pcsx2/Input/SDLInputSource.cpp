@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,15 +14,22 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "Config.h"
 #include "Input/SDLInputSource.h"
 #include "Input/InputManager.h"
 #include "Host.h"
+
 #include "common/Assertions.h"
-#include "common/StringUtil.h"
 #include "common/Console.h"
+#include "common/Error.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
+
+#include <bit>
 #include <cmath>
 
-#include "GS/GSIntrin.h" // _BitScanForward
+static constexpr const char* CONTROLLER_DB_FILENAME = "game_controller_db.txt";
 
 static constexpr const char* s_sdl_axis_names[] = {
 	"LeftX", // SDL_CONTROLLER_AXIS_LEFTX
@@ -118,18 +125,6 @@ SDLInputSource::~SDLInputSource()
 
 bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	std::optional<std::vector<u8>> controller_db_data = Host::ReadResourceFile("game_controller_db.txt");
-	if (controller_db_data.has_value())
-	{
-		SDL_RWops* ops = SDL_RWFromConstMem(controller_db_data->data(), static_cast<int>(controller_db_data->size()));
-		if (SDL_GameControllerAddMappingsFromRW(ops, true) < 0)
-			Console.Error("SDL_GameControllerAddMappingsFromRW() failed: %s", SDL_GetError());
-	}
-	else
-	{
-		Console.Error("Controller database resource is missing.");
-	}
-
 	LoadSettings(si);
 	settings_lock.unlock();
 	SetHints();
@@ -226,6 +221,28 @@ void SDLInputSource::SetHints()
 		SDL_SetHint(hint.first.c_str(), hint.second.c_str());
 }
 
+bool SDLInputSource::LoadControllerDB()
+{
+	Error error;
+	auto fp = FileSystem::OpenManagedCFile(Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME).c_str(), "rb", &error);
+	std::optional<std::string> data;
+	if (!fp || !(data = FileSystem::ReadFileToString(fp.get())))
+	{
+		Console.Error(fmt::format("SDLInputSource: Failed to open controller database: {}", error.GetDescription()));
+		return false;
+	}
+
+	if (SDL_GameControllerAddMappingsFromRW(SDL_RWFromConstMem(data->c_str(), data->length()), SDL_TRUE) < 0)
+	{
+		Console.Error(fmt::format("SDLInputSource: SDL_GameControllerAddMappingsFromRW() failed: {}", SDL_GetError()));
+		return false;
+	}
+
+	Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: Loaded {} controller mappings from {}.",
+										   SDL_GameControllerNumMappings(), CONTROLLER_DB_FILENAME));
+	return true;
+}
+
 bool SDLInputSource::InitializeSubsystem()
 {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
@@ -236,6 +253,7 @@ bool SDLInputSource::InitializeSubsystem()
 
 	// we should open the controllers as the connected events come in, so no need to do any more here
 	m_sdl_subsystem_initialized = true;
+	LoadControllerDB();
 	return true;
 }
 
@@ -757,16 +775,14 @@ bool SDLInputSource::HandleJoystickHatEvent(const SDL_JoyHatEvent* ev)
 	if (it == m_controllers.end() || ev->hat >= it->last_hat_state.size())
 		return false;
 
-	const unsigned long last_direction = it->last_hat_state[ev->hat];
+	const u8 last_direction = it->last_hat_state[ev->hat];
 	it->last_hat_state[ev->hat] = ev->value;
 
-	unsigned long changed_direction = last_direction ^ ev->value;
+	u8 changed_direction = last_direction ^ ev->value;
 	while (changed_direction != 0)
 	{
-		unsigned long pos;
-		_BitScanForward(&pos, changed_direction);
-
-		const unsigned long mask = (1u << pos);
+		const u8 pos = std::countr_zero(changed_direction);
+		const u8 mask = (1u << pos);
 		changed_direction &= ~mask;
 
 		const InputBindingKey key(

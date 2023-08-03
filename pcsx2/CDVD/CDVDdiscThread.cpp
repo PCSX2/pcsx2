@@ -261,25 +261,15 @@ void cdvdThread()
 	printf(" * CDVD: IO thread finished.\n");
 }
 
-bool cdvdStartThread()
+void cdvdStartThread()
 {
 	if (cdvd_is_open == false)
 	{
 		cdvd_is_open = true;
-		try
-		{
-			s_thread = std::thread(cdvdThread);
-		}
-		catch (std::system_error&)
-		{
-			cdvd_is_open = false;
-			return false;
-		}
+		s_thread = std::thread(cdvdThread);
 	}
 
 	cdvdCacheReset();
-
-	return true;
 }
 
 void cdvdStopThread()
@@ -349,15 +339,8 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer)
 	if (src == nullptr)
 		return -1;
 
-	try
-	{
-		if (sector >= src->GetSectorCount())
-			return -1;
-	}
-	catch (...)
-	{
+	if (sector >= src->GetSectorCount())
 		return -1;
-	}
 
 	// Align to cache block
 	u32 sector_block = sector & ~(sectors_per_read - 1);

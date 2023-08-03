@@ -181,6 +181,7 @@ namespace Host
 #define TRANSLATE(context, msg) Host::TranslateToCString(context, msg)
 #define TRANSLATE_SV(context, msg) Host::TranslateToStringView(context, msg)
 #define TRANSLATE_STR(context, msg) Host::TranslateToString(context, msg)
+#define TRANSLATE_FS(context, msg) fmt::runtime(Host::TranslateToStringView(context, msg))
 
 // Does not translate the string at runtime, but allows the UI to in its own way.
 #define TRANSLATE_NOOP(context, msg) msg

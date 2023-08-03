@@ -59,7 +59,7 @@ GLContextWGL::~GLContextWGL()
 	ReleaseDC();
 }
 
-std::unique_ptr<GLContext> GLContextWGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextWGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
 {
 	std::unique_ptr<GLContextWGL> context = std::make_unique<GLContextWGL>(wi);
 	if (!context->Initialize(versions_to_try))
@@ -68,7 +68,7 @@ std::unique_ptr<GLContext> GLContextWGL::Create(const WindowInfo& wi, gsl::span<
 	return context;
 }
 
-bool GLContextWGL::Initialize(gsl::span<const Version> versions_to_try)
+bool GLContextWGL::Initialize(std::span<const Version> versions_to_try)
 {
 	if (m_wi.type == WindowInfo::Type::Win32)
 	{

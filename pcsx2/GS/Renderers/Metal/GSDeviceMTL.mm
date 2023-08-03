@@ -673,7 +673,7 @@ MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to load shader %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
-		throw GSRecoverableError();
+		pxFailRel("Failed to load shader, check the log for more details.");
 	}
 	return fn;
 }
@@ -689,7 +689,7 @@ MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipeline
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
-		throw GSRecoverableError();
+		pxFailRel("Failed to create pipeline, check the log for more details.");
 	}
 	return res;
 }
@@ -709,7 +709,7 @@ MRCOwned<id<MTLComputePipelineState>> GSDeviceMTL::MakeComputePipeline(id<MTLFun
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
-		throw GSRecoverableError();
+		pxFailRel("Failed to create pipeline, check the log for more details.");
 	}
 	return res;
 }
@@ -907,276 +907,278 @@ bool GSDeviceMTL::Create()
 	m_features.prefer_new_textures = true;
 	m_features.dxt_textures = true;
 	m_features.bptc_textures = true;
-	m_features.framebuffer_fetch = m_dev.features.framebuffer_fetch;
+	m_features.framebuffer_fetch = m_dev.features.framebuffer_fetch && !GSConfig.DisableFramebufferFetch;
 	m_features.dual_source_blend = true;
 	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
 
-	try
+	// Init metal stuff
+	m_fn_constants = MRCTransfer([MTLFunctionConstantValues new]);
+	setFnConstantB(m_fn_constants, m_dev.features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
+
+	m_draw_sync_fence = MRCTransfer([m_dev.dev newFence]);
+	[m_draw_sync_fence setLabel:@"Draw Sync Fence"];
+	m_spin_fence = MRCTransfer([m_dev.dev newFence]);
+	[m_spin_fence setLabel:@"Spin Fence"];
+	constexpr MTLResourceOptions spin_opts = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeUntracked;
+	m_spin_buffer = MRCTransfer([m_dev.dev newBufferWithLength:4 options:spin_opts]);
+	[m_spin_buffer setLabel:@"Spin Buffer"];
+	id<MTLCommandBuffer> initCommands = [m_queue commandBuffer];
+	id<MTLBlitCommandEncoder> clearSpinBuffer = [initCommands blitCommandEncoder];
+	[clearSpinBuffer fillBuffer:m_spin_buffer range:NSMakeRange(0, 4) value:0];
+	[clearSpinBuffer updateFence:m_spin_fence];
+	[clearSpinBuffer endEncoding];
+	m_spin_pipeline = MakeComputePipeline(LoadShader(@"waste_time"), @"waste_time");
+
+	for (int sharpen_only = 0; sharpen_only < 2; sharpen_only++)
 	{
-		// Init metal stuff
-		m_fn_constants = MRCTransfer([MTLFunctionConstantValues new]);
-		setFnConstantB(m_fn_constants, m_dev.features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
+		setFnConstantB(m_fn_constants, sharpen_only, GSMTLConstantIndex_CAS_SHARPEN_ONLY);
+		NSString* shader = m_dev.features.has_fast_half ? @"CASHalf" : @"CASFloat";
+		m_cas_pipeline[sharpen_only] = MakeComputePipeline(LoadShader(shader), sharpen_only ? @"CAS Sharpen" : @"CAS Upscale");
+	}
 
-		m_draw_sync_fence = MRCTransfer([m_dev.dev newFence]);
-		[m_draw_sync_fence setLabel:@"Draw Sync Fence"];
-		m_spin_fence = MRCTransfer([m_dev.dev newFence]);
-		[m_spin_fence setLabel:@"Spin Fence"];
-		constexpr MTLResourceOptions spin_opts = MTLResourceStorageModePrivate | MTLResourceHazardTrackingModeUntracked;
-		m_spin_buffer = MRCTransfer([m_dev.dev newBufferWithLength:4 options:spin_opts]);
-		[m_spin_buffer setLabel:@"Spin Buffer"];
-		id<MTLCommandBuffer> initCommands = [m_queue commandBuffer];
-		id<MTLBlitCommandEncoder> clearSpinBuffer = [initCommands blitCommandEncoder];
-		[clearSpinBuffer fillBuffer:m_spin_buffer range:NSMakeRange(0, 4) value:0];
-		[clearSpinBuffer updateFence:m_spin_fence];
-		[clearSpinBuffer endEncoding];
-		m_spin_pipeline = MakeComputePipeline(LoadShader(@"waste_time"), @"waste_time");
+	m_expand_index_buffer = CreatePrivateBufferWithContent(m_dev.dev, initCommands, MTLResourceHazardTrackingModeUntracked, EXPAND_BUFFER_SIZE, GenerateExpansionIndexBuffer);
+	[m_expand_index_buffer setLabel:@"Point/Sprite Expand Indices"];
 
-		for (int sharpen_only = 0; sharpen_only < 2; sharpen_only++)
+	m_hw_vertex = MRCTransfer([MTLVertexDescriptor new]);
+	[[[m_hw_vertex layouts] objectAtIndexedSubscript:GSMTLBufferIndexHWVertices] setStride:sizeof(GSVertex)];
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexST, MTLVertexFormatFloat2,           offsetof(GSVertex, ST),      GSMTLBufferIndexHWVertices);
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexC,  MTLVertexFormatUChar4,           offsetof(GSVertex, RGBAQ.R), GSMTLBufferIndexHWVertices);
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexQ,  MTLVertexFormatFloat,            offsetof(GSVertex, RGBAQ.Q), GSMTLBufferIndexHWVertices);
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexXY, MTLVertexFormatUShort2,          offsetof(GSVertex, XYZ.X),   GSMTLBufferIndexHWVertices);
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexZ,  MTLVertexFormatUInt,             offsetof(GSVertex, XYZ.Z),   GSMTLBufferIndexHWVertices);
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexUV, MTLVertexFormatUShort2,          offsetof(GSVertex, UV),      GSMTLBufferIndexHWVertices);
+	applyAttribute(m_hw_vertex, GSMTLAttributeIndexF,  MTLVertexFormatUChar4Normalized, offsetof(GSVertex, FOG),     GSMTLBufferIndexHWVertices);
+
+	for (auto& desc : m_render_pass_desc)
+	{
+		desc = MRCTransfer([MTLRenderPassDescriptor new]);
+		[[desc   depthAttachment] setStoreAction:MTLStoreActionStore];
+		[[desc stencilAttachment] setStoreAction:MTLStoreActionStore];
+	}
+
+	// Init samplers
+	m_sampler_hw[SamplerSelector::Linear().key] = CreateSampler(m_dev.dev, SamplerSelector::Linear());
+	m_sampler_hw[SamplerSelector::Point().key] = CreateSampler(m_dev.dev, SamplerSelector::Point());
+
+	// Init depth stencil states
+	MTLDepthStencilDescriptor* dssdesc = [[MTLDepthStencilDescriptor new] autorelease];
+	MTLStencilDescriptor* stencildesc = [[MTLStencilDescriptor new] autorelease];
+	stencildesc.stencilCompareFunction = MTLCompareFunctionAlways;
+	stencildesc.depthFailureOperation = MTLStencilOperationKeep;
+	stencildesc.stencilFailureOperation = MTLStencilOperationKeep;
+	stencildesc.depthStencilPassOperation = MTLStencilOperationReplace;
+	dssdesc.frontFaceStencil = stencildesc;
+	dssdesc.backFaceStencil = stencildesc;
+	[dssdesc setLabel:@"Stencil Write"];
+	m_dss_stencil_write = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
+	dssdesc.frontFaceStencil.depthStencilPassOperation = MTLStencilOperationZero;
+	dssdesc.backFaceStencil.depthStencilPassOperation = MTLStencilOperationZero;
+	[dssdesc setLabel:@"Stencil Zero"];
+	m_dss_stencil_zero = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
+	stencildesc.stencilCompareFunction = MTLCompareFunctionEqual;
+	stencildesc.readMask = 1;
+	stencildesc.writeMask = 1;
+	for (size_t i = 0; i < std::size(m_dss_hw); i++)
+	{
+		GSHWDrawConfig::DepthStencilSelector sel;
+		sel.key = i;
+		if (sel.date)
 		{
-			setFnConstantB(m_fn_constants, sharpen_only, GSMTLConstantIndex_CAS_SHARPEN_ONLY);
-			NSString* shader = m_dev.features.has_fast_half ? @"CASHalf" : @"CASFloat";
-			m_cas_pipeline[sharpen_only] = MakeComputePipeline(LoadShader(shader), sharpen_only ? @"CAS Sharpen" : @"CAS Upscale");
-		}
-
-		m_expand_index_buffer = CreatePrivateBufferWithContent(m_dev.dev, initCommands, MTLResourceHazardTrackingModeUntracked, EXPAND_BUFFER_SIZE, GenerateExpansionIndexBuffer);
-		[m_expand_index_buffer setLabel:@"Point/Sprite Expand Indices"];
-
-		m_hw_vertex = MRCTransfer([MTLVertexDescriptor new]);
-		[[[m_hw_vertex layouts] objectAtIndexedSubscript:GSMTLBufferIndexHWVertices] setStride:sizeof(GSVertex)];
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexST, MTLVertexFormatFloat2,           offsetof(GSVertex, ST),      GSMTLBufferIndexHWVertices);
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexC,  MTLVertexFormatUChar4,           offsetof(GSVertex, RGBAQ.R), GSMTLBufferIndexHWVertices);
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexQ,  MTLVertexFormatFloat,            offsetof(GSVertex, RGBAQ.Q), GSMTLBufferIndexHWVertices);
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexXY, MTLVertexFormatUShort2,          offsetof(GSVertex, XYZ.X),   GSMTLBufferIndexHWVertices);
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexZ,  MTLVertexFormatUInt,             offsetof(GSVertex, XYZ.Z),   GSMTLBufferIndexHWVertices);
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexUV, MTLVertexFormatUShort2,          offsetof(GSVertex, UV),      GSMTLBufferIndexHWVertices);
-		applyAttribute(m_hw_vertex, GSMTLAttributeIndexF,  MTLVertexFormatUChar4Normalized, offsetof(GSVertex, FOG),     GSMTLBufferIndexHWVertices);
-
-		for (auto& desc : m_render_pass_desc)
-		{
-			desc = MRCTransfer([MTLRenderPassDescriptor new]);
-			[[desc   depthAttachment] setStoreAction:MTLStoreActionStore];
-			[[desc stencilAttachment] setStoreAction:MTLStoreActionStore];
-		}
-
-		// Init samplers
-		m_sampler_hw[SamplerSelector::Linear().key] = CreateSampler(m_dev.dev, SamplerSelector::Linear());
-		m_sampler_hw[SamplerSelector::Point().key] = CreateSampler(m_dev.dev, SamplerSelector::Point());
-
-		// Init depth stencil states
-		MTLDepthStencilDescriptor* dssdesc = [[MTLDepthStencilDescriptor new] autorelease];
-		MTLStencilDescriptor* stencildesc = [[MTLStencilDescriptor new] autorelease];
-		stencildesc.stencilCompareFunction = MTLCompareFunctionAlways;
-		stencildesc.depthFailureOperation = MTLStencilOperationKeep;
-		stencildesc.stencilFailureOperation = MTLStencilOperationKeep;
-		stencildesc.depthStencilPassOperation = MTLStencilOperationReplace;
-		dssdesc.frontFaceStencil = stencildesc;
-		dssdesc.backFaceStencil = stencildesc;
-		[dssdesc setLabel:@"Stencil Write"];
-		m_dss_stencil_write = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
-		dssdesc.frontFaceStencil.depthStencilPassOperation = MTLStencilOperationZero;
-		dssdesc.backFaceStencil.depthStencilPassOperation = MTLStencilOperationZero;
-		[dssdesc setLabel:@"Stencil Zero"];
-		m_dss_stencil_zero = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
-		stencildesc.stencilCompareFunction = MTLCompareFunctionEqual;
-		stencildesc.readMask = 1;
-		stencildesc.writeMask = 1;
-		for (size_t i = 0; i < std::size(m_dss_hw); i++)
-		{
-			GSHWDrawConfig::DepthStencilSelector sel;
-			sel.key = i;
-			if (sel.date)
-			{
-				if (sel.date_one)
-					stencildesc.depthStencilPassOperation = MTLStencilOperationZero;
-				else
-					stencildesc.depthStencilPassOperation = MTLStencilOperationKeep;
-				dssdesc.frontFaceStencil = stencildesc;
-				dssdesc.backFaceStencil = stencildesc;
-			}
+			if (sel.date_one)
+				stencildesc.depthStencilPassOperation = MTLStencilOperationZero;
 			else
-			{
-				dssdesc.frontFaceStencil = nil;
-				dssdesc.backFaceStencil = nil;
-			}
-			dssdesc.depthWriteEnabled = sel.zwe ? YES : NO;
-			static constexpr MTLCompareFunction ztst[] =
-			{
-				MTLCompareFunctionNever,
-				MTLCompareFunctionAlways,
-				MTLCompareFunctionGreaterEqual,
-				MTLCompareFunctionGreater,
-			};
-			static constexpr const char* ztstname[] =
-			{
-				"DepthNever",
-				"DepthAlways",
-				"DepthGEq",
-				"DepthEq",
-			};
-			const char* datedesc = sel.date ? (sel.date_one ? " DATE_ONE" : " DATE") : "";
-			const char* zwedesc = sel.zwe ? " ZWE" : "";
-			dssdesc.depthCompareFunction = ztst[sel.ztst];
-			[dssdesc setLabel:[NSString stringWithFormat:@"%s%s%s", ztstname[sel.ztst], zwedesc, datedesc]];
-			m_dss_hw[i] = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
+				stencildesc.depthStencilPassOperation = MTLStencilOperationKeep;
+			dssdesc.frontFaceStencil = stencildesc;
+			dssdesc.backFaceStencil = stencildesc;
 		}
-
-		// Init HW Vertex Shaders
-		for (size_t i = 0; i < std::size(m_hw_vs); i++)
+		else
 		{
-			VSSelector sel;
-			sel.key = i;
-			if (sel.point_size && sel.expand != GSMTLExpandType::None)
-				continue;
-			setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
-			setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
-			setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
-			NSString* shader = @"vs_main";
-			if (sel.expand != GSMTLExpandType::None)
-			{
-				setFnConstantI(m_fn_constants, static_cast<u32>(sel.expand), GSMTLConstantIndex_VS_EXPAND_TYPE);
-				shader = @"vs_main_expand";
-			}
-			m_hw_vs[i] = LoadShader(shader);
+			dssdesc.frontFaceStencil = nil;
+			dssdesc.backFaceStencil = nil;
 		}
-
-		// Init pipelines
-		auto vs_convert = LoadShader(@"vs_convert");
-		auto fs_triangle = LoadShader(@"fs_triangle");
-		auto ps_copy = LoadShader(@"ps_copy");
-		auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
-		// FS Triangle Pipelines
-		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-		m_hdr_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_resolve"), @"HDR Resolve");
-		m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
-		m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
-		m_clut_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_4"), @"4-bit CLUT Update");
-		m_clut_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_8"), @"8-bit CLUT Update");
-		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::HDRColor);
-		m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_init"), @"HDR Init");
-		pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
-		pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
-		m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
-		m_datm_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm1"), @"datm1");
-		m_stencil_clear_pipeline = MakePipeline(pdesc, fs_triangle, nil, @"Stencil Clear");
-		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::PrimID);
-		pdesc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
-		pdesc.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
-		m_primid_init_pipeline[1][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
-		m_primid_init_pipeline[1][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
-		pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-		m_primid_init_pipeline[0][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
-		m_primid_init_pipeline[0][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
-
-		pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-		applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
-		applyAttribute(pdesc.vertexDescriptor, 1, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, texpos), 0);
-		pdesc.vertexDescriptor.layouts[0].stride = sizeof(ConvertShaderVertex);
-
-		for (size_t i = 0; i < std::size(m_interlace_pipeline); i++)
+		dssdesc.depthWriteEnabled = sel.zwe ? YES : NO;
+		static constexpr MTLCompareFunction ztst[] =
 		{
-			NSString* name = [NSString stringWithFormat:@"ps_interlace%zu", i];
-			m_interlace_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
-		}
-		for (size_t i = 0; i < std::size(m_convert_pipeline); i++)
+			MTLCompareFunctionNever,
+			MTLCompareFunctionAlways,
+			MTLCompareFunctionGreaterEqual,
+			MTLCompareFunctionGreater,
+		};
+		static constexpr const char* ztstname[] =
 		{
-			ShaderConvert conv = static_cast<ShaderConvert>(i);
-			NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
-			switch (conv)
-			{
-				case ShaderConvert::Count:
-				case ShaderConvert::DATM_0:
-				case ShaderConvert::DATM_1:
-				case ShaderConvert::CLUT_4:
-				case ShaderConvert::CLUT_8:
-				case ShaderConvert::HDR_INIT:
-				case ShaderConvert::HDR_RESOLVE:
-					continue;
-				case ShaderConvert::FLOAT32_TO_32_BITS:
-					pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt32);
-					pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-					break;
-				case ShaderConvert::FLOAT32_TO_16_BITS:
-				case ShaderConvert::RGBA8_TO_16_BITS:
-					pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt16);
-					pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-					break;
-				case ShaderConvert::DEPTH_COPY:
-				case ShaderConvert::RGBA8_TO_FLOAT32:
-				case ShaderConvert::RGBA8_TO_FLOAT24:
-				case ShaderConvert::RGBA8_TO_FLOAT16:
-				case ShaderConvert::RGB5A1_TO_FLOAT16:
-				case ShaderConvert::RGBA8_TO_FLOAT32_BILN:
-				case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
-				case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
-				case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
-					pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
-					pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
-					break;
-				case ShaderConvert::COPY:
-				case ShaderConvert::RGBA_TO_8I: // Yes really
-				case ShaderConvert::TRANSPARENCY_FILTER:
-				case ShaderConvert::FLOAT32_TO_RGBA8:
-				case ShaderConvert::FLOAT16_TO_RGB5A1:
-				case ShaderConvert::YUV:
-					pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-					pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-					break;
-			}
-			m_convert_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
-		}
-		pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-		for (size_t i = 0; i < std::size(m_present_pipeline); i++)
-		{
-			PresentShader conv = static_cast<PresentShader>(i);
-			NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
-			pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
-			m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
-		}
-
-		pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
-		for (size_t i = 0; i < std::size(m_convert_pipeline_copy_mask); i++)
-		{
-			MTLColorWriteMask mask = MTLColorWriteMaskNone;
-			if (i & 1) mask |= MTLColorWriteMaskRed;
-			if (i & 2) mask |= MTLColorWriteMaskGreen;
-			if (i & 4) mask |= MTLColorWriteMaskBlue;
-			if (i & 8) mask |= MTLColorWriteMaskAlpha;
-			NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s", i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : ""];
-			pdesc.colorAttachments[0].writeMask = mask;
-			m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, ps_copy, name);
-		}
-
-		pdesc.colorAttachments[0].blendingEnabled = YES;
-		pdesc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
-		pdesc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
-		pdesc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-		for (size_t i = 0; i < std::size(m_merge_pipeline); i++)
-		{
-			bool mmod = i & 1;
-			bool amod = i & 2;
-			NSString* name = [NSString stringWithFormat:@"ps_merge%zu", mmod];
-			NSString* pipename = [NSString stringWithFormat:@"Merge%s%s", mmod ? " MMOD" : "", amod ? " AMOD" : ""];
-			pdesc.colorAttachments[0].writeMask = amod ? MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue : MTLColorWriteMaskAll;
-			m_merge_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), pipename);
-		}
-		pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
-
-		applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2,           offsetof(ImDrawVert, pos), 0);
-		applyAttribute(pdesc.vertexDescriptor, 1, MTLVertexFormatFloat2,           offsetof(ImDrawVert, uv),  0);
-		applyAttribute(pdesc.vertexDescriptor, 2, MTLVertexFormatUChar4Normalized, offsetof(ImDrawVert, col), 0);
-		pdesc.vertexDescriptor.layouts[0].stride = sizeof(ImDrawVert);
-		pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
-		m_imgui_pipeline = MakePipeline(pdesc, LoadShader(@"vs_imgui"), LoadShader(@"ps_imgui"), @"imgui");
-
-		[initCommands commit];
+			"DepthNever",
+			"DepthAlways",
+			"DepthGEq",
+			"DepthEq",
+		};
+		const char* datedesc = sel.date ? (sel.date_one ? " DATE_ONE" : " DATE") : "";
+		const char* zwedesc = sel.zwe ? " ZWE" : "";
+		dssdesc.depthCompareFunction = ztst[sel.ztst];
+		[dssdesc setLabel:[NSString stringWithFormat:@"%s%s%s", ztstname[sel.ztst], zwedesc, datedesc]];
+		m_dss_hw[i] = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
 	}
-	catch (GSRecoverableError&)
+
+	// Init HW Vertex Shaders
+	for (size_t i = 0; i < std::size(m_hw_vs); i++)
 	{
-		return false;
+		VSSelector sel;
+		sel.key = i;
+		if (sel.point_size && sel.expand != GSMTLExpandType::None)
+			continue;
+		setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
+		setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
+		setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
+		NSString* shader = @"vs_main";
+		if (sel.expand != GSMTLExpandType::None)
+		{
+			setFnConstantI(m_fn_constants, static_cast<u32>(sel.expand), GSMTLConstantIndex_VS_EXPAND_TYPE);
+			shader = @"vs_main_expand";
+		}
+		m_hw_vs[i] = LoadShader(shader);
 	}
+
+	// Init pipelines
+	auto vs_convert = LoadShader(@"vs_convert");
+	auto fs_triangle = LoadShader(@"fs_triangle");
+	auto ps_copy = LoadShader(@"ps_copy");
+	auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
+	// FS Triangle Pipelines
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+	m_hdr_resolve_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_resolve"), @"HDR Resolve");
+	m_fxaa_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_fxaa"), @"fxaa");
+	m_shadeboost_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_shadeboost"), @"shadeboost");
+	m_clut_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_4"), @"4-bit CLUT Update");
+	m_clut_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_8"), @"8-bit CLUT Update");
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::HDRColor);
+	m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_init"), @"HDR Init");
+	pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+	m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
+	m_datm_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm1"), @"datm1");
+	m_stencil_clear_pipeline = MakePipeline(pdesc, fs_triangle, nil, @"Stencil Clear");
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::PrimID);
+	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
+	pdesc.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+	m_primid_init_pipeline[1][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
+	m_primid_init_pipeline[1][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
+	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+	m_primid_init_pipeline[0][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
+	m_primid_init_pipeline[0][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
+
+	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
+	applyAttribute(pdesc.vertexDescriptor, 1, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, texpos), 0);
+	pdesc.vertexDescriptor.layouts[0].stride = sizeof(ConvertShaderVertex);
+
+	for (size_t i = 0; i < std::size(m_interlace_pipeline); i++)
+	{
+		NSString* name = [NSString stringWithFormat:@"ps_interlace%zu", i];
+		m_interlace_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
+	}
+	for (size_t i = 0; i < std::size(m_convert_pipeline); i++)
+	{
+		ShaderConvert conv = static_cast<ShaderConvert>(i);
+		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
+		switch (conv)
+		{
+			case ShaderConvert::Count:
+			case ShaderConvert::DATM_0:
+			case ShaderConvert::DATM_1:
+			case ShaderConvert::CLUT_4:
+			case ShaderConvert::CLUT_8:
+			case ShaderConvert::HDR_INIT:
+			case ShaderConvert::HDR_RESOLVE:
+				continue;
+			case ShaderConvert::FLOAT32_TO_32_BITS:
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt32);
+				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+				break;
+			case ShaderConvert::FLOAT32_TO_16_BITS:
+			case ShaderConvert::RGBA8_TO_16_BITS:
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt16);
+				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+				break;
+			case ShaderConvert::DEPTH_COPY:
+			case ShaderConvert::RGBA8_TO_FLOAT32:
+			case ShaderConvert::RGBA8_TO_FLOAT24:
+			case ShaderConvert::RGBA8_TO_FLOAT16:
+			case ShaderConvert::RGB5A1_TO_FLOAT16:
+			case ShaderConvert::RGBA8_TO_FLOAT32_BILN:
+			case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
+			case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
+			case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
+				pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+				pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
+				break;
+			case ShaderConvert::COPY:
+			case ShaderConvert::RGBA_TO_8I: // Yes really
+			case ShaderConvert::TRANSPARENCY_FILTER:
+			case ShaderConvert::FLOAT32_TO_RGBA8:
+			case ShaderConvert::FLOAT32_TO_RGB8:
+			case ShaderConvert::FLOAT16_TO_RGB5A1:
+			case ShaderConvert::YUV:
+				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+				break;
+		}
+		const u32 scmask = ShaderConvertWriteMask(conv);
+		MTLColorWriteMask mask = MTLColorWriteMaskNone;
+		if (scmask & 1) mask |= MTLColorWriteMaskRed;
+		if (scmask & 2) mask |= MTLColorWriteMaskGreen;
+		if (scmask & 4) mask |= MTLColorWriteMaskBlue;
+		if (scmask & 8) mask |= MTLColorWriteMaskAlpha;
+		pdesc.colorAttachments[0].writeMask = mask;
+		m_convert_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
+	}
+	pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
+	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+	for (size_t i = 0; i < std::size(m_present_pipeline); i++)
+	{
+		PresentShader conv = static_cast<PresentShader>(i);
+		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
+		pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
+		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
+	}
+
+	pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
+	for (size_t i = 0; i < std::size(m_convert_pipeline_copy_mask); i++)
+	{
+		MTLColorWriteMask mask = MTLColorWriteMaskNone;
+		if (i & 1) mask |= MTLColorWriteMaskRed;
+		if (i & 2) mask |= MTLColorWriteMaskGreen;
+		if (i & 4) mask |= MTLColorWriteMaskBlue;
+		if (i & 8) mask |= MTLColorWriteMaskAlpha;
+		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s", i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : ""];
+		pdesc.colorAttachments[0].writeMask = mask;
+		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, ps_copy, name);
+	}
+
+	pdesc.colorAttachments[0].blendingEnabled = YES;
+	pdesc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
+	pdesc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+	pdesc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+	for (size_t i = 0; i < std::size(m_merge_pipeline); i++)
+	{
+		bool mmod = i & 1;
+		bool amod = i & 2;
+		NSString* name = [NSString stringWithFormat:@"ps_merge%zu", mmod];
+		NSString* pipename = [NSString stringWithFormat:@"Merge%s%s", mmod ? " MMOD" : "", amod ? " AMOD" : ""];
+		pdesc.colorAttachments[0].writeMask = amod ? MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue : MTLColorWriteMaskAll;
+		m_merge_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), pipename);
+	}
+	pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
+
+	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2,           offsetof(ImDrawVert, pos), 0);
+	applyAttribute(pdesc.vertexDescriptor, 1, MTLVertexFormatFloat2,           offsetof(ImDrawVert, uv),  0);
+	applyAttribute(pdesc.vertexDescriptor, 2, MTLVertexFormatUChar4Normalized, offsetof(ImDrawVert, col), 0);
+	pdesc.vertexDescriptor.layouts[0].stride = sizeof(ImDrawVert);
+	pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
+	m_imgui_pipeline = MakePipeline(pdesc, LoadShader(@"vs_imgui"), LoadShader(@"ps_imgui"), @"imgui");
+
+	[initCommands commit];
 	return true;
 }}
 
@@ -1429,21 +1431,6 @@ void GSDeviceMTL::AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer)
 		m_last_gpu_time_end = end;
 	}
 #pragma clang diagnostic pop
-}
-
-void GSDeviceMTL::ClearRenderTarget(GSTexture* t, uint32 c)
-{
-	t->SetClearColor(c);
-}
-
-void GSDeviceMTL::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
-}
-
-void GSDeviceMTL::InvalidateRenderTarget(GSTexture* t)
-{
-	t->SetState(GSTexture::State::Invalidated);
 }
 
 std::unique_ptr<GSDownloadTexture> GSDeviceMTL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
@@ -2429,6 +2416,8 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 		{
 			if (cmd.UserCallback)
 				[NSException raise:@"Unimplemented" format:@"UserCallback not implemented"];
+			if (!cmd.ElemCount)
+				continue;
 
 			simd::float4 clip_rect = (ToSimd(cmd.ClipRect) - clip_off.xyxy) * clip_scale.xyxy;
 			simd::float2 clip_min = clip_rect.xy;

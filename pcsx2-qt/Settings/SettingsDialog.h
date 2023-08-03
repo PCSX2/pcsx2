@@ -51,13 +51,15 @@ class SettingsDialog final : public QDialog
 
 public:
 	explicit SettingsDialog(QWidget* parent);
-	SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, u32 game_crc);
+	SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, std::string serial, u32 disc_crc);
 	~SettingsDialog();
 
-	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& serial, u32 crc);
+	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc);
 
-	__fi bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
 	__fi SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
+	__fi bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
+	__fi const std::string& getSerial() const { return m_serial; }
+	__fi u32 getDiscCRC() const { return m_disc_crc; }
 
 	__fi InterfaceSettingsWidget* getInterfaceSettingsWidget() const { return m_interface_settings; }
 	__fi GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
@@ -143,5 +145,6 @@ private:
 	QObject* m_current_help_widget = nullptr;
 	QMap<QObject*, QString> m_widget_help_text_map;
 
-	u32 m_game_crc;
+	std::string m_serial;
+	u32 m_disc_crc;
 };

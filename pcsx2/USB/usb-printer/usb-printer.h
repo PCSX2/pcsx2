@@ -120,10 +120,6 @@ namespace usb_printer
 		},
 	};
 
-	static const char* sPrinterNames[] = {
-		"Sony DPP-MP1",
-	};
-
 	class PrinterDevice final : public DeviceProxy
 	{
 	public:
@@ -132,7 +128,7 @@ namespace usb_printer
 		const char* TypeName() const override;
 
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
-		gsl::span<const char*> SubTypes() const override;
+		std::span<const char*> SubTypes() const override;
 	};
 
 #pragma pack(push, 1)

@@ -13,6 +13,11 @@
   </description>
   <url type="homepage">https://pcsx2.net/</url>
   <url type="bugtracker">https://github.com/PCSX2/pcsx2/issues</url>
+  <url type="donation">https://github.com/sponsors/PCSX2</url>
+  <url type="faq">https://pcsx2.net/docs/</url>
+  <url type="help">https://discord.com/invite/TCz3t9k</url>
+  <url type="translate">https://crowdin.com/project/pcsx2-emulator</url>
+  <url type="vcs-browser">https://github.com/PCSX2/pcsx2</url>
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/PCSX2/pcsx2/master/.github/workflows/scripts/linux/flatpak/screenshots/screenshot1.png</image>
@@ -22,8 +27,11 @@
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1"/>
-  <update_contact>pcsx2_AT_pcsx2.net</update_contact>
+  <update_contact>stenzek_AT_gmail.com</update_contact>
   <releases>
     <release version="@GIT_VERSION@" date="@GIT_DATE@" />
   </releases>
+  <custom>
+    <value key="flathub::manifest">https://raw.githubusercontent.com/PCSX2/pcsx2/@GIT_HASH@/.github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json</value>
+  </custom>
 </component>

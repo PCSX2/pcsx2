@@ -16,7 +16,8 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS/Renderers/OpenGL/GLLoader.h"
+
+#include "glad.h"
 
 class GSTextureOGL final : public GSTexture
 {
@@ -54,7 +55,6 @@ public:
 	bool Save(const std::string& fn) final;
 	void Swap(GSTexture* tex) final;
 
-	GSMap Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer);
 	bool IsIntegerFormat() const
 	{
 		return (m_int_format == GL_RED_INTEGER || m_int_format == GL_RGBA_INTEGER);

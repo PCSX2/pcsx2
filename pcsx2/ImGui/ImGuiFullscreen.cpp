@@ -83,8 +83,8 @@ namespace ImGuiFullscreen
 	ImVec4 UITextHighlightColor;
 	ImVec4 UIPrimaryLineColor;
 	ImVec4 UISecondaryColor;
-	ImVec4 UISecondaryLightColor;
-	ImVec4 UISecondaryDarkColor;
+	ImVec4 UISecondaryStrongColor;
+	ImVec4 UISecondaryWeakColor;
 	ImVec4 UISecondaryTextColor;
 
 	static u32 s_menu_button_index = 0;
@@ -510,11 +510,12 @@ void ImGuiFullscreen::PushResetLayout()
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIPrimaryColor);
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, UIPrimaryLightColor);
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, UIPrimaryDarkColor);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIBackgroundColor, 0.95f));
 }
 
 void ImGuiFullscreen::PopResetLayout()
 {
-	ImGui::PopStyleColor(10);
+	ImGui::PopStyleColor(11);
 	ImGui::PopStyleVar(12);
 }
 
@@ -573,20 +574,6 @@ void ImGuiFullscreen::PushPrimaryColor()
 }
 
 void ImGuiFullscreen::PopPrimaryColor()
-{
-	ImGui::PopStyleColor(5);
-}
-
-void ImGuiFullscreen::PushSecondaryColor()
-{
-	ImGui::PushStyleColor(ImGuiCol_Text, UISecondaryTextColor);
-	ImGui::PushStyleColor(ImGuiCol_Button, UISecondaryDarkColor);
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, UISecondaryColor);
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UISecondaryLightColor);
-	ImGui::PushStyleColor(ImGuiCol_Border, UISecondaryLightColor);
-}
-
-void ImGuiFullscreen::PopSecondaryColor()
 {
 	ImGui::PopStyleColor(5);
 }
@@ -1157,7 +1144,7 @@ bool ImGuiFullscreen::ToggleButton(
 	}
 	else
 	{
-		col_bg = ImGui::GetColorU32(ImLerp(HEX_TO_IMVEC4(0x8C8C8C, 0xff), UISecondaryLightColor, t));
+		col_bg = ImGui::GetColorU32(ImLerp(HEX_TO_IMVEC4(0x8C8C8C, 0xff), UISecondaryStrongColor, t));
 		col_knob = IM_COL32(255, 255, 255, 255);
 	}
 
@@ -1233,10 +1220,10 @@ bool ImGuiFullscreen::ThreeWayToggleButton(
 		col_bg = IM_COL32(0x75, 0x75, 0x75, 0xff);
 	else if (hovered)
 		col_bg = ImGui::GetColorU32(
-			ImLerp(v->has_value() ? HEX_TO_IMVEC4(0xf05100, 0xff) : HEX_TO_IMVEC4(0x9e9e9e, 0xff), UISecondaryLightColor, color_t));
+			ImLerp(v->has_value() ? HEX_TO_IMVEC4(0xf05100, 0xff) : HEX_TO_IMVEC4(0x9e9e9e, 0xff), UISecondaryStrongColor, color_t));
 	else
 		col_bg = ImGui::GetColorU32(
-			ImLerp(v->has_value() ? HEX_TO_IMVEC4(0xc45100, 0xff) : HEX_TO_IMVEC4(0x757575, 0xff), UISecondaryLightColor, color_t));
+			ImLerp(v->has_value() ? HEX_TO_IMVEC4(0xc45100, 0xff) : HEX_TO_IMVEC4(0x757575, 0xff), UISecondaryStrongColor, color_t));
 
 	dl->AddRectFilled(toggle_pos, ImVec2(toggle_pos.x + toggle_width, toggle_pos.y + toggle_height), col_bg, toggle_height * 0.5f);
 	dl->AddCircleFilled(ImVec2(toggle_pos.x + toggle_radius + t * (toggle_width - toggle_radius * 2.0f), toggle_pos.y + toggle_radius),
@@ -2232,7 +2219,7 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 	const float window_height = LayoutScale(75.0f);
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, UIPrimaryDarkColor);
-	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UISecondaryLightColor);
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UISecondaryStrongColor);
 	ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, LayoutScale(4.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, LayoutScale(1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
@@ -2492,8 +2479,8 @@ void ImGuiFullscreen::SetTheme(bool light)
 		UITextHighlightColor = HEX_TO_IMVEC4(0x90caf9, 0xff);
 		UIPrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 		UISecondaryColor = HEX_TO_IMVEC4(0x0d47a1, 0xff);
-		UISecondaryLightColor = HEX_TO_IMVEC4(0x63a4ff, 0xff);
-		UISecondaryDarkColor = HEX_TO_IMVEC4(0x002171, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x63a4ff, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0x002171, 0xff);
 		UISecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 	}
 	else
@@ -2511,8 +2498,8 @@ void ImGuiFullscreen::SetTheme(bool light)
 		UITextHighlightColor = HEX_TO_IMVEC4(0x8e8e8e, 0xff);
 		UIPrimaryLineColor = HEX_TO_IMVEC4(0x000000, 0xff);
 		UISecondaryColor = HEX_TO_IMVEC4(0x3d5afe, 0xff);
-		UISecondaryLightColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
-		UISecondaryDarkColor = HEX_TO_IMVEC4(0x0031ca, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x0031ca, 0xff);
+		UISecondaryWeakColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
 		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
 	}
 }

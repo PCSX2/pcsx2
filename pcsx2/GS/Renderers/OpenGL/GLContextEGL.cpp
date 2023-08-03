@@ -35,7 +35,7 @@ GLContextEGL::~GLContextEGL()
 	DestroyContext();
 }
 
-std::unique_ptr<GLContext> GLContextEGL::Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
 {
 	std::unique_ptr<GLContextEGL> context = std::make_unique<GLContextEGL>(wi);
 	if (!context->Initialize(versions_to_try))
@@ -44,7 +44,7 @@ std::unique_ptr<GLContext> GLContextEGL::Create(const WindowInfo& wi, gsl::span<
 	return context;
 }
 
-bool GLContextEGL::Initialize(gsl::span<const Version> versions_to_try)
+bool GLContextEGL::Initialize(std::span<const Version> versions_to_try)
 {
 	if (!gladLoadEGL())
 	{

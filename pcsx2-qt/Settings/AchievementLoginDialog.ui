@@ -9,21 +9,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
-    <height>215</height>
+    <width>447</width>
+    <height>196</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>410</width>
-    <height>215</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>410</width>
-    <height>215</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string comment="Window title">RetroAchievements Login</string>
@@ -63,7 +51,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="instructionText">
      <property name="text">
       <string>Please enter user name and password for retroachievements.org below. Your password will not be saved in PCSX2, an access token will be generated and used instead.</string>
      </property>

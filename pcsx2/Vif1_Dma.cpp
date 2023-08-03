@@ -170,6 +170,7 @@ __fi void vif1SetupTransfer()
 			//DevCon.Warning("VIF1 DMA Stall");
 			// stalled
 			hwDmacIrq(DMAC_STALL_SIS);
+			CPU_SET_DMASTALL(DMAC_VIF1, true);
 			return;
 		}
 	}
@@ -341,7 +342,10 @@ __fi void vif1Interrupt()
 	}
 
 	if (!vif1ch.chcr.STR)
+	{
 		Console.WriteLn("Vif1 running when CHCR == %x", vif1ch.chcr._u32);
+		return;
+	}
 
 	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)
 	{

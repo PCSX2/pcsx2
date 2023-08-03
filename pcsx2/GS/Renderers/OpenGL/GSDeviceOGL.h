@@ -16,7 +16,6 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSDevice.h"
-#include "GS/Renderers/OpenGL/GLLoader.h"
 #include "GS/Renderers/OpenGL/GLProgram.h"
 #include "GS/Renderers/OpenGL/GLShaderCache.h"
 #include "GS/Renderers/OpenGL/GLState.h"
@@ -154,9 +153,13 @@ private:
 
 	std::unique_ptr<GLContext> m_gl_context;
 
+	bool m_disable_download_pbo = false;
+
 	GLuint m_fbo = 0; // frame buffer container
 	GLuint m_fbo_read = 0; // frame buffer container only for reading
 	GLuint m_fbo_write = 0;	// frame buffer container only for writing
+
+	std::unique_ptr<GLStreamBuffer> m_texture_upload_buffer;
 
 	std::unique_ptr<GLStreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GLStreamBuffer> m_index_stream_buffer;
@@ -240,6 +243,8 @@ private:
 	std::string m_shader_tfx_vgs;
 	std::string m_shader_tfx_fs;
 
+	bool CheckFeatures(bool& buggy_pbo);
+
 	void SetSwapInterval();
 	void DestroyResources();
 
@@ -281,10 +286,10 @@ public:
 	// Used by OpenGL, so the same calling convention is required.
 	static void APIENTRY DebugMessageCallback(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam);
 
-	static GLStreamBuffer* GetTextureUploadBuffer();
-
+	__fi bool IsDownloadPBODisabled() const { return m_disable_download_pbo; }
 	__fi u32 GetFBORead() const { return m_fbo_read; }
 	__fi u32 GetFBOWrite() const { return m_fbo_write; }
+	__fi GLStreamBuffer* GetTextureUploadBuffer() const { return m_texture_upload_buffer.get(); }
 	void CommitClear(GSTexture* t, bool use_write_fbo);
 
 	RenderAPI GetRenderAPI() const override;
@@ -310,10 +315,6 @@ public:
 	void DrawPrimitive();
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
-
-	void ClearRenderTarget(GSTexture* t, u32 c) override;
-	void InvalidateRenderTarget(GSTexture* t) override;
-	void ClearDepth(GSTexture* t, float d) override;
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -350,7 +351,6 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
-	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
 	void ClearSamplerCache() override;
 

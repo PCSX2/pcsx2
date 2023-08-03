@@ -14,16 +14,19 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSState.h"
-#include "GSGL.h"
-#include "GSUtil.h"
+#include "GS/GSState.h"
+#include "GS/GSDump.h"
+#include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
+#include "common/BitUtils.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
-#include <algorithm> // clamp
-#include <cfloat> // FLT_MAX
+#include <algorithm>
+#include <cfloat>
 #include <fstream>
-#include <iomanip> // Dump Verticles
+#include <iomanip>
 
 int GSState::s_n = 0;
 int GSState::s_last_transfer_draw_n = 0;
@@ -111,9 +114,6 @@ GSState::GSState()
 	m_v.RGBAQ.Q = 1.0f;
 
 	GrowVertexBuffer();
-
-	m_draw_transfers.clear();
-	m_draw_transfers_double_buff.clear();
 
 	PRIM = &m_env.PRIM;
 	//CSR->rREV = 0x20;
@@ -1646,24 +1646,11 @@ void GSState::FlushPrim()
 
 		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-		try
-		{
-			// Skip draw if Z test is enabled, but set to fail all pixels.
-			const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
+		// Skip draw if Z test is enabled, but set to fail all pixels.
+		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
 
-			if (!skip_draw)
-				Draw();
-		}
-		catch (GSRecoverableError&)
-		{
-			// could be an unsupported draw call
-		}
-		catch (const std::bad_alloc&)
-		{
-			// Texture Out Of Memory
-			PurgePool();
-			Console.Error("GS: Memory allocation failure.");
-		}
+		if (!skip_draw)
+			Draw();
 
 		g_perfmon.Put(GSPerfMon::Draw, 1);
 		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
@@ -1708,28 +1695,6 @@ void GSState::Write(const u8* mem, int len)
 
 	GIFRegBITBLTBUF& blit = m_tr.m_blit;
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
-
-	// The game uses a resolution of 512x244. RT is located at 0x700 and depth at 0x0
-	//
-	// #Bug number 1. (bad top bar)
-	// The game saves the depth buffer in the EE but with a resolution of
-	// 512x255. So it is ending to 0x7F8, ouch it saves the top of the RT too.
-	//
-	// #Bug number 2. (darker screen)
-	// The game will restore the previously saved buffer at position 0x0 to
-	// 0x7F8.  Because of the extra RT pixels, GS will partialy invalidate
-	// the texture located at 0x700. Next access will generate a cache miss
-	//
-	// The no-solution: instead to handle garbage (aka RT) at the end of the
-	// depth buffer. Let's reduce the size of the transfer
-	if (m_game.title == CRC::SMTNocturne) // TODO: hack
-	{
-		if (blit.DBP == 0 && blit.DPSM == PSMZ32 && w == 512 && h > 224)
-		{
-			h = 224;
-			m_env.TRXREG.RRH = 224;
-		}
-	}
 
 	if (!m_tr.Update(w, h, psm.trbpp, len))
 		return;
@@ -1790,6 +1755,7 @@ void GSState::Write(const u8* mem, int len)
 			GSUploadQueue transfer = m_draw_transfers.back();
 			m_draw_transfers.pop_back();
 			transfer.rect = transfer.rect.runion(r);
+			transfer.draw = s_n;
 			m_draw_transfers.push_back(transfer);
 		}
 		else
@@ -1994,6 +1960,7 @@ void GSState::Move()
 		GSUploadQueue transfer = m_draw_transfers.back();
 		m_draw_transfers.pop_back();
 		transfer.rect = transfer.rect.runion(r);
+		transfer.draw = s_n;
 		m_draw_transfers.push_back(transfer);
 	}
 	else
@@ -2218,11 +2185,6 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 		memcpy(mem, &m_tr.buff[m_tr.end], len);
 		m_tr.end += len;
 	}
-}
-
-void GSState::PurgePool()
-{
-	g_gs_device->PurgePool();
 }
 
 void GSState::PurgeTextureCache()
@@ -2543,7 +2505,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	Flush(GSFlushReason::LOADSTATE);
 
-	Reset(false);
+	Reset(true);
 
 	ReadState(&m_env.PRIM, data);
 
@@ -2643,17 +2605,6 @@ int GSState::Defrost(const freezeData* fd)
 	return 0;
 }
 
-void GSState::SetGameCRC(u32 crc)
-{
-	m_crc = crc;
-	UpdateCRCHacks();
-}
-
-void GSState::UpdateCRCHacks()
-{
-	m_game = CRC::Lookup(GSConfig.UserHacks_DisableRenderFixes ? 0 : m_crc);
-}
-
 //
 
 void GSState::UpdateContext()
@@ -2709,8 +2660,7 @@ void GSState::GrowVertexBuffer()
 
 		Console.Error("GS: failed to allocate %zu bytes for vertices and %zu for indices.",
 			vert_byte_count, idx_byte_count);
-
-		throw GSError();
+		pxFailRel("Memory allocation failed");
 	}
 
 	if (m_vertex.buff)
@@ -2732,6 +2682,55 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
+bool GSState::TrianglesAreQuads() const
+{
+	// If this is a quad, there should only be two distinct values for both X and Y, which
+	// also happen to be the minimum/maximum bounds of the primitive.
+	const GSVertex* const v = m_vertex.buff;
+	for (u32 idx = 0; idx < m_index.tail; idx += 6)
+	{
+		const u16* const i = m_index.buff + idx;
+
+		// Degenerate triangles should've been culled already, so we can check indices.
+		u32 extra_verts = 0;
+		for (u32 j = 3; j < 6; j++)
+		{
+			const u16 idx = i[j];
+			if (idx != i[0] && idx != i[1] && idx != i[2])
+				extra_verts++;
+		}
+		if (extra_verts == 1)
+			return true;
+
+		// As a fallback, they might've used different vertices with a tri list, not strip.
+		// Note that this won't work unless the quad is axis-aligned.
+		u16 distinct_x_values[2] = {v[i[0]].XYZ.X};
+		u16 distinct_y_values[2] = {v[i[0]].XYZ.Y};
+		u32 num_distinct_x_values = 1, num_distinct_y_values = 1;
+		for (u32 j = 1; j < 6; j++)
+		{
+			const GSVertex& jv = v[i[j]];
+			if (jv.XYZ.X != distinct_x_values[0] && jv.XYZ.X != distinct_x_values[1])
+			{
+				if (num_distinct_x_values > 1)
+					return false;
+
+				distinct_x_values[num_distinct_x_values++] = jv.XYZ.X;
+			}
+
+			if (jv.XYZ.Y != distinct_y_values[0] && jv.XYZ.Y != distinct_y_values[1])
+			{
+				if (num_distinct_y_values > 1)
+					return false;
+
+				distinct_y_values[num_distinct_y_values++] = jv.XYZ.Y;
+			}
+		}
+	}
+
+	return true;
+}
+
 GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 {
 	// Either 1 triangle or 1 line or 3 POINTs
@@ -2739,7 +2738,9 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	if (m_vertex.next < 4)
 		return PRIM_OVERLAP_NO;
 
-	if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+		return (m_index.tail == 6 && TrianglesAreQuads()) ? PRIM_OVERLAP_NO : PRIM_OVERLAP_UNKNOW;
+	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
 		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
 
 	// Check intersection of sprite primitive only
@@ -3527,7 +3528,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			// If it's the start of the texture and our little adjustment is all that pushed it over, clamp it to 0.
 			// This stops the border check failing when using repeat but needed less than the full texture
 			// since this was making it take the full texture even though it wasn't needed.
-			if (((m_vt.m_min.t == GSVector4::zero()).mask() & 0x3) == 0x3)
+			if (!clamp_to_tsize && ((m_vt.m_min.t == GSVector4::zero()).mask() & 0x3) == 0x3)
 				st = st.max(GSVector4::zero());
 		}
 		else
@@ -3682,12 +3683,13 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 	return { vr, uses_border };
 }
 
-void GSState::CalcAlphaMinMax()
+void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 {
-	if (m_vt.m_alpha.valid)
+	if (m_vt.m_alpha.valid && tex_alpha_min == 0 && tex_alpha_max == 255)
 		return;
 
-	int min = 0, max = 0;
+	// We wanted to force an update as we now know the alpha of the non-indexed texture.
+	int min = tex_alpha_min, max = tex_alpha_max;
 
 	if (IsCoverageAlpha())
 	{
@@ -3705,8 +3707,8 @@ void GSState::CalcAlphaMinMax()
 			switch (GSLocalMemory::m_psm[context->TEX0.PSM].fmt)
 			{
 				case 0:
-					a.y = 0;
-					a.w = 0xff;
+					a.y = min;
+					a.w = max;
 					break;
 				case 1:
 					a.y = env.TEXA.AEM ? 0 : env.TEXA.TA0;
@@ -3770,9 +3772,10 @@ bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 
 	const u32 framemask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 	const u32 framemaskalpha = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk & 0xFF000000;
+	const u32 fail_type = m_context->TEST.GetAFAIL(m_context->FRAME.PSM);
 	// Alpha test can only control the write of some channels. If channels are already masked
 	// the alpha test is therefore a nop.
-	switch (m_context->TEST.AFAIL)
+	switch (fail_type)
 	{
 		case AFAIL_KEEP:
 			break;
@@ -3785,7 +3788,7 @@ bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 				return true;
 			break;
 		case AFAIL_RGB_ONLY:
-			if (zm == 0xFFFFFFFF && ((fm & framemaskalpha) == framemaskalpha || GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 1))
+			if (zm == 0xFFFFFFFF && (fm & framemaskalpha) == framemaskalpha)
 				return true;
 			break;
 		default:
@@ -3869,7 +3872,7 @@ bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
 
 	if (!pass)
 	{
-		switch (m_context->TEST.AFAIL)
+		switch (fail_type)
 		{
 			case AFAIL_KEEP:
 				fm = zm = 0xffffffff;
@@ -4040,4 +4043,561 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 	}
 
 	return len > 0;
+}
+
+// The horizontal offset values (under z) for PAL and NTSC have been tweaked
+// they should be apparently 632 and 652 respectively, but that causes a thick black line on the left
+// these values leave a small black line on the right in a bunch of games, but it's not so bad.
+// The only conclusion I can come to is there is horizontal overscan expected so there would normally
+// be black borders either side anyway, or both sides slightly covered.
+static inline constexpr GSVector4i VideoModeOffsets[6] = {
+	GSVector4i::cxpr(640, 224, 642, 25),
+	GSVector4i::cxpr(640, 256, 676, 36),
+	GSVector4i::cxpr(640, 480, 276, 34),
+	GSVector4i::cxpr(720, 480, 232, 35),
+	GSVector4i::cxpr(1280, 720, 302, 24),
+	GSVector4i::cxpr(1920, 540, 238, 40)
+};
+
+static inline constexpr GSVector4i VideoModeOffsetsOverscan[6] = {
+	GSVector4i::cxpr(711, 240, 498, 17),
+	GSVector4i::cxpr(711, 288, 532, 21),
+	GSVector4i::cxpr(640, 480, 276, 34),
+	GSVector4i::cxpr(720, 480, 232, 35),
+	GSVector4i::cxpr(1280, 720, 302, 24),
+	GSVector4i::cxpr(1920, 540, 238, 40)
+};
+
+static inline constexpr GSVector4i VideoModeDividers[6] = {
+	GSVector4i::cxpr(3, 0, 2559, 239),
+	GSVector4i::cxpr(3, 0, 2559, 287),
+	GSVector4i::cxpr(1, 0, 1279, 479),
+	GSVector4i::cxpr(1, 0, 1439, 479),
+	GSVector4i::cxpr(0, 0, 1279, 719),
+	GSVector4i::cxpr(0, 0, 1919, 1079)
+};
+
+bool GSState::GSPCRTCRegs::IsAnalogue()
+{
+	const GSVideoMode video = static_cast<GSVideoMode>(videomode + 1);
+	return video == GSVideoMode::NTSC || video == GSVideoMode::PAL || video == GSVideoMode::HDTV_1080I;
+}
+
+// Calculates which display is closest to matching zero offsets in either direction.
+GSVector2i GSState::GSPCRTCRegs::NearestToZeroOffset()
+{
+	GSVector2i returnValue = { 1, 1 };
+
+	if (!PCRTCDisplays[0].enabled && !PCRTCDisplays[1].enabled)
+		return returnValue;
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (!PCRTCDisplays[i].enabled)
+		{
+			returnValue.x = 1 - i;
+			returnValue.y = 1 - i;
+			return returnValue;
+		}
+	}
+
+	if (abs(PCRTCDisplays[0].displayOffset.x - VideoModeOffsets[videomode].z) <
+		abs(PCRTCDisplays[1].displayOffset.x - VideoModeOffsets[videomode].z))
+		returnValue.x = 0;
+
+	// When interlaced, the vertical base offset is doubled
+	const int verticalOffset = VideoModeOffsets[videomode].w * (1 << interlaced);
+
+	if (abs(PCRTCDisplays[0].displayOffset.y - verticalOffset) <
+		abs(PCRTCDisplays[1].displayOffset.y - verticalOffset))
+		returnValue.y = 0;
+
+	return returnValue;
+}
+
+void GSState::GSPCRTCRegs::SetVideoMode(GSVideoMode videoModeIn)
+{
+	videomode = static_cast<int>(videoModeIn) - 1;
+}
+
+// Enable each of the displays.
+void GSState::GSPCRTCRegs::EnableDisplays(GSRegPMODE pmode, GSRegSMODE2 smode2, bool smodetoggle)
+{
+	PCRTCDisplays[0].enabled = pmode.EN1;
+	PCRTCDisplays[1].enabled = pmode.EN2;
+
+	interlaced = smode2.INT && IsAnalogue();
+	FFMD = smode2.FFMD;
+	toggling_field = smodetoggle && IsAnalogue();
+}
+
+void GSState::GSPCRTCRegs::CheckSameSource()
+{
+	if (PCRTCDisplays[0].enabled != PCRTCDisplays[1].enabled || (PCRTCDisplays[0].enabled | PCRTCDisplays[1].enabled) == false)
+	{
+		PCRTCSameSrc = false;
+		return;
+	}
+
+	PCRTCSameSrc = PCRTCDisplays[0].FBP == PCRTCDisplays[1].FBP &&
+	PCRTCDisplays[0].FBW == PCRTCDisplays[1].FBW &&
+	GSUtil::HasCompatibleBits(PCRTCDisplays[0].PSM, PCRTCDisplays[1].PSM);
+}
+		
+bool GSState::GSPCRTCRegs::FrameWrap()
+{
+	const GSVector4i combined_rect = GSVector4i(PCRTCDisplays[0].framebufferRect.runion(PCRTCDisplays[1].framebufferRect));
+	return combined_rect.w >= 2048 || combined_rect.z >= 2048;
+}
+
+// If the start point of both frames match, we can do a single read
+bool GSState::GSPCRTCRegs::FrameRectMatch()
+{
+	return PCRTCSameSrc;
+}
+
+GSVector2i GSState::GSPCRTCRegs::GetResolution()
+{
+	GSVector2i resolution;
+
+	const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+	const bool is_full_height = interlaced || (toggling_field && GSConfig.InterlaceMode != GSInterlaceMode::Off) || GSConfig.InterlaceMode == GSInterlaceMode::Off;
+
+	if (!GSConfig.PCRTCOffsets)
+	{
+		if (PCRTCDisplays[0].enabled && PCRTCDisplays[1].enabled)
+		{
+			const GSVector4i combined_size = PCRTCDisplays[0].displayRect.runion(PCRTCDisplays[1].displayRect);
+			resolution = { combined_size.width(), combined_size.height() };
+		}
+		else if (PCRTCDisplays[0].enabled)
+		{
+			resolution = { PCRTCDisplays[0].displayRect.width(), PCRTCDisplays[0].displayRect.height() };
+		}
+		else
+		{
+			resolution = { PCRTCDisplays[1].displayRect.width(), PCRTCDisplays[1].displayRect.height() };
+		}
+	}
+	else
+	{
+		const int shift = is_full_height ? 1 : 0;
+		resolution = { offsets.x, offsets.y << shift };
+	}
+
+	resolution.x = std::min(resolution.x, offsets.x);
+	resolution.y = std::min(resolution.y, is_full_height ? offsets.y << 1 : offsets.y);
+
+	return resolution;
+}
+
+GSVector4i GSState::GSPCRTCRegs::GetFramebufferRect(int display)
+{
+	if (display == -1)
+	{
+		return GSVector4i(PCRTCDisplays[0].framebufferRect.runion(PCRTCDisplays[1].framebufferRect));
+	}
+	else
+	{
+		return PCRTCDisplays[display].framebufferRect;
+	}
+}
+
+int GSState::GSPCRTCRegs::GetFramebufferBitDepth()
+{
+	if (PCRTCDisplays[0].enabled)
+		return GSLocalMemory::m_psm[PCRTCDisplays[0].PSM].bpp;
+	else if (PCRTCDisplays[1].enabled)
+		return GSLocalMemory::m_psm[PCRTCDisplays[1].PSM].bpp;
+
+	return 32;
+}
+
+GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
+{
+	int max_height = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode].y : VideoModeOffsetsOverscan[videomode].y;
+
+	if (!(FFMD && interlaced))
+	{
+		max_height *= 2;
+	}
+
+	if (display == -1)
+	{
+		GSVector4i combined_rect = PCRTCDisplays[0].framebufferRect.runion(PCRTCDisplays[1].framebufferRect);
+
+		if (combined_rect.z >= 2048)
+		{
+			const int high_x = (PCRTCDisplays[0].framebufferRect.x > PCRTCDisplays[1].framebufferRect.x) ? PCRTCDisplays[0].framebufferRect.x : PCRTCDisplays[1].framebufferRect.x;
+			combined_rect.z -= GSConfig.UseHardwareRenderer() ? 2048 : high_x;
+			combined_rect.x = 0;
+		}
+
+		if (combined_rect.w >= 2048)
+		{
+			const int high_y = (PCRTCDisplays[0].framebufferRect.y > PCRTCDisplays[1].framebufferRect.y) ? PCRTCDisplays[0].framebufferRect.y : PCRTCDisplays[1].framebufferRect.y;
+			combined_rect.w -= GSConfig.UseHardwareRenderer() ? 2048 : high_y;
+			combined_rect.y = 0;
+		}
+
+		// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
+		const int min_mag = std::max(1, std::min(PCRTCDisplays[0].magnification.y, PCRTCDisplays[1].magnification.y));
+		int offset = PCRTCDisplays[0].displayRect.runion(PCRTCDisplays[1].displayRect).y;
+
+		if (FFMD && interlaced)
+		{
+			offset = (offset - 1) / 2;
+		}
+
+		// Hardware mode needs a wider framebuffer as it can't offset the read.
+		if (GSConfig.UseHardwareRenderer())
+		{
+			combined_rect.z += std::max(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.x);
+			combined_rect.w += std::max(PCRTCDisplays[0].framebufferOffsets.y, PCRTCDisplays[1].framebufferOffsets.y);
+		}
+		offset = (max_height / min_mag) - offset;
+		combined_rect.w = std::min(combined_rect.w, offset);
+		return GSVector2i(combined_rect.z, combined_rect.w);
+	}
+	else
+	{
+		GSVector4i out_rect = PCRTCDisplays[display].framebufferRect;
+
+		if (out_rect.z >= 2048)
+			out_rect.z -= out_rect.x;
+
+		if (out_rect.w >= 2048)
+			out_rect.w -= out_rect.y;
+
+		// Cap the framebuffer read to the maximum display height, otherwise the hardware renderer gets messy.
+		const int min_mag = std::max(1, PCRTCDisplays[display].magnification.y);
+		int offset = PCRTCDisplays[display].displayRect.y;
+
+		if (FFMD && interlaced)
+		{
+			offset = (offset - 1) / 2;
+		}
+
+		offset = (max_height / min_mag) - offset;
+		out_rect.w = std::min(out_rect.w, offset);
+
+		return GSVector2i(out_rect.z, out_rect.w);
+	}
+}
+
+// Sets up the rectangles for both the framebuffer read and the displays for the merge circuit.
+void GSState::GSPCRTCRegs::SetRects(int display, GSRegDISPLAY displayReg, GSRegDISPFB framebufferReg)
+{
+	// Save framebuffer information first, while we're here.
+	PCRTCDisplays[display].FBP = framebufferReg.FBP;
+	PCRTCDisplays[display].FBW = framebufferReg.FBW;
+	PCRTCDisplays[display].PSM = framebufferReg.PSM;
+	PCRTCDisplays[display].prevFramebufferReg = framebufferReg;
+	// Probably not really enabled but will cause a mess.
+	// Q-Ball Billiards enables both circuits but doesn't set one of them up.
+	if (PCRTCDisplays[display].FBW == 0 && displayReg.DW == 0 && displayReg.DH == 0 && displayReg.MAGH == 0)
+	{
+		PCRTCDisplays[display].enabled = false;
+		return;
+	}
+	PCRTCDisplays[display].magnification = GSVector2i(displayReg.MAGH + 1, displayReg.MAGV + 1);
+	const u32 DW = displayReg.DW + 1;
+	const u32 DH = displayReg.DH + 1;
+
+	const int renderWidth = DW / PCRTCDisplays[display].magnification.x;
+	const int renderHeight = DH / PCRTCDisplays[display].magnification.y;
+
+	u32 finalDisplayWidth = renderWidth;
+	u32 finalDisplayHeight = renderHeight;
+	// When using screen offsets the screen gets squashed/resized in to the actual screen size.
+	if (GSConfig.PCRTCOffsets)
+	{
+		finalDisplayWidth = DW / (VideoModeDividers[videomode].x + 1);
+		finalDisplayHeight = DH / (VideoModeDividers[videomode].y + 1);
+	}
+	else
+	{
+		finalDisplayWidth = std::min(finalDisplayWidth ,DW / (VideoModeDividers[videomode].x + 1));
+		finalDisplayHeight = std::min(finalDisplayHeight, DH / (VideoModeDividers[videomode].y + 1));
+	}
+
+	// Framebuffer size and offsets.
+	PCRTCDisplays[display].prevFramebufferOffsets = PCRTCDisplays[display].framebufferOffsets;
+	PCRTCDisplays[display].framebufferRect.x = 0;
+	PCRTCDisplays[display].framebufferRect.y = 0;
+	PCRTCDisplays[display].framebufferRect.z = renderWidth;
+
+	if(FFMD && interlaced) // Round up the height as if it's an odd value, this will cause havok with the merge circuit.
+		PCRTCDisplays[display].framebufferRect.w = (renderHeight + 1) >> (FFMD * interlaced); // Half height read if FFMD + INT enabled.
+	else
+		PCRTCDisplays[display].framebufferRect.w = renderHeight;
+	PCRTCDisplays[display].framebufferOffsets.x = framebufferReg.DBX;
+	PCRTCDisplays[display].framebufferOffsets.y = framebufferReg.DBY;
+
+	const bool is_interlaced_resolution = interlaced || (toggling_field && GSConfig.InterlaceMode != GSInterlaceMode::Off);
+
+	// If the interlace flag isn't set, but it's still interlacing, the height is likely reported wrong.
+	// Q-Ball Billiards.
+	if (is_interlaced_resolution && !interlaced)
+		finalDisplayHeight *= 2;
+
+	// Display size and offsets.
+	PCRTCDisplays[display].displayRect.x = 0;
+	PCRTCDisplays[display].displayRect.y = 0;
+	PCRTCDisplays[display].displayRect.z = finalDisplayWidth;
+	PCRTCDisplays[display].displayRect.w = finalDisplayHeight;
+	PCRTCDisplays[display].prevDisplayOffset = PCRTCDisplays[display].displayOffset;
+	PCRTCDisplays[display].displayOffset.x = displayReg.DX;
+	PCRTCDisplays[display].displayOffset.y = displayReg.DY;
+}
+
+// Calculate framebuffer read offsets, should be considered if only one circuit is enabled, or difference is more than 1 line.
+// Only considered if "Anti-blur" is enabled.
+void GSState::GSPCRTCRegs::CalculateFramebufferOffset(bool scanmask)
+{
+	if (GSConfig.PCRTCAntiBlur && PCRTCSameSrc && !scanmask)
+	{
+		GSVector2i fb0 = GSVector2i(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[0].framebufferOffsets.y);
+		GSVector2i fb1 = GSVector2i(PCRTCDisplays[1].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.y);
+
+		if (fb0.x + PCRTCDisplays[0].displayRect.z > 2048)
+		{
+			fb0.x -= 2048;
+			fb0.x = abs(fb0.x);
+		}
+		if (fb0.y + PCRTCDisplays[0].displayRect.w > 2048)
+		{
+			fb0.y -= 2048;
+			fb0.y = abs(fb0.y);
+		}
+		if (fb1.x + PCRTCDisplays[1].displayRect.z > 2048)
+		{
+			fb1.x -= 2048;
+			fb1.x = abs(fb1.x);
+		}
+		if (fb1.y + PCRTCDisplays[1].displayRect.w > 2048)
+		{
+			fb1.y -= 2048;
+			fb1.y = abs(fb1.y);
+		}
+
+		if (abs(fb1.y - fb0.y) == 1
+			&& PCRTCDisplays[0].displayRect.y == PCRTCDisplays[1].displayRect.y)
+		{
+			if (fb1.y < fb0.y)
+				PCRTCDisplays[0].framebufferOffsets.y = fb1.y;
+			else
+				PCRTCDisplays[1].framebufferOffsets.y = fb0.y;
+		}
+		if (abs(fb1.x - fb0.x) == 1
+			&& PCRTCDisplays[0].displayRect.x == PCRTCDisplays[1].displayRect.x)
+		{
+			if (fb1.x < fb0.x)
+				PCRTCDisplays[0].framebufferOffsets.x = fb1.x;
+			else
+				PCRTCDisplays[1].framebufferOffsets.x = fb0.x;
+		}
+	}
+	PCRTCDisplays[0].framebufferRect.x += PCRTCDisplays[0].framebufferOffsets.x;
+	PCRTCDisplays[0].framebufferRect.z += PCRTCDisplays[0].framebufferOffsets.x;
+	PCRTCDisplays[0].framebufferRect.y += PCRTCDisplays[0].framebufferOffsets.y;
+	PCRTCDisplays[0].framebufferRect.w += PCRTCDisplays[0].framebufferOffsets.y;
+
+	PCRTCDisplays[1].framebufferRect.x += PCRTCDisplays[1].framebufferOffsets.x;
+	PCRTCDisplays[1].framebufferRect.z += PCRTCDisplays[1].framebufferOffsets.x;
+	PCRTCDisplays[1].framebufferRect.y += PCRTCDisplays[1].framebufferOffsets.y;
+	PCRTCDisplays[1].framebufferRect.w += PCRTCDisplays[1].framebufferOffsets.y;
+}
+
+// Used in software mode to align the buffer when reading. Offset is accounted for (block aligned) by GetOutput.
+void GSState::GSPCRTCRegs::RemoveFramebufferOffset(int display)
+{
+	if (display >= 0)
+	{
+		// Hardware needs nothing but handling for wrapped framebuffers.
+		if (GSConfig.UseHardwareRenderer())
+		{
+			if (PCRTCDisplays[display].framebufferRect.z >= 2048)
+			{
+				PCRTCDisplays[display].displayRect.x += 2048 - PCRTCDisplays[display].framebufferRect.x;
+				PCRTCDisplays[display].displayRect.z += 2048 - PCRTCDisplays[display].framebufferRect.x;
+				PCRTCDisplays[display].framebufferRect.x = 0;
+				PCRTCDisplays[display].framebufferRect.z -= 2048;
+			}
+			if (PCRTCDisplays[display].framebufferRect.w >= 2048)
+			{
+				PCRTCDisplays[display].displayRect.y += 2048 - PCRTCDisplays[display].framebufferRect.y;
+				PCRTCDisplays[display].displayRect.w += 2048 - PCRTCDisplays[display].framebufferRect.y;
+				PCRTCDisplays[display].framebufferRect.y = 0;
+				PCRTCDisplays[display].framebufferRect.w -= 2048;
+			}
+		}
+		else
+		{
+			const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[PCRTCDisplays[display].PSM];
+
+			// Software mode - See note below.
+			GSVector4i r = PCRTCDisplays[display].framebufferRect;
+			r = r.ralign<Align_Outside>(psm.bs);
+
+			PCRTCDisplays[display].framebufferRect.z -= r.x;
+			PCRTCDisplays[display].framebufferRect.w -= r.y;
+			PCRTCDisplays[display].framebufferRect.x -= r.x;
+			PCRTCDisplays[display].framebufferRect.y -= r.y;
+		}
+	}
+	else
+	{
+		// Software Mode Note:
+		// This code is to read the framebuffer nicely block aligned in software, then leave the remaining offset in to the block.
+		// In hardware mode this doesn't happen, it reads the whole framebuffer, so we need to keep the offset.
+		if (!GSConfig.UseHardwareRenderer())
+		{
+			const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[PCRTCDisplays[1].PSM];
+
+			GSVector4i r = PCRTCDisplays[0].framebufferRect.runion(PCRTCDisplays[1].framebufferRect);
+			r = r.ralign<Align_Outside>(psm.bs);
+
+			PCRTCDisplays[0].framebufferRect.x -= r.x;
+			PCRTCDisplays[0].framebufferRect.y -= r.y;
+			PCRTCDisplays[0].framebufferRect.z -= r.x;
+			PCRTCDisplays[0].framebufferRect.w -= r.y;
+			PCRTCDisplays[1].framebufferRect.x -= r.x;
+			PCRTCDisplays[1].framebufferRect.y -= r.y;
+			PCRTCDisplays[1].framebufferRect.z -= r.x;
+			PCRTCDisplays[1].framebufferRect.w -= r.y;
+		}
+	}
+}
+
+// If the two displays are offset from each other, move them to the correct offsets.
+// If using screen offsets, calculate the positions here.
+void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
+{
+	const bool both_enabled = PCRTCDisplays[0].enabled && PCRTCDisplays[1].enabled;
+	// Offsets are generally ignored, the "hacky" way of doing the displays, but direct to framebuffers.
+	if (!GSConfig.PCRTCOffsets)
+	{
+		const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+		int int_off[2] = { 0, 0 };
+		GSVector2i zeroDisplay = NearestToZeroOffset();
+		GSVector2i baseOffset = PCRTCDisplays[zeroDisplay.y].displayOffset;
+
+		if (both_enabled)
+		{
+			int blurOffset = abs(PCRTCDisplays[1].displayOffset.y - PCRTCDisplays[0].displayOffset.y);
+			if (GSConfig.PCRTCAntiBlur && !scanmask && blurOffset < 4)
+			{
+				if (PCRTCDisplays[1].displayOffset.y > PCRTCDisplays[0].displayOffset.y)
+					PCRTCDisplays[1].displayOffset.y -= blurOffset;
+				else
+					PCRTCDisplays[0].displayOffset.y -= blurOffset;
+			}
+		}
+
+		// If there's a single pixel offset, account for it else it can throw interlacing out.
+		for (int i = 0; i < 2; i++)
+		{
+			if (!PCRTCDisplays[i].enabled)
+				continue;
+
+			// Should this be MAGV/H in the DISPLAY register rather than the "default" magnification?
+			const int offset = (PCRTCDisplays[i].displayOffset.y - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1);
+
+			if (offset > 4)
+				continue;
+
+			int_off[i] = offset & 1;
+			if (offset < 0)
+				int_off[i] = -int_off[i];
+
+			PCRTCDisplays[i].displayRect.y += int_off[i];
+			PCRTCDisplays[i].displayRect.w += int_off[i];
+		}
+
+		// Handle difference in offset between the two displays, used in games like DmC and Time Crisis 2 (for split screen).
+		// Offset is not screen based, but relative to each other.
+		if (both_enabled)
+		{
+			GSVector2i offset;
+
+			offset.x = (PCRTCDisplays[1 - zeroDisplay.x].displayOffset.x - PCRTCDisplays[zeroDisplay.x].displayOffset.x) / (VideoModeDividers[videomode].x + 1);
+			offset.y = (PCRTCDisplays[1 - zeroDisplay.y].displayOffset.y - PCRTCDisplays[zeroDisplay.y].displayOffset.y) / (VideoModeDividers[videomode].y + 1);
+
+			if (offset.x >= 4 || !GSConfig.PCRTCAntiBlur || scanmask)
+			{
+				PCRTCDisplays[1 - zeroDisplay.x].displayRect.x += offset.x;
+				PCRTCDisplays[1 - zeroDisplay.x].displayRect.z += offset.x;
+			}
+			if (offset.y >= 4 || !GSConfig.PCRTCAntiBlur || scanmask)
+			{
+				PCRTCDisplays[1 - zeroDisplay.y].displayRect.y += offset.y - int_off[1 - zeroDisplay.y];
+				PCRTCDisplays[1 - zeroDisplay.y].displayRect.w += offset.y - int_off[1 - zeroDisplay.y];
+			}
+
+			baseOffset = PCRTCDisplays[zeroDisplay.y].displayOffset;
+		}
+
+		// Handle any large vertical offset from the zero position on the screen.
+		// Example: Hokuto no Ken, does a rougly -14 offset to bring the screen up.
+		// Ignore the lowest bit, we've already accounted for this
+		int vOffset = ((static_cast<int>(baseOffset.y) - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1));
+
+		if(vOffset <= 4 && vOffset != 0)
+		{
+			PCRTCDisplays[0].displayRect.y += vOffset - int_off[0];
+			PCRTCDisplays[0].displayRect.w += vOffset - int_off[0];
+			PCRTCDisplays[1].displayRect.y += vOffset - int_off[1];
+			PCRTCDisplays[1].displayRect.w += vOffset - int_off[1];
+		}
+	}
+	else // We're using screen offsets, so just calculate the entire offset.
+	{
+		const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
+		GSVector2i offset = { 0, 0 };
+		GSVector2i zeroDisplay = NearestToZeroOffset();
+
+		if (both_enabled)
+		{
+			int blurOffset = abs(PCRTCDisplays[1].displayOffset.y - PCRTCDisplays[0].displayOffset.y);
+			if (GSConfig.PCRTCAntiBlur && !scanmask && blurOffset < 4)
+			{
+				if (PCRTCDisplays[1].displayOffset.y > PCRTCDisplays[0].displayOffset.y)
+					PCRTCDisplays[1].displayOffset.y -= blurOffset;
+				else
+					PCRTCDisplays[0].displayOffset.y -= blurOffset;
+			}
+		}
+
+		for (int i = 0; i < 2; i++)
+		{
+			// Should this be MAGV/H in the DISPLAY register rather than the "default" magnification?
+			offset.x = (static_cast<int>(PCRTCDisplays[i].displayOffset.x) - offsets.z) / (VideoModeDividers[videomode].x + 1);
+			offset.y = (static_cast<int>(PCRTCDisplays[i].displayOffset.y) - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1);
+
+			PCRTCDisplays[i].displayRect.x += offset.x;
+			PCRTCDisplays[i].displayRect.z += offset.x;
+			PCRTCDisplays[i].displayRect.y += offset.y;
+			PCRTCDisplays[i].displayRect.w += offset.y;
+		}
+
+		if (both_enabled)
+		{
+			GSVector2i offset;
+
+			offset.x = (PCRTCDisplays[1 - zeroDisplay.x].displayRect.x - PCRTCDisplays[zeroDisplay.x].displayRect.x);
+			offset.y = (PCRTCDisplays[1 - zeroDisplay.y].displayRect.y - PCRTCDisplays[zeroDisplay.y].displayRect.y);
+
+			if (offset.x > 0 && offset.x < 4 && GSConfig.PCRTCAntiBlur)
+			{
+				PCRTCDisplays[1 - zeroDisplay.x].displayRect.x -= offset.x;
+				PCRTCDisplays[1 - zeroDisplay.x].displayRect.z -= offset.x;
+			}
+			if (offset.y > 0 && offset.y < 4 && GSConfig.PCRTCAntiBlur)
+			{
+				PCRTCDisplays[1 - zeroDisplay.y].displayRect.y -= offset.y;
+				PCRTCDisplays[1 - zeroDisplay.y].displayRect.w -= offset.y;
+			}
+		}
+	}
 }

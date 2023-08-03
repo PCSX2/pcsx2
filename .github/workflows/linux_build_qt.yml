@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-20.04
+        default: ubuntu-22.04
       platform:
         required: false
         type: string
@@ -28,10 +28,14 @@ on:
         required: false
         type: string
         default: ""
-      patches_url:
+      patchesUrl:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_linux:
@@ -52,12 +56,16 @@ jobs:
         with:
           submodules: recursive
 
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         env:
           OS: linux
-          GUI_FRAMEWORK: QT
           ARCH: ${{ inputs.platform }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -87,7 +95,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/deps
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-qt.sh') }}
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-qt.sh') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -96,7 +104,7 @@ jobs:
       - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
+          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Generate CMake
         env:
@@ -120,9 +128,9 @@ jobs:
         env:
           NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: |
-                .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
-                mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
-                mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
+          .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
+          mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
+          mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
 
       - name: Upload artifact
         if: inputs.buildAppImage == true

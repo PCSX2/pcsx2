@@ -21,7 +21,7 @@
 #include "R3000A.h"
 #include "IopMem.h"
 
-#include "common/MathUtils.h"
+#include "common/BitUtils.h"
 #ifdef GTE_DUMP
 #define G_OP(name,delay) fprintf(gteLog, "* : %08X : %02d : %s\n", psxRegs.code, delay, name);
 #define G_SD(reg)  fprintf(gteLog, "+D%02d : %08X\n", reg, psxRegs.CP2D.r[reg]);
@@ -208,7 +208,7 @@ __inline void MTC2(unsigned long value, int reg) {
 
 	case 30:
 		psxRegs.CP2D.r[30] = value;
-		psxRegs.CP2D.r[31] = count_leading_sign_bits(value);
+		psxRegs.CP2D.r[31] = Common::CountLeadingSignBits(value);
 		break;
 
 	default:

@@ -63,8 +63,8 @@ namespace ImGuiFullscreen
 	extern ImVec4 UITextHighlightColor;
 	extern ImVec4 UIPrimaryLineColor;
 	extern ImVec4 UISecondaryColor;
-	extern ImVec4 UISecondaryLightColor;
-	extern ImVec4 UISecondaryDarkColor;
+	extern ImVec4 UISecondaryStrongColor;
+	extern ImVec4 UISecondaryWeakColor;
 	extern ImVec4 UISecondaryTextColor;
 
 	static __fi float DPIScale(float v) { return ImGui::GetIO().DisplayFramebufferScale.x * v; }
@@ -136,8 +136,6 @@ namespace ImGuiFullscreen
 
 	void PushPrimaryColor();
 	void PopPrimaryColor();
-	void PushSecondaryColor();
-	void PopSecondaryColor();
 
 	void DrawWindowTitle(const char* title);
 

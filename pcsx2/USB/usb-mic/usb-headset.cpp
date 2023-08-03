@@ -994,7 +994,7 @@ namespace usb_mic
 		// TODO: Update device
 	}
 
-	gsl::span<const SettingInfo> HeadsetDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> HeadsetDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),

@@ -57,6 +57,9 @@ public:
 	static bool OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
+	static bool MV_Growlanser(GSRendererHW& r);
+	static bool MV_Ico(GSRendererHW& r);
+
 	template <typename F>
 	struct Entry
 	{
@@ -66,4 +69,5 @@ public:
 
 	static const Entry<GSRendererHW::GSC_Ptr> s_get_skip_count_functions[];
 	static const Entry<GSRendererHW::OI_Ptr> s_before_draw_functions[];
+	static const Entry<GSRendererHW::MV_Ptr> s_move_handler_functions[];
 };

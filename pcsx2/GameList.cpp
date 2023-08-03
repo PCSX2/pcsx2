@@ -48,7 +48,7 @@ namespace GameList
 	enum : u32
 	{
 		GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
-		GAME_LIST_CACHE_VERSION = 32,
+		GAME_LIST_CACHE_VERSION = 33,
 
 
 		PLAYED_TIME_SERIAL_LENGTH = 32,
@@ -117,7 +117,7 @@ const char* GameList::RegionToString(Region region)
 {
 	static std::array<const char*, static_cast<int>(Region::Count)> names = {{"NTSC-B", "NTSC-C", "NTSC-HK", "NTSC-J", "NTSC-K", "NTSC-T",
 		"NTSC-U", "Other", "PAL-A", "PAL-AF", "PAL-AU", "PAL-BE", "PAL-E", "PAL-F", "PAL-FI", "PAL-G", "PAL-GR", "PAL-I", "PAL-IN", "PAL-M",
-		"PAL-NL", "PAL-NO", "PAL-P", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
+		"PAL-NL", "PAL-NO", "PAL-P", "PAL-PL", "PAL-R", "PAL-S", "PAL-SC", "PAL-SW", "PAL-SWI", "PAL-UK"}};
 
 	return names[static_cast<int>(region)];
 }
@@ -182,16 +182,8 @@ bool GameList::GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::
 
 bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 {
-	const s64 file_size = FileSystem::GetPathFileSize(path.c_str());
-	if (file_size <= 0)
-		return false;
-
-	try
-	{
-		ElfObject eo(path, static_cast<uint>(file_size), false);
-		entry->crc = eo.getCRC();
-	}
-	catch (...)
+	ElfObject eo;
+	if (!eo.OpenFile(path, false, nullptr))
 	{
 		Console.Error("Failed to parse ELF '%s'", path.c_str());
 		return false;
@@ -201,9 +193,10 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	entry->serial.clear();
 	entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
 	entry->region = Region::Other;
-	entry->total_size = static_cast<u64>(file_size);
 	entry->type = EntryType::ELF;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
+	entry->crc = eo.GetCRC();
+	entry->total_size = eo.GetSize();
 
 	std::string disc_path(VMManager::GetDiscOverrideFromGameSettings(path));
 	if (!disc_path.empty())
@@ -273,6 +266,8 @@ GameList::Region GameList::ParseDatabaseRegion(const std::string_view& db_region
 		return Region::PAL_NL;
 	else if (StringUtil::StartsWith(db_region, "PAL-NO"))
 		return Region::PAL_NO;
+	else if (StringUtil::StartsWith(db_region, "PAL-PL"))
+		return Region::PAL_PL;
 	else if (StringUtil::StartsWith(db_region, "PAL-P"))
 		return Region::PAL_P;
 	else if (StringUtil::StartsWith(db_region, "PAL-R"))
@@ -317,7 +312,16 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 		case CDVD_TYPE_ILLEGAL:
 		default:
-			return false;
+		{
+			// Create empty invalid entry, so we don't repeatedly scan it every time.
+			entry->type = EntryType::Invalid;
+			entry->path = path;
+			entry->total_size = 0;
+			entry->compatibility_rating = CompatibilityRating::Unknown;
+			entry->title.clear();
+			entry->region = Region::Other;
+			return true;
+		}
 	}
 
 	entry->path = path;
@@ -349,7 +353,7 @@ bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* e
 
 bool GameList::GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry)
 {
-	auto iter = UnorderedStringMapFind(s_cache_map, path);
+	auto iter = s_cache_map.find(path);
 	if (iter == s_cache_map.end())
 		return false;
 
@@ -445,7 +449,7 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 		ge.compatibility_rating = static_cast<CompatibilityRating>(compatibility_rating);
 		ge.last_modified_time = static_cast<std::time_t>(last_modified_time);
 
-		auto iter = UnorderedStringMapFind(s_cache_map, ge.path);
+		auto iter = s_cache_map.find(ge.path);
 		if (iter != s_cache_map.end())
 			iter->second = std::move(ge);
 		else
@@ -629,7 +633,11 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 	if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
 		return false;
 
-	auto iter = UnorderedStringMapFind(played_time_map, entry.serial);
+	// Skip over invalid entries.
+	if (entry.type == EntryType::Invalid)
+		return true;
+
+	auto iter = played_time_map.find(entry.serial);
 	if (iter != played_time_map.end())
 	{
 		entry.last_played_time = iter->second.last_played_time;
@@ -652,7 +660,6 @@ bool GameList::ScanFile(
 	if (!PopulateEntryFromPath(path, &entry))
 		return false;
 
-	entry.path = std::move(path);
 	entry.last_modified_time = timestamp;
 
 	if (s_cache_write_stream || OpenCacheForWriting())
@@ -661,7 +668,14 @@ bool GameList::ScanFile(
 			Console.Warning("Failed to write entry '%s' to cache", entry.path.c_str());
 	}
 
-	auto iter = UnorderedStringMapFind(played_time_map, entry.serial);
+	if (entry.type == EntryType::Invalid)
+	{
+		// don't add invalid entries to list
+		lock.lock();
+		return true;
+	}
+
+	auto iter = played_time_map.find(entry.serial);
 	if (iter != played_time_map.end())
 	{
 		entry.last_played_time = iter->second.last_played_time;
@@ -898,7 +912,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
 			if (!ParsePlayedTimeLine(line, serial, entry))
 				continue;
 
-			if (UnorderedStringMapFind(ret, serial) != ret.end())
+			if (ret.find(serial) != ret.end())
 			{
 				Console.Warning("(LoadPlayedTimeMap) Duplicate entry: '%s'", serial.c_str());
 				continue;

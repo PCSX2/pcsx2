@@ -26,7 +26,7 @@ public:
 	GLContextEGLWayland(const WindowInfo& wi);
 	~GLContextEGLWayland() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
 
 	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
 	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;

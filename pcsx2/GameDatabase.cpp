@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,6 +21,7 @@
 #include "IconsFontAwesome5.h"
 #include "vtlb.h"
 
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -200,33 +201,25 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 		}
 	}
 
-	// Validate speed hacks, invalid ones will be dropped!
 	if (node.has_child("speedHacks") && node["speedHacks"].has_children())
 	{
 		for (const auto& n : node["speedHacks"].children())
 		{
-			bool speedHackValidated = false;
-			auto speedHack = std::string(n.key().str, n.key().len);
+			const std::string_view id_view = std::string_view(n.key().str, n.key().len);
+			const std::string_view value_view = std::string_view(n.val().str, n.val().len);
+			const std::optional<SpeedHack> id = Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(id_view);
+			const std::optional<int> value = StringUtil::FromChars<int>(value_view);
 
-			// Same deal with SpeedHacks
-			if (StringUtil::EndsWith(speedHack, "SpeedHack"))
+			if (id.has_value() && value.has_value() &&
+				std::none_of(gameEntry.speedHacks.begin(), gameEntry.speedHacks.end(),
+					[&id](const auto& it) { return it.first == id.value(); }))
 			{
-				speedHack.erase(speedHack.size() - 9);
-				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; ++id)
-				{
-					if (speedHack.compare(EnumToString(id)) == 0 &&
-						std::none_of(gameEntry.speedHacks.begin(), gameEntry.speedHacks.end(), [id](const auto& it) { return it.first == id; }))
-					{
-						gameEntry.speedHacks.emplace_back(id, std::atoi(n.val().str));
-						speedHackValidated = true;
-						break;
-					}
-				}
+				gameEntry.speedHacks.emplace_back(id.value(), value.value());
 			}
-
-			if (!speedHackValidated)
+			else
 			{
-				Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}', specified for serial: '{}'. Dropping!", speedHack.c_str(), serial));
+				Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}={}', specified for serial: '{}'. Dropping!",
+					id_view, value_view, serial));
 			}
 		}
 	}
@@ -238,13 +231,17 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			const std::string_view id_name(n.key().data(), n.key().size());
 			std::optional<GameDatabaseSchema::GSHWFixId> id = GameDatabaseSchema::parseHWFixName(id_name);
 			std::optional<s32> value;
-			if (id.has_value() && (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount || id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw))
+			if (id.has_value() && (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount ||
+									  id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw ||
+									  id.value() == GameDatabaseSchema::GSHWFixId::MoveHandler))
 			{
 				const std::string_view str_value(n.has_val() ? std::string_view(n.val().data(), n.val().size()) : std::string_view());
 				if (id.value() == GameDatabaseSchema::GSHWFixId::GetSkipCount)
 					value = GSLookupGetSkipCountFunctionId(str_value);
 				else if (id.value() == GameDatabaseSchema::GSHWFixId::BeforeDraw)
 					value = GSLookupBeforeDrawFunctionId(str_value);
+				else if (id.value() == GameDatabaseSchema::GSHWFixId::MoveHandler)
+					value = GSLookupMoveHandlerFunctionId(str_value);
 
 				if (value.value_or(-1) < 0)
 				{
@@ -370,7 +367,8 @@ static const char* s_gs_hw_fix_names[] = {
 	"maximumBlendingLevel",
 	"recommendedBlendingLevel",
 	"getSkipCount",
-	"beforeDraw"
+	"beforeDraw",
+	"moveHandler",
 };
 static_assert(std::size(s_gs_hw_fix_names) == static_cast<u32>(GameDatabaseSchema::GSHWFixId::Count), "HW fix name lookup is correct size");
 
@@ -405,6 +403,7 @@ bool GameDatabaseSchema::isUserHackHWFix(GSHWFixId id)
 		case GSHWFixId::PCRTCOverscan:
 		case GSHWFixId::GetSkipCount:
 		case GSHWFixId::BeforeDraw:
+		case GSHWFixId::MoveHandler:
 			return false;
 		default:
 			return true;
@@ -507,16 +506,17 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (const auto& it : speedHacks)
 	{
-		const bool mode = it.second != 0;
 		if (!applyAuto)
 		{
-			Console.Warning("[GameDB] Skipping setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
+			Console.Warning("[GameDB] Skipping setting Speedhack '%s' to [mode=%d]",
+				Pcsx2Config::SpeedhackOptions::GetSpeedHackName(it.first), it.second);
 			continue;
 		}
 		// Legacy note - speedhacks are setup in the GameDB as integer values, but
 		// are effectively booleans like the gamefixes
-		config.Speedhacks.Set(it.first, mode);
-		Console.WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]", EnumToString(it.first), mode);
+		config.Speedhacks.Set(it.first, it.second);
+		Console.WriteLn("(GameDB) Setting Speedhack '%s' to [mode=%d]",
+			Pcsx2Config::SpeedhackOptions::GetSpeedHackName(it.first), it.second);
 	}
 
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
@@ -646,6 +646,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::BeforeDraw:
 			return (static_cast<int>(config.BeforeDrawFunctionId) == value);
 
+		case GSHWFixId::MoveHandler:
+			return (static_cast<int>(config.MoveHandlerFunctionId) == value);
+
 		default:
 			return false;
 	}
@@ -725,8 +728,11 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				break;
 
 			case GSHWFixId::BilinearUpscale:
-				config.UserHacks_BilinearHack = (value > 0);
-				break;
+			{
+				if (value >= 0 && value < static_cast<int>(GSBilinearDirtyMode::MaxCount))
+					config.UserHacks_BilinearHack = static_cast<GSBilinearDirtyMode>(value);
+			}
+			break;
 
 			case GSHWFixId::NativePaletteDraw:
 				config.UserHacks_NativePaletteDraw = (value > 0);
@@ -855,7 +861,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
-						fmt::format(TRANSLATE_SV("GameDatabase",
+						fmt::format(TRANSLATE_FS("GameDatabase",
 										"{0} Current Blending Accuracy is {1}.\n"
 										"Recommended Blending Accuracy for this game is {2}.\n"
 										"You can adjust the blending level in Game Properties to improve\n"
@@ -879,6 +885,10 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::BeforeDraw:
 				config.BeforeDrawFunctionId = static_cast<s16>(value);
+				break;
+
+			case GSHWFixId::MoveHandler:
+				config.MoveHandlerFunctionId = static_cast<s16>(value);
 				break;
 
 			default:
@@ -908,50 +918,45 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 void GameDatabase::initDatabase()
 {
 	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
-	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
-		throw std::runtime_error(fmt::format("[YAML] Parsing error at {}:{} (bufpos={}): {}",
-			loc.line, loc.col, loc.offset, msg));
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
+		Console.Error(fmt::format("[GameDB YAML] Parsing error at {}:{} (bufpos={}): {}",
+			loc.line, loc.col, loc.offset, std::string_view(msg, msg_len)));
 	};
 	ryml::set_callbacks(rymlCallbacks);
 	c4::set_error_callback([](const char* msg, size_t msg_size) {
-		throw std::runtime_error(fmt::format("[YAML] Internal Parsing error: {}",
-			msg));
+		Console.Error(fmt::format("[GameDB YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 	});
-	try
+
+	auto buf = Host::ReadResourceFileToString(GAMEDB_YAML_FILE_NAME);
+	if (!buf.has_value())
 	{
-		auto buf = Host::ReadResourceFileToString(GAMEDB_YAML_FILE_NAME);
-		if (!buf.has_value())
+		Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
+		return;
+	}
+
+	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
+	ryml::NodeRef root = tree.rootref();
+
+	for (const ryml::NodeRef& n : root.children())
+	{
+		auto serial = StringUtil::toLower(std::string(n.key().str, n.key().len));
+
+		// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
+		// this is because the application may pass a lowercase CRC or serial along
+		//
+		// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
+		if (s_game_db.count(serial) == 1)
 		{
-			Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
-			return;
+			Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
+			continue;
 		}
 
-		ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
-		ryml::NodeRef root = tree.rootref();
-
-		for (const auto& n : root.children())
+		if (n.is_map())
 		{
-			auto serial = StringUtil::toLower(std::string(n.key().str, n.key().len));
-
-			// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
-			// this is because the application may pass a lowercase CRC or serial along
-			//
-			// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
-			if (s_game_db.count(serial) == 1)
-			{
-				Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
-				continue;
-			}
-			if (n.is_map())
-			{
-				parseAndInsert(serial, n);
-			}
+			parseAndInsert(serial, n);
 		}
 	}
-	catch (const std::exception& e)
-	{
-		Console.Error(fmt::format("[GameDB] Error occured when initializing GameDB: {}", e.what()));
-	}
+
 	ryml::reset_callbacks();
 }
 
@@ -971,4 +976,242 @@ const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_vi
 
 	auto iter = s_game_db.find(StringUtil::toLower(serial));
 	return (iter != s_game_db.end()) ? &iter->second : nullptr;
+}
+
+bool GameDatabase::TrackHash::parseHash(const std::string_view& str)
+{
+	constexpr u32 expected_length = SIZE * 2;
+	if (str.length() != expected_length)
+		return false;
+
+	std::memset(data, 0, sizeof(data));
+	for (u32 i = 0; i < SIZE * 2; i++)
+	{
+		const char ch = str[i];
+		u8 b;
+		if (ch >= '0' && ch <= '9')
+			b = static_cast<u8>(ch - '0');
+		else if (ch >= 'a' && ch <= 'f')
+			b = static_cast<u8>(ch - 'a') + 0xa;
+		else if (ch >= 'A' && ch <= 'F')
+			b = static_cast<u8>(ch - 'A') + 0xa;
+		else
+			return false;
+
+		data[i / 2] |= ((i % 2) == 0) ? (b << 4) : b;
+	}
+
+	return true;
+}
+
+std::string GameDatabase::TrackHash::toString() const
+{
+	return fmt::format(
+		"{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+		data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+		data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+}
+
+struct TrackHashHasher
+{
+	size_t operator()(const GameDatabase::TrackHash& hash) const
+	{
+		return std::hash<std::string_view>()(std::string_view(reinterpret_cast<const char*>(hash.data),
+			GameDatabase::TrackHash::SIZE));
+	}
+};
+
+static constexpr char HASHDB_YAML_FILE_NAME[] = "RedumpDatabase.yaml";
+std::unordered_map<GameDatabase::TrackHash, u32, TrackHashHasher> s_track_hash_to_entry_map;
+std::vector<GameDatabase::HashDatabaseEntry> s_hash_database;
+
+static bool parseHashDatabaseEntry(const c4::yml::NodeRef& node)
+{
+	if (!node.has_child("name") || !node.has_child("hashes"))
+	{
+		Console.Warning("[HashDatabase] Incomplete entry found.");
+		return false;
+	}
+
+	GameDatabase::HashDatabaseEntry entry;
+	node["name"] >> entry.name;
+	if (node.has_child("version"))
+		node["version"] >> entry.version;
+	if (node.has_child("serial"))
+		node["serial"] >> entry.serial;
+
+	const u32 index = static_cast<u32>(s_hash_database.size());
+	for (const ryml::NodeRef& n : node["hashes"].children())
+	{
+		if (!n.is_map() || !n.has_child("size") || !n.has_child("md5"))
+		{
+			Console.Error(fmt::format("[HashDatabase] Incomplete hash definition in {}", entry.name));
+			return false;
+		}
+
+		GameDatabase::TrackHash th;
+		std::string md5;
+		n["md5"] >> md5;
+		n["size"] >> th.size;
+
+		if (!th.parseHash(md5))
+		{
+			Console.Error(fmt::format("[HashDatabase] Failed to parse hash in {}: '{}'", entry.name, md5));
+			return false;
+		}
+
+		if (entry.tracks.empty() && s_track_hash_to_entry_map.find(th) != s_track_hash_to_entry_map.end())
+			Console.Warning(fmt::format("[HashDatabase] Duplicate first track hash in {}", entry.name));
+
+		entry.tracks.push_back(th);
+		s_track_hash_to_entry_map.emplace(th, index);
+	}
+
+	s_hash_database.push_back(std::move(entry));
+	return true;
+}
+
+bool GameDatabase::loadHashDatabase()
+{
+	if (!s_hash_database.empty())
+		return true;
+
+	ryml::Callbacks rymlCallbacks = ryml::get_callbacks();
+	rymlCallbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void*) {
+		Console.Error(fmt::format(
+			"[HashDatabase YAML] Parsing error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, msg));
+	};
+	ryml::set_callbacks(rymlCallbacks);
+	c4::set_error_callback([](const char* msg, size_t msg_size) {
+		Console.Error(fmt::format("[HashDatabase YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
+	});
+
+	Common::Timer load_timer;
+
+	auto buf = Host::ReadResourceFileToString(HASHDB_YAML_FILE_NAME);
+	if (!buf.has_value())
+	{
+		Console.Error("[GameDB] Unable to open hash database file, file does not exist.");
+		return false;
+	}
+
+	ryml::Tree tree = ryml::parse_in_arena(c4::to_csubstr(buf.value()));
+	ryml::NodeRef root = tree.rootref();
+
+	bool okay = true;
+	for (const ryml::NodeRef& n : root.children())
+	{
+		if (!parseHashDatabaseEntry(n))
+		{
+			okay = false;
+			break;
+		}
+	}
+
+	ryml::reset_callbacks();
+	if (!okay)
+	{
+		s_track_hash_to_entry_map.clear();
+		s_hash_database.clear();
+		return false;
+	}
+
+	Console.WriteLn(Color_StrongGreen, "[HashDatabase] Loaded YAML in %.0f ms", load_timer.GetTimeMilliseconds());
+	return true;
+}
+
+void GameDatabase::unloadHashDatabase()
+{
+	s_track_hash_to_entry_map.clear();
+	s_hash_database.clear();
+}
+
+static size_t getTrackIndex(const GameDatabase::TrackHash* tracks, size_t num_tracks, const GameDatabase::TrackHash& track)
+{
+	for (size_t i = 0; i < num_tracks; i++)
+	{
+		if (tracks[i] == track)
+			return i;
+	}
+	return num_tracks;
+}
+
+const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
+	const TrackHash* tracks, size_t num_tracks, bool* tracks_matched, std::string* match_error)
+{
+	loadHashDatabase();
+
+	if (num_tracks == 0)
+	{
+		*match_error = TRANSLATE_STR("GameDatabase", "No tracks provided.");
+		std::memset(tracks_matched, 0, sizeof(bool) * num_tracks);
+		return nullptr;
+	}
+
+	// match the first track, for DVDs this will be all there is anyway
+	const auto data_iter = s_track_hash_to_entry_map.find(tracks[0]);
+	if (data_iter == s_track_hash_to_entry_map.end())
+	{
+		*match_error = fmt::format(TRANSLATE_FS("GameDatabase", "Hash {} is not in database."), tracks[0].toString());
+		std::memset(tracks_matched, 0, sizeof(bool) * num_tracks);
+		return nullptr;
+	}
+
+	// make sure they're not missing the data track
+	const GameDatabase::HashDatabaseEntry* candidate = &s_hash_database[data_iter->second];
+	if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[0]) != 0)
+	{
+		*match_error = TRANSLATE_STR("GameDatabase", "Data track number does not match data track in database.");
+		std::memset(tracks_matched, 0, sizeof(bool) * num_tracks);
+		return nullptr;
+	}
+
+	// first track is okay!
+	tracks_matched[0] = true;
+	match_error->clear();
+
+	// now check any audio tracks...
+	bool all_okay = true;
+	for (size_t track = 1; track < num_tracks; track++)
+	{
+		const auto audio_iter = s_track_hash_to_entry_map.find(tracks[track]);
+		if (audio_iter != s_track_hash_to_entry_map.end())
+		{
+			fmt::format_to(std::back_inserter(*match_error),
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is not found in database.\n"), track + 1,
+				tracks[track].toString());
+			tracks_matched[track] = false;
+			all_okay = false;
+			continue;
+		}
+
+		// same game?
+		if (audio_iter->second != data_iter->second)
+		{
+			fmt::format_to(std::back_inserter(*match_error),
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is for a different game ({}).\n"), track + 1,
+				tracks[track].toString(), s_hash_database[audio_iter->second].name);
+			tracks_matched[track] = false;
+			all_okay = false;
+			continue;
+		}
+
+		// make sure it's the correct track number
+		if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[track]) != track)
+		{
+			fmt::format_to(std::back_inserter(*match_error),
+				TRANSLATE_FS("GameDatabase", "Track {} with hash {} does not match database track.\n"), track + 1,
+				tracks[track].toString());
+			tracks_matched[track] = false;
+			all_okay = false;
+			continue;
+		}
+
+		tracks_matched[track] = true;
+	}
+
+	if (!match_error->empty() && match_error->back() == '\n')
+		match_error->pop_back();
+
+	return all_okay ? candidate : nullptr;
 }

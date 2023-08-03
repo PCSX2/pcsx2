@@ -15,14 +15,15 @@
 
 #pragma once
 
-#include "PAD/Host/PAD.h"
+#include "pcsx2/SIO/Pad/PadTypes.h"
 
 #include <QtWidgets/QWidget>
 
-#include "gsl/span"
+#include <span>
 
 #include "ui_ControllerBindingWidget.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
+#include "ui_ControllerBindingWidget_Guitar.h"
 #include "ui_ControllerMacroWidget.h"
 #include "ui_ControllerMacroEditWidget.h"
 #include "ui_USBDeviceWidget.h"
@@ -48,7 +49,7 @@ public:
 
 	__fi ControllerSettingsDialog* getDialog() const { return m_dialog; }
 	__fi const std::string& getConfigSection() const { return m_config_section; }
-	__fi const std::string& getControllerType() const { return m_controller_type; }
+	__fi Pad::ControllerType getControllerType() const { return m_controller_type; }
 	__fi u32 getPortNumber() const { return m_port_number; }
 
 private Q_SLOTS:
@@ -69,7 +70,7 @@ private:
 	ControllerSettingsDialog* m_dialog;
 
 	std::string m_config_section;
-	std::string m_controller_type;
+	Pad::ControllerType m_controller_type;
 	u32 m_port_number;
 
 	ControllerBindingWidget_Base* m_bindings_widget = nullptr;
@@ -91,7 +92,7 @@ public:
 	void updateListItem(u32 index);
 
 private:
-	static constexpr u32 NUM_MACROS = PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER;
+	static constexpr u32 NUM_MACROS = Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER;
 
 	void createWidgets(ControllerBindingWidget* parent);
 
@@ -114,6 +115,7 @@ public:
 
 private Q_SLOTS:
 	void onPressureChanged();
+	void onDeadzoneChanged();
 	void onSetFrequencyClicked();
 	void updateBinds();
 
@@ -139,7 +141,7 @@ class ControllerCustomSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	ControllerCustomSettingsWidget(gsl::span<const SettingInfo> settings, std::string config_section, std::string config_prefix,
+	ControllerCustomSettingsWidget(std::span<const SettingInfo> settings, std::string config_section, std::string config_prefix,
 		const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget);
 	~ControllerCustomSettingsWidget();
 
@@ -149,7 +151,7 @@ private Q_SLOTS:
 private:
 	void createSettingWidgets(const char* translation_ctx, QWidget* widget_parent, QGridLayout* layout);
 
-	gsl::span<const SettingInfo> m_settings;
+	std::span<const SettingInfo> m_settings;
 	std::string m_config_section;
 	std::string m_config_prefix;
 	ControllerSettingsDialog* m_dialog;
@@ -168,7 +170,7 @@ public:
 
 	__fi ControllerSettingsDialog* getDialog() const { return static_cast<ControllerBindingWidget*>(parent())->getDialog(); }
 	__fi const std::string& getConfigSection() const { return static_cast<ControllerBindingWidget*>(parent())->getConfigSection(); }
-	__fi const std::string& getControllerType() const { return static_cast<ControllerBindingWidget*>(parent())->getControllerType(); }
+	__fi Pad::ControllerType getControllerType() const { return static_cast<ControllerBindingWidget*>(parent())->getControllerType(); }
 	__fi u32 getPortNumber() const { return static_cast<ControllerBindingWidget*>(parent())->getPortNumber(); }
 
 	virtual QIcon getIcon() const;
@@ -191,6 +193,22 @@ public:
 
 private:
 	Ui::ControllerBindingWidget_DualShock2 m_ui;
+};
+
+class ControllerBindingWidget_Guitar final : public ControllerBindingWidget_Base
+{
+	Q_OBJECT
+
+public:
+	ControllerBindingWidget_Guitar(ControllerBindingWidget* parent);
+	~ControllerBindingWidget_Guitar();
+
+	QIcon getIcon() const override;
+
+	static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
+
+private:
+	Ui::ControllerBindingWidget_Guitar m_ui;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -252,11 +270,11 @@ public:
 
 	QIcon getIcon() const;
 
-	static USBBindingWidget* createInstance(const std::string& type, u32 subtype, gsl::span<const InputBindingInfo> bindings, USBDeviceWidget* parent);
+	static USBBindingWidget* createInstance(const std::string& type, u32 subtype, std::span<const InputBindingInfo> bindings, USBDeviceWidget* parent);
 
 protected:
 	std::string getBindingKey(const char* binding_name) const;
 
-	void createWidgets(gsl::span<const InputBindingInfo> bindings);
-	void bindWidgets(gsl::span<const InputBindingInfo> bindings);
+	void createWidgets(std::span<const InputBindingInfo> bindings);
+	void bindWidgets(std::span<const InputBindingInfo> bindings);
 };

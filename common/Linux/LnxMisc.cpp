@@ -27,6 +27,7 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
@@ -70,66 +71,72 @@ std::string GetOSVersionString()
 
 #ifdef DBUS_API
 
-bool ChangeScreenSaverStateDBus(const bool inhibit_requested, const char* program_name, const char* reason)
+static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
 	static dbus_uint32_t s_cookie;
-	// "error_dbus" doesn't need to be cleared in the end with "dbus_message_unref" at least if there is
-	// no error set, since calling "dbus_error_free" reinitializes it like "dbus_error_init" after freeing.
+	const char* bus_method = (inhibit_requested) ? "Inhibit" : "UnInhibit";
 	DBusError error_dbus;
-	dbus_error_init(&error_dbus);
 	DBusConnection* connection = nullptr;
+	static DBusConnection* s_comparison_connection;
 	DBusMessage* message = nullptr;
 	DBusMessage* response = nullptr;
-	// Initialized here because initializations should be before "goto" statements.
-	const char* bus_method = (inhibit_requested) ? "Inhibit" : "UnInhibit";
-	// "dbus_bus_get" gets a pointer to the same connection in libdbus, if exists, without creating a new connection.
-	// this doesn't need to be deleted, except if there's an error then calling "dbus_connection_unref", to free it,
-	// might be better so a new connection is established on the next try.
-	if (!(connection = dbus_bus_get(DBUS_BUS_SESSION, &error_dbus)) || (dbus_error_is_set(&error_dbus)))
-		goto cleanup;
-	if (!(message = dbus_message_new_method_call("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", bus_method)))
-		goto cleanup;
-	// Initialize an append iterator for the message, gets freed with the message.
 	DBusMessageIter message_itr;
+
+	ScopedGuard cleanup = [&]() {
+		if (dbus_error_is_set(&error_dbus))
+			dbus_error_free(&error_dbus);
+		if (message)
+			dbus_message_unref(message);
+		if (response)
+			dbus_message_unref(response);
+	};
+
+	dbus_error_init(&error_dbus);
+	// Calling dbus_bus_get() after the first time returns a pointer to the existing connection.
+	connection = dbus_bus_get(DBUS_BUS_SESSION, &error_dbus);
+	if (!connection || (dbus_error_is_set(&error_dbus)))
+		return false;
+	if (s_comparison_connection != connection)
+	{
+		dbus_connection_set_exit_on_disconnect(connection, false);
+		s_cookie = 0;
+		s_comparison_connection = connection;
+	}
+	message = dbus_message_new_method_call("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", bus_method);
+	if (!message)
+		return false;
+	// Initialize an append iterator for the message, gets freed with the message.
 	dbus_message_iter_init_append(message, &message_itr);
 	if (inhibit_requested)
 	{
+		// Guard against repeat inhibitions which would add extra inhibitors each generating a different cookie.
+		if (s_cookie)
+			return false;
 		// Append process/window name.
 		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_STRING, &program_name))
-			goto cleanup;
+			return false;
 		// Append reason for inhibiting the screensaver.
 		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_STRING, &reason))
-			goto cleanup;
+			return false;
 	}
 	else
 	{
 		// Only Append the cookie.
 		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_UINT32, &s_cookie))
-			goto cleanup;
+			return false;
 	}
 	// Send message and get response.
-	if (!(response = dbus_connection_send_with_reply_and_block(connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error_dbus)) 
-		|| dbus_error_is_set(&error_dbus))
-		goto cleanup;
+	response = dbus_connection_send_with_reply_and_block(connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error_dbus);
+	if (!response || dbus_error_is_set(&error_dbus))
+		return false;
+	s_cookie = 0;
 	if (inhibit_requested)
 	{
 		// Get the cookie from the response message.
-		if (!dbus_message_get_args(response, &error_dbus, DBUS_TYPE_UINT32, &s_cookie, DBUS_TYPE_INVALID))
-			goto cleanup;
+		if (!dbus_message_get_args(response, &error_dbus, DBUS_TYPE_UINT32, &s_cookie, DBUS_TYPE_INVALID) || dbus_error_is_set(&error_dbus))
+			return false;
 	}
-	dbus_message_unref(message);
-	dbus_message_unref(response);
 	return true;
-cleanup:
-	if (dbus_error_is_set(&error_dbus))
-		dbus_error_free(&error_dbus);
-	if (connection)
-		dbus_connection_unref(connection);
-	if (message)
-		dbus_message_unref(message);
-	if (response)
-		dbus_message_unref(response);
-	return false;
 }
 
 #endif
@@ -176,11 +183,10 @@ bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 
 #ifdef DBUS_API
 
-	return ChangeScreenSaverStateDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
+	return SetScreensaverInhibitDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
 
 #else
 
-	//ChangeScreenSaverStateDBus
 	if (s_inhibit_window_info.has_value())
 	{
 		// Bit of extra logic here, because wx spams it and we don't want to

@@ -97,6 +97,7 @@
 
 namespace Vulkan
 {
+	bool IsVulkanLibraryLoaded();
 	bool LoadVulkanLibrary();
 	bool LoadVulkanInstanceFunctions(VkInstance instance);
 	bool LoadVulkanDeviceFunctions(VkDevice device);

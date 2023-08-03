@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 
 #include "GS/Renderers/DX12/D3D12Builders.h"
-#include "GS/Renderers/DX12/D3D12Context.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
+#include "GS/Renderers/DX12/GSDevice12.h"
 #include "common/Console.h"
 
 #include <cstdarg>
@@ -193,6 +193,11 @@ void D3D12::GraphicsPipelineBuilder::SetBlendState(u32 rt, bool blend_enable, D3
 		m_desc.BlendState.IndependentBlendEnable = TRUE;
 }
 
+void D3D12::GraphicsPipelineBuilder::SetColorWriteMask(u32 rt, u8 write_mask /* = D3D12_COLOR_WRITE_ENABLE_ALL */)
+{
+	m_desc.BlendState.RenderTarget[rt].RenderTargetWriteMask = write_mask;
+}
+
 void D3D12::GraphicsPipelineBuilder::SetNoBlendingState()
 {
 	SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE, D3D12_BLEND_ZERO,
@@ -291,7 +296,7 @@ void D3D12::RootSignatureBuilder::Clear()
 
 wil::com_ptr_nothrow<ID3D12RootSignature> D3D12::RootSignatureBuilder::Create(bool clear /*= true*/)
 {
-	wil::com_ptr_nothrow<ID3D12RootSignature> rs = g_d3d12_context->CreateRootSignature(&m_desc);
+	wil::com_ptr_nothrow<ID3D12RootSignature> rs = GSDevice12::GetInstance()->CreateRootSignature(&m_desc);
 	if (!rs)
 		return {};
 
@@ -362,3 +367,21 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(
 
 	return index;
 }
+
+#ifdef _DEBUG
+#include "common/StringUtil.h"
+
+void D3D12::SetObjectName(ID3D12Object* object, const char* name)
+{
+	object->SetName(StringUtil::UTF8StringToWideString(name).c_str());
+}
+
+void D3D12::SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
+{
+	std::va_list ap;
+	va_start(ap, format);
+	SetObjectName(object, StringUtil::StdStringFromFormatV(format, ap).c_str());
+	va_end(ap);
+}
+
+#endif

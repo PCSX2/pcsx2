@@ -16,7 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "IopHw_Internal.h"
 #include "Sif.h"
-#include "Sio.h"
+#include "SIO/Sio2.h"
+#include "SIO/Sio0.h"
 #include "FW.h"
 #include "CDVD/Ps1CD.h"
 #include "SPU2/spu2.h"
@@ -86,7 +87,7 @@ void iopHwWrite8_Page1( u32 addr, mem8_t val )
 	switch( masked_addr )
 	{
 		case (HW_SIO_DATA & 0x0fff):
-			sio0.SetTxData(val);
+			g_Sio0.SetTxData(val);
 			break;
 		case (HW_SIO_STAT & 0x0fff):
 			Sio0Log.Error("%s(%08X, %08X) Unexpected SIO0 STAT 8 bit write", __FUNCTION__, addr, val);
@@ -176,7 +177,7 @@ void iopHwWrite8_Page8( u32 addr, mem8_t val )
 
 	if (addr == HW_SIO2_DATAIN)
 	{
-		sio2.Write(val);
+		g_Sio2.Write(val);
 	}
 	else
 	{
@@ -301,22 +302,12 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			// ------------------------------------------------------------------------
 			case (HW_SIO_DATA & 0x0fff):
 				Console.Error("%s(%08X, %08X) Unexpected 16 or 32 bit write to SIO0 DATA!", __FUNCTION__, addr, val);
-/*
-				sio0.SetTxData(val & 0xFF);
-				sio0.SetTxData((val >> 8) & 0xFF);
-				
-				if (sizeof(T) == 4)
-				{
-					sio0.SetTxData((static_cast<u32>(val) >> 16) & 0xFF);
-					sio0.SetTxData((static_cast<u32>(val) >> 24) & 0xFF);
-				}
-*/				
 				break;
 			case (HW_SIO_STAT & 0x0fff):
 				Console.Error("%s(%08X, %08X) Write issued to read-only SIO0 STAT!", __FUNCTION__, addr, val);
 				break;
 			case (HW_SIO_MODE & 0x0fff):
-				sio0.SetMode(static_cast<u16>(val));
+				g_Sio0.SetMode(static_cast<u16>(val));
 
 				if (sizeof(T) == 4)
 				{
@@ -326,11 +317,11 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 				break;
 
 			case (HW_SIO_CTRL & 0x0fff):
-				sio0.SetCtrl(static_cast<u16>(val));
+				g_Sio0.SetCtrl(static_cast<u16>(val));
 				break;
 			
 			case (HW_SIO_BAUD & 0x0fff):
-				sio0.SetBaud(static_cast<u16>(val));
+				g_Sio0.SetBaud(static_cast<u16>(val));
 				break;
 
 			// ------------------------------------------------------------------------
@@ -612,7 +603,7 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 		{
 			Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND3 Write (len = %d / %d) (port = %d)", __FUNCTION__, addr, val, (val >> 8) & Send3::COMMAND_LENGTH_MASK, (val >> 18) & Send3::COMMAND_LENGTH_MASK, val & 0x01);
 			const int parm = (masked_addr - 0x200) / 4;
-			sio2.SetSend3(parm, val);
+			g_Sio2.SetSend3(parm, val);
 		}
 		else if( masked_addr < 0x260 )
 		{
@@ -624,12 +615,12 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 			if (masked_addr & 4)
 			{
 				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND2 Write", __FUNCTION__, addr, val);
-				sio2.send2.at(parm) = val;
+				g_Sio2.send2[parm] = val;
 			}
 			else
 			{
 				Sio2Log.WriteLn("%s(%08X, %08X) SIO2 SEND1 Write", __FUNCTION__, addr, val);
-				sio2.send1.at(parm) = val;
+				g_Sio2.send1[parm] = val;
 			}
 		}
 		else if( masked_addr <= 0x280 )
@@ -644,31 +635,31 @@ void iopHwWrite32_Page8( u32 addr, mem32_t val )
 					break;
 				case (HW_SIO2_CTRL & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 CTRL Write", __FUNCTION__, addr, val);
-					sio2.SetCtrl(val);
+					g_Sio2.SetCtrl(val);
 					break;
 				case (HW_SIO2_RECV1 & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV1 Write", __FUNCTION__, addr, val);
-					sio2.recv1 = val;
+					g_Sio2.recv1 = val;
 					break;
 				case (HW_SIO2_RECV2 & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV2 Write", __FUNCTION__, addr, val);
-					sio2.recv2 = val;
+					g_Sio2.recv2 = val;
 					break;
 				case (HW_SIO2_RECV3 & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 RECV3 Write", __FUNCTION__, addr, val);
-					sio2.recv3 = val;
+					g_Sio2.recv3 = val;
 					break;
 				case (HW_SIO2_8278 & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 UNK1 Write", __FUNCTION__, addr, val);
-					sio2.unknown1 = val;
+					g_Sio2.unknown1 = val;
 					break;
 				case (HW_SIO2_827C & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 UNK2 Write", __FUNCTION__, addr, val);
-					sio2.unknown2 = val;
+					g_Sio2.unknown2 = val;
 					break;
 				case (HW_SIO2_INTR & 0x0fff):
 					Sio2Log.WriteLn("%s(%08X, %08X) SIO2 ISTAT Write", __FUNCTION__, addr, val);
-					sio2.iStat = val;
+					g_Sio2.iStat = val;
 					break;
 				// Other SIO2 registers are read-only, no-ops on write.
 				default:

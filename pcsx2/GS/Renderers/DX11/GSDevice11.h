@@ -102,10 +102,9 @@ public:
 		std::vector<mcstr> mout;
 
 	public:
-		ShaderMacro(D3D_FEATURE_LEVEL fl);
 		void AddMacro(const char* n, int d);
 		void AddMacro(const char* n, std::string d);
-		D3D_SHADER_MACRO* GetPtr(void);
+		D3D_SHADER_MACRO* GetPtr();
 	};
 
 private:
@@ -156,7 +155,6 @@ private:
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u32)
 	u32 m_structured_vb_pos = 0; // bytes
-	int m_d3d_texsize = 0;
 
 	bool m_allow_tearing_supported = false;
 	bool m_using_flip_model_swap_chain = true;
@@ -309,10 +307,6 @@ public:
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count);
 
-	void ClearRenderTarget(GSTexture* t, u32 c) override;
-	void InvalidateRenderTarget(GSTexture* t) override;
-	void ClearDepth(GSTexture* t, float v) override;
-
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
@@ -352,7 +346,6 @@ public:
 
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
 
-	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState();

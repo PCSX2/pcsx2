@@ -19,7 +19,10 @@
 #include "ImGui/ImGuiManager.h"
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/GSCapture.h"
+#include "GS/GSDump.h"
 #include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
 #include "GSDumpReplayer.h"
 #include "Host.h"
 #include "PerformanceMetrics.h"
@@ -41,10 +44,11 @@
 #include <thread>
 #include <mutex>
 
-static constexpr std::array<PresentShader, 6> s_tv_shader_indices = {
+static constexpr std::array<PresentShader, 8> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
 	PresentShader::DIAGONAL_FILTER, PresentShader::TRIANGULAR_FILTER,
-	PresentShader::COMPLEX_FILTER, PresentShader::LOTTES_FILTER};
+	PresentShader::COMPLEX_FILTER, PresentShader::LOTTES_FILTER,
+	PresentShader::SUPERSAMPLE_4xRGSS, PresentShader::SUPERSAMPLE_AUTO};
 
 static std::deque<std::thread> s_screenshot_threads;
 static std::mutex s_screenshot_threads_mutex;
@@ -71,7 +75,7 @@ GSRenderer::~GSRenderer() = default;
 
 void GSRenderer::Reset(bool hardware_reset)
 {
-	// clear the current display texture
+	// Clear the current display texture.
 	if (hardware_reset)
 		g_gs_device->ClearCurrent();
 
@@ -81,6 +85,15 @@ void GSRenderer::Reset(bool hardware_reset)
 void GSRenderer::Destroy()
 {
 	GSCapture::EndCapture();
+}
+
+void GSRenderer::PurgePool()
+{
+	g_gs_device->PurgePool();
+}
+
+void GSRenderer::UpdateRenderFixes()
+{
 }
 
 bool GSRenderer::Merge(int field)
@@ -428,7 +441,7 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 	if (!GSDumpReplayer::IsRunner())
 	{
 		Host::AddIconOSDMessage(key, ICON_FA_CAMERA,
-			fmt::format(TRANSLATE_SV("GS", "Saving screenshot to '{}'."), Path::GetFileName(filename)), 60.0f);
+			fmt::format(TRANSLATE_FS("GS", "Saving screenshot to '{}'."), Path::GetFileName(filename)), 60.0f);
 	}
 
 	// maybe std::async would be better here.. but it's definitely worth threading, large screenshots take a while to compress.
@@ -440,14 +453,14 @@ static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 heig
 			if (!GSDumpReplayer::IsRunner())
 			{
 				Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-					fmt::format(TRANSLATE_SV("GS", "Saved screenshot to '{}'."), Path::GetFileName(filename)),
+					fmt::format(TRANSLATE_FS("GS", "Saved screenshot to '{}'."), Path::GetFileName(filename)),
 					Host::OSD_INFO_DURATION);
 			}
 		}
 		else
 		{
 			Host::AddIconOSDMessage(std::move(key), ICON_FA_CAMERA,
-				fmt::format(TRANSLATE_SV("GS", "Failed to save screenshot to '{}'."), Path::GetFileName(filename),
+				fmt::format(TRANSLATE_FS("GS", "Failed to save screenshot to '{}'."), Path::GetFileName(filename),
 					Host::OSD_ERROR_DURATION));
 		}
 
@@ -536,8 +549,6 @@ void GSRenderer::EndPresentFrame()
 
 void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
-	Flush(GSFlushReason::VSYNC);
-
 	if (GSConfig.DumpGSData && s_n >= GSConfig.SaveN)
 	{
 		m_regs->Dump(GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
@@ -547,7 +558,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	const bool fb_sprite_frame = (fb_sprite_blits > 0);
 
 	bool skip_frame = false;
-	if (GSConfig.SkipDuplicateFrames)
+	if (GSConfig.SkipDuplicateFrames && !GSCapture::IsCapturingVideo())
 	{
 		bool is_unique_frame;
 		switch (PerformanceMetrics::GetInternalFPSMethod())
@@ -657,6 +668,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 		if (!m_dump && m_dump_frames > 0)
 		{
+			if (GSConfig.UserHacks_ReadTCOnClose)
+				ReadbackTextureCache();
+
 			freezeData fd = {0, nullptr};
 			Freeze(&fd, true);
 			fd.data = new u8[fd.size];
@@ -671,33 +685,30 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			std::string_view compression_str;
 			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(), m_crc,
-					screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
-					fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(),
+					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
 				compression_str = "with no compression";
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), m_crc,
-					screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
-					fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(
+					new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
+						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
 				compression_str = "with LZMA compression";
 			}
 			else
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), m_crc,
-					screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
-					fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(
+					new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
+						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
 				compression_str = "with Zstandard compression";
 			}
 
 			delete[] fd.data;
 
 			Host::AddKeyedOSDMessage("GSDump",
-				fmt::format(TRANSLATE_SV("GS", "Saving {0} GS dump {1} to '{2}'"),
+				fmt::format(TRANSLATE_FS("GS", "Saving {0} GS dump {1} to '{2}'"),
 					(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
 					Path::GetFileName(m_dump->GetPath())),
 				Host::OSD_INFO_DURATION);
@@ -729,7 +740,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		if (m_dump->VSync(field, last, m_regs))
 		{
 			Host::AddKeyedOSDMessage("GSDump",
-				fmt::format(TRANSLATE_SV("GS", "Saved GS dump to '{}'."), Path::GetFileName(m_dump->GetPath())),
+				fmt::format(TRANSLATE_FS("GS", "Saved GS dump to '{}'."), Path::GetFileName(m_dump->GetPath())),
 				Host::OSD_INFO_DURATION);
 			m_dump.reset();
 		}
@@ -742,10 +753,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	// capture
 	if (GSCapture::IsCapturingVideo())
 	{
+		const GSVector2i size = GSCapture::GetSize();
 		if (GSTexture* current = g_gs_device->GetCurrent())
 		{
-			const GSVector2i size(GSCapture::GetSize());
-
 			// TODO: Maybe avoid this copy in the future? We can use swscale to fix it up on the dumping thread..
 			if (current->GetSize() != size)
 			{
@@ -760,6 +770,17 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			else
 			{
 				GSCapture::DeliverVideoFrame(current);
+			}
+		}
+		else
+		{
+			// Bit janky, but unless we want to make variable frame rate files, we need to deliver *a* frame to
+			// the video file, so just grab a blank RT.
+			GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, true);
+			if (temp)
+			{
+				GSCapture::DeliverVideoFrame(temp);
+				g_gs_device->Recycle(temp);
 			}
 		}
 	}
@@ -895,11 +916,13 @@ void GSSetDisplayAlignment(GSDisplayAlignment alignment)
 	s_display_alignment = alignment;
 }
 
-bool GSRenderer::BeginCapture(std::string filename)
+bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 {
-	const GSVector2i capture_resolution(GSConfig.VideoCaptureAutoResolution ?
-											GetInternalResolution() :
-											GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
+	const GSVector2i capture_resolution = (size.x != 0 && size.y != 0) ?
+											  size :
+											  (GSConfig.VideoCaptureAutoResolution ?
+													  GetInternalResolution() :
+													  GSVector2i(GSConfig.VideoCaptureWidth, GSConfig.VideoCaptureHeight));
 
 	return GSCapture::BeginCapture(GetTvRefreshRate(), capture_resolution,
 		GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P),

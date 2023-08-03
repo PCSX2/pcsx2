@@ -14,6 +14,5 @@ jobs:
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/macos_build.yml
     with:
-      jobName: "Qt"
-      gui: "Qt"
+      jobName: "MacOS Build"
     secrets: inherit

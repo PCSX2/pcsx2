@@ -45,7 +45,7 @@ static void HotkeyAdjustTargetSpeed(double delta)
 	EmuConfig.LimiterMode = LimiterModeType::Unlimited; // force update
 	VMManager::SetLimiterMode(LimiterModeType::Nominal);
 	Host::AddIconOSDMessage("SpeedChanged", ICON_FA_CLOCK,
-		fmt::format(TRANSLATE_SV("Hotkeys", "Target speed set to {:.0f}%."),
+		fmt::format(TRANSLATE_FS("Hotkeys", "Target speed set to {:.0f}%."),
 			std::round(EmuConfig.Framerate.NominalScalar * 100.0)),
 		Host::OSD_QUICK_DURATION);
 }
@@ -68,7 +68,7 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	else
 	{
 		Host::AddIconOSDMessage("VolumeChanged", (current_vol < new_volume) ? ICON_FA_VOLUME_UP : ICON_FA_VOLUME_DOWN,
-			fmt::format(TRANSLATE_SV("Hotkeys", "Volume: {}%"), new_volume));
+			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {}%"), new_volume));
 	}
 }
 
@@ -103,13 +103,13 @@ static void HotkeyCycleSaveSlot(s32 delta)
 
 		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
 			fmt::format(
-				TRANSLATE_SV("Hotkeys", "Save slot {} selected (last save: {})."), s_current_save_slot, date_buf),
+				TRANSLATE_FS("Hotkeys", "Save slot {} selected (last save: {})."), s_current_save_slot, date_buf),
 			Host::OSD_QUICK_DURATION);
 	}
 	else
 	{
 		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
-			fmt::format(TRANSLATE_SV("Hotkeys", "Save slot {} selected (no save yet)."), s_current_save_slot),
+			fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {} selected (no save yet)."), s_current_save_slot),
 			Host::OSD_QUICK_DURATION);
 	}
 }
@@ -121,7 +121,7 @@ static void HotkeyLoadStateSlot(s32 slot)
 		if (!VMManager::HasSaveStateInSlot(VMManager::GetDiscSerial().c_str(), VMManager::GetDiscCRC(), slot))
 		{
 			Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
-				fmt::format(TRANSLATE_SV("Hotkeys", "No save state found in slot {}."), slot), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_FS("Hotkeys", "No save state found in slot {}."), slot), Host::OSD_INFO_DURATION);
 			return;
 		}
 

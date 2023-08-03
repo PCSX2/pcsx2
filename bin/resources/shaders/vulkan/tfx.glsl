@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 //////////////////////////////////////////////////////////////////////
 // Vertex Shader
 //////////////////////////////////////////////////////////////////////
@@ -336,12 +351,12 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
-	#ifndef DISABLE_TEXTURE_BARRIER
-		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
-		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
-	#else
+	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
 		layout(set = 2, binding = 0) uniform texture2D RtSampler;
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+	#else
+		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
+		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
 	#endif
 #endif
 
@@ -834,7 +849,7 @@ vec4 sample_color(vec2 st)
 vec4 tfx(vec4 T, vec4 C)
 {
 	vec4 C_out;
-	vec4 FxT = trunc(trunc(C) * T / 128.0f);
+	vec4 FxT = trunc((C * T) / 128.0f);
 
 #if (PS_TFX == 0)
 	C_out = FxT;
@@ -1218,7 +1233,7 @@ void main()
 #endif
 
 #if (SW_AD_TO_HW)
-	vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
+	vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
 	vec4 alpha_blend = vec4(C.a / 128.0f);

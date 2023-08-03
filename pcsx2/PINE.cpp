@@ -39,6 +39,7 @@
 #include "Elfheader.h"
 #include "pcsx2/VMManager.h"
 #include "svnrev.h"
+#include "SysForwardDefs.h"
 #include "PINE.h"
 
 PINEServer::PINEServer() {}
@@ -199,7 +200,7 @@ void PINEServer::MainLoop()
 		// use a bunch of auto
 		auto receive_length = 0;
 		auto end_length = 4;
-		const gsl::span<u8> ipc_buffer_span = gsl::make_span(m_ipc_buffer);
+		const std::span<u8> ipc_buffer_span(m_ipc_buffer);
 
 		// while we haven't received the entire packet, maybe due to
 		// socket datagram splittage, we continue to read
@@ -270,7 +271,7 @@ void PINEServer::Deinitialize()
 	}
 }
 
-PINEServer::IPCBuffer PINEServer::ParseCommand(gsl::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size)
+PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size)
 {
 	u32 ret_cnt = 5;
 	u32 buf_cnt = 0;

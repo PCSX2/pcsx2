@@ -33,11 +33,11 @@
 
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
-#include "gsl/span"
 
 #include <algorithm>
 #include <cstring>
 #include <memory>
+#include <span>
 #include <sstream>
 #include <vector>
 
@@ -148,13 +148,14 @@ namespace Patch
 
 	static void TrimPatchLine(std::string& buffer);
 	static int PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
-		const gsl::span<const PatchTextTable>& Table);
+		const std::span<const PatchTextTable>& Table);
 	static void LoadPatchLine(PatchGroup* group, const std::string_view& line);
 	static u32 LoadPatchesFromString(PatchList* patch_list, const std::string& patch_file);
 	static bool OpenPatchesZip();
 	static std::string GetPnachTemplate(
-		const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard);
-	static std::vector<std::string> FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats);
+		const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs);
+	static std::vector<std::string> FindPatchFilesOnDisk(
+		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
@@ -214,7 +215,7 @@ void Patch::TrimPatchLine(std::string& buffer)
 }
 
 int Patch::PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
-	const gsl::span<const PatchTextTable>& Table)
+	const std::span<const PatchTextTable>& Table)
 {
 	int i = 0;
 
@@ -297,7 +298,7 @@ bool Patch::OpenPatchesZip()
 		if (!warning_shown)
 		{
 			Host::AddIconOSDMessage("PatchesZipOpenWarning", ICON_FA_MICROCHIP,
-				fmt::format(TRANSLATE_SV("Patch", "Failed to open {}. Built-in game patches are not available."),
+				fmt::format(TRANSLATE_FS("Patch", "Failed to open {}. Built-in game patches are not available."),
 					PATCHES_ZIP_NAME),
 				Host::OSD_ERROR_DURATION);
 			warning_shown = true;
@@ -313,20 +314,23 @@ bool Patch::OpenPatchesZip()
 	return true;
 }
 
-std::string Patch::GetPnachTemplate(const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard)
+std::string Patch::GetPnachTemplate(const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs)
 {
-	if (include_serial)
+	pxAssert(!all_crcs || (include_serial && add_wildcard));
+	if (all_crcs)
+		return fmt::format("{}_*.pnach", serial);
+	else if (include_serial)
 		return fmt::format("{}_{:08X}{}.pnach", serial, crc, add_wildcard ? "*" : "");
 	else
 		return fmt::format("{:08X}{}.pnach", crc, add_wildcard ? "*" : "");
 }
 
-std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats)
+std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats, bool all_crcs)
 {
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
-		GetPnachTemplate(serial, crc, true, true).c_str(), FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES,
-		&files);
+		GetPnachTemplate(serial, crc, true, true, all_crcs).c_str(),
+		FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
 
 	std::vector<std::string> ret;
 	ret.reserve(files.size());
@@ -336,7 +340,7 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& ser
 
 	// and patches without serials
 	FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
-		GetPnachTemplate(serial, crc, false, true).c_str(), FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES,
+		GetPnachTemplate(serial, crc, false, true, false).c_str(), FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES,
 		&files);
 	ret.reserve(ret.size() + files.size());
 	for (FILESYSTEM_FIND_DATA& fd : files)
@@ -351,7 +355,7 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 	// Prefer files on disk over the zip.
 	std::vector<std::string> disk_patch_files;
 	if (for_ui || !Achievements::ChallengeModeActive())
-		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats);
+		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats, for_ui);
 
 	if (!disk_patch_files.empty())
 	{
@@ -370,11 +374,11 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 		return;
 
 	// Prefer filename with serial.
-	std::string zip_filename = GetPnachTemplate(serial, crc, true, false);
+	std::string zip_filename = GetPnachTemplate(serial, crc, true, false, false);
 	std::optional<std::string> pnach_data(ReadFileInZipToString(s_patches_zip, zip_filename.c_str()));
 	if (!pnach_data.has_value())
 	{
-		zip_filename = GetPnachTemplate(serial, crc, false, false);
+		zip_filename = GetPnachTemplate(serial, crc, false, false, false);
 		pnach_data = ReadFileInZipToString(s_patches_zip, zip_filename.c_str());
 	}
 	if (pnach_data.has_value())
@@ -398,7 +402,11 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 		{
 			if (has_patch)
 			{
-				dst->push_back(std::move(current_patch));
+				if (std::none_of(dst->begin(), dst->end(),
+						[&current_patch](const PatchInfo& pi) { return (pi.name == current_patch.name); }))
+				{
+					dst->push_back(std::move(current_patch));
+				}
 				current_patch = {};
 			}
 
@@ -443,8 +451,12 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 	}
 
 	// Last one.
-	if (!current_patch.name.empty())
+	if (!current_patch.name.empty() && std::none_of(dst->begin(), dst->end(), [&current_patch](const PatchInfo& pi) {
+			return (pi.name == current_patch.name);
+		}))
+	{
 		dst->push_back(std::move(current_patch));
+	}
 }
 
 std::string_view Patch::PatchInfo::GetNamePart() const
@@ -601,20 +613,20 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	{
 		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
 		if (gp_count > 0)
-			fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{} GameDB patches"), gp_count);
+			fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{} GameDB patches"), gp_count);
 	}
 
 	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches);
 	if (p_count > 0)
 	{
-		fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{}{} game patches"),
+		fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{}{} game patches"),
 			message.empty() ? "" : ", ", p_count);
 	}
 
 	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats) : 0;
 	if (c_count > 0)
 	{
-		fmt::format_to(std::back_inserter(message), TRANSLATE_SV("Patch", "{}{} cheat patches"),
+		fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{}{} cheat patches"),
 			message.empty() ? "" : ", ", c_count);
 	}
 
@@ -626,12 +638,12 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 		if (!message.empty())
 		{
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
-				fmt::format(TRANSLATE_SV("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_FS("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
 		}
 		else
 		{
 			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
-				TRANSLATE_STR(
+				TRANSLATE_SV(
 					"Patch", "No cheats or patches (widescreen, compatibility or others) are found / enabled."),
 				Host::OSD_INFO_DURATION);
 		}

@@ -36,6 +36,9 @@ if(UNIX AND NOT APPLE)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
 	option(DBUS_API "Enable DBus support for screensaver inhibiting" ON)
+endif()
+
+if(UNIX)
 	option(USE_LINKED_FFMPEG "Links with ffmpeg instead of using dynamic loading" OFF)
 endif()
 
@@ -134,8 +137,10 @@ add_compile_options("${ARCH_FLAG_LIST}")
 option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
 option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
-# Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
-# Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
+# Require C++20.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(MSVC AND NOT USE_CLANG_CL)
 	add_compile_options(
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
@@ -144,8 +149,20 @@ if(MSVC AND NOT USE_CLANG_CL)
 		"/Zo"
 		"/utf-8"
 	)
-elseif(NOT MSVC)
-	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
+endif()
+
+if(MSVC)
+	# Disable RTTI
+	string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+	# Disable Exceptions
+	string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+else()
+	add_compile_options(-pipe -fvisibility=hidden -pthread)
+	add_compile_options(
+		"$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>"
+		"$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>"
+	)
 endif()
 
 set(CONFIG_REL_NO_DEB $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>)
@@ -156,8 +173,9 @@ if(WIN32)
 		$<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=2>
 		$<$<CONFIG:Devel>:_ITERATOR_DEBUG_LEVEL=1>
 		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
+		_HAS_EXCEPTIONS=0
 	)
-	list(APPEND PCSX2_DEFS TIXML_USE_STL _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+	list(APPEND PCSX2_DEFS _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
 endif()
 
 # Enable debug information in release builds for Linux.
@@ -259,18 +277,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Xcode")
 	# Assume Xcode builds aren't being used for distribution
 	# Helpful because Xcode builds don't build multiple metallibs for different macOS versions
 	# Also helpful because Xcode's interactive shader debugger requires apps be built for the latest macOS
-	if (QT_BUILD)
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
-	else()
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-	endif()
-endif()
-
-if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.14 AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9)
-	# Older versions of the macOS stdlib don't have operator new(size_t, align_val_t)
-	# Disable use of them with this flag
-	# Not great, but also no worse that what we were getting before we turned on C++17
-	add_compile_options(-fno-aligned-allocation)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 endif()
 
 # CMake defaults the suffix for modules to .so on macOS but wx tells us that the

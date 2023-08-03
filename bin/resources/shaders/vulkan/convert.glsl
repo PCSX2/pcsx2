@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifdef VERTEX_SHADER
 
 layout(location = 0) in vec4 a_pos;
@@ -348,7 +363,7 @@ layout(push_constant) uniform cb10
 void ps_yuv()
 {
 	vec4 i = sample_c(v_tex);
-	vec4 o;
+	vec4 o = vec4(0.0f);
 
 	mat3 rgb2yuv;
 	rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
@@ -361,7 +376,8 @@ void ps_yuv()
 	float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
 	float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
 
-	switch(EMODA) {
+	switch(EMODA)
+	{
 		case 0:
 			o.a = i.a;
 			break;
@@ -376,7 +392,8 @@ void ps_yuv()
 			break;
 	}
 
-	switch(EMODC) {
+	switch(EMODC)
+	{
 		case 0:
 			o.rgb = i.rgb;
 			break;

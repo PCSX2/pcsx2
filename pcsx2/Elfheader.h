@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include "common/SafeArray.h"
-#include "common/SafeArray.inl"
-#include "CDVD/IsoFS/IsoFSCDVD.h"
-#include "CDVD/IsoFS/IsoFS.h"
+#include <vector>
+
+class Error;
+class IsoReader;
 
 struct ELF_HEADER {
 	u8	e_ident[16];	//0x7f,"ELF"  (ELF file identifier)
@@ -118,39 +118,44 @@ struct Elf32_Rel {
 	u32	r_info;
 };
 
-class ElfObject
+class ElfObject final
 {
-	private:
-		SafeArray<u8> data;
-		ELF_HEADER& header;
-		ELF_PHR* proghead = nullptr;
-		ELF_SHR* secthead = nullptr;
-		std::string filename;
-		bool isPSXElf;
+public:
+	ElfObject();
+	ElfObject(const ElfObject&) = delete;
+	~ElfObject();
 
-		void initElfHeaders();
-		bool hasValidPSXHeader();
-		void readIso(IsoFile& file);
-		void readFile();
-		void checkElfSize(s64 elfsize);
+	__fi const std::vector<u8>& GetData() const { return data; }
+	__fi const ELF_HEADER& GetHeader() const { return *reinterpret_cast<const ELF_HEADER*>(data.data()); }
+	__fi u32 GetSize() const { return static_cast<u32>(data.size()); }
 
-	public:
-		ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf_);
-		ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf_);
+	bool OpenFile(std::string srcfile, bool isPSXElf_, Error* error);
+	bool OpenIsoFile(std::string srcfile, IsoReader& isor, bool isPSXElf_, Error* error);
 
-		bool IsPSXElf() const { return isPSXElf; }
+	void LoadHeaders();
 
-		void loadProgramHeaders();
-		void loadSectionHeaders();
-		void loadHeaders();
+	bool HasProgramHeaders() const;
+	bool HasSectionHeaders() const;
+	bool HasHeaders() const;
 
-		bool hasProgramHeaders();
-		bool hasSectionHeaders();
-		bool hasHeaders();
+	std::pair<u32, u32> GetTextRange() const;
+	u32 GetEntryPoint() const;
+	u32 GetCRC() const;
 
-		std::pair<u32,u32> getTextRange();
-		u32 getEntryPoint();
-		u32 getCRC();
+private:
+	std::vector<u8> data;
+	ELF_PHR* proghead = nullptr;
+	ELF_SHR* secthead = nullptr;
+	std::string filename;
+	bool isPSXElf;
+
+	bool CheckElfSize(s64 size, Error* error);
+
+	void InitElfHeaders();
+	void LoadProgramHeaders();
+	void LoadSectionHeaders();
+
+	bool HasValidPSXHeader() const;
 };
 
 //-------------------

@@ -28,19 +28,18 @@
 #include "ImGui/ImGuiManager.h"
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
-#include "PAD/Host/KeyStatus.h"
-#include "PAD/Host/PAD.h"
 #include "PerformanceMetrics.h"
+#include "Recording/InputRecording.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadBase.h"
 #include "USB/USB.h"
 #include "VMManager.h"
-#include "pcsx2/Recording/InputRecording.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
 #include "fmt/core.h"
-#include "gsl/span"
 #include "imgui.h"
 
 #include <array>
@@ -48,19 +47,20 @@
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <span>
 #include <tuple>
 #include <unordered_map>
 
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(std::string& text, double usage, double time);
-	static void DrawPerformanceOverlay();
+	static void DrawPerformanceOverlay(float& position_y);
 	static void DrawSettingsOverlay();
 	static void DrawInputsOverlay();
-	static void DrawInputRecordingOverlay();
+	static void DrawInputRecordingOverlay(float& position_y);
 } // namespace ImGuiManager
 
-static std::tuple<float, float> GetMinMax(gsl::span<const float> values)
+static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
 	GSVector4 vmin(GSVector4::load<false>(values.data()));
 	GSVector4 vmax(vmin);
@@ -97,13 +97,12 @@ void ImGuiManager::FormatProcessorStat(std::string& text, double usage, double t
 		fmt::format_to(std::back_inserter(text), "{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-void ImGuiManager::DrawPerformanceOverlay()
+void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float shadow_offset = std::ceil(1.0f * scale);
 	const float margin = std::ceil(10.0f * scale);
 	const float spacing = std::ceil(5.0f * scale);
-	float position_y = margin;
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -409,10 +408,10 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("SD={}/{} ", GSConfig.SkipDrawStart, GSConfig.SkipDrawEnd);
 		if (GSConfig.UserHacks_TextureInsideRt != GSTextureInRtMode::Disabled)
 			APPEND("TexRT={} ", static_cast<unsigned>(GSConfig.UserHacks_TextureInsideRt));
+		if (GSConfig.UserHacks_BilinearHack != GSBilinearDirtyMode::Automatic)
+			APPEND("BLU={} ", static_cast<unsigned>(GSConfig.UserHacks_BilinearHack));
 		if (GSConfig.UserHacks_WildHack)
 			APPEND("WA ");
-		if (GSConfig.UserHacks_BilinearHack)
-			APPEND("BLU ");
 		if (GSConfig.UserHacks_NativePaletteDraw)
 			APPEND("NPD ");
 		if (GSConfig.UserHacks_MergePPSprite)
@@ -483,10 +482,10 @@ void ImGuiManager::DrawInputsOverlay()
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
 	u32 num_ports = 0;
-	for (u32 port = 0; port < PAD::NUM_CONTROLLER_PORTS; port++)
+
+	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
-		const PAD::ControllerType ctype = g_key_status.GetType(port);
-		if (ctype != PAD::ControllerType::NotConnected)
+		if (Pad::HasConnectedPad(slot))
 			num_ports++;
 	}
 
@@ -504,29 +503,27 @@ void ImGuiManager::DrawInputsOverlay()
 	std::string text;
 	text.reserve(256);
 
-	for (u32 port = 0; port < PAD::NUM_CONTROLLER_PORTS; port++)
+	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
-		const PAD::ControllerType ctype = g_key_status.GetType(port);
-		if (ctype == PAD::ControllerType::NotConnected)
+		const PadBase* const pad = Pad::GetPad(slot);
+		const Pad::ControllerType ctype = pad->GetType();
+		if (ctype == Pad::ControllerType::NotConnected)
 			continue;
-
-		const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(ctype);
-		if (!cinfo)
-			continue;
-
+	
 		text.clear();
-		fmt::format_to(std::back_inserter(text), "P{} |", port + 1u);
+		fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
 
-		for (u32 bind = 0; bind < cinfo->num_bindings; bind++)
+		const Pad::ControllerInfo& cinfo = pad->GetInfo();
+		for (u32 bind = 0; bind < static_cast<u32>(cinfo.bindings.size()); bind++)
 		{
-			const InputBindingInfo& bi = cinfo->bindings[bind];
+			const InputBindingInfo& bi = cinfo.bindings[bind];
 			switch (bi.bind_type)
 			{
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
 				{
 					// axes are always shown
-					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
+					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
 					if (value >= (254.0f / 255.0f))
 						fmt::format_to(std::back_inserter(text), " {}", bi.name);
 					else if (value > (1.0f / 255.0f))
@@ -537,11 +534,9 @@ void ImGuiManager::DrawInputsOverlay()
 				case InputBindingInfo::Type::Button:
 				{
 					// buttons only shown when active
-					const float value = static_cast<float>(g_key_status.GetRawPressure(port, bind)) * (1.0f / 255.0f);
-					if (value == 1.0f)
+					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
+					if (value >= 0.5f)
 						fmt::format_to(std::back_inserter(text), " {}", bi.name);
-					else if (value > 0.0f)
-						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
 				}
 				break;
 
@@ -566,7 +561,7 @@ void ImGuiManager::DrawInputsOverlay()
 		if (EmuConfig.USB.Ports[port].DeviceType < 0)
 			continue;
 
-		const gsl::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(port));
+		const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(port));
 		if (bindings.empty())
 			continue;
 
@@ -615,13 +610,13 @@ void ImGuiManager::DrawInputsOverlay()
 	}
 }
 
-void ImGuiManager::DrawInputRecordingOverlay()
+void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 {
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float shadow_offset = std::ceil(1.0f * scale);
 	const float margin = std::ceil(10.0f * scale);
 	const float spacing = std::ceil(5.0f * scale);
-	float position_y = margin;
+	position_y += margin;
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -666,8 +661,9 @@ void ImGuiManager::DrawInputRecordingOverlay()
 
 void ImGuiManager::RenderOverlays()
 {
-	DrawPerformanceOverlay();
-	DrawInputRecordingOverlay();
+	float position_y = 0;
+	DrawInputRecordingOverlay(position_y);
+	DrawPerformanceOverlay(position_y);
 	DrawSettingsOverlay();
 	DrawInputsOverlay();
 }

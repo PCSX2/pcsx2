@@ -15,19 +15,9 @@
 
 #pragma once
 
-#include "SysForwardDefs.h"
-
-#include "common/Exceptions.h"
-#include "common/SafeArray.h"
-#include "common/Threading.h"
-
 #include "Config.h"
 #include "VirtualMemory.h"
 #include "vtlb.h"
-
-typedef SafeArray<u8> VmStateBuffer;
-
-class BaseVUmicroCPU;
 
 // This is a table of default virtual map addresses for ps2vm components.  These locations
 // are provided and used to assist in debugging and possibly hacking; as it makes it possible

@@ -34,16 +34,22 @@ public:
 	GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent);
 	~GameSummaryWidget();
 
+private Q_SLOTS:
+	void onInputProfileChanged(int index);
+	void onDiscPathChanged(const QString& value);
+	void onDiscPathBrowseClicked();
+	void onVerifyClicked();
+	void onSearchHashClicked();
+
 private:
 	void populateInputProfiles();
 	void populateDetails(const GameList::Entry* entry);
 	void populateDiscPath(const GameList::Entry* entry);
-
-	void onInputProfileChanged(int index);
-	void onDiscPathChanged(const QString& value);
-	void onDiscPathBrowseClicked();
+	void populateTrackList(const GameList::Entry* entry);
+	void setVerifyResult(QString error);
 
 	Ui::GameSummaryWidget m_ui;
 	SettingsDialog* m_dialog;
 	std::string m_entry_path;
+	std::string m_redump_search_keyword;
 };

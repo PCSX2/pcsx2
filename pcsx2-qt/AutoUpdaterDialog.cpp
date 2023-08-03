@@ -224,7 +224,6 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 						bool is_symbols = false;
 						bool is_avx2 = false;
 						bool is_sse4 = false;
-						bool is_qt_asset = false;
 						bool is_perfect_match = false;
 						for (const QJsonValue& additional_tag : additional_tags_array)
 						{
@@ -234,12 +233,6 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 								// we're not interested in symbols downloads
 								is_symbols = true;
 								break;
-							}
-							else if (additional_tag_str.startsWith(QStringLiteral("Qt")))
-							{
-								// found a qt build
-								// Note: The website improperly parses macOS file names, and gives them the tag "Qt.tar" instead of "Qt"
-								is_qt_asset = true;
 							}
 							else if (additional_tag_str == QStringLiteral("SSE4"))
 							{
@@ -258,7 +251,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 #endif
 						}
 
-						if (!is_qt_asset || is_symbols || (!x86caps.hasAVX2 && is_avx2))
+						if (is_symbols || (!x86caps.hasAVX2 && is_avx2))
 						{
 							// skip this asset
 							continue;
@@ -387,6 +380,8 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 				changes_html.prepend(tr("<h2>Save State Warning</h2><p>Installing this update will make your save states "
 										"<b>incompatible</b>. Please ensure you have saved your games to a Memory Card "
 										"before installing this update or you will lose progress.</p>"));
+
+				m_update_will_break_save_states = true;
 			}
 
 			if (update_increases_settings_version)
@@ -414,6 +409,23 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 
 void AutoUpdaterDialog::downloadUpdateClicked()
 {
+	if (m_update_will_break_save_states)
+	{
+		QMessageBox msgbox;
+		msgbox.setIcon(QMessageBox::Critical);
+		msgbox.setWindowTitle(tr("Savestate Warning"));
+		msgbox.setText(tr("<h1>WARNING</h1><p style='font-size:12pt;'>Installing this update will make your <b>save states incompatible</b>, <i>be sure to save any progress to your memory cards before proceeding</i>.</p><p>Do you wish to continue?</p>"));
+		msgbox.addButton(QMessageBox::Yes);
+		msgbox.addButton(QMessageBox::No);
+		msgbox.setDefaultButton(QMessageBox::No);
+		// This makes the box wider, for some reason sizing boxes in Qt is hard - Source: The internet.
+		QSpacerItem* horizontalSpacer = new QSpacerItem(500, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QGridLayout* layout = (QGridLayout*)msgbox.layout();
+		layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+		if (msgbox.exec() != QMessageBox::Yes)
+			return;
+	}
+
 	m_display_messages = true;
 	QUrl url(m_download_url);
 	QNetworkRequest request(url);

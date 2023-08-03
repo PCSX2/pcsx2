@@ -19,15 +19,16 @@
 #include "Counters.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiManager.h"
-#include "GS.h"
-#include "GSCapture.h"
-#include "GSExtra.h"
-#include "GSGL.h"
-#include "GSLzma.h"
-#include "GSUtil.h"
+#include "GS/GS.h"
+#include "GS/GSCapture.h"
+#include "GS/GSExtra.h"
+#include "GS/GSGL.h"
+#include "GS/GSLzma.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
+#include "GS/MultiISA.h"
 #include "Host.h"
 #include "Input/InputManager.h"
-#include "MultiISA.h"
 #include "MTGS.h"
 #include "pcsx2/GS.h"
 #include "GS/Renderers/Null/GSRendererNull.h"
@@ -201,6 +202,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 
 	g_gs_renderer->SetRegsMem(basemem);
 	g_gs_renderer->ResetPCRTC();
+	g_gs_renderer->UpdateRenderFixes();
 	g_perfmon.Reset();
 	return true;
 }
@@ -227,8 +229,17 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	if (GSConfig.UserHacks_ReadTCOnClose)
 		g_gs_renderer->ReadbackTextureCache();
 
+	std::string capture_filename;
+	GSVector2i capture_size;
+	if (GSCapture::IsCapturing() && (recreate_renderer || recreate_device))
+	{
+		capture_filename = GSCapture::GetNextCaptureFileName();
+		capture_size = GSCapture::GetSize();
+		Console.Warning(fmt::format("Restarting video capture to {}.", capture_filename));
+		g_gs_renderer->EndCapture();
+	}
+
 	u8* basemem = g_gs_renderer->GetRegsMem();
-	const u32 gamecrc = g_gs_renderer->GetGameCRC();
 
 	freezeData fd = {};
 	std::unique_ptr<u8[]> fd_data;
@@ -298,9 +309,10 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 			Console.Error("(GSreopen) Failed to defrost");
 			return false;
 		}
-
-		g_gs_renderer->SetGameCRC(gamecrc);
 	}
+
+	if (!capture_filename.empty())
+		g_gs_renderer->BeginCapture(std::move(capture_filename), capture_size);
 
 	return true;
 }
@@ -342,52 +354,35 @@ void GSclose()
 
 void GSreset(bool hardware_reset)
 {
-	try
+	g_gs_renderer->Reset(hardware_reset);
+
+	// Restart video capture if it's been started.
+	// Otherwise we get a buildup of audio frames from the CPU thread.
+	if (hardware_reset && GSCapture::IsCapturing())
 	{
-		g_gs_renderer->Reset(hardware_reset);
-	}
-	catch (GSRecoverableError)
-	{
+		std::string next_filename = GSCapture::GetNextCaptureFileName();
+		const GSVector2i size = GSCapture::GetSize();
+		Console.Warning(fmt::format("Restarting video capture to {}.", next_filename));
+		g_gs_renderer->EndCapture();
+		g_gs_renderer->BeginCapture(std::move(next_filename), size);
 	}
 }
 
 void GSgifSoftReset(u32 mask)
 {
-	try
-	{
-		g_gs_renderer->SoftReset(mask);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->SoftReset(mask);
 }
 
 void GSwriteCSR(u32 csr)
 {
-	try
-	{
-		g_gs_renderer->WriteCSR(csr);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->WriteCSR(csr);
 }
 
 void GSInitAndReadFIFO(u8* mem, u32 size)
 {
 	GL_PERF("Init and read FIFO %u qwc", size);
-	try
-	{
-		g_gs_renderer->InitReadFIFO(mem, size);
-		g_gs_renderer->ReadFIFO(mem, size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
+	g_gs_renderer->InitReadFIFO(mem, size);
+	g_gs_renderer->ReadFIFO(mem, size);
 }
 
 void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 TRXREG)
@@ -397,89 +392,56 @@ void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 T
 
 void GSgifTransfer(const u8* mem, u32 size)
 {
-	try
-	{
-		g_gs_renderer->Transfer<3>(mem, size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<3>(mem, size);
 }
 
 void GSgifTransfer1(u8* mem, u32 addr)
 {
-	try
-	{
-		g_gs_renderer->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
 }
 
 void GSgifTransfer2(u8* mem, u32 size)
 {
-	try
-	{
-		g_gs_renderer->Transfer<1>(const_cast<u8*>(mem), size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<1>(const_cast<u8*>(mem), size);
 }
 
 void GSgifTransfer3(u8* mem, u32 size)
 {
-	try
-	{
-		g_gs_renderer->Transfer<2>(const_cast<u8*>(mem), size);
-	}
-	catch (GSRecoverableError)
-	{
-	}
+	g_gs_renderer->Transfer<2>(const_cast<u8*>(mem), size);
 }
 
 void GSvsync(u32 field, bool registers_written)
 {
-	try
-	{
-		g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
-	}
-	catch (GSRecoverableError)
-	{
-	}
-	catch (const std::bad_alloc&)
-	{
-		fprintf(stderr, "GS: Memory allocation error\n");
-	}
+	// Do not move the flush into the VSync() method. It's here because EE transfers
+	// get cleared in HW VSync, and may be needed for a buffered draw (FFX FMVs).
+	g_gs_renderer->Flush(GSState::VSYNC);
+	g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
 }
 
 int GSfreeze(FreezeAction mode, freezeData* data)
 {
-	try
+	if (mode == FreezeAction::Save)
 	{
-		if (mode == FreezeAction::Save)
-		{
-			return g_gs_renderer->Freeze(data, false);
-		}
-		else if (mode == FreezeAction::Size)
-		{
-			return g_gs_renderer->Freeze(data, true);
-		}
-		else if (mode == FreezeAction::Load)
-		{
-			// Since Defrost doesn't do a hardware reset (since it would be clearing
-			// local memory just before it's overwritten), we have to manually wipe
-			// out the current textures.
-			g_gs_device->ClearCurrent();
-			return g_gs_renderer->Defrost(data);
-		}
+		return g_gs_renderer->Freeze(data, false);
 	}
-	catch (GSRecoverableError)
+	else if (mode == FreezeAction::Size)
 	{
+		return g_gs_renderer->Freeze(data, true);
 	}
+	else // if (mode == FreezeAction::Load)
+	{
+		// Since Defrost doesn't do a hardware reset (since it would be clearing
+		// local memory just before it's overwritten), we have to manually wipe
+		// out the current textures.
+		g_gs_device->ClearCurrent();
 
-	return 0;
+		// Dump audio frames in video capture if it's been started, otherwise we get
+		// a buildup of audio frames from the CPU thread.
+		if (GSCapture::IsCapturing())
+			GSCapture::Flush();
+
+		return g_gs_renderer->Defrost(data);
+	}
 }
 
 void GSQueueSnapshot(const std::string& path, u32 gsdump_frames)
@@ -540,9 +502,10 @@ void GSThrottlePresentation()
 	Threading::SleepUntil(s_next_manual_present_time);
 }
 
-void GSSetGameCRC(u32 crc)
+void GSGameChanged()
 {
-	g_gs_renderer->SetGameCRC(crc);
+	if (GSConfig.UseHardwareRenderer())
+		GSTextureReplacements::GameChanged();
 }
 
 void GSResizeDisplayWindow(int width, int height, float scale)
@@ -764,9 +727,10 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (GSConfig.UserHacks_DisableRenderFixes != old_config.UserHacks_DisableRenderFixes ||
 		GSConfig.UpscaleMultiplier != old_config.UpscaleMultiplier ||
 		GSConfig.GetSkipCountFunctionId != old_config.GetSkipCountFunctionId ||
-		GSConfig.BeforeDrawFunctionId != old_config.BeforeDrawFunctionId)
+		GSConfig.BeforeDrawFunctionId != old_config.BeforeDrawFunctionId ||
+		GSConfig.MoveHandlerFunctionId != old_config.MoveHandlerFunctionId)
 	{
-		g_gs_renderer->UpdateCRCHacks();
+		g_gs_renderer->UpdateRenderFixes();
 	}
 
 	// renderer-specific options (e.g. auto flush, TC offset)
@@ -964,11 +928,67 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 
 #endif
 
+std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height, u32 stride)
+{
+	GSVector4i minc = GSVector4i::xffffffff();
+	GSVector4i maxc = GSVector4i::zero();
+
+	const u8* ptr = static_cast<const u8*>(data);
+	if ((width % 4) == 0)
+	{
+		for (u32 r = 0; r < height; r++)
+		{
+			const u8* rptr = ptr;
+			for (u32 c = 0; c < width; c += 4)
+			{
+				const GSVector4i v = GSVector4i::load<false>(rptr);
+				rptr += sizeof(GSVector4i);
+				minc = minc.min_u32(v);
+				maxc = maxc.max_u32(v);
+			}
+
+			ptr += stride;
+		}
+	}
+	else
+	{
+		const u32 aligned_width = Common::AlignDownPow2(width, 4);
+		static constexpr const GSVector4i masks[3][2] = {
+			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0), GSVector4i::cxpr(0, 0, 0, 0xFFFFFFFF)},
+			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0, 0), GSVector4i::cxpr(0, 0, 0xFFFFFFFF, 0xFFFFFFFF)},
+			{GSVector4i::cxpr(0xFFFFFFFF, 0, 0, 0), GSVector4i::cxpr(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF)},
+		};
+		const GSVector4i last_mask_and = masks[(width & 3) - 1][0];
+		const GSVector4i last_mask_or = masks[(width & 3) - 1][1];
+
+		for (u32 r = 0; r < height; r++)
+		{
+			const u8* rptr = ptr;
+			for (u32 c = 0; c < aligned_width; c += 4)
+			{
+				const GSVector4i v = GSVector4i::load<false>(rptr);
+				rptr += sizeof(GSVector4i);
+				minc = minc.min_u32(v);
+				maxc = maxc.max_u32(v);
+			}
+
+			const GSVector4i v = GSVector4i::load<false>(rptr);
+			minc = minc.min_u32(v | last_mask_or);
+			maxc = maxc.max_u32(v & last_mask_and);
+
+			ptr += stride;
+		}
+	}
+
+	return std::make_pair<u8, u8>(static_cast<u8>(minc.minv_u32() >> 24),
+		static_cast<u8>(maxc.maxv_u32() >> 24));
+}
+
 static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 {
 	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
 	Host::AddKeyedOSDMessage("UpscaleMultiplierChanged",
-		fmt::format(TRANSLATE_SV("GS", "Upscale multiplier set to {}x."), new_multiplier), Host::OSD_QUICK_DURATION);
+		fmt::format(TRANSLATE_FS("GS", "Upscale multiplier set to {}x."), new_multiplier), Host::OSD_QUICK_DURATION);
 	EmuConfig.GS.UpscaleMultiplier = new_multiplier;
 
 	// this is pretty slow. we only really need to flush the TC and recompile shaders.
@@ -1047,7 +1067,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			EmuConfig.CurrentAspectRatio = static_cast<AspectRatioType>(
 				(static_cast<int>(EmuConfig.CurrentAspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
 			Host::AddKeyedOSDMessage("CycleAspectRatio",
-				fmt::format(TRANSLATE_SV("Hotkeys", "Aspect ratio set to '{}'."),
+				fmt::format(TRANSLATE_FS("Hotkeys", "Aspect ratio set to '{}'."),
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
 		}},
@@ -1063,7 +1083,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			const HWMipmapLevel new_level =
 				static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
 			Host::AddKeyedOSDMessage("CycleMipmapMode",
-				fmt::format(TRANSLATE_SV("Hotkeys", "Hardware mipmapping set to '{}'."),
+				fmt::format(TRANSLATE_FS("Hotkeys", "Hardware mipmapping set to '{}'."),
 					option_names[static_cast<s32>(new_level) + 1]),
 				Host::OSD_QUICK_DURATION);
 			EmuConfig.GS.HWMipmap = new_level;
@@ -1096,7 +1116,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				(static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
 			Host::AddKeyedOSDMessage("CycleInterlaceMode",
 				fmt::format(
-					TRANSLATE_SV("Hotkeys", "Deinterlace mode set to '{}'."), option_names[static_cast<s32>(new_mode)]),
+					TRANSLATE_FS("Hotkeys", "Deinterlace mode set to '{}'."), option_names[static_cast<s32>(new_mode)]),
 				Host::OSD_QUICK_DURATION);
 			EmuConfig.GS.InterlaceMode = new_mode;
 

@@ -13,11 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PrecompiledHeader.h"
-#include "GSIntrin.h"
-#include <cstring>
-
 #pragma once
+
+#include "PrecompiledHeader.h"
+
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#include <tmmintrin.h>
+#include <smmintrin.h>
+#if _M_SSE >= 0x500
+#include <immintrin.h>
+#endif
+
+#include <cstring>
 
 #ifdef _WIN32
 	#define gsforceinline __forceinline
@@ -82,6 +90,16 @@ public:
 	constexpr GSVector2T operator/(const GSVector2T& v) const
 	{
 		return { x / v.x, y / v.y };
+	}
+
+	GSVector2T min(const GSVector2T& v) const
+	{
+		return { std::min(x, v.x), std::min(y, v.y) };
+	}
+
+	GSVector2T max(const GSVector2T& v) const
+	{
+		return { std::max(x, v.x), std::max(y, v.y) };
 	}
 };
 

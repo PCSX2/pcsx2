@@ -18,10 +18,12 @@
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
 #include "Input/InputSource.h"
-#include "PAD/Host/PAD.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Sio.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 
+#include "common/Assertions.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
@@ -110,7 +112,7 @@ namespace InputManager
 	static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
 
 	static void AddHotkeyBindings(SettingsInterface& si);
-	static void AddPadBindings(SettingsInterface& si, u32 pad, const char* default_type);
+	static void AddPadBindings(SettingsInterface& si, u32 pad);
 	static void AddUSBBindings(SettingsInterface& si, u32 port);
 	static void UpdateContinuedVibration();
 	static void GenerateRelativeMouseEvents();
@@ -379,7 +381,7 @@ void InputManager::AddBinding(const std::string_view& binding, const InputEventH
 
 		if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
 		{
-			Console.WriteLn(fmt::format("Too many chord parts, max is {} ({})", MAX_KEYS_PER_BINDING, binding));
+			Console.WriteLn(fmt::format("Too many chord parts, max is {} ({})", static_cast<u32>(MAX_KEYS_PER_BINDING), binding));
 			ibinding.reset();
 			break;
 		}
@@ -624,21 +626,28 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
 	}
 }
 
-void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const char* default_type)
+void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 {
-	const std::string section(fmt::format("Pad{}", pad_index + 1));
-	const std::string type(si.GetStringValue(section.c_str(), "Type", default_type));
-	if (type.empty() || type == "None")
+	const Pad::ControllerType type = EmuConfig.Pad.Ports[pad_index].Type;
+
+	// Don't bother checking macros/vibration if it's not a connected type.
+	if (type == Pad::ControllerType::NotConnected)
 		return;
 
-	const PAD::ControllerInfo* cinfo = PAD::GetControllerInfo(type);
-	if (!cinfo)
-		return;
-
-	for (u32 i = 0; i < cinfo->num_bindings; i++)
+	// Or if it's a multitap port, and this multitap isn't enabled.
+	if (sioPadIsMultitapSlot(pad_index))
 	{
-		const InputBindingInfo& bi = cinfo->bindings[i];
+		const auto& [mt_port, mt_slot] = sioConvertPadToPortAndSlot(pad_index);
+		if (EmuConfig.Pad.IsMultitapPortEnabled(mt_port))
+			return;
+	}
 
+	const std::string section = Pad::GetConfigSection(pad_index);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(type);
+	pxAssert(cinfo);
+
+	for (const InputBindingInfo& bi : cinfo->bindings)
+	{
 		switch (bi.bind_type)
 		{
 			case InputBindingInfo::Type::Button:
@@ -653,7 +662,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 					const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("{}Deadzone", bi.name).c_str(), 0.0f);
 					AddBindings(
 						bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity, deadzone](float value) {
-							PAD::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
+							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}});
 				}
 			}
@@ -666,18 +675,20 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 		}
 	}
 
-	for (u32 macro_button_index = 0; macro_button_index < PAD::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
+	for (u32 macro_button_index = 0; macro_button_index < Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
 	{
 		const std::vector<std::string> bindings(si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1).c_str()));
 		if (!bindings.empty())
 		{
-			AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
-				PAD::SetMacroButtonState(pad_index, macro_button_index, state);
+			const float deadzone = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
+			AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
+				const bool state = (value > deadzone);
+				Pad::SetMacroButtonState(pad_index, macro_button_index, state);
 			}});
 		}
 	}
 
-	if (cinfo->vibration_caps != PAD::VibrationCapabilities::NoVibration)
+	if (cinfo->vibration_caps != Pad::VibrationCapabilities::NoVibration)
 	{
 		PadVibrationBinding vib;
 		vib.pad_index = pad_index;
@@ -685,7 +696,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 		bool has_any_bindings = false;
 		switch (cinfo->vibration_caps)
 		{
-			case PAD::VibrationCapabilities::LargeSmallMotors:
+			case Pad::VibrationCapabilities::LargeSmallMotors:
 			{
 				if (const std::string large_binding(si.GetStringValue(section.c_str(), "LargeMotor")); !large_binding.empty())
 					has_any_bindings |= ParseBindingAndGetSource(large_binding, &vib.motors[0].binding, &vib.motors[0].source);
@@ -694,7 +705,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, const ch
 			}
 			break;
 
-			case PAD::VibrationCapabilities::SingleMotor:
+			case Pad::VibrationCapabilities::SingleMotor:
 			{
 				if (const std::string binding(si.GetStringValue(section.c_str(), "Motor")); !binding.empty())
 					has_any_bindings |= ParseBindingAndGetSource(binding, &vib.motors[0].binding, &vib.motors[0].source);
@@ -1289,8 +1300,8 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 
 	// If there's an input profile, we load pad bindings from it alone, rather than
 	// falling back to the base configuration.
-	for (u32 pad = 0; pad < PAD::NUM_CONTROLLER_PORTS; pad++)
-		AddPadBindings(binding_si, pad, PAD::GetDefaultPadType(pad));
+	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
+		AddPadBindings(binding_si, pad);
 
 	constexpr float ui_ctrl_range = 100.0f;
 	constexpr float pointer_sensitivity = 0.05f;
@@ -1308,6 +1319,11 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	for (u32 port = 0; port < USB::NUM_PORTS; port++)
 		AddUSBBindings(binding_si, port);
 
+	UpdateHostMouseMode();
+}
+
+void InputManager::UpdateHostMouseMode()
+{
 	// Check for relative mode bindings, and enable if there's anything using it.
 	bool has_relative_mode_bindings = !s_pointer_move_callbacks.empty();
 	if (!has_relative_mode_bindings)
@@ -1323,7 +1339,9 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 			}
 		}
 	}
-	Host::SetRelativeMouseMode(has_relative_mode_bindings);
+
+	const bool has_software_cursor = ImGuiManager::HasSoftwareCursor(0);
+	Host::SetMouseMode(has_relative_mode_bindings, has_relative_mode_bindings || has_software_cursor);
 }
 
 // ------------------------------------------------------------------------

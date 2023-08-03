@@ -22,12 +22,21 @@
 
 #include <QtWidgets/QMessageBox>
 
-AchievementLoginDialog::AchievementLoginDialog(QWidget* parent)
+AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
 	m_ui.loginIcon->setPixmap(QIcon::fromTheme("login-box-line").pixmap(32));
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+	// Adjust text if needed based on reason.
+	if (reason == Achievements::LoginRequestReason::TokenInvalid)
+	{
+		m_ui.instructionText->setText(
+			tr("<strong>Your RetroAchievements login token is no longer valid.</strong> You must re-enter your "
+			   "credentials for achievements to be tracked. Your password will not be saved in PCSX2, an access token "
+			   "will be generated and used instead."));
+	}
 
 	m_login = m_ui.buttonBox->addButton(tr("&Login"), QDialogButtonBox::AcceptRole);
 	m_login->setEnabled(false);

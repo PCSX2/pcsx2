@@ -1,4 +1,4 @@
-add_library(soundtouch
+add_library(pcsx2-soundtouch
 	source/SoundStretch/WavFile.cpp
 	source/SoundTouch/AAFilter.cpp
 	source/SoundTouch/BPMDetect.cpp
@@ -30,5 +30,19 @@ add_library(soundtouch
 	source/SoundTouch/RateTransposer.h
 	source/SoundTouch/TDStretch.h
 )
-target_include_directories(soundtouch PUBLIC soundtouch)
-add_library(PkgConfig::SOUNDTOUCH ALIAS soundtouch)
+
+target_include_directories(pcsx2-soundtouch PUBLIC soundtouch)
+target_compile_definitions(pcsx2-soundtouch PUBLIC SOUNDTOUCH_FLOAT_SAMPLES ST_NO_EXCEPTION_HANDLING)
+set_property(TARGET pcsx2-soundtouch PROPERTY CXX_STANDARD 17)
+set_property(TARGET pcsx2-soundtouch PROPERTY CXX_STANDARD_REQUIRED ON)
+
+if(NOT "${CMAKE_BUILD_TYPE}" MATCHES "Debug")
+	if(MSVC)
+		target_compile_options(pcsx2-soundtouch PRIVATE /O2 /fp:fast)
+	else()
+		target_compile_options(pcsx2-soundtouch PRIVATE -Ofast)
+	endif()
+endif()
+
+add_library(SoundTouch::SoundTouch ALIAS pcsx2-soundtouch)
+

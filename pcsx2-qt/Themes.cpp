@@ -238,7 +238,7 @@ void QtHost::SetStyleFromSettings()
 		standardPalette.setColor(QPalette::Text, Qt::black);
 		standardPalette.setColor(QPalette::Button, extr);
 		standardPalette.setColor(QPalette::ButtonText, Qt::black);
-		standardPalette.setColor(QPalette::Link, Qt::black);
+		standardPalette.setColor(QPalette::Link, highlight.darker());
 		standardPalette.setColor(QPalette::Highlight, highlight);
 		standardPalette.setColor(QPalette::HighlightedText, Qt::white);
 		standardPalette.setColor(QPalette::Active, QPalette::Button, extr);
@@ -332,6 +332,7 @@ void QtHost::SetStyleFromSettings()
 		const QColor royalBlue(29, 41, 81);
 		const QColor darkishBlue(17, 30, 108);
 		const QColor highlight(36, 93, 218);
+		const QColor link(0, 202, 255);
 
 		QPalette darkPalette;
 		darkPalette.setColor(QPalette::Window, royalBlue);
@@ -343,7 +344,7 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Text, Qt::white);
 		darkPalette.setColor(QPalette::Button, darkishBlue);
 		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, Qt::white);
+		darkPalette.setColor(QPalette::Link, link);
 		darkPalette.setColor(QPalette::Highlight, highlight);
 		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
 

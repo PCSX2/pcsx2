@@ -64,7 +64,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 
 	if (i == m_vs.end())
 	{
-		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+		ShaderMacro sm;
 
 		sm.AddMacro("VERTEX_SHADER", 1);
 		sm.AddMacro("VS_TME", sel.tme);
@@ -113,7 +113,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 
 	if (i == m_ps.end())
 	{
-		ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+		ShaderMacro sm;
 
 		sm.AddMacro("PIXEL_SHADER", 1);
 		sm.AddMacro("PS_FST", sel.fst);

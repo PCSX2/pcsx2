@@ -95,7 +95,7 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 {
 }
 
-void Host::SetRelativeMouseMode(bool enabled)
+void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
 }
 
@@ -178,6 +178,14 @@ void Host::SetFullscreen(bool enabled)
 {
 }
 
+void Host::OnCaptureStarted(const std::string& filename)
+{
+}
+
+void Host::OnCaptureStopped()
+{
+}
+
 void Host::RequestExit(bool save_state_if_running)
 {
 }
@@ -202,11 +210,13 @@ s32 Host::Internal::GetTranslatedStringImpl(
 	return static_cast<s32>(msg.size());
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+}
+
 void Host::OnAchievementsRefreshed()
 {
 }
-#endif
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {

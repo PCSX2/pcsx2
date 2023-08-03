@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>692</width>
-    <height>562</height>
+    <width>641</width>
+    <height>467</height>
    </rect>
   </property>
   <layout class="QFormLayout" name="detailsFormLayout">
@@ -270,6 +270,11 @@
      </item>
      <item>
       <property name="text">
+       <string extracomment="Leave the code as-is, translate the country's name.">PAL-PL (Poland)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string extracomment="Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
       </property>
      </item>
@@ -408,7 +413,7 @@
      </item>
     </layout>
    </item>
-   <item row="9" column="1">
+   <item row="10" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -420,6 +425,90 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="9" column="0" colspan="2">
+    <layout class="QVBoxLayout" name="verifyLayout">
+     <item>
+      <widget class="QTableWidget" name="tracks">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="cornerButtonEnabled">
+        <bool>false</bool>
+       </property>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="verifyButtonLayout">
+       <item>
+        <spacer name="verifyButtonSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="verify">
+         <property name="text">
+          <string>Verify</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="2">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" rowspan="3">
+        <widget class="QPlainTextEdit" name="verifyResult">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="searchHash">
+         <property name="text">
+          <string>Search on Redump.org...</string>
+         </property>
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

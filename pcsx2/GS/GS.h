@@ -68,6 +68,7 @@ class HostDisplay;
 // Returns the ID for the specified function, otherwise -1.
 s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
 s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
+s16 GSLookupMoveHandlerFunctionId(const std::string_view& name);
 
 void GSinit();
 void GSshutdown();
@@ -93,7 +94,7 @@ bool GSBeginCapture(std::string filename);
 void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
-void GSSetGameCRC(u32 crc);
+void GSGameChanged();
 void GSSetDisplayAlignment(GSDisplayAlignment alignment);
 void GSResizeDisplayWindow(int width, int height, float scale);
 void GSUpdateDisplayWindow();
@@ -119,13 +120,6 @@ bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspe
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();
 
-struct GSError
-{
-};
-struct GSRecoverableError : GSError
-{
-};
-
 namespace Host
 {
 	/// Called when the GS is creating a render device.
@@ -146,4 +140,8 @@ namespace Host
 
 	/// Returns the desired vsync mode, depending on the runtime environment.
 	VsyncMode GetEffectiveVSyncMode();
+
+	/// Called when video capture starts or stops. Called on the MTGS thread.
+	void OnCaptureStarted(const std::string& filename);
+	void OnCaptureStopped();
 }

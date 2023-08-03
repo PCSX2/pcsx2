@@ -15,21 +15,28 @@
 
 #include "PrecompiledHeader.h"
 
+#include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
 #include "SettingsDialog.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "QtProgressCallback.h"
 #include "QtUtils.h"
 
+#include "pcsx2/CDVD/IsoHasher.h"
+#include "pcsx2/GameDatabase.h"
 #include "pcsx2/GameList.h"
-#include "pcsx2/PAD/Host/PAD.h"
 
+#include "common/Error.h"
+#include "common/MD5Digest.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
 #include "fmt/format.h"
 
 #include <QtCore/QDir>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
 	: m_dialog(dialog)
@@ -51,15 +58,18 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialo
 	populateInputProfiles();
 	populateDetails(entry);
 	populateDiscPath(entry);
+	populateTrackList(entry);
 
 	connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
+	connect(m_ui.verify, &QAbstractButton::clicked, this, &GameSummaryWidget::onVerifyClicked);
+	connect(m_ui.searchHash, &QAbstractButton::clicked, this, &GameSummaryWidget::onSearchHashClicked);
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
 
 void GameSummaryWidget::populateInputProfiles()
 {
-	for (const std::string& name : PAD::GetInputProfileNames())
+	for (const std::string& name : Pad::GetInputProfileNames())
 		m_ui.inputProfile->addItem(QString::fromStdString(name));
 }
 
@@ -136,4 +146,210 @@ void GameSummaryWidget::onDiscPathBrowseClicked()
 
 	// let the signal take care of it
 	m_ui.discPath->setText(QDir::toNativeSeparators(filename));
+}
+
+void GameSummaryWidget::populateTrackList(const GameList::Entry* entry)
+{
+	if (entry->type != GameList::EntryType::PS1Disc && entry->type != GameList::EntryType::PS2Disc)
+	{
+		m_ui.verify->setEnabled(false);
+		m_ui.verifyResult->setPlainText(tr("Game is not a CD/DVD."));
+		return;
+	}
+
+	if (QtHost::IsVMValid())
+	{
+		m_ui.verify->setEnabled(false);
+		m_ui.verifyResult->setPlainText(tr("Track list unavailable while virtual machine is running."));
+		return;
+	}
+
+	IsoHasher hasher;
+	Error error;
+	if (!hasher.Open(m_entry_path, &error))
+	{
+		m_ui.verify->setEnabled(false);
+		m_ui.verifyResult->setPlainText(QString::fromStdString(error.GetDescription()));
+		return;
+	}
+
+	const auto AddColumn = [this](const QString& text) {
+		QTableWidgetItem* item = new QTableWidgetItem(text);
+		const int column = m_ui.tracks->columnCount();
+		m_ui.tracks->insertColumn(column);
+		m_ui.tracks->setHorizontalHeaderItem(column, item);
+	};
+	const auto SetColumn = [this](int row, int column, const QString& text) {
+		QTableWidgetItem* item = new QTableWidgetItem(text);
+		m_ui.tracks->setItem(row, column, item);
+	};
+
+	// columns depend on CD vs DVD.
+	AddColumn(tr("#"));
+	if (hasher.IsCD())
+	{
+		AddColumn(tr("Mode"));
+		AddColumn(tr("Start"));
+		AddColumn(tr("Sectors"));
+		AddColumn(tr("Size"));
+		AddColumn(tr("MD5"));
+		AddColumn(tr("Status"));
+	}
+	else
+	{
+		AddColumn(tr("Start"));
+		AddColumn(tr("Sectors"));
+		AddColumn(tr("Size"));
+		AddColumn(tr("MD5"));
+		AddColumn(tr("Status"));
+	}
+
+	for (const IsoHasher::Track& track : hasher.GetTracks())
+	{
+		const int row = m_ui.tracks->rowCount();
+		m_ui.tracks->insertRow(row);
+
+		SetColumn(row, 0, tr("%1").arg(track.number));
+
+		if (hasher.IsCD())
+		{
+			SetColumn(row, 1, QtUtils::StringViewToQString(IsoHasher::GetTrackTypeString(track.type)));
+			SetColumn(row, 2, tr("%1").arg(track.start_lsn));
+			SetColumn(row, 3, tr("%1").arg(track.sectors));
+			SetColumn(row, 4, tr("%1").arg(track.size));
+			SetColumn(row, 5, tr("<not computed>"));
+			SetColumn(row, 6, QString());
+		}
+		else
+		{
+			SetColumn(row, 1, tr("%1").arg(track.start_lsn));
+			SetColumn(row, 2, tr("%1").arg(track.sectors));
+			SetColumn(row, 3, tr("%1").arg(track.size));
+			SetColumn(row, 4, tr("<not computed>"));
+			SetColumn(row, 5, QString());
+		}
+	}
+
+	if (hasher.IsCD())
+		QtUtils::ResizeColumnsForTableView(m_ui.tracks, {20, 60, 70, 70, 100, 220, 40});
+	else
+		QtUtils::ResizeColumnsForTableView(m_ui.tracks, {20, 100, 100, 100, 220, 40});
+}
+
+void GameSummaryWidget::onVerifyClicked()
+{
+	// Can't do this while a VM is running because of stupid CDVD.
+	if (QtHost::IsVMValid())
+	{
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Cannot verify image while a game is running."));
+		return;
+	}
+
+	IsoHasher hasher;
+	Error error;
+	if (!hasher.Open(m_entry_path, &error))
+	{
+		setVerifyResult(QString::fromStdString(error.GetDescription()));
+		return;
+	}
+
+	QtModalProgressCallback callback(this);
+	hasher.ComputeHashes(&callback);
+	if (callback.IsCancelled())
+		return;
+
+	const int hash_column = hasher.IsCD() ? 5 : 4;
+	int row = 0;
+
+	// convert to database format
+	std::vector<GameDatabase::TrackHash> thashes;
+	thashes.reserve(hasher.GetTrackCount());
+	for (const IsoHasher::Track& track : hasher.GetTracks())
+	{
+		GameDatabase::TrackHash thash;
+		thash.size = track.size;
+		if (track.hash.empty() || !thash.parseHash(track.hash))
+		{
+			m_ui.verify->setEnabled(false);
+			m_ui.verifyResult->setPlainText(tr("One or more tracks is missing."));
+			return;
+		}
+
+		// Use the first track's hash as the redump search term.
+		if (m_redump_search_keyword.empty())
+			m_redump_search_keyword = thash.toString();
+
+		thashes.push_back(thash);
+	}
+
+	// match the hashes. can't use vector<bool> here because it's not an actual array
+	std::unique_ptr<bool[]> val_results = std::make_unique<bool[]>(hasher.GetTrackCount());
+	std::string match_error;
+	const GameDatabase::HashDatabaseEntry* hentry =
+		GameDatabase::lookupHash(thashes.data(), thashes.size(), val_results.get(), &match_error);
+
+	// fill the UI with both the hashes and validation results
+	for (u32 i = 0; i < hasher.GetTrackCount(); i++)
+	{
+		QTableWidgetItem* const hash_item = m_ui.tracks->item(row, hash_column);
+		QTableWidgetItem* const status_item = m_ui.tracks->item(row, hash_column + 1);
+
+		const bool result = val_results[i];
+		const QBrush brush(result ? QColor(0, 200, 0) : QColor(200, 0, 0));
+
+		hash_item->setText(QString::fromStdString(hasher.GetTrack(i).hash));
+		hash_item->setForeground(brush);
+		status_item->setText(result ? QStringLiteral("\u2713") : QStringLiteral("\u2715"));
+		status_item->setForeground(brush);
+		row++;
+	}
+
+	if (hentry)
+	{
+		if (!hentry->version.empty())
+		{
+			setVerifyResult(tr("Verified as %1 [%2] (Version %3).")
+								.arg(QString::fromStdString(hentry->name))
+								.arg(QString::fromStdString(hentry->serial))
+								.arg(QString::fromStdString(hentry->version)));
+		}
+		else
+		{
+			setVerifyResult(tr("Verified as %1 [%2].")
+								.arg(QString::fromStdString(hentry->name))
+								.arg(QString::fromStdString(hentry->serial)));
+		}
+	}
+	else
+	{
+		setVerifyResult(QString::fromStdString(match_error));
+	}
+}
+
+void GameSummaryWidget::onSearchHashClicked()
+{
+	if (m_redump_search_keyword.empty())
+		return;
+
+	QtUtils::OpenURL(this, fmt::format("http://redump.org/discs/quicksearch/{}", m_redump_search_keyword).c_str());
+}
+
+void GameSummaryWidget::setVerifyResult(QString error)
+{
+	m_ui.verify->setVisible(false);
+	m_ui.verifyButtonLayout->removeWidget(m_ui.verify);
+	m_ui.verify->deleteLater();
+	m_ui.verify = nullptr;
+	m_ui.verifyButtonLayout->removeItem(m_ui.verifyButtonSpacer);
+	delete m_ui.verifyButtonSpacer;
+	m_ui.verifyButtonSpacer = nullptr;
+	m_ui.verifyLayout->removeItem(m_ui.verifyButtonLayout);
+	m_ui.verifyButtonLayout->deleteLater();
+	m_ui.verifyButtonLayout = nullptr;
+	m_ui.verifyLayout->update();
+	updateGeometry();
+
+	m_ui.verifyResult->setPlainText(error);
+	m_ui.verifyResult->setVisible(true);
+	m_ui.searchHash->setVisible(true);
 }

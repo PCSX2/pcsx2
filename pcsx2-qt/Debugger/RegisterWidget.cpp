@@ -17,8 +17,6 @@
 
 #include "RegisterWidget.h"
 
-#include "common/BitCast.h"
-
 #include "QtUtils.h"
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QTabBar>
@@ -30,6 +28,7 @@
 #include <QtWidgets/QMessageBox>
 
 #include <algorithm>
+#include <bit>
 
 #define CAT_SHOW_FLOAT (categoryIndex == EECAT_FPR && m_showFPRFloat) || (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
 
@@ -151,7 +150,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 
 				if (categoryIndex == EECAT_VU0F && m_showVU0FFloat)
 					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight, Qt::AlignLeft,
-						painter.fontMetrics().elidedText(QString::number(bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
+						painter.fontMetrics().elidedText(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[regIndex])), Qt::ElideRight, m_fieldWidth - painter.fontMetrics().averageCharWidth()));
 				else
 					painter.drawText(m_fieldStartX[j], yStart, m_fieldWidth, m_rowHeight,
 						Qt::AlignLeft, FilledQStringFromValue(curRegister._u32[regIndex], 16));
@@ -168,7 +167,7 @@ void RegisterWidget::paintEvent(QPaintEvent* event)
 
 			if (categoryIndex == EECAT_FPR && m_showFPRFloat)
 				painter.drawText(safeValueStartX, yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft,
-					QString("%1").arg(QString::number(bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[0]))).toUpper());
+					QString("%1").arg(QString::number(std::bit_cast<float>(m_cpu->getRegister(categoryIndex, registerIndex)._u32[0]))).toUpper());
 			else if (m_cpu->getRegisterSize(categoryIndex) == 64)
 				painter.drawText(safeValueStartX, yStart, renderSize.width(), m_rowHeight, Qt::AlignLeft,
 					FilledQStringFromValue(m_cpu->getRegister(categoryIndex, registerIndex).lo, 16));
@@ -299,7 +298,7 @@ void RegisterWidget::contextCopyValue()
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const u128 val = m_cpu->getRegister(categoryIndex, m_selectedRow);
 	if (CAT_SHOW_FLOAT)
-		QApplication::clipboard()->setText(QString("%1").arg(QString::number(bit_cast<float>(val._u32[0])).toUpper(), 16));
+		QApplication::clipboard()->setText(QString("%1").arg(QString::number(std::bit_cast<float>(val._u32[0])).toUpper(), 16));
 	else
 		QApplication::clipboard()->setText(QString("%1").arg(QString::number(val._u64[0], 16).toUpper(), 16));
 }
@@ -323,7 +322,7 @@ void RegisterWidget::contextCopySegment()
 	const int categoryIndex = ui.registerTabs->currentIndex();
 	const u128 val = m_cpu->getRegister(categoryIndex, m_selectedRow);
 	if (CAT_SHOW_FLOAT)
-		QApplication::clipboard()->setText(FilledQStringFromValue(bit_cast<float>(val._u32[3 - m_selected128Field]), 10));
+		QApplication::clipboard()->setText(FilledQStringFromValue(std::bit_cast<float>(val._u32[3 - m_selected128Field]), 10));
 	else
 		QApplication::clipboard()->setText(FilledQStringFromValue(val._u32[3 - m_selected128Field], 16));
 }
@@ -340,7 +339,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 	if (!floatingPoint)
 		existingValue = existingValue.arg(currentValue, regSize == 64 ? 16 : 8, 16, QChar('0'));
 	else
-		existingValue = existingValue.arg(bit_cast<float>((u32)currentValue));
+		existingValue = existingValue.arg(std::bit_cast<float>((u32)currentValue));
 
 	//: Changing the value in a CPU register (e.g. "Change t0")
 	QString input = QInputDialog::getText(this, tr("Change %1").arg(m_cpu->getRegisterName(categoryIndex, m_selectedRow)), "",
@@ -360,7 +359,7 @@ bool RegisterWidget::contextFetchNewValue(u64& out, u64 currentValue, bool segme
 	}
 	else
 	{
-		out = bit_cast<u32>(input.toFloat(&ok));
+		out = std::bit_cast<u32>(input.toFloat(&ok));
 		if (!ok)
 		{
 			QMessageBox::warning(this, tr("Invalid register value"), tr("Invalid floating-point register value."));

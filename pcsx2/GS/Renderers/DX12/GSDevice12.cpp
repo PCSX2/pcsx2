@@ -22,12 +22,11 @@
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/Renderers/DX12/GSDevice12.h"
 #include "GS/Renderers/DX12/D3D12Builders.h"
-#include "GS/Renderers/DX12/D3D12Context.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "Host.h"
 #include "ShaderCacheVersion.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
@@ -67,21 +66,8 @@ static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* 
 	// clang-format on
 }
 
-GSDevice12::ShaderMacro::ShaderMacro(D3D_FEATURE_LEVEL fl)
+GSDevice12::ShaderMacro::ShaderMacro()
 {
-	switch (fl)
-	{
-		case D3D_FEATURE_LEVEL_10_0:
-			mlist.emplace_back("SHADER_MODEL", "0x400");
-			break;
-		case D3D_FEATURE_LEVEL_10_1:
-			mlist.emplace_back("SHADER_MODEL", "0x401");
-			break;
-		case D3D_FEATURE_LEVEL_11_0:
-		default:
-			mlist.emplace_back("SHADER_MODEL", "0x500");
-			break;
-	}
 	mlist.emplace_back("DX12", "1");
 }
 
@@ -108,9 +94,579 @@ D3D_SHADER_MACRO* GSDevice12::ShaderMacro::GetPtr(void)
 
 GSDevice12::GSDevice12() = default;
 
-GSDevice12::~GSDevice12()
+GSDevice12::~GSDevice12() = default;
+
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
 {
-	pxAssert(!g_d3d12_context);
+	ComPtr<ID3DBlob> blob;
+	ComPtr<ID3DBlob> error_blob;
+	const HRESULT hr = D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.put(), error_blob.put());
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12SerializeRootSignature() failed: %08X", hr);
+		if (error_blob)
+			Console.Error("%s", error_blob->GetBufferPointer());
+
+		return {};
+	}
+
+	return blob;
+}
+
+GSDevice12::ComPtr<ID3D12RootSignature> GSDevice12::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+{
+	ComPtr<ID3DBlob> blob = SerializeRootSignature(desc);
+	if (!blob)
+		return {};
+
+	ComPtr<ID3D12RootSignature> rs;
+	const HRESULT hr =
+		m_device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(rs.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("CreateRootSignature() failed: %08X", hr);
+		return {};
+	}
+
+	return rs;
+}
+
+bool GSDevice12::SupportsTextureFormat(DXGI_FORMAT format)
+{
+	constexpr u32 required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE;
+
+	D3D12_FEATURE_DATA_FORMAT_SUPPORT support = {format};
+	return SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
+		   (support.Support1 & required) == required;
+}
+
+u32 GSDevice12::GetAdapterVendorID() const
+{
+	if (!m_adapter)
+		return 0;
+
+	DXGI_ADAPTER_DESC desc;
+	if (FAILED(m_adapter->GetDesc(&desc)))
+		return 0;
+
+	return desc.VendorId;
+}
+
+bool GSDevice12::CreateDevice()
+{
+	bool enable_debug_layer = GSConfig.UseDebugDevice;
+
+	m_dxgi_factory = D3D::CreateFactory(GSConfig.UseDebugDevice);
+	if (!m_dxgi_factory)
+		return false;
+
+	m_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
+
+	HRESULT hr;
+
+	// Enabling the debug layer will fail if the Graphics Tools feature is not installed.
+	if (enable_debug_layer)
+	{
+		ComPtr<ID3D12Debug> debug12;
+		hr = D3D12GetDebugInterface(IID_PPV_ARGS(debug12.put()));
+		if (SUCCEEDED(hr))
+		{
+			debug12->EnableDebugLayer();
+		}
+		else
+		{
+			Console.Error("Debug layer requested but not available.");
+			enable_debug_layer = false;
+		}
+	}
+
+	// Create the actual device.
+	hr = D3D12CreateDevice(m_adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+	if (FAILED(hr))
+	{
+		Console.Error("Failed to create D3D12 device: %08X", hr);
+		return false;
+	}
+
+	if (!m_adapter)
+	{
+		const LUID luid(m_device->GetAdapterLuid());
+		if (FAILED(m_dxgi_factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.put()))))
+			Console.Error("Failed to get lookup adapter by device LUID");
+	}
+
+	if (enable_debug_layer)
+	{
+		ComPtr<ID3D12InfoQueue> info_queue = m_device.try_query<ID3D12InfoQueue>();
+		if (info_queue)
+		{
+			if (IsDebuggerPresent())
+			{
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+			}
+
+			D3D12_INFO_QUEUE_FILTER filter = {};
+			std::array<D3D12_MESSAGE_ID, 5> id_list{
+				D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_CREATEGRAPHICSPIPELINESTATE_RENDERTARGETVIEW_NOT_SET,
+				D3D12_MESSAGE_ID_CREATEINPUTLAYOUT_TYPE_MISMATCH,
+				D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE,
+			};
+			filter.DenyList.NumIDs = static_cast<UINT>(id_list.size());
+			filter.DenyList.pIDList = id_list.data();
+			info_queue->PushStorageFilter(&filter);
+		}
+	}
+
+	const D3D12_COMMAND_QUEUE_DESC queue_desc = {
+		D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE};
+	hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
+	if (FAILED(hr))
+	{
+		Console.Error("Failed to create command queue: %08X", hr);
+		return false;
+	}
+
+	D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+	allocatorDesc.pDevice = m_device.get();
+	allocatorDesc.pAdapter = m_adapter.get();
+	allocatorDesc.Flags =
+		D3D12MA::ALLOCATOR_FLAG_SINGLETHREADED |
+		D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED /* | D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED*/;
+
+	hr = D3D12MA::CreateAllocator(&allocatorDesc, m_allocator.put());
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12MA::CreateAllocator() failed with HRESULT %08X", hr);
+		return false;
+	}
+
+	hr = m_device->CreateFence(m_completed_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+	if (FAILED(hr))
+	{
+		Console.Error("Failed to create fence: %08X", hr);
+		return false;
+	}
+
+	m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if (m_fence_event == NULL)
+	{
+		Console.Error("Failed to create fence event: %08X", GetLastError());
+		return false;
+	}
+
+	return true;
+}
+
+bool GSDevice12::CreateDescriptorHeaps()
+{
+	static constexpr size_t MAX_SRVS = 32768;
+	static constexpr size_t MAX_RTVS = 16384;
+	static constexpr size_t MAX_DSVS = 16384;
+	static constexpr size_t MAX_CPU_SAMPLERS = 1024;
+
+	if (!m_descriptor_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_SRVS, false) ||
+		!m_rtv_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, MAX_RTVS, false) ||
+		!m_dsv_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, MAX_DSVS, false) ||
+		!m_sampler_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, MAX_CPU_SAMPLERS, false))
+	{
+		return false;
+	}
+
+	// Allocate null SRV descriptor for unbound textures.
+	constexpr D3D12_SHADER_RESOURCE_VIEW_DESC null_srv_desc = {
+		DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+
+	if (!m_descriptor_heap_manager.Allocate(&m_null_srv_descriptor))
+	{
+		pxFailRel("Failed to allocate null descriptor");
+		return false;
+	}
+
+	m_device->CreateShaderResourceView(nullptr, &null_srv_desc, m_null_srv_descriptor.cpu_handle);
+	return true;
+}
+
+bool GSDevice12::CreateCommandLists()
+{
+	static constexpr size_t MAX_GPU_SRVS = 32768;
+	static constexpr size_t MAX_GPU_SAMPLERS = 2048;
+
+	for (u32 i = 0; i < NUM_COMMAND_LISTS; i++)
+	{
+		CommandListResources& res = m_command_lists[i];
+		HRESULT hr;
+
+		for (u32 i = 0; i < 2; i++)
+		{
+			hr = m_device->CreateCommandAllocator(
+				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(res.command_allocators[i].put()));
+			pxAssertRel(SUCCEEDED(hr), "Create command allocator");
+			if (FAILED(hr))
+				return false;
+
+			hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res.command_allocators[i].get(),
+				nullptr, IID_PPV_ARGS(res.command_lists[i].put()));
+			if (FAILED(hr))
+			{
+				Console.Error("Failed to create command list: %08X", hr);
+				return false;
+			}
+
+			// Close the command lists, since the first thing we do is reset them.
+			hr = res.command_lists[i]->Close();
+			pxAssertRel(SUCCEEDED(hr), "Closing new command list failed");
+			if (FAILED(hr))
+				return false;
+		}
+
+		if (!res.descriptor_allocator.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_GPU_SRVS))
+		{
+			Console.Error("Failed to create per frame descriptor allocator");
+			return false;
+		}
+
+		if (!res.sampler_allocator.Create(m_device.get(), MAX_GPU_SAMPLERS))
+		{
+			Console.Error("Failed to create per frame sampler allocator");
+			return false;
+		}
+	}
+
+	MoveToNextCommandList();
+	return true;
+}
+
+void GSDevice12::MoveToNextCommandList()
+{
+	m_current_command_list = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+	m_current_fence_value++;
+
+	// We may have to wait if this command list hasn't finished on the GPU.
+	CommandListResources& res = m_command_lists[m_current_command_list];
+	WaitForFence(res.ready_fence_value, false);
+	res.ready_fence_value = m_current_fence_value;
+	res.init_command_list_used = false;
+
+	// Begin command list.
+	res.command_allocators[1]->Reset();
+	res.command_lists[1]->Reset(res.command_allocators[1].get(), nullptr);
+	res.descriptor_allocator.Reset();
+	if (res.sampler_allocator.ShouldReset())
+		res.sampler_allocator.Reset();
+
+	if (res.has_timestamp_query)
+	{
+		// readback timestamp from the last time this cmdlist was used.
+		// we don't need to worry about disjoint in dx12, the frequency is reliable within a single cmdlist.
+		const u32 offset = (m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+		const D3D12_RANGE read_range = {offset, offset + (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST)};
+		void* map;
+		HRESULT hr = m_timestamp_query_buffer->Map(0, &read_range, &map);
+		if (SUCCEEDED(hr))
+		{
+			u64 timestamps[2];
+			std::memcpy(timestamps, static_cast<const u8*>(map) + offset, sizeof(timestamps));
+			m_accumulated_gpu_time +=
+				static_cast<float>(static_cast<double>(timestamps[1] - timestamps[0]) / m_timestamp_frequency);
+
+			const D3D12_RANGE write_range = {};
+			m_timestamp_query_buffer->Unmap(0, &write_range);
+		}
+		else
+		{
+			Console.Warning("Map() for timestamp query failed: %08X", hr);
+		}
+	}
+
+	res.has_timestamp_query = m_gpu_timing_enabled;
+	if (m_gpu_timing_enabled)
+	{
+		res.command_lists[1]->EndQuery(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
+			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
+	}
+
+	ID3D12DescriptorHeap* heaps[2] = {
+		res.descriptor_allocator.GetDescriptorHeap(), res.sampler_allocator.GetDescriptorHeap()};
+	res.command_lists[1]->SetDescriptorHeaps(std::size(heaps), heaps);
+
+	m_allocator->SetCurrentFrameIndex(static_cast<UINT>(m_current_fence_value));
+}
+
+ID3D12GraphicsCommandList4* GSDevice12::GetInitCommandList()
+{
+	CommandListResources& res = m_command_lists[m_current_command_list];
+	if (!res.init_command_list_used)
+	{
+		HRESULT hr = res.command_allocators[0]->Reset();
+		pxAssertMsg(SUCCEEDED(hr), "Reset init command allocator failed");
+
+		res.command_lists[0]->Reset(res.command_allocators[0].get(), nullptr);
+		pxAssertMsg(SUCCEEDED(hr), "Reset init command list failed");
+		res.init_command_list_used = true;
+	}
+
+	return res.command_lists[0].get();
+}
+
+bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
+{
+	CommandListResources& res = m_command_lists[m_current_command_list];
+	HRESULT hr;
+
+	if (res.has_timestamp_query)
+	{
+		// write the timestamp back at the end of the cmdlist
+		res.command_lists[1]->EndQuery(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
+			(m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST) + 1);
+		res.command_lists[1]->ResolveQueryData(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
+			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST, NUM_TIMESTAMP_QUERIES_PER_CMDLIST,
+			m_timestamp_query_buffer.get(), m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+	}
+
+	if (res.init_command_list_used)
+	{
+		hr = res.command_lists[0]->Close();
+		if (FAILED(hr))
+		{
+			Console.Error("Closing init command list failed with HRESULT %08X", hr);
+			return false;
+		}
+	}
+
+	// Close and queue command list.
+	hr = res.command_lists[1]->Close();
+	if (FAILED(hr))
+	{
+		Console.Error("Closing main command list failed with HRESULT %08X", hr);
+		return false;
+	}
+
+	if (res.init_command_list_used)
+	{
+		const std::array<ID3D12CommandList*, 2> execute_lists{res.command_lists[0].get(), res.command_lists[1].get()};
+		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
+	}
+	else
+	{
+		const std::array<ID3D12CommandList*, 1> execute_lists{res.command_lists[1].get()};
+		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
+	}
+
+	// Update fence when GPU has completed.
+	hr = m_command_queue->Signal(m_fence.get(), res.ready_fence_value);
+	pxAssertRel(SUCCEEDED(hr), "Signal fence");
+
+	MoveToNextCommandList();
+	if (wait_for_completion != WaitType::None)
+		WaitForFence(res.ready_fence_value, wait_for_completion == WaitType::Spin);
+
+	return true;
+}
+
+void GSDevice12::InvalidateSamplerGroups()
+{
+	for (CommandListResources& res : m_command_lists)
+		res.sampler_allocator.InvalidateCache();
+}
+
+void GSDevice12::DeferObjectDestruction(ID3D12DeviceChild* resource)
+{
+	if (!resource)
+		return;
+
+	resource->AddRef();
+	m_command_lists[m_current_command_list].pending_resources.emplace_back(nullptr, resource);
+}
+
+void GSDevice12::DeferResourceDestruction(D3D12MA::Allocation* allocation, ID3D12Resource* resource)
+{
+	if (!resource)
+		return;
+
+	if (allocation)
+		allocation->AddRef();
+
+	resource->AddRef();
+	m_command_lists[m_current_command_list].pending_resources.emplace_back(allocation, resource);
+}
+
+void GSDevice12::DeferDescriptorDestruction(D3D12DescriptorHeapManager& manager, u32 index)
+{
+	m_command_lists[m_current_command_list].pending_descriptors.emplace_back(manager, index);
+}
+
+void GSDevice12::DeferDescriptorDestruction(D3D12DescriptorHeapManager& manager, D3D12DescriptorHandle* handle)
+{
+	if (handle->index == D3D12DescriptorHandle::INVALID_INDEX)
+		return;
+
+	m_command_lists[m_current_command_list].pending_descriptors.emplace_back(manager, handle->index);
+	handle->Clear();
+}
+
+void GSDevice12::DestroyPendingResources(CommandListResources& cmdlist)
+{
+	for (const auto& dd : cmdlist.pending_descriptors)
+		dd.first.Free(dd.second);
+	cmdlist.pending_descriptors.clear();
+
+	for (const auto& it : cmdlist.pending_resources)
+	{
+		it.second->Release();
+		if (it.first)
+			it.first->Release();
+	}
+	cmdlist.pending_resources.clear();
+}
+
+void GSDevice12::WaitForFence(u64 fence, bool spin)
+{
+	if (m_completed_fence_value >= fence)
+		return;
+
+	if (spin)
+	{
+		u64 value;
+		while ((value = m_fence->GetCompletedValue()) < fence)
+			ShortSpin();
+		m_completed_fence_value = value;
+	}
+	else
+	{
+		// Try non-blocking check.
+		m_completed_fence_value = m_fence->GetCompletedValue();
+		if (m_completed_fence_value < fence)
+		{
+			// Fall back to event.
+			HRESULT hr = m_fence->SetEventOnCompletion(fence, m_fence_event);
+			pxAssertRel(SUCCEEDED(hr), "Set fence event on completion");
+			WaitForSingleObject(m_fence_event, INFINITE);
+			m_completed_fence_value = m_fence->GetCompletedValue();
+		}
+	}
+
+	// Release resources for as many command lists which have completed.
+	u32 index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+	for (u32 i = 0; i < NUM_COMMAND_LISTS; i++)
+	{
+		CommandListResources& res = m_command_lists[index];
+		if (m_completed_fence_value < res.ready_fence_value)
+			break;
+
+		DestroyPendingResources(res);
+		index = (index + 1) % NUM_COMMAND_LISTS;
+	}
+}
+
+void GSDevice12::WaitForGPUIdle()
+{
+	u32 index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+	for (u32 i = 0; i < (NUM_COMMAND_LISTS - 1); i++)
+	{
+		WaitForFence(m_command_lists[index].ready_fence_value, false);
+		index = (index + 1) % NUM_COMMAND_LISTS;
+	}
+}
+
+bool GSDevice12::CreateTimestampQuery()
+{
+	constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;
+	constexpr u32 BUFFER_SIZE = sizeof(u64) * QUERY_COUNT;
+
+	const D3D12_QUERY_HEAP_DESC desc = {D3D12_QUERY_HEAP_TYPE_TIMESTAMP, QUERY_COUNT};
+	HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("CreateQueryHeap() for timestamp failed with %08X", hr);
+		return false;
+	}
+
+	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_READBACK};
+	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, BUFFER_SIZE, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+	hr = m_allocator->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+		m_timestamp_query_allocation.put(), IID_PPV_ARGS(m_timestamp_query_buffer.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("CreateResource() for timestamp failed with %08X", hr);
+		return false;
+	}
+
+	u64 frequency;
+	hr = m_command_queue->GetTimestampFrequency(&frequency);
+	if (FAILED(hr))
+	{
+		Console.Error("GetTimestampFrequency() failed: %08X", hr);
+		return false;
+	}
+
+	m_timestamp_frequency = static_cast<double>(frequency) / 1000.0;
+	return true;
+}
+
+float GSDevice12::GetAndResetAccumulatedGPUTime()
+{
+	const float time = m_accumulated_gpu_time;
+	m_accumulated_gpu_time = 0.0f;
+	return time;
+}
+
+bool GSDevice12::SetGPUTimingEnabled(bool enabled)
+{
+	m_gpu_timing_enabled = enabled;
+	return true;
+}
+
+bool GSDevice12::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
+	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
+{
+	// Try to place the fixed index buffer in GPU local memory.
+	// Use the staging buffer to copy into it.
+	const D3D12_RESOURCE_DESC rd = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},
+		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
+
+	const D3D12MA::ALLOCATION_DESC cpu_ad = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
+
+	ComPtr<ID3D12Resource> cpu_buffer;
+	ComPtr<D3D12MA::Allocation> cpu_allocation;
+	HRESULT hr = m_allocator->CreateResource(
+		&cpu_ad, &rd, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
+	pxAssertMsg(SUCCEEDED(hr), "Allocate CPU buffer");
+	if (FAILED(hr))
+		return false;
+
+	static constexpr const D3D12_RANGE read_range = {};
+	const D3D12_RANGE write_range = {0, size};
+	void* mapped;
+	hr = cpu_buffer->Map(0, &read_range, &mapped);
+	pxAssertMsg(SUCCEEDED(hr), "Map CPU buffer");
+	if (FAILED(hr))
+		return false;
+	fill_callback(mapped);
+	cpu_buffer->Unmap(0, &write_range);
+
+	const D3D12MA::ALLOCATION_DESC gpu_ad = {D3D12MA::ALLOCATION_FLAG_COMMITTED, D3D12_HEAP_TYPE_DEFAULT};
+
+	hr = m_allocator->CreateResource(
+		&gpu_ad, &rd, D3D12_RESOURCE_STATE_COMMON, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
+	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
+	if (FAILED(hr))
+		return false;
+
+	GetInitCommandList()->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer.get(), 0, size);
+
+	D3D12_RESOURCE_BARRIER rb = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+	rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	rb.Transition.pResource = *gpu_buffer;
+	rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // COMMON -> COPY_DEST at first use.
+	rb.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+	GetInitCommandList()->ResourceBarrier(1, &rb);
+
+	DeferResourceDestruction(cpu_allocation.get(), cpu_buffer.get());
+	return true;
 }
 
 RenderAPI GSDevice12::GetRenderAPI() const
@@ -128,28 +684,17 @@ bool GSDevice12::Create()
 	if (!GSDevice::Create())
 		return false;
 
-	m_dxgi_factory = D3D::CreateFactory(GSConfig.UseDebugDevice);
-	if (!m_dxgi_factory)
+	if (!CreateDevice())
 		return false;
-
-	ComPtr<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
-
-	if (!D3D12Context::Create(m_dxgi_factory.get(), dxgi_adapter.get(), GSConfig.UseDebugDevice))
-	{
-		Console.Error("Failed to create D3D12 context");
-		return false;
-	}
-
-	BOOL allow_tearing_supported = false;
-	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
-		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
-	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
 	if (!CheckFeatures())
 	{
 		Console.Error("Your GPU does not support the required D3D12 features.");
 		return false;
 	}
+
+	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery())
+		return false;
 
 	if (!AcquireWindow(true) || (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain()))
 		return false;
@@ -165,11 +710,8 @@ bool GSDevice12::Create()
 		m_tfx_source = std::move(*shader);
 	}
 
-	if (!m_shader_cache.Open(g_d3d12_context->GetFeatureLevel(), GSConfig.UseDebugDevice))
+	if (!m_shader_cache.Open(m_feature_level, GSConfig.UseDebugDevice))
 		Console.Warning("Shader cache failed to open.");
-
-	// reset stuff in case it was used by a previous device
-	g_d3d12_context->GetSamplerAllocator().Reset();
 
 	if (!CreateNullTexture())
 	{
@@ -206,14 +748,14 @@ void GSDevice12::Destroy()
 {
 	GSDevice::Destroy();
 
-	if (g_d3d12_context)
+	if (GetCommandList())
 	{
 		EndRenderPass();
 		ExecuteCommandList(true);
-		DestroyResources();
-		DestroySwapChain();
-		g_d3d12_context->Destroy();
 	}
+
+	DestroySwapChain();
+	DestroyResources();
 }
 
 bool GSDevice12::GetHostRefreshRate(float* refresh_rate)
@@ -297,7 +839,7 @@ bool GSDevice12::CreateSwapChain()
 		fs_desc.Windowed = FALSE;
 
 		Console.WriteLn("Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
-		hr = m_dxgi_factory->CreateSwapChainForHwnd(g_d3d12_context->GetCommandQueue(), window_hwnd, &fs_sd_desc,
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.get(), window_hwnd, &fs_sd_desc,
 			&fs_desc, fullscreen_output.get(), m_swap_chain.put());
 		if (FAILED(hr))
 		{
@@ -311,7 +853,7 @@ bool GSDevice12::CreateSwapChain()
 	{
 		Console.WriteLn("Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(
-			g_d3d12_context->GetCommandQueue(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
+			m_command_queue.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
 	}
 
 	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
@@ -327,7 +869,7 @@ bool GSDevice12::CreateSwapChain()
 	// Render a frame as soon as possible to clear out whatever was previously being displayed.
 	EndRenderPass();
 	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
-	ID3D12GraphicsCommandList4* cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 	swap_chain_buf->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	cmdlist->ClearRenderTargetView(swap_chain_buf->GetWriteDescriptor(), s_present_clear_color.data(), 0, nullptr);
@@ -444,16 +986,13 @@ std::string GSDevice12::GetDriverInfo() const
 	std::string ret = "Unknown Feature Level";
 
 	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
-		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
-		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_1"},
 		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
 		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
 	}};
 
-	const D3D_FEATURE_LEVEL fl = g_d3d12_context->GetFeatureLevel();
 	for (size_t i = 0; i < std::size(feature_level_names); i++)
 	{
-		if (fl == std::get<0>(feature_level_names[i]))
+		if (m_feature_level == std::get<0>(feature_level_names[i]))
 		{
 			ret = std::get<1>(feature_level_names[i]);
 			break;
@@ -462,9 +1001,8 @@ std::string GSDevice12::GetDriverInfo() const
 
 	ret += "\n";
 
-	IDXGIAdapter* adapter = g_d3d12_context->GetAdapter();
 	DXGI_ADAPTER_DESC desc;
-	if (adapter && SUCCEEDED(adapter->GetDesc(&desc)))
+	if (m_adapter && SUCCEEDED(m_adapter->GetDesc(&desc)))
 	{
 		ret += StringUtil::StdStringFromFormat("VID: 0x%04X PID: 0x%04X\n", desc.VendorId, desc.DeviceId);
 		ret += StringUtil::WideStringToUTF8String(desc.Description);
@@ -531,7 +1069,7 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 
 	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
 
-	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList* cmdlist = GetCommandList();
 	swap_chain_buf->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	cmdlist->ClearRenderTargetView(swap_chain_buf->GetWriteDescriptor(), s_present_clear_color.data(), 0, nullptr);
 	cmdlist->OMSetRenderTargets(1, &swap_chain_buf->GetWriteDescriptor().cpu_handle, FALSE, nullptr);
@@ -553,8 +1091,8 @@ void GSDevice12::EndPresent()
 	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
 	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
 
-	swap_chain_buf->TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
-	if (!g_d3d12_context->ExecuteCommandList(D3D12Context::WaitType::None))
+	swap_chain_buf->TransitionToState(GetCommandList(), D3D12_RESOURCE_STATE_PRESENT);
+	if (!ExecuteCommandList(WaitType::None))
 	{
 		m_device_lost = true;
 		InvalidateCachedState();
@@ -568,17 +1106,6 @@ void GSDevice12::EndPresent()
 		m_swap_chain->Present(static_cast<UINT>(vsync), 0);
 
 	InvalidateCachedState();
-}
-
-bool GSDevice12::SetGPUTimingEnabled(bool enabled)
-{
-	g_d3d12_context->SetEnableGPUTiming(enabled);
-	return true;
-}
-
-float GSDevice12::GetAndResetAccumulatedGPUTime()
-{
-	return g_d3d12_context->GetAndResetAccumulatedGPUTime();
 }
 
 void GSDevice12::PushDebugGroup(const char* fmt, ...)
@@ -595,7 +1122,7 @@ void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* f
 
 bool GSDevice12::CheckFeatures()
 {
-	const u32 vendorID = g_d3d12_context->GetAdapterVendorID();
+	const u32 vendorID = GetAdapterVendorID();
 	const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 
 	m_features.texture_barrier = false;
@@ -609,13 +1136,19 @@ bool GSDevice12::CheckFeatures()
 	m_features.dual_source_blend = true;
 	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
+	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = false;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
-	m_features.dxt_textures = g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
-							  g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
-							  g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC3_UNORM);
-	m_features.bptc_textures = g_d3d12_context->SupportsTextureFormat(DXGI_FORMAT_BC7_UNORM);
+	m_features.dxt_textures = SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
+							  SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
+							  SupportsTextureFormat(DXGI_FORMAT_BC3_UNORM);
+	m_features.bptc_textures = SupportsTextureFormat(DXGI_FORMAT_BC7_UNORM);
+
+	BOOL allow_tearing_supported = false;
+	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
+		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
+	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
 	return true;
 }
@@ -623,44 +1156,20 @@ bool GSDevice12::CheckFeatures()
 void GSDevice12::DrawPrimitive()
 {
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	g_d3d12_context->GetCommandList()->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
+	GetCommandList()->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
 }
 
 void GSDevice12::DrawIndexedPrimitive()
 {
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	g_d3d12_context->GetCommandList()->DrawIndexedInstanced(m_index.count, 1, m_index.start, m_vertex.start, 0);
+	GetCommandList()->DrawIndexedInstanced(m_index.count, 1, m_index.start, m_vertex.start, 0);
 }
 
 void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 {
 	ASSERT(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	g_d3d12_context->GetCommandList()->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
-}
-
-void GSDevice12::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	if (m_current_render_target == t)
-		EndRenderPass();
-
-	t->SetClearColor(c);
-}
-
-void GSDevice12::InvalidateRenderTarget(GSTexture* t)
-{
-	if (m_current_render_target == t || m_current_depth_target == t)
-		EndRenderPass();
-
-	t->SetState(GSTexture::State::Invalidated);
-}
-
-void GSDevice12::ClearDepth(GSTexture* t, float d)
-{
-	if (m_current_depth_target == t)
-		EndRenderPass();
-
-	t->SetClearDepth(d);
+	GetCommandList()->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
 }
 
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
@@ -753,16 +1262,18 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 				// otherwise we need to do an attachment clear
 				EndRenderPass();
 
+				dTexVK->SetState(GSTexture::State::Dirty);
+
 				if (dTexVK->GetType() != GSTexture::Type::DepthStencil)
 				{
 					dTexVK->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-					g_d3d12_context->GetCommandList()->ClearRenderTargetView(
+					GetCommandList()->ClearRenderTargetView(
 						dTexVK->GetWriteDescriptor(), sTexVK->GetUNormClearColor().v, 0, nullptr);
 				}
 				else
 				{
 					dTexVK->TransitionToState(D3D12_RESOURCE_STATE_DEPTH_WRITE);
-					g_d3d12_context->GetCommandList()->ClearDepthStencilView(
+					GetCommandList()->ClearDepthStencilView(
 						dTexVK->GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, sTexVK->GetClearDepth(), 0, 0, nullptr);
 				}
 
@@ -782,12 +1293,12 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	EndRenderPass();
 
 	sTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_SOURCE);
-	sTexVK->SetUsedThisCommandBuffer();
+	sTexVK->SetUseFenceCounter(GetCurrentFenceValue());
 	if (m_tfx_textures[0] && sTexVK->GetSRVDescriptor() == m_tfx_textures[0])
 		PSSetShaderResource(0, nullptr, false);
 
 	dTexVK->TransitionToState(D3D12_RESOURCE_STATE_COPY_DEST);
-	dTexVK->SetUsedThisCommandBuffer();
+	dTexVK->SetUseFenceCounter(GetCurrentFenceValue());
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
 	srcloc.pResource = sTexVK->GetResource();
@@ -801,7 +1312,7 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 	const D3D12_BOX srcbox{static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0u, static_cast<UINT>(r.right),
 		static_cast<UINT>(r.bottom), 1u};
-	g_d3d12_context->GetCommandList()->CopyTextureRegion(&dstloc, destX, destY, 0, &srcloc, &srcbox);
+	GetCommandList()->CopyTextureRegion(&dstloc, destX, destY, 0, &srcloc, &srcbox);
 
 	dTexVK->SetState(GSTexture::State::Dirty);
 }
@@ -816,7 +1327,8 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
 
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear, true);
+		dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get(), linear,
+		ShaderConvertWriteMask(shader) == 0xf);
 }
 
 void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
@@ -1102,9 +1614,23 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	EndRenderPass();
 
 	// transition everything before starting the new render pass
-	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-	if (sTex[0])
+	const bool has_input_0 =
+		(sTex[0] && (sTex[0]->GetState() == GSTexture::State::Dirty ||
+						(sTex[0]->GetState() == GSTexture::State::Cleared || sTex[0]->GetClearColor() != 0)));
+	const bool has_input_1 = (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg) && sTex[1] &&
+							 (sTex[1]->GetState() == GSTexture::State::Dirty ||
+								 (sTex[1]->GetState() == GSTexture::State::Cleared || sTex[1]->GetClearColor() != 0));
+	if (has_input_0)
+	{
+		static_cast<GSTexture12*>(sTex[0])->CommitClear();
 		static_cast<GSTexture12*>(sTex[0])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+	if (has_input_1)
+	{
+		static_cast<GSTexture12*>(sTex[1])->CommitClear();
+		static_cast<GSTexture12*>(sTex[1])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+	static_cast<GSTexture12*>(dTex)->TransitionToState(D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
 	if (feedback_write_2 || feedback_write_1 || sTex[0])
@@ -1117,25 +1643,21 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	const GSVector2i dsize(dTex->GetSize());
 	const GSVector4i darea(0, 0, dsize.x, dsize.y);
 	bool dcleared = false;
-	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
+	if (has_input_1 && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		if (sTex[1]->GetState() == GSTexture::State::Dirty)
-		{
-			static_cast<GSTexture12*>(sTex[1])->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-			OMSetRenderTargets(dTex, nullptr, darea);
-			SetUtilityTexture(sTex[1], sampler);
-			BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
-				D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-				D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-				D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
-			SetUtilityRootSignature();
-			SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
-			DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
-			dTex->SetState(GSTexture::State::Dirty);
-			dcleared = true;
-		}
+		OMSetRenderTargets(dTex, nullptr, darea);
+		SetUtilityTexture(sTex[1], sampler);
+		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
+		SetUtilityRootSignature();
+		SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
+		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
+		dTex->SetState(GSTexture::State::Dirty);
+		dcleared = true;
 	}
 
 	// Upload constant to select YUV algo
@@ -1182,7 +1704,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
 	}
 
-	if (sTex[0] && sTex[0]->GetState() == GSTexture::State::Dirty)
+	if (has_input_0)
 	{
 		// 1st output is enabled. It must be blended
 		SetUtilityRootSignature();
@@ -1293,13 +1815,15 @@ bool GSDevice12::CompileCASPipelines()
 	D3D12::ComputePipelineBuilder cpb;
 	cpb.SetRootSignature(m_cas_root_signature.get());
 	cpb.SetShader(cs_upscale->GetBufferPointer(), cs_upscale->GetBufferSize());
-	m_cas_upscale_pipeline = cpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+	m_cas_upscale_pipeline = cpb.Create(m_device.get(), m_shader_cache, false);
 	cpb.SetShader(cs_sharpen->GetBufferPointer(), cs_sharpen->GetBufferSize());
-	m_cas_sharpen_pipeline = cpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+	m_cas_sharpen_pipeline = cpb.Create(m_device.get(), m_shader_cache, false);
 	if (!m_cas_upscale_pipeline || !m_cas_sharpen_pipeline)
+	{
+		Console.Error("Failed to create CAS pipelines");
 		return false;
+	}
 
-	m_features.cas_sharpening = true;
 	return true;
 }
 
@@ -1334,7 +1858,7 @@ bool GSDevice12::CompileImGuiPipeline()
 		D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD);
 	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
 
-	m_imgui_pipeline = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+	m_imgui_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
 	if (!m_imgui_pipeline)
 	{
 		Console.Error("Failed to compile ImGui pipeline");
@@ -1378,7 +1902,7 @@ void GSDevice12::RenderImGui()
 		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
 
 		// just skip if we run out.. we can't resume the present render pass :/
-		if (!g_d3d12_context->GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
+		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
 		{
 			Console.Warning("Skipping ImGui draw because of no descriptors");
 			return;
@@ -1439,7 +1963,7 @@ void GSDevice12::RenderImGui()
 
 			if (ApplyUtilityState())
 			{
-				g_d3d12_context->GetCommandList()->DrawIndexedInstanced(
+				GetCommandList()->DrawIndexedInstanced(
 					pcmd->ElemCount, 1, m_index.start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset, 0);
 			}
 		}
@@ -1468,7 +1992,7 @@ bool GSDevice12::DoCAS(
 		}
 	}
 
-	ID3D12GraphicsCommandList* const cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList* const cmdlist = GetCommandList();
 	const D3D12_RESOURCE_STATES old_state = sTex12->GetResourceState();
 	sTex12->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	dTex12->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -1537,6 +2061,25 @@ void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		// framebuffer change
 		EndRenderPass();
 	}
+	else if (InRenderPass())
+	{
+		// Framebuffer unchanged, but check for clears. Have to restart render pass, unlike Vulkan.
+		// We'll take care of issuing the actual clear there, because we have to start one anyway.
+		if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+		{
+			if (vkRt->GetState() == GSTexture::State::Cleared)
+				EndRenderPass();
+			else
+				vkRt->SetState(GSTexture::State::Dirty);
+		}
+		if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+		{
+			if (vkDs->GetState() == GSTexture::State::Cleared)
+				EndRenderPass();
+			else
+				vkDs->SetState(GSTexture::State::Dirty);
+		}
+	}
 
 	m_current_render_target = vkRt;
 	m_current_depth_target = vkDs;
@@ -1598,20 +2141,21 @@ bool GSDevice12::GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::S
 	sd.MaxAnisotropy = std::clamp<u8>(GSConfig.MaxAnisotropy, 1, 16);
 	sd.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 
-	if (!g_d3d12_context->GetSamplerHeapManager().Allocate(cpu_handle))
+	if (!GetSamplerHeapManager().Allocate(cpu_handle))
 		return false;
 
-	g_d3d12_context->GetDevice()->CreateSampler(&sd, *cpu_handle);
+	m_device.get()->CreateSampler(&sd, *cpu_handle);
 	m_samplers.emplace(ss.key, *cpu_handle);
 	return true;
 }
 
 void GSDevice12::ClearSamplerCache()
 {
-	for (auto& it : m_samplers)
-		g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &it.second);
+	ExecuteCommandList(false);
+	for (const auto& it : m_samplers)
+		m_sampler_heap_manager.Free(it.second.index);
 	m_samplers.clear();
-	g_d3d12_context->InvalidateSamplerGroups();
+	InvalidateSamplerGroups();
 	InitializeSamplers();
 
 	m_utility_sampler_gpu = m_point_sampler_cpu;
@@ -1622,12 +2166,12 @@ void GSDevice12::ClearSamplerCache()
 bool GSDevice12::GetTextureGroupDescriptors(
 	D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count)
 {
-	if (!g_d3d12_context->GetDescriptorAllocator().Allocate(count, gpu_handle))
+	if (!GetDescriptorAllocator().Allocate(count, gpu_handle))
 		return false;
 
 	if (count == 1)
 	{
-		g_d3d12_context->GetDevice()->CopyDescriptorsSimple(
+		m_device.get()->CopyDescriptorsSimple(
 			1, *gpu_handle, cpu_handles[0], D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		return true;
 	}
@@ -1641,7 +2185,7 @@ bool GSDevice12::GetTextureGroupDescriptors(
 		src_handles[i] = cpu_handles[i];
 		src_sizes[i] = 1;
 	}
-	g_d3d12_context->GetDevice()->CopyDescriptors(
+	m_device.get()->CopyDescriptors(
 		1, &dst_handle, &count, count, src_handles, src_sizes, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	return true;
 }
@@ -1656,13 +2200,13 @@ static void AddUtilityVertexAttributes(D3D12::GraphicsPipelineBuilder& gpb)
 
 GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::string& source, const char* entry_point)
 {
-	ShaderMacro sm_model(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm_model;
 	return m_shader_cache.GetVertexShader(source, sm_model.GetPtr(), entry_point);
 }
 
 GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* entry_point)
 {
-	ShaderMacro sm_model(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm_model;
 	return m_shader_cache.GetPixelShader(source, sm_model.GetPtr(), entry_point);
 }
 
@@ -1674,7 +2218,7 @@ bool GSDevice12::CreateNullTexture()
 	if (!m_null_texture)
 		return false;
 
-	m_null_texture->TransitionToState(g_d3d12_context->GetCommandList(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	m_null_texture->TransitionToState(GetCommandList(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	D3D12::SetObjectName(m_null_texture->GetResource(), "Null texture");
 	return true;
 }
@@ -1705,7 +2249,13 @@ bool GSDevice12::CreateBuffers()
 		return false;
 	}
 
-	if (!g_d3d12_context->AllocatePreinitializedGPUBuffer(EXPAND_BUFFER_SIZE, &m_expand_index_buffer,
+	if (!m_texture_stream_buffer.Create(TEXTURE_UPLOAD_BUFFER_SIZE))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate texture stream buffer");
+		return false;
+	}
+
+	if (!AllocatePreinitializedGPUBuffer(EXPAND_BUFFER_SIZE, &m_expand_index_buffer,
 			&m_expand_index_buffer_allocation, &GSDevice::GenerateExpansionIndexBuffer))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer");
@@ -1815,13 +2365,15 @@ bool GSDevice12::CompileConvertPipelines()
 			gpb.SetNoStencilState();
 		}
 
+		gpb.SetColorWriteMask(0, ShaderConvertWriteMask(i));
+
 		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
 		if (!ps)
 			return false;
 
 		gpb.SetPixelShader(ps.get());
 
-		m_convert[index] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		m_convert[index] = gpb.Create(m_device.get(), m_shader_cache, false);
 		if (!m_convert[index])
 			return false;
 
@@ -1837,7 +2389,7 @@ bool GSDevice12::CompileConvertPipelines()
 				pxAssert(!m_color_copy[i]);
 				gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
 					D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, static_cast<u8>(i));
-				m_color_copy[i] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+				m_color_copy[i] = gpb.Create(m_device.get(), m_shader_cache, false);
 				if (!m_color_copy[i])
 					return false;
 
@@ -1855,7 +2407,7 @@ bool GSDevice12::CompileConvertPipelines()
 
 				gpb.SetRenderTarget(0, is_setup ? DXGI_FORMAT_R16G16B16A16_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
 				gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
-				arr[ds] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+				arr[ds] = gpb.Create(m_device.get(), m_shader_cache, false);
 				if (!arr[ds])
 					return false;
 
@@ -1883,7 +2435,7 @@ bool GSDevice12::CompileConvertPipelines()
 		for (u32 ds = 0; ds < 2; ds++)
 		{
 			gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
-			m_date_image_setup_pipelines[ds][datm] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+			m_date_image_setup_pipelines[ds][datm] = gpb.Create(m_device.get(), m_shader_cache, false);
 			if (!m_date_image_setup_pipelines[ds][datm])
 				return false;
 
@@ -1929,7 +2481,7 @@ bool GSDevice12::CompilePresentPipelines()
 
 		gpb.SetPixelShader(ps.get());
 
-		m_present[index] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		m_present[index] = gpb.Create(m_device.get(), m_shader_cache, false);
 		if (!m_present[index])
 			return false;
 
@@ -1965,7 +2517,7 @@ bool GSDevice12::CompileInterlacePipelines()
 
 		gpb.SetPixelShader(ps.get());
 
-		m_interlace[i] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		m_interlace[i] = gpb.Create(m_device.get(), m_shader_cache, false);
 		if (!m_interlace[i])
 			return false;
 
@@ -2002,7 +2554,7 @@ bool GSDevice12::CompileMergePipelines()
 		gpb.SetBlendState(0, true, D3D12_BLEND_SRC_ALPHA, D3D12_BLEND_INV_SRC_ALPHA, D3D12_BLEND_OP_ADD,
 			D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD);
 
-		m_merge[i] = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		m_merge[i] = gpb.Create(m_device.get(), m_shader_cache, false);
 		if (!m_merge[i])
 			return false;
 
@@ -2031,13 +2583,15 @@ bool GSDevice12::CompilePostProcessingPipelines()
 			return false;
 		}
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "ps_main"));
+		ShaderMacro sm;
+		sm.AddMacro("FXAA_HLSL_5", "1");
+		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, sm.GetPtr());
 		if (!ps)
 			return false;
 
 		gpb.SetPixelShader(ps.get());
 
-		m_fxaa_pipeline = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		m_fxaa_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
 		if (!m_fxaa_pipeline)
 			return false;
 
@@ -2058,7 +2612,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 
 		gpb.SetPixelShader(ps.get());
 
-		m_shadeboost_pipeline = gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache, false);
+		m_shadeboost_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
 		if (!m_shadeboost_pipeline)
 			return false;
 
@@ -2070,16 +2624,12 @@ bool GSDevice12::CompilePostProcessingPipelines()
 
 void GSDevice12::DestroyResources()
 {
-	g_d3d12_context->ExecuteCommandList(D3D12Context::WaitType::Sleep);
-
 	m_convert_vs.reset();
 
 	m_cas_sharpen_pipeline.reset();
 	m_cas_upscale_pipeline.reset();
 	m_cas_root_signature.reset();
 
-	for (auto& it : m_tfx_pipelines)
-		g_d3d12_context->DeferObjectDestruction(it.second.get());
 	m_tfx_pipelines.clear();
 	m_tfx_pixel_shaders.clear();
 	m_tfx_vertex_shaders.clear();
@@ -2095,17 +2645,17 @@ void GSDevice12::DestroyResources()
 	m_shadeboost_pipeline.reset();
 	m_imgui_pipeline.reset();
 
-	m_linear_sampler_cpu.Clear();
-	m_point_sampler_cpu.Clear();
-
-	for (auto& it : m_samplers)
-		g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &it.second);
-	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &m_linear_sampler_cpu);
-	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetSamplerHeapManager(), &m_point_sampler_cpu);
-	g_d3d12_context->InvalidateSamplerGroups();
+	for (const auto& it : m_samplers)
+	{
+		if (it.second)
+			m_sampler_heap_manager.Free(it.second.index);
+	}
+	m_samplers.clear();
+	InvalidateSamplerGroups();
 
 	m_expand_index_buffer.reset();
 	m_expand_index_buffer_allocation.reset();
+	m_texture_stream_buffer.Destroy(false);
 	m_pixel_constant_buffer.Destroy(false);
 	m_vertex_constant_buffer.Destroy(false);
 	m_index_stream_buffer.Destroy(false);
@@ -2121,6 +2671,27 @@ void GSDevice12::DestroyResources()
 	}
 
 	m_shader_cache.Close();
+
+	m_descriptor_heap_manager.Free(&m_null_srv_descriptor);
+	m_timestamp_query_buffer.reset();
+	m_timestamp_query_allocation.reset();
+	m_sampler_heap_manager.Destroy();
+	m_dsv_heap_manager.Destroy();
+	m_rtv_heap_manager.Destroy();
+	m_descriptor_heap_manager.Destroy();
+	m_command_lists = {};
+	m_current_command_list = 0;
+	m_completed_fence_value = 0;
+	m_current_fence_value = 0;
+	if (m_fence_event)
+	{
+		CloseHandle(m_fence_event);
+		m_fence_event = {};
+	}
+
+	m_allocator.reset();
+	m_command_queue.reset();
+	m_device.reset();
 }
 
 const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
@@ -2129,7 +2700,7 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	if (it != m_tfx_vertex_shaders.end())
 		return it->second.get();
 
-	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm;
 	sm.AddMacro("VERTEX_SHADER", 1);
 	sm.AddMacro("VS_TME", sel.tme);
 	sm.AddMacro("VS_FST", sel.fst);
@@ -2148,7 +2719,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	if (it != m_tfx_pixel_shaders.end())
 		return it->second.get();
 
-	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm;
 	sm.AddMacro("PIXEL_SHADER", 1);
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
@@ -2310,7 +2881,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 			D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, p.cms.wrgba);
 	}
 
-	ComPtr<ID3D12PipelineState> pipeline(gpb.Create(g_d3d12_context->GetDevice(), m_shader_cache));
+	ComPtr<ID3D12PipelineState> pipeline(gpb.Create(m_device.get(), m_shader_cache));
 	if (pipeline)
 	{
 		D3D12::SetObjectNameFormatted(
@@ -2361,20 +2932,20 @@ void GSDevice12::InitializeSamplers()
 		pxFailRel("Failed to initialize samplers");
 }
 
-static D3D12Context::WaitType GetWaitType(bool wait, bool spin)
+GSDevice12::WaitType GSDevice12::GetWaitType(bool wait, bool spin)
 {
 	if (!wait)
-		return D3D12Context::WaitType::None;
+		return WaitType::None;
 	if (spin)
-		return D3D12Context::WaitType::Spin;
+		return WaitType::Spin;
 	else
-		return D3D12Context::WaitType::Sleep;
+		return WaitType::Sleep;
 }
 
 void GSDevice12::ExecuteCommandList(bool wait_for_completion)
 {
 	EndRenderPass();
-	g_d3d12_context->ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
+	ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
 }
 
@@ -2395,13 +2966,13 @@ void GSDevice12::ExecuteCommandListAndRestartRenderPass(bool wait_for_completion
 
 	const bool was_in_render_pass = m_in_render_pass;
 	EndRenderPass();
-	g_d3d12_context->ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
+	ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 	InvalidateCachedState();
 
 	if (was_in_render_pass)
 	{
 		// rebind everything except RT, because the RP does that for us
-		ApplyBaseState(m_dirty_flags & ~DIRTY_FLAG_RENDER_TARGET, g_d3d12_context->GetCommandList());
+		ApplyBaseState(m_dirty_flags & ~DIRTY_FLAG_RENDER_TARGET, GetCommandList());
 		m_dirty_flags &= ~DIRTY_BASE_STATE;
 
 		// restart render pass
@@ -2501,7 +3072,7 @@ void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state)
 			dtex->CommitClear();
 			dtex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		}
-		dtex->SetUsedThisCommandBuffer();
+		dtex->SetUseFenceCounter(GetCurrentFenceValue());
 		handle = dtex->GetSRVDescriptor();
 	}
 	else
@@ -2533,7 +3104,7 @@ void GSDevice12::SetUtilityRootSignature()
 
 	m_current_root_signature = RootSignature::Utility;
 	m_dirty_flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_PIPELINE;
-	g_d3d12_context->GetCommandList()->SetGraphicsRootSignature(m_utility_root_signature.get());
+	GetCommandList()->SetGraphicsRootSignature(m_utility_root_signature.get());
 }
 
 void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12DescriptorHandle& sampler)
@@ -2544,7 +3115,7 @@ void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12DescriptorHandle&
 		GSTexture12* d12tex = static_cast<GSTexture12*>(dtex);
 		d12tex->CommitClear();
 		d12tex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		d12tex->SetUsedThisCommandBuffer();
+		d12tex->SetUseFenceCounter(GetCurrentFenceValue());
 		handle = d12tex->GetSRVDescriptor();
 	}
 	else
@@ -2570,7 +3141,7 @@ void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12DescriptorHandle&
 		m_utility_sampler_cpu = sampler;
 		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
 
-		if (!g_d3d12_context->GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, sampler))
+		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, sampler))
 		{
 			ExecuteCommandListAndRestartRenderPass(false, "Ran out of utility sampler descriptors");
 			SetUtilityTexture(dtex, sampler);
@@ -2581,7 +3152,7 @@ void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12DescriptorHandle&
 
 void GSDevice12::SetUtilityPushConstants(const void* data, u32 size)
 {
-	g_d3d12_context->GetCommandList()->SetGraphicsRoot32BitConstants(
+	GetCommandList()->SetGraphicsRoot32BitConstants(
 		UTILITY_ROOT_SIGNATURE_PARAM_PUSH_CONSTANTS, (size + 3) / sizeof(u32), data, 0);
 }
 
@@ -2615,22 +3186,22 @@ void GSDevice12::RenderTextureMipmap(
 	// we need a temporary SRV and RTV for each mip level
 	// Safe to use the init buffer after exec, because everything will be done with the texture.
 	D3D12DescriptorHandle rtv_handle;
-	while (!g_d3d12_context->GetRTVHeapManager().Allocate(&rtv_handle))
+	while (!GetRTVHeapManager().Allocate(&rtv_handle))
 		ExecuteCommandList(false);
 
 	D3D12DescriptorHandle srv_handle;
-	while (!g_d3d12_context->GetDescriptorHeapManager().Allocate(&srv_handle))
+	while (!GetDescriptorHeapManager().Allocate(&srv_handle))
 		ExecuteCommandList(false);
 
 	// Setup views. This will be a partial view for the SRV.
 	D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {texture->GetDXGIFormat(), D3D12_RTV_DIMENSION_TEXTURE2D};
 	rtv_desc.Texture2D = {dst_level, 0u};
-	g_d3d12_context->GetDevice()->CreateRenderTargetView(texture->GetResource(), &rtv_desc, rtv_handle);
+	m_device.get()->CreateRenderTargetView(texture->GetResource(), &rtv_desc, rtv_handle);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {
 		texture->GetDXGIFormat(), D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
 	srv_desc.Texture2D = {src_level, 1u, 0u, 0.0f};
-	g_d3d12_context->GetDevice()->CreateShaderResourceView(texture->GetResource(), &srv_desc, srv_handle);
+	m_device.get()->CreateShaderResourceView(texture->GetResource(), &srv_desc, srv_handle);
 
 	// We need to set the descriptors up manually, because we're not going through GSTexture.
 	if (!GetTextureGroupDescriptors(&m_utility_texture_gpu, &srv_handle, 1))
@@ -2638,12 +3209,12 @@ void GSDevice12::RenderTextureMipmap(
 	if (m_utility_sampler_cpu != m_linear_sampler_cpu)
 	{
 		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
-		if (!g_d3d12_context->GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
+		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
 			ExecuteCommandList(false);
 	}
 
 	// *now* we don't have to worry about running out of anything.
-	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList* cmdlist = GetCommandList();
 	if (texture->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
 		texture->TransitionSubresourceToState(
 			cmdlist, src_level, texture->GetResourceState(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -2680,8 +3251,8 @@ void GSDevice12::RenderTextureMipmap(
 			cmdlist, dst_level, D3D12_RESOURCE_STATE_RENDER_TARGET, texture->GetResourceState());
 
 	// Must destroy after current cmdlist.
-	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDescriptorHeapManager(), &srv_handle);
-	g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetRTVHeapManager(), &rtv_handle);
+	DeferDescriptorDestruction(m_descriptor_heap_manager, &srv_handle);
+	DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
 
 	// Restore for next normal draw.
 	m_dirty_flags |= MODIFIED_STATE;
@@ -2741,7 +3312,7 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		}
 	}
 
-	g_d3d12_context->GetCommandList()->BeginRenderPass(m_current_render_target ? 1 : 0,
+	GetCommandList()->BeginRenderPass(m_current_render_target ? 1 : 0,
 		m_current_render_target ? &rt : nullptr, m_current_depth_target ? &ds : nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 }
 
@@ -2757,7 +3328,7 @@ void GSDevice12::EndRenderPass()
 
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	g_d3d12_context->GetCommandList()->EndRenderPass();
+	GetCommandList()->EndRenderPass();
 }
 
 void GSDevice12::SetViewport(const D3D12_VIEWPORT& viewport)
@@ -2886,7 +3457,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 
 	if (flags & DIRTY_FLAG_TFX_SAMPLERS)
 	{
-		if (!g_d3d12_context->GetSamplerAllocator().LookupSingle(&m_tfx_samplers_handle_gpu, m_tfx_sampler))
+		if (!GetSamplerAllocator().LookupSingle(&m_tfx_samplers_handle_gpu, m_tfx_sampler))
 		{
 			ExecuteCommandListAndRestartRenderPass(false, "Ran out of sampler groups");
 			return ApplyTFXState(true);
@@ -2917,7 +3488,7 @@ bool GSDevice12::ApplyTFXState(bool already_execed)
 		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2;
 	}
 
-	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList* cmdlist = GetCommandList();
 
 	if (m_current_root_signature != RootSignature::TFX)
 	{
@@ -2956,7 +3527,7 @@ bool GSDevice12::ApplyUtilityState(bool already_execed)
 	u32 flags = m_dirty_flags;
 	m_dirty_flags &= ~DIRTY_UTILITY_STATE;
 
-	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList* cmdlist = GetCommandList();
 
 	if (m_current_root_signature != RootSignature::Utility)
 	{

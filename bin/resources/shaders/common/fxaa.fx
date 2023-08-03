@@ -1,11 +1,18 @@
-#if defined(SHADER_MODEL) || defined(FXAA_GLSL_130) || defined(FXAA_GLSL_VK) || defined(__METAL_VERSION__)
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#ifndef SHADER_MODEL
-    #define SHADER_MODEL 0
-#endif
-#ifndef FXAA_HLSL_4
-    #define FXAA_HLSL_4 0
-#endif
 #ifndef FXAA_HLSL_5
     #define FXAA_HLSL_5 0
 #endif
@@ -36,7 +43,7 @@ layout(location = 0) in vec2 PSin_t;
 layout(location = 0) out vec4 SV_Target0;
 layout(set = 0, binding = 0) uniform sampler2D TextureSampler;
 
-#elif (SHADER_MODEL >= 0x400)
+#elif (FXAA_HLSL_5 == 1)
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
 
@@ -65,39 +72,12 @@ static constexpr sampler MAIN_SAMPLER(coord::normalized, address::clamp_to_edge,
                              [FXAA CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-// We don't use gather4 for alpha/luminance because it would require an additional
-// pass to compute the values, which would be slower than the extra shader loads.
-
-#if (SHADER_MODEL >= 0x500)
-#undef FXAA_HLSL_5
-#define FXAA_HLSL_5 1
-#define FXAA_GATHER4_ALPHA 0
-
-#elif (SHADER_MODEL >= 0x400)
-#undef FXAA_HLSL_4
-#define FXAA_HLSL_4 1
-#define FXAA_GATHER4_ALPHA 0
-
-#elif (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
-#define FXAA_GATHER4_ALPHA 0
-
-#elif defined(__METAL_VERSION__)
-#define FXAA_GATHER4_ALPHA 0
-#endif
-
 #if (FXAA_HLSL_5 == 1)
 struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
 #define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
 #define FxaaTexAlpha4(t, p) t.tex.GatherAlpha(t.smpl, p)
 #define FxaaTexOffAlpha4(t, p, o) t.tex.GatherAlpha(t.smpl, p, o)
-#define FxaaDiscard clip(-1)
-#define FxaaSat(x) saturate(x)
-
-#elif (FXAA_HLSL_4 == 1)
-struct FxaaTex { SamplerState smpl; Texture2D tex; };
-#define FxaaTexTop(t, p) t.tex.SampleLevel(t.smpl, p, 0.0)
-#define FxaaTexOff(t, p, o, r) t.tex.SampleLevel(t.smpl, p, 0.0, o)
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 
@@ -111,12 +91,6 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTex sampler2D
 #define FxaaTexTop(t, p) textureLod(t, p, 0.0)
 #define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
-
-#if (FXAA_GATHER4_ALPHA == 1)
-// use #extension GL_ARB_gpu_shader5 : enable
-#define FxaaTexAlpha4(t, p) textureGather(t, p, 3)
-#define FxaaTexOffAlpha4(t, p, o) textureGatherOffset(t, p, o, 3)
-#endif
 
 #elif defined(__METAL_VERSION__)
 #define FxaaTex texture2d<float>
@@ -206,21 +180,6 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	posM.x = pos.x;
 	posM.y = pos.y;
 
-	#if (FXAA_GATHER4_ALPHA == 1)
-	float4 rgbyM = FxaaTexTop(tex, posM);
-	float4 luma4A = FxaaTexAlpha4(tex, posM);
-	float4 luma4B = FxaaTexOffAlpha4(tex, posM, int2(-1, -1));
-	rgbyM.w = RGBLuminance(rgbyM.xyz);
-
-	#define lumaM rgbyM.w
-	#define lumaE luma4A.z
-	#define lumaS luma4A.x
-	#define lumaSE luma4A.y
-	#define lumaNW luma4B.w
-	#define lumaN luma4B.z
-	#define lumaW luma4B.x
-
-	#else
 	float4 rgbyM = FxaaTexTop(tex, posM);
 	rgbyM.w = RGBLuminance(rgbyM.xyz);
 	#define lumaM rgbyM.w
@@ -229,7 +188,6 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	float lumaE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 0), fxaaRcpFrame.xy));
 	float lumaN = FxaaLuma(FxaaTexOff(tex, posM, int2( 0,-1), fxaaRcpFrame.xy));
 	float lumaW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 0), fxaaRcpFrame.xy));
-	#endif
 
 	float maxSM = max(lumaS, lumaM);
 	float minSM = min(lumaS, lumaM);
@@ -249,15 +207,10 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	if(earlyExit) { return rgbyM; }
 	#endif
 
-	#if (FXAA_GATHER4_ALPHA == 0)
 	float lumaNW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1,-1), fxaaRcpFrame.xy));
 	float lumaSE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1, 1), fxaaRcpFrame.xy));
 	float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
 	float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
-	#else
-	float lumaNE = FxaaLuma(FxaaTexOff(tex, posM, int2( 1,-1), fxaaRcpFrame.xy));
-	float lumaSW = FxaaLuma(FxaaTexOff(tex, posM, int2(-1, 1), fxaaRcpFrame.xy));
-	#endif
 
 	float lumaNS = lumaN + lumaS;
 	float lumaWE = lumaW + lumaE;
@@ -503,14 +456,14 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 
 #if (FXAA_GLSL_130 == 1 || FXAA_GLSL_VK == 1)
 float4 FxaaPass(float4 FxaaColor, float2 uv0)
-#elif (SHADER_MODEL >= 0x400)
+#elif (FXAA_HLSL_5 == 1)
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 #elif defined(__METAL_VERSION__)
 float4 FxaaPass(float4 FxaaColor, float2 uv0, texture2d<float> tex)
 #endif
 {
 
-	#if (SHADER_MODEL >= 0x400)
+	#if (FXAA_HLSL_5 == 1)
 	FxaaTex tex;
 	tex.tex = Texture;
 	tex.smpl = TextureSampler;
@@ -544,8 +497,8 @@ void main()
 	SV_Target0 = float4(color.rgb, 1.0);
 }
 
-#elif (SHADER_MODEL >= 0x400)
-PS_OUTPUT ps_main(VS_OUTPUT input)
+#elif (FXAA_HLSL_5 == 1)
+PS_OUTPUT main(VS_OUTPUT input)
 {
 	PS_OUTPUT output;
 
@@ -560,6 +513,4 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 }
 
 // Metal main function in in fxaa.metal
-#endif
-
 #endif

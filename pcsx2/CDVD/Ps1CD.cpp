@@ -22,6 +22,8 @@
 #include "IopHw.h"
 #include "IopDma.h"
 
+#include "common/Threading.h"
+
 //THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 
 enum cdrom_registers
@@ -1114,8 +1116,11 @@ void cdrReset()
 	cdReadTime = (PSXCLK / 1757) * BIAS;
 }
 
-void SaveStateBase::cdrFreeze()
+bool SaveStateBase::cdrFreeze()
 {
-	FreezeTag("cdrom");
+	if (!FreezeTag("cdrom"))
+		return false;
+
 	Freeze(cdr);
+	return IsOkay();
 }

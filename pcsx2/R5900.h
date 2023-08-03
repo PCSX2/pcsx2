@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,34 +15,7 @@
 
 #pragma once
 
-#include "common/Exceptions.h"
-
-class BaseR5900Exception;
-
-// --------------------------------------------------------------------------------------
-//  Recompiler Stuffs
-// --------------------------------------------------------------------------------------
-// This code section contains recompiler vars that are used in "shared" code. Placing
-// them in iR5900.h would mean having to include that into more files than I care to
-// right now, so we're sticking them here for now until a better solution comes along.
-
-namespace Exception
-{
-	// Implementation Note: this exception has no meaningful type information and we don't
-	// care to have it be caught by any BaseException handlers lying about, so let's not
-	// derive from BaseException :D
-	class ExitCpuExecute
-	{
-	public:
-		explicit ExitCpuExecute() { }
-	};
-
-	class CancelInstruction
-	{
-	public:
-		explicit CancelInstruction() { }
-	};
-}
+#include "common/Pcsx2Defs.h"
 
 // --------------------------------------------------------------------------------------
 //  EE Bios function name tables.
@@ -214,18 +187,6 @@ struct tlbs
 
 #ifndef _PC_
 
-/*#define _i64(x) (s64)x
-#define _u64(x) (u64)x
-
-#define _i32(x) (s32)x
-#define _u32(x) (u32)x
-
-#define _i16(x) (s16)x
-#define _u16(x) (u16)x
-
-#define _i8(x) (s8)x
-#define _u8(x) (u8)x*/
-
 ////////////////////////////////////////////////////////////////////
 // R5900 Instruction Macros
 
@@ -372,6 +333,13 @@ extern R5900cpu *Cpu;
 extern R5900cpu intCpu;
 extern R5900cpu recCpu;
 
+enum EE_intProcessStatus
+{
+	INT_NOT_RUNNING = 0,
+	INT_RUNNING,
+	INT_REQ_LOOP
+};
+
 enum EE_EventType
 {
 	DMAC_VIF0	= 0,
@@ -405,7 +373,7 @@ extern void CPU_SET_DMASTALL(EE_EventType n, bool set);
 extern uint intcInterrupt();
 extern uint dmacInterrupt();
 
-extern void cpuReset();		// can throw Exception::FileNotFound.
+extern void cpuReset();
 extern void cpuException(u32 code, u32 bd);
 extern void cpuTlbMissR(u32 addr, u32 bd);
 extern void cpuTlbMissW(u32 addr, u32 bd);

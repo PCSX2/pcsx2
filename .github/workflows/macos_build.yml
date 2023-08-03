@@ -9,18 +9,15 @@ on:
       os:
         required: false
         type: string
-        default: macos-11.0
-      platform:
-        required: false
-        type: string
-        default: x64
-      gui:
-        required: true
-        type: string
-      patches_url:
+        default: macos-13
+      patchesUrl:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_macos:
@@ -42,13 +39,19 @@ jobs:
         with:
           submodules: recursive
 
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
+
+      - name: Use Xcode 14.3.1
+        run: sudo xcode-select -s /Applications/Xcode_14.3.1.app
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         env:
           OS: macos
-          GUI_FRAMEWORK: ${{ inputs.gui }}
-          ARCH: ${{ inputs.platform }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
@@ -57,16 +60,16 @@ jobs:
 
       - name: Install Packages
         env:
-          PLATFORM: ${{ inputs.platform }}
+          PLATFORM: "x64"
           HOMEBREW_NO_INSTALL_CLEANUP: 1
           HOMEBREW_NO_ANALYTICS: 1
         run: |
           brew unlink libjpeg || true # Conflicts with our self-built dependencies
           brew unlink libpng || true
           # Unlike other packages, brew's MoltenVK build uses MoltenVK's minimum macOS version of 10.13 so we can use it
-          if ! brew install molten-vk ccache; then
+          if ! brew install molten-vk ccache nasm; then
             brew update
-            brew install molten-vk ccache
+            brew install molten-vk ccache nasm
           fi
 
       - name: Cache Dependencies
@@ -74,18 +77,16 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/deps
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
+          key: ${{ inputs.os }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
-        env:
-          GUI: ${{ inputs.gui }}
         run: .github/workflows/scripts/macos/build-dependencies.sh
 
       - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
+          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
@@ -96,8 +97,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .ccache
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} ccache
+          key: ${{ inputs.os }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ccache
 
       - name: Generate CMake Files
         run: |
@@ -108,6 +109,7 @@ jobs:
                 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
                 -DUSE_SYSTEM_LIBS=OFF \
                 -DUSE_SYSTEM_SDL2=ON \
+                -DUSE_LINKED_FFMPEG=ON \
                 -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
@@ -130,7 +132,6 @@ jobs:
           done
 
       - name: Run Tests
-        if: inputs.gui == 'Qt'
         working-directory: build
         run: make -j$(getconf _NPROCESSORS_ONLN) unittests
 
@@ -146,7 +147,7 @@ jobs:
           mv build/pcsx2*/PCSX2.app "$APPNAME.app"
           tar --options xz:compression-level=9 -cvJf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" "$APPNAME.app"
           mkdir ci-artifacts
-          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS-${{ inputs.gui }}.tar.xz
+          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS.tar.xz
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3

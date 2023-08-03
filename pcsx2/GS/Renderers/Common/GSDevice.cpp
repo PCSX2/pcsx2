@@ -20,7 +20,7 @@
 #include "GS/GS.h"
 #include "Host.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -42,6 +42,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_32_BITS:     return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_RGBA8:       return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT32_TO_RGB8:        return "ps_convert_float32_rgba8";
 		case ShaderConvert::FLOAT16_TO_RGB5A1:      return "ps_convert_float16_rgb5a1";
 		case ShaderConvert::RGBA8_TO_FLOAT32:       return "ps_convert_rgba8_float32";
 		case ShaderConvert::RGBA8_TO_FLOAT24:       return "ps_convert_rgba8_float24";
@@ -68,12 +69,14 @@ const char* shaderName(PresentShader value)
 	switch (value)
 	{
 			// clang-format off
-		case PresentShader::COPY:              return "ps_copy";
-		case PresentShader::SCANLINE:          return "ps_filter_scanlines";
-		case PresentShader::DIAGONAL_FILTER:   return "ps_filter_diagonal";
-		case PresentShader::TRIANGULAR_FILTER: return "ps_filter_triangular";
-		case PresentShader::COMPLEX_FILTER:    return "ps_filter_complex";
-		case PresentShader::LOTTES_FILTER:     return "ps_filter_lottes";
+		case PresentShader::COPY:               return "ps_copy";
+		case PresentShader::SCANLINE:           return "ps_filter_scanlines";
+		case PresentShader::DIAGONAL_FILTER:    return "ps_filter_diagonal";
+		case PresentShader::TRIANGULAR_FILTER:  return "ps_filter_triangular";
+		case PresentShader::COMPLEX_FILTER:     return "ps_filter_complex";
+		case PresentShader::LOTTES_FILTER:      return "ps_filter_lottes";
+		case PresentShader::SUPERSAMPLE_4xRGSS: return "ps_4x_rgss";
+		case PresentShader::SUPERSAMPLE_AUTO:   return "ps_automagical_supersampling";
 			// clang-format on
 		default:
 			ASSERT(0);
@@ -228,6 +231,21 @@ bool GSDevice::GetHostRefreshRate(float* refresh_rate)
 	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
 }
 
+void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
+{
+	t->SetClearColor(c);
+}
+
+void GSDevice::ClearDepth(GSTexture* t, float d)
+{
+	t->SetClearDepth(d);
+}
+
+void GSDevice::InvalidateRenderTarget(GSTexture* t)
+{
+	t->SetState(GSTexture::State::Invalidated);
+}
+
 bool GSDevice::UpdateImGuiFontTexture()
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -306,7 +324,15 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 		{
 			t = CreateSurface(type, width, height, levels, format);
 			if (!t)
-				throw std::bad_alloc();
+			{
+				Console.Error("GS: Memory allocation failure for %dx%d texture. Purging pool and retrying.", width, height);
+				PurgePool();
+				if (!t)
+				{
+					Console.Error("GS: Memory allocation failure for %dx%d texture after purging pool.", width, height);
+					return nullptr;
+				}
+			}
 		}
 	}
 
@@ -607,19 +633,16 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 		return true;
 	}
 
-	GSTexture* new_tex;
-	try
-	{
-		const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
-		new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !preserve_contents, true);
-	}
-	catch (std::bad_alloc&)
+	const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
+	const bool really_preserve_contents = (preserve_contents && orig_tex);
+	GSTexture* new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !really_preserve_contents, true);
+	if (!new_tex)
 	{
 		Console.WriteLn("%dx%d texture allocation failed in ResizeTexture()", w, h);
 		return false;
 	}
 
-	if (preserve_contents && orig_tex)
+	if (really_preserve_contents)
 	{
 		constexpr GSVector4 sRect = GSVector4::cxpr(0, 0, 1, 1);
 		const GSVector4 dRect = GSVector4(orig_tex->GetRect());
@@ -828,10 +851,10 @@ const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , SRC1_ALPHA}      , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
 	{ 0                        , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
 	{ 0                        , OP_ADD          , CONST_ZERO      , INV_DST_ALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
-	{ 0                        , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
+	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , DST_ALPHA}       , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
 	{ 0                        , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
 	{ 0                        , OP_ADD          , CONST_ZERO      , INV_CONST_COLOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	{ 0                        , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
+	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , CONST_COLOR}     , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
 	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2200: (0  -  0)*As + Cs ==> Cs
 	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2201: (0  -  0)*As + Cd ==> Cd
 	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2202: (0  -  0)*As +  0 ==> 0

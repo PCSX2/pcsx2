@@ -65,7 +65,7 @@ GSLocalMemory::GSLocalMemory()
 {
 	m_vm8 = (u8*)GSAllocateWrappedMemory(m_vmsize, 4);
 	if (!m_vm8)
-		throw std::bad_alloc();
+		pxFailRel("Failed to allocate GS memory storage.");
 
 	memset(m_vm8, 0, m_vmsize);
 
@@ -485,13 +485,20 @@ u32 GSLocalMemory::GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
 	return result;
 }
 
+u32 GSLocalMemory::GetUnwrappedEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
+{
+	const u32 result = GetEndBlockAddress(bp, bw, psm, rect);
+	return (result < bp) ? (result + MAX_BLOCKS) : result;
+}
+
 GSVector4i GSLocalMemory::GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 bw, u32 psm)
 {
 	pxAssert((base_bp % BLOCKS_PER_PAGE) == 0 && (offset_bp % BLOCKS_PER_PAGE) == 0);
 
 	const u32 page_offset = (offset_bp - base_bp) >> 5;
 	const GSVector2i& pgs = m_psm[psm].pgs;
-	const GSVector2i page_offset_xy = GSVector2i(page_offset % bw, page_offset / bw);
+	const u32 valid_bw = std::max(1U, bw);
+	const GSVector2i page_offset_xy = GSVector2i(page_offset % valid_bw, page_offset / std::max(1U, valid_bw));
 	return GSVector4i(pgs * page_offset_xy).xyxy() + GSVector4i::loadh(pgs);
 }
 

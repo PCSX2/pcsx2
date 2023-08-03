@@ -26,7 +26,6 @@
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/BiosDebugData.h"
 #include "DebugTools/MipsStackWalk.h"
-#include "common/BitCast.h"
 
 #include "QtUtils.h"
 #include <QtGui/QClipboard>
@@ -539,7 +538,7 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, u32 start, u32 end, T 
 				{
 					const float fTop = value + 0.00001f;
 					const float fBottom = value - 0.00001f;
-					const float memValue = bit_cast<float, u32>(cpu->read32(addr));
+					const float memValue = std::bit_cast<float, u32>(cpu->read32(addr));
 					if (fBottom < memValue && memValue < fTop)
 					{
 						hitAddresses.emplace_back(addr);
@@ -556,7 +555,7 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, u32 start, u32 end, T 
 				{
 					const double dTop = value + 0.00001f;
 					const double dBottom = value - 0.00001f;
-					const double memValue = bit_cast<double, u64>(cpu->read64(addr));
+					const double memValue = std::bit_cast<double, u64>(cpu->read64(addr));
 					if (dBottom < memValue && memValue < dTop)
 					{
 						hitAddresses.emplace_back(addr);
@@ -582,13 +581,13 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, u32 start, u32 end, T 
 	return hitAddresses;
 }
 
-static std::vector<u32> searchWorkerString(DebugInterface* cpu, u32 start, u32 end, std::string value)
+static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, u32 start, u32 end, QByteArray value)
 {
 	std::vector<u32> hitAddresses;
 	for (u32 addr = start; addr < end; addr += 1)
 	{
 		bool hit = true;
-		for (size_t i = 0; i < value.length(); i++)
+		for (qsizetype i = 0; i < value.length(); i++)
 		{
 			if (static_cast<char>(cpu->read8(addr + i)) != value[i])
 			{
@@ -624,7 +623,9 @@ std::vector<u32> startWorker(DebugInterface* cpu, int type, u32 start, u32 end, 
 		case 5:
 			return searchWorker<double>(cpu, start, end, value.toDouble());
 		case 6:
-			return searchWorkerString(cpu, start, end, value.toStdString());
+			return searchWorkerByteArray(cpu, start, end, value.toUtf8());
+		case 7:
+			return searchWorkerByteArray(cpu, start, end, QByteArray::fromHex(value.toUtf8()));
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
 			break;
@@ -667,13 +668,24 @@ void CpuWidget::onSearchButtonClicked()
 
 	unsigned long long value;
 
-	if (searchType < 4)
+	switch (searchType)
 	{
-		value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
-	}
-	else if (searchType != 6)
-	{
-		searchValue.toDouble(&ok);
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
+			break;
+		case 4:
+		case 5:
+			searchValue.toDouble(&ok);
+			break;
+		case 6:
+			ok = !searchValue.isEmpty();
+			break;
+		case 7:
+			ok = !searchValue.trimmed().isEmpty();
+			break;
 	}
 
 	if (!ok)
@@ -684,6 +696,7 @@ void CpuWidget::onSearchButtonClicked()
 
 	switch (searchType)
 	{
+		case 7:
 		case 6:
 		case 5:
 		case 4:

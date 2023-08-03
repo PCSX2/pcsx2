@@ -20,6 +20,7 @@
 #include "GS/Renderers/OpenGL/GLState.h"
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
 
@@ -41,7 +42,98 @@ static constexpr u32 VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 static constexpr u32 FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 static constexpr u32 TEXTURE_UPLOAD_BUFFER_SIZE = 128 * 1024 * 1024;
 
-static std::unique_ptr<GLStreamBuffer> s_texture_upload_buffer;
+namespace ReplaceGL
+{
+	static void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
+	{
+		glScissor(left, bottom, width, height);
+	}
+
+	static void APIENTRY ViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
+	{
+		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
+	}
+
+	static void APIENTRY TextureBarrier()
+	{
+	}
+
+} // namespace ReplaceGL
+
+namespace Emulate_DSA
+{
+	// Texture entry point
+	static void APIENTRY BindTextureUnit(GLuint unit, GLuint texture)
+	{
+		glActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+
+	static void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint* textures)
+	{
+		glGenTextures(1, textures);
+	}
+
+	static void APIENTRY TextureStorage(
+		GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
+	{
+		BindTextureUnit(7, texture);
+		glTexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
+	}
+
+	static void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+		GLsizei height, GLenum format, GLenum type, const void* pixels)
+	{
+		BindTextureUnit(7, texture);
+		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
+	}
+
+	static void APIENTRY CompressedTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset,
+		GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
+	{
+		BindTextureUnit(7, texture);
+		glCompressedTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, imageSize, data);
+	}
+
+	static void APIENTRY GetTexureImage(
+		GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void* pixels)
+	{
+		BindTextureUnit(7, texture);
+		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
+	}
+
+	static void APIENTRY TextureParameteri(GLuint texture, GLenum pname, GLint param)
+	{
+		BindTextureUnit(7, texture);
+		glTexParameteri(GL_TEXTURE_2D, pname, param);
+	}
+
+	static void APIENTRY GenerateTextureMipmap(GLuint texture)
+	{
+		BindTextureUnit(7, texture);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
+	// Misc entry point
+	static void APIENTRY CreateSamplers(GLsizei n, GLuint* samplers)
+	{
+		glGenSamplers(n, samplers);
+	}
+
+	// Replace function pointer to emulate DSA behavior
+	static void Init()
+	{
+		glBindTextureUnit = BindTextureUnit;
+		glCreateTextures = CreateTexture;
+		glTextureStorage2D = TextureStorage;
+		glTextureSubImage2D = TextureSubImage;
+		glCompressedTextureSubImage2D = CompressedTextureSubImage;
+		glGetTextureImage = GetTexureImage;
+		glTextureParameteri = TextureParameteri;
+		glGenerateTextureMipmap = GenerateTextureMipmap;
+		glCreateSamplers = CreateSamplers;
+	}
+} // namespace Emulate_DSA
 
 GSDeviceOGL::GSDeviceOGL() = default;
 
@@ -96,7 +188,6 @@ bool GSDeviceOGL::Create()
 	if (!m_gl_context)
 	{
 		Console.Error("Failed to create any GL context");
-		m_gl_context.reset();
 		return false;
 	}
 
@@ -106,14 +197,15 @@ bool GSDeviceOGL::Create()
 		return false;
 	}
 
-	// Render a frame as soon as possible to clear out whatever was previously being displayed.
-	if (m_window_info.type != WindowInfo::Type::Surfaceless)
-		RenderBlankFrame();
-
-	if (!GLLoader::check_gl_requirements())
+	bool buggy_pbo;
+	if (!CheckFeatures(buggy_pbo))
 		return false;
 
 	SetSwapInterval();
+
+	// Render a frame as soon as possible to clear out whatever was previously being displayed.
+	if (m_window_info.type != WindowInfo::Type::Surfaceless)
+		RenderBlankFrame();
 
 	if (!GSConfig.DisableShaderCache)
 	{
@@ -124,68 +216,6 @@ bool GSDeviceOGL::Create()
 	{
 		Console.WriteLn("Not using shader cache.");
 	}
-
-	// optional features based on context
-	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
-	m_features.primitive_id = true;
-
-	m_features.framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch;
-	if (m_features.framebuffer_fetch && GSConfig.DisableFramebufferFetch)
-	{
-		Host::AddOSDMessage("Framebuffer fetch was found but is disabled. This will reduce performance.", Host::OSD_ERROR_DURATION);
-		m_features.framebuffer_fetch = false;
-	}
-
-	if (GSConfig.OverrideTextureBarriers == 0)
-		m_features.texture_barrier = m_features.framebuffer_fetch; // Force Disabled
-	else if (GSConfig.OverrideTextureBarriers == 1)
-		m_features.texture_barrier = true; // Force Enabled
-	else
-		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier;
-	if (!m_features.texture_barrier)
-	{
-		Host::AddOSDMessage(
-			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
-	}
-
-	m_features.provoking_vertex_last = true;
-	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
-	m_features.bptc_textures = GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
-	m_features.prefer_new_textures = false;
-	m_features.dual_source_blend = !GSConfig.DisableDualSourceBlend;
-	m_features.clip_control = GLAD_GL_ARB_clip_control;
-	if (!m_features.clip_control)
-		Host::AddOSDMessage("GL_ARB_clip_control is not supported, this will cause rendering issues.", Host::OSD_ERROR_DURATION);
-	m_features.stencil_buffer = true;
-	m_features.test_and_sample_depth = m_features.texture_barrier;
-
-	// NVIDIA GPUs prior to Kepler appear to have broken vertex shader buffer loading.
-	// Use bindless textures (introduced in Kepler) to differentiate.
-	const bool buggy_vs_expand =
-		GLLoader::vendor_id_nvidia && (!GLAD_GL_ARB_bindless_texture && !GLAD_GL_NV_bindless_texture);
-	if (buggy_vs_expand)
-		Console.Warning("Disabling vertex shader expand due to broken NVIDIA driver.");
-
-	if (GLAD_GL_ARB_shader_storage_buffer_object)
-	{
-		GLint max_vertex_ssbos = 0;
-		glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &max_vertex_ssbos);
-		DevCon.WriteLn("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS: %d", max_vertex_ssbos);
-		m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && !buggy_vs_expand && max_vertex_ssbos > 0 &&
-								GLAD_GL_ARB_gpu_shader5);
-	}
-	if (!m_features.vs_expand)
-		Console.Warning("Vertex expansion is not supported. This will reduce performance.");
-
-	GLint point_range[2] = {};
-	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
-	m_features.point_expand = (point_range[0] <= GSConfig.UpscaleMultiplier && point_range[1] >= GSConfig.UpscaleMultiplier);
-	m_features.line_expand = false;
-
-	Console.WriteLn("Using %s for point expansion, %s for line expansion and %s for sprite expansion.",
-		m_features.point_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
-		m_features.line_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
-		m_features.vs_expand ? "vertex expanding" : "CPU");
 
 	// because of fbo bindings below...
 	GLState::Clear();
@@ -512,19 +542,18 @@ bool GSDeviceOGL::Create()
 	// ****************************************************************
 	// Pbo Pool allocation
 	// ****************************************************************
-	if (!GLLoader::buggy_pbo)
+	if (!buggy_pbo)
 	{
-		s_texture_upload_buffer = GLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
-		if (s_texture_upload_buffer)
+		m_texture_upload_buffer = GLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_UPLOAD_BUFFER_SIZE);
+		if (m_texture_upload_buffer)
 		{
 			// Don't keep it bound, we'll re-bind when we need it.
 			// Otherwise non-PBO texture uploads break. Yay for global state.
-			s_texture_upload_buffer->Unbind();
+			m_texture_upload_buffer->Unbind();
 		}
 		else
 		{
 			Console.Error("Failed to create texture upload buffer. Using slow path.");
-			GLLoader::buggy_pbo = true;
 		}
 	}
 
@@ -584,6 +613,176 @@ bool GSDeviceOGL::CreateTextureFX()
 	}
 
 	GLProgram::ResetLastProgram();
+	return true;
+}
+
+bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
+{
+	bool vendor_id_amd = false;
+	bool vendor_id_nvidia = false;
+	//bool vendor_id_intel = false;
+
+	const char* vendor = (const char*)glGetString(GL_VENDOR);
+	if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
+		std::strstr(vendor, "ATI"))
+	{
+		Console.WriteLn(Color_StrongRed, "OGL: AMD GPU detected.");
+		vendor_id_amd = true;
+	}
+	else if (std::strstr(vendor, "NVIDIA Corporation"))
+	{
+		Console.WriteLn(Color_StrongGreen, "OGL: NVIDIA GPU detected.");
+		vendor_id_nvidia = true;
+	}
+	else if (std::strstr(vendor, "Intel"))
+	{
+		Console.WriteLn(Color_StrongBlue, "OGL: Intel GPU detected.");
+		//vendor_id_intel = true;
+	}
+
+	GLint major_gl = 0;
+	GLint minor_gl = 0;
+	glGetIntegerv(GL_MAJOR_VERSION, &major_gl);
+	glGetIntegerv(GL_MINOR_VERSION, &minor_gl);
+	if (!GLAD_GL_VERSION_3_3)
+	{
+		Host::ReportErrorAsync(
+			"GS", fmt::format("OpenGL renderer is not supported. Only OpenGL {}.{}\n was found", major_gl, minor_gl));
+		return false;
+	}
+
+	// Log extension string for debugging purposes.
+	Console.WriteLn(fmt::format("GL_VENDOR: {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR))));
+	Console.WriteLn(fmt::format("GL_VERSION: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+	Console.WriteLn(fmt::format("GL_RENDERER: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
+	Console.WriteLn(fmt::format(
+		"GL_SHADING_LANGUAGE_VERSION: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))));
+	std::string extensions = "GL_EXTENSIONS:";
+	GLint num_extensions = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+	for (GLint i = 0; i < num_extensions; i++)
+	{
+		const char* ext = reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i));
+		if (ext)
+		{
+			extensions += ' ';
+			extensions.append(ext);
+		}
+	}
+	Console.WriteLn(std::move(extensions));
+
+	if (!GLAD_GL_ARB_shading_language_420pack)
+	{
+		Host::ReportFormattedErrorAsync(
+			"GS", "GL_ARB_shading_language_420pack is not supported, this is required for the OpenGL renderer.");
+		return false;
+	}
+
+	if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_ARB_copy_image && !GLAD_GL_EXT_copy_image)
+	{
+		Host::ReportFormattedErrorAsync(
+			"GS", "GL_ARB_copy_image is not supported, this is required for the OpenGL renderer.");
+		return false;
+	}
+
+	if (!GLAD_GL_ARB_viewport_array)
+	{
+		glScissorIndexed = ReplaceGL::ScissorIndexed;
+		glViewportIndexedf = ReplaceGL::ViewportIndexedf;
+		Console.Warning("GL_ARB_viewport_array is not supported! Function pointer will be replaced.");
+	}
+
+	if (!GLAD_GL_ARB_texture_barrier)
+	{
+		glTextureBarrier = ReplaceGL::TextureBarrier;
+		Host::AddOSDMessage(
+			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+	}
+
+	if (!GLAD_GL_ARB_direct_state_access)
+	{
+		Console.Warning("GL_ARB_direct_state_access is not supported, this will reduce performance.");
+		Emulate_DSA::Init();
+	}
+
+	// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
+	// using the normal texture update routines and letting the driver take care of it.
+	buggy_pbo = !GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage;
+	if (buggy_pbo)
+		Console.Warning("Not using PBOs for texture uploads because buffer_storage is unavailable.");
+
+	// Give the user the option to disable PBO usage for downloads.
+	// Most drivers seem to be faster with PBO.
+	m_disable_download_pbo = Host::GetBoolSettingValue("EmuCore/GS", "DisableGLDownloadPBO", false);
+	if (m_disable_download_pbo)
+		Console.Warning("Not using PBOs for texture downloads, this may reduce performance.");
+
+	// optional features based on context
+	m_features.broken_point_sampler = vendor_id_amd;
+	m_features.primitive_id = true;
+
+	m_features.framebuffer_fetch = GLAD_GL_EXT_shader_framebuffer_fetch;
+	if (m_features.framebuffer_fetch && GSConfig.DisableFramebufferFetch)
+	{
+		Host::AddOSDMessage(
+			"Framebuffer fetch was found but is disabled. This will reduce performance.", Host::OSD_ERROR_DURATION);
+		m_features.framebuffer_fetch = false;
+	}
+
+	if (GSConfig.OverrideTextureBarriers == 0)
+		m_features.texture_barrier = m_features.framebuffer_fetch; // Force Disabled
+	else if (GSConfig.OverrideTextureBarriers == 1)
+		m_features.texture_barrier = true; // Force Enabled
+	else
+		m_features.texture_barrier = m_features.framebuffer_fetch || GLAD_GL_ARB_texture_barrier;
+	if (!m_features.texture_barrier)
+	{
+		Host::AddOSDMessage(
+			"GL_ARB_texture_barrier is not supported, blending will not be accurate.", Host::OSD_ERROR_DURATION);
+	}
+
+	m_features.provoking_vertex_last = true;
+	m_features.dxt_textures = GLAD_GL_EXT_texture_compression_s3tc;
+	m_features.bptc_textures =
+		GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
+	m_features.prefer_new_textures = false;
+	m_features.dual_source_blend = !GSConfig.DisableDualSourceBlend;
+	m_features.clip_control = GLAD_GL_ARB_clip_control;
+	if (!m_features.clip_control)
+		Host::AddOSDMessage(
+			"GL_ARB_clip_control is not supported, this will cause rendering issues.", Host::OSD_ERROR_DURATION);
+	m_features.stencil_buffer = true;
+	m_features.test_and_sample_depth = m_features.texture_barrier;
+
+	// NVIDIA GPUs prior to Kepler appear to have broken vertex shader buffer loading.
+	// Use bindless textures (introduced in Kepler) to differentiate.
+	const bool buggy_vs_expand =
+		vendor_id_nvidia && (!GLAD_GL_ARB_bindless_texture && !GLAD_GL_NV_bindless_texture);
+	if (buggy_vs_expand)
+		Console.Warning("Disabling vertex shader expand due to broken NVIDIA driver.");
+
+	if (GLAD_GL_ARB_shader_storage_buffer_object)
+	{
+		GLint max_vertex_ssbos = 0;
+		glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &max_vertex_ssbos);
+		DevCon.WriteLn("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS: %d", max_vertex_ssbos);
+		m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && !buggy_vs_expand && max_vertex_ssbos > 0 &&
+								GLAD_GL_ARB_gpu_shader5);
+	}
+	if (!m_features.vs_expand)
+		Console.Warning("Vertex expansion is not supported. This will reduce performance.");
+
+	GLint point_range[2] = {};
+	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, point_range);
+	m_features.point_expand =
+		(point_range[0] <= GSConfig.UpscaleMultiplier && point_range[1] >= GSConfig.UpscaleMultiplier);
+	m_features.line_expand = false;
+
+	Console.WriteLn("Using %s for point expansion, %s for line expansion and %s for sprite expansion.",
+		m_features.point_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
+		m_features.line_expand ? "hardware" : (m_features.vs_expand ? "vertex expanding" : "UNSUPPORTED"),
+		m_features.vs_expand ? "vertex expanding" : "CPU");
+
 	return true;
 }
 
@@ -648,7 +847,7 @@ void GSDeviceOGL::DestroyResources()
 
 	m_index_stream_buffer.reset();
 	m_vertex_stream_buffer.reset();
-	s_texture_upload_buffer.reset();
+	m_texture_upload_buffer.reset();
 	if (m_expand_ibo)
 		glDeleteBuffers(1, &m_expand_ibo);
 
@@ -961,21 +1160,6 @@ void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
 	}
 }
 
-void GSDeviceOGL::ClearRenderTarget(GSTexture* t, u32 c)
-{
-	t->SetClearColor(c);
-}
-
-void GSDeviceOGL::InvalidateRenderTarget(GSTexture* t)
-{
-	t->SetState(GSTexture::State::Invalidated);
-}
-
-void GSDeviceOGL::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
-}
-
 std::unique_ptr<GSDownloadTexture> GSDeviceOGL::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
 {
 	return GSDownloadTextureOGL::Create(width, height, format);
@@ -1066,6 +1250,8 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 	const GSVector2i& rtsize = rt->GetSize();
 
 	GSTexture* tex = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
+	if (!tex)
+		return nullptr;
 
 	GL_PUSH("PrimID Destination Alpha Clear");
 	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[datm], false);
@@ -1243,10 +1429,6 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 // Copy a sub part of a texture into another
 void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
-	ASSERT(sTex && dTex);
-	if (!(sTex && dTex))
-		return;
-
 	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
 	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
 	CommitClear(sTex, false);
@@ -1266,33 +1448,13 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 		glCopyImageSubDataEXT(sid, GL_TEXTURE_2D, 0, r.x, r.y, 0, did, GL_TEXTURE_2D,
 			0, destX, destY, 0, r.width(), r.height(), 1);
 	}
-	else if (GLAD_GL_OES_copy_image)
-	{
-		glCopyImageSubDataOES(sid, GL_TEXTURE_2D, 0, r.x, r.y, 0, did, GL_TEXTURE_2D,
-			0, destX, destY, 0, r.width(), r.height(), 1);
-	}
-	else
-	{
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo_write);
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, did, 0);
-
-		const int w = r.width(), h = r.height();
-		glDisable(GL_SCISSOR_TEST);
-		glBlitFramebuffer(r.x, r.y, r.x + w, r.y + h, destX + r.x, destY + r.y, destX + r.x + w, destY + r.y + h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		glEnable(GL_SCISSOR_TEST);
-
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLState::fbo);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	}
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
 	pxAssert(dTex->IsDepthStencil() == HasDepthOutput(shader));
 	pxAssert(linear ? SupportsBilinear(shader) : SupportsNearest(shader));
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], false, OMColorMaskSelector(ShaderConvertWriteMask(shader)), linear);
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool linear)
@@ -1472,7 +1634,7 @@ void GSDeviceOGL::DrawMultiStretchRects(
 {
 	IASetVAO(m_vao);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
-	OMSetDepthStencilState(m_convert.dss);
+	OMSetDepthStencilState(HasDepthOutput(shader) ? m_convert.dss_write : m_convert.dss);
 	OMSetBlendState(false);
 	OMSetColorMaskState();
 	if (!dTex->IsDepthStencil())
@@ -1632,13 +1794,6 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 bool GSDeviceOGL::CompileFXAAProgram()
 {
-	// Needs ARB_gpu_shader5 for gather.
-	if (!GLAD_GL_ARB_gpu_shader5)
-	{
-		Console.Warning("FXAA is not supported with the current GPU");
-		return true;
-	}
-
 	const std::string_view fxaa_macro = "#define FXAA_GLSL_130 1\n";
 	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
 	if (!shader.has_value())
@@ -1647,7 +1802,7 @@ bool GSDeviceOGL::CompileFXAAProgram()
 		return false;
 	}
 
-	const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, shader->c_str(), fxaa_macro));
+	const std::string ps(GetShaderSource("main", GL_FRAGMENT_SHADER, shader->c_str(), fxaa_macro));
 	std::optional<GLProgram> prog = m_shader_cache.GetProgram(m_convert.vs, ps);
 	if (!prog.has_value())
 	{
@@ -1787,23 +1942,14 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
-	ASSERT(i < static_cast<int>(std::size(GLState::tex_unit)));
-	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
-	if (sr)
-	{
-		const GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
-		if (GLState::tex_unit[i] != id)
-		{
-			GLState::tex_unit[i] = id;
-			glBindTextureUnit(i, id);
-		}
-	}
-}
+	pxAssert(i < static_cast<int>(std::size(GLState::tex_unit)));
 
-void GSDeviceOGL::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
-{
-	PSSetShaderResource(0, sr0);
-	PSSetShaderResource(1, sr1);
+	const GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
+	if (GLState::tex_unit[i] != id)
+	{
+		GLState::tex_unit[i] = id;
+		glBindTextureUnit(i, id);
+	}
 }
 
 void GSDeviceOGL::PSSetSamplerState(GLuint ss)
@@ -2229,6 +2375,11 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		GLState::scissor = config.scissor;
 	}
 
+	if (config.tex)
+		CommitClear(config.tex, true);
+	if (config.pal)
+		CommitClear(config.pal, true);
+
 	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 
 	GSTexture* primid_texture = nullptr;
@@ -2321,7 +2472,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
-	PSSetShaderResources(config.tex, config.pal);
+	if (config.tex)
+		PSSetShaderResource(0, config.tex);
+	if (config.pal)
+		PSSetShaderResource(1, config.pal);
 	if (draw_rt_clone)
 		PSSetShaderResource(2, draw_rt_clone);
 	else if (config.require_one_barrier || config.require_full_barrier)
@@ -2358,11 +2512,14 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			glDisable(GL_PROGRAM_POINT_SIZE);
 		GLState::point_size = point_size_enabled;
 	}
-	const float line_width = config.line_expand ? static_cast<float>(GSConfig.UpscaleMultiplier) : 1.0f;
-	if (GLState::line_width != line_width)
+	if (config.topology == GSHWDrawConfig::Topology::Line)
 	{
-		GLState::line_width = line_width;
-		glLineWidth(line_width);
+		const float line_width = config.line_expand ? config.cb_ps.ScaleFactor.z : 1.0f;
+		if (GLState::line_width != line_width)
+		{
+			GLState::line_width = line_width;
+			glLineWidth(line_width);
+		}
 	}
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
@@ -2592,11 +2749,6 @@ void GSDeviceOGL::DebugMessageCallback(GLenum gl_source, GLenum gl_type, GLuint 
 	{
 		Console.Error("T:%s\tID:%d\tS:%s\t=> %s", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 	}
-}
-
-GLStreamBuffer* GSDeviceOGL::GetTextureUploadBuffer()
-{
-	return s_texture_upload_buffer.get();
 }
 
 void GSDeviceOGL::PushDebugGroup(const char* fmt, ...)

@@ -49,6 +49,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <PreprocessorDefinitions>LZMA_API_STATIC;BUILD_DX=1;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_DISCORD_PRESENCE;ENABLE_OPENGL;ENABLE_VULKAN;SDL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>QT_NO_EXCEPTIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- Current Qt debug builds assert on RTTI. Remove this once we next build Qt. -->
       <RuntimeTypeInfo Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(Debug))">true</RuntimeTypeInfo>
     </ClCompile>
@@ -104,7 +105,7 @@
     <ClCompile Include="Settings\BIOSSettingsWidget.cpp" />
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp" />
     <ClCompile Include="Settings\ControllerGlobalSettingsWidget.cpp" />
-    <ClCompile Include="Settings\CreateMemoryCardDialog.cpp" />
+    <ClCompile Include="Settings\MemoryCardCreateDialog.cpp" />
     <ClCompile Include="Settings\EmulationSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameListSettingsWidget.cpp" />
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp" />
@@ -171,7 +172,7 @@
     <QtMoc Include="Settings\GamePatchSettingsWidget.h" />
     <ClInclude Include="Settings\HddCreateQt.h" />
     <QtMoc Include="Settings\GameSummaryWidget.h" />
-    <QtMoc Include="Settings\CreateMemoryCardDialog.h" />
+    <QtMoc Include="Settings\MemoryCardCreateDialog.h" />
     <QtMoc Include="Settings\AchievementLoginDialog.h" />
     <QtMoc Include="Settings\AchievementSettingsWidget.h" />
     <QtMoc Include="GameList\GameListModel.h" />
@@ -211,7 +212,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidgets.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsDialog.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_CreateMemoryCardDialog.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_EmulationSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GraphicsSettingsWidget.cpp" />
@@ -305,13 +306,16 @@
     <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\ControllerBindingWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\ControllerGlobalSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Settings\CreateMemoryCardDialog.ui">
+    <QtUi Include="Settings\MemoryCardCreateDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\AudioSettingsWidget.ui">
@@ -370,6 +374,9 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
+    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="SetupWizardDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
@@ -391,8 +398,12 @@
     <QtUi Include="Settings\GamePatchSettingsWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <None Include="Settings\USBBindingWidget_DrivingForce.ui" />
-    <None Include="Settings\USBBindingWidget_GTForce.ui" />
+    <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_GTForce.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <QtUi Include="Settings\USBDeviceWidget.ui">
       <FileType>Document</FileType>
     </QtUi>

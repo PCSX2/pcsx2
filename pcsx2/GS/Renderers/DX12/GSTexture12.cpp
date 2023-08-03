@@ -17,13 +17,12 @@
 
 #include "GS/Renderers/DX12/GSTexture12.h"
 #include "GS/Renderers/DX12/D3D12Builders.h"
-#include "GS/Renderers/DX12/D3D12Context.h"
 #include "GS/Renderers/DX12/GSDevice12.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSGL.h"
 
 #include "common/Assertions.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
 
 #include "D3D12MemAlloc.h"
@@ -55,19 +54,20 @@ GSTexture12::~GSTexture12()
 
 void GSTexture12::Destroy(bool defer)
 {
-	GSDevice12::GetInstance()->UnbindTexture(this);
+	GSDevice12* const dev = GSDevice12::GetInstance();
+	dev->UnbindTexture(this);
 
 	if (defer)
 	{
-		g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDescriptorHeapManager(), &m_srv_descriptor);
+		dev->DeferDescriptorDestruction(dev->GetDescriptorHeapManager(), &m_srv_descriptor);
 
 		switch (m_write_descriptor_type)
 		{
 			case WriteDescriptorType::RTV:
-				g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetRTVHeapManager(), &m_write_descriptor);
+				dev->DeferDescriptorDestruction(dev->GetRTVHeapManager(), &m_write_descriptor);
 				break;
 			case WriteDescriptorType::DSV:
-				g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDSVHeapManager(), &m_write_descriptor);
+				dev->DeferDescriptorDestruction(dev->GetDSVHeapManager(), &m_write_descriptor);
 				break;
 			case WriteDescriptorType::None:
 			default:
@@ -75,23 +75,23 @@ void GSTexture12::Destroy(bool defer)
 		}
 
 		if (m_uav_descriptor)
-			g_d3d12_context->DeferDescriptorDestruction(g_d3d12_context->GetDescriptorHeapManager(), &m_uav_descriptor);
+			dev->DeferDescriptorDestruction(dev->GetDescriptorHeapManager(), &m_uav_descriptor);
 
-		g_d3d12_context->DeferResourceDestruction(m_allocation.get(), m_resource.get());
+		dev->DeferResourceDestruction(m_allocation.get(), m_resource.get());
 		m_resource.reset();
 		m_allocation.reset();
 	}
 	else
 	{
-		g_d3d12_context->GetDescriptorHeapManager().Free(&m_srv_descriptor);
+		dev->GetDescriptorHeapManager().Free(&m_srv_descriptor);
 
 		switch (m_write_descriptor_type)
 		{
 			case WriteDescriptorType::RTV:
-				g_d3d12_context->GetRTVHeapManager().Free(&m_write_descriptor);
+				dev->GetRTVHeapManager().Free(&m_write_descriptor);
 				break;
 			case WriteDescriptorType::DSV:
-				g_d3d12_context->GetDSVHeapManager().Free(&m_write_descriptor);
+				dev->GetDSVHeapManager().Free(&m_write_descriptor);
 				break;
 			case WriteDescriptorType::None:
 			default:
@@ -99,7 +99,7 @@ void GSTexture12::Destroy(bool defer)
 		}
 
 		if (m_uav_descriptor)
-			g_d3d12_context->GetDescriptorHeapManager().Free(&m_uav_descriptor);
+			dev->GetDescriptorHeapManager().Free(&m_uav_descriptor);
 
 		m_resource.reset();
 		m_allocation.reset();
@@ -112,6 +112,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 	DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format,
 	DXGI_FORMAT uav_format)
 {
+	GSDevice12* const dev = GSDevice12::GetInstance();
+
 	D3D12_RESOURCE_DESC desc = {};
 	desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	desc.Width = width;
@@ -179,7 +181,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	wil::com_ptr_nothrow<ID3D12Resource> resource;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocationDesc, &desc, state,
+	HRESULT hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc, state,
 		(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
 		IID_PPV_ARGS(resource.put()));
 	if (FAILED(hr))
@@ -213,7 +215,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			write_descriptor_type = WriteDescriptorType::RTV;
 			if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 			{
-				g_d3d12_context->GetRTVHeapManager().Free(&srv_descriptor);
+				dev->GetRTVHeapManager().Free(&srv_descriptor);
 				return {};
 			}
 		}
@@ -225,7 +227,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 			write_descriptor_type = WriteDescriptorType::DSV;
 			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
 			{
-				g_d3d12_context->GetDSVHeapManager().Free(&srv_descriptor);
+				dev->GetDSVHeapManager().Free(&srv_descriptor);
 				return {};
 			}
 		}
@@ -243,8 +245,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), dsv_format, &uav_descriptor))
 	{
-		g_d3d12_context->GetDescriptorHeapManager().Free(&write_descriptor);
-		g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
+		dev->GetDescriptorHeapManager().Free(&write_descriptor);
+		dev->GetDescriptorHeapManager().Free(&srv_descriptor);
 		return {};
 	}
 
@@ -272,7 +274,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 		write_descriptor_type = WriteDescriptorType::RTV;
 		if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 		{
-			g_d3d12_context->GetRTVHeapManager().Free(&srv_descriptor);
+			GSDevice12::GetInstance()->GetRTVHeapManager().Free(&srv_descriptor);
 			return {};
 		}
 	}
@@ -281,7 +283,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 		write_descriptor_type = WriteDescriptorType::DSV;
 		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
 		{
-			g_d3d12_context->GetDSVHeapManager().Free(&srv_descriptor);
+			GSDevice12::GetInstance()->GetDSVHeapManager().Free(&srv_descriptor);
 			return {};
 		}
 	}
@@ -290,8 +292,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 	{
 		if (!CreateUAVDescriptor(resource.get(), srv_format, &uav_descriptor))
 		{
-			g_d3d12_context->GetDescriptorHeapManager().Free(&write_descriptor);
-			g_d3d12_context->GetDescriptorHeapManager().Free(&srv_descriptor);
+			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&write_descriptor);
+			GSDevice12::GetInstance()->GetDescriptorHeapManager().Free(&srv_descriptor);
 			return {};
 		}
 	}
@@ -304,7 +306,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 bool GSTexture12::CreateSRVDescriptor(
 	ID3D12Resource* resource, u32 levels, DXGI_FORMAT format, D3D12DescriptorHandle* dh)
 {
-	if (!g_d3d12_context->GetDescriptorHeapManager().Allocate(dh))
+	if (!GSDevice12::GetInstance()->GetDescriptorHeapManager().Allocate(dh))
 	{
 		Console.Error("Failed to allocate SRV descriptor");
 		return false;
@@ -314,46 +316,46 @@ bool GSTexture12::CreateSRVDescriptor(
 		format, D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
 	desc.Texture2D.MipLevels = levels;
 
-	g_d3d12_context->GetDevice()->CreateShaderResourceView(resource, &desc, dh->cpu_handle);
+	GSDevice12::GetInstance()->GetDevice()->CreateShaderResourceView(resource, &desc, dh->cpu_handle);
 	return true;
 }
 
 bool GSTexture12::CreateRTVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh)
 {
-	if (!g_d3d12_context->GetRTVHeapManager().Allocate(dh))
+	if (!GSDevice12::GetInstance()->GetRTVHeapManager().Allocate(dh))
 	{
 		Console.Error("Failed to allocate SRV descriptor");
 		return false;
 	}
 
 	const D3D12_RENDER_TARGET_VIEW_DESC desc = {format, D3D12_RTV_DIMENSION_TEXTURE2D};
-	g_d3d12_context->GetDevice()->CreateRenderTargetView(resource, &desc, dh->cpu_handle);
+	GSDevice12::GetInstance()->GetDevice()->CreateRenderTargetView(resource, &desc, dh->cpu_handle);
 	return true;
 }
 
 bool GSTexture12::CreateDSVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh)
 {
-	if (!g_d3d12_context->GetDSVHeapManager().Allocate(dh))
+	if (!GSDevice12::GetInstance()->GetDSVHeapManager().Allocate(dh))
 	{
 		Console.Error("Failed to allocate SRV descriptor");
 		return false;
 	}
 
 	const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {format, D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE};
-	g_d3d12_context->GetDevice()->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
+	GSDevice12::GetInstance()->GetDevice()->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
 	return true;
 }
 
 bool GSTexture12::CreateUAVDescriptor(ID3D12Resource* resource, DXGI_FORMAT format, D3D12DescriptorHandle* dh)
 {
-	if (!g_d3d12_context->GetDescriptorHeapManager().Allocate(dh))
+	if (!GSDevice12::GetInstance()->GetDescriptorHeapManager().Allocate(dh))
 	{
 		Console.Error("Failed to allocate UAV descriptor");
 		return false;
 	}
 
 	const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {format, D3D12_UAV_DIMENSION_TEXTURE2D};
-	g_d3d12_context->GetDevice()->CreateUnorderedAccessView(resource, nullptr, &desc, dh->cpu_handle);
+	GSDevice12::GetInstance()->GetDevice()->CreateUnorderedAccessView(resource, nullptr, &desc, dh->cpu_handle);
 	return true;
 }
 
@@ -364,14 +366,15 @@ void* GSTexture12::GetNativeHandle() const
 
 ID3D12GraphicsCommandList* GSTexture12::GetCommandBufferForUpdate()
 {
-	if (m_type != Type::Texture || m_use_fence_counter == g_d3d12_context->GetCurrentFenceValue())
+	GSDevice12* const dev = GSDevice12::GetInstance();
+	if (m_type != Type::Texture || m_use_fence_counter == dev->GetCurrentFenceValue())
 	{
 		// Console.WriteLn("Texture update within frame, can't use do beforehand");
 		GSDevice12::GetInstance()->EndRenderPass();
-		return g_d3d12_context->GetCommandList();
+		return dev->GetCommandList();
 	}
 
-	return g_d3d12_context->GetInitCommandList();
+	return dev->GetInitCommandList();
 }
 
 ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(
@@ -384,7 +387,7 @@ ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(
 	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
 	const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER, 0, buffer_size, 1, 1, 1,
 		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE};
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
+	HRESULT hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
 		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
 	if (FAILED(hr))
 	{
@@ -407,7 +410,7 @@ ID3D12Resource* GSTexture12::AllocateUploadStagingBuffer(
 
 	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
 	// This adds the reference needed to keep the buffer alive.
-	g_d3d12_context->DeferResourceDestruction(allocation.get(), resource.get());
+	GSDevice12::GetInstance()->DeferResourceDestruction(allocation.get(), resource.get());
 	return resource.get();
 }
 
@@ -442,7 +445,7 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	// If the texture is larger than half our streaming buffer size, use a separate buffer.
 	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
-	if (required_size > (g_d3d12_context->GetTextureStreamBuffer().GetSize() / 2))
+	if (required_size > (GSDevice12::GetInstance()->GetTextureStreamBuffer().GetSize() / 2))
 	{
 		srcloc.pResource = AllocateUploadStagingBuffer(data, pitch, upload_pitch, height);
 		if (!srcloc.pResource)
@@ -452,7 +455,7 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	}
 	else
 	{
-		D3D12StreamBuffer& sbuffer = g_d3d12_context->GetTextureStreamBuffer();
+		D3D12StreamBuffer& sbuffer = GSDevice12::GetInstance()->GetTextureStreamBuffer();
 		if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
 		{
 			GSDevice12::GetInstance()->ExecuteCommandList(
@@ -518,7 +521,7 @@ bool GSTexture12::Map(GSMap& m, const GSVector4i* r, int layer)
 
 	// see note in Update() for the reason why.
 	const u32 required_size = CalcUploadSize(m_map_area.height(), m.pitch);
-	D3D12StreamBuffer& buffer = g_d3d12_context->GetTextureStreamBuffer();
+	D3D12StreamBuffer& buffer = GSDevice12::GetInstance()->GetTextureStreamBuffer();
 	if (required_size >= (buffer.GetSize() / 2))
 		return false;
 
@@ -544,7 +547,7 @@ void GSTexture12::Unmap()
 	const u32 height = m_map_area.height();
 	const u32 pitch = Common::AlignUpPow2(CalcUploadPitch(width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 	const u32 required_size = CalcUploadSize(height, pitch);
-	D3D12StreamBuffer& buffer = g_d3d12_context->GetTextureStreamBuffer();
+	D3D12StreamBuffer& buffer = GSDevice12::GetInstance()->GetTextureStreamBuffer();
 	const u32 buffer_offset = buffer.GetCurrentOffset();
 	buffer.CommitMemory(required_size);
 
@@ -608,7 +611,7 @@ void GSTexture12::GenerateMipmap()
 			this, dst_level, dst_width, dst_height, src_level, src_width, src_height);
 	}
 
-	SetUsedThisCommandBuffer();
+	SetUseFenceCounter(GSDevice12::GetInstance()->GetCurrentFenceValue());
 }
 
 void GSTexture12::Swap(GSTexture* tex)
@@ -629,7 +632,7 @@ void GSTexture12::Swap(GSTexture* tex)
 
 void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
 {
-	TransitionToState(g_d3d12_context->GetCommandList(), state);
+	TransitionToState(GSDevice12::GetInstance()->GetCommandList(), state);
 }
 
 void GSTexture12::TransitionToState(ID3D12GraphicsCommandList* cmdlist, D3D12_RESOURCE_STATES state)
@@ -656,7 +659,7 @@ void GSTexture12::CommitClear()
 
 	GSDevice12::GetInstance()->EndRenderPass();
 
-	CommitClear(g_d3d12_context->GetCommandList());
+	CommitClear(GSDevice12::GetInstance()->GetCommandList());
 }
 
 void GSTexture12::CommitClear(ID3D12GraphicsCommandList* cmdlist)
@@ -687,7 +690,7 @@ GSDownloadTexture12::~GSDownloadTexture12()
 		GSDownloadTexture12::Unmap();
 
 	if (m_buffer)
-		g_d3d12_context->DeferResourceDestruction(m_allocation.get(), m_buffer.get());
+		GSDevice12::GetInstance()->DeferResourceDestruction(m_allocation.get(), m_buffer.get());
 }
 
 std::unique_ptr<GSDownloadTexture12> GSDownloadTexture12::Create(u32 width, u32 height, GSTexture::Format format)
@@ -703,7 +706,7 @@ std::unique_ptr<GSDownloadTexture12> GSDownloadTexture12::Create(u32 width, u32 
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 	wil::com_ptr_nothrow<ID3D12Resource> buffer;
 
-	HRESULT hr = g_d3d12_context->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
+	HRESULT hr = GSDevice12::GetInstance()->GetAllocator()->CreateResource(&allocation_desc, &resource_desc,
 		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.put(), IID_PPV_ARGS(buffer.put()));
 	if (FAILED(hr))
 	{
@@ -742,7 +745,7 @@ void GSDownloadTexture12::CopyFromTexture(
 	if (IsMapped())
 		Unmap();
 
-	ID3D12GraphicsCommandList* cmdlist = g_d3d12_context->GetCommandList();
+	ID3D12GraphicsCommandList* cmdlist = GSDevice12::GetInstance()->GetCommandList();
 	GL_INS("ReadbackTexture: {%d,%d} %ux%u", src.left, src.top, src.width(), src.height());
 
 	D3D12_TEXTURE_COPY_LOCATION srcloc;
@@ -772,7 +775,7 @@ void GSDownloadTexture12::CopyFromTexture(
 	if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
 		tex12->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
 
-	m_copy_fence_value = g_d3d12_context->GetCurrentFenceValue();
+	m_copy_fence_value = GSDevice12::GetInstance()->GetCurrentFenceValue();
 	m_needs_flush = true;
 }
 
@@ -816,12 +819,13 @@ void GSDownloadTexture12::Flush()
 
 	m_needs_flush = false;
 
-	if (g_d3d12_context->GetCompletedFenceValue() >= m_copy_fence_value)
+	GSDevice12* dev = GSDevice12::GetInstance();
+	if (dev->GetCompletedFenceValue() >= m_copy_fence_value)
 		return;
 
 	// Need to execute command buffer.
-	if (g_d3d12_context->GetCurrentFenceValue() == m_copy_fence_value)
-		GSDevice12::GetInstance()->ExecuteCommandListForReadback();
+	if (dev->GetCurrentFenceValue() == m_copy_fence_value)
+		dev->ExecuteCommandListForReadback();
 	else
-		g_d3d12_context->WaitForFence(m_copy_fence_value, GSConfig.HWSpinGPUForReadbacks);
+		dev->WaitForFence(m_copy_fence_value, GSConfig.HWSpinGPUForReadbacks);
 }

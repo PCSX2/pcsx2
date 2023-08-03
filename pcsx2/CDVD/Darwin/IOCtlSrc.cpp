@@ -29,11 +29,9 @@
 #include <cerrno>
 #include <cstring>
 
-IOCtlSrc::IOCtlSrc(decltype(m_filename) filename)
-	: m_filename(filename)
+IOCtlSrc::IOCtlSrc(std::string filename)
+	: m_filename(std::move(filename))
 {
-	if (!Reopen())
-		throw std::runtime_error(" * CDVD: Error opening source.\n");
 }
 
 IOCtlSrc::~IOCtlSrc()

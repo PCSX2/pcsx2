@@ -17,7 +17,7 @@
 #include "GS/Renderers/Metal/GSTextureMTL.h"
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/GSPerfMon.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Console.h"
 
 #ifdef __APPLE__

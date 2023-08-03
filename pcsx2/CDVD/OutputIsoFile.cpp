@@ -18,7 +18,6 @@
 #include "CDVD/IsoFileFormats.h"
 #include "Host.h"
 
-#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
@@ -126,7 +125,7 @@ void OutputIsoFile::WriteBuffer(const void* src, size_t size)
 {
 	if (std::fwrite(src, size, 1, m_outstream) != 1)
 	{
-		Host::ReportErrorAsync("Write Error", fmt::format("errno {} when trying to write {} bytes to block dump file.\n\nClosing file."));
+		Host::ReportErrorAsync("Write Error", fmt::format("errno {} when trying to write {} bytes to block dump file.\n\nClosing file.", errno, size));
 		Close();
 	}
 }

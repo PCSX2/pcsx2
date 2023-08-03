@@ -40,14 +40,13 @@
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
-#include "pcsx2/PAD/Host/PAD.h"
 #include "pcsx2/PerformanceMetrics.h"
+#include "pcsx2/SysForwardDefs.h"
 #include "pcsx2/VMManager.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/CrashHandler.h"
-#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/SettingsWrapper.h"
@@ -1080,6 +1079,11 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 }
 
 #ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+	emit g_emu_thread->onAchievementsLoginRequested(reason);
+}
+
 void Host::OnAchievementsRefreshed()
 {
 	u32 game_id = 0;
@@ -1184,6 +1188,16 @@ bool Host::IsFullscreen()
 void Host::SetFullscreen(bool enabled)
 {
 	g_emu_thread->setFullscreen(enabled, true);
+}
+
+void Host::OnCaptureStarted(const std::string& filename)
+{
+	emit g_emu_thread->onCaptureStarted(QString::fromStdString(filename));
+}
+
+void Host::OnCaptureStopped()
+{
+	emit g_emu_thread->onCaptureStopped();
 }
 
 bool QtHost::InitializeConfig()
@@ -1459,9 +1473,9 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 	emit g_emu_thread->onInputDeviceDisconnected(identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
 }
 
-void Host::SetRelativeMouseMode(bool enabled)
+void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
-	emit g_emu_thread->onRelativeMouseModeRequested(enabled);
+	emit g_emu_thread->onMouseModeRequested(relative_mode, hide_cursor);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1769,6 +1783,7 @@ void QtHost::RegisterTypes()
 	qRegisterMetaType<InputBindingKey>();
 	qRegisterMetaType<CDVD_SourceType>();
 	qRegisterMetaType<const GameList::Entry*>();
+	qRegisterMetaType<Achievements::LoginRequestReason>();
 }
 
 bool QtHost::RunSetupWizard()

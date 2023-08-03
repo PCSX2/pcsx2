@@ -115,11 +115,11 @@
   - 'pcsx2/IPU/*'
   - 'pcsx2/IPU/**/*'
 'Memory Card':
-  - 'pcsx2/gui/MemoryCard*'
-  - 'pcsx2/gui/**/MemoryCard*'
+  - 'pcsx2/SIO/Memcard/*'
+  - 'pcsx2/SIO/Memcard/**/*'
 'PAD':
-  - 'pcsx2/PAD/*'
-  - 'pcsx2/PAD/**/*'
+  - 'pcsx2/SIO/Pad/*'
+  - 'pcsx2/SIO/Pad/**/*'
 'SPU2':
   - 'pcsx2/SPU2/*'
   - 'pcsx2/SPU2/**/*'

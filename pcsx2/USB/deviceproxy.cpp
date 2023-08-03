@@ -21,6 +21,7 @@
 #include "usb-mic/usb-mic-singstar.h"
 #include "usb-msd/usb-msd.h"
 #include "usb-pad/usb-pad.h"
+#include "usb-pad/usb-turntable.h"
 #include "usb-printer/usb-printer.h"
 #include "usb-lightgun/guncon2.h"
 
@@ -28,17 +29,17 @@ RegisterDevice* RegisterDevice::registerDevice = nullptr;
 
 DeviceProxy::~DeviceProxy() = default;
 
-gsl::span<const char*> DeviceProxy::SubTypes() const
+std::span<const char*> DeviceProxy::SubTypes() const
 {
 	return {};
 }
 
-gsl::span<const InputBindingInfo> DeviceProxy::Bindings(u32 subtype) const
+std::span<const InputBindingInfo> DeviceProxy::Bindings(u32 subtype) const
 {
 	return {};
 }
 
-gsl::span<const SettingInfo> DeviceProxy::Settings(u32 subtype) const
+std::span<const SettingInfo> DeviceProxy::Settings(u32 subtype) const
 {
 	return {};
 }
@@ -82,6 +83,7 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_HIDKBD, new usb_hid::HIDKbdDevice());
 	inst.Add(DEVTYPE_HIDMOUSE, new usb_hid::HIDMouseDevice());
 	inst.Add(DEVTYPE_RBKIT, new usb_pad::RBDrumKitDevice());
+	inst.Add(DEVTYPE_DJ, new usb_pad::DJTurntableDevice());
 	inst.Add(DEVTYPE_BUZZ, new usb_pad::BuzzDevice());
 	inst.Add(DEVTYPE_EYETOY, new usb_eyetoy::EyeToyWebCamDevice());
 	inst.Add(DEVTYPE_BEATMANIA_DADADA, new usb_hid::BeatManiaDevice());

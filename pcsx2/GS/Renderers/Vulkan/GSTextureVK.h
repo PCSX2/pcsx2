@@ -17,7 +17,6 @@
 
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS/Renderers/Vulkan/VKContext.h"
 #include "GS/Renderers/Vulkan/VKLoader.h"
 
 #include <limits>
@@ -86,7 +85,7 @@ public:
 	VkFramebuffer GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop);
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
-	__fi void SetUsedThisCommandBuffer() { m_use_fence_counter = g_vulkan_context->GetCurrentFenceCounter(); }
+	__fi void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
 
 private:
 	GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image, VmaAllocation allocation,

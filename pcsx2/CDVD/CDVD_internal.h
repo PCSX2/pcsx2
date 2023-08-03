@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "Common.h"
+
 /*
 Interrupts - values are flag bits.
 

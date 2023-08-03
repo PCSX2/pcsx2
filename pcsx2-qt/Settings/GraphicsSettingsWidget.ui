@@ -1168,14 +1168,14 @@
          </item>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="textureOffsetLabel">
          <property name="text">
           <string>Texture Offsets:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <layout class="QHBoxLayout" name="textureOffsetLayout" stretch="0,1,0,1">
          <item>
           <widget class="QLabel" name="textureOffsetXLabel">
@@ -1207,26 +1207,12 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
           <widget class="QCheckBox" name="alignSprite">
            <property name="text">
             <string>Align Sprite</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="bilinearHack">
-           <property name="text">
-            <string>Bilinear Dirty Upscale</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="mergeSprite">
-           <property name="text">
-            <string>Merge Sprite</string>
            </property>
           </widget>
          </item>
@@ -1244,7 +1230,40 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="mergeSprite">
+           <property name="text">
+            <string>Merge Sprite</string>
+           </property>
+          </widget>
+         </item>
         </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Bilinear Dirty Upscale:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="bilinearHack">
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Bilinear</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Nearest</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1477,6 +1496,16 @@
             <item>
              <property name="text">
               <string extracomment="Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.">Lottes CRT</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4xRGSS downsampling (4x Rotated Grid SuperSampling)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</string>
              </property>
             </item>
            </widget>

@@ -31,6 +31,12 @@
 
 namespace Achievements
 {
+	enum class LoginRequestReason
+	{
+		UserInitiated,
+		TokenInvalid,
+	};
+
 	enum class AchievementCategory : u8
 	{
 		Local = 0,
@@ -88,6 +94,7 @@ namespace Achievements
 
 	bool IsActive();
 	bool IsLoggedIn();
+	bool HasSavedCredentials();
 	bool ChallengeModeActive();
 	bool LeaderboardsActive();
 	bool IsTestModeActive();
@@ -131,6 +138,7 @@ namespace Achievements
 
 	bool LoginAsync(const char* username, const char* password);
 	bool Login(const char* username, const char* password);
+	bool LoginWithTokenAsync(const char* username, const char* api_token);
 	void Logout();
 
 	void GameChanged(u32 disc_crc, u32 crc);
@@ -253,6 +261,6 @@ namespace Achievements
 /// Functions implemented in the frontend.
 namespace Host
 {
+	void OnAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 	void OnAchievementsRefreshed();
-	void OnAchievementsChallengeModeChanged();
 } // namespace Host

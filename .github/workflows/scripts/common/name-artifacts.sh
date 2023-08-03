@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Artifact Naming Scheme:
-# PCSX2-<OS>-<GUI>-[ARCH]-[SIMD]-[pr\[PR_NUM\]]-[title|sha\[SHA|PR_TITLE\]
+# PCSX2-<OS>-Qt-[ARCH]-[SIMD]-[pr\[PR_NUM\]]-[title|sha\[SHA|PR_TITLE\]
 # -- limited to 200 chars
 # Outputs:
 # - artifact-name
@@ -9,7 +9,6 @@
 # Inputs as env-vars
 # OS
 # BUILD_SYSTEM
-# GUI_FRAMEWORK
 # ARCH
 # SIMD
 # EVENT_NAME
@@ -20,11 +19,12 @@
 NAME=""
 
 if [ "${OS}" == "macos" ]; then
-  NAME="PCSX2-${OS}-${GUI_FRAMEWORK}"
+  # MacOS has combined binaries for x64 and ARM64.
+  NAME="PCSX2-${OS}-Qt"
 elif [[ ("${OS}" == "windows" && "$BUILD_SYSTEM" != "cmake") ]]; then
-  NAME="PCSX2-${OS}-${GUI_FRAMEWORK}-${ARCH}-${SIMD}"
+  NAME="PCSX2-${OS}-Qt-${ARCH}-${SIMD}"
 else
-  NAME="PCSX2-${OS}-${GUI_FRAMEWORK}-${ARCH}"
+  NAME="PCSX2-${OS}-Qt-${ARCH}"
 fi
 
 # Add cmake if used to differentate it from msbuild builds

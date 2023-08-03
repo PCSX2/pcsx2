@@ -41,12 +41,17 @@ private:
 
 	using GSC_Ptr = bool(*)(GSRendererHW& r, int& skip);	// GSC - Get Skip Count
 	using OI_Ptr = bool(*)(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t); // OI - Before draw
+	using MV_Ptr = bool(*)(GSRendererHW& r); // MV - Move
 
 	// Require special argument
 	bool OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* t, const GSVector4i& r_draw);
-	bool OI_GsMemClear(); // always on
-	void OI_DoGsMemClear(const GSOffset& off, const GSVector4i& r, u32 vert_color);
-	void OI_DoubleHalfClear(GSTextureCache::Target*& rt, GSTextureCache::Target*& ds); // always on
+	bool TryGSMemClear();
+	void ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, u32 vert_color);
+	bool DetectDoubleHalfClear(bool& no_rt, bool& no_ds);
+	bool DetectStripedDoubleClear(bool& no_rt, bool& no_ds);
+	bool TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Target* ds, bool preserve_rt_color, bool preserve_depth);
+	void SetNewFRAME(u32 bp, u32 bw, u32 psm);
+	void SetNewZBUF(u32 bp, u32 psm);
 
 	u16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
@@ -54,7 +59,11 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
 	bool IsConstantDirectWriteMemClear();
+	u32 GetConstantDirectWriteMemClearColor() const;
+	bool IsReallyDithered() const;
 	bool IsDiscardingDstColor();
+	bool IsDiscardingDstRGB();
+	bool IsDiscardingDstAlpha();
 	bool PrimitiveCoversWithoutGaps();
 
 	enum class CLUTDrawTestResult
@@ -79,14 +88,15 @@ private:
 	void SetupIA(float target_scale, float sx, float sy);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt);
 	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
-	void EmulateBlending(bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
+	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
 
 	void EmulateTextureSampler(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
 		GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSTexture*& src_copy);
 	void HandleTextureHazards(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
 		const GSTextureCache::Source* tex, const TextureMinMaxResult& tmm, GSTextureCache::SourceRegion& source_region,
 		bool& target_region, GSVector2i& unscaled_size, float& scale, GSTexture*& src_copy);
-	bool CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex) const;
+	bool CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextureCache::Source* tex,
+		const TextureMinMaxResult& tmm);
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
 	void EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool pass_2);
@@ -96,6 +106,10 @@ private:
 	bool IsPossibleChannelShuffle() const;
 	bool IsSplitTextureShuffle();
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
+	u32 GetEffectiveTextureShuffleFbmsk() const;
+
+	static GSVector4i GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages);
+	bool TryToResolveSinglePageFramebuffer(GIFRegFRAME& FRAME, bool only_next_draw);
 
 	bool IsSplitClearActive() const;
 	bool CheckNextDrawForSplitClear(const GSVector4i& r, u32* pages_covered_by_this_draw) const;
@@ -133,6 +147,7 @@ private:
 	bool IsBadFrame();
 	GSC_Ptr m_gsc = nullptr;
 	OI_Ptr m_oi = nullptr;
+	MV_Ptr m_mv = nullptr;
 	int m_skip = 0;
 	int m_skip_offset = 0;
 
@@ -144,6 +159,7 @@ private:
 	u32 m_last_channel_shuffle_fbmsk = 0;
 
 	GIFRegFRAME m_split_clear_start = {};
+	GIFRegZBUF m_split_clear_start_Z = {};
 	u32 m_split_clear_pages = 0; // if zero, inactive
 	u32 m_split_clear_color = 0;
 
@@ -169,8 +185,7 @@ public:
 
 	void Destroy() override;
 
-	void SetGameCRC(u32 crc) override;
-	void UpdateCRCHacks() override;
+	void UpdateRenderFixes() override;
 
 	bool CanUpscale() override;
 	float GetUpscaleMultiplier() override;
@@ -182,6 +197,7 @@ public:
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
 	void MergeSprite(GSTextureCache::Source* tex);
 	float GetTextureScaleFactor() override;
+	GSVector2i GetValidSize(const GSTextureCache::Source* tex = nullptr);
 	GSVector2i GetTargetSize(const GSTextureCache::Source* tex = nullptr);
 
 	void Reset(bool hardware_reset) override;

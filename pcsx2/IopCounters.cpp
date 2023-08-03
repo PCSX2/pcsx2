@@ -100,6 +100,8 @@ static void _rcntSet(int cntidx)
 	if (counter.mode & IOPCNT_STOPPED || counter.rate == PSXHBLANK)
 		return;
 
+	if (!(counter.mode & (IOPCNT_INT_TARGET | IOPCNT_INT_OVERFLOW)))
+		return;
 	// check for special cases where the overflow or target has just passed
 	// (we probably missed it because we're doing/checking other things)
 	if (counter.count > overflowCap || counter.count > counter.target)
@@ -256,8 +258,8 @@ static __fi void _rcntTestOverflow(int i)
 	// (high bit of the target gets set by rcntWtarget when the target is behind
 	// the counter value, and thus should not be flagged until after an overflow)
 
+	psxCounters[i].count -= maxTarget + 1;
 	psxCounters[i].target &= maxTarget;
-	psxCounters[i].count -= maxTarget;
 }
 
 /*
@@ -377,16 +379,16 @@ void psxCheckStartGate16(int i)
 			(psxCounters[1].mode & stoppedGateCheck) == altSourceCheck)
 		{
 			psxCounters[1].count++;
-			_rcntTestTarget(1);
 			_rcntTestOverflow(1);
+			_rcntTestTarget(1);
 		}
 
 		if ((psxCounters[3].mode & altSourceCheck) == IOPCNT_ALT_SOURCE ||
 			(psxCounters[3].mode & stoppedGateCheck) == altSourceCheck)
 		{
 			psxCounters[3].count++;
-			_rcntTestTarget(3);
 			_rcntTestOverflow(3);
+			_rcntTestTarget(3);
 		}
 	}
 
@@ -436,8 +438,6 @@ void psxRcntUpdate()
 {
 	int i;
 
-	psxRegs.iopNextEventCycle = psxRegs.cycle + 32;
-
 	psxNextCounter = 0x7fffffff;
 	psxNextsCounter = psxRegs.cycle;
 
@@ -486,8 +486,8 @@ void psxRcntUpdate()
 		if (psxCounters[i].mode & IOPCNT_STOPPED)
 			continue;
 
-		_rcntTestTarget(i);
 		_rcntTestOverflow(i);
+		_rcntTestTarget(i);
 
 		// perform second target test because if we overflowed above it's possible we
 		// already shot past our target if it was very near zero.
@@ -880,9 +880,10 @@ void psxRcntSetGates()
 		psxvblankgate &= ~(1 << 3);
 }
 
-void SaveStateBase::psxRcntFreeze()
+bool SaveStateBase::psxRcntFreeze()
 {
-	FreezeTag("iopCounters");
+	if (!FreezeTag("iopCounters"))
+		return false;
 
 	Freeze(psxCounters);
 	Freeze(psxNextCounter);
@@ -890,6 +891,11 @@ void SaveStateBase::psxRcntFreeze()
 	Freeze(psxvblankgate);
 	Freeze(psxhblankgate);
 
+	if (!IsOkay())
+		return false;
+
 	if (IsLoading())
 		psxRcntUpdate();
+
+	return true;
 }

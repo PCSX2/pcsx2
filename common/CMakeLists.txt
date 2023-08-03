@@ -10,11 +10,11 @@ add_library(common)
 # x86emitter sources
 target_sources(common PRIVATE
 	AlignedMalloc.cpp
-	SafeArray.inl
+	Assertions.cpp
 	Console.cpp
 	CrashHandler.cpp
 	DynamicLibrary.cpp
-	Exceptions.cpp
+	Error.cpp
 	FastJmp.cpp
 	FileSystem.cpp
 	General.cpp
@@ -30,6 +30,7 @@ target_sources(common PRIVATE
 	Semaphore.cpp
 	SettingsWrapper.cpp
 	StringUtil.cpp
+	TextureDecompress.cpp
 	Timer.cpp
 	ThreadPool.cpp
 	WAVWriter.cpp
@@ -60,17 +61,17 @@ target_sources(common PRIVATE
 
 # x86emitter headers
 target_sources(common PRIVATE
-	Align.h
 	AlignedMalloc.h
 	Assertions.h
 	boost_spsc_queue.hpp
+	BitUtils.h
 	ByteSwap.h
 	Console.h
 	CrashHandler.h
 	DynamicLibrary.h
 	Easing.h
 	EnumOps.h
-	Exceptions.h
+	Error.h
 	FastJmp.h
 	FileSystem.h
 	General.h
@@ -89,12 +90,12 @@ target_sources(common PRIVATE
 	ReadbackSpinManager.h
 	RedtapeWilCom.h
 	RedtapeWindows.h
-	SafeArray.h
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
 	StringUtil.h
 	Timer.h
+	TextureDecompress.h
 	Threading.h
 	ThreadPool.h
 	TraceLog.h

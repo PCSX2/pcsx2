@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "PAD/Host/PAD.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -151,7 +151,7 @@ void SetupWizardDialog::updatePageLabels(int prev_page)
 void SetupWizardDialog::updatePageButtons()
 {
 	const int page = m_ui.pages->currentIndex();
-	m_ui.next->setText((page == Page_Complete) ? "&Finish" : "&Next");
+	m_ui.next->setText((page == Page_Complete) ? tr("&Finish") : tr("&Next"));
 	m_ui.back->setEnabled(page > 0);
 }
 
@@ -194,7 +194,7 @@ void SetupWizardDialog::setupUi()
 void SetupWizardDialog::setupLanguagePage()
 {
 	SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.theme, "UI", "Theme",
-		InterfaceSettingsWidget::THEME_NAMES, InterfaceSettingsWidget::THEME_VALUES, QtHost::GetDefaultThemeName());
+		InterfaceSettingsWidget::THEME_NAMES, InterfaceSettingsWidget::THEME_VALUES, QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
 
 	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
@@ -414,10 +414,10 @@ void SetupWizardDialog::setupControllerPage()
 		const std::string section = fmt::format("Pad{}", port + 1);
 		const PadWidgets& w = pad_widgets[port];
 
-		for (const auto& [name, display_name] : PAD::GetControllerTypeNames())
-			w.type_combo->addItem(qApp->translate("Pad", display_name), QString::fromStdString(name));
+		for (const auto& [name, display_name] : Pad::GetControllerTypeNames())
+			w.type_combo->addItem(QString::fromUtf8(display_name), QString::fromUtf8(name));
 		ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-			nullptr, w.type_combo, section, "Type", PAD::GetDefaultPadType(port));
+			nullptr, w.type_combo, section, "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(port))->name);
 
 		w.mapping_result->setText((port == 0) ? tr("Default (Keyboard)") : tr("Default (None)"));
 
@@ -473,7 +473,7 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
 	bool result;
 	{
 		auto lock = Host::GetSettingsLock();
-		result = PAD::MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping);
+		result = Pad::MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping);
 	}
 	if (!result)
 		return;

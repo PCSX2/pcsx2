@@ -971,7 +971,7 @@ namespace usb_msd
 		std::string path(USB::GetConfigString(si, port, TypeName(), "ImagePath"));
 		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
 		{
-			Host::AddOSDMessage(fmt::format(TRANSLATE_SV("USB", "usb-msd: Could not open image file '{}'"), path),
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "usb-msd: Could not open image file '{}'"), path),
 				Host::OSD_ERROR_DURATION);
 			goto fail;
 		}
@@ -1053,7 +1053,7 @@ namespace usb_msd
 		// TODO: Handle changes to path.
 	}
 
-	gsl::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo settings[] = {
 			{SettingInfo::Type::Path, "ImagePath", TRANSLATE_NOOP("USB", "Image Path"),

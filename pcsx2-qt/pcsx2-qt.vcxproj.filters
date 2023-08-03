@@ -190,10 +190,10 @@
     <ClCompile Include="Settings\AudioSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_CreateMemoryCardDialog.cpp">
+    <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="Settings\CreateMemoryCardDialog.cpp">
+    <ClCompile Include="Settings\MemoryCardCreateDialog.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\DEV9DnsHostDialog.cpp">
@@ -423,7 +423,7 @@
     <QtMoc Include="Settings\AudioSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\CreateMemoryCardDialog.h">
+    <QtMoc Include="Settings\MemoryCardCreateDialog.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\DEV9DnsHostDialog.h">
@@ -531,6 +531,9 @@
     <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\ControllerBindingWidget_Guitar.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
     <QtUi Include="Settings\ControllerBindingWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
@@ -549,7 +552,7 @@
     <QtUi Include="Settings\AudioSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\CreateMemoryCardDialog.ui">
+    <QtUi Include="Settings\MemoryCardCreateDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\DEV9DnsHostDialog.ui">
@@ -621,15 +624,18 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="SetupWizardDialog.ui" />
+    <QtUi Include="Settings\USBBindingWidget_DrivingForce.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_GTForce.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <None Include="Settings\FolderSettingsWidget.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Settings\USBBindingWidget_GTForce.ui">
-      <Filter>Settings</Filter>
-    </None>
-    <None Include="Settings\USBBindingWidget_DrivingForce.ui">
       <Filter>Settings</Filter>
     </None>
   </ItemGroup>

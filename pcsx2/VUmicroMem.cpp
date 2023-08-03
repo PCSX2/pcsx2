@@ -84,12 +84,13 @@ void vuMemoryReserve::Reset()
 	VU1.VI[0].UL = 0;
 }
 
-void SaveStateBase::vuMicroFreeze()
+bool SaveStateBase::vuMicroFreeze()
 {
 	if(IsSaving())
 		vu1Thread.WaitVU();
 
-	FreezeTag( "vuMicroRegs" );
+	if (!FreezeTag("vuMicroRegs"))
+		return false;
 
 	// VU0 state information
 
@@ -175,4 +176,6 @@ void SaveStateBase::vuMicroFreeze()
 	Freeze(VU1.ialureadpos);
 	Freeze(VU1.ialuwritepos);
 	Freeze(VU1.ialucount);
+
+	return IsOkay();
 }

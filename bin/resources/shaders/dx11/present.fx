@@ -1,8 +1,17 @@
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1
-#endif
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 struct VS_INPUT
 {
@@ -395,4 +404,44 @@ PS_OUTPUT ps_filter_lottes(PS_INPUT input)
 	return output;
 }
 
-#endif
+PS_OUTPUT ps_4x_rgss(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float2 dxy = float2(ddx(input.t.x), ddy(input.t.y));
+	float3 color = 0;
+
+	float s = 1.0/8.0;
+	float l = 3.0/8.0;
+
+	color += sample_c(input.t + float2( s, l) * dxy).rgb;
+	color += sample_c(input.t + float2( l,-s) * dxy).rgb;
+	color += sample_c(input.t + float2(-s,-l) * dxy).rgb;
+	color += sample_c(input.t + float2(-l, s) * dxy).rgb;
+
+	output.c = float4(color * 0.25,1);
+	return output;
+}
+
+PS_OUTPUT ps_automagical_supersampling(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float2 ratio = (u_source_size / u_target_size) * 0.5;
+	float2 steps = floor(ratio);
+	float3 col = sample_c(input.t).rgb;
+	float div = 1;
+
+	for (float y = 0; y < steps.y; y++)
+	{
+		for (float x = 0; x < steps.x; x++)
+		{
+			float2 offset = float2(x,y) - ratio * 0.5;
+			col += sample_c(input.t + offset * u_rcp_source_resolution * 2.0).rgb;
+			div++;
+		}
+	}
+
+	output.c = float4(col / div, 1);
+	return output;
+}

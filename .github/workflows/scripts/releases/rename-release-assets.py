@@ -1,7 +1,7 @@
 import os
 import shutil
 
-tag = os.environ['TAG'].split("refs/tags/")[1]
+tag = os.environ['TAG_VAL']
 scan_dir = os.environ['SCAN_DIR']
 output_dir = os.environ['OUT_DIR']
 accepted_exts = ["AppImage", "flatpak", "tar.xz", "7z"]
@@ -13,11 +13,11 @@ for dir_name in os.listdir(scan_dir):
     asset_name += "-macos"
   elif "linux" in dir_name.lower():
     if "flatpak" in dir_name.lower():
-      asset_name += "-linux-Flatpak-64bit"
+      asset_name += "-linux-flatpak-x64"
     else:
-      asset_name += "-linux-AppImage-64bit"
+      asset_name += "-linux-appimage-x64"
   elif "windows" in dir_name.lower():
-    asset_name += "-windows-64bit"
+    asset_name += "-windows-x64"
   else:
     continue;
 

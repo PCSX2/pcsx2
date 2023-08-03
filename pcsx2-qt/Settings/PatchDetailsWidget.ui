@@ -10,9 +10,6 @@
     <height>112</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

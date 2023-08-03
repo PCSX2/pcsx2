@@ -1,0 +1,42 @@
+name: 📦 Publish Flathub Release
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Every day at 12am UTC.
+  workflow_dispatch: # As well as manually.
+
+jobs:
+  check:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "Check if release is needed"
+    runs-on: ubuntu-latest
+    outputs:
+      PCSX2_RELEASE: ${{ steps.getinfo.outputs.PCSX2_RELEASE }}
+      FLATHUB_RELEASE: ${{ steps.getinfo.outputs.FLATHUB_RELEASE }}
+    steps:
+      - name: Get latest tag and Flathub release
+        id: getinfo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PCSX2_RELEASE=$(gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' /repos/PCSX2/pcsx2/releases | jq -r '.[0].tag_name')
+          FLATHUB_RELEASE=$(curl -L -s https://flathub.org/api/v2/appstream/net.pcsx2.PCSX2 | jq -r '.releases | max_by(.version) | .version')
+          echo "Latest PCSX2 release is: '${PCSX2_RELEASE}'"
+          echo "Latest Flathub release is: '${FLATHUB_RELEASE}'"
+          echo "PCSX2_RELEASE=${PCSX2_RELEASE}" >> "$GITHUB_OUTPUT"
+          echo "FLATHUB_RELEASE=${FLATHUB_RELEASE}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: check
+    if: needs.check.outputs.FLATHUB_RELEASE < needs.check.outputs.PCSX2_RELEASE
+    name: "Build and publish Flatpak"
+    uses: ./.github/workflows/linux_build_flatpak.yml
+    with:
+      jobName: "Qt"
+      compiler: clang
+      cmakeflags: ""
+      publish: true
+      branch: stable
+      fetchTags: true
+    secrets: inherit
+

@@ -21,7 +21,8 @@
 
 #include "System.h"
 #include "common/Assertions.h"
-#include "common/Exceptions.h"
+
+class Error;
 
 enum class FreezeAction
 {
@@ -36,7 +37,7 @@ enum class FreezeAction
 // [SAVEVERSION+]
 // This informs the auto updater that the users savestates will be invalidated.
 
-static const u32 g_SaveVersion = (0x9A37 << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A3C << 16) | 0x0000;
 
 
 // the freezing data between submodules and core
@@ -62,11 +63,11 @@ class ArchiveEntryList;
 
 // Wrappers to generate a save state compatible across all frontends.
 // These functions assume that the caller has paused the core thread.
-extern std::unique_ptr<ArchiveEntryList> SaveState_DownloadState();
+extern std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error);
 extern std::unique_ptr<SaveStateScreenshotData> SaveState_SaveScreenshot();
 extern bool SaveState_ZipToDisk(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<SaveStateScreenshotData> screenshot, const char* filename);
 extern bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels);
-extern void SaveState_UnzipFromDisk(const std::string& filename);
+extern bool SaveState_UnzipFromDisk(const std::string& filename, Error* error);
 
 // --------------------------------------------------------------------------------------
 //  SaveStateBase class
@@ -76,17 +77,24 @@ extern void SaveState_UnzipFromDisk(const std::string& filename);
 // states), and memLoadingState, memSavingState (uncompressed memory states).
 class SaveStateBase
 {
+public:
+	using VmStateBuffer = std::vector<u8>;
+
 protected:
-	VmStateBuffer* m_memory;
+	VmStateBuffer& m_memory;
 
-	u32 m_version;		// version of the savestate being loaded.
+	u32 m_version = 0;		// version of the savestate being loaded.
 
-	int m_idx;			// current read/write index of the allocation
+	int m_idx = 0;			// current read/write index of the allocation
+
+	bool m_error = false; // error occurred while reading/writing
 
 public:
-	SaveStateBase( VmStateBuffer& memblock );
-	SaveStateBase( VmStateBuffer* memblock );
-	virtual ~SaveStateBase() { }
+	SaveStateBase(VmStateBuffer& memblock);
+	virtual ~SaveStateBase() = default;
+
+	__fi bool HasError() const { return m_error; }
+	__fi bool IsOkay() const { return !m_error; }
 
 	// Gets the version of savestate that this object is acting on.
 	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
@@ -95,8 +103,8 @@ public:
 		return (m_version & 0xffff);
 	}
 
-	virtual SaveStateBase& FreezeBios();
-	virtual SaveStateBase& FreezeInternals();
+	bool FreezeBios();
+	bool FreezeInternals();
 
 	// Loads or saves an arbitrary data type.  Usable on atomic types, structs, and arrays.
 	// For dynamically allocated pointers use FreezeMem instead.
@@ -165,12 +173,7 @@ public:
 
 	u8* GetBlockPtr()
 	{
-		return m_memory->GetPtr(m_idx);
-	}
-
-	u8* GetPtrEnd() const
-	{
-		return m_memory->GetPtrEnd();
+		return &m_memory[m_idx];
 	}
 
 	void CommitBlock( int size )
@@ -182,7 +185,7 @@ public:
 	// Identifiers can be used to determine where in a savestate that data has become
 	// skewed (if the value does not match then the error occurs somewhere prior to that
 	// position).
-	void FreezeTag( const char* src );
+	bool FreezeTag( const char* src );
 
 	// Returns true if this object is a StateLoading type object.
 	bool IsLoading() const { return !IsSaving(); }
@@ -195,47 +198,43 @@ public:
 
 public:
 	// note: gsFreeze() needs to be public because of the GSState recorder.
-	void gsFreeze();
+	bool gsFreeze();
 
 protected:
-	void Init( VmStateBuffer* memblock );
+	bool vmFreeze();
+	bool mtvuFreeze();
+	bool rcntFreeze();
+	bool vuMicroFreeze();
+	bool vuJITFreeze();
+	bool vif0Freeze();
+	bool vif1Freeze();
+	bool sifFreeze();
+	bool ipuFreeze();
+	bool ipuDmaFreeze();
+	bool gifFreeze();
+	bool gifDmaFreeze();
+	bool gifPathFreeze(u32 path); // called by gifFreeze()
 
-	void vmFreeze();
-	void mtvuFreeze();
-	void rcntFreeze();
-	void vuMicroFreeze();
-	void vuJITFreeze();
-	void vif0Freeze();
-	void vif1Freeze();
-	void sifFreeze();
-	void ipuFreeze();
-	void ipuDmaFreeze();
-	void gifFreeze();
-	void gifDmaFreeze();
-	void gifPathFreeze(u32 path); // called by gifFreeze()
+	bool sprFreeze();
 
-	void sprFreeze();
-
-	void sioFreeze();
-	void cdrFreeze();
-	void cdvdFreeze();
-	void psxRcntFreeze();
-	void sio2Freeze();
-
-	void deci2Freeze();
+	bool sioFreeze();
+	bool cdrFreeze();
+	bool cdvdFreeze();
+	bool psxRcntFreeze();
+	bool deci2Freeze();
 
 	// Save or load PCSX2's global frame counter (g_FrameCount) along with each savestate
 	//
 	// This is to prevent any inaccuracy issues caused by having a different
 	// internal emulation frame count than what it was at the beginning of the
 	// original recording
-	void InputRecordingFreeze();
+	bool InputRecordingFreeze();
 };
 
 // --------------------------------------------------------------------------------------
 //  ArchiveEntry
 // --------------------------------------------------------------------------------------
-class ArchiveEntry
+class ArchiveEntry final
 {
 protected:
 	std::string	m_filename;
@@ -250,7 +249,7 @@ public:
 		m_datasize = 0;
 	}
 
-	virtual ~ArchiveEntry() = default;
+	~ArchiveEntry() = default;
 
 	ArchiveEntry& SetDataIndex(uptr idx)
 	{
@@ -280,52 +279,41 @@ public:
 	}
 };
 
-typedef SafeArray< u8 > ArchiveDataBuffer;
-
 // --------------------------------------------------------------------------------------
 //  ArchiveEntryList
 // --------------------------------------------------------------------------------------
-class ArchiveEntryList
+class ArchiveEntryList final
 {
+public:
+	using VmStateBuffer = std::vector<u8>;
 	DeclareNoncopyableObject(ArchiveEntryList);
 
 protected:
 	std::vector<ArchiveEntry> m_list;
-	std::unique_ptr<ArchiveDataBuffer> m_data;
+	VmStateBuffer m_data;
 
 public:
-	virtual ~ArchiveEntryList() = default;
+	ArchiveEntryList() = default;
+	~ArchiveEntryList() = default;
 
-	ArchiveEntryList() {}
-
-	ArchiveEntryList(ArchiveDataBuffer* data)
-		: m_data(data)
+	const VmStateBuffer& GetBuffer() const
 	{
+		return m_data;
 	}
 
-	ArchiveEntryList(ArchiveDataBuffer& data)
-		: m_data(&data)
+	VmStateBuffer& GetBuffer()
 	{
-	}
-
-	const VmStateBuffer* GetBuffer() const
-	{
-		return m_data.get();
-	}
-
-	VmStateBuffer* GetBuffer()
-	{
-		return m_data.get();
+		return m_data;
 	}
 
 	u8* GetPtr(uint idx)
 	{
-		return &(*m_data)[idx];
+		return &m_data[idx];
 	}
 
 	const u8* GetPtr(uint idx) const
 	{
-		return &(*m_data)[idx];
+		return &m_data[idx];
 	}
 
 	ArchiveEntryList& Add(const ArchiveEntry& src)
@@ -354,49 +342,24 @@ public:
 //  Saving and Loading Specialized Implementations...
 // --------------------------------------------------------------------------------------
 
-class memSavingState : public SaveStateBase
+class memSavingState final : public SaveStateBase
 {
 	typedef SaveStateBase _parent;
 
-protected:
-	static const int ReallocThreshold		= _1mb / 4;		// 256k reallocation block size.
-	static const int MemoryBaseAllocSize	= _8mb;			// 8 meg base alloc when PS2 main memory is excluded
-
 public:
-	virtual ~memSavingState() = default;
-	memSavingState( VmStateBuffer& save_to );
-	memSavingState( VmStateBuffer* save_to );
+	memSavingState(VmStateBuffer& save_to);
+	~memSavingState() override = default;
 
-	void MakeRoomForData();
-
-	void FreezeMem( void* data, int size );
-
-	bool IsSaving() const { return true; }
+	void FreezeMem(void* data, int size) override;
+	bool IsSaving() const override { return true; }
 };
 
-class memLoadingState : public SaveStateBase
+class memLoadingState final : public SaveStateBase
 {
 public:
-	virtual ~memLoadingState() = default;
+	memLoadingState(const VmStateBuffer& load_from);
+	~memLoadingState() override = default;
 
-	memLoadingState( const VmStateBuffer& load_from );
-	memLoadingState( const VmStateBuffer* load_from );
-
-	void FreezeMem( void* data, int size );
-
-	bool IsSaving() const { return false; }
-	bool IsFinished() const { return m_idx >= m_memory->GetSizeInBytes(); }
+	void FreezeMem(void* data, int size) override;
+	bool IsSaving() const override { return false; }
 };
-
-
-namespace Exception
-{
-	// Exception thrown when a corrupted or truncated savestate is encountered.
-	class SaveStateLoadError : public BadStream
-	{
-		DEFINE_STREAM_EXCEPTION(SaveStateLoadError, BadStream)
-
-		virtual std::string FormatDiagnosticMessage() const override;
-		virtual std::string FormatDisplayMessage() const override;
-	};
-}; // namespace Exception

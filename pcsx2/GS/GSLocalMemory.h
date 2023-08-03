@@ -549,6 +549,7 @@ public:
 	static bool IsPageAligned(u32 psm, const GSVector4i& rc);
 	static u32 GetStartBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);
 	static u32 GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);
+	static u32 GetUnwrappedEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);
 	static GSVector4i GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 bw, u32 psm);
 
 	// address

@@ -30,9 +30,8 @@
 #include "PerformanceMetrics.h"
 #include "Patch.h"
 #include "ps2/HwInternal.h"
-#include "Sio.h"
+#include "SIO/Sio.h"
 #include "SPU2/spu2.h"
-#include "PAD/Host/PAD.h"
 #include "Recording/InputRecording.h"
 #include "VMManager.h"
 #include "VUmicro.h"
@@ -95,6 +94,7 @@ static __fi void _rcntSet( int cntidx )
 	// Stopped or special hsync gate?
 	if (!counter.mode.IsCounting || (counter.mode.ClockSource == 0x3) ) return;
 
+	if (!counter.mode.TargetInterrupt && !counter.mode.OverflowInterrupt) return;
 	// check for special cases where the overflow or target has just passed
 	// (we probably missed it because we're doing/checking other things)
 	if( counter.count > 0x10000 || counter.count > counter.target )
@@ -113,6 +113,7 @@ static __fi void _rcntSet( int cntidx )
 	if (c < nextCounter)
 	{
 		nextCounter = c;
+
 		cpuSetNextEvent( nextsCounter, nextCounter ); // Need to update on counter resets/target changes
 	}
 
@@ -154,7 +155,9 @@ static __fi void cpuRcntSet()
 		_rcntSet( i );
 
 	// sanity check!
-	if( nextCounter < 0 ) nextCounter = 0;
+	if (nextCounter < 0)
+		nextCounter = 0;
+
 	cpuSetNextEvent(nextsCounter, nextCounter); // Need to update on counter resets/target changes
 }
 
@@ -544,20 +547,6 @@ static __fi void DoFMVSwitch()
 		RendererSwitched = false;
 }
 
-// Convenience function to update UI thread and set patches. 
-static __fi void VSyncUpdateCore()
-{
-	DoFMVSwitch();
-
-	VMManager::Internal::VSyncOnCPUThread();
-}
-
-static __fi void VSyncCheckExit()
-{
-	if (VMManager::Internal::IsExecutionInterrupted())
-		Cpu->ExitExecution();
-}
-
 // Framelimiter - Measures the delta time between calls and stalls until a
 // certain amount of time passes if such time hasn't passed yet.
 static __fi void frameLimit()
@@ -602,14 +591,13 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
-	// Update vibration at the end of a frame.
-	VSyncUpdateCore();
-	PAD::Update();
+	// End-of-frame tasks.
+	DoFMVSwitch();
+	VMManager::Internal::VSyncOnCPUThread();
 
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
-	VSyncCheckExit();
-
+	
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount );
 
@@ -640,6 +628,10 @@ static __fi void VSyncStart(u32 sCycle)
 	// Therefore, there needs to be some delay in order for it to see the interrupt flag before the interrupt is acknowledged, likely helped on real hardware by the pipelines.
 	// Without the patch and fixing this, the games have other issues, so I'm not going to rush to fix it.
 	// Refraction
+
+	// Bail out before the next frame starts if we're paused, or the CPU has changed
+	if (VMManager::Internal::IsExecutionInterrupted())
+		Cpu->ExitExecution();
 }
 
 static __fi void GSVSync()
@@ -810,6 +802,8 @@ static __fi void _cpuTestOverflow( int i )
 __fi void rcntUpdate()
 {
 	rcntUpdate_vSync();
+	// HBlank after as VSync can do error compensation
+	rcntUpdate_hScanline();
 
 	// Update counters so that we can perform overflow and target tests.
 
@@ -832,8 +826,9 @@ __fi void rcntUpdate()
 			counters[i].sCycleT = cpuRegs.cycle - change;
 
 			// Check Counter Targets and Overflows:
-			_cpuTestTarget( i );
+			// Check Overflow first, in case the target is 0
 			_cpuTestOverflow( i );
+			_cpuTestTarget(i);
 		}
 		else counters[i].sCycleT = cpuRegs.cycle;
 	}
@@ -883,8 +878,8 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 			// currectly by rcntUpdate (since it's not being scheduled for these counters)
 
 			counters[i].count += HBLANK_COUNTER_SPEED;
+			_cpuTestOverflow(i);
 			_cpuTestTarget( i );
-			_cpuTestOverflow( i );
 		}
 
 		if (!(gates & (1<<i))) continue;
@@ -1156,7 +1151,7 @@ template u16 rcntRead32<0x01>( u32 mem );
 template bool rcntWrite32<0x00>( u32 mem, mem32_t& value );
 template bool rcntWrite32<0x01>( u32 mem, mem32_t& value );
 
-void SaveStateBase::rcntFreeze()
+bool SaveStateBase::rcntFreeze()
 {
 	Freeze( counters );
 	Freeze( hsyncCounter );
@@ -1170,4 +1165,6 @@ void SaveStateBase::rcntFreeze()
 
 	if( IsLoading() )
 		cpuRcntSet();
+
+	return IsOkay();
 }

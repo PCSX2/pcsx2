@@ -109,9 +109,6 @@
     <Filter Include="System\Ps2\iCore">
       <UniqueIdentifier>{5e741f2d-9e0b-4e43-b2a2-44a8370e1546}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\IsoFS">
-      <UniqueIdentifier>{c5237754-2509-4291-b869-c5dacc1a8aba}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\Iop\CDVD\Windows">
       <UniqueIdentifier>{be861049-a142-4650-85a5-a2fdd4eef011}</UniqueIdentifier>
     </Filter>
@@ -174,9 +171,6 @@
     </Filter>
     <Filter Include="System\Ps2\USB">
       <UniqueIdentifier>{df9de75c-2272-4f73-b2a0-4f9f492ba1e9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="System\Ps2\PAD">
-      <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
     <Filter Include="System\Ps2\GS\Shaders">
       <UniqueIdentifier>{38f3b97b-eac6-4085-b6b0-567ec5081242}</UniqueIdentifier>
@@ -271,6 +265,18 @@
     <Filter Include="Misc\ImGui">
       <UniqueIdentifier>{8a23ff29-0a43-4d5b-8c6c-a7722871058a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\Iop\SIO">
+      <UniqueIdentifier>{2fa4b100-51e1-4315-85b2-402a13136f8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\Multitap">
+      <UniqueIdentifier>{9cd399c0-6c75-4872-a785-83bcebd4bd0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\Memcard">
+      <UniqueIdentifier>{d37c74a9-5267-4eed-8356-86720df5beed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\PAD">
+      <UniqueIdentifier>{2ef3ebf7-d2a3-4b33-8059-a09b82c085ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\License.txt">
@@ -318,6 +324,9 @@
     <None Include="x86\microVU_Upper.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
+    <None Include="..\bin\resources\shaders\common\fxaa.fx">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
     <None Include="..\bin\resources\shaders\opengl\convert.glsl">
       <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
@@ -336,8 +345,11 @@
     <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
       <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\common\fxaa.fx">
-      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    <None Include="..\bin\resources\shaders\opengl\imgui.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\present.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
     <None Include="..\bin\resources\shaders\vulkan\interlace.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
@@ -349,6 +361,15 @@
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
     <None Include="..\bin\resources\shaders\vulkan\tfx.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\present.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\imgui.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\tfx.fx">
@@ -364,6 +385,12 @@
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="..\bin\resources\shaders\dx11\convert.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\imgui.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\present.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl">
@@ -521,7 +548,7 @@
     <ClCompile Include="x86\ir5900tables.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iR5900-32.cpp">
+    <ClCompile Include="x86\ix86-32\iR5900.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
     </ClCompile>
     <ClCompile Include="x86\ix86-32\iR5900Arit.cpp">
@@ -594,9 +621,6 @@
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
     <ClCompile Include="R3000AOpcodeTables.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
-    <ClCompile Include="Sio.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
     <ClCompile Include="x86\iR3000A.cpp">
@@ -674,20 +698,11 @@
     <ClCompile Include="rdebug\deci2_ttyp.cpp">
       <Filter>System\Ps2\Debug\rdebug</Filter>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iCore-32.cpp">
+    <ClCompile Include="x86\ix86-32\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
     </ClCompile>
     <ClCompile Include="x86\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
-    </ClCompile>
-    <ClCompile Include="CDVD\IsoFS\IsoFile.cpp">
-      <Filter>System\IsoFS</Filter>
-    </ClCompile>
-    <ClCompile Include="CDVD\IsoFS\IsoFS.cpp">
-      <Filter>System\IsoFS</Filter>
-    </ClCompile>
-    <ClCompile Include="CDVD\IsoFS\IsoFSCDVD.cpp">
-      <Filter>System\IsoFS</Filter>
     </ClCompile>
     <ClCompile Include="GameDatabase.cpp">
       <Filter>Misc</Filter>
@@ -980,9 +995,6 @@
     <ClCompile Include="GS\GSClut.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="GS\GSCrc.cpp">
-      <Filter>System\Ps2\GS</Filter>
-    </ClCompile>
     <ClCompile Include="GS\GSDump.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
@@ -1033,9 +1045,6 @@
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp">
-      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
@@ -1124,12 +1133,6 @@
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryCardFile.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryCardFolder.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -1141,15 +1144,6 @@
     </ClCompile>
     <ClCompile Include="VMManager.cpp">
       <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="PAD\Host\KeyStatus.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
-    <ClCompile Include="PAD\Host\PAD.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
-    <ClCompile Include="PAD\Host\StateManagement.cpp">
-      <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
@@ -1180,12 +1174,6 @@
     </ClCompile>
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
       <Filter>Tools\Input Recording\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryCardProtocol.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
-    <ClCompile Include="MultitapProtocol.cpp">
-      <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
     <ClCompile Include="USB\USB.cpp">
       <Filter>System\Ps2\USB</Filter>
@@ -1244,6 +1232,9 @@
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-turntable.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
@@ -1283,9 +1274,6 @@
     <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\DX12\D3D12Context.cpp">
-      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClCompile>
@@ -1319,9 +1307,6 @@
     <ClCompile Include="GS\Renderers\Vulkan\VKBuilders.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\Vulkan\VKContext.cpp">
-      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\VKLoader.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
@@ -1332,9 +1317,6 @@
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\VKSwapChain.cpp">
-      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\Vulkan\VKUtil.cpp">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="Dmac.cpp">
@@ -1405,6 +1387,48 @@
     </ClCompile>
     <ClCompile Include="ImGui\ImGuiFullscreen.cpp">
       <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\IsoHasher.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\IsoReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp">
+      <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardFolder.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadBase.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadDualshock2.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadGuitar.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadNotConnected.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio0.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio2.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\Pad.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1576,9 +1600,6 @@
     <ClInclude Include="R3000A.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
-    <ClInclude Include="Sio.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
     <ClInclude Include="x86\iR3000A.h">
       <Filter>System\Ps2\Iop\Dynarec</Filter>
     </ClInclude>
@@ -1635,24 +1656,6 @@
     </ClInclude>
     <ClInclude Include="x86\iCore.h">
       <Filter>System\Ps2\iCore</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoDirectory.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFile.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFileDescriptor.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFS.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\IsoFSCDVD.h">
-      <Filter>System\IsoFS</Filter>
-    </ClInclude>
-    <ClInclude Include="CDVD\IsoFS\SectorSource.h">
-      <Filter>System\IsoFS</Filter>
     </ClInclude>
     <ClInclude Include="GameDatabase.h">
       <Filter>Misc</Filter>
@@ -1894,9 +1897,6 @@
     <ClInclude Include="GS\GSExtra.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\GSIntrin.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GSGL.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -1910,9 +1910,6 @@
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS\GSClut.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\GSCrc.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS\GSDump.h">
@@ -1977,9 +1974,6 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSTexture11.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h">
-      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
@@ -2071,12 +2065,6 @@
     <ClInclude Include="GS\Renderers\DX11\D3D.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryCardFolder.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryCardFile.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
     <ClInclude Include="PerformanceMetrics.h">
       <Filter>System\Include</Filter>
     </ClInclude>
@@ -2089,18 +2077,6 @@
     <ClInclude Include="GS.h" />
     <ClInclude Include="VMManager.h">
       <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\KeyStatus.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\PAD.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\StateManagement.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="PAD\Host\Global.h">
-      <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h">
       <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
@@ -2131,15 +2107,6 @@
     </ClInclude>
     <ClInclude Include="ShaderCacheVersion.h">
       <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="SioTypes.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryCardProtocol.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
-    <ClInclude Include="MultitapProtocol.h">
-      <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
     <ClInclude Include="USB\deviceproxy.h">
       <Filter>System\Ps2\USB</Filter>
@@ -2210,6 +2177,9 @@
     <ClInclude Include="USB\usb-pad\usb-pad.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-turntable.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
     <ClInclude Include="USB\usb-pad\lg\lg_ff.h">
       <Filter>System\Ps2\USB\usb-pad\lg</Filter>
     </ClInclude>
@@ -2249,9 +2219,6 @@
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Renderers\DX12\D3D12Context.h">
-      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
     </ClInclude>
@@ -2282,9 +2249,6 @@
     <ClInclude Include="GS\Renderers\Vulkan\VKBuilders.h">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Renderers\Vulkan\VKContext.h">
-      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\Vulkan\VKEntryPoints.h">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
@@ -2298,9 +2262,6 @@
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h">
-      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Renderers\Vulkan\VKUtil.h">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="ps2\pgif.h">
@@ -2353,6 +2314,54 @@
     </ClInclude>
     <ClInclude Include="ImGui\ImGuiFullscreen.h">
       <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\IsoHasher.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\IsoReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Multitap\MultitapProtocol.h">
+      <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardFile.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardFolder.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadBase.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadDualshock2.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadGuitar.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadNotConnected.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadTypes.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio0.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio2.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\SioTypes.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\Pad.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

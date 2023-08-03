@@ -40,6 +40,7 @@ namespace GameList
 		PS2Disc,
 		PS1Disc,
 		ELF,
+		Invalid,
 		Count
 	};
 
@@ -68,6 +69,7 @@ namespace GameList
 		PAL_NL,
 		PAL_NO,
 		PAL_P,
+		PAL_PL,
 		PAL_R,
 		PAL_S,
 		PAL_SC,

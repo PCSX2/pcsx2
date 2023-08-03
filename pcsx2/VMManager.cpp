@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,6 +17,7 @@
 
 #include "Achievements.h"
 #include "CDVD/CDVD.h"
+#include "CDVD/IsoReader.h"
 #include "Counters.h"
 #include "DEV9/DEV9.h"
 #include "DebugTools/MIPSAnalyst.h"
@@ -36,8 +37,6 @@
 #include "LogSink.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "MemoryCardFile.h"
-#include "PAD/Host/PAD.h"
 #include "PCSX2Base.h"
 #include "PINE.h"
 #include "Patch.h"
@@ -45,13 +44,18 @@
 #include "R5900.h"
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
+#include "SIO/Memcard/MemoryCardFile.h"
+#include "SIO/Pad/Pad.h"
+#include "SIO/Sio.h"
+#include "SIO/Sio0.h"
+#include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
-#include "Sio.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
@@ -446,11 +450,11 @@ void VMManager::SetDefaultSettings(
 	}
 	if (controllers)
 	{
-		PAD::SetDefaultControllerConfig(si);
+		Pad::SetDefaultControllerConfig(si);
 		USB::SetDefaultConfiguration(&si);
 	}
 	if (hotkeys)
-		PAD::SetDefaultHotkeyConfig(si);
+		Pad::SetDefaultHotkeyConfig(si);
 	if (ui)
 		Host::SetDefaultUISettings(si);
 }
@@ -460,7 +464,7 @@ void VMManager::LoadSettings()
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
 	LoadCoreSettings(si);
-	PAD::LoadConfig(*si);
+	Pad::LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
 	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
@@ -589,7 +593,12 @@ std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, 
 std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_path)
 {
 	std::string iso_path;
-	if (const u32 crc = cdvdGetElfCRC(elf_path); crc != 0)
+	ElfObject elfo;
+	if (!elfo.OpenFile(elf_path, false, nullptr))
+		return iso_path;
+
+	const u32 crc = elfo.GetCRC();
+	if (crc != 0)
 	{
 		INISettingsInterface si(GetGameSettingsPath(std::string_view(), crc));
 		if (si.Load())
@@ -819,14 +828,13 @@ void VMManager::UpdateDiscDetails(bool booting)
 			s_disc_serial = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override));
 			s_disc_version = {};
 			s_disc_crc = 0; // set below
-			title = s_disc_serial;
 		}
 		else
 		{
 			s_disc_serial = BiosSerial;
 			s_disc_version = {};
 			s_disc_crc = 0;
-			title = fmt::format("PS2 BIOS ({})", BiosZone);
+			title = fmt::format(TRANSLATE_FS("VMManager", "PS2 BIOS ({})"), BiosZone);
 		}
 
 		// If we're booting an ELF, use its CRC, not the disc (if any).
@@ -861,22 +869,17 @@ void VMManager::UpdateDiscDetails(bool booting)
 			else
 			{
 				Console.Warning(fmt::format("Serial '{}' not found in GameDB.", s_disc_serial));
-
-				// Use ELF title, otherwise the serial.
-				if (!s_elf_override.empty())
-				{
-					title = fmt::format("Unknown Game: {} [{}]", s_disc_serial,
-						Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
-				}
-				else
-				{
-					title = fmt::format("Unknown Game: {}", s_disc_serial);
-				}
 			}
 		}
-		else if (title.empty())
+
+		if (title.empty())
 		{
-			title = "Unknown Game";
+			if (!s_disc_serial.empty())
+				title = fmt::format("{} [?]", s_disc_serial);
+			else if (!s_disc_elf.empty())
+				title = fmt::format("{} [?]", Path::GetFileName(IsoReader::RemoveVersionIdentifierFromPath(s_disc_elf)));
+			else
+				title = TRANSLATE_STR("VMManager", "Unknown Game");
 		}
 
 		s_title = std::move(title);
@@ -901,6 +904,8 @@ void VMManager::UpdateDiscDetails(bool booting)
 
 	ReportGameChangeToHost();
 	Achievements::GameChanged(s_disc_crc, s_current_crc);
+	if (MTGS::IsOpen())
+		MTGS::GameChanged();
 	ReloadPINE();
 	UpdateDiscordPresence(Achievements::GetRichPresenceString());
 
@@ -941,29 +946,25 @@ void VMManager::HandleELFChange(bool verbose_patches_if_changed)
 
 void VMManager::UpdateELFInfo(std::string elf_path)
 {
-	try
+	Error error;
+	ElfObject elfo;
+	if (elf_path.empty() || !cdvdLoadElf(&elfo, elf_path, false, &error))
 	{
-		std::unique_ptr<ElfObject> elfptr = cdvdLoadElf(elf_path, false);
-		elfptr->loadHeaders();
-		s_current_crc = elfptr->getCRC();
-		s_elf_entry_point = elfptr->getEntryPoint();
-		s_elf_text_range = elfptr->getTextRange();
-		s_elf_path = std::move(elf_path);
+		if (!elf_path.empty())
+			Console.Error(fmt::format("Failed to read ELF being loaded: {}: {}", elf_path, error.GetDescription()));
+
+		s_elf_path = {};
+		s_elf_text_range = {};
+		s_elf_entry_point = 0xFFFFFFFFu;
+		s_current_crc = 0;
 		return;
 	}
-	catch ([[maybe_unused]] Exception::FileNotFound& e)
-	{
-	}
-	catch (Exception::BadStream& ex)
-	{
-		Console.Error(ex.FormatDiagnosticMessage());
-	}
 
-	Console.Error(fmt::format("Failed to read ELF being loaded: {}", elf_path));
-	s_elf_path = {};
-	s_elf_text_range = {};
-	s_elf_entry_point = 0xFFFFFFFFu;
-	s_current_crc = 0;
+	elfo.LoadHeaders();
+	s_current_crc = elfo.GetCRC();
+	s_elf_entry_point = elfo.GetEntryPoint();
+	s_elf_text_range = elfo.GetTextRange();
+	s_elf_path = std::move(elf_path);
 }
 
 void VMManager::ClearELFInfo()
@@ -1039,7 +1040,6 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	{
 		// make sure we're not fast booting when we have no filename
 		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
-		s_fast_boot_requested = false;
 		return true;
 	}
 }
@@ -1125,17 +1125,14 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Console.WriteLn("Loading BIOS...");
 		if (!LoadBIOS())
 		{
-			// TODO: When we translate core strings, translate this.
-
-			const char* message =
-				"PCSX2 requires a PS2 BIOS in order to run.\n\n"
-				"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
-				"doesn't count).\n\n"
-				"Once dumped, this BIOS image should be placed in the bios folder within the data directory "
-				"(Tools Menu -> Open Data Directory).\n\n"
-				"Please consult the FAQs and Guides for further instructions.";
-
-			Host::ReportErrorAsync("Startup Error", message);
+			Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Error"),
+				TRANSLATE_SV("VMManager",
+					"PCSX2 requires a PS2 BIOS in order to run.\n\n"
+					"For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing "
+					"doesn't count).\n\n"
+					"Once dumped, this BIOS image should be placed in the bios folder within the data directory "
+					"(Tools Menu -> Open Data Directory).\n\n"
+					"Please consult the FAQs and Guides for further instructions."));
 			return false;
 		}
 	}
@@ -1157,6 +1154,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// ELFs must be fast booted, and GS dumps are never fast booted.
 	s_fast_boot_requested =
 		(boot_params.fast_boot.value_or(static_cast<bool>(EmuConfig.EnableFastBoot)) || !s_elf_override.empty()) &&
+		(CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc || !s_elf_override.empty()) &&
 		!GSDumpReplayer::IsReplayingDump();
 
 	if (!s_elf_override.empty())
@@ -1169,7 +1167,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 
 		Hle_SetElfPath(s_elf_override.c_str());
-		s_fast_boot_requested = true;
 	}
 	else
 	{
@@ -1210,15 +1207,33 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	}
 	ScopedGuard close_spu2(&SPU2::Close);
 
-	Console.WriteLn("Opening PAD...");
-	if (PADinit() != 0 || PADopen() != 0)
+	
+	Console.WriteLn("Initializing Pad...");
+	if (!Pad::Initialize())
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD.");
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize PAD");
 		return false;
 	}
-	ScopedGuard close_pad = []() {
-		PADclose();
-		PADshutdown();
+	ScopedGuard close_pad = &Pad::Shutdown;
+
+	Console.WriteLn("Initializing SIO2...");
+	if (!g_Sio2.Initialize())
+	{
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO2");
+		return false;
+	}
+	ScopedGuard close_sio2 = []() {
+		g_Sio2.Shutdown();
+	};
+
+	Console.WriteLn("Initializing SIO0...");
+	if (!g_Sio0.Initialize())
+	{
+		Host::ReportErrorAsync("Startup Error", "Failed to initialize SIO0");
+		return false;
+	}
+	ScopedGuard close_sio0 = []() {
+		g_Sio0.Shutdown();
 	};
 
 	Console.WriteLn("Opening DEV9...");
@@ -1253,6 +1268,8 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_usb.Cancel();
 	close_dev9.Cancel();
 	close_pad.Cancel();
+	close_sio2.Cancel();
+	close_sio0.Cancel();
 	close_spu2.Cancel();
 	close_gs.Cancel();
 	close_memcards.Cancel();
@@ -1349,7 +1366,9 @@ void VMManager::Shutdown(bool save_resume_state)
 	vtlb_Shutdown();
 	USBclose();
 	SPU2::Close();
-	PADclose();
+	Pad::Shutdown();
+	g_Sio2.Shutdown();
+	g_Sio0.Shutdown();
 	DEV9close();
 	DoCDVDclose();
 	FWclose();
@@ -1367,7 +1386,6 @@ void VMManager::Shutdown(bool save_resume_state)
 		MTGS::WaitForClose();
 	}
 
-	PADshutdown();
 	DEV9shutdown();
 
 	if (GSDumpReplayer::IsReplayingDump())
@@ -1428,7 +1446,7 @@ void VMManager::Reset()
 		s_state.store(VMState::Running, std::memory_order_release);
 }
 
-void SaveStateBase::vmFreeze()
+bool SaveStateBase::vmFreeze()
 {
 	const u32 prev_crc = s_current_crc;
 	const std::string prev_elf = s_elf_path;
@@ -1459,6 +1477,8 @@ void SaveStateBase::vmFreeze()
 		if (s_current_crc != prev_crc || s_elf_path != prev_elf || s_elf_executed != prev_elf_executed)
 			VMManager::HandleELFChange(true);
 	}
+
+	return IsOkay();
 }
 
 std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot)
@@ -1507,24 +1527,23 @@ bool VMManager::DoLoadState(const char* filename)
 	if (GSDumpReplayer::IsReplayingDump())
 		return false;
 
-	try
+	Host::OnSaveStateLoading(filename);
+
+	Error error;
+	if (!SaveState_UnzipFromDisk(filename, &error))
 	{
-		Host::OnSaveStateLoading(filename);
-		SaveState_UnzipFromDisk(filename);
-		Host::OnSaveStateLoaded(filename, true);
-		if (g_InputRecording.isActive())
-		{
-			g_InputRecording.handleLoadingSavestate();
-			MTGS::PresentCurrentFrame();
-		}
-		return true;
-	}
-	catch (Exception::BaseException& e)
-	{
-		Host::ReportErrorAsync("Failed to load save state", e.UserMsg());
-		Host::OnSaveStateLoaded(filename, false);
+		Host::ReportErrorAsync("Failed to load save state", error.GetDescription());
 		return false;
 	}
+
+	Host::OnSaveStateLoaded(filename, true);
+	if (g_InputRecording.isActive())
+	{
+		g_InputRecording.handleLoadingSavestate();
+		MTGS::PresentCurrentFrame();
+	}
+
+	return true;
 }
 
 bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state)
@@ -1533,47 +1552,46 @@ bool VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		return false;
 
 	std::string osd_key(fmt::format("SaveStateSlot{}", slot_for_message));
+	Error error;
 
-	try
-	{
-		std::unique_ptr<ArchiveEntryList> elist(SaveState_DownloadState());
-		std::unique_ptr<SaveStateScreenshotData> screenshot(SaveState_SaveScreenshot());
-
-		if (FileSystem::FileExists(filename) && backup_old_state)
-		{
-			const std::string backup_filename(fmt::format("{}.backup", filename));
-			Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
-			if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
-			{
-				Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-					fmt::format(
-						TRANSLATE_SV("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
-					Host::OSD_ERROR_DURATION);
-			}
-		}
-
-		if (zip_on_thread)
-		{
-			// lock order here is important; the thread could exit before we resume here.
-			std::unique_lock lock(s_save_state_threads_mutex);
-			s_save_state_threads.emplace_back(&VMManager::ZipSaveStateOnThread, std::move(elist), std::move(screenshot),
-				std::move(osd_key), std::string(filename), slot_for_message);
-		}
-		else
-		{
-			ZipSaveState(std::move(elist), std::move(screenshot), std::move(osd_key), filename, slot_for_message);
-		}
-
-		Host::OnSaveStateSaved(filename);
-		return true;
-	}
-	catch (Exception::BaseException& e)
+	std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState(&error);
+	if (!elist)
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state: {}."), e.DiagMsg()),
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save save state: {}."), error.GetDescription()),
 			Host::OSD_ERROR_DURATION);
 		return false;
 	}
+
+	std::unique_ptr<SaveStateScreenshotData> screenshot = SaveState_SaveScreenshot();
+
+	if (FileSystem::FileExists(filename) && backup_old_state)
+	{
+		const std::string backup_filename(fmt::format("{}.backup", filename));
+		Console.WriteLn(fmt::format("Creating save state backup {}...", backup_filename));
+		if (!FileSystem::RenamePath(filename, backup_filename.c_str()))
+		{
+			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
+				fmt::format(
+					TRANSLATE_FS("VMManager", "Failed to back up old save state {}."), Path::GetFileName(filename)),
+				Host::OSD_ERROR_DURATION);
+		}
+	}
+
+	if (zip_on_thread)
+	{
+		// lock order here is important; the thread could exit before we resume here.
+		std::unique_lock lock(s_save_state_threads_mutex);
+		s_save_state_threads.emplace_back(&VMManager::ZipSaveStateOnThread, std::move(elist), std::move(screenshot),
+			std::move(osd_key), std::string(filename), slot_for_message);
+	}
+	else
+	{
+		ZipSaveState(std::move(elist), std::move(screenshot), std::move(osd_key), filename, slot_for_message);
+	}
+
+	Host::OnSaveStateSaved(filename);
+	return true;
 }
 
 void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
@@ -1587,14 +1605,14 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 		if (slot_for_message >= 0 && VMManager::HasValidVM())
 		{
 			Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SAVE,
-				fmt::format(TRANSLATE_SV("VMManager", "State saved to slot {}."), slot_for_message),
+				fmt::format(TRANSLATE_FS("VMManager", "State saved to slot {}."), slot_for_message),
 				Host::OSD_QUICK_DURATION);
 		}
 	}
 	else
 	{
 		Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "Failed to save save state to slot {}."), slot_for_message,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save save state to slot {}."), slot_for_message,
 				Host::OSD_ERROR_DURATION));
 	}
 
@@ -1681,7 +1699,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 	if (filename.empty())
 	{
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
-			fmt::format(TRANSLATE_SV("VMManager", "There is no save state in slot {}."), slot),
+			fmt::format(TRANSLATE_FS("VMManager", "There is no save state in slot {}."), slot),
 			Host::OSD_QUICK_DURATION);
 		return false;
 	}
@@ -1694,7 +1712,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 #endif
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
-		fmt::format(TRANSLATE_SV("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
+		fmt::format(TRANSLATE_FS("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
 	return DoLoadState(filename.c_str());
 }
 
@@ -1711,7 +1729,7 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 
 	// if it takes more than a minute.. well.. wtf.
 	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE,
-		fmt::format(TRANSLATE_SV("VMManager", "Saving state to slot {}..."), slot), 60.0f);
+		fmt::format(TRANSLATE_FS("VMManager", "Saving state to slot {}..."), slot), 60.0f);
 	return DoSaveState(filename.c_str(), slot, zip_on_thread, EmuConfig.BackupSavestate);
 }
 
@@ -1779,14 +1797,14 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		else
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				fmt::format(TRANSLATE_SV("VMManager", "Disc changed to '{}'."), display_name), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_FS("VMManager", "Disc changed to '{}'."), display_name), Host::OSD_INFO_DURATION);
 		}
 	}
 	else
 	{
 		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
 			fmt::format(
-				TRANSLATE_SV("VMManager", "Failed to open new disc image '{}'. Reverting to old image."), display_name),
+				TRANSLATE_FS("VMManager", "Failed to open new disc image '{}'. Reverting to old image."), display_name),
 			Host::OSD_ERROR_DURATION);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
@@ -1964,7 +1982,8 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 
 void VMManager::Internal::VSyncOnCPUThread()
 {
-	// TODO: Move frame limiting here to reduce CPU usage after sleeping...
+	Pad::UpdateMacroButtons();
+
 	Patch::ApplyLoadedPatches(Patch::PPT_CONTINUOUSLY);
 	Patch::ApplyLoadedPatches(Patch::PPT_COMBINED_0_1);
 
@@ -2210,7 +2229,10 @@ void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool 
 void VMManager::EnforceAchievementsChallengeModeSettings()
 {
 	if (!Achievements::ChallengeModeActive())
+	{
+		Host::RemoveKeyedOSDMessage("ChallengeDisableCheats");
 		return;
+	}
 
 	static constexpr auto ClampSpeed = [](float& rate) {
 		if (rate > 0.0f && rate < 1.0f)

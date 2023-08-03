@@ -46,10 +46,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlignedMalloc.cpp" />
+    <ClCompile Include="Assertions.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="DynamicLibrary.cpp" />
-    <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="Error.cpp" />
     <ClCompile Include="FastJmp.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -68,6 +69,7 @@
     <ClCompile Include="StackWalker.cpp" />
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
+    <ClCompile Include="TextureDecompress.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="WAVWriter.cpp" />
     <ClCompile Include="WindowInfo.cpp" />
@@ -101,14 +103,14 @@
     <MASM Include="FastJmp.asm" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Align.h" />
+    <ClInclude Include="BitUtils.h" />
     <ClInclude Include="AlignedMalloc.h" />
-    <ClInclude Include="BitCast.h" />
     <ClInclude Include="ByteSwap.h" />
     <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="DynamicLibrary.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
+    <ClInclude Include="Error.h" />
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HashCombine.h" />
@@ -131,15 +133,14 @@
     <ClInclude Include="SettingsWrapper.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="Exceptions.h" />
     <ClInclude Include="General.h" />
-    <ClInclude Include="MathUtils.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="TextureDecompress.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="WAVWriter.h" />
     <ClInclude Include="WindowInfo.h" />

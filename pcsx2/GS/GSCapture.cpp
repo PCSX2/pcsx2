@@ -25,7 +25,7 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "common/Assertions.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/DynamicLibrary.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -95,6 +95,7 @@ extern "C" {
 	X(av_strerror) \
 	X(av_reduce) \
 	X(av_dict_parse_string) \
+	X(av_dict_get) \
 	X(av_dict_free) \
 	X(av_opt_set_int) \
 	X(av_opt_set_sample_fmt) \
@@ -408,8 +409,14 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 					fmt::format("Video codec {} not found, using default.", GSConfig.VideoCaptureCodec), Host::OSD_ERROR_DURATION);
 			}
 		}
+
+		// FFmpeg decides whether mp4, mkv, etc should use h264 or mpeg4 as their default codec by whether x264 was enabled
+		// But there's a lot of other h264 encoders (e.g. hardware encoders) we may want to use instead
+		if (!vcodec && wrap_avformat_query_codec(output_format, AV_CODEC_ID_H264, FF_COMPLIANCE_NORMAL))
+			vcodec = wrap_avcodec_find_encoder(AV_CODEC_ID_H264);
 		if (!vcodec)
 			vcodec = wrap_avcodec_find_encoder(output_format->video_codec);
+
 		if (!vcodec)
 		{
 			Host::AddIconOSDMessage("GSCaptureError", ICON_FA_CAMERA, "Failed to find video encoder.", Host::OSD_ERROR_DURATION);
@@ -528,6 +535,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		if (output_format->flags & AVFMT_GLOBALHEADER)
 			s_video_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
+		bool has_pixel_format_override = wrap_av_dict_get(s_video_codec_arguments, "pixel_format", nullptr, 0);
+
 		res = wrap_avcodec_open2(s_video_codec_context, vcodec, &s_video_codec_arguments);
 		if (res < 0)
 		{
@@ -535,6 +544,10 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			InternalEndCapture(lock);
 			return false;
 		}
+
+		// If the user overrode the pixel format, get that now
+		if (has_pixel_format_override)
+			sw_pix_fmt = s_video_codec_context->pix_fmt;
 
 		s_converted_video_frame = wrap_av_frame_alloc();
 		s_hw_video_frame = IsUsingHardwareVideoEncoding() ? wrap_av_frame_alloc() : nullptr;
@@ -794,6 +807,9 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	s_capturing.store(true, std::memory_order_release);
 	StartEncoderThread();
+
+	lock.unlock();
+	Host::OnCaptureStarted(s_filename);
 	return true;
 }
 
@@ -1111,7 +1127,7 @@ bool GSCapture::ProcessAudioPackets(s64 video_pts)
 			else
 			{
 				// Direct copy - optimal.
-				std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps,
+				std::memcpy(s_converted_audio_frame->data[0] + s_audio_frame_pos * s_audio_frame_bps * AUDIO_CHANNELS,
 					&s_audio_buffer[s_audio_buffer_read_pos * AUDIO_CHANNELS], this_batch * sizeof(s16) * AUDIO_CHANNELS);
 			}
 		}
@@ -1300,8 +1316,12 @@ void GSCapture::InternalEndCapture(std::unique_lock<std::mutex>& lock)
 
 void GSCapture::EndCapture()
 {
-	std::unique_lock<std::mutex> lock(s_lock);
-	InternalEndCapture(lock);
+	{
+		std::unique_lock<std::mutex> lock(s_lock);
+		InternalEndCapture(lock);
+	}
+
+	Host::OnCaptureStopped();
 }
 
 bool GSCapture::IsCapturing()
@@ -1327,6 +1347,61 @@ const Threading::ThreadHandle& GSCapture::GetEncoderThreadHandle()
 GSVector2i GSCapture::GetSize()
 {
 	return s_size;
+}
+
+std::string GSCapture::GetNextCaptureFileName()
+{
+	std::string ret;
+	if (!IsCapturing())
+		return ret;
+
+	const std::string_view ext = Path::GetExtension(s_filename);
+	std::string_view name = Path::GetFileTitle(s_filename);
+
+	// Should end with a number.
+	int partnum = 2;
+	std::string_view::size_type pos = name.rfind("_part");
+	if (pos >= 0)
+	{
+		std::string_view::size_type cpos = pos + 5;
+		for (; cpos < name.length(); cpos++)
+		{
+			if (name[cpos] < '0' || name[cpos] > '9')
+				break;
+		}
+		if (cpos == name.length())
+		{
+			// Has existing part number, so add to it.
+			partnum = StringUtil::FromChars<int>(name.substr(pos + 5)).value_or(1) + 1;
+			name = name.substr(0, pos);
+		}
+	}
+
+	// If we haven't started a new file previously, add "_part2".
+	ret = Path::BuildRelativePath(s_filename, fmt::format("{}_part{:03d}.{}", name, partnum, ext));
+	return ret;
+}
+
+void GSCapture::Flush()
+{
+	std::unique_lock<std::mutex> lock(s_lock);
+
+	if (s_encoding_error)
+		return;
+
+	ProcessAllInFlightFrames(lock);
+
+	if (IsCapturingAudio())
+	{
+		// Clear any buffered audio frames out, we don't want to delay the CPU thread.
+		const u32 audio_frames = s_audio_buffer_size.load(std::memory_order_acquire);
+		if (audio_frames > 0)
+			Console.Warning("Dropping %u audio frames on for buffer clear.", audio_frames);
+
+		s_audio_buffer_read_pos = 0;
+		s_audio_buffer_write_pos = 0;
+		s_audio_buffer_size.store(0, std::memory_order_release);
+	}
 }
 
 GSCapture::CodecList GSCapture::GetCodecListForContainer(const char* container, AVMediaType type)

@@ -17,6 +17,7 @@
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSHwHack.h"
 #include "GS/GSGL.h"
+#include "GS/GSUtil.h"
 
 static bool s_nativeres;
 
@@ -194,6 +195,36 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
 	{
+		if (r.IsPossibleChannelShuffle())
+		{
+			pxAssertMsg((RTBP0 & 31) == 0, "TEX0 should be page aligned");
+
+			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
+				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+			if (!rt)
+				return false;
+
+			GL_INS("GSC_Tekken5(): HLE channel shuffle");
+
+			// have to set up the palette ourselves too, since GSC executes before it does
+			r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA);
+			std::shared_ptr<GSTextureCache::Palette> palette =
+				g_texture_cache->LookupPaletteObject(r.m_mem.m_clut, GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
+			if (!palette)
+				return false;
+
+			GSHWDrawConfig& conf = r.BeginHLEHardwareDraw(
+				rt->GetTexture(), nullptr, rt->GetScale(), rt->GetTexture(), rt->GetScale(), rt->GetUnscaledRect());
+			conf.pal = palette->GetPaletteGSTexture();
+			conf.ps.channel = ChannelFetch_RGB;
+			conf.colormask.wa = false;
+			r.EndHLEHardwareDraw(false);
+
+			// 12 pages: 2 calls by channel, 3 channels, 1 blit
+			skip = 12 * (3 + 3 + 1);
+			return true;
+		}
+
 		if (!s_nativeres && RTME && (RFBP == 0x02d60 || RFBP == 0x02d80 || RFBP == 0x02ea0 || RFBP == 0x03620 || RFBP == 0x03640) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSMCT32)
 		{
 			// Don't enable hack on native res if crc is below aggressive.
@@ -215,20 +246,104 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 
 bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 {
-	if (RFBW == 2 && std::abs(static_cast<int>(RFBP) - static_cast<int>(RZBP)) <= static_cast<int>(BLOCKS_PER_PAGE) && (!RTME || RTPSM != PSMT8))
-	{
-		skip = 2;
-		return true;
-	}
+	// Burnout has a... creative way of achieving its bloom effect, to avoid horizontal page breaks.
+	// First they double strip clear a single page column to (191, 191, 191), then blend the main
+	// framebuffer into this column, with (Cs - Cd) * 2. So anything lower than 191 clamps to zero,
+	// and anything larger boosts up a bit. Then that column gets downsampled to half size, makes
+	// sense right? The fun bit is when they move to the next page, instead of being sensible and
+	// using another double strip clear, they write Z to the next page as part of the blended draw,
+	// setting it to 191 (in Z24 terms). Then the buffers are swapped for the next column, 0x1a40
+	// and 0x1a60 in US.
+	//
+	// We _could_ handle that, except for the fact that instead of pointing the texture at 0x1a60
+	// for the downsample of the second column, they point it at 0x1a40, and offset the coordinates
+	// by a page. This would need "tex outside RT", and no way that's happening.
+	//
+	// So, I present to you, dear reader, the first state machine within a CRC hack, in all its
+	// disgusting glory. This effectively reduces the multi-pass effect to a single pass, by replacing
+	// the column-wide draws with a fullscreen sprite, and skipping the extra passes.
+	//
+	// After this, they do a blur on the buffer, which is fine, because all the buffer swap BS has
+	// finished, so we can return to normal.
 
-	// We don't check if we already have a skip here, because it gets confused when auto flush is on.
-	if (RTME && (RFBP == 0x01dc0 || RFBP == 0x01c00 || RFBP == 0x01f00 || RFBP == 0x01d40 || RFBP == 0x02200 || RFBP == 0x02000) && RFPSM == RTPSM && (RTBP0 == 0x01dc0 || RTBP0 == 0x01c00 || RTBP0 == 0x01f00 || RTBP0 == 0x01d40 || RTBP0 == 0x02200 || RTBP0 == 0x02000) && RTPSM == PSMCT32)
+	static u32 state = 0;
+	static GIFRegTEX0 main_fb;
+	static GSVector2i main_fb_size;
+	static GIFRegTEX0 downsample_fb;
+	static GIFRegTEX0 bloom_fb;
+	switch (state)
 	{
-		// 0x01dc0 01c00(MP) ntsc, 0x01f00 0x01d40(MP) ntsc progressive, 0x02200(MP) pal.
-		// Yellow stripes.
-		// Multiplayer tested only on Takedown.
-		skip = 3;
-		return true;
+		case 0: // waiting for double striped clear
+		{
+			if (RFBW != 2 || RFBP != RZBP || RTME)
+				break;
+
+			// Need a backed up context to grab the framebuffer.
+			if (r.m_backed_up_ctx < 0)
+				break;
+
+			// Next draw should contain our source.
+			GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(r.m_env.CTXT[r.m_backed_up_ctx].TEX0,
+				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+			if (!tgt)
+				break;
+
+			// Clear temp render target.
+			main_fb = tgt->m_TEX0;
+			main_fb_size = tgt->GetUnscaledSize();
+			r.m_cached_ctx.FRAME.FBW = tgt->m_TEX0.TBW;
+			r.m_cached_ctx.ZBUF.ZMSK = true;
+			r.ReplaceVerticesWithSprite(GSVector4i::loadh(main_fb_size), main_fb_size);
+			bloom_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
+			state = 1;
+			GL_INS("GSC_BurnoutGames(): Initial double-striped clear.");
+			return true;
+		}
+
+		case 1: // reverse blend to extract bright pixels
+		{
+			r.ReplaceVerticesWithSprite(GSVector4i::loadh(main_fb_size), main_fb_size);
+			r.m_cached_ctx.ZBUF.ZMSK = true;
+			state = 2;
+			GL_INS("GSC_BurnoutGames(): Extract Bright Pixels.");
+			return true;
+		}
+
+		case 2: // downsample
+		{
+			const GSVector4i downsample_rect = GSVector4i(0, 0, ((main_fb_size.x / 2) - 1), ((main_fb_size.y / 2) - 1));
+			const GSVector4i uv_rect = GSVector4i(0, 0, (downsample_rect.z * 2) - std::min(r.GetUpscaleMultiplier()-1.0f, 4.0f) * 3 , (downsample_rect.w * 2) - std::min(r.GetUpscaleMultiplier()-1.0f, 4.0f) * 3);
+			r.ReplaceVerticesWithSprite(downsample_rect, uv_rect, main_fb_size, downsample_rect);
+			downsample_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
+			state = 3;
+			GL_INS("GSC_BurnoutGames(): Downsampling.");
+			return true;
+		}
+
+		case 3:
+		{
+			// Kill the downsample source, because we made it way larger than it was supposed to be.
+			// That way we don't risk confusing any other targets.
+			g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bloom_fb.TBP0);
+			state = 4;
+			[[fallthrough]];
+		}
+
+		case 4: // Skip until it's downsampled again.
+		{
+			if (!RTME || RTBP0 != downsample_fb.TBP0)
+			{
+				GL_INS("GSC_BurnoutGames(): Skipping extra pass.");
+				skip = 1;
+				return true;
+			}
+
+			// Finally, we're done, let the game take over.
+			GL_INS("GSC_BurnoutGames(): Bloom effect done.");
+			skip = 0;
+			state = 0;
+			return true;
+		}
 	}
 
 	return GSC_BlackAndBurnoutSky(r, skip);
@@ -615,7 +730,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	// have to set up the palette ourselves too, since GSC executes before it does
 	r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA);
 	std::shared_ptr<GSTextureCache::Palette> palette =
-		g_texture_cache->LookupPaletteObject(GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
+		g_texture_cache->LookupPaletteObject(r.m_mem.m_clut, GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
 	if (!palette)
 		return false;
 
@@ -636,6 +751,48 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 {
 	GSDrawingContext* context = r.m_context;
+
+	// Nicktoons does its weird dithered depth pattern during FMV's also, which really screws the frame width up, which is wider for FMV's
+	// and so fails to work correctly in the HW renderer and makes a mess of the width, so let's expand the draw to match the proper width.
+	if (RPRIM->TME && RTEX0.TW == 3 && RTEX0.TH == 3 && RTEX0.PSM == 0 && RFRAME.FBMSK == 0x00FFFFFF && RFRAME.FBW == 8 && r.PCRTCDisplays.GetResolution().x > 512)
+	{
+		// Check we are drawing stripes
+		for (u32 i = 1; i < r.m_vertex.tail; i+=2)
+		{
+			int value = (((r.m_vertex.buff[i].XYZ.X - r.m_vertex.buff[i - 1].XYZ.X) + 8) >> 4);
+			if (value != 32)
+				return false;
+		}
+
+		r.m_r.x = r.m_vt.m_min.p.x;
+		r.m_r.y = r.m_vt.m_min.p.y;
+		r.m_r.z = r.PCRTCDisplays.GetResolution().x;
+		r.m_r.w = r.m_vt.m_max.p.y;
+
+		for (int vert = 32; vert < 40; vert+=2)
+		{
+			r.m_vertex.buff[vert].XYZ.X = context->XYOFFSET.OFX + (((vert * 16) << 4) - 8);
+			r.m_vertex.buff[vert].XYZ.Y = context->XYOFFSET.OFY;
+			r.m_vertex.buff[vert].U = (vert * 16) << 4;
+			r.m_vertex.buff[vert].V = 0;
+			r.m_vertex.buff[vert+1].XYZ.X = context->XYOFFSET.OFX + ((((vert * 16) + 32) << 4) - 8);
+			r.m_vertex.buff[vert+1].XYZ.Y = context->XYOFFSET.OFY + 8184; //511.5
+			r.m_vertex.buff[vert+1].U = ((vert * 16) + 32) << 4;
+			r.m_vertex.buff[vert+1].V = 512 << 4;
+		}
+
+		/*r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 2;
+		r.m_index.tail = 2;*/
+
+		r.m_vt.m_max.p.x = r.m_r.z;
+		r.m_vt.m_max.p.y = r.m_r.w;
+		r.m_vt.m_max.t.x = r.m_r.z;
+		r.m_vt.m_max.t.y = r.m_r.w;
+		context->scissor.in.z = r.m_r.z;
+		context->scissor.in.w = r.m_r.w;
+
+		RFRAME.FBW = 10;
+	}
 
 	// Whoever wrote this was kinda nuts. They draw a stipple/dither pattern to a framebuffer, then reuse that as
 	// the depth buffer. Textures are then drawn repeatedly on top of one another, each with a slight offset.
@@ -845,6 +1002,8 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 			{
 				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				g_gs_device->ClearRenderTarget(tmp_rt->m_texture, 0);
+				tmp_rt->m_alpha_max = 0;
+				tmp_rt->m_alpha_min = 0;
 			}
 
 			return false;
@@ -968,6 +1127,8 @@ bool GSHwHack::OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GS
 	if (!r.CanUseSwSpriteRender())
 		return true;
 
+	if (!r.PRIM->TME)
+		return true;
 	// Render palette via CPU.
 	r.SwSpriteRender();
 
@@ -1104,6 +1265,176 @@ bool GSHwHack::OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#define RBITBLTBUF r.m_env.BITBLTBUF
+#define RSBP r.m_env.BITBLTBUF.SBP
+#define RSBW r.m_env.BITBLTBUF.SBW
+#define RSPSM r.m_env.BITBLTBUF.SPSM
+#define RDBP r.m_env.BITBLTBUF.DBP
+#define RDBW r.m_env.BITBLTBUF.DBW
+#define RDPSM r.m_env.BITBLTBUF.DPSM
+#define RWIDTH r.m_env.TRXREG.RRW
+#define RHEIGHT r.m_env.TRXREG.RRH
+#define RSX r.m_env.TRXPOS.SSAX
+#define RSY r.m_env.TRXPOS.SSAY
+#define RDX r.m_env.TRXPOS.DSAX
+#define RDY r.m_env.TRXPOS.DSAY
+
+static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIFRegTEX0 src_desc,
+	GSTextureCache::Target** dst, GIFRegTEX0 dst_desc, bool req_target, bool preserve_target)
+{
+	// The source needs to exist.
+	const int src_type =
+		GSLocalMemory::m_psm[src_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
+	GSTextureCache::Target* tsrc =
+		g_texture_cache->LookupTarget(src_desc, GSVector2i(1, 1), r.GetTextureScaleFactor(), src_type);
+	if (!src)
+		return false;
+
+	// The target might not.
+	const int dst_type =
+		GSLocalMemory::m_psm[dst_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
+	GSTextureCache::Target* tdst = g_texture_cache->LookupTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetScale(),
+		dst_type, true, 0, false, false, preserve_target, preserve_target, tsrc->GetUnscaledRect());
+	if (!tdst)
+	{
+		if (req_target)
+			return false;
+
+		tdst = g_texture_cache->CreateTarget(dst_desc, tsrc->GetUnscaledSize(), tsrc->GetUnscaledSize(), tsrc->GetScale(), dst_type, true, 0,
+			false, false, true, tsrc->GetUnscaledRect());
+		if (!tdst)
+			return false;
+	}
+
+	if (!preserve_target)
+	{
+		g_texture_cache->InvalidateVideoMemType(
+			(dst_type == GSTextureCache::RenderTarget) ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget,
+			dst_desc.TBP0);
+
+		GL_INS("GetMoveTargetPair(): Clearing dirty list.");
+		tdst->m_dirty.clear();
+	}
+	else
+	{
+		tdst->Update();
+	}
+
+	*src = tsrc;
+	*dst = tdst;
+	return true;
+}
+
+// Disabled to avoid compiler warnings, enable when it is needed.
+static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GSTextureCache::Target** dst,
+	bool req_target = false, bool preserve_target = false)
+{
+	return GetMoveTargetPair(r, src, GIFRegTEX0::Create(RSBP, RSBW, RSPSM), dst, GIFRegTEX0::Create(RDBP, RDBW, RDPSM),
+		req_target, preserve_target);
+}
+
+static int s_last_hacked_move_n = 0;
+
+bool GSHwHack::MV_Growlanser(GSRendererHW& r)
+{
+	// Growlanser games have precomputed backgrounds and depth buffers, then draw the characters over the top. But
+	// instead of pre-swizzling it, or doing a large 512x448 move, they draw each page of depth to a temporary buffer
+	// (FBP 0), then move it, one quadrant (of a page) at a time to 0x1C00, in C32 format. Why they didn't just use a
+	// C32->Z32 move is beyond me... Anyway, since we don't swizzle targets in VRAM, the first move would need to
+	// readback (slow), and lose upscaling. The real issue is that because we don't preload depth targets, even with
+	// EE writes, the depth buffer gets cleared, and the background never occludes the foreground. So, we'll intercept
+	// the first move, prefill the depth buffer at 0x1C00, and skip the rest of them, so it's ready for the game.
+
+	// Only 32x16 moves in C32.
+	if (RWIDTH != 32 || RHEIGHT != 16 || RSPSM != PSMCT32 || RDPSM != PSMCT32)
+		return false;
+
+	// All the moves happen inbetween two draws, so we can take advantage of that to know when to stop.
+	if (r.s_n == s_last_hacked_move_n)
+		return true;
+
+	GSTextureCache::Target *src, *dst;
+	if (!GetMoveTargetPair(
+			r, &src, GIFRegTEX0::Create(RSBP, RSBW, RSPSM), &dst, GIFRegTEX0::Create(RDBP, RDBW, PSMZ32), false, false))
+	{
+		return false;
+	}
+
+	const GSVector4i rc = src->GetUnscaledRect().rintersect(dst->GetUnscaledRect());
+	dst->m_TEX0.TBW = src->m_TEX0.TBW;
+	dst->UpdateValidity(rc);
+
+	GL_INS("MV_Growlanser: %x -> %x %dx%d", RSBP, RDBP, src->GetUnscaledWidth(), src->GetUnscaledHeight());
+
+	g_gs_device->StretchRect(src->GetTexture(), GSVector4(rc) / GSVector4(src->GetUnscaledSize()).xyxy(),
+		dst->GetTexture(), GSVector4(rc) * GSVector4(dst->GetScale()), ShaderConvert::RGBA8_TO_FLOAT32, false);
+
+	s_last_hacked_move_n = r.s_n;
+	return true;
+}
+
+bool GSHwHack::MV_Ico(GSRendererHW& r)
+{
+	// Ico unswizzles the depth buffer (usually) 0x1800 to (usually) 0x2800 with a Z32->C32 move.
+	// Then it does a bunch of P4 moves to shift the bits in the blue channel to the alpha channel.
+	// The shifted target then gets used as a P8H texture, basically mapping depth bits 16..24 to a LUT.
+	// We can't currently HLE that in the usual move handler, so instead, emulate it with a channel shuffle.
+
+	// If we've started skipping moves (i.e. HLE'ed the first one), skip the others.
+	if (r.s_n == s_last_hacked_move_n && RSPSM == PSMT4 && RDPSM == PSMT4)
+		return true;
+
+	// 512x448 moves from C32->Z32.
+	if (RSPSM != PSMZ32 || RDPSM != PSMCT32 || RWIDTH < 512 || RHEIGHT < 448)
+		return false;
+
+	GL_PUSH("MV_Ico: %x -> %x %dx%d", RSBP, RDBP, RWIDTH, RHEIGHT);
+
+	GSTextureCache::Target *src, *dst;
+	if (!GetMoveTargetPair(r, &src, &dst, false, false))
+		return false;
+
+	// Store B -> A using a channel shuffle.
+	u32 pal[256];
+	for (u32 i = 0; i < std::size(pal); i++)
+		pal[i] = i << 24;	
+	std::shared_ptr<GSTextureCache::Palette> palette = g_texture_cache->LookupPaletteObject(pal, 256, true);
+	if (!palette)
+		return false;
+
+	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT);
+	dst->UpdateValidChannels(PSMCT32, 0);
+	dst->UpdateValidity(draw_rc);
+
+	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(dst->GetTexture(), nullptr,
+		dst->GetScale(), src->GetTexture(), src->GetScale(), draw_rc);
+	config.pal = palette->GetPaletteGSTexture();
+	config.ps.channel = ChannelFetch_BLUE;
+	config.ps.depth_fmt = 1;
+	config.ps.tfx = TFX_DECAL; // T -> A.
+	config.ps.tcc = true;
+	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
+
+	s_last_hacked_move_n = r.s_n;
+	return true;
+}
+
+#undef RBITBLTBUF
+#undef RSBP
+#undef RSBW
+#undef RSPSM
+#undef RDBP
+#undef RDBW
+#undef RDPSM
+#undef RWIDTH
+#undef RHEIGHT
+#undef RSX
+#undef RSY
+#undef RDX
+#undef RDY
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define CRC_F(name) { #name, &GSHwHack::name }
 
 const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
@@ -1158,7 +1489,12 @@ const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] 
 	CRC_F(OI_ArTonelico2),
 	CRC_F(OI_BurnoutGames),
 	CRC_F(OI_Battlefield2),
-	CRC_F(OI_HauntingGround)
+	CRC_F(OI_HauntingGround),
+};
+
+const GSHwHack::Entry<GSRendererHW::MV_Ptr> GSHwHack::s_move_handler_functions[] = {
+	CRC_F(MV_Growlanser),
+	CRC_F(MV_Ico),
 };
 
 #undef CRC_F
@@ -1185,15 +1521,27 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
 	return -1;
 }
 
-void GSRendererHW::UpdateCRCHacks()
+s16 GSLookupMoveHandlerFunctionId(const std::string_view& name)
 {
-	GSRenderer::UpdateCRCHacks();
+	for (u32 i = 0; i < std::size(GSHwHack::s_move_handler_functions); i++)
+	{
+		if (name == GSHwHack::s_move_handler_functions[i].name)
+			return static_cast<s16>(i);
+	}
+
+	return -1;
+}
+
+void GSRendererHW::UpdateRenderFixes()
+{
+	GSRenderer::UpdateRenderFixes();
 
 	m_nativeres = (GSConfig.UpscaleMultiplier == 1.0f);
 	s_nativeres = m_nativeres;
 
 	m_gsc = nullptr;
 	m_oi = nullptr;
+	m_mv = nullptr;
 
 	if (!GSConfig.UserHacks_DisableRenderFixes)
 	{
@@ -1207,6 +1555,12 @@ void GSRendererHW::UpdateCRCHacks()
 			static_cast<size_t>(GSConfig.BeforeDrawFunctionId) < std::size(GSHwHack::s_before_draw_functions))
 		{
 			m_oi = GSHwHack::s_before_draw_functions[GSConfig.BeforeDrawFunctionId].ptr;
+		}
+
+		if (GSConfig.MoveHandlerFunctionId >= 0 &&
+			static_cast<size_t>(GSConfig.MoveHandlerFunctionId) < std::size(GSHwHack::s_move_handler_functions))
+		{
+			m_mv = GSHwHack::s_move_handler_functions[GSConfig.MoveHandlerFunctionId].ptr;
 		}
 	}
 }

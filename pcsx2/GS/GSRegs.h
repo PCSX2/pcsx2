@@ -792,6 +792,7 @@ REG_END2
 	__forceinline bool DoFirstPass() const { return !ATE || ATST != ATST_NEVER; } // not all pixels fail automatically
 	__forceinline bool DoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; } // pixels may fail, write fb/z
 	__forceinline bool NoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP; } // pixels may fail, no output
+	__forceinline u32 GetAFAIL(u32 fpsm) const { return (AFAIL == AFAIL_RGB_ONLY && (fpsm & 0xF) != 0) ? AFAIL_FB_ONLY : AFAIL; } // FB Only when not 32bit Framebuffer
 REG_END2
 
 REG64_(GIFReg, TEX0)
@@ -835,6 +836,15 @@ REG_END2
 
 		// The recast of TBW seems useless but it avoid tons of warning from GCC...
 		return ((u32)TBW << 6u) < (1u << TW);
+	}
+
+	__forceinline static GIFRegTEX0 Create(u32 bp, u32 bw, u32 psm)
+	{
+		GIFRegTEX0 ret = {};
+		ret.TBP0 = bp;
+		ret.TBW = bw;
+		ret.PSM = psm;
+		return ret;
 	}
 REG_END2
 

@@ -1,0 +1,28 @@
+name: 🌎 Update Base Translation
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Every day at 12am UTC.
+  workflow_dispatch: # As well as manually.
+
+jobs:
+  update:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "Update Base Translation"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update Base Translation
+        run: ./.github/workflows/scripts/common/update_base_translation.sh
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "Qt: Update Base Translation"
+          commit-message: "Qt: Update Base Translation"
+          committer: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
+          author: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
+          body: "Daily update of base translation sources."
+          branch: update-base-translation
+          delete-branch: true

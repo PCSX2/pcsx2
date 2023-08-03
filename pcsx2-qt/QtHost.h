@@ -41,11 +41,17 @@ struct VMBootParameters;
 
 enum class CDVD_SourceType : uint8_t;
 
+namespace Achievements
+{
+	enum class LoginRequestReason;
+}
+
 Q_DECLARE_METATYPE(std::shared_ptr<VMBootParameters>);
 Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(GSRendererType);
 Q_DECLARE_METATYPE(InputBindingKey);
 Q_DECLARE_METATYPE(CDVD_SourceType);
+Q_DECLARE_METATYPE(Achievements::LoginRequestReason);
 
 class EmuThread : public QThread
 {
@@ -119,7 +125,7 @@ Q_SIGNALS:
 	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeRenderWindowRequested(qint32 width, qint32 height);
 	void onReleaseRenderWindowRequested();
-	void onRelativeMouseModeRequested(bool enabled);
+	void onMouseModeRequested(bool relative_mode, bool hide_cursor);
 
 	/// Called when the VM is starting initialization, but has not been completed yet.
 	void onVMStarting();
@@ -155,8 +161,15 @@ Q_SIGNALS:
 	/// just signifies that the save has started, not necessarily completed.
 	void onSaveStateSaved(const QString& path);
 
+	/// Called when achievements login is requested.
+	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
+
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
 	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+
+	/// Called when video capture starts/stops.
+	void onCaptureStarted(const QString& filename);
+	void onCaptureStopped();
 
 protected:
 	void run();

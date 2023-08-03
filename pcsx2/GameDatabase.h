@@ -21,10 +21,10 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 enum GamefixId;
-enum SpeedhackId;
 
 namespace GameDatabaseSchema
 {
@@ -97,6 +97,7 @@ namespace GameDatabaseSchema
 		RecommendedBlendingLevel,
 		GetSkipCount,
 		BeforeDraw,
+		MoveHandler,
 
 		Count
 	};
@@ -113,7 +114,7 @@ namespace GameDatabaseSchema
 		ClampMode vu0ClampMode = ClampMode::Undefined;
 		ClampMode vu1ClampMode = ClampMode::Undefined;
 		std::vector<GamefixId> gameFixes;
-		std::vector<std::pair<SpeedhackId, int>> speedHacks;
+		std::vector<std::pair<SpeedHack, int>> speedHacks;
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<u32, std::string> patches;
@@ -133,10 +134,43 @@ namespace GameDatabaseSchema
 		/// Returns true if the current config value for the specified hw fix id matches the value.
 		static bool configMatchesHWFix(const Pcsx2Config::GSOptions& config, GSHWFixId id, int value);
 	};
-};
+}; // namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
 	void ensureLoaded();
 	const GameDatabaseSchema::GameEntry* findGame(const std::string_view& serial);
+
+	struct TrackHash
+	{
+		static constexpr u32 SIZE = 16;
+
+		bool parseHash(const std::string_view& str);
+		std::string toString() const;
+
+#define MAKE_OPERATOR(op) \
+	bool operator op(const TrackHash& hash) const { return (std::memcmp(data, hash.data, sizeof(data)) op 0); }
+		MAKE_OPERATOR(==);
+		MAKE_OPERATOR(!=);
+		MAKE_OPERATOR(<);
+		MAKE_OPERATOR(<=);
+		MAKE_OPERATOR(>);
+		MAKE_OPERATOR(>=);
+#undef MAKE_OPERATOR
+
+		u8 data[SIZE];
+		u64 size;
+	};
+
+	struct HashDatabaseEntry
+	{
+		std::string serial;
+		std::string name;
+		std::string version;
+		std::vector<TrackHash> tracks;
+	};
+
+	bool loadHashDatabase();
+	void unloadHashDatabase();
+	const HashDatabaseEntry* lookupHash(const TrackHash* tracks, size_t num_tracks, bool* tracks_matched, std::string* match_error);
 }; // namespace GameDatabase

@@ -18,33 +18,42 @@
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/GSTextureVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
-#include "GS/Renderers/Vulkan/VKContext.h"
-#include "GS/Renderers/Vulkan/VKUtil.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSGL.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Assertions.h"
 
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
-static constexpr std::array<VkImageLayout, static_cast<u32>(GSTextureVK::Layout::Count)> s_vk_layout_mapping = {{
-	VK_IMAGE_LAYOUT_UNDEFINED, // Undefined
-	VK_IMAGE_LAYOUT_PREINITIALIZED, // Preinitialized
-	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // ColorAttachment
-	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // DepthStencilAttachment
-	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // ShaderReadOnly
-	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
-	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TransferSrc
-	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TransferDst
-	VK_IMAGE_LAYOUT_GENERAL, // TransferSelf
-	VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
-	VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
-	VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
-	VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
-	VK_IMAGE_LAYOUT_GENERAL, // General
-}};
+static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
+{
+	static constexpr std::array<VkImageLayout, static_cast<u32>(GSTextureVK::Layout::Count)> s_vk_layout_mapping = {{
+		VK_IMAGE_LAYOUT_UNDEFINED, // Undefined
+		VK_IMAGE_LAYOUT_PREINITIALIZED, // Preinitialized
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // ColorAttachment
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // DepthStencilAttachment
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // ShaderReadOnly
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TransferSrc
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TransferDst
+		VK_IMAGE_LAYOUT_GENERAL, // TransferSelf
+		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
+		VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
+		VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
+		VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
+		VK_IMAGE_LAYOUT_GENERAL, // General
+	}};
+	return (layout == GSTextureVK::Layout::FeedbackLoop && GSDeviceVK::GetInstance()->UseFeedbackLoopLayout()) ?
+			   VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+			   s_vk_layout_mapping[static_cast<u32>(layout)];
+}
+
+static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
+{
+	return GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+}
 
 GSTextureVK::GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image,
 	VmaAllocation allocation, VkImageView view, VkFormat vk_format)
@@ -104,15 +113,18 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 			pxAssert(levels == 1);
 			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 						VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-						VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+						(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+																	 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		}
 		break;
 
 		case Type::DepthStencil:
 		{
 			pxAssert(levels == 1);
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-						VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+			ici.usage =
+				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT : 0);
 			vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		}
 		break;
@@ -135,12 +147,12 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 
 	VkImage image = VK_NULL_HANDLE;
 	VmaAllocation allocation = VK_NULL_HANDLE;
-	VkResult res = vmaCreateImage(g_vulkan_context->GetAllocator(), &ici, &aci, &image, &allocation, nullptr);
+	VkResult res = vmaCreateImage(GSDeviceVK::GetInstance()->GetAllocator(), &ici, &aci, &image, &allocation, nullptr);
 	if (aci.flags & VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT && res != VK_SUCCESS)
 	{
 		// try without dedicated allocation
 		aci.flags &= ~VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
-		res = vmaCreateImage(g_vulkan_context->GetAllocator(), &ici, &aci, &image, &allocation, nullptr);
+		res = vmaCreateImage(GSDeviceVK::GetInstance()->GetAllocator(), &ici, &aci, &image, &allocation, nullptr);
 	}
 	if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
 	{
@@ -155,30 +167,30 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 
 	VkImageView view = VK_NULL_HANDLE;
 	vci.image = image;
-	res = vkCreateImageView(g_vulkan_context->GetDevice(), &vci, nullptr, &view);
+	res = vkCreateImageView(GSDeviceVK::GetInstance()->GetDevice(), &vci, nullptr, &view);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkCreateImageView failed: ");
-		vmaDestroyImage(g_vulkan_context->GetAllocator(), image, allocation);
+		vmaDestroyImage(GSDeviceVK::GetInstance()->GetAllocator(), image, allocation);
 		return {};
 	}
 
 	switch (type)
 	{
 		case Type::Texture:
-			Vulkan::SetObjectName(g_vulkan_context->GetDevice(), image, "%dx%d texture", width, height);
+			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d texture", width, height);
 			break;
 
 		case Type::RenderTarget:
-			Vulkan::SetObjectName(g_vulkan_context->GetDevice(), image, "%dx%d render target", width, height);
+			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d render target", width, height);
 			break;
 
 		case Type::DepthStencil:
-			Vulkan::SetObjectName(g_vulkan_context->GetDevice(), image, "%dx%d depth stencil", width, height);
+			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d depth stencil", width, height);
 			break;
 
 		case Type::RWTexture:
-			Vulkan::SetObjectName(g_vulkan_context->GetDevice(), image, "%dx%d RW texture", width, height);
+			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d RW texture", width, height);
 			break;
 
 		default:
@@ -201,7 +213,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Adopt(
 
 	// Memory is managed by the owner of the image.
 	VkImageView view = VK_NULL_HANDLE;
-	VkResult res = vkCreateImageView(g_vulkan_context->GetDevice(), &view_info, nullptr, &view);
+	VkResult res = vkCreateImageView(GSDeviceVK::GetInstance()->GetDevice(), &view_info, nullptr, &view);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkCreateImageView failed: ");
@@ -234,9 +246,9 @@ void GSTextureVK::Destroy(bool defer)
 			}
 
 			if (defer)
-				g_vulkan_context->DeferFramebufferDestruction(fb);
+				GSDeviceVK::GetInstance()->DeferFramebufferDestruction(fb);
 			else
-				vkDestroyFramebuffer(g_vulkan_context->GetDevice(), fb, nullptr);
+				vkDestroyFramebuffer(GSDeviceVK::GetInstance()->GetDevice(), fb, nullptr);
 		}
 		m_framebuffers.clear();
 	}
@@ -244,9 +256,9 @@ void GSTextureVK::Destroy(bool defer)
 	if (m_view != VK_NULL_HANDLE)
 	{
 		if (defer)
-			g_vulkan_context->DeferImageViewDestruction(m_view);
+			GSDeviceVK::GetInstance()->DeferImageViewDestruction(m_view);
 		else
-			vkDestroyImageView(g_vulkan_context->GetDevice(), m_view, nullptr);
+			vkDestroyImageView(GSDeviceVK::GetInstance()->GetDevice(), m_view, nullptr);
 		m_view = VK_NULL_HANDLE;
 	}
 
@@ -254,9 +266,9 @@ void GSTextureVK::Destroy(bool defer)
 	if (m_allocation != VK_NULL_HANDLE)
 	{
 		if (defer)
-			g_vulkan_context->DeferImageDestruction(m_image, m_allocation);
+			GSDeviceVK::GetInstance()->DeferImageDestruction(m_image, m_allocation);
 		else
-			vmaDestroyImage(g_vulkan_context->GetAllocator(), m_image, m_allocation);
+			vmaDestroyImage(GSDeviceVK::GetInstance()->GetAllocator(), m_image, m_allocation);
 		m_image = VK_NULL_HANDLE;
 		m_allocation = VK_NULL_HANDLE;
 	}
@@ -264,7 +276,7 @@ void GSTextureVK::Destroy(bool defer)
 
 VkImageLayout GSTextureVK::GetVkLayout() const
 {
-	return s_vk_layout_mapping[static_cast<u32>(m_layout)];
+	return GetVkImageLayout(m_layout);
 }
 
 void* GSTextureVK::GetNativeHandle() const
@@ -274,14 +286,14 @@ void* GSTextureVK::GetNativeHandle() const
 
 VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 {
-	if (m_type != Type::Texture || m_use_fence_counter == g_vulkan_context->GetCurrentFenceCounter())
+	if (m_type != Type::Texture || m_use_fence_counter == GSDeviceVK::GetInstance()->GetCurrentFenceCounter())
 	{
 		// Console.WriteLn("Texture update within frame, can't use do beforehand");
 		GSDeviceVK::GetInstance()->EndRenderPass();
-		return g_vulkan_context->GetCurrentCommandBuffer();
+		return GSDeviceVK::GetInstance()->GetCurrentCommandBuffer();
 	}
 
-	return g_vulkan_context->GetCurrentInitCommandBuffer();
+	return GSDeviceVK::GetInstance()->GetCurrentInitCommandBuffer();
 }
 
 void GSTextureVK::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const
@@ -307,7 +319,7 @@ VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u
 	VmaAllocationInfo ai;
 	VkBuffer buffer;
 	VmaAllocation allocation;
-	VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
+	VkResult res = vmaCreateBuffer(GSDeviceVK::GetInstance()->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "(AllocateUploadStagingBuffer) vmaCreateBuffer() failed: ");
@@ -315,11 +327,11 @@ VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u
 	}
 
 	// Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
-	g_vulkan_context->DeferBufferDestruction(buffer, allocation);
+	GSDeviceVK::GetInstance()->DeferBufferDestruction(buffer, allocation);
 
 	// And write the data.
 	CopyTextureDataForUpload(ai.pMappedData, data, pitch, upload_pitch, height);
-	vmaFlushAllocation(g_vulkan_context->GetAllocator(), allocation, 0, size);
+	vmaFlushAllocation(GSDeviceVK::GetInstance()->GetAllocator(), allocation, 0, size);
 	return buffer;
 }
 
@@ -349,14 +361,14 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	const u32 width = r.width();
 	const u32 height = r.height();
-	const u32 upload_pitch = Common::AlignUpPow2(pitch, g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 upload_pitch = Common::AlignUpPow2(pitch, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 	const u32 required_size = CalcUploadSize(height, upload_pitch);
 
 	// If the texture is larger than half our streaming buffer size, use a separate buffer.
 	// Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
 	VkBuffer buffer;
 	u32 buffer_offset;
-	if (required_size > (g_vulkan_context->GetTextureUploadBuffer().GetCurrentSize() / 2))
+	if (required_size > (GSDeviceVK::GetInstance()->GetTextureUploadBuffer().GetCurrentSize() / 2))
 	{
 		buffer_offset = 0;
 		buffer = AllocateUploadStagingBuffer(data, pitch, upload_pitch, height);
@@ -365,12 +377,12 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 	}
 	else
 	{
-		VKStreamBuffer& sbuffer = g_vulkan_context->GetTextureUploadBuffer();
-		if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+		VKStreamBuffer& sbuffer = GSDeviceVK::GetInstance()->GetTextureUploadBuffer();
+		if (!sbuffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 		{
 			GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
 				false, "While waiting for %u bytes in texture upload buffer", required_size);
-			if (!sbuffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+			if (!sbuffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 			{
 				Console.Error("Failed to reserve texture upload memory (%u bytes).", required_size);
 				return false;
@@ -419,19 +431,19 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 	m_map_level = layer;
 
 	m.pitch =
-		Common::AlignUpPow2(CalcUploadPitch(m_map_area.width()), g_vulkan_context->GetBufferCopyRowPitchAlignment());
+		Common::AlignUpPow2(CalcUploadPitch(m_map_area.width()), GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 
 	// see note in Update() for the reason why.
 	const u32 required_size = CalcUploadSize(m_map_area.height(), m.pitch);
-	VKStreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+	VKStreamBuffer& buffer = GSDeviceVK::GetInstance()->GetTextureUploadBuffer();
 	if (required_size >= (buffer.GetCurrentSize() / 2))
 		return false;
 
-	if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+	if (!buffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 	{
 		GSDeviceVK::GetInstance()->ExecuteCommandBuffer(
 			false, "While waiting for %u bytes in texture upload buffer", required_size);
-		if (!buffer.ReserveMemory(required_size, g_vulkan_context->GetBufferCopyOffsetAlignment()))
+		if (!buffer.ReserveMemory(required_size, GSDeviceVK::GetInstance()->GetBufferCopyOffsetAlignment()))
 			pxFailRel("Failed to reserve texture upload memory");
 	}
 
@@ -447,9 +459,9 @@ void GSTextureVK::Unmap()
 
 	const u32 width = m_map_area.width();
 	const u32 height = m_map_area.height();
-	const u32 pitch = Common::AlignUpPow2(CalcUploadPitch(width), g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 pitch = Common::AlignUpPow2(CalcUploadPitch(width), GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 	const u32 required_size = CalcUploadSize(height, pitch);
-	VKStreamBuffer& buffer = g_vulkan_context->GetTextureUploadBuffer();
+	VKStreamBuffer& buffer = GSDeviceVK::GetInstance()->GetTextureUploadBuffer();
 	const u32 buffer_offset = buffer.GetCurrentOffset();
 	buffer.CommitMemory(required_size);
 
@@ -531,7 +543,7 @@ void GSTextureVK::CommitClear()
 
 	GSDeviceVK::GetInstance()->EndRenderPass();
 
-	CommitClear(g_vulkan_context->GetCurrentCommandBuffer());
+	CommitClear(GSDeviceVK::GetInstance()->GetCurrentCommandBuffer());
 }
 
 void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
@@ -562,7 +574,7 @@ void GSTextureVK::OverrideImageLayout(Layout new_layout)
 
 void GSTextureVK::TransitionToLayout(Layout layout)
 {
-	TransitionToLayout(g_vulkan_context->GetCurrentCommandBuffer(), layout);
+	TransitionToLayout(GSDeviceVK::GetInstance()->GetCurrentCommandBuffer(), layout);
 }
 
 void GSTextureVK::TransitionToLayout(VkCommandBuffer command_buffer, Layout new_layout)
@@ -589,9 +601,8 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, 0,
-		s_vk_layout_mapping[static_cast<u32>(old_layout)], s_vk_layout_mapping[static_cast<u32>(new_layout)],
-		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image,
+	VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, 0, GetVkImageLayout(old_layout),
+		GetVkImageLayout(new_layout), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image,
 		{aspect, static_cast<u32>(start_level), static_cast<u32>(num_levels), 0u, 1u}};
 
 	// srcStageMask -> Stages that must complete before the barrier
@@ -657,7 +668,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		case Layout::FeedbackLoop:
 			barrier.srcAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-											VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
+											GetFeedbackLoopInputAccessBits()) :
 										(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 											VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
 			srcStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
@@ -733,7 +744,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		case Layout::FeedbackLoop:
 			barrier.dstAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
 										(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-											VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
+											GetFeedbackLoopInputAccessBits()) :
 										(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
 											VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
 			dstStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
@@ -775,7 +786,7 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 			return fb;
 	}
 
-	const VkRenderPass rp = g_vulkan_context->GetRenderPass(
+	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		(m_type != GSTexture::Type::DepthStencil) ? m_vk_format : VK_FORMAT_UNDEFINED,
 		(m_type != GSTexture::Type::DepthStencil) ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) :
 													m_vk_format,
@@ -791,7 +802,7 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 	fbb.SetSize(m_size.x, m_size.y, 1);
 	fbb.SetRenderPass(rp);
 
-	VkFramebuffer fb = fbb.Create(g_vulkan_context->GetDevice());
+	VkFramebuffer fb = fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
 	if (!fb)
 		return VK_NULL_HANDLE;
 
@@ -810,12 +821,12 @@ GSDownloadTextureVK::~GSDownloadTextureVK()
 {
 	// Buffer was created mapped, no need to manually unmap.
 	if (m_buffer != VK_NULL_HANDLE)
-		g_vulkan_context->DeferBufferDestruction(m_buffer, m_allocation);
+		GSDeviceVK::GetInstance()->DeferBufferDestruction(m_buffer, m_allocation);
 }
 
 std::unique_ptr<GSDownloadTextureVK> GSDownloadTextureVK::Create(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 buffer_size = GetBufferSize(width, height, format, g_vulkan_context->GetBufferCopyRowPitchAlignment());
+	const u32 buffer_size = GetBufferSize(width, height, format, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 
 	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0u, buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0u, nullptr};
@@ -828,7 +839,7 @@ std::unique_ptr<GSDownloadTextureVK> GSDownloadTextureVK::Create(u32 width, u32 
 	VmaAllocationInfo ai = {};
 	VmaAllocation allocation;
 	VkBuffer buffer;
-	VkResult res = vmaCreateBuffer(g_vulkan_context->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
+	VkResult res = vmaCreateBuffer(GSDeviceVK::GetInstance()->GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
@@ -858,14 +869,14 @@ void GSDownloadTextureVK::CopyFromTexture(
 
 	u32 copy_offset, copy_size, copy_rows;
 	m_current_pitch = GetTransferPitch(use_transfer_pitch ? static_cast<u32>(drc.width()) : m_width,
-		g_vulkan_context->GetBufferCopyRowPitchAlignment());
+		GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 	GetTransferSize(drc, &copy_offset, &copy_size, &copy_rows);
 
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
 	GSDeviceVK::GetInstance()->EndRenderPass();
 	vkTex->CommitClear();
 
-	const VkCommandBuffer cmdbuf = g_vulkan_context->GetCurrentCommandBuffer();
+	const VkCommandBuffer cmdbuf = GSDeviceVK::GetInstance()->GetCurrentCommandBuffer();
 	GL_INS("GSDownloadTextureVK::CopyFromTexture: {%d,%d} %ux%u", src.left, src.top, src.width(), src.height());
 
 	GSTextureVK::Layout old_layout = vkTex->GetLayout();
@@ -885,13 +896,24 @@ void GSDownloadTextureVK::CopyFromTexture(
 	vkCmdCopyImageToBuffer(cmdbuf, vkTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_buffer, 1, &image_copy);
 
 	// flush gpu cache
-	Vulkan::BufferMemoryBarrier(cmdbuf, m_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT, 0, copy_size,
-		VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT);
+	const VkBufferMemoryBarrier buffer_info = {
+		VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER, // VkStructureType    sType
+		nullptr, // const void*        pNext
+		VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags      srcAccessMask
+		VK_ACCESS_HOST_READ_BIT, // VkAccessFlags      dstAccessMask
+		VK_QUEUE_FAMILY_IGNORED, // uint32_t           srcQueueFamilyIndex
+		VK_QUEUE_FAMILY_IGNORED, // uint32_t           dstQueueFamilyIndex
+		m_buffer, // VkBuffer           buffer
+		0, // VkDeviceSize       offset
+		copy_size // VkDeviceSize       size
+	};
+	vkCmdPipelineBarrier(
+		cmdbuf, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &buffer_info, 0, nullptr);
 
 	if (old_layout != GSTextureVK::Layout::TransferSrc)
 		vkTex->TransitionSubresourcesToLayout(cmdbuf, src_level, 1, GSTextureVK::Layout::TransferSrc, old_layout);
 
-	m_copy_fence_counter = g_vulkan_context->GetCurrentFenceCounter();
+	m_copy_fence_counter = GSDeviceVK::GetInstance()->GetCurrentFenceCounter();
 	m_needs_cache_invalidate = true;
 	m_needs_flush = true;
 }
@@ -903,7 +925,7 @@ bool GSDownloadTextureVK::Map(const GSVector4i& read_rc)
 	{
 		u32 copy_offset, copy_size, copy_rows;
 		GetTransferSize(read_rc, &copy_offset, &copy_size, &copy_rows);
-		vmaInvalidateAllocation(g_vulkan_context->GetAllocator(), m_allocation, copy_offset, copy_size);
+		vmaInvalidateAllocation(GSDeviceVK::GetInstance()->GetAllocator(), m_allocation, copy_offset, copy_size);
 		m_needs_cache_invalidate = false;
 	}
 
@@ -922,12 +944,12 @@ void GSDownloadTextureVK::Flush()
 
 	m_needs_flush = false;
 
-	if (g_vulkan_context->GetCompletedFenceCounter() >= m_copy_fence_counter)
+	if (GSDeviceVK::GetInstance()->GetCompletedFenceCounter() >= m_copy_fence_counter)
 		return;
 
 	// Need to execute command buffer.
-	if (g_vulkan_context->GetCurrentFenceCounter() == m_copy_fence_counter)
+	if (GSDeviceVK::GetInstance()->GetCurrentFenceCounter() == m_copy_fence_counter)
 		GSDeviceVK::GetInstance()->ExecuteCommandBufferForReadback();
 	else
-		g_vulkan_context->WaitForFenceCounter(m_copy_fence_counter);
+		GSDeviceVK::GetInstance()->WaitForFenceCounter(m_copy_fence_counter);
 }

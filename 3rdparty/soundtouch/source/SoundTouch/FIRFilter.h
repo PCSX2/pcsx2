@@ -106,12 +106,12 @@ public:
         short *filterCoeffsUnalign;
         short *filterCoeffsAlign;
 
-        virtual uint evaluateFilterStereo(short *dest, const short *src, uint numSamples) const;
+        virtual uint evaluateFilterStereo(short *dest, const short *src, uint numSamples) const override;
     public:
         FIRFilterMMX();
         ~FIRFilterMMX();
 
-        virtual void setCoefficients(const short *coeffs, uint newLength, uint uResultDivFactor);
+        virtual void setCoefficients(const short *coeffs, uint newLength, uint uResultDivFactor) override;
     };
 
 #endif // SOUNDTOUCH_ALLOW_MMX
@@ -125,12 +125,12 @@ public:
         float *filterCoeffsUnalign;
         float *filterCoeffsAlign;
 
-        virtual uint evaluateFilterStereo(float *dest, const float *src, uint numSamples) const;
+        virtual uint evaluateFilterStereo(float *dest, const float *src, uint numSamples) const override;
     public:
         FIRFilterSSE();
         ~FIRFilterSSE();
 
-        virtual void setCoefficients(const float *coeffs, uint newLength, uint uResultDivFactor);
+        virtual void setCoefficients(const float *coeffs, uint newLength, uint uResultDivFactor) override;
     };
 
 #endif // SOUNDTOUCH_ALLOW_SSE

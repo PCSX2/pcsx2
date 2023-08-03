@@ -21,7 +21,9 @@
 #include <string>
 #include <string_view>
 
+class Error;
 class ElfObject;
+class IsoReader;
 
 #define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
 #define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
@@ -189,7 +191,8 @@ extern void cdvdWrite(u8 key, u8 rt);
 extern void cdvdGetDiscInfo(std::string* out_serial, std::string* out_elf_path, std::string* out_version, u32* out_crc,
 	CDVDDiscType* out_disc_type);
 extern u32 cdvdGetElfCRC(const std::string& path);
-extern std::unique_ptr<ElfObject> cdvdLoadElf(std::string filename, bool isPSXElf);
+extern bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf, Error* error);
+extern bool cdvdLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std::string_view& elfpath, bool isPSXElf, Error* error);
 
 extern s32 cdvdCtrlTrayOpen();
 extern s32 cdvdCtrlTrayClose();

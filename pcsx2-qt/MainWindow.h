@@ -39,6 +39,11 @@ class ControllerSettingsDialog;
 
 class EmuThread;
 
+namespace Achievements
+{
+	enum class LoginRequestReason;
+}
+
 namespace GameList
 {
 	struct Entry;
@@ -124,7 +129,7 @@ private Q_SLOTS:
 
 	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
-	void relativeMouseModeRequested(bool enabled);
+	void mouseModeRequested(bool relative_mode, bool hide_cursor);
 	void releaseRenderWindow();
 	void focusDisplayWidget();
 
@@ -182,6 +187,11 @@ private Q_SLOTS:
 
 	void onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
 		const QString& serial, quint32 disc_crc, quint32 crc);
+
+	void onCaptureStarted(const QString& filename);
+	void onCaptureStopped();
+
+	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
 protected:
 	void showEvent(QShowEvent* event) override;
@@ -290,6 +300,7 @@ private:
 
 	bool m_display_created = false;
 	bool m_relative_mouse_mode = false;
+	bool m_hide_mouse_cursor = false;
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;
 	bool m_is_closing = false;

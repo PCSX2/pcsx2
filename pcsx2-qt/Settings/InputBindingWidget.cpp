@@ -21,12 +21,11 @@
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+#include <bit>
 #include <cmath>
 #include <sstream>
 
 #include "pcsx2/Host.h"
-
-#include "pcsx2/GS/GSIntrin.h" // _BitScanForward
 
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -74,9 +73,14 @@ void InputBindingWidget::initialize(
 
 void InputBindingWidget::updateText()
 {
+	const QString binding_tip(tr("\n\nLeft click to assign a new button\nShift + left click for additional bindings"));
+	const QString binding_clear_tip(tr("\nRight click to clear binding"));
+
 	if (m_bindings.empty())
 	{
 		setText(QString());
+
+		setToolTip(tr("No bindings registered") + binding_tip);
 	}
 	else if (m_bindings.size() > 1)
 	{
@@ -93,12 +97,12 @@ void InputBindingWidget::updateText()
 				ss << "\n";
 			ss << binding;
 		}
-		setToolTip(QString::fromStdString(ss.str()));
+		setToolTip(QString::fromStdString(ss.str()) + binding_tip + binding_clear_tip);
 	}
 	else
 	{
 		QString binding_text(QString::fromStdString(m_bindings[0]));
-		setToolTip(binding_text);
+		setToolTip(binding_text + binding_tip + binding_clear_tip);
 
 		// fix up accelerators, and if it's too long, ellipsise it
 		if (binding_text.contains('&'))
@@ -129,9 +133,8 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 	else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
 	{
 		// double clicks get triggered if we click bind, then click again quickly.
-		unsigned long button_index;
-		if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
-			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+		if (const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()))
+			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, std::countr_zero(button_mask)));
 		return true;
 	}
 	else if (event_type == QEvent::Wheel)

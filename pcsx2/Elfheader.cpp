@@ -14,13 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Common.h"
+
+#include "Elfheader.h"
+#include "CDVD/IsoReader.h"
+#include "DebugTools/Debug.h"
+#include "DebugTools/SymbolMap.h"
+
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
-
-#include "GS.h"			// for sending game crc to mtgs
-#include "Elfheader.h"
-#include "DebugTools/SymbolMap.h"
 
 #pragma pack(push, 1)
 struct PSXEXEHeader
@@ -43,50 +45,76 @@ struct PSXEXEHeader
 static_assert(sizeof(PSXEXEHeader) == 0x800);
 #pragma pack(pop)
 
-// All of ElfObjects functions.
-ElfObject::ElfObject(std::string srcfile, IsoFile& isofile, bool isPSXElf_)
-	: data(isofile.getLength(), "ELF headers")
-	, header(*(ELF_HEADER*)data.GetPtr())
-	, filename(std::move(srcfile))
-	, isPSXElf(isPSXElf_)
+ElfObject::ElfObject() = default;
+
+ElfObject::~ElfObject() = default;
+
+bool ElfObject::OpenIsoFile(std::string srcfile, IsoReader& isor, bool isPSXElf_, Error* error)
 {
-	checkElfSize(data.GetSizeInBytes());
-	readIso(isofile);
-	initElfHeaders();
+	const auto de = isor.LocateFile(srcfile, error);
+	if (!de)
+		return false;
+
+	if (!CheckElfSize(de->length_le, error))
+		return false;
+
+	if (!isor.ReadFile(de.value(), &data, error))
+		return false;
+
+	filename = std::move(srcfile);
+	isPSXElf = isPSXElf_;
+	InitElfHeaders();
+	return true;
 }
 
-ElfObject::ElfObject(std::string srcfile, u32 hdrsize, bool isPSXElf_)
-	: data(hdrsize, "ELF headers")
-	, header(*(ELF_HEADER*)data.GetPtr())
-	, filename(std::move(srcfile))
-	, isPSXElf(isPSXElf_)
+bool ElfObject::OpenFile(std::string srcfile, bool isPSXElf_, Error* error)
 {
-	checkElfSize(data.GetSizeInBytes());
-	readFile();
-	initElfHeaders();
+	auto fp = FileSystem::OpenManagedCFile(srcfile.c_str(), "rb", error);
+	FILESYSTEM_STAT_DATA sd;
+	if (!fp || !FileSystem::StatFile(fp.get(), &sd))
+	{
+		Error::SetString(error, fmt::format("Failed to read ELF from '{}'", srcfile));
+		return false;
+	}
+
+	if (!isPSXElf_ && !CheckElfSize(sd.Size, error))
+		return false;
+
+	data.resize(static_cast<size_t>(sd.Size));
+	if (std::fread(data.data(), data.size(), 1, fp.get()) != 1)
+	{
+		Error::SetString(error, fmt::format("Failed to read ELF from '{}'", srcfile));
+		return false;
+	}
+
+	filename = std::move(srcfile);
+	isPSXElf = isPSXElf_;
+	InitElfHeaders();
+	return true;
 }
 
-void ElfObject::initElfHeaders()
+void ElfObject::InitElfHeaders()
 {
 	if (isPSXElf)
 		return;
 
-	DevCon.WriteLn("Initializing Elf: %d bytes", data.GetSizeInBytes());
+	DevCon.WriteLn("Initializing Elf: %zu bytes", data.size());
 
+	const ELF_HEADER& header = GetHeader();
 	if (header.e_phnum > 0)
 	{
-		if ((header.e_phoff + sizeof(ELF_PHR)) <= static_cast<u32>(data.GetSizeInBytes()))
+		if ((header.e_phoff + sizeof(ELF_PHR)) <= data.size())
 			proghead = reinterpret_cast<ELF_PHR*>(&data[header.e_phoff]);
 		else
-			Console.Error("(ELF) Program header offset %u is larger than file size %u", header.e_phoff, data.GetSizeInBytes());
+			Console.Error("(ELF) Program header offset %u is larger than file size %zu", header.e_phoff, data.size());
 	}
 
 	if (header.e_shnum > 0)
 	{
-		if ((header.e_shoff + sizeof(ELF_SHR)) <= static_cast<u32>(data.GetSizeInBytes()))
+		if ((header.e_shoff + sizeof(ELF_SHR)) <= data.size())
 			secthead = reinterpret_cast<ELF_SHR*>(&data[header.e_shoff]);
 		else
-			Console.Error("(ELF) Section header offset %u is larger than file size %u", header.e_shoff, data.GetSizeInBytes());
+			Console.Error("(ELF) Section header offset %u is larger than file size %zu", header.e_shoff, data.size());
 	}
 
 	if ((header.e_shnum > 0) && (header.e_shentsize != sizeof(ELF_SHR)))
@@ -147,49 +175,61 @@ void ElfObject::initElfHeaders()
 	//applyPatches();
 }
 
-bool ElfObject::hasValidPSXHeader()
+bool ElfObject::HasValidPSXHeader() const
 {
-	if (data.GetSizeInBytes() < static_cast<s64>(sizeof(PSXEXEHeader)))
+	if (data.size() < sizeof(PSXEXEHeader))
 		return false;
 
-	const PSXEXEHeader* header = reinterpret_cast<const PSXEXEHeader*>(data.GetPtr());
+	const PSXEXEHeader* header = reinterpret_cast<const PSXEXEHeader*>(data.data());
 
 	static constexpr char expected_id[] = {'P', 'S', '-', 'X', ' ', 'E', 'X', 'E'};
 	if (std::memcmp(header->id, expected_id, sizeof(expected_id)) != 0)
 		return false;
 
-	if (static_cast<s64>(header->file_size + sizeof(PSXEXEHeader)) > data.GetSizeInBytes())
+	if ((header->file_size + sizeof(PSXEXEHeader)) > data.size())
 	{
 		Console.Warning("Incorrect file size in PS-EXE header: %u bytes should not be greater than %u bytes",
-			header->file_size, static_cast<unsigned>(data.GetSizeInBytes() - sizeof(PSXEXEHeader)));
+			header->file_size, static_cast<unsigned>(data.size() - sizeof(PSXEXEHeader)));
 	}
 
 	return true;
 }
 
-bool ElfObject::hasProgramHeaders() { return (proghead != NULL); }
-bool ElfObject::hasSectionHeaders() { return (secthead != NULL); }
-bool ElfObject::hasHeaders() { return (hasProgramHeaders() && hasSectionHeaders()); }
+bool ElfObject::HasProgramHeaders() const
+{
+	return (proghead != nullptr);
+}
 
-u32 ElfObject::getEntryPoint()
+bool ElfObject::HasSectionHeaders() const
+{
+	return (secthead != nullptr);
+}
+
+bool ElfObject::HasHeaders() const
+{
+	return (HasProgramHeaders() && HasSectionHeaders());
+}
+
+u32 ElfObject::GetEntryPoint() const
 {
 	if (isPSXElf)
 	{
-		if (hasValidPSXHeader())
-			return reinterpret_cast<const PSXEXEHeader*>(data.GetPtr())->initial_pc;
+		if (HasValidPSXHeader())
+			return reinterpret_cast<const PSXEXEHeader*>(data.data())->initial_pc;
 		else
 			return 0xFFFFFFFFu;
 	}
 	else
 	{
-		return header.e_entry;
+		return GetHeader().e_entry;
 	}
 }
 
-std::pair<u32,u32> ElfObject::getTextRange()
+std::pair<u32,u32> ElfObject::GetTextRange() const
 {
-	if (isPSXElf && hasProgramHeaders())
+	if (!isPSXElf && HasProgramHeaders())
 	{
+		const ELF_HEADER& header = GetHeader();
 		for (int i = 0; i < header.e_phnum; i++)
 		{
 			const u32 start = proghead[i].p_vaddr;
@@ -203,62 +243,36 @@ std::pair<u32,u32> ElfObject::getTextRange()
 	return std::make_pair(0,0);
 }
 
-void ElfObject::readIso(IsoFile& file)
+bool ElfObject::CheckElfSize(s64 size, Error* error)
 {
-	int rsize = file.read(data.GetPtr(), data.GetSizeInBytes());
-	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
+	if (size > 0xfffffff)
+		Error::SetString(error, "Illegal ELF file size over 2GB!");
+	else if (size == -1)
+		Error::SetString(error, "ELF file does not exist!");
+	else if (size <= static_cast<s64>(sizeof(ELF_HEADER)))
+		Error::SetString(error, "Unexpected end of ELF file.");
+	else
+		return true;
+
+	return false;
 }
 
-void ElfObject::readFile()
-{
-	int rsize = 0;
-	FILE *f = FileSystem::OpenCFile( filename.c_str(), "rb");
-	if (f == NULL) throw Exception::FileNotFound(filename);
-
-	fseek(f, 0, SEEK_SET);
-	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
-	fclose( f );
-
-	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
-}
-
-static std::string GetMsg_InvalidELF()
-{
-	return
-		"Cannot load ELF binary image.  The file may be corrupt or incomplete."
-		"\n\n"
-		"If loading from an ISO image, this error may be caused by an unsupported ISO image type or a bug in PCSX2 ISO image support.";
-}
-
-
-void ElfObject::checkElfSize(s64 elfsize)
-{
-	const char* diagMsg = NULL;
-	if		(elfsize > 0xfffffff)	diagMsg = "Illegal ELF file size over 2GB!";
-	else if	(elfsize == -1)			diagMsg = "ELF file does not exist!";
-	else if	(elfsize == 0)			diagMsg = "Unexpected end of ELF file.";
-
-	if (diagMsg)
-		throw Exception::BadStream(filename)
-			.SetDiagMsg(diagMsg)
-			.SetUserMsg(GetMsg_InvalidELF());
-}
-
-u32 ElfObject::getCRC()
+u32 ElfObject::GetCRC() const
 {
 	u32 CRC = 0;
 
-	const u32* srcdata = (u32*)data.GetPtr();
-	for(u32 i=data.GetSizeInBytes()/4; i; --i, ++srcdata)
+	const u32* srcdata = reinterpret_cast<const u32*>(data.data());
+	for (u32 i = static_cast<u32>(data.size()) / 4; i; --i, ++srcdata)
 		CRC ^= *srcdata;
 
 	return CRC;
 }
 
-void ElfObject::loadProgramHeaders()
+void ElfObject::LoadProgramHeaders()
 {
 	if (proghead == NULL) return;
 
+	const ELF_HEADER& header = GetHeader();
 	for( int i = 0 ; i < header.e_phnum ; i++ )
 	{
 		ELF_LOG( "Elf32 Program Header" );
@@ -289,11 +303,17 @@ void ElfObject::loadProgramHeaders()
 	}
 }
 
-void ElfObject::loadSectionHeaders()
+void ElfObject::LoadSectionHeaders()
 {
-	if (secthead == NULL || header.e_shoff > (u32)data.GetLength()) return;
+	const ELF_HEADER& header = GetHeader();
+	if (!secthead || header.e_shoff > data.size())
+		return;
 
-	const u8* sections_names = data.GetPtr( secthead[ (header.e_shstrndx == 0xffff ? 0 : header.e_shstrndx) ].sh_offset );
+	// This function scares me a lot. There's a lot of potential for buffer overreads.
+	// All the accesses should be wrapped in bounds checked read() calls.
+
+	const u32 section_names_offset = secthead[(header.e_shstrndx == 0xffff ? 0 : header.e_shstrndx)].sh_offset;
+	const u8* sections_names = data.data() + section_names_offset;
 
 	int i_st = -1, i_dt = -1;
 
@@ -343,28 +363,33 @@ void ElfObject::loadSectionHeaders()
 
 	if ((i_st >= 0) && (i_dt >= 0))
 	{
-		const char * SymNames;
-		Elf32_Sym * eS;
+		const char* SymNames;
+		Elf32_Sym* eS;
 
-		SymNames = (char*)data.GetPtr(secthead[i_dt].sh_offset);
-		eS = (Elf32_Sym*)data.GetPtr(secthead[i_st].sh_offset);
-		Console.WriteLn("found %d symbols", secthead[i_st].sh_size / sizeof(Elf32_Sym));
+		if (secthead[i_dt].sh_offset < data.size() &&
+			secthead[i_st].sh_offset < data.size())
+		{
+			SymNames = (char*)(data.data() + secthead[i_dt].sh_offset);
+			eS = (Elf32_Sym*)(data.data() + secthead[i_st].sh_offset);
+			Console.WriteLn("found %d symbols", secthead[i_st].sh_size / sizeof(Elf32_Sym));
 
-		R5900SymbolMap.Clear();
-		for(uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++) {
-			if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
+			R5900SymbolMap.Clear();
+			for (uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++)
 			{
-				R5900SymbolMap.AddLabel(&SymNames[eS[i].st_name],eS[i].st_value);
+				if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
+				{
+					R5900SymbolMap.AddLabel(&SymNames[eS[i].st_name], eS[i].st_value);
+				}
 			}
 		}
 	}
 }
 
-void ElfObject::loadHeaders()
+void ElfObject::LoadHeaders()
 {
 	if (isPSXElf)
 		return;
 
-	loadProgramHeaders();
-	loadSectionHeaders();
+	LoadProgramHeaders();
+	LoadSectionHeaders();
 }

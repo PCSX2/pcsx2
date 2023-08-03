@@ -52,6 +52,10 @@ public:
 
 	virtual void Destroy();
 
+	virtual void UpdateRenderFixes();
+
+	void PurgePool();
+
 	virtual void VSync(u32 field, bool registers_written, bool idle_frame);
 	virtual bool CanUpscale() { return false; }
 	virtual float GetUpscaleMultiplier() { return 1.0f; }
@@ -70,7 +74,7 @@ public:
 	void StopGSDump();
 	void PresentCurrentFrame();
 
-	bool BeginCapture(std::string filename);
+	bool BeginCapture(std::string filename, const GSVector2i& size = GSVector2i(0, 0));
 	void EndCapture();
 };
 

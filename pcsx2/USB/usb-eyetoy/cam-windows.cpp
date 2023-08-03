@@ -29,6 +29,9 @@
 #pragma clang diagnostic ignored "-Wmicrosoft-goto"
 #endif
 
+#define safe_release(ptr) \
+	((void)((((ptr) != NULL) && ((ptr)->Release(), !!0)), (ptr) = NULL))
+
 namespace usb_eyetoy
 {
 	namespace windows_api
@@ -339,34 +342,45 @@ namespace usb_eyetoy
 			return 0;
 		}
 
-		void DirectShow::Start()
+		bool DirectShow::Start()
 		{
 			HRESULT hr = nullrenderer->Run(0);
 			if (FAILED(hr))
-				throw hr;
+			{
+				Console.Error("nullrenderer->Run() failed: %08X", hr);
+				return false;
+			}
 
 			hr = samplegrabberfilter->Run(0);
 			if (FAILED(hr))
-				throw hr;
+			{
+				Console.Error("samplegrabberfilter->Run() failed: %08X", hr);
+				return false;
+			}
 
 			hr = sourcefilter->Run(0);
 			if (FAILED(hr))
-				throw hr;
+			{
+				Console.Error("sourcefilter->Run() failed: %08X", hr);
+				return false;
+			}
+
+			return true;
 		}
 
 		void DirectShow::Stop()
 		{
 			HRESULT hr = sourcefilter->Stop();
 			if (FAILED(hr))
-				throw hr;
+				Console.Error("sourcefilter->Stop() failed: %08X", hr);
 
 			hr = samplegrabberfilter->Stop();
 			if (FAILED(hr))
-				throw hr;
+				Console.Error("samplegrabberfilter->Stop() failed: %08X", hr);
 
 			hr = nullrenderer->Stop();
 			if (FAILED(hr))
-				throw hr;
+				Console.Error("nullrenderer->Stop() failed: %08X", hr);
 		}
 
 		void store_mpeg_frame(const unsigned char* data, const unsigned int len)
@@ -551,9 +565,14 @@ namespace usb_eyetoy
 			}
 
 			pControl->Run();
-			this->Stop();
-			this->SetCallback(dshow_callback);
-			this->Start();
+			Stop();
+			SetCallback(dshow_callback);
+			if (!Start())
+			{
+				Console.Error("Camera: Failed to start");
+				Stop();
+				return -1;
+			}
 
 			return 0;
 		};

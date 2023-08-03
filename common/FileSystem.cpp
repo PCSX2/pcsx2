@@ -14,12 +14,14 @@
  */
 
 #include "FileSystem.h"
+#include "Error.h"
 #include "Path.h"
 #include "Assertions.h"
 #include "Console.h"
 #include "StringUtil.h"
 #include "Path.h"
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
@@ -36,6 +38,7 @@
 
 #if defined(_WIN32)
 #include "RedtapeWindows.h"
+#include <io.h>
 #include <winioctl.h>
 #include <share.h>
 #include <shlobj.h>
@@ -186,6 +189,27 @@ void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 	if (str->length() > 0 && str->back() == '.')
 		str->back() = '_';
 #endif
+}
+
+bool Path::IsValidFileName(const std::string_view& str, bool allow_slashes)
+{
+	const size_t len = str.length();
+	size_t pos = 0;
+	while (pos < len)
+	{
+		char32_t ch;
+		pos += StringUtil::DecodeUTF8(str.data() + pos, pos - len, &ch);
+		if (!FileSystemCharacterIsSane(ch, !allow_slashes))
+			return false;
+	}
+
+#ifdef _WIN32
+	// Windows: Can't end filename with a period.
+	if (len > 0 && str.back() == '.')
+		return false;
+#endif
+
+	return true;
 }
 
 bool Path::IsAbsolute(const std::string_view& path)
@@ -596,7 +620,7 @@ std::string Path::Combine(const std::string_view& base, const std::string_view& 
 	return ret;
 }
 
-std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
+std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* error)
 {
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -604,23 +628,34 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
 	if (!wfilename.empty() && !wmode.empty())
 	{
 		std::FILE* fp;
-		if (_wfopen_s(&fp, wfilename.c_str(), wmode.c_str()) != 0)
+		const errno_t err = _wfopen_s(&fp, wfilename.c_str(), wmode.c_str());
+		if (err != 0)
+		{
+			Error::SetErrno(error, err);
 			return nullptr;
+		}
 
 		return fp;
 	}
 
 	std::FILE* fp;
-	if (fopen_s(&fp, filename, mode) != 0)
+	const errno_t err = fopen_s(&fp, filename, mode);
+	if (err != 0)
+	{
+		Error::SetErrno(error, err);
 		return nullptr;
+	}
 
 	return fp;
 #else
-	return std::fopen(filename, mode);
+	std::FILE* fp = std::fopen(filename, mode);
+	if (!fp)
+		Error::SetErrno(error, errno);
+	return fp;
 #endif
 }
 
-int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
+int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -629,16 +664,19 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
 
 	return -1;
 #else
-	return open(filename, flags, mode);
+	const int fd = open(filename, flags, mode);
+	if (fd < 0)
+		Error::SetErrno(error, errno);
+	return fd;
 #endif
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode)
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
-	return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
+	return ManagedCFilePtr(OpenCFile(filename, mode, error));
 }
 
-std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode)
+std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -668,15 +706,19 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 	if (fp)
 		return fp;
 
+	Error::SetErrno(error, errno);
 	return nullptr;
 #else
-	return std::fopen(filename, mode);
+	std::FILE* fp = std::fopen(filename, mode);
+	if (!fp)
+		Error::SetErrno(error, errno);
+	return fp;
 #endif
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode)
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
-	return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode), [](std::FILE* fp) { std::fclose(fp); });
+	return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode, error));
 }
 
 int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
@@ -740,12 +782,11 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
 {
-	std::fseek(fp, 0, SEEK_END);
-	const long size = std::ftell(fp);
-	std::fseek(fp, 0, SEEK_SET);
+	const s64 size = FSize64(fp);
 	if (size < 0)
 		return std::nullopt;
 
+	std::fseek(fp, 0, SEEK_SET);
 	std::vector<u8> res(static_cast<size_t>(size));
 	if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
 		return std::nullopt;
@@ -764,12 +805,11 @@ std::optional<std::string> FileSystem::ReadFileToString(const char* filename)
 
 std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
 {
-	std::fseek(fp, 0, SEEK_END);
-	const long size = std::ftell(fp);
-	std::fseek(fp, 0, SEEK_SET);
+	const s64 size = FSize64(fp);
 	if (size < 0)
 		return std::nullopt;
 
+	std::fseek(fp, 0, SEEK_SET);
 	std::string res;
 	res.resize(static_cast<size_t>(size));
 	// NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes

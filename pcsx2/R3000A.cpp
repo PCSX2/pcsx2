@@ -18,7 +18,7 @@
 #include "R3000A.h"
 #include "Common.h"
 
-#include "Sio.h"
+#include "SIO/Sio0.h"
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
@@ -41,6 +41,8 @@ u32 g_psxHasConstReg, g_psxFlushedConstReg;
 // happened (hsyncs, vsyncs, IOP exceptions, etc).  IOP runs code whenever this
 // is true, even if it's already running ahead a bit.
 bool iopEventAction = false;
+
+static constexpr uint iopWaitCycles = 384; // Keep inline with EE wait cycle max.
 
 bool iopEventTestIsActive = false;
 
@@ -140,13 +142,13 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 
 	psxSetNextBranchDelta(ecycle);
 
-	if (psxRegs.iopCycleEE < 0)
+	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * 8;
+
+	if (psxRegs.iopCycleEE < iopDelta)
 	{
 		// The EE called this int, so inform it to branch as needed:
-		// fixme - this doesn't take into account EE/IOP sync (the IOP may be running
-		// ahead or behind the EE as per the EEsCycles value)
-		const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * 8;
-		cpuSetNextEventDelta(iopDelta);
+		
+		cpuSetNextEventDelta(iopDelta - psxRegs.iopCycleEE);
 	}
 }
 
@@ -173,7 +175,7 @@ static __fi void Sio0TestEvent(IopEventId n)
 	if (psxTestCycle(psxRegs.sCycle[n], psxRegs.eCycle[n]))
 	{
 		psxRegs.interrupt &= ~(1 << n);
-		sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
+		g_Sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
 	}
 	else
 	{
@@ -209,6 +211,8 @@ static __fi void _psxTestInterrupts()
 
 __ri void iopEventTest()
 {
+	psxRegs.iopNextEventCycle = psxRegs.cycle + iopWaitCycles;
+
 	if (psxTestCycle(psxNextsCounter, psxNextCounter))
 	{
 		psxRcntUpdate();
@@ -218,7 +222,8 @@ __ri void iopEventTest()
 	{
 		// start the next branch at the next counter event by default
 		// the interrupt code below will assign nearer branches if needed.
-		psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
+		if (psxNextCounter < static_cast<s32>(psxRegs.iopNextEventCycle - psxNextsCounter))
+			psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
 	}
 
 	if (psxRegs.interrupt)

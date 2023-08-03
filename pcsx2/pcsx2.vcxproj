@@ -65,14 +65,19 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PreprocessorDefinitions>ZIP_STATIC;LZMA_API_STATIC;ENABLE_DISCORD_PRESENCE;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;SDL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">ZYCORE_STATIC_DEFINE;ZYDIS_STATIC_DEFINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ZIP_STATIC;LZMA_API_STATIC;ST_NO_EXCEPTION_HANDLING;ENABLE_DISCORD_PRESENCE;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_OPENGL;ENABLE_VULKAN;SPU2X_CUBEB;SDL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">XBYAK_NO_EXCEPTION;ZYCORE_STATIC_DEFINE;ZYDIS_STATIC_DEFINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\bin\resources\shaders\opengl\imgui.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\present.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\imgui.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\interlace.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\merge.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\present.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\tfx.glsl" />
     <None Include="..\bin\resources\shaders\opengl\convert.glsl" />
     <None Include="..\bin\resources\shaders\opengl\interlace.glsl" />
@@ -86,6 +91,8 @@
     <None Include="..\bin\resources\shaders\dx11\merge.fx" />
     <None Include="..\bin\resources\shaders\dx11\shadeboost.fx" />
     <None Include="..\bin\resources\shaders\dx11\tfx.fx" />
+    <None Include="..\bin\resources\shaders\dx11\imgui.fx" />
+    <None Include="..\bin\resources\shaders\dx11\present.fx" />
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl" />
     <None Include="Docs\License.txt" />
     <None Include="ps2\eeHwTraceLog.inl" />
@@ -114,6 +121,8 @@
     <ClCompile Include="CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="CDVD\CsoFileReader.cpp" />
     <ClCompile Include="CDVD\GzippedFileReader.cpp" />
+    <ClCompile Include="CDVD\IsoReader.cpp" />
+    <ClCompile Include="CDVD\IsoHasher.cpp" />
     <ClCompile Include="CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
     <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
@@ -181,7 +190,6 @@
     <ClCompile Include="GameList.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp" />
-    <ClCompile Include="GS\Renderers\DX12\D3D12Context.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12ShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\DX12\D3D12StreamBuffer.cpp" />
@@ -191,12 +199,10 @@
     <ClCompile Include="GS\Renderers\OpenGL\GLShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKBuilders.cpp" />
-    <ClCompile Include="GS\Renderers\Vulkan\VKContext.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKLoader.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKShaderCache.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKStreamBuffer.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\VKSwapChain.cpp" />
-    <ClCompile Include="GS\Renderers\Vulkan\VKUtil.cpp" />
     <ClCompile Include="GS\Renderers\Vulkan\vk_mem_alloc.cpp" />
     <ClCompile Include="Hotkeys.cpp" />
     <ClCompile Include="ImGui\FullscreenUI.cpp" />
@@ -224,21 +230,26 @@
     <ClCompile Include="IopGte.cpp" />
     <ClCompile Include="LayeredSettingsInterface.cpp" />
     <ClCompile Include="LogSink.cpp" />
-    <ClCompile Include="MemoryCardProtocol.cpp" />
-    <ClCompile Include="MultitapProtocol.cpp" />
-    <ClCompile Include="PAD\Host\KeyStatus.cpp" />
-    <ClCompile Include="PAD\Host\PAD.cpp" />
-    <ClCompile Include="PAD\Host\StateManagement.cpp" />
     <ClCompile Include="PINE.cpp" />
     <ClCompile Include="FW.cpp" />
-    <ClCompile Include="MemoryCardFile.cpp" />
-    <ClCompile Include="MemoryCardFolder.cpp" />
     <ClCompile Include="PerformanceMetrics.cpp" />
     <ClCompile Include="Recording\InputRecording.cpp" />
     <ClCompile Include="Recording\InputRecordingControls.cpp" />
     <ClCompile Include="Recording\InputRecordingFile.cpp" />
     <ClCompile Include="Recording\PadData.cpp" />
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardFolder.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp" />
+    <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp" />
+    <ClCompile Include="SIO\Pad\PadBase.cpp" />
+    <ClCompile Include="SIO\Pad\Pad.cpp" />
+    <ClCompile Include="SIO\Pad\PadDualshock2.cpp" />
+    <ClCompile Include="SIO\Pad\PadGuitar.cpp" />
+    <ClCompile Include="SIO\Pad\PadNotConnected.cpp" />
+    <ClCompile Include="SIO\Sio.cpp" />
+    <ClCompile Include="SIO\Sio0.cpp" />
+    <ClCompile Include="SIO\Sio2.cpp" />
     <ClCompile Include="SPU2\Debug.cpp" />
     <ClCompile Include="SPU2\Dma.cpp" />
     <ClCompile Include="SPU2\DplIIdecoder.cpp" />
@@ -267,14 +278,12 @@
     <ClCompile Include="Dmac.cpp" />
     <ClCompile Include="ShiftJisToUnicode.cpp" />
     <ClCompile Include="sif2.cpp" />
-    <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp" />
     <ClCompile Include="GS\GS.cpp" />
     <ClCompile Include="GS\GSAlignedClass.cpp" />
     <ClCompile Include="GS\GSBlock.cpp" />
     <ClCompile Include="GS\GSCapture.cpp" />
     <ClCompile Include="GS\GSClut.cpp" />
-    <ClCompile Include="GS\GSCrc.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSDevice.cpp" />
     <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp" />
@@ -341,6 +350,7 @@
     <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp" />
     <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-turntable.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
@@ -401,7 +411,7 @@
     <ClCompile Include="x86\iMMI.cpp" />
     <ClCompile Include="x86\iR5900Misc.cpp" />
     <ClCompile Include="x86\ir5900tables.cpp" />
-    <ClCompile Include="x86\ix86-32\iR5900-32.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900.cpp" />
     <ClCompile Include="x86\ix86-32\iR5900Arit.cpp" />
     <ClCompile Include="x86\ix86-32\iR5900AritImm.cpp" />
     <ClCompile Include="x86\ix86-32\iR5900Branch.cpp" />
@@ -426,7 +436,6 @@
     <ClCompile Include="R3000A.cpp" />
     <ClCompile Include="R3000AInterpreter.cpp" />
     <ClCompile Include="R3000AOpcodeTables.cpp" />
-    <ClCompile Include="Sio.cpp" />
     <ClCompile Include="x86\iR3000A.cpp" />
     <ClCompile Include="x86\iR3000Atables.cpp" />
     <ClCompile Include="IopHw.cpp" />
@@ -464,11 +473,8 @@
     <ClCompile Include="rdebug\deci2_ttyp.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iCore-32.cpp" />
+    <ClCompile Include="x86\ix86-32\iCore.cpp" />
     <ClCompile Include="x86\iCore.cpp" />
-    <ClCompile Include="CDVD\IsoFS\IsoFile.cpp" />
-    <ClCompile Include="CDVD\IsoFS\IsoFS.cpp" />
-    <ClCompile Include="CDVD\IsoFS\IsoFSCDVD.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Achievements.h" />
@@ -480,6 +486,8 @@
     <ClInclude Include="CDVD\CsoFileReader.h" />
     <ClInclude Include="CDVD\ChdFileReader.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
+    <ClInclude Include="CDVD\IsoReader.h" />
+    <ClInclude Include="CDVD\IsoHasher.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
     <ClInclude Include="DebugTools\Breakpoints.h" />
@@ -536,7 +544,6 @@
     <ClInclude Include="GameList.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h" />
-    <ClInclude Include="GS\Renderers\DX12\D3D12Context.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12ShaderCache.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12StreamBuffer.h" />
@@ -547,13 +554,11 @@
     <ClInclude Include="GS\Renderers\OpenGL\GLShaderCache.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKBuilders.h" />
-    <ClInclude Include="GS\Renderers\Vulkan\VKContext.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKEntryPoints.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKLoader.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKShaderCache.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKStreamBuffer.h" />
     <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h" />
-    <ClInclude Include="GS\Renderers\Vulkan\VKUtil.h" />
     <ClInclude Include="ImGui\FullscreenUI.h" />
     <ClInclude Include="ImGui\ImGuiFullscreen.h" />
     <ClInclude Include="ImGui\ImGuiManager.h" />
@@ -578,16 +583,8 @@
     <ClInclude Include="IPU\mpeg2_vlc.h" />
     <ClInclude Include="LayeredSettingsInterface.h" />
     <ClInclude Include="LogSink.h" />
-    <ClInclude Include="MemoryCardProtocol.h" />
-    <ClInclude Include="MultitapProtocol.h" />
-    <ClInclude Include="PAD\Host\Global.h" />
-    <ClInclude Include="PAD\Host\KeyStatus.h" />
-    <ClInclude Include="PAD\Host\PAD.h" />
-    <ClInclude Include="PAD\Host\StateManagement.h" />
     <ClInclude Include="PINE.h" />
     <ClInclude Include="FW.h" />
-    <ClInclude Include="MemoryCardFile.h" />
-    <ClInclude Include="MemoryCardFolder.h" />
     <ClInclude Include="PerformanceMetrics.h" />
     <ClInclude Include="Recording\InputRecording.h" />
     <ClInclude Include="Recording\InputRecordingControls.h" />
@@ -595,7 +592,20 @@
     <ClInclude Include="Recording\PadData.h" />
     <ClInclude Include="Recording\Utilities\InputRecordingLogger.h" />
     <ClInclude Include="ShaderCacheVersion.h" />
-    <ClInclude Include="SioTypes.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardFile.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardFolder.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h" />
+    <ClInclude Include="SIO\Multitap\MultitapProtocol.h" />
+    <ClInclude Include="SIO\Pad\PadBase.h" />
+    <ClInclude Include="SIO\Pad\Pad.h" />
+    <ClInclude Include="SIO\Pad\PadDualshock2.h" />
+    <ClInclude Include="SIO\Pad\PadGuitar.h" />
+    <ClInclude Include="SIO\Pad\PadNotConnected.h" />
+    <ClInclude Include="SIO\Pad\PadTypes.h" />
+    <ClInclude Include="SIO\Sio.h" />
+    <ClInclude Include="SIO\Sio0.h" />
+    <ClInclude Include="SIO\Sio2.h" />
+    <ClInclude Include="SIO\SioTypes.h" />
     <ClInclude Include="SPU2\Debug.h" />
     <ClInclude Include="SPU2\Dma.h" />
     <ClInclude Include="SPU2\Global.h" />
@@ -606,18 +616,15 @@
     <ClInclude Include="SPU2\regs.h" />
     <ClInclude Include="SPU2\Mixer.h" />
     <ClInclude Include="SPU2\spu2.h" />
-    <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS\GS.h" />
     <ClInclude Include="GS\GSExtra.h" />
     <ClInclude Include="GS\GSGL.h" />
-    <ClInclude Include="GS\GSIntrin.h" />
     <ClInclude Include="GS\GSRegs.h" />
     <ClInclude Include="GS\GSAlignedClass.h" />
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />
     <ClInclude Include="GS\GSClut.h" />
-    <ClInclude Include="GS\GSCrc.h" />
     <ClInclude Include="GS\Renderers\Common\GSDevice.h" />
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h" />
@@ -698,6 +705,7 @@
     <ClInclude Include="USB\usb-pad\lg\lg_ff.h" />
     <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h" />
     <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\usb-pad\usb-turntable.h" />
     <ClInclude Include="USB\usb-printer\usb-printer.h" />
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="Utilities\AsciiFile.h" />
@@ -760,7 +768,6 @@
     <ClInclude Include="IopDma.h" />
     <ClInclude Include="IopMem.h" />
     <ClInclude Include="R3000A.h" />
-    <ClInclude Include="Sio.h" />
     <ClInclude Include="x86\iR3000A.h" />
     <ClInclude Include="IopHw.h" />
     <ClInclude Include="ps2\Iop\IopHw_Internal.h" />
@@ -802,12 +809,6 @@
     <ClInclude Include="ps2\BiosTools.h" />
     <ClInclude Include="MemoryTypes.h" />
     <ClInclude Include="x86\iCore.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoDirectory.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFile.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFileDescriptor.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFS.h" />
-    <ClInclude Include="CDVD\IsoFS\IsoFSCDVD.h" />
-    <ClInclude Include="CDVD\IsoFS\SectorSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">

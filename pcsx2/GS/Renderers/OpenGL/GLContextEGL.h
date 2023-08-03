@@ -19,7 +19,7 @@
 
 #include "glad_egl.h"
 
-#include <gsl/span>
+#include <span>
 
 class GLContextEGL : public GLContext
 {
@@ -27,7 +27,7 @@ public:
 	GLContextEGL(const WindowInfo& wi);
 	~GLContextEGL() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, gsl::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
 
 	void* GetProcAddress(const char* name) override;
 	virtual bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -42,7 +42,7 @@ protected:
 	virtual bool SetDisplay();
 	virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
-	bool Initialize(gsl::span<const Version> versions_to_try);
+	bool Initialize(std::span<const Version> versions_to_try);
 	bool CreateDisplay();
 	bool CreateContext(const Version& version, EGLContext share_context);
 	bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);

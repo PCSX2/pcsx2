@@ -44,9 +44,10 @@ void vif1Reset()
 	resetNewVif(1);
 }
 
-void SaveStateBase::vif0Freeze()
+bool SaveStateBase::vif0Freeze()
 {
-	FreezeTag("VIF0dma");
+	if (!FreezeTag("VIF0dma"))
+		return false;
 
 	Freeze(g_vif0Cycles);
 
@@ -54,11 +55,14 @@ void SaveStateBase::vif0Freeze()
 
 	Freeze(nVif[0].bSize);
 	FreezeMem(nVif[0].buffer, nVif[0].bSize);
+
+	return IsOkay();
 }
 
-void SaveStateBase::vif1Freeze()
+bool SaveStateBase::vif1Freeze()
 {
-	FreezeTag("VIF1dma");
+	if (!FreezeTag("VIF1dma"))
+		return false;
 
 	Freeze(g_vif1Cycles);
 
@@ -66,6 +70,8 @@ void SaveStateBase::vif1Freeze()
 
 	Freeze(nVif[1].bSize);
 	FreezeMem(nVif[1].buffer, nVif[1].bSize);
+
+	return IsOkay();
 }
 
 //------------------------------------------------------------------

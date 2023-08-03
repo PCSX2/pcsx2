@@ -22,6 +22,7 @@
 #include "common/FileSystem.h"
 #include "DebugTools/Debug.h"
 #include "MemoryTypes.h"
+#include "SysForwardDefs.h"
 
 #include <fmt/format.h>
 

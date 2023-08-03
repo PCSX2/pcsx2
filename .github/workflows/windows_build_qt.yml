@@ -37,10 +37,14 @@ on:
         required: false
         type: string
         default: 3rdparty\qt\6.5.0\msvc2022_64
-      patches_url:
+      patchesUrl:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_windows_qt:
@@ -57,13 +61,17 @@ jobs:
         with:
           submodules: recursive
 
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         env:
           OS: windows
           BUILD_SYSTEM: ${{ inputs.buildSystem }}
-          GUI_FRAMEWORK: Qt
           ARCH: ${{ inputs.platform }}
           SIMD: ${{ inputs.simd }}
           EVENT_NAME: ${{ github.event_name }}
@@ -88,7 +96,7 @@ jobs:
         shell: cmd
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.patches_url }}/patches.zip"
+          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Generate CMake
         if: inputs.configuration == 'CMake'

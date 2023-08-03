@@ -52,7 +52,7 @@ class GamePatchSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	GamePatchSettingsWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent);
+	GamePatchSettingsWidget(SettingsDialog* dialog, QWidget* parent);
 	~GamePatchSettingsWidget();
 
 private Q_SLOTS:
@@ -63,7 +63,4 @@ private:
 
 	Ui::GamePatchSettingsWidget m_ui;
 	SettingsDialog* m_dialog;
-
-	std::string m_serial;
-	u32 m_crc;
 };
