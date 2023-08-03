@@ -393,6 +393,8 @@ public:
 
 	virtual void Move();
 
+	GSVector4i GetTEX0Rect();
+	void CheckWriteOverlap(bool req_write, bool req_read);
 	void Write(const u8* mem, int len);
 	void Read(u8* mem, int len);
 	void InitReadFIFO(u8* mem, int len);

@@ -502,6 +502,63 @@ GSVector4i GSLocalMemory::GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 b
 	return GSVector4i(pgs * page_offset_xy).xyxy() + GSVector4i::loadh(pgs);
 }
 
+bool GSLocalMemory::HasOverlap(const u32 src_bp, const u32 src_bw, const u32 src_psm, const GSVector4i src_rect
+							, const u32 dst_bp, const u32 dst_bw, const u32 dst_psm, const GSVector4i dst_rect)
+{
+	const u32 src_start_bp = GSLocalMemory::GetStartBlockAddress(src_bp, src_bw, src_psm, src_rect) & ~(BLOCKS_PER_PAGE - 1);
+	const u32 dst_start_bp = GSLocalMemory::GetStartBlockAddress(dst_bp, dst_bw, dst_psm, dst_rect) & ~(BLOCKS_PER_PAGE - 1);
+
+	u32 src_end_bp = ((GSLocalMemory::GetEndBlockAddress(src_bp, src_bw, src_psm, src_rect) + 1) + (BLOCKS_PER_PAGE - 1)) & ~(BLOCKS_PER_PAGE - 1);
+	u32 dst_end_bp = ((GSLocalMemory::GetEndBlockAddress(dst_bp, dst_bw, dst_psm, dst_rect) + 1) + (BLOCKS_PER_PAGE - 1)) & ~(BLOCKS_PER_PAGE - 1);
+	
+	if (src_start_bp == src_end_bp)
+	{
+		src_end_bp = (src_end_bp + BLOCKS_PER_PAGE) & ~(MAX_BLOCKS - 1);
+	}
+
+	if (dst_start_bp == dst_end_bp)
+	{
+		dst_end_bp = (dst_end_bp + BLOCKS_PER_PAGE) & ~(MAX_BLOCKS - 1);
+	}
+
+	// Source has wrapped, 2 separate checks.
+	if (src_end_bp <= src_start_bp)
+	{
+		// Destination has also wrapped, so they *have* to overlap.
+		if (dst_end_bp <= dst_start_bp)
+		{
+			return true;
+		}
+		else
+		{
+			if (dst_end_bp > src_start_bp)
+				return true;
+
+			if (dst_start_bp < src_end_bp)
+				return true;
+		}
+	}
+	else // No wrapping on source.
+	{
+		// Destination wraps.
+		if (dst_end_bp <= dst_start_bp)
+		{
+			if (src_end_bp > dst_start_bp)
+				return true;
+
+			if (src_start_bp < dst_end_bp)
+				return true;
+		}
+		else
+		{
+			if (dst_start_bp < src_end_bp && dst_end_bp > src_start_bp)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 ///////////////////
 
 void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA)
