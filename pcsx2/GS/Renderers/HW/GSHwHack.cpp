@@ -851,6 +851,44 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	return true;
 }
 
+bool GSHwHack::GSC_BigMuthaTruckers(GSRendererHW& r, int& skip)
+{
+	// Rendering pattern:
+	// CRTC frontbuffer at 0x0 is interlaced (half vertical resolution),
+	// game needs to do a depth effect (so green channel to alpha),
+	// but there is a vram limitation so green is pushed into the alpha channel of the CRCT buffer,
+	// vertical resolution is half so only half is processed at once
+	// We, however, don't have this limitation so we'll replace the draw with a full-screen TS.
+
+	const GIFRegTEX0& Texture = RTEX0;
+
+	GIFRegTEX0 Frame = {};
+	Frame.TBW = RFRAME.FBW;
+	Frame.TBP0 = RFRAME.Block();
+	const int frame_offset_pal = GSLocalMemory::GetEndBlockAddress(0xa00, 10, PSMCT32, GSVector4i(0, 0, 640, 256)) + 1;
+	const int frame_offset_ntsc = GSLocalMemory::GetEndBlockAddress(0xa00, 10, PSMCT32, GSVector4i(0, 0, 640, 224)) + 1;
+	const GSVector4i rect = GSVector4i(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y, r.m_vt.m_max.p.x, r.m_vt.m_max.p.y);
+
+	if (RPRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Texture.PSM == PSMCT16 && ((rect.w == 512 && Frame.TBP0 == frame_offset_pal) || (Frame.TBP0 == frame_offset_ntsc && rect.w == 448)))
+	{
+		// 224 ntsc, 256 pal.
+		GL_INS("GSC_BigMuthaTruckers half bottom offset %d", r.m_context->XYOFFSET.OFX >> 4);
+
+		const size_t count = r.m_vertex.next;
+		GSVertex* v = &r.m_vertex.buff[0];
+		const u16 offset = (u16)rect.w * 16;
+
+		for (size_t i = 0; i < count; i++)
+			v[i].XYZ.Y += offset;
+
+		r.m_vt.m_min.p.y += rect.w;
+		r.m_vt.m_max.p.y += rect.w;
+		r.m_cached_ctx.FRAME.FBP = 0x50; // 0xA00 >> 5
+	}
+
+	return true;
+}
+
 bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	const u32 n_vertices = r.m_vertex.next;
@@ -901,37 +939,6 @@ bool GSHwHack::OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds
 		g_texture_cache->InvalidateVideoMem(r.m_context->offset.fb, r.m_r);
 		return false;
 	}
-	return true;
-}
-
-bool GSHwHack::OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	// Rendering pattern:
-	// CRTC frontbuffer at 0x0 is interlaced (half vertical resolution),
-	// game needs to do a depth effect (so green channel to alpha),
-	// but there is a vram limitation so green is pushed into the alpha channel of the CRCT buffer,
-	// vertical resolution is half so only half is processed at once
-	// We, however, don't have this limitation so we'll replace the draw with a full-screen TS.
-
-	const GIFRegTEX0& Texture = RTEX0;
-
-	GIFRegTEX0 Frame = {};
-	Frame.TBW = RFRAME.FBW;
-	Frame.TBP0 = RFRAME.Block();
-
-	if (RPRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Frame.TBP0 == 0x00a00 && Texture.PSM == PSMT8H && (r.m_r.y == 256 || r.m_r.y == 224))
-	{
-		// 224 ntsc, 256 pal.
-		GL_INS("OI_BigMuthaTruckers half bottom offset");
-
-		const size_t count = r.m_vertex.next;
-		GSVertex* v = &r.m_vertex.buff[0];
-		const u16 offset = (u16)r.m_r.y * 16;
-
-		for (size_t i = 0; i < count; i++)
-			v[i].V += offset;
-	}
-
 	return true;
 }
 
@@ -1457,6 +1464,7 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 	// Texture shuffle
 	CRC_F(GSC_DeathByDegreesTekkenNinaWilliams), // + Upscaling issues
+	CRC_F(GSC_BigMuthaTruckers),
 
 	// Upscaling hacks
 	CRC_F(GSC_UltramanFightingEvolution),
@@ -1467,7 +1475,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] = {
 	CRC_F(OI_PointListPalette),
-	CRC_F(OI_BigMuthaTruckers),
 	CRC_F(OI_DBZBTGames),
 	CRC_F(OI_FFX),
 	CRC_F(OI_RozenMaidenGebetGarden),

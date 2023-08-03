@@ -868,7 +868,8 @@ SCAJ-20010:
   name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-Unk"
   gsHWFixes:
-    beforeDraw: "OI_BigMuthaTruckers"
+    textureInsideRT: 1 # Fixes inside RT shuffling.
+    getSkipCount: "GSC_BigMuthaTruckers"
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-HK"
@@ -11459,11 +11460,16 @@ SLED-53664:
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    recommendedBlendingLevel: 4 # Fixes lighting.
 SLED-53681:
   name: "007 - From Russia with Love & Need for Speed Most Wanted & SSX On Tour [Demo]"
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    textureInsideRT: 1 # Required for complex offset shuffles on 007.
+    recommendedBlendingLevel: 4 # Fixes lighting in 007.
 SLED-53711:
   name: "Brothers in Arms - Earned in Blood"
   region: "PAL-A"
@@ -14914,7 +14920,8 @@ SLES-51355:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    beforeDraw: "OI_BigMuthaTruckers"
+    textureInsideRT: 1 # Fixes inside RT shuffling.
+    getSkipCount: "GSC_BigMuthaTruckers"
 SLES-51356:
   name: "Road Trip Adventure"
   region: "PAL-M3"
@@ -17581,21 +17588,18 @@ SLES-52588:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-E"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52589:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-F"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52590:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-G"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52591:
@@ -18718,7 +18722,6 @@ SLES-53008:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-I-S"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-53009:
@@ -20265,6 +20268,9 @@ SLES-53552:
 SLES-53553:
   name: "007 - From Russia with Love"
   region: "PAL-M7"
+  gsHWFixes:
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    recommendedBlendingLevel: 4 # Fixes lighting.
 SLES-53556:
   name: "Driver - Parallel Lines"
   region: "PAL-M3"
@@ -33308,7 +33314,8 @@ SLPM-65234:
   name: "Bakusou Dekotora Densetsu - Otoko Hanamichi Yume Roman"
   region: "NTSC-J"
   gsHWFixes:
-    beforeDraw: "OI_BigMuthaTruckers"
+    textureInsideRT: 1 # Fixes inside RT shuffling.
+    getSkipCount: "GSC_BigMuthaTruckers"
 SLPM-65235:
   name: "New Roommania - Porori Seishun"
   region: "NTSC-J"
@@ -35839,7 +35846,6 @@ SLPM-65942:
   name: "Mercenaries - Playground of Destruction"
   region: "NTSC-J"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-65943:
@@ -37439,6 +37445,9 @@ SLPM-66321:
 SLPM-66322:
   name: "007 - Russia yori Ai o Komete"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    recommendedBlendingLevel: 4 # Fixes lighting.
 SLPM-66323:
   name: "Princess Software Collection, The"
   region: "NTSC-J"
@@ -38036,7 +38045,6 @@ SLPM-66465:
   name: "Mercenaries - Playground of Destruction [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-66467:
@@ -48238,7 +48246,8 @@ SLUS-20291:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    beforeDraw: "OI_BigMuthaTruckers"
+    textureInsideRT: 1 # Fixes inside RT shuffling.
+    getSkipCount: "GSC_BigMuthaTruckers"
 SLUS-20292:
   name: "Tsugunai - Atonement"
   region: "NTSC-U"
@@ -49820,7 +49829,8 @@ SLUS-20605:
   name: "Big Mutha Truckers"
   region: "NTSC-U"
   gsHWFixes:
-    beforeDraw: "OI_BigMuthaTruckers"
+    textureInsideRT: 1 # Fixes inside RT shuffling.
+    getSkipCount: "GSC_BigMuthaTruckers"
 SLUS-20606:
   name: "Bounty Hunter - Seek & Destroy"
   region: "NTSC-U"
@@ -51491,7 +51501,6 @@ SLUS-20932:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-20933:
@@ -53496,6 +53505,9 @@ SLUS-21282:
   name: "007 - From Russia with Love"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    recommendedBlendingLevel: 4 # Fixes lighting.
 SLUS-21283:
   name: "Total Overdose - A Gunslinger's Tale in Mexico"
   region: "NTSC-U"
@@ -57487,7 +57499,6 @@ SLUS-29137:
   name: "Mercenaries - Playground of Destruction [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    halfBottomOverride: 1 # Bottom screen has wrong colors.
     autoFlush: 2 # Fixes missing lighting.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-29138:
@@ -57622,9 +57633,14 @@ SLUS-29167:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
+    textureInsideRT: 1 # Required for complex offset shuffles in 007.
+    recommendedBlendingLevel: 4 # Fixes lighting in 007.
 SLUS-29168:
   name: "007 - From Russia with Love [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    textureInsideRT: 1 # Required for complex offset shuffles.
+    recommendedBlendingLevel: 4 # Fixes lighting.
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
   region: "NTSC-U"
