@@ -337,7 +337,7 @@ void GSRendererHW::ExpandLineIndices()
 }
 
 // Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
-void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
+void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
 	const u32 count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
@@ -351,7 +351,8 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
 	int tex_pos = (PRIM->FST) ? first_vert.U : static_cast<int>(tw * first_vert.ST.S);
 	tex_pos &= 0xFF;
-	read_ba = (tex_pos > 112 && tex_pos < 144);
+	// "same group" means it can read blue and write alpha using C32 tricks
+	read_ba = (tex_pos > 112 && tex_pos < 144) || (m_same_group_texture_shuffle && (m_cached_ctx.FRAME.FBMSK & 0xFFFF0000) != 0xFFFF00000);
 
 	// Another way of selecting whether to read RG/BA is to use region repeat.
 	// Ace Combat 04 reads RG, writes to RGBA by setting a MINU of 1015.
@@ -406,60 +407,51 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 		return;
 	}
 
-	bool half_bottom = false;
-	switch (GSConfig.UserHacks_HalfBottomOverride)
+	bool half_bottom_vert = true;
+	bool half_right_vert = true;
+	bool half_bottom_uv = true;
+	bool half_right_uv = true;
+
+	if (m_same_group_texture_shuffle)
 	{
-		case 0:
-			// Force Disabled.
-			// Force Disabled will help games such as Xenosaga.
-			// Xenosaga handles the half bottom as an vertex offset instead of a buffer offset which does the effect twice.
-			// Half bottom won't trigger a cache miss that skip the draw because it is still the normal buffer but with a vertices offset.
-			half_bottom = false;
-			break;
-		case 1:
-			// Force Enabled.
-			// Force Enabled will help games such as Superman Shadows of Apokolips, The Lord of the Rings: The Two Towers,
-			// Demon Stone, Midnight Club 3.
-			half_bottom = true;
-			break;
-		case -1:
-		default:
-			// Default, Automatic.
-			// Here's the idea
-			// TS effect is 16 bits but we emulate it on a 32 bits format
-			// Normally this means we need to divide size by 2.
-			//
-			// Some games do two TS effects on each half of the buffer.
-			// This makes a mess for us in the TC because we end up with two targets
-			// when we only want one, thus half screen bug.
-			//
-			// 32bits emulation means we can do the effect once but double the size.
-			// Test cases: Crash Twinsantiy and DBZ BT3
-			// Test Case: NFS: HP2 splits the effect h:256 and h:192 so 64
-			// Other games: Midnight Club 3 headlights, black bar in Xenosaga 3 dialogue,
-			// Firefighter FD18 fire occlusion, PSI Ops half screen green overlay, Lord of the Rings - Two Towers,
-			// Demon Stone , Sonic Unleashed, Lord of the Rings Two Towers,
-			// Superman Shadow of Apokolips, Matrix Path of Neo, Big Mutha Truckers
-
-			int maxvert = 0;
-			int minvert = 4096;
-			for (u32 i = 0; i < count; i++)
+		if (m_cached_ctx.FRAME.FBW != rt->m_TEX0.TBW && m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
+			half_right_vert = false;
+		else
+			half_bottom_vert = false;
+	}
+	else
+	{
+		// Different source (maybe?)
+		// If a game does the texture and frame doubling differently, they can burn in hell.
+		if (m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
+		{
+			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
+			int tex_width = tex->m_target ? tex->m_from_target->m_valid.z : (tex->m_TEX0.TBW * 64);
+			int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
+			if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW || (m_cached_ctx.TEX0.TBW * 64) < floor(m_vt.m_max.t.x))
 			{
-				int YCord = 0;
-
-				if (!PRIM->FST)
-					YCord = static_cast<int>((1 << m_cached_ctx.TEX0.TH) * (v[i].ST.T / v[i].RGBAQ.Q));
-				else
-					YCord = (v[i].V >> 4);
-
-				if (maxvert < YCord)
-					maxvert = YCord;
-				if (minvert > YCord)
-					minvert = YCord;
+				half_right_uv = false;
+				half_right_vert = false;
 			}
-
-			half_bottom = minvert == 0 && m_r.height() <= maxvert;
-			break;
+			else
+			{
+				half_bottom_uv = false;
+				half_bottom_vert = false;
+			}
+		}
+		else
+		{
+			if ((floor(m_vt.m_max.p.y) <= rt->m_valid.w) && ((floor(m_vt.m_max.p.x) > (m_cached_ctx.FRAME.FBW * 64)) || (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW)))
+			{
+				half_right_vert = false;
+				half_right_uv = false;
+			}
+			else
+			{
+				half_bottom_vert = false;
+				half_bottom_uv = false;
+			}
+		}
 	}
 
 	if (PRIM->FST)
@@ -469,16 +461,16 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 		for (u32 i = 0; i < count; i += 2)
 		{
 			if (write_ba)
-				v[i].XYZ.X   -= 128u;
+				v[i].XYZ.X -= 128u;
 			else
-				v[i+1].XYZ.X += 128u;
+				v[i + 1].XYZ.X += 128u;
 
 			if (read_ba)
-				v[i].U       -= 128u;
+				v[i].U -= 128u;
 			else
-				v[i+1].U     += 128u;
+				v[i + 1].U += 128u;
 
-			if (!half_bottom)
+			if (!half_bottom_vert)
 			{
 				// Height is too big (2x).
 				const int tex_offset = v[i].V & 0xF;
@@ -488,9 +480,13 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
 				v[i].XYZ.Y = static_cast<u16>(tmp.x);
-				v[i].V = static_cast<u16>(tmp.y);
 				v[i + 1].XYZ.Y = static_cast<u16>(tmp.z);
-				v[i + 1].V = static_cast<u16>(tmp.w);
+
+				if (!half_bottom_uv)
+				{
+					v[i].V = static_cast<u16>(tmp.y);
+					v[i + 1].V = static_cast<u16>(tmp.w);
+				}
 			}
 		}
 	}
@@ -502,16 +498,16 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 		for (u32 i = 0; i < count; i += 2)
 		{
 			if (write_ba)
-				v[i].XYZ.X   -= 128u;
+				v[i].XYZ.X -= 128u;
 			else
-				v[i+1].XYZ.X += 128u;
+				v[i + 1].XYZ.X += 128u;
 
 			if (read_ba)
-				v[i].ST.S    -= offset_8pix;
+				v[i].ST.S -= offset_8pix;
 			else
-				v[i+1].ST.S  += offset_8pix;
+				v[i + 1].ST.S += offset_8pix;
 
-			if (!half_bottom)
+			if (!half_bottom_vert)
 			{
 				// Height is too big (2x).
 				const GSVector4i offset(o.OFY, o.OFY);
@@ -521,9 +517,13 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 
 				//fprintf(stderr, "Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
 				v[i].XYZ.Y = static_cast<u16>(tmp.x);
-				v[i].ST.T /= 2.0f;
 				v[i + 1].XYZ.Y = static_cast<u16>(tmp.y);
-				v[i + 1].ST.T /= 2.0f;
+
+				if (!half_bottom_uv)
+				{
+					v[i].ST.T /= 2.0f;
+					v[i + 1].ST.T /= 2.0f;
+				}
 			}
 		}
 	}
@@ -534,21 +534,41 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	else
 		m_vt.m_max.p.x += 8.0f;
 
-	if (!half_bottom)
+	if (!m_same_group_texture_shuffle)
 	{
-		const float delta_Y = m_vt.m_max.p.y - m_vt.m_min.p.y;
-		m_vt.m_max.p.y -= delta_Y / 2.0f;
+		if (read_ba)
+			m_vt.m_min.t.x -= 8.0f;
+		else
+			m_vt.m_max.t.x += 8.0f;
 	}
 
-	if (read_ba)
-		m_vt.m_min.t.x -= 8.0f;
-	else
-		m_vt.m_max.t.x += 8.0f;
-
-	if (!half_bottom)
+	if (!half_right_vert)
 	{
-		const float delta_T = m_vt.m_max.t.y - m_vt.m_min.t.y;
-		m_vt.m_max.t.y -= delta_T / 2.0f;
+		m_vt.m_min.p.x /= 2.0f;
+		m_vt.m_max.p.x /= 2.0f;
+		m_context->scissor.in.x = m_vt.m_min.p.x;
+		m_context->scissor.in.z = m_vt.m_max.p.x + 8.0f;
+	}
+
+	if (!half_bottom_vert)
+	{
+		m_vt.m_min.p.y /= 2.0f;
+		m_vt.m_max.p.y /= 2.0f;
+		m_context->scissor.in.y = m_vt.m_min.p.y;
+		m_context->scissor.in.w = m_vt.m_max.p.y + 8.0f;
+	}
+
+	// Only do this is the source is being interpreted as 16bit
+	if (!half_bottom_uv)
+	{
+		m_vt.m_min.t.y /= 2.0f;
+		m_vt.m_max.t.y /= 2.0f;
+	}
+
+	if (!half_right_uv)
+	{
+		m_vt.m_min.t.y /= 2.0f;
+		m_vt.m_max.t.y /= 2.0f;
 	}
 }
 
@@ -849,19 +869,22 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 
 	// If this is a split texture shuffle, the next draw's FRAME/TEX0 should line up.
 	// Re-add the offset we subtracted in Draw() to get the original FBP/TBP0.. this won't handle wrapping. Oh well.
+	// "Potential" ones are for Jak3 which does a split shuffle on a 128x128 texture with a width of 256, writing to the lower half then offsetting 2 pages.
 	const u32 expected_next_FBP = (m_cached_ctx.FRAME.FBP + m_split_texture_shuffle_pages) + num_pages;
+	const u32 potential_expected_next_FBP = m_cached_ctx.FRAME.FBP + ((m_context->FRAME.FBW * 64) / aligned_rc.width());
 	const u32 expected_next_TBP0 = (m_cached_ctx.TEX0.TBP0 + (m_split_texture_shuffle_pages + num_pages) * BLOCKS_PER_PAGE);
+	const u32 potential_expected_next_TBP0 = m_cached_ctx.TEX0.TBP0 + (BLOCKS_PER_PAGE * ((m_context->TEX0.TBW * 64) / aligned_rc.width()));
 	GL_CACHE("IsSplitTextureShuffle: Draw covers %ux%u pages, next FRAME %x TEX %x",
 		static_cast<u32>(aligned_rc.width()) / frame_psm.pgs.x, pages_high, expected_next_FBP * BLOCKS_PER_PAGE,
 		expected_next_TBP0);
-	if (next_ctx.TEX0.TBP0 != expected_next_TBP0)
+	if (next_ctx.TEX0.TBP0 != expected_next_TBP0 && next_ctx.TEX0.TBP0 != potential_expected_next_TBP0)
 	{
 		GL_CACHE("IsSplitTextureShuffle: Mismatch on TBP0, expecting %x, got %x", expected_next_TBP0, next_ctx.TEX0.TBP0);
 		return false;
 	}
 
 	// Some games don't offset the FBP.
-	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP)
+	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP && next_ctx.FRAME.FBP != potential_expected_next_FBP)
 	{
 		GL_CACHE("IsSplitTextureShuffle: Mismatch on FBP, expecting %x, got %x", expected_next_FBP * BLOCKS_PER_PAGE,
 			next_ctx.FRAME.FBP * BLOCKS_PER_PAGE);
@@ -1904,6 +1927,7 @@ void GSRendererHW::Draw()
 
 	m_texture_shuffle = false;
 	m_copy_16bit_to_target_shuffle = false;
+	m_same_group_texture_shuffle = false;
 
 	const bool is_split_texture_shuffle = (m_split_texture_shuffle_pages > 0);
 	if (is_split_texture_shuffle)
@@ -2167,9 +2191,30 @@ void GSRendererHW::Draw()
 			GL_CACHE("Estimated texture region: %u,%u -> %u,%u", MIP_CLAMP.MINU, MIP_CLAMP.MINV, MIP_CLAMP.MAXU + 1,
 				MIP_CLAMP.MAXV + 1);
 		}
-		const bool possible_shuffle = m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 || IsPossibleChannelShuffle();
-		src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear()) :
-								g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr, possible_shuffle, m_vt.IsLinear());
+
+		GIFRegTEX0 FRAME_TEX0;
+		bool rt_32bit = false;
+		if (!no_rt && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16)
+		{
+			// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
+			FRAME_TEX0.U64 = 0;
+			FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
+			FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
+			FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
+
+			GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(FRAME_TEX0, GSVector2i(m_vt.m_max.p.x, m_vt.m_max.p.y), GetTextureScaleFactor(), GSTextureCache::RenderTarget, true,
+				fm);
+
+			if (tgt)
+				rt_32bit = tgt->m_32_bits_fmt;
+
+			tgt = nullptr;
+		}
+		const bool possible_shuffle = ((rt_32bit && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0) || IsPossibleChannelShuffle();
+
+		src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block()) :
+								g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block());
+
 		if (unlikely(!src))
 		{
 			GL_INS("ERROR: Source lookup failed, skipping.");
@@ -2257,7 +2302,7 @@ void GSRendererHW::Draw()
 			}
 
 			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::RenderTarget, true,
-				fm, false, force_preload, preserve_rt_color, m_r);
+				fm, false, force_preload, preserve_rt_color, m_r, src);
 			if (unlikely(!rt))
 			{
 				GL_INS("ERROR: Failed to create FRAME target, skipping.");
@@ -2281,7 +2326,7 @@ void GSRendererHW::Draw()
 		if (!ds)
 		{
 			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::DepthStencil,
-				m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, m_r);
+				m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, m_r, src);
 			if (unlikely(!ds))
 			{
 				GL_INS("ERROR: Failed to create ZBUF target, skipping.");
@@ -2294,21 +2339,36 @@ void GSRendererHW::Draw()
 	if (process_texture)
 	{
 		GIFRegCLAMP MIP_CLAMP = m_cached_ctx.CLAMP;
-
+		const u32 draw_end = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r)+1;
+		const bool draw_uses_target = src->m_from_target && ((src->m_from_target_TEX0.TBP0 <= m_cached_ctx.FRAME.Block() && 
+									src->m_from_target->UnwrappedEndBlock() > m_cached_ctx.FRAME.Block()) || 
+									(m_cached_ctx.FRAME.Block() < src->m_from_target_TEX0.TBP0 && draw_end > src->m_from_target_TEX0.TBP0));
+		
 		if (rt)
 		{
 			// copy of a 16bit source in to this target, make sure it's opaque and not bilinear to reduce false positives.
 			m_copy_16bit_to_target_shuffle = m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block() && rt->m_32_bits_fmt == true && IsOpaque()
 											&& !(context->TEX1.MMIN & 1) && !src->m_32_bits_fmt && m_cached_ctx.FRAME.FBMSK;
-		}
 
+			// It's not actually possible to do a C16->C16 texture shuffle of B to A as they are the same group
+			// However you can do it by using C32 and offsetting the target verticies to point to B A, then mask as appropriate.
+			m_same_group_texture_shuffle = draw_uses_target && (m_cached_ctx.TEX0.PSM & 0xE) == PSMCT32 && (m_cached_ctx.FRAME.PSM & 0x7) == PSMCT16 && (m_vt.m_min.p.x == 8.0f);
+		}
+		const GSVertex* v = &m_vertex.buff[0];
 		// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 		// Initially code also tested the RT but it gives too much false-positive
-		//
-		// Both input and output are 16 bits and texture was initially 32 bits!
-		m_texture_shuffle = (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
+		const int first_x = (v[0].XYZ.X + 8) >> 4;
+		const int first_u = PRIM->FST ? ((v[0].U + 8) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[0].ST.S / v[1].RGBAQ.Q)) + 0.5f);
+		const bool shuffle_coords = (first_x ^ first_u) & 8;
+		// Both input and output are 16 bits and texture was initially 32 bits! Same for the target, Sonic Unleash makes a new target which really is 16bit.
+		m_texture_shuffle = ((m_same_group_texture_shuffle || (tex_psm.bpp == 16)) && (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) &&
+			(shuffle_coords || rt->m_32_bits_fmt))
+			&& draw_sprite_tex && (src->m_32_bits_fmt || m_copy_16bit_to_target_shuffle);
+	/*	const bool old_shuffle = ((m_same_group_texture_shuffle || (tex_psm.bpp == 16)) && (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16))
 			&& draw_sprite_tex && (src->m_32_bits_fmt || m_copy_16bit_to_target_shuffle);
 
+		if (old_shuffle && !m_texture_shuffle)
+			DevCon.Warning("Here draw %d", s_n);*/
 		// Okami mustn't call this code
 		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && ((m_cached_ctx.FRAME.FBMSK & fm_mask) == 0))
 		{
@@ -2318,7 +2378,6 @@ void GSRendererHW::Draw()
 
 			// Shadow of Memories/Destiny shouldn't call this code.
 			// Causes shadow flickering.
-			const GSVertex* v = &m_vertex.buff[0];
 			m_texture_shuffle = ((v[1].U - v[0].U) < 256) ||
 				// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
 				// In this case, the address of the framebuffer and texture are the same.
@@ -2509,9 +2568,23 @@ void GSRendererHW::Draw()
 	GSTextureCache::Target* old_rt = nullptr;
 	GSTextureCache::Target* old_ds = nullptr;
 	{
+		GSVector2i new_size = t_size;
+
+		// We need to adjust the size if it's a texture shuffle as we could end up making the RT twice the size.
+		if (rt && m_texture_shuffle && m_split_texture_shuffle_pages == 0)
+		{
+			if (new_size.x > rt->m_valid.z || new_size.y > rt->m_valid.w)
+			{
+				if (new_size.y <= rt->m_valid.w && (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW))
+					new_size.x /= 2;
+				else
+					new_size.y /= 2;
+			}
+		}
+
 		// We still need to make sure the dimensions of the targets match.
-		const int new_w = std::max(t_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds->m_unscaled_size.x : 0));
-		const int new_h = std::max(t_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds->m_unscaled_size.y : 0));
+		const int new_w = std::max(new_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds->m_unscaled_size.x : 0));
+		const int new_h = std::max(new_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds->m_unscaled_size.y : 0));
 		if (rt)
 		{
 			const u32 old_end_block = rt->m_end_block;
@@ -2522,6 +2595,7 @@ void GSRendererHW::Draw()
 			pxAssert(rt->GetScale() == target_scale);
 			if (rt->GetUnscaledWidth() != new_w || rt->GetUnscaledHeight() != new_h)
 				GL_INS("Resize RT from %dx%d to %dx%d", rt->GetUnscaledWidth(), rt->GetUnscaledHeight(), new_w, new_h);
+
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -2531,8 +2605,8 @@ void GSRendererHW::Draw()
 			}
 
 			// Limit to 2x the vertical height of the resolution (for double buffering)
-			rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
-			rt->UpdateDrawn(m_r, can_update_size || m_r.w <= (resolution.y * 2));
+			rt->UpdateValidity(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
+			rt->UpdateDrawn(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
 			// Probably changing to double buffering, so invalidate any old target that was next to it.
 			// This resolves an issue where the PCRTC will find the old target in FMV's causing flashing.
 			// Grandia Xtreme, Onimusha Warlord.
@@ -2735,7 +2809,7 @@ void GSRendererHW::Draw()
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
-		rt->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
+		rt->UpdateValidity(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
 
 		g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false);
 
@@ -2748,7 +2822,7 @@ void GSRendererHW::Draw()
 	{
 		//ds->m_valid = ds->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
-		ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2));
+		ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2) && !m_texture_shuffle);
 
 		g_texture_cache->InvalidateVideoMem(context->offset.zb, m_r, false);
 
@@ -2996,7 +3070,7 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 	}
 }
 
-void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt)
+void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
@@ -3039,7 +3113,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt)
 		bool write_ba;
 		bool read_ba;
 
-		ConvertSpriteTextureShuffle(write_ba, read_ba);
+		ConvertSpriteTextureShuffle(write_ba, read_ba, rt, tex);
 
 		// If date is enabled you need to test the green channel instead of the
 		// alpha channel. Only enable this code in DATE mode to reduce the number
@@ -3048,6 +3122,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt)
 
 		m_conf.ps.read_ba = read_ba;
 		m_conf.ps.real16src = m_copy_16bit_to_target_shuffle;
+		m_conf.ps.shuffle_same = m_same_group_texture_shuffle;
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const u32 m = m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
@@ -4101,7 +4176,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// Force a 32 bits access (normally shuffle is done on 16 bits)
 		// m_ps_sel.tex_fmt = 0; // removed as an optimization
 		m_conf.ps.aem = TEXA.AEM;
-		ASSERT(tex->m_target);
+		//ASSERT(tex->m_target);
 
 		// Require a float conversion if the texure is a depth otherwise uses Integral scaling
 		if (psm.depth)
@@ -4669,7 +4744,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_prim_overlap = PrimitiveOverlap();
 
-	EmulateTextureShuffleAndFbmask(rt);
+	EmulateTextureShuffleAndFbmask(rt, tex);
 
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
 

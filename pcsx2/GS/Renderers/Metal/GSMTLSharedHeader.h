@@ -182,6 +182,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_ADJT,
 	GSMTLConstantIndex_PS_LTF,
 	GSMTLConstantIndex_PS_SHUFFLE,
+	GSMTLConstantIndex_PS_SHUFFLE_SAME,
 	GSMTLConstantIndex_PS_READ_BA,
 	GSMTLConstantIndex_PS_READ16_SRC,
 	GSMTLConstantIndex_PS_WRITE_RG,

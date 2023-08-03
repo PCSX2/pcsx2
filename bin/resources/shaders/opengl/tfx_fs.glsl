@@ -950,6 +950,15 @@ void ps_main()
 #if PS_SHUFFLE
 	uvec4 denorm_c = uvec4(C);
 	uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
+#if PS_SHUFFLE_SAME
+#if (PS_READ_BA)
+	C.ga = vec2(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+	C.rb = C.ga;
+#else
+	C.ga = C.rg;
+	C.rb = C.ga;
+#endif
+#else
 #if PS_READ16_SRC
 	C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 	if (bool(denorm_c.a & 0x80u))
@@ -995,6 +1004,7 @@ void ps_main()
 #endif // PS_READ_BA
 
 #endif // READ16_SRC
+#endif // PS_SHUFFLE_SAME
 #endif // PS_SHUFFLE
 
 	// Must be done before alpha correction
