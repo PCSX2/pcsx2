@@ -402,7 +402,28 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 				current_patch = {};
 			}
 
-			current_patch.name = line.substr(1, line.length() - 2);
+
+			std::string result = line.substr(1, line.length() - 2);
+			std::string::size_type pos = result.find('\\');
+
+			//	get name
+			current_patch.name = result;		
+			current_patch.simple_name = result;		
+			if (pos != std::string::npos)
+			{
+				current_patch.group = result.substr(0, pos);
+				current_patch.simple_name = result.substr(pos + 1);	//	@TODO: overwrite name { conflicts with base UI }
+				if (current_patch.group != "")
+				{
+					//	Get nested group name if avbailable
+					std::string::size_type pos2 = result.rfind('\\');
+					if (pos2 != std::string::npos && pos2 != pos)
+					{
+						current_patch.nested_group = result.substr(pos +1, pos2 - pos - 1);
+						current_patch.simple_name = result.substr(pos2 + 1);	//	@TODO: overwrite name { conflicts with base ui }
+					}
+				}
+			}
 			continue;
 		}
 

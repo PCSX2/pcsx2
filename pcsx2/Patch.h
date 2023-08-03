@@ -69,6 +69,9 @@ namespace Patch
 		std::string name;
 		std::string description;
 		std::string author;
+		std::string group;
+		std::string nested_group;
+		std::string simple_name;
 
 		std::string_view GetNamePart() const;
 		std::string_view GetNameParentPart() const;
