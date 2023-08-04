@@ -19790,6 +19790,8 @@ SLES-53444:
     - VUSyncHack # Partly fixes SPS still needs EE+3.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom.
+  speedHacks:
+    eeCycleRate: 3 # Fixes SPS.
 SLES-53446:
   name: "Arcade USA"
   region: "PAL-E"
@@ -24058,6 +24060,8 @@ SLES-54953:
   region: "PAL-M6"
   gameFixes:
     - VUSyncHack # Partially fixes graphical issues also needs EE+3 to be fully fixed.
+  speedHacks:
+    eeCycleRate: 3 # Fixes SPS.
 SLES-54955:
   name: "Finkles World"
   region: "PAL-E"
@@ -56057,6 +56061,8 @@ SLUS-21795:
   region: "NTSC-U"
   gameFixes:
     - VUSyncHack # Partially fixes graphical issues also needs EE+3 to be fully fixed.
+  speedHacks:
+    eeCycleRate: 3 # Fixes SPS.
 SLUS-21796:
   name: "Dora the Explorer - Dora Saves the Snow Princess"
   region: "NTSC-U"
