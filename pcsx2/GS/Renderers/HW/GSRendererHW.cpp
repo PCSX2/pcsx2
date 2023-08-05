@@ -373,7 +373,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 		// We can't use the draw rect exactly here, because if the target was actually larger
 		// for some reason... unhandled clears, maybe, it won't have been halved correctly.
 		// So, halve it ourselves.
-		const GSVector4i dr = GetSplitTextureShuffleDrawRect();
+		const GSVector4i dr = m_r;
 		const GSVector4i r = dr.blend32<9>(dr.sra32(1));
 		GL_CACHE("ConvertSpriteTextureShuffle: Rewrite from %d,%d => %d,%d to %d,%d => %d,%d",
 			static_cast<int>(m_vt.m_min.p.x), static_cast<int>(m_vt.m_min.p.y), static_cast<int>(m_vt.m_min.p.z),
@@ -786,12 +786,8 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 	return false;
 }
 
-bool GSRendererHW::IsSplitTextureShuffle()
+bool GSRendererHW::NextDrawMatchesShuffle() const
 {
-	// For this to work, we're peeking into the next draw, therefore we need dirty registers.
-	if (m_dirty_gs_regs == 0)
-		return false;
-
 	// Make sure nothing unexpected has changed.
 	// Twinsanity seems to screw with ZBUF here despite it being irrelevant.
 	const GSDrawingContext& next_ctx = m_env.CTXT[m_backed_up_ctx];
@@ -805,13 +801,24 @@ bool GSRendererHW::IsSplitTextureShuffle()
 		return false;
 	}
 
+	return true;
+}
+
+bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
+{
+	// For this to work, we're peeking into the next draw, therefore we need dirty registers.
+	if (m_dirty_gs_regs == 0)
+		return false;
+
+	if (!NextDrawMatchesShuffle())
+		return false;
+
 	// Different channel being shuffled, so needs to be handled separately (misdetection in 50 Cent)
 	if (m_vertex.buff[m_index.buff[0]].U != m_v.U)
 		return false;
 
 	// Check that both the position and texture coordinates are page aligned, so we can work in pages instead of coordinates.
 	// For texture shuffles, the U will be offset by 8.
-	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
 
 	const GSVector4i pos_rc = GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p + GSVector4::cxpr(0.5f)));
 	const GSVector4i tex_rc = GSVector4i(m_vt.m_min.t.upld(m_vt.m_max.t));
@@ -823,6 +830,8 @@ bool GSRendererHW::IsSplitTextureShuffle()
 	// X might be offset by up to -8/+8, but either the position or UV should be aligned.
 	GSVector4i aligned_rc = pos_rc.min_i32(tex_rc).blend32<12>(pos_rc.max_i32(tex_rc));
 
+	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
+	const GSDrawingContext& next_ctx = m_env.CTXT[m_backed_up_ctx];
 	// Y should be page aligned. X should be too, but if it's doing a copy with a shuffle (which is kinda silly), both the
 	// position and coordinates may be offset by +8. See Psi-Ops - The Mindgate Conspiracy.
 	if ((aligned_rc.x & 7) != 0 || aligned_rc.x > 8 || (aligned_rc.z & 7) != 0 ||
@@ -836,7 +845,7 @@ bool GSRendererHW::IsSplitTextureShuffle()
 
 	// We should have the same number of pages in both the position and UV.
 	const u32 pages_high = static_cast<u32>(aligned_rc.height()) / frame_psm.pgs.y;
-	const u32 num_pages = m_cached_ctx.FRAME.FBW * pages_high;
+	const u32 num_pages = m_context->FRAME.FBW * pages_high;
 
 	// If this is a split texture shuffle, the next draw's FRAME/TEX0 should line up.
 	// Re-add the offset we subtracted in Draw() to get the original FBP/TBP0.. this won't handle wrapping. Oh well.
@@ -866,10 +875,19 @@ bool GSRendererHW::IsSplitTextureShuffle()
 	{
 		m_split_texture_shuffle_start_FBP = m_cached_ctx.FRAME.FBP;
 		m_split_texture_shuffle_start_TBP = m_cached_ctx.TEX0.TBP0;
+
+		// If the game has changed the texture width to 1 we need to retanslate it to whatever the rt has so the final rect is correct.
+		if (m_cached_ctx.FRAME.FBW == 1)
+			m_split_texture_shuffle_fbw = rt_tbw;
+		else
+			m_split_texture_shuffle_fbw = m_cached_ctx.FRAME.FBW;
 	}
 
+	if ((m_split_texture_shuffle_pages % m_split_texture_shuffle_fbw) == 0)
+		m_split_texture_shuffle_pages_high += pages_high;
+
 	m_split_texture_shuffle_pages += num_pages;
-	m_split_texture_shuffle_pages_high += pages_high;
+
 	return true;
 }
 
@@ -881,7 +899,6 @@ GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 	// Some games (e.g. Crash Twinsanity) adjust both FBP and TBP0, so the rectangle will be half the size
 	// of the actual shuffle. Others leave the FBP alone, but only adjust TBP0, and offset the draw rectangle
 	// to the second half of the fb. In which case, the rectangle bounds will be correct.
-
 	if (m_context->FRAME.FBP != m_split_texture_shuffle_start_FBP)
 	{
 		const int pages_high = (r.height() + frame_psm.pgs.y - 1) / frame_psm.pgs.y;
@@ -1902,7 +1919,41 @@ void GSRendererHW::Draw()
 
 		// Fudge FRAME and TEX0 to point to the start of the shuffle.
 		m_cached_ctx.TEX0.TBP0 = m_split_texture_shuffle_start_TBP;
-		SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+
+		// We correct this again at the end of the split
+		SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_context->FRAME.FBW, m_cached_ctx.FRAME.PSM);
+
+		// TEX0 may also be just using single width with offsets also, so let's deal with that.
+		if (m_split_texture_shuffle_pages > 1 && !NextDrawMatchesShuffle())
+		{
+			if (m_context->FRAME.FBW != m_split_texture_shuffle_fbw && m_cached_ctx.TEX0.TBW == 1)
+			{
+				const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
+				const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
+				// This is the final draw of the shuffle, so let's fudge the numbers
+				// Need to update the final rect as it could be wrong.
+				if (m_context->FRAME.FBW == 1 && m_split_texture_shuffle_fbw != m_context->FRAME.FBW)
+				{
+					m_r.x = 0; // Need to keep the X offset to calculate the shuffle.
+					m_r.z = m_split_texture_shuffle_fbw * frame_psm.pgs.x;
+					m_r.y = 0;
+					m_r.w = std::min(1024U, m_split_texture_shuffle_pages_high * frame_psm.pgs.y); // Max we can shuffle is 1024 (512)
+
+					//Fudge the scissor and frame
+					m_context->scissor.in = m_r;
+
+					SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_split_texture_shuffle_fbw, m_cached_ctx.FRAME.PSM);
+				}
+
+				const int pages = m_split_texture_shuffle_pages + 1;
+				const int width = m_split_texture_shuffle_fbw;
+				const int height = (pages >= width) ? (pages / width) : 1;
+				// We must update the texture size! It will likely be 64x64, which is no good, so let's fudge that.
+				m_cached_ctx.TEX0.TW = std::ceil(std::log2(std::min(1024, width * tex_psm.pgs.x)));
+				m_cached_ctx.TEX0.TH = std::ceil(std::log2(std::min(1024, height * tex_psm.pgs.y)));
+				m_cached_ctx.TEX0.TBW = m_split_texture_shuffle_fbw;
+			}
+		}
 	}
 
 	const auto cleanup_draw = [&]() {
@@ -2156,7 +2207,9 @@ void GSRendererHW::Draw()
 
 	// Ensure draw rect is clamped to framebuffer size. Necessary for updating valid area.
 	const GSVector4i unclamped_draw_rect = m_r;
-	m_r = m_r.rintersect(t_size_rect);
+	// Don't clamp on shuffle, the height cache may troll us with the REAL height.
+	if (!m_texture_shuffle && m_split_texture_shuffle_pages == 0)
+		m_r = m_r.rintersect(t_size_rect);
 
 	float target_scale = GetTextureScaleFactor();
 
@@ -2276,7 +2329,7 @@ void GSRendererHW::Draw()
 			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
 		}
 
-		if (m_texture_shuffle && IsSplitTextureShuffle())
+		if (m_texture_shuffle && IsSplitTextureShuffle(rt->m_TEX0.TBW))
 		{
 			// If TEX0 == FBP, we're going to have a source left in the TC.
 			// That source will get used in the actual draw unsafely, so kick it out.
