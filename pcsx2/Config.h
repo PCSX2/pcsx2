@@ -1262,12 +1262,14 @@ struct Pcsx2Config
 			PrimedIndicators : 1;
 		BITFIELD_END
 
+		s32 NotificationsDuration = 5;
+
 		AchievementsOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
 		bool operator==(const AchievementsOptions& right) const
 		{
-			return OpEqu(bitset);
+			return OpEqu(bitset) && OpEqu(NotificationsDuration);
 		}
 
 		bool operator!=(const AchievementsOptions& right) const

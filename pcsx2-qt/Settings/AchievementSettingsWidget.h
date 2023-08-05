@@ -33,6 +33,7 @@ private Q_SLOTS:
   void onLoginLogoutPressed();
   void onViewProfilePressed();
   void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+  void onNotificationsDurationChanged();
 
 private:
   void updateLoginState();

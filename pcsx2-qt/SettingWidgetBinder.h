@@ -1078,7 +1078,10 @@ namespace SettingWidgetBinder
 	static inline void BindSliderToIntSetting(SettingsInterface* sif, QSlider* slider, QLabel* label, const QString& label_suffix,
 		std::string section, std::string key, s32 default_value)
 	{
-		const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+		s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+
+		//Clamp in case setting was updated manually using INI
+		global_value = std::clamp(global_value, slider->minimum(), slider->maximum());
 
 		if (sif)
 		{
@@ -1086,7 +1089,9 @@ namespace SettingWidgetBinder
 			QFont bold_font(orig_font);
 			bold_font.setBold(true);
 
-			const s32 current_value = sif->GetOptionalIntValue(section.c_str(), key.c_str()).value_or(global_value);
+			s32 current_value = sif->GetOptionalIntValue(section.c_str(), key.c_str()).value_or(global_value);
+			current_value = std::clamp(current_value, slider->minimum(), slider->maximum());
+
 			slider->setValue(current_value);
 
 			label->setText(QStringLiteral("%1%2").arg(current_value).arg(label_suffix));
@@ -1100,8 +1105,10 @@ namespace SettingWidgetBinder
 				[sif, slider, label, label_suffix, orig_font = std::move(orig_font), section, key, default_value](const QPoint& pt) {
 					QMenu menu(slider);
 					slider->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, slider,
-						[sif, label, label_suffix, orig_font, section, key, default_value]() {
-							const s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+						[sif, slider, label, label_suffix, orig_font, section, key, default_value]() {
+							s32 global_value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value);
+							global_value = std::clamp(global_value, slider->minimum(), slider->maximum());
+
 							label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
 							label->setFont(orig_font);
 
