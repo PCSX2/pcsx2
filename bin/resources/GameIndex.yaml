@@ -13252,9 +13252,12 @@ SLES-50726:
   patches:
     9E159E95:
       content: |-
-        // Gives the IPU more time to process the textures
-        // CPU does a wait loop then starts copying the output of the IPU
-        patch=0,EE,001f02a0,word,24027fff
+        // Waits for IPU command to finish.
+        // Replaces wait loop that had a very short wait period.
+        patch=0,EE,001f02A0,word,3C021000
+        patch=0,EE,001f02A4,word,34422010
+        patch=0,EE,001f02A8,word,8c430000
+        patch=0,EE,001f02B8,word,0460FFFA
   gameFixes:
     - EETimingHack # Speeds up IPU DMA's
 SLES-50727:
@@ -48851,9 +48854,12 @@ SLUS-20434:
   patches:
     75DB04A3:
       content: |-
-        // Gives the IPU more time to process the textures
-        // CPU does a wait loop then starts copying the output of the IPU
-        patch=0,EE,001f0030,word,24027fff
+        // Waits for IPU command to finish.
+        // Replaces wait loop that had a very short wait period.
+        patch=0,EE,001f0030,word,3C021000
+        patch=0,EE,001f0034,word,34422010
+        patch=0,EE,001f0038,word,8c430000
+        patch=0,EE,001f0048,word,0460FFFA
   gameFixes:
     - EETimingHack # Speeds up IPU DMA's
 SLUS-20435:
