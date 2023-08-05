@@ -638,7 +638,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index)
 	if (sioPadIsMultitapSlot(pad_index))
 	{
 		const auto& [mt_port, mt_slot] = sioConvertPadToPortAndSlot(pad_index);
-		if (EmuConfig.Pad.IsMultitapPortEnabled(mt_port))
+		if (!EmuConfig.Pad.IsMultitapPortEnabled(mt_port))
 			return;
 	}
 
