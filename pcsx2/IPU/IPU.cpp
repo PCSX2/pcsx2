@@ -95,7 +95,7 @@ __fi void IPUProcessInterrupt()
 	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 		IPUWorker();
 
-	if (ipuRegs.ctrl.BUSY)
+	if (ipuRegs.ctrl.BUSY && !IPU1Status.DataRequested && !(cpuRegs.interrupt & 1 << IPU_PROCESS))
 	{
 		CPU_INT(IPU_PROCESS, ProcessedData ? ProcessedData : 64);
 	}

@@ -93,6 +93,8 @@ int IPU_Fifo_Input::write(const u32* pMem, int size)
 	if (g_BP.IFC == 8)
 		IPU1Status.DataRequested = false;
 
+	CPU_INT(IPU_PROCESS, transfer_size * BIAS);
+
 	return transfer_size;
 }
 
@@ -106,7 +108,7 @@ int IPU_Fifo_Input::read(void *value)
 
 		if(ipu1ch.chcr.STR && cpuRegs.eCycle[4] == 0x9999)
 		{
-			CPU_INT( DMAC_TO_IPU, 4);
+			CPU_INT( DMAC_TO_IPU, std::min(8U, ipu1ch.qwc));
 		}
 
 		if (g_BP.IFC == 0) return 0;
@@ -183,7 +185,7 @@ void WriteFIFO_IPUin(const mem128_t* value)
 	{
 		if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
 		{
-			CommandExecuteQueued = true;
+			CommandExecuteQueued = false;
 			CPU_INT(IPU_PROCESS, 8);
 		}
 	}
