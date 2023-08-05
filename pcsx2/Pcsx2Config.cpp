@@ -1429,6 +1429,7 @@ Pcsx2Config::AchievementsOptions::AchievementsOptions()
 	Notifications = true;
 	SoundEffects = true;
 	PrimedIndicators = true;
+	NotificationsDuration = 5;
 }
 
 void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
@@ -1444,6 +1445,13 @@ void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(Notifications);
 	SettingsWrapBitBool(SoundEffects);
 	SettingsWrapBitBool(PrimedIndicators);
+	SettingsWrapBitfield(NotificationsDuration);
+
+	if (wrap.IsLoading())
+	{
+		//Clamp in case setting was updated manually using the INI
+		NotificationsDuration = std::clamp(NotificationsDuration, 3, 10);
+	}
 }
 
 #endif

@@ -132,6 +132,8 @@ namespace Achievements
 	static void UnlockAchievementCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data);
 	static void SubmitLeaderboardCallback(s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data, u32 lboard_id);
 
+	static s32 GetNotificationsDuration();
+
 	static bool s_active = false;
 	static bool s_logged_in = false;
 	static bool s_challenge_mode = false;
@@ -1109,9 +1111,9 @@ void Achievements::DisplayAchievementSummary()
 				summary.append(TRANSLATE_SV("Achievements", "Leaderboard submission is enabled."));
 		}
 
-		MTGS::RunOnGSThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
+		MTGS::RunOnGSThread([duration = GetNotificationsDuration(), title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
 			if (FullscreenUI::IsInitialized())
-				ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
+				ImGuiFullscreen::AddNotification(duration, std::move(title), std::move(summary), std::move(icon));
 		});
 	}
 
@@ -1129,9 +1131,9 @@ void Achievements::DisplayMasteredNotification()
 	std::string message(fmt::format(
 		"{} achievements, {} points{}", GetAchievementCount(), GetCurrentPointsForGame(), s_challenge_mode ? " (Hardcore Mode)" : ""));
 
-	MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
+	MTGS::RunOnGSThread([duration = GetNotificationsDuration(), title = std::move(title), message = std::move(message), icon = s_game_icon]() {
 		if (FullscreenUI::IsInitialized())
-			ImGuiFullscreen::AddNotification(20.0f, std::move(title), std::move(message), std::move(icon));
+			ImGuiFullscreen::AddNotification(duration, std::move(title), std::move(message), std::move(icon));
 	});
 }
 
@@ -1842,9 +1844,9 @@ void Achievements::SubmitLeaderboardCallback(s32 status_code, const std::string&
 	std::string summary = fmt::format(
 		"Your Score: {} (Best: {})\nLeaderboard Position: {} of {}", submitted_score, best_score, response.new_rank, response.num_entries);
 
-	MTGS::RunOnGSThread([title = lb->title, summary = std::move(summary), icon = s_game_icon]() {
+	MTGS::RunOnGSThread([duration = GetNotificationsDuration(), title = lb->title, summary = std::move(summary), icon = s_game_icon]() {
 		if (FullscreenUI::IsInitialized())
-			ImGuiFullscreen::AddNotification(10.0f, std::move(title), std::move(summary), std::move(icon));
+			ImGuiFullscreen::AddNotification(duration, std::move(title), std::move(summary), std::move(icon));
 	});
 }
 
@@ -1886,8 +1888,8 @@ void Achievements::UnlockAchievement(u32 achievement_id, bool add_notification /
 		}
 
 		MTGS::RunOnGSThread(
-			[title = std::move(title), description = achievement->description, icon = GetAchievementBadgePath(*achievement)]() {
-				ImGuiFullscreen::AddNotification(15.0f, std::move(title), std::move(description), std::move(icon));
+			[duration = GetNotificationsDuration(), title = std::move(title), description = achievement->description, icon = GetAchievementBadgePath(*achievement)]() {
+				ImGuiFullscreen::AddNotification(duration, std::move(title), std::move(description), std::move(icon));
 			});
 	}
 
@@ -2143,6 +2145,12 @@ void Achievements::PokeMemory(unsigned address, unsigned num_bytes, void* ud, un
 		default:
 			break;
 	}
+}
+
+
+s32 Achievements::GetNotificationsDuration()
+{
+	return EmuConfig.Achievements.NotificationsDuration;
 }
 
 #ifdef ENABLE_RAINTEGRATION

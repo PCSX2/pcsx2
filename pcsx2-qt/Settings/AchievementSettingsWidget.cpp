@@ -30,6 +30,8 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 
+static constexpr s32 DEFAULT_NOTIFICATIONS_DURATION = 5;
+
 AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
@@ -48,6 +50,9 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Achievements", "SoundEffects", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.primedIndicators, "Achievements", "PrimedIndicators", true);
 
+	SettingWidgetBinder::BindSliderToIntSetting(sif, m_ui.notifications_duration, m_ui.notifications_duration_seconds,
+		tr(" seconds"), "Achievements", "NotificationsDuration", DEFAULT_NOTIFICATIONS_DURATION);
+	
 	dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
 		tr("When enabled and logged in, PCSX2 will scan for achievements on game load."));
 	dialog->registerWidgetHelp(m_ui.testMode, tr("Enable Test Mode"), tr("Unchecked"),
@@ -70,10 +75,18 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWi
 	dialog->registerWidgetHelp(m_ui.primedIndicators, tr("Show Challenge Indicators"), tr("Checked"),
 		tr("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."));
 
+	dialog->registerWidgetHelp(m_ui.notifications_duration, tr("Notification Duration"), 
+		tr("5 seconds"), tr("The duration, in seconds, an achievement popup notification will remain on screen."));
+	dialog->registerWidgetHelp(m_ui.notifications_duration_label, tr("Notification Duration"), 
+		tr("5 seconds"), tr("The duration, in seconds, an achievement popup notification will remain on screen."));
+	dialog->registerWidgetHelp(m_ui.notifications_duration_seconds, tr("Notification Duration"), 
+		tr("5 seconds"), tr("The duration, in seconds, an achievement popup notification will remain on screen."));
+
 	connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.notifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.challengeMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onChallengeModeStateChanged);
+	connect(m_ui.notifications_duration, &QSlider::valueChanged, this, &AchievementSettingsWidget::onNotificationsDurationChanged);
 
 	if (!m_dialog->isPerGameSettings())
 	{
@@ -105,6 +118,8 @@ void AchievementSettingsWidget::updateEnableState()
 {
 	const bool enabled = m_dialog->getEffectiveBoolValue("Achievements", "Enabled", false);
 	const bool challenge = m_dialog->getEffectiveBoolValue("Achievements", "ChallengeMode", false);
+	const bool notifications = m_dialog->getEffectiveBoolValue("Achievements", "Notifications", true);
+
 	m_ui.testMode->setEnabled(enabled);
 	m_ui.unofficialTestMode->setEnabled(enabled);
 	m_ui.richPresence->setEnabled(enabled);
@@ -113,6 +128,10 @@ void AchievementSettingsWidget::updateEnableState()
 	m_ui.notifications->setEnabled(enabled);
 	m_ui.soundEffects->setEnabled(enabled);
 	m_ui.primedIndicators->setEnabled(enabled);
+
+	m_ui.notifications_duration->setEnabled(enabled && notifications);
+	m_ui.notifications_duration_label->setEnabled(enabled && notifications);
+	m_ui.notifications_duration_seconds->setEnabled(enabled && notifications);
 }
 
 void AchievementSettingsWidget::onChallengeModeStateChanged()
@@ -195,4 +214,10 @@ void AchievementSettingsWidget::onViewProfilePressed()
 void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points)
 {
 	m_ui.gameInfo->setText(game_info_string);
+}
+
+void AchievementSettingsWidget::onNotificationsDurationChanged()
+{
+	m_ui.notifications_duration_seconds->setText(tr("%1 seconds")
+		.arg(m_ui.notifications_duration->value()));
 }
