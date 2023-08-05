@@ -13287,7 +13287,6 @@ SLES-50731:
     vuClampMode: 2 # White textures.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes "Busted" scenes.
 SLES-50735:
   name: "Jade Cocoon 2"
   region: "PAL-E"
@@ -40209,7 +40208,6 @@ SLPM-67527:
     vuClampMode: 2 # White textures.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes "Busted" scenes.
 SLPM-67528:
   name: "Hajime no Ippo - Victorious Boxers [Championship Edition]"
   region: "NTSC-K"
@@ -48483,7 +48481,6 @@ SLUS-20362:
     vuClampMode: 2 # White textures.
   gsHWFixes:
     halfPixelOffset: 1 # Fixes blurriness.
-    cpuCLUTRender: 1 # Fixes "Busted" scenes.
 SLUS-20363:
   name: "Sled Storm"
   region: "NTSC-U"
