@@ -39,6 +39,7 @@ private Q_SLOTS:
 	void onDirectoryListContextMenuRequested(const QPoint& point);
 	void onAddSearchDirectoryButtonClicked();
 	void onRemoveSearchDirectoryButtonClicked();
+	void onAddExcludedFileButtonClicked();
 	void onAddExcludedPathButtonClicked();
 	void onRemoveExcludedPathButtonClicked();
 	void onScanForNewGamesClicked();

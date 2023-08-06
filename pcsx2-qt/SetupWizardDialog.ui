@@ -371,11 +371,14 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Add</string>
+            <string>Add...</string>
            </property>
            <property name="icon">
             <iconset theme="folder-add-line">
              <normaloff>.</normaloff>.</iconset>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextBesideIcon</enum>
            </property>
           </widget>
          </item>
@@ -393,6 +396,9 @@
            <property name="icon">
             <iconset theme="folder-reduce-line">
              <normaloff>.</normaloff>.</iconset>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextBesideIcon</enum>
            </property>
           </widget>
          </item>
