@@ -582,7 +582,7 @@ void GameList::RewriteCacheFile()
 
 static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string& path)
 {
-	return (std::find(excluded_paths.begin(), excluded_paths.end(), path) != excluded_paths.end());
+	return std::find_if(excluded_paths.begin(), excluded_paths.end(), [&path](const std::string& entry) { return path.starts_with(entry); }) != excluded_paths.end();
 }
 
 void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
@@ -596,7 +596,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(path, "*",
 		recursive ? (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE) :
-                    (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
+					(FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
 		&files);
 
 	u32 files_scanned = 0;
@@ -808,7 +808,7 @@ bool GameList::RescanPath(const std::string& path)
 	{
 		// cancel if excluded
 		const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
-		if (std::find(excluded_paths.begin(), excluded_paths.end(), path) != excluded_paths.end())
+		if (IsPathExcluded(excluded_paths, path))
 			return false;
 	}
 

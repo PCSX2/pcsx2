@@ -57,11 +57,14 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Add</string>
+        <string>Add...</string>
        </property>
        <property name="icon">
         <iconset theme="folder-add-line">
          <normaloff>.</normaloff>.</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
@@ -79,6 +82,9 @@
        <property name="icon">
         <iconset theme="folder-reduce-line">
          <normaloff>.</normaloff>.</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
@@ -129,11 +135,34 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Add</string>
+        <string>Directory...</string>
+       </property>
+       <property name="icon">
+        <iconset theme="folder-add-line">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="addExcludedFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>File...</string>
        </property>
        <property name="icon">
         <iconset theme="file-add-line">
          <normaloff>.</normaloff>.</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
@@ -151,6 +180,9 @@
        <property name="icon">
         <iconset theme="file-reduce-line">
          <normaloff>.</normaloff>.</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>

@@ -51,6 +51,7 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsDialog* dialog, QWidget* 
 		&GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
 	connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
 		&GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
+	connect(m_ui.addExcludedFile, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedFileButtonClicked);
 	connect(m_ui.addExcludedPath, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedPathButtonClicked);
 	connect(m_ui.removeExcludedPath, &QPushButton::clicked, this,
 		&GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
@@ -215,10 +216,21 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked()
 	delete item;
 }
 
+void GameListSettingsWidget::onAddExcludedFileButtonClicked()
+{
+	QString path =
+		QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select File")));
+	if (path.isEmpty())
+		return;
+
+	addExcludedPath(path.toStdString());
+}
+
 void GameListSettingsWidget::onAddExcludedPathButtonClicked()
 {
 	QString path =
-		QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Path")));
+		QDir::toNativeSeparators(QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(this), tr("Select Directory")));
+
 	if (path.isEmpty())
 		return;
 
