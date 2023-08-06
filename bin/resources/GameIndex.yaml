@@ -7537,7 +7537,7 @@ SCPS-15060:
   region: "NTSC-J"
 SCPS-15061:
   name: "EyeToy: Play(アイトーイ プレイ)"
-  name-sort: "EyeToy: Play(あいとーい ぷれい)"
+  name-sort: あいとーい ぷれい
   name-en: "EyeToy - Play [with Camera]"
   region: "NTSC-J"
 SCPS-15062:
@@ -7795,7 +7795,7 @@ SCPS-15092:
     - "SCPS-19253"
 SCPS-15093:
   name: RULE of ROSE (ルール オブ ローズ)
-  name-sort: RULE of ROSE (るーる おぶ ろーず)
+  name-sort: るーる おぶ ろーず
   name-en: "Rule of Rose"
   region: "NTSC-J"
   compat: 5
@@ -31999,7 +31999,7 @@ SLPM-62361:
   region: "NTSC-J"
 SLPM-62362:
   name: SEGA AGES 2500 シリーズ Vol.1 PHANTASY STAR(ファンタシースター) generation1限定
-  name-sort: SEGA AGES 2500 しりーず Vol.1 PHANTASY STAR(ふぁんたしーすたー) generation1げんてい
+  name-sort: SEGA AGES 2500 しりーず Vol.1 ふぁんたしーすたー generation1げんてい
   name-en: "Sega Ages 2500 Series Vol.01 - Phantasy Star Generation 1"
   region: "NTSC-J"
   compat: 5
@@ -35083,12 +35083,12 @@ SLPM-65185:
     roundSprite: 1 # Fixes text alignment.
 SLPM-65186:
   name: Thread Colors(スレッドカラーズ)〜さよならの向こう側〜 [限定生産初回BOX]
-  name-sort: Thread Colors(すれっどからーず)〜さよならのむこうがわ〜 [げんていせいさんしょかいBOX]
+  name-sort: すれっどからーず 〜さよならのむこうがわ〜 [げんていせいさんしょかいBOX]
   name-en: "Thread Colors [Limited Edition]"
   region: "NTSC-J"
 SLPM-65187:
   name: Thread Colors(スレッドカラーズ)〜さよならの向こう側〜 [量産型ふつう版]
-  name-sort: Thread Colors(すれっどからーず)〜さよならのむこうがわ〜 [りょうさんがたふつうばん]
+  name-sort: すれっどからーず 〜さよならのむこうがわ〜 [りょうさんがたふつうばん]
   name-en: "Thread Colors"
   region: "NTSC-J"
 SLPM-65190:
@@ -35490,7 +35490,7 @@ SLPM-65255:
     roundSprite: 2 # Reduces font artifacts.
 SLPM-65256:
   name: ファーストKiss☆物語(ストーリーズ) スペシャルCD同梱版
-  name-sort: ふぁーすとKiss☆ものがたり(すとーりーず) すぺしゃるCDどうこんばん
+  name-sort: ふぁーすとKiss☆すとーりーず すぺしゃるCDどうこんばん
   name-en: "First Kiss Story 1&2 [Limited Edition]"
   region: "NTSC-J"
 SLPM-65257:
@@ -35800,7 +35800,7 @@ SLPM-65309:
   region: "NTSC-J"
 SLPM-65310:
   name: The Mark of KRI(マーク オブ クリィ)
-  name-sort: The Mark of KRI(まーく おぶ くりぃ)
+  name-sort: まーく おぶ くりぃ
   name-en: "Mark of Kri, The"
   region: "NTSC-J"
 SLPM-65311:
@@ -35812,7 +35812,7 @@ SLPM-65311:
     roundSprite: 1 # Aligns text boxes.
 SLPM-65313:
   name: ファーストKiss☆物語(ストーリーズ)
-  name-sort: ふぁーすとKiss☆ものがたり(すとーりーず)
+  name-sort: ふぁーすとKiss☆すとーりーず
   name-en: "First Kiss Story 1&2"
   region: "NTSC-J"
 SLPM-65314:
@@ -36113,7 +36113,7 @@ SLPM-65372:
   region: "NTSC-J"
 SLPM-65373:
   name: 玻璃の薔薇(ガラスノバラ)
-  name-sort: がらすのばら(がらすのばら)
+  name-sort: がらすのばら
   name-en: "Glass Rose"
   region: "NTSC-J"
   compat: 5
@@ -36306,7 +36306,7 @@ SLPM-65409:
   region: "NTSC-J"
 SLPM-65410:
   name: ゲッタウェイ(the Getaway)
-  name-sort: げったうぇい(the Getaway)
+  name-sort: げったうぇい
   name-en: "Getaway, The"
   region: "NTSC-J"
   gsHWFixes:
@@ -36693,7 +36693,7 @@ SLPM-65479:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLPM-65480:
   name: michigan(ミシガン)
-  name-sort: michigan(みしがん)
+  name-sort: みしがん
   name-en: "Michigan"
   region: "NTSC-J"
 SLPM-65481:
@@ -37276,7 +37276,7 @@ SLPM-65596:
   region: "NTSC-J"
 SLPM-65597:
   name: DIGITAL DEVIL SAGA(デジタル・デビル・サーガ)〜アバタール・チューナー〜
-  name-sort: DIGITAL DEVIL SAGA(でじたる・でびる・さーが)〜あばたーる・ちゅーなー〜
+  name-sort: でじたる・でびる・さーが〜あばたーる・ちゅーなー〜
   name-en: "Digital Devil Saga - Avatar Tuner"
   region: "NTSC-J"
   gameFixes:
@@ -37696,12 +37696,12 @@ SLPM-65680:
   region: "NTSC-J"
 SLPM-65681:
   name: Monochrome(モノクローム) 初回限定版
-  name-sort: Monochrome(ものくろーむ) しょかいげんていばん
+  name-sort: ものくろーむ しょかいげんていばん
   name-en: "Monochrome [Limited Edition]"
   region: "NTSC-J"
 SLPM-65682:
   name: Monochrome(モノクローム)
-  name-sort: Monochrome(ものくろーむ)
+  name-sort: ものくろーむ
   name-en: "Monochrome"
   region: "NTSC-J"
 SLPM-65683:
@@ -37718,7 +37718,7 @@ SLPM-65684:
   region: "NTSC-J"
 SLPM-65685:
   name: Stella Deus(ステラデウス)
-  name-sort: Stella Deus(すてらでうす)
+  name-sort: すてらでうす
   name-en: "Stella Deus"
   region: "NTSC-J"
 SLPM-65686:
@@ -38031,7 +38031,7 @@ SLPM-65737:
   region: "NTSC-J"
 SLPM-65738:
   name: LoveSongs♪ADV(アドベンチャー)『双葉理保 19歳〜冬〜』
-  name-sort: LoveSongs♪ADV(あどべんちゃー)『ふたばりほ 19さい〜ふゆ〜』
+  name-sort: LoveSongs♪あどべんちゃー『ふたばりほ 19さい〜ふゆ〜』
   name-en: "Love Songs Adv - Futaba Riho 19 Sai"
   region: "NTSC-J"
 SLPM-65739:
@@ -38356,7 +38356,7 @@ SLPM-65794:
   compat: 5
 SLPM-65795:
   name: DIGITAL DEVIL SAGA(デジタル・デビル・サーガ) 〜アバタール・チューナー2〜
-  name-sort: DIGITAL DEVIL SAGA(でじたる・でびる・さーが) 〜あばたーる・ちゅーなー2〜
+  name-sort: でじたる・でびる・さーが 〜あばたーる・ちゅーなー2〜
   name-en: "Digital Devil Saga - Avatar Tuner 2"
   region: "NTSC-J"
   gameFixes:
@@ -38436,7 +38436,7 @@ SLPM-65805:
   region: "NTSC-J"
 SLPM-65806:
   name: VM JAPAN(ブイエムジャパン)
-  name-sort: VM JAPAN(ぶいえむじゃぱん)
+  name-sort: ぶいえむじゃぱん
   name-en: "VM Japan"
   region: "NTSC-J"
 SLPM-65807:
@@ -38842,7 +38842,7 @@ SLPM-65884:
   region: "NTSC-J"
 SLPM-65885:
   name: RUMBLE ROSES(ランブルローズ)
-  name-sort: RUMBLE ROSES(らんぶるろーず)
+  name-sort: らんぶるろーず
   name-en: "Rumble Roses"
   region: "NTSC-J"
 SLPM-65886:
@@ -39025,7 +39025,7 @@ SLPM-65918:
   region: "NTSC-J"
 SLPM-65919:
   name: THE RUMBLE FISH(ザ・ランブルフィッシュ)
-  name-sort: THE RUMBLE FISH(ざ・らんぶるふぃっしゅ)
+  name-sort: ざ・らんぶるふぃっしゅ
   name-en: "Rumble Fish, The"
   region: "NTSC-J"
   compat: 5
@@ -39142,7 +39142,7 @@ SLPM-65941:
   region: "NTSC-J"
 SLPM-65942:
   name: MERCENARIES(マーセナリーズ)
-  name-sort: MERCENARIES(まーせなりーず)
+  name-sort: まーせなりーず
   name-en: "Mercenaries - Playground of Destruction"
   region: "NTSC-J"
   gsHWFixes:
@@ -39171,7 +39171,7 @@ SLPM-65946:
   compat: 5
 SLPM-65947:
   name: Killer7(キラー7)
-  name-sort: Killer7(きらー7)
+  name-sort: きらー7
   name-en: "Killer7"
   region: "NTSC-J"
 SLPM-65948:
@@ -39376,7 +39376,7 @@ SLPM-65980:
   region: "NTSC-J"
 SLPM-65981:
   name: FRONT MISSION ONLINE(フロントミッション オンライン)
-  name-sort: FRONT MISSION ONLINE(ふろんとみっしょん おんらいん)
+  name-sort: ふろんとみっしょん おんらいん
   name-en: "Front Mission Online"
   region: "NTSC-J"
 SLPM-65982:
@@ -39654,7 +39654,7 @@ SLPM-66030:
   compat: 5
 SLPM-66031:
   name: ファンタシー スター  ユニバース (Phantasy Star Universe)
-  name-sort: ふぁんたしー すたー  ゆにばーす (Phantasy Star Universe)
+  name-sort: ふぁんたしー すたー  ゆにばーす
   name-en: "Phantasy Star Universe"
   region: "NTSC-J"
   roundModes:
@@ -39772,12 +39772,12 @@ SLPM-66053:
   region: "NTSC-J"
 SLPM-66054:
   name: 新天魔界 ジェネレーション オブ カオス V(ファイブ) 限定版
-  name-sort: しんてんまかい じぇねれーしょん おぶ かおす V(ふぁいぶ) げんていばん
+  name-sort: しんてんまかい じぇねれーしょん おぶ かおす ふぁいぶ げんていばん
   name-en: "Generation of Chaos 5 [Limited Edition]"
   region: "NTSC-J"
 SLPM-66055:
   name: 新天魔界 ジェネレーション オブ カオス V(ファイブ)
-  name-sort: しんてんまかい じぇねれーしょん おぶ かおす V(ふぁいぶ)
+  name-sort: しんてんまかい じぇねれーしょん おぶ かおす ふぁいぶ
   name-en: "Generation of Chaos 5"
   region: "NTSC-J"
 SLPM-66056:
@@ -40537,7 +40537,7 @@ SLPM-66182:
   region: "NTSC-J"
 SLPM-66183:
   name: ゲッタウェイ ブラックマンデー(The Getaway Black Monday)
-  name-sort: げったうぇい ぶらっくまんでー(The Getaway Black Monday)
+  name-sort: げったうぇい ぶらっくまんでー
   name-en: "Getaway, The - Black Monday"
   region: "NTSC-J"
   gsHWFixes:
@@ -40736,7 +40736,7 @@ SLPM-66213:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-66214:
   name: WHITE CLARITY(ホワイト クラリティー)〜And The tears became you.〜 [初回限定版]
-  name-sort: WHITE CLARITY(ほわいと くらりてぃー)〜And The tears became you.〜 [しょかいげんていばん]
+  name-sort: ほわいと くらりてぃー 〜And The tears became you.〜 [しょかいげんていばん]
   name-en: "White Clarity - And, the Tears Became You [First Print Limited Edition]"
   region: "NTSC-J"
 SLPM-66215:
@@ -41467,7 +41467,7 @@ SLPM-66332:
   region: "NTSC-J"
 SLPM-66333:
   name: GUILTY GEAR XX SLASH (ギルティギア イグゼクス スラッシュ)
-  name-sort: GUILTY GEAR XX SLASH (ぎるてぃぎあ いぐぜくす すらっしゅ)
+  name-sort: ぎるてぃぎあ いぐぜくす すらっしゅ
   name-en: "Guilty Gear XX Slash"
   region: "NTSC-J"
   compat: 5
@@ -42396,7 +42396,7 @@ SLPM-66491:
     cpuCLUTRender: 1 # Fixes rendering.
 SLPM-66492:
   name: COMMANDOS STRIKE FORCE(コマンドス ストライク・フォース)
-  name-sort: COMMANDOS STRIKE FORCE(こまんどす すとらいく・ふぉーす)
+  name-sort: こまんどす すとらいく・ふぉーす
   name-en: "Commandos Strike Force"
   region: "NTSC-J"
   gsHWFixes:
@@ -42697,7 +42697,7 @@ SLPM-66549:
   region: "NTSC-J"
 SLPM-66550:
   name: GOD HAND(ゴッドハンド)
-  name-sort: GOD HAND(ごっどはんど)
+  name-sort: ごっどはんど
   name-en: "God Hand"
   region: "NTSC-J"
   compat: 5
@@ -42706,7 +42706,7 @@ SLPM-66550:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLPM-66551:
   name: APPLESEED EX(アップルシード エクス)
-  name-sort: APPLESEED EX(あっぷるしーど えくす)
+  name-sort: あっぷるしーど えくす
   name-en: "Appleseed EX"
   region: "NTSC-J"
 SLPM-66552:
@@ -42837,7 +42837,7 @@ SLPM-66569:
     roundSprite: 2 # Reduces artifacts like vertical lines in main menu but there are many other artifacts still.
 SLPM-66570:
   name: I”s Pure(アイズピュア)
-  name-sort: I”s Pure(あいずぴゅあ)
+  name-sort: あいずぴゅあ
   name-en: "I's Pure"
   region: "NTSC-J"
 SLPM-66571:
@@ -43163,7 +43163,7 @@ SLPM-66627:
   region: "NTSC-J"
 SLPM-66628:
   name: OutRun2 SP(アウトラン2 スペシャルツアーズ) [初回限定版]
-  name-sort: OutRun2 SP(あうとらん2 すぺしゃるつあーず) [しょかいげんていばん]
+  name-sort: あうとらん2 すぺしゃるつあーず [しょかいげんていばん]
   name-en: "OutRun 2 SP [First Print Limited Edition]"
   region: "NTSC-J"
   compat: 5
@@ -43190,7 +43190,7 @@ SLPM-66631:
   region: "NTSC-J"
 SLPM-66632:
   name: 喧嘩番長2 〜FULLTHROTTLE〜(フルスロットル)
-  name-sort: けんかばんちょう2 〜FULLTHROTTLE〜(ふるすろっとる)
+  name-sort: けんかばんちょう2 〜ふるすろっとる〜
   name-en: "Kenka Banchou 2 - Full Throttle"
   region: "NTSC-J"
 SLPM-66633:
@@ -43716,7 +43716,7 @@ SLPM-66719:
   region: "NTSC-J"
 SLPM-66720:
   name: GUILTY GEAR XX SLASH(ギルティギア イグゼクス スラッシュ) [SEGA THE BEST]
-  name-sort: GUILTY GEAR XX SLASH(ぎるてぃぎあ いぐぜくす すらっしゅ) [SEGA THE BEST]
+  name-sort: ぎるてぃぎあ いぐぜくす すらっしゅ [SEGA THE BEST]
   name-en: "Guilty Gear XX #Slash [Sega the Best]"
   region: "NTSC-J"
 SLPM-66721:
@@ -43786,12 +43786,12 @@ SLPM-66731:
     beforeDraw: "OI_BurnoutGames"
 SLPM-66732:
   name: 許嫁(いいなずけ) [初回限定版]
-  name-sort: いいなずけ(いいなずけ) [しょかいげんていばん]
+  name-sort: いいなずけ [しょかいげんていばん]
   name-en: "Iinazuke [Limited Edition]"
   region: "NTSC-J"
 SLPM-66733:
   name: 許嫁(いいなずけ) [通常版]
-  name-sort: いいなずけ(いいなずけ) [つうじょうばん]
+  name-sort: いいなずけ [つうじょうばん]
   name-en: "Iinazuke"
   region: "NTSC-J"
 SLPM-66734:
@@ -44434,7 +44434,7 @@ SLPM-66847:
   region: "NTSC-J"
 SLPM-66848:
   name: 戦国BASARA2 英雄外伝(HEROES)
-  name-sort: せんごくBASARA2 えいゆうがいでん(HEROES)
+  name-sort: せんごくBASARA2 HEROES
   name-en: "Sengoku Basara 2 Heroes"
   region: "NTSC-J"
 SLPM-66849:
@@ -46941,7 +46941,7 @@ SLPS-20149:
   region: "NTSC-J"
 SLPS-20150:
   name: AKIRA PSYCHO BALL(アキラ サイコボール)
-  name-sort: AKIRA PSYCHO BALL(あきら さいこぼーる)
+  name-sort: あきら さいこぼーる
   name-en: "Akira Psycho Ball"
   region: "NTSC-J"
 SLPS-20151:
@@ -47918,7 +47918,7 @@ SLPS-20401:
   region: "NTSC-J"
 SLPS-20402:
   name: 仮面ライダー剣(ブレイド)
-  name-sort: かめんらいだーけん(ぶれいど)
+  name-sort: かめんらいだーぶれいど
   name-en: "Kamen Rider Blade"
   region: "NTSC-J"
   compat: 5
@@ -48609,7 +48609,7 @@ SLPS-25024:
   region: "NTSC-J"
 SLPS-25025:
   name: 7(セブン)〜モールモースの騎兵隊〜
-  name-sort: 7(せぶん)〜もーるもーすのきへいたい〜
+  name-sort: せぶん〜もーるもーすのきへいたい〜
   name-en: "7 (Seven) - Molmorth no Kiheitai"
   region: "NTSC-J"
   compat: 5
@@ -49043,7 +49043,7 @@ SLPS-25101:
     - FullVU0SyncHack # Fixes SPS.
 SLPS-25102:
   name: PROJECT ARMS(プロジェクトアームズ)
-  name-sort: PROJECT ARMS(ぷろじぇくとあーむず)
+  name-sort: ぷろじぇくとあーむず
   name-en: "Project Arms"
   region: "NTSC-J"
 SLPS-25103:
@@ -49660,7 +49660,7 @@ SLPS-25216:
   compat: 5
 SLPS-25217:
   name: SHADOW TOWER ABYSS(シャドウタワー アビス)
-  name-sort: SHADOW TOWER ABYSS(しゃどうたわー あびす)
+  name-sort: しゃどうたわー あびす
   name-en: "Shadow Tower Abyss"
   region: "NTSC-J"
   compat: 5
@@ -50040,7 +50040,7 @@ SLPS-25294:
   region: "NTSC-J"
 SLPS-25295:
   name: Kaena(ケイナ)
-  name-sort: Kaena(けいな)
+  name-sort: けいな
   name-en: "Kaena"
   region: "NTSC-J"
   compat: 5
@@ -50918,7 +50918,7 @@ SLPS-25438:
   region: "NTSC-J"
 SLPS-25439:
   name: はじめの一歩 ALL☆STARS(オール☆スターズ)
-  name-sort: はじめのいちほ ALL☆STARS(おーる☆すたーず)
+  name-sort: はじめのいちほ おーる☆すたーず
   name-en: "Hajime no Ippo - All-Stars"
   region: "NTSC-J"
 SLPS-25440:
@@ -51269,7 +51269,7 @@ SLPS-25504:
   region: "NTSC-J"
 SLPS-25505:
   name: NAMCO×CAPCOM(ナムコ クロス カプコン)
-  name-sort: NAMCO×CAPCOM(なむこ くろす かぷこん)
+  name-sort: なむこ くろす かぷこん
   name-en: "Namco X Capcom"
   region: "NTSC-J"
   compat: 5
@@ -51295,7 +51295,7 @@ SLPS-25509:
   region: "NTSC-J"
 SLPS-25510:
   name: 鉄拳5 (TEKKEN 5)
-  name-sort: てっけん5 (TEKKEN 5)
+  name-sort: てっけん5
   name-en: "Tekken 5"
   region: "NTSC-J"
   compat: 5
@@ -51410,7 +51410,7 @@ SLPS-25532:
   region: "NTSC-J"
 SLPS-25533:
   name: テイルズ オブ レジェンディア (Tales of Legendia)
-  name-sort: ているず おぶ れじぇんでぃあ (Tales of Legendia)
+  name-sort: ているず おぶ れじぇんでぃあ
   name-en: "Tales of Legendia"
   region: "NTSC-J"
   compat: 5
@@ -52264,7 +52264,7 @@ SLPS-25674:
   compat: 5
 SLPS-25675:
   name: バトルスタジアムD.O.N(ディー・オー・エヌ)
-  name-sort: ばとるすたじあむD.O.N(でぃー・おー・えぬ)
+  name-sort: ばとるすたじあむでぃー・おー・えぬ
   name-en: "Battle Stadium D.O.N"
   region: "NTSC-J"
   compat: 5
@@ -52409,7 +52409,7 @@ SLPS-25701:
   region: "NTSC-J"
 SLPS-25702:
   name: 雨格子の館(あまごうしのやかた)
-  name-sort: あめこうしのやかた(あまごうしのやかた)
+  name-sort: あめごうしのやかた
   name-en: "Amagoushi no Yakata"
   region: "NTSC-J"
 SLPS-25703:
@@ -53347,7 +53347,7 @@ SLPS-25877:
   region: "NTSC-J"
 SLPS-25879:
   name: Bully (ブリー)
-  name-sort: Bully (ぶりー)
+  name-sort: ぶりー
   name-en: "Bully"
   region: "NTSC-J"
   clampModes:
@@ -65638,7 +65638,7 @@ TCPS-10158:
     halfPixelOffset: 2
 TCPS-10159:
   name: TT SUPERBIKES(TTスーパーバイクス)
-  name-sort: TT SUPERBIKES(TTすーぱーばいくす)
+  name-sort: TTすーぱーばいくす
   name-en: "Suzuki TT Super Bikes - Real Road Racing"
   region: "NTSC-J"
 TCPS-10160:
