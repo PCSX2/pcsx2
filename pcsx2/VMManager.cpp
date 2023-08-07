@@ -1418,6 +1418,10 @@ void VMManager::Reset()
 #ifdef ENABLE_ACHIEVEMENTS
 	if (!Achievements::OnReset())
 		return;
+
+	// Re-enforce hardcode mode constraints if we're now enabling it.
+	if (Achievements::ResetChallengeMode())
+		ApplySettings();
 #endif
 
 	vu1Thread.WaitVU();
