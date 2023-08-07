@@ -888,6 +888,11 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 				continue;
 		}
 
+		// We only want relevant file types.
+		if (!(StringUtil::EndsWith(fd.FileName, ".ps2") || StringUtil::EndsWith(fd.FileName, ".mcr") ||
+			StringUtil::EndsWith(fd.FileName, ".mcd") || StringUtil::EndsWith(fd.FileName, ".bin")))
+			continue;
+
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
 		{
 			if (!IsMemoryCardFolder(fd.FileName))
