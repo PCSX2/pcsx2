@@ -286,5 +286,5 @@ private:
 	static void WriteUInt16(u8* data, int* index, u16 value);
 	static void WriteUInt32(u8* data, int* index, u32 value);
 	static void WriteUInt64(u8* data, int* index, u64 value);
-	static void WritePaddedString(u8* data, int* index, std::string value, u32 len);
+	static void WritePaddedString(u8* data, int* index, const std::string& value, u32 len);
 };

@@ -39,7 +39,7 @@ void HddCreate::Start()
 	Cleanup();
 }
 
-void HddCreate::WriteImage(std::string hddPath, u64 fileBytes, u64 zeroSizeBytes)
+void HddCreate::WriteImage(const std::string& hddPath, u64 fileBytes, u64 zeroSizeBytes)
 {
 	constexpr int buffsize = 4 * 1024;
 	const u8 buff[buffsize] = {0}; // 4kb.
