@@ -92,7 +92,7 @@ namespace usb_eyetoy
 			void SetCallback(DShowVideoCaptureCallback cb) { callbackhandler->SetCallback(cb); }
 			bool Start();
 			void Stop();
-			int InitializeDevice(std::wstring selectedDevice);
+			int InitializeDevice(const std::wstring& selectedDevice);
 
 		private:
 			wil::unique_couninitialize_call dshowCoInitialize;
