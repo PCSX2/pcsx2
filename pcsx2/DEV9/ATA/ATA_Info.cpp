@@ -37,7 +37,7 @@ void ATA::WriteUInt64(u8* data, int* index, u64 value)
 }
 
 //No null char
-void ATA::WritePaddedString(u8* data, int* index, std::string value, u32 len)
+void ATA::WritePaddedString(u8* data, int* index, const std::string& value, u32 len)
 {
 	memset(&data[*index], (u8)' ', len);
 	memcpy(&data[*index], value.c_str(), value.length() < len ? value.length() : len);
