@@ -586,7 +586,7 @@ __ri static GSTextureCache::Source* FindSourceInMap(const GIFRegTEX0& TEX0, cons
 	return nullptr;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, bool palette)
+GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, const bool linear, bool palette)
 {
 	if (GSConfig.UserHacks_DisableDepthSupport)
 	{
@@ -646,12 +646,19 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 			const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 			const bool can_translate = CanTranslate(bp, TEX0.TBW, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 			const bool swizzle_match = psm_s.depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
+			GSVector4i new_rect = r;
+
+			if (linear)
+			{
+				new_rect.z -= 1;
+				new_rect.w -= 1;
+			}
 
 			if (can_translate)
 			{
 				if (swizzle_match)
 				{
-					target_rc = TranslateAlignedRectByPage(t, bp, psm, TEX0.TBW, r);
+					target_rc = TranslateAlignedRectByPage(t, bp, psm, TEX0.TBW, new_rect);
 				}
 				else
 				{
@@ -669,8 +676,8 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 					{
 						target_rc.x &= ~(page_size.x - 1);
 						target_rc.y &= ~(page_size.y - 1);
-						target_rc.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
-						target_rc.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
+						target_rc.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
+						target_rc.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
 					}
 					target_rc = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, TEX0.TBW, target_rc);
 				}
@@ -680,6 +687,11 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 					dst = t;
 					inside_target = true;
 				}
+			}
+			if (linear)
+			{
+				new_rect.z += 1;
+				new_rect.w += 1;
 			}
 		}
 	}
@@ -764,7 +776,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	else
 	{
 		// This is a bit of a worry, since it could load junk from local memory... but it's better than skipping the draw.
-		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr, possible_shuffle);
+		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr, possible_shuffle, linear);
 	}
 
 	ASSERT(src->m_texture);
@@ -773,7 +785,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	return src;
 }
 
-GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle)
+GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle, const bool linear)
 {
 	GL_CACHE("TC: Lookup Source <%d,%d => %d,%d> (0x%x, %s, BW: %u, CBP: 0x%x, TW: %d, TH: %d)", r.x, r.y, r.z, r.w, TEX0.TBP0, psm_str(TEX0.PSM), TEX0.TBW, TEX0.CBP, 1 << TEX0.TW, 1 << TEX0.TH);
 
@@ -857,6 +869,13 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				if (rect_clean && tex_overlaps && !t->m_dirty.empty() && width_match)
 				{
 					GSVector4i new_rect = r;
+
+					if (linear)
+					{
+						new_rect.z -= 1;
+						new_rect.w -= 1;
+					}
+
 					bool partial = false;
 					// If it's compatible and page aligned, then handle it this way.
 					// It's quicker, and Surface Offsets can get it wrong.
@@ -865,14 +884,14 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					if (bp > t->m_TEX0.TBP0)
 					{
 						const GSVector2i page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
-						const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+						const bool can_translate = CanTranslate(bp, bw, psm, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 						const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 
 						if (can_translate)
 						{
 							if (swizzle_match)
 							{
-								new_rect = TranslateAlignedRectByPage(t, bp, psm, bw, r);
+								new_rect = TranslateAlignedRectByPage(t, bp, psm, bw, new_rect);
 							}
 							else
 							{
@@ -887,8 +906,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								{
 									new_rect.x &= ~(page_size.x - 1);
 									new_rect.y &= ~(page_size.y - 1);
-									new_rect.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
-									new_rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
+									new_rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
+									new_rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
 								}
 								new_rect = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, bw, new_rect);
 							}
@@ -901,7 +920,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							sok.elems[0].bp = bp;
 							sok.elems[0].bw = bw;
 							sok.elems[0].psm = psm;
-							sok.elems[0].rect = r;
+							sok.elems[0].rect = new_rect;
 							sok.elems[1].bp = t->m_TEX0.TBP0;
 							sok.elems[1].bw = t->m_TEX0.TBW;
 							sok.elems[1].psm = t->m_TEX0.PSM;
@@ -941,6 +960,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// If not all channels are clean/dirty or only part of the rect is dirty, we need to update the target.
 					if (((channels & channel_mask) != channel_mask || partial))
 						t->Update();
+
+					if (linear)
+					{
+						new_rect.z += 1;
+						new_rect.w += 1;
+					}
 				}
 				else
 				{
@@ -1014,23 +1039,29 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 					if (bp > t->m_TEX0.TBP0)
 					{
+						GSVector4i new_rect = r;
+						if (linear)
+						{
+							new_rect.z -= 1;
+							new_rect.w -= 1;
+						}
 						// Check if it is possible to hit with valid <x,y> offset on the given Target.
 						// Fixes Jak eyes rendering.
 						// Fixes Xenosaga 3 last dungeon graphic bug.
 						// Fixes Pause menu in The Getaway.
-						const bool can_translate = CanTranslate(bp, bw, psm, r, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
+						const bool can_translate = CanTranslate(bp, bw, psm, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW);
 						if (can_translate)
 						{
 							const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 							const GSVector2i& page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 							const GSVector4i page_mask(GSVector4i((page_size.x - 1), (page_size.y - 1)).xyxy());
-							GSVector4i rect = r & ~page_mask;
+							GSVector4i rect = new_rect & ~page_mask;
 
 							if (swizzle_match)
 							{
-								rect = TranslateAlignedRectByPage(t, bp, psm, bw, r);
-								rect.x -= r.x;
-								rect.y -= r.y;
+								rect = TranslateAlignedRectByPage(t, bp, psm, bw, new_rect);
+								rect.x -= new_rect.x;
+								rect.y -= new_rect.y;
 							}
 							else
 							{
@@ -1045,12 +1076,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								{
 									rect.x &= ~(page_size.x - 1);
 									rect.y &= ~(page_size.y - 1);
-									rect.z = (r.z + (page_size.x - 1)) & ~(page_size.x - 1);
-									rect.w = (r.w + (page_size.y - 1)) & ~(page_size.y - 1);
+									rect.z = (new_rect.z + (page_size.x - 1)) & ~(page_size.x - 1);
+									rect.w = (new_rect.w + (page_size.y - 1)) & ~(page_size.y - 1);
 								}
 								rect = TranslateAlignedRectByPage(t, bp & ~((1 << 5) - 1), psm, bw, rect);
-								rect.x -= r.x & ~(page_size.y - 1);
-								rect.y -= r.x & ~(page_size.y - 1);
+								rect.x -= new_rect.x & ~(page_size.y - 1);
+								rect.y -= new_rect.x & ~(page_size.y - 1);
 							}
 
 							rect = rect.rintersect(t->m_valid);
@@ -1085,7 +1116,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							{
 								// Improves Beyond Good & Evil shadow.
 								const u32 bp_unwrap = bp + GSTextureCache::MAX_BP + 0x1;
-								so = ComputeSurfaceOffset(bp_unwrap, bw, psm, r, t);
+								so = ComputeSurfaceOffset(bp_unwrap, bw, psm, new_rect, t);
 							}
 							if (so.is_valid)
 							{
@@ -1098,6 +1129,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 								// Keep looking, just in case there is an exact match (Situation: Target frame drawn inside target frame, current makes a separate texture)
 								continue;
 							}
+						}
+						if (linear)
+						{
+							new_rect.z += 1;
+							new_rect.w += 1;
 						}
 					}
 					else
@@ -1172,11 +1208,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						GIFRegTEX0 depth_TEX0;
 						depth_TEX0.U32[0] = TEX0.U32[0] | (0x30u << 20u);
 						depth_TEX0.U32[1] = TEX0.U32[1];
-						return LookupDepthSource(depth_TEX0, TEXA, CLAMP, r, possible_shuffle);
+						return LookupDepthSource(depth_TEX0, TEXA, CLAMP, r, possible_shuffle, linear);
 					}
 					else
 					{
-						return LookupDepthSource(TEX0, TEXA, CLAMP, r, possible_shuffle, true);
+						return LookupDepthSource(TEX0, TEXA, CLAMP, r, possible_shuffle, linear, true);
 					}
 				}
 			}
