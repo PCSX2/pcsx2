@@ -553,7 +553,10 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		else if (!s_challenge_mode && EmuConfig.Achievements.ChallengeMode)
 		{
 			if (HasActiveGame())
-				ImGuiFullscreen::ShowToast(std::string(), "Hardcore mode will be enabled on system reset.", 10.0f);
+			{
+				ImGuiFullscreen::ShowToast(std::string(),
+					TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."), 10.0f);
+			}
 		}
 	}
 
@@ -586,10 +589,10 @@ bool Achievements::ConfirmChallengeModeDisable(const char* trigger)
 		return (RA_WarnDisableHardcore(trigger) != 0);
 #endif
 
-	const bool confirmed =
-		Host::ConfirmMessage("Confirm Hardcore Mode", fmt::format("{0} cannot be performed while hardcore mode is active. Do you want to "
-																  "disable hardcore mode? {0} will be cancelled if you select No.",
-														  trigger));
+	const bool confirmed = Host::ConfirmMessage("Confirm Hardcore Mode",
+		fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you want "
+												 "to disable hardcore mode? {0} will be cancelled if you select No."),
+			trigger));
 	if (!confirmed)
 		return false;
 
@@ -639,7 +642,12 @@ void Achievements::SetChallengeMode(bool enabled)
 	s_challenge_mode = enabled;
 
 	if (HasActiveGame())
-		ImGuiFullscreen::ShowToast(std::string(), enabled ? TRANSLATE("Achievements", "Hardcore mode is now enabled.") : TRANSLATE("Achievements", "Hardcore mode is now disabled."), 10.0f);
+	{
+		ImGuiFullscreen::ShowToast(std::string(),
+			enabled ? TRANSLATE("Achievements", "Hardcore mode is now enabled.") :
+					  TRANSLATE("Achievements", "Hardcore mode is now disabled."),
+			10.0f);
+	}
 
 	if (HasActiveGame() && !IsTestModeActive())
 	{
