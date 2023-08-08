@@ -110,7 +110,7 @@ struct crash_info_t
 	u64 reserved;
 	u64 reserved2;
 };
-#define CRASH_ANNOTATION __attribute__((section("__DATA,__crash_info")))
+#define CRASH_ANNOTATION __attribute__((used, section("__DATA,__crash_info")))
 #define CRASH_VERSION 4
 extern "C" crash_info_t gCRAnnotations CRASH_ANNOTATION = { CRASH_VERSION };
 #endif
