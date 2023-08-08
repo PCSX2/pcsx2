@@ -105,6 +105,7 @@ jobs:
           cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DUSE_OPENGL=OFF \
+                -DUSE_VULKAN=OFF \
                 -DDISABLE_ADVANCE_SIMD=ON \
                 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
                 -DUSE_SYSTEM_LIBS=OFF \
