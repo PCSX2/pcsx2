@@ -637,8 +637,7 @@ public:
 	bool ApplyUtilityState(bool already_execed = false);
 	bool ApplyTFXState(bool already_execed = false);
 
-	void SetVertexBuffer(VkBuffer buffer, VkDeviceSize offset);
-	void SetIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType type);
+	void SetIndexBuffer(VkBuffer buffer);
 	void SetBlendConstants(u8 color);
 	void SetLineWidth(float width);
 
@@ -668,13 +667,12 @@ private:
 		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 5),
 		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 6),
 		DIRTY_FLAG_LINE_WIDTH = (1 << 7),
-		DIRTY_FLAG_VERTEX_BUFFER = (1 << 8),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 9),
-		DIRTY_FLAG_VIEWPORT = (1 << 10),
-		DIRTY_FLAG_SCISSOR = (1 << 11),
-		DIRTY_FLAG_PIPELINE = (1 << 12),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 13),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 14),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 8),
+		DIRTY_FLAG_VIEWPORT = (1 << 9),
+		DIRTY_FLAG_SCISSOR = (1 << 10),
+		DIRTY_FLAG_PIPELINE = (1 << 11),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 12),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 13),
 
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
@@ -684,9 +682,8 @@ private:
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
 								  DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID,
 
-		DIRTY_BASE_STATE = DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE |
-						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_BLEND_CONSTANTS |
-						   DIRTY_FLAG_LINE_WIDTH,
+		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
+						   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
 		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
@@ -703,6 +700,7 @@ private:
 	void InitializeState();
 	bool CreatePersistentDescriptorSets();
 
+	void SetInitialState(VkCommandBuffer cmdbuf);
 	void ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf);
 
 	// Which bindings/state has to be updated before the next draw.
@@ -710,12 +708,7 @@ private:
 	FeedbackLoopFlag m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
 	bool m_warned_slow_spin = false;
 
-	// input assembly
-	VkBuffer m_vertex_buffer = VK_NULL_HANDLE;
-	VkDeviceSize m_vertex_buffer_offset = 0;
 	VkBuffer m_index_buffer = VK_NULL_HANDLE;
-	VkDeviceSize m_index_buffer_offset = 0;
-	VkIndexType m_index_type = VK_INDEX_TYPE_UINT16;
 
 	GSTextureVK* m_current_render_target = nullptr;
 	GSTextureVK* m_current_depth_target = nullptr;

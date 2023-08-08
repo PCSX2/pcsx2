@@ -1313,6 +1313,8 @@ void GSDeviceVK::CommandBufferCompleted(u32 index)
 void GSDeviceVK::MoveToNextCommandBuffer()
 {
 	ActivateCommandBuffer((m_current_frame + 1) % NUM_COMMAND_BUFFERS);
+	InvalidateCachedState();
+	SetInitialState(m_current_command_buffer);
 }
 
 void GSDeviceVK::ActivateCommandBuffer(u32 index)
@@ -2198,6 +2200,8 @@ bool GSDeviceVK::UpdateWindow()
 
 	m_window_info = m_swap_chain->GetWindowInfo();
 	RenderBlankFrame();
+	InvalidateCachedState();
+	SetInitialState(m_current_command_buffer);
 	return true;
 }
 
@@ -2991,7 +2995,7 @@ void GSDeviceVK::DoMultiStretchRects(
 	m_index.count = icount;
 	m_vertex_stream_buffer.CommitMemory(vcount * sizeof(GSVertexPT1));
 	m_index_stream_buffer.CommitMemory(icount * sizeof(u16));
-	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer());
 
 	// Even though we're batching, a cmdbuffer submit could've messed this up.
 	const GSVector4i rc(dTex->GetRect());
@@ -3386,7 +3390,7 @@ void GSDeviceVK::IASetIndexBuffer(const void* index, size_t count)
 	std::memcpy(m_index_stream_buffer.GetCurrentHostPointer(), index, size);
 	m_index_stream_buffer.CommitMemory(size);
 
-	SetIndexBuffer(m_index_stream_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer());
 }
 
 void GSDeviceVK::OMSetRenderTargets(
@@ -3673,8 +3677,6 @@ bool GSDeviceVK::CreateBuffers()
 		return false;
 	}
 
-	SetVertexBuffer(m_vertex_stream_buffer.GetBuffer(), 0);
-
 	if (!AllocatePreinitializedGPUBuffer(EXPAND_BUFFER_SIZE, &m_expand_index_buffer, &m_expand_index_buffer_allocation,
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT, &GSDevice::GenerateExpansionIndexBuffer))
 	{
@@ -3682,6 +3684,7 @@ bool GSDeviceVK::CreateBuffers()
 		return false;
 	}
 
+	SetIndexBuffer(m_index_stream_buffer.GetBuffer());
 	return true;
 }
 
@@ -4447,9 +4450,7 @@ void GSDeviceVK::RenderBlankFrame()
 
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
-	MoveToNextCommandBuffer();
-
-	InvalidateCachedState();
+	ActivateCommandBuffer((m_current_frame + 1) % NUM_COMMAND_BUFFERS);
 }
 
 bool GSDeviceVK::DoCAS(
@@ -4863,11 +4864,6 @@ bool GSDeviceVK::BindDrawPipeline(const PipelineSelector& p)
 
 void GSDeviceVK::InitializeState()
 {
-	m_vertex_buffer = m_vertex_stream_buffer.GetBuffer();
-	m_vertex_buffer_offset = 0;
-	m_index_buffer = m_index_stream_buffer.GetBuffer();
-	m_index_buffer_offset = 0;
-	m_index_type = VK_INDEX_TYPE_UINT16;
 	m_current_framebuffer = VK_NULL_HANDLE;
 	m_current_render_pass = VK_NULL_HANDLE;
 
@@ -4887,6 +4883,7 @@ void GSDeviceVK::InitializeState()
 	m_tfx_sampler = m_point_sampler;
 
 	InvalidateCachedState();
+	SetInitialState(m_current_command_buffer);
 }
 
 bool GSDeviceVK::CreatePersistentDescriptorSets()
@@ -4926,7 +4923,6 @@ void GSDeviceVK::ExecuteCommandBuffer(bool wait_for_completion)
 {
 	EndRenderPass();
 	ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
-	InvalidateCachedState();
 }
 
 void GSDeviceVK::ExecuteCommandBuffer(bool wait_for_completion, const char* reason, ...)
@@ -4953,7 +4949,6 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 
 	EndRenderPass();
 	ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
-	InvalidateCachedState();
 
 	if (render_pass != VK_NULL_HANDLE)
 	{
@@ -4987,11 +4982,6 @@ void GSDeviceVK::ExecuteCommandBufferForReadback()
 void GSDeviceVK::InvalidateCachedState()
 {
 	m_dirty_flags = ALL_DIRTY_STATE;
-	if (m_vertex_buffer != VK_NULL_HANDLE)
-		m_dirty_flags |= DIRTY_FLAG_VERTEX_BUFFER;
-	if (m_index_buffer != VK_NULL_HANDLE)
-		m_dirty_flags |= DIRTY_FLAG_INDEX_BUFFER;
-
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
 		m_tfx_textures[i] = m_null_texture.get();
 	m_utility_texture = m_null_texture.get();
@@ -5006,24 +4996,12 @@ void GSDeviceVK::InvalidateCachedState()
 	m_utility_descriptor_set = VK_NULL_HANDLE;
 }
 
-void GSDeviceVK::SetVertexBuffer(VkBuffer buffer, VkDeviceSize offset)
+void GSDeviceVK::SetIndexBuffer(VkBuffer buffer)
 {
-	if (m_vertex_buffer == buffer && m_vertex_buffer_offset == offset)
-		return;
-
-	m_vertex_buffer = buffer;
-	m_vertex_buffer_offset = offset;
-	m_dirty_flags |= DIRTY_FLAG_VERTEX_BUFFER;
-}
-
-void GSDeviceVK::SetIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType type)
-{
-	if (m_index_buffer == buffer && m_index_buffer_offset == offset && m_index_type == type)
+	if (m_index_buffer == buffer)
 		return;
 
 	m_index_buffer = buffer;
-	m_index_buffer_offset = offset;
-	m_index_type = type;
 	m_dirty_flags |= DIRTY_FLAG_INDEX_BUFFER;
 }
 
@@ -5226,13 +5204,16 @@ void GSDeviceVK::SetPipeline(VkPipeline pipeline)
 	m_dirty_flags |= DIRTY_FLAG_PIPELINE;
 }
 
+void GSDeviceVK::SetInitialState(VkCommandBuffer cmdbuf)
+{
+	const VkDeviceSize buffer_offset = 0;
+	vkCmdBindVertexBuffers(cmdbuf, 0, 1, m_vertex_stream_buffer.GetBufferPtr(), &buffer_offset);
+}
+
 __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 {
-	if (flags & DIRTY_FLAG_VERTEX_BUFFER)
-		vkCmdBindVertexBuffers(cmdbuf, 0, 1, &m_vertex_buffer, &m_vertex_buffer_offset);
-
 	if (flags & DIRTY_FLAG_INDEX_BUFFER)
-		vkCmdBindIndexBuffer(cmdbuf, m_index_buffer, m_index_buffer_offset, m_index_type);
+		vkCmdBindIndexBuffer(cmdbuf, m_index_buffer, 0, VK_INDEX_TYPE_UINT16);
 
 	if (flags & DIRTY_FLAG_PIPELINE)
 		vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_current_pipeline);
@@ -5853,7 +5834,7 @@ void GSDeviceVK::UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config)
 	{
 		m_index.start = 0;
 		m_index.count = config.nindices;
-		SetIndexBuffer(m_expand_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+		SetIndexBuffer(m_expand_index_buffer);
 	}
 	else
 	{
