@@ -14587,6 +14587,7 @@ SLES-51230:
   region: "PAL-E"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light bleed through objects.
+    autoFlush: 1 # Fixes light bloom intensity.
 SLES-51232:
   name: "Virtua Tennis 2"
   region: "PAL-M4"
@@ -14836,11 +14837,13 @@ SLES-51317:
   region: "PAL-F"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light bleed through objects.
+    autoFlush: 1 # Fixes light bloom intensity.
 SLES-51318:
   name: "Minority Report"
   region: "PAL-G"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light bleed through objects.
+    autoFlush: 1 # Fixes light bloom intensity.
 SLES-51322:
   name: "Robotech Battlecry"
   region: "PAL-M5"
@@ -48432,6 +48435,7 @@ SLUS-20331:
   compat: 5
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes light bleed through objects.
+    autoFlush: 1 # Fixes light bloom intensity.
 SLUS-20332:
   name: "NCAA March Madness 2002"
   region: "NTSC-U"
