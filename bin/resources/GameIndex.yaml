@@ -904,7 +904,7 @@ SCAJ-20015:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
 SCAJ-20016:
   name: "Warrior of Argus"
-  region: "NTSC-CH-E"
+  region: "NTSC-C-E"
 SCAJ-20017:
   name: "Sly Cooper"
   region: "NTSC-Unk"
@@ -916,7 +916,7 @@ SCAJ-20019:
   region: "NTSC-J"
 SCAJ-20020:
   name: "Drag-on Dragoon"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
   clampModes:
     eeClampMode: 3 # Characters are visible in-game.
   gsHWFixes:
@@ -1248,7 +1248,7 @@ SCAJ-20087:
     - "SLPS-73224"
 SCAJ-20088:
   name: "Yu Zi - Qiang Jiu Shui Tang Da Zuo Zhan"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SCAJ-20089:
   name: "Athens 2004"
   region: "NTSC-Unk"
@@ -1293,7 +1293,7 @@ SCAJ-20099:
     moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCAJ-20100:
   name: "Tenchu Kurenai"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
 SCAJ-20101:
   name: "EyeToy - Saru"
   region: "NTSC-Unk"
@@ -1371,7 +1371,7 @@ SCAJ-20115:
     partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20116:
   name: "Death by Degrees - Tekken - Nina Williams"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
   gsHWFixes:
     alignSprite: 1 # Fixes FMV lines.
     getSkipCount: "GSC_DeathByDegreesTekkenNinaWilliams"
@@ -1553,7 +1553,7 @@ SCAJ-20143:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -1569,7 +1569,7 @@ SCAJ-20145:
     getSkipCount: "GSC_TalesOfLegendia"
 SCAJ-20146:
   name: "Wang Da Yu Ju Xiang"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   compat: 5
   gsHWFixes:
     mipmap: 1
@@ -1641,7 +1641,7 @@ SCAJ-20158:
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SCAJ-20159:
   name: "Soul Calibur III"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   gameFixes:
     - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
   clampModes:
@@ -1710,7 +1710,7 @@ SCAJ-20169:
     autoFlush: 2 # Fixes lighting.
 SCAJ-20170:
   name: "Tourist Trophy"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
@@ -1828,7 +1828,7 @@ SCAJ-20192:
   region: "NTSC-Unk"
 SCAJ-20193:
   name: "Tales of Destiny [Director's Cut] [Premium Box]"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
   gameFixes:
     - FpuMulHack
 SCAJ-20194:
@@ -1836,7 +1836,7 @@ SCAJ-20194:
   region: "NTSC-Unk"
 SCAJ-20195:
   name: "Ape Escape 3 [PlayStation 2 The Best]"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -1845,7 +1845,7 @@ SCAJ-20195:
     autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20196:
   name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   gsHWFixes:
     mipmap: 1
     halfPixelOffset: 1 # Fixes misalignments and borders on side.
@@ -1942,7 +1942,7 @@ SCAJ-30003:
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-30004:
   name: "Kan Wo Long Xian Shen Wei"
-  region: "NTSC-CH"
+  region: "NTSC-C"
 SCAJ-30005:
   name: "Gacha Mecha Stadium - Saru Battle"
   region: "NTSC-Unk"
@@ -2090,7 +2090,7 @@ SCCS-40022:
   compat: 5
 SCCS-60001:
   name: "Sakura Taisen - Atsuki Chishio Ni"
-  region: "NTSC-CH"
+  region: "NTSC-C"
   gsHWFixes:
     getSkipCount: "GSC_SakuraTaisen"
 SCCS-60002:
@@ -8380,7 +8380,7 @@ SCPS-55031:
   region: "NTSC-J"
 SCPS-55032:
   name: "Fantavision - For You and Me"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SCPS-55035:
   name: "Ape Escape 2"
   region: "NTSC-J"
@@ -10663,7 +10663,7 @@ SLAJ-25016:
   region: "NTSC-Unk"
 SLAJ-25017:
   name: "Harry Potter and the Philosopher's Stone"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLAJ-25018:
   name: "Shutokou Battle 01"
   region: "NTSC-HK"
@@ -10674,7 +10674,7 @@ SLAJ-25018:
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLAJ-25019:
   name: "The Lord of the Rings - The Return of the King"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLAJ-25023:
   name: "Shin Sangoku Musou 3 - Mushoden"
   region: "NTSC-Unk"
@@ -10688,13 +10688,13 @@ SLAJ-25027:
   region: "NTSC-Unk"
 SLAJ-25028:
   name: "The Sims - Bustin' Out"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLAJ-25030:
   name: "Medal of Honor - Rising Sun"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLAJ-25031:
   name: "Kunoichi - Shinobu"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
   gsHWFixes:
     getSkipCount: "GSC_Kunoichi"
 SLAJ-25033:
@@ -10708,7 +10708,7 @@ SLAJ-25035:
   region: "NTSC-Unk"
 SLAJ-25036:
   name: "Zhen Sanguo Wushuang 2"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLAJ-25037:
   name: "Astro Boy Atom"
   region: "NTSC-Unk"
@@ -10725,19 +10725,19 @@ SLAJ-25040:
   region: "NTSC-Unk"
 SLAJ-25041:
   name: "Harry Potter and the Prisoner of Azkaban"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLAJ-25042:
   name: "Virtua Fighter - Cyber Generation"
   region: "NTSC-Unk"
 SLAJ-25045:
   name: "Yinghua Dazhan V Episode 0 - Huangye de Shaonu Wushi"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
 SLAJ-25046:
   name: "NBA Live 2005"
   region: "NTSC-Unk"
 SLAJ-25047:
   name: "Dororo"
-  region: "NTSC-Ch-J"
+  region: "NTSC-C-J"
   gsHWFixes:
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLAJ-25048:
@@ -10748,7 +10748,7 @@ SLAJ-25049:
   region: "NTSC-Unk"
 SLAJ-25051:
   name: "Lord of the Rings, The - The Third Age"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
 SLAJ-25052:
@@ -10980,12 +10980,12 @@ SLAJ-35001:
   region: "NTSC-Unk"
 SLAJ-35003:
   name: "Sakura Taisen - Atsuki Chishio Ni"
-  region: "NTSC-CH"
+  region: "NTSC-C"
   gsHWFixes:
     getSkipCount: "GSC_SakuraTaisen"
 SLAJ-35007:
   name: "Zhen San Guo Wu Shuang 5 Special"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLED-50117:
   name: "Metal Gear Solid 2 - Sons of Liberty [Demo] [Zone of the Enders Bonus Disc]"
   region: "PAL-E"
@@ -19312,6 +19312,8 @@ SLES-53234:
   name: "Samurai Western"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes line across the middle of the screen and offset blur.
 SLES-53235:
   name: "Syberia II"
   region: "PAL-R"
@@ -29570,6 +29572,8 @@ SLPM-61103:
 SLPM-61104:
   name: "Samurai Western - Katsugeki Samurai-dou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes line across the middle of the screen and offset blur.
 SLPM-61105:
   name: "Hajime no Ippo All Stars"
   region: "NTSC-J"
@@ -30274,7 +30278,7 @@ SLPM-62161:
   compat: 5
 SLPM-62163:
   name: "WinBack"
-  region: "NTSC-Ch-E-J"
+  region: "NTSC-C-E-J"
 SLPM-62164:
   name: "Generation of Chaos - Next"
   region: "NTSC-J"
@@ -30507,7 +30511,7 @@ SLPM-62239:
   region: "NTSC-J"
 SLPM-62240:
   name: "The Sims"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLPM-62241:
   name: "Harry Potter to Himitsu no Heya"
   region: "NTSC-J"
@@ -32781,7 +32785,7 @@ SLPM-65101:
     - "SLPM-65100"
 SLPM-65104:
   name: "SSX Tricky"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLPM-65105:
   name: "Shin Combat Choro Q"
   region: "NTSC-J"
@@ -32941,7 +32945,7 @@ SLPM-65161:
   region: "NTSC-J"
 SLPM-65162:
   name: "San Guo Zhi Zhan Ji"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLPM-65163:
   name: "Zhen San Guo Wu Shuang 2"
   region: "NTSC-T"
@@ -32968,7 +32972,7 @@ SLPM-65167:
   region: "NTSC-J"
 SLPM-65168:
   name: "Medal of Honor - Frontline"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLPM-65169:
   name: "Combat Queen"
   region: "NTSC-J"
@@ -33010,7 +33014,7 @@ SLPM-65180:
   region: "NTSC-J"
 SLPM-65181:
   name: "Need for Speed - Hot Pursuit 2"
-  region: "NTSC-Ch"
+  region: "NTSC-C"
 SLPM-65183:
   name: "Auto Modellista"
   region: "NTSC-J"
@@ -35096,6 +35100,8 @@ SLPM-65754:
 SLPM-65755:
   name: "Samurai Western - Katsugeki Samurai-dou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes line across the middle of the screen and offset blur.
 SLPM-65756:
   name: "Tennis no Oji-Sama - Rush & Dream"
   region: "NTSC-J"
@@ -52772,6 +52778,8 @@ SLUS-21187:
   name: "Samurai Western"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes line across the middle of the screen and offset blur.
 SLUS-21188:
   name: "America's Army - Rise of a Soldier"
   region: "NTSC-U"
