@@ -16,10 +16,10 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSDevice.h"
+#include "GS/GSVector.h"
 #include "GS/Renderers/Vulkan/GSTextureVK.h"
 #include "GS/Renderers/Vulkan/VKLoader.h"
 #include "GS/Renderers/Vulkan/VKStreamBuffer.h"
-#include "GS/GSVector.h"
 
 #include "common/HashCombine.h"
 #include "common/ReadbackSpinManager.h"
@@ -109,9 +109,6 @@ public:
 	VkCommandBuffer GetCurrentInitCommandBuffer();
 
 	/// Allocates a descriptor set from the pool reserved for the current frame.
-	VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout set_layout);
-
-	/// Allocates a descriptor set from the pool reserved for the current frame.
 	VkDescriptorSet AllocatePersistentDescriptorSet(VkDescriptorSetLayout set_layout);
 
 	/// Frees a descriptor set allocated from the global pool.
@@ -199,12 +196,11 @@ private:
 	};
 
 	using ExtensionList = std::vector<const char*>;
-	static bool SelectInstanceExtensions(
-		ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils);
+	static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils);
 	bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
 	bool SelectDeviceFeatures();
 	bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
-	void ProcessDeviceExtensions();
+	bool ProcessDeviceExtensions();
 
 	bool CreateAllocator();
 	bool CreateCommandBuffers();
@@ -237,7 +233,6 @@ private:
 		// [0] - Init (upload) command buffer, [1] - draw command buffer
 		VkCommandPool command_pool = VK_NULL_HANDLE;
 		std::array<VkCommandBuffer, 2> command_buffers{VK_NULL_HANDLE, VK_NULL_HANDLE};
-		VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 		VkFence fence = VK_NULL_HANDLE;
 		u64 fence_counter = 0;
 		s32 spin_id = -1;
@@ -388,11 +383,7 @@ public:
 	enum : u32
 	{
 		NUM_TFX_DYNAMIC_OFFSETS = 2,
-		NUM_TFX_DRAW_TEXTURES = 2,
-		NUM_TFX_RT_TEXTURES = 2,
-		NUM_TFX_TEXTURES = NUM_TFX_DRAW_TEXTURES + NUM_TFX_RT_TEXTURES,
-		NUM_CONVERT_TEXTURES = 1,
-		NUM_CONVERT_SAMPLERS = 1,
+		NUM_UTILITY_SAMPLERS = 1,
 		CONVERT_PUSH_CONSTANTS_SIZE = 96,
 
 		NUM_CAS_PIPELINES = 2,
@@ -401,9 +392,17 @@ public:
 	{
 		TFX_DESCRIPTOR_SET_UBO,
 		TFX_DESCRIPTOR_SET_TEXTURES,
-		TFX_DESCRIPTOR_SET_RT,
 
 		NUM_TFX_DESCRIPTOR_SETS,
+	};
+	enum TFX_TEXTURES : u32
+	{
+		TFX_TEXTURE_TEXTURE,
+		TFX_TEXTURE_PALETTE,
+		TFX_TEXTURE_RT,
+		TFX_TEXTURE_PRIMID,
+
+		NUM_TFX_TEXTURES
 	};
 	enum DATE_RENDER_PASS : u32
 	{
@@ -419,8 +418,7 @@ private:
 	VkPipelineLayout m_utility_pipeline_layout = VK_NULL_HANDLE;
 
 	VkDescriptorSetLayout m_tfx_ubo_ds_layout = VK_NULL_HANDLE;
-	VkDescriptorSetLayout m_tfx_sampler_ds_layout = VK_NULL_HANDLE;
-	VkDescriptorSetLayout m_tfx_rt_texture_ds_layout = VK_NULL_HANDLE;
+	VkDescriptorSetLayout m_tfx_texture_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_tfx_pipeline_layout = VK_NULL_HANDLE;
 
 	VKStreamBuffer m_vertex_stream_buffer;
@@ -449,7 +447,8 @@ private:
 	VkPipeline m_shadeboost_pipeline = {};
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
-	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash> m_tfx_fragment_shaders;
+	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
+		m_tfx_fragment_shaders;
 	std::unordered_map<PipelineSelector, VkPipeline, PipelineSelectorHash> m_tfx_pipelines;
 
 	VkRenderPass m_utility_color_render_pass_load = VK_NULL_HANDLE;
@@ -473,15 +472,18 @@ private:
 
 	std::string m_tfx_source;
 
-	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(
+		GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) final;
-	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) final;
+	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+		ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 
-	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
+	bool DoCAS(
+		GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
 
 	VkSampler GetSampler(GSHWDrawConfig::SamplerSelector ss);
 	void ClearSamplerCache() final;
@@ -520,7 +522,8 @@ public:
 
 	__fi static GSDeviceVK* GetInstance() { return static_cast<GSDeviceVK*>(g_gs_device.get()); }
 
-	static void GetAdaptersAndFullscreenModes(std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
+	static void GetAdaptersAndFullscreenModes(
+		std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
 
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
@@ -571,7 +574,8 @@ public:
 		bool green, bool blue, bool alpha) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		PresentShader shader, float shaderTime, bool linear) override;
-	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
+	void DrawMultiStretchRects(
+		const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvert shader);
 
 	void BeginRenderPassForStretchRect(
@@ -583,8 +587,10 @@ public:
 	void BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, GSTexture* dTex, const GSVector4i& dRect,
 		u32 dLevel, bool linear);
 
-	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
-	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
+	void UpdateCLUTTexture(
+		GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
+	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM,
+		GSTexture* dTex, u32 DBW, u32 DPSM) override;
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVector4i& bbox);
 	GSTextureVK* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config);
@@ -657,25 +663,34 @@ public:
 private:
 	enum DIRTY_FLAG : u32
 	{
-		DIRTY_FLAG_TFX_SAMPLERS_DS = (1 << 0),
-		DIRTY_FLAG_TFX_RT_TEXTURE_DS = (1 << 1),
-		DIRTY_FLAG_TFX_DYNAMIC_OFFSETS = (1 << 2),
-		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 3),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 4),
-		DIRTY_FLAG_LINE_WIDTH = (1 << 5),
-		DIRTY_FLAG_VERTEX_BUFFER = (1 << 6),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 7),
-		DIRTY_FLAG_VIEWPORT = (1 << 8),
-		DIRTY_FLAG_SCISSOR = (1 << 9),
-		DIRTY_FLAG_PIPELINE = (1 << 10),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 11),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 12),
+		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3
+		DIRTY_FLAG_TFX_UBO = (1 << 4),
+		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 5),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 6),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 7),
+		DIRTY_FLAG_VERTEX_BUFFER = (1 << 8),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 9),
+		DIRTY_FLAG_VIEWPORT = (1 << 10),
+		DIRTY_FLAG_SCISSOR = (1 << 11),
+		DIRTY_FLAG_PIPELINE = (1 << 12),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 14),
+
+		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
+		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
+		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
+		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
+
+		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
+								  DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID,
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_VERTEX_BUFFER | DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE |
-						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
-		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_SAMPLERS_DS | DIRTY_FLAG_TFX_RT_TEXTURE_DS,
+						   DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_BLEND_CONSTANTS |
+						   DIRTY_FLAG_LINE_WIDTH,
+		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
+		ALL_DIRTY_STATE = DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE,
 	};
 
 	enum class PipelineLayout

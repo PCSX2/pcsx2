@@ -243,4 +243,7 @@ VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 // VK_EXT_calibrated_timestamps
 VULKAN_DEVICE_ENTRY_POINT(vkGetCalibratedTimestampsEXT, false)
 
+// VK_KHR_push_descriptor
+VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
+
 #endif // VULKAN_DEVICE_ENTRY_POINT
