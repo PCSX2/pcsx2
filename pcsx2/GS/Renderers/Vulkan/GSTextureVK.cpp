@@ -15,14 +15,14 @@
 
 #include "PrecompiledHeader.h"
 
+#include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/GSTextureVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
-#include "GS/GSPerfMon.h"
-#include "GS/GSGL.h"
 
-#include "common/BitUtils.h"
 #include "common/Assertions.h"
+#include "common/BitUtils.h"
 
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
@@ -52,7 +52,8 @@ static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
 
 static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
 {
-	return GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+	return GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT :
+																VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 }
 
 GSTextureVK::GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image,
@@ -111,10 +112,11 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 		case Type::RenderTarget:
 		{
 			pxAssert(levels == 1);
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-						VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-						(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
-																	 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
+			ici.usage =
+				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+																	  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		}
 		break;
 
@@ -124,7 +126,8 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 			ici.usage =
 				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT : 0);
+				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+																	  0);
 			vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		}
 		break;
@@ -430,8 +433,8 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 	m_map_area = r ? *r : GetRect();
 	m_map_level = layer;
 
-	m.pitch =
-		Common::AlignUpPow2(CalcUploadPitch(m_map_area.width()), GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
+	m.pitch = Common::AlignUpPow2(
+		CalcUploadPitch(m_map_area.width()), GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 
 	// see note in Update() for the reason why.
 	const u32 required_size = CalcUploadSize(m_map_area.height(), m.pitch);
@@ -459,7 +462,8 @@ void GSTextureVK::Unmap()
 
 	const u32 width = m_map_area.width();
 	const u32 height = m_map_area.height();
-	const u32 pitch = Common::AlignUpPow2(CalcUploadPitch(width), GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
+	const u32 pitch =
+		Common::AlignUpPow2(CalcUploadPitch(width), GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 	const u32 required_size = CalcUploadSize(height, pitch);
 	VKStreamBuffer& buffer = GSDeviceVK::GetInstance()->GetTextureUploadBuffer();
 	const u32 buffer_offset = buffer.GetCurrentOffset();
@@ -826,7 +830,8 @@ GSDownloadTextureVK::~GSDownloadTextureVK()
 
 std::unique_ptr<GSDownloadTextureVK> GSDownloadTextureVK::Create(u32 width, u32 height, GSTexture::Format format)
 {
-	const u32 buffer_size = GetBufferSize(width, height, format, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
+	const u32 buffer_size =
+		GetBufferSize(width, height, format, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 
 	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0u, buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0u, nullptr};

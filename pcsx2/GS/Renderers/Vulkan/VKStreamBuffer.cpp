@@ -16,11 +16,11 @@
 #include "PrecompiledHeader.h"
 
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
-#include "GS/Renderers/Vulkan/VKStreamBuffer.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
+#include "GS/Renderers/Vulkan/VKStreamBuffer.h"
 
-#include "common/BitUtils.h"
 #include "common/Assertions.h"
+#include "common/BitUtils.h"
 #include "common/Console.h"
 
 VKStreamBuffer::VKStreamBuffer() = default;
@@ -79,7 +79,8 @@ bool VKStreamBuffer::Create(VkBufferUsageFlags usage, u32 size)
 	VmaAllocationInfo ai = {};
 	VkBuffer new_buffer = VK_NULL_HANDLE;
 	VmaAllocation new_allocation = VK_NULL_HANDLE;
-	VkResult res = vmaCreateBuffer(GSDeviceVK::GetInstance()->GetAllocator(), &bci, &aci, &new_buffer, &new_allocation, &ai);
+	VkResult res =
+		vmaCreateBuffer(GSDeviceVK::GetInstance()->GetAllocator(), &bci, &aci, &new_buffer, &new_allocation, &ai);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkCreateBuffer failed: ");
