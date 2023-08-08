@@ -2141,8 +2141,6 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Try to reduce render pass restarts
-	if (!stencil && config.depth.key == DepthStencilSelector::NoDepth().key && (m_current_render.color_target != rt || m_current_render.depth_target != config.ds))
-		config.ds = nullptr;
 	if (!config.ds && m_current_render.color_target == rt && stencil == m_current_render.stencil_target && m_current_render.depth_target != config.tex)
 		config.ds = m_current_render.depth_target;
 	if (!rt && config.ds == m_current_render.depth_target && m_current_render.color_target != config.tex)
