@@ -13736,11 +13736,16 @@ SLES-50876:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 2
+    autoFlush: 1 # Aligns and corrects shadows.
+    roundSprite: 1 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves building textures and reduces pop in.
+    trilinearFiltering: 1
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
-    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    recommendedBlendingLevel: 2 # Fixes car and bike exhaust smoke rendering.
 SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
@@ -16573,11 +16578,16 @@ SLES-52153:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 2
+    autoFlush: 1 # Aligns and corrects shadows.
+    roundSprite: 1 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves building textures and reduces pop in.
+    trilinearFiltering: 1
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
-    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    recommendedBlendingLevel: 2 # Fixes car and bike exhaust smoke rendering.
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -18283,7 +18293,9 @@ SLES-52859:
   name: "Project - Snowblind"
   region: "PAL-E"
   gsHWFixes:
-    mipmap: 1
+    autoFlush: 1 # Fixes the post processing positioning.
+    mipmap: 2
+    trilinearFiltering: 1
     textureInsideRT: 1 # Fixes post processing.
 SLES-52861:
   name: "King Arthur"
@@ -18967,12 +18979,31 @@ SLES-53087:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLES-53088:
   name: "DTM Race Driver 3"
   region: "PAL-M5"
+  gsHWFixes:
+    alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLES-53089:
-  name: "V8 Supercars 3"
+  name: "V8 Supercars Australia 3"
   region: "PAL-E"
+  gsHWFixes:
+    alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLES-53090:
   name: "Circuit Blasters"
   region: "PAL-M5"
@@ -19057,8 +19088,9 @@ SLES-53124:
   name: "Project Snowblind"
   region: "PAL-M4"
   gsHWFixes:
-    mipmap: 1
-    estimateTextureRegion: 1 # Improves performance.
+    autoFlush: 1 # Fixes the post processing positioning.
+    mipmap: 2
+    trilinearFiltering: 1
     textureInsideRT: 1 # Fixes post processing.
 SLES-53125:
   name: "Enthusia - Professional Racing"
@@ -25780,10 +25812,11 @@ SLES-82009:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+    recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
   region: "PAL-E"
@@ -26881,9 +26914,16 @@ SLKA-25196:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 2
+    autoFlush: 1 # Aligns and corrects shadows.
+    roundSprite: 1 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves building textures and reduces pop in.
+    trilinearFiltering: 1
+    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+    cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    recommendedBlendingLevel: 2 # Fixes car and bike exhaust smoke rendering.
 SLKA-25198:
   name: "Tenchu Kurenai"
   region: "NTSC-K"
@@ -27917,10 +27957,11 @@ SLKA-35001:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+    recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-K"
@@ -28088,6 +28129,16 @@ SLPM-55042:
 SLPM-55044:
   name: "Heart no Kuni no Alice - Wonderful Wonder World"
   region: "NTSC-J"
+SLPM-55046:
+  name: "TOCA Race Driver 3 - The Ultimate Racing Simulator [Best Price]"
+  region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLPM-55047:
   name: "Sugar+Spice! - Anoko no Suteki na Nanimokamo"
   region: "NTSC-J"
@@ -29534,9 +29585,16 @@ SLPM-61092:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 2
+    autoFlush: 1 # Aligns and corrects shadows.
+    roundSprite: 1 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves building textures and reduces pop in.
+    trilinearFiltering: 1
+    cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
+    cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    recommendedBlendingLevel: 2 # Fixes car and bike exhaust smoke rendering.
 SLPM-61093:
   name: "Ultraman - Fighting Evolution 3"
   region: "NTSC-J"
@@ -35039,11 +35097,16 @@ SLPM-65741:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 2
+    autoFlush: 1 # Aligns and corrects shadows.
+    roundSprite: 1 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves building textures and reduces pop in.
+    trilinearFiltering: 1
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
-    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    recommendedBlendingLevel: 2 # Fixes car and bike exhaust smoke rendering.
 SLPM-65742:
   name: "Cool Girl [Konami the Best]"
   region: "NTSC-J"
@@ -39614,10 +39677,15 @@ SLPM-66880:
   name: "StarTRain - Your Past Makes Your Future"
   region: "NTSC-J"
 SLPM-66881:
-  name: "TOCA Race Driver 3 - Ultimate Racing Simulator"
+  name: "TOCA Race Driver 3 - The Ultimate Racing Simulator"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLPM-66882:
   name: "Hakarena Heart [Limited Edition]"
   region: "NTSC-J"
@@ -40024,10 +40092,11 @@ SLPM-67002:
   name: "Metal Gear Solid 2 - Substance"
   region: "NTSC-J"
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+    recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-J"
@@ -40053,9 +40122,12 @@ SLPM-67007:
 SLPM-67008:
   name: "Metal Gear Solid 2 - Substance [Konami Dendou Collection]"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+    recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
   region: "NTSC-J"
@@ -40889,6 +40961,12 @@ SLPM-74421:
 SLPM-74901:
   name: "Metal Gear Solid 2 - Substance"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
+  gsHWFixes:
+    roundSprite: 2 # Fixes font artifacts.
+    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+    recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-84075:
   name: "Anubis Zone of Enders Special Edition [Konami Dendou Selection]"
   region: "NTSC-J"
@@ -49445,10 +49523,11 @@ SLUS-20554:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - DMABusyHack # Fixes broken half-bottom artifacts.
+    - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
     partialTargetInvalidation: 1 # Fixes cutscene blur effects.
+    recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLUS-20555:
   name: "Reel Fishing 3"
   region: "NTSC-U"
@@ -49648,11 +49727,16 @@ SLUS-20587:
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
-    autoFlush: 2
+    autoFlush: 1 # Aligns and corrects shadows.
+    roundSprite: 1 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves building textures and reduces pop in.
+    trilinearFiltering: 1
     cpuCLUTRender: 1 # Fixes janky coloured cars.
     gpuTargetCLUT: 1 # Fixes janky coloured cars.
     textureInsideRT: 1 # Fixes car textures.
-    nativePaletteDraw: 1 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderBW: 4 # Alleviates text and sky rendering issues.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    recommendedBlendingLevel: 2 # Fixes car and bike exhaust smoke rendering.
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -52037,7 +52121,9 @@ SLUS-21037:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    autoFlush: 1 # Fixes the post processing positioning.
+    mipmap: 2
+    trilinearFiltering: 1
     textureInsideRT: 1 # Fixes post processing.
 SLUS-21038:
   name: "Pinball Hall of Fame - The Gottlieb Collection"
@@ -52760,6 +52846,11 @@ SLUS-21182:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLUS-21183:
   name: "Teen Titans"
   region: "NTSC-U"
@@ -57382,8 +57473,9 @@ SLUS-29131:
   name: "Project Snowblind [Public Beta Vol.1.0]"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
-    estimateTextureRegion: 1 # Improves performance.
+    autoFlush: 1 # Fixes the post processing positioning.
+    mipmap: 2
+    trilinearFiltering: 1
     textureInsideRT: 1 # Fixes post processing.
 SLUS-29132:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash [Public Beta Vol.1.0]"
@@ -57586,6 +57678,11 @@ SLUS-29178:
   region: "NTSC-U"
   gsHWFixes:
     alignSprite: 1 # Fixes lighting and vertical lines, also works with normal vertex.
+    roundSprite: 1 # Fixes misaligned map.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    skipDrawStart: 1 # Removes large black box around player car till we properly emulate it.
+    skipDrawEnd: 1 # Removes large black box around player car till we properly emulate it.
 SLUS-29179:
   name: "Sonic Riders [Demo]"
   region: "NTSC-U"
