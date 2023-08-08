@@ -352,16 +352,16 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
 	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
-		layout(set = 2, binding = 0) uniform texture2D RtSampler;
+		layout(set = 1, binding = 2) uniform texture2D RtSampler;
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
 	#else
-		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
+		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
 		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
 	#endif
 #endif
 
 #if PS_DATE > 0
-layout(set = 2, binding = 1) uniform texture2D PrimMinTexture;
+layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
 #if NEEDS_TEX
