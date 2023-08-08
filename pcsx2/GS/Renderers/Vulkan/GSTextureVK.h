@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "GS/GS.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "GS/GS.h"
 #include "GS/Renderers/Vulkan/VKLoader.h"
 
 #include <limits>
@@ -76,8 +76,8 @@ public:
 	void OverrideImageLayout(Layout new_layout);
 
 	void TransitionToLayout(VkCommandBuffer command_buffer, Layout new_layout);
-	void TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, int start_level, int num_levels,
-		Layout old_layout, Layout new_layout);
+	void TransitionSubresourcesToLayout(
+		VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout);
 
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);

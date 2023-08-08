@@ -210,7 +210,7 @@ namespace Vulkan
 
 		VkSpecializationInfo m_si;
 		std::array<VkSpecializationMapEntry, MAX_SPECIALIZATION_CONSTANTS> m_smap_entries;
-		std::array<u8, SPECIALIZATION_CONSTANT_SIZE* MAX_SPECIALIZATION_CONSTANTS> m_smap_constants;
+		std::array<u8, SPECIALIZATION_CONSTANT_SIZE * MAX_SPECIALIZATION_CONSTANTS> m_smap_constants;
 	};
 
 	class SamplerBuilder

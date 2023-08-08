@@ -15,10 +15,10 @@
 
 #include "PrecompiledHeader.h"
 
-#include "GS/Renderers/Vulkan/VKShaderCache.h"
+#include "GS/GS.h"
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
-#include "GS/GS.h"
+#include "GS/Renderers/Vulkan/VKShaderCache.h"
 
 #include "Config.h"
 #include "ShaderCacheVersion.h"
@@ -44,28 +44,29 @@
 
 std::unique_ptr<VKShaderCache> g_vulkan_shader_cache;
 
-namespace {
+namespace
+{
 #pragma pack(push, 4)
-struct VK_PIPELINE_CACHE_HEADER
-{
-	u32 header_length;
-	u32 header_version;
-	u32 vendor_id;
-	u32 device_id;
-	u8 uuid[VK_UUID_SIZE];
-};
+	struct VK_PIPELINE_CACHE_HEADER
+	{
+		u32 header_length;
+		u32 header_version;
+		u32 vendor_id;
+		u32 device_id;
+		u8 uuid[VK_UUID_SIZE];
+	};
 
-struct CacheIndexEntry
-{
-	u64 source_hash_low;
-	u64 source_hash_high;
-	u32 source_length;
-	u32 shader_type;
-	u32 file_offset;
-	u32 blob_size;
-};
+	struct CacheIndexEntry
+	{
+		u64 source_hash_low;
+		u64 source_hash_high;
+		u32 source_length;
+		u32 shader_type;
+		u32 file_offset;
+		u32 blob_size;
+	};
 #pragma pack(pop)
-}
+} // namespace
 
 static bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header)
 {
@@ -478,7 +479,8 @@ bool VKShaderCache::FlushPipelineCache()
 		return false;
 
 	size_t data_size;
-	VkResult res = vkGetPipelineCacheData(GSDeviceVK::GetInstance()->GetDevice(), m_pipeline_cache, &data_size, nullptr);
+	VkResult res =
+		vkGetPipelineCacheData(GSDeviceVK::GetInstance()->GetDevice(), m_pipeline_cache, &data_size, nullptr);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPipelineCacheData() failed: ");
