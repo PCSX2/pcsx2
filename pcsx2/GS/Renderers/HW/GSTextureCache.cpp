@@ -1341,6 +1341,15 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 			if (bp == t->m_TEX0.TBP0)
 			{
+				// if It's an old target and it's being completely overwritten, kill it.
+				if (!preserve_rgb && !preserve_alpha && TEX0.TBW != t->m_TEX0.TBW && TEX0.TBW > 1 && t->m_age >= 1)
+				{
+					GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to width change to %d", t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, TEX0.TBW);
+					InvalidateSourcesFromTarget(t);
+					i = list.erase(i);
+					delete t;
+					continue;
+				}
 				list.MoveFront(i.Index());
 
 				dst = t;
@@ -1825,9 +1834,9 @@ void GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
 					if (((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0)
 					{
-						//DevCon.Warning("Found one %x->%x BW %d PSM %x (new target %x->%x BW %d PSM %x)", t->m_TEX0.TBP0, t->m_end_block, t->m_TEX0.TBW, t->m_TEX0.PSM, dst->m_TEX0.TBP0, dst->m_end_block, dst->m_TEX0.TBW, dst->m_TEX0.PSM);
 						GSVector4i new_valid = t->m_valid;
 						new_valid.w /= 2;
+						GL_INS("RT resize buffer for FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, t->m_valid.width(), t->m_valid.height(), new_valid.width(), new_valid.height());
 						t->ResizeValidity(new_valid);
 						return;
 					}
