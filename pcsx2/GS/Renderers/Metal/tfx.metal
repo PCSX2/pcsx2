@@ -1022,37 +1022,33 @@ struct PSMain
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(cb.ta * 255.5f);
 
+			// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 			if (PS_SHUFFLE_SAME)
 			{
 				if (PS_READ_BA)
-				{
-					C.ga = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80);
-					C.rb = C.ga;
-				}
+					C = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80);
 				else
-				{
 					C.ga = C.rg;
-					C.rb = C.ga;
-				}
+			}
+			// Copy of a 16bit source in to this target
+			else if (PS_READ16_SRC)
+			{
+				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
+				if (denorm_c.a & 0x80)
+					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
+				else
+					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
+			}
+			// Write RB part. Mask will take care of the correct destination
+			else if (PS_READ_BA)
+			{
+				C.rb = C.bb;	
+				C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
 			}
 			else
 			{
-				if (PS_READ16_SRC)
-				{
-					C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
-					if (denorm_c.a & 0x80)
-						C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
-					else
-						C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
-				}
-				else
-				{
-					C.rb = PS_READ_BA ? C.bb : C.rr;
-					if (PS_READ_BA)
-						C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
-					else
-						C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
-				}
+				C.rb = C.rr;
+				C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
 			}
 		}
 
