@@ -2920,13 +2920,14 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 	const u32 frame_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 	const bool frame_hit = m_context->FRAME.Block() == m_context->TEX0.TBP0 && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
 	// There's a strange behaviour we need to test on a PS2 here, if the FRAME is a Z format, like Powerdrome something swaps over, and it seems Alpha Fail of "FB Only" writes to the Z.. it's odd.
-	const bool zbuf_hit = (m_context->ZBUF.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL != 2) && !m_context->ZBUF.ZMSK;
+	const bool z_needed = !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL != 2) && !m_context->ZBUF.ZMSK;
+	const bool zbuf_hit = (m_context->ZBUF.Block() == m_context->TEX0.TBP0) && z_needed;
 	const u32 frame_z_psm = frame_hit ? m_context->FRAME.PSM : m_context->ZBUF.PSM;
 	const u32 frame_z_bp = frame_hit ? m_context->FRAME.Block() : m_context->ZBUF.Block();
 
 	if ((frame_hit || zbuf_hit) && GSUtil::HasSharedBits(frame_z_bp, frame_z_psm, m_context->TEX0.TBP0, m_context->TEX0.PSM))
 		return true;
-	
+
 	return false;
 }
 
@@ -3023,10 +3024,6 @@ __forceinline void GSState::HandleAutoFlush()
 				break;
 		}
 
-		const int page_mask_x = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x - 1);
-		const int page_mask_y = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y - 1);
-		const GSVector4i page_mask = { page_mask_x, page_mask_y, page_mask_x, page_mask_y };
-
 		GSVector4i tex_coord;
 		// Prepare the currently processed vertex.
 		if (PRIM->FST)
@@ -3070,6 +3067,19 @@ __forceinline void GSState::HandleAutoFlush()
 			tex_rect.w = std::max(tex_rect.w, tex_coord.y);
 		}
 
+		// If the draw was 1 line thick, make it larger as rects are exclusive of ends.
+		if (tex_rect.x == tex_rect.z)
+			tex_rect += GSVector4i(0, 0, 1, 0);
+		if (tex_rect.y == tex_rect.w)
+			tex_rect += GSVector4i(0, 0, 0, 1);
+
+		const GSLocalMemory::psm_t tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		const GSLocalMemory::psm_t frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+
+		// Nothing being drawn intersect with the new texture, so no point in checking further.
+		if (tex_psm.depth == frame_psm.depth && tex_rect.rintersect(temp_draw_rect).rempty())
+			return;
+
 		// Get the last texture position from the last draw.
 		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - (index_swap ? n : 1)]];
 
@@ -3087,6 +3097,9 @@ __forceinline void GSState::HandleAutoFlush()
 			tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
 		}
 
+		const int page_mask_x = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x - 1);
+		const int page_mask_y = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y - 1);
+		const GSVector4i page_mask = { page_mask_x, page_mask_y, page_mask_x, page_mask_y };
 		const GSVector4i last_tex_page = tex_coord.xyxy() & page_mask;
 		const GSVector4i tex_page = tex_rect.xyxy() & page_mask;
 
@@ -3097,14 +3110,8 @@ __forceinline void GSState::HandleAutoFlush()
 			const bool frame_hit = (m_context->FRAME.Block() == m_context->TEX0.TBP0) && !(m_context->TEST.ATE && m_context->TEST.ATST == 0 && m_context->TEST.AFAIL == 2) && ((m_context->FRAME.FBMSK & frame_mask) != frame_mask);
 			const u32 frame_z_psm = frame_hit ? m_context->FRAME.PSM : m_context->ZBUF.PSM;
 			// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
-			if (GSUtil::HasCompatibleBits(m_context->TEX0.PSM, frame_z_psm) && (m_context->FRAME.FBW == m_context->TEX0.TBW))
+			if (tex_psm.bpp == frame_psm.bpp && (m_context->FRAME.FBW == m_context->TEX0.TBW))
 			{
-				// If the draw was 1 line thick, make it larger as rects are exclusive of ends.
-				if (tex_rect.x == tex_rect.z)
-					tex_rect += GSVector4i(0, 0, 1, 0);
-				if (tex_rect.y == tex_rect.w)
-					tex_rect += GSVector4i(0, 0, 0, 1);
-
 				const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 				const GSVector4i scissor = m_context->scissor.in;
 				GSVector4i old_tex_rect = GSVector4i::zero();
@@ -3116,8 +3123,28 @@ __forceinline void GSState::HandleAutoFlush()
 					{
 						const GSVertex* v = &m_vertex.buff[m_index.buff[i]];
 
-						tex_coord.x = (static_cast<int>(v->XYZ.X) - offset.x) >> 4;
-						tex_coord.y = (static_cast<int>(v->XYZ.Y) - offset.y) >> 4;
+						if (prim == GS_SPRITE && (i & 1))
+						{
+							tex_coord.x = ((static_cast<int>(v->XYZ.X) - offset.x) >> 4) - 1;
+							tex_coord.y = ((static_cast<int>(v->XYZ.Y) - offset.y) >> 4) - 1;
+						}
+						else
+						{
+							tex_coord.x = (static_cast<int>(v->XYZ.X) - offset.x) >> 4;
+							tex_coord.y = (static_cast<int>(v->XYZ.Y) - offset.y) >> 4;
+						}
+
+						if (tex_psm.depth != frame_psm.depth)
+						{
+							tex_coord.x ^= (frame_psm.pgs.x / 2);
+							tex_coord.y ^= (frame_psm.pgs.y / 2);
+						}
+
+						if (prim == GS_SPRITE && (i & 1))
+						{
+							tex_coord.x += 1;
+							tex_coord.y += 1;
+						}
 
 						if (i == (current_draw_end - 1))
 						{
@@ -3443,6 +3470,11 @@ __forceinline void GSState::VertexKick(u32 skip)
 		case GS_SPRITE:
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
+
+			// Update the first vert's Q for ease of doing Autoflush
+			if (!m_env.PRIM.FST)
+				m_vertex.buff[buff[0]].RGBAQ.Q = m_vertex.buff[buff[1]].RGBAQ.Q;
+
 			m_vertex.head = head + 2;
 			m_vertex.next = head + 2;
 			m_index.tail += 2;
