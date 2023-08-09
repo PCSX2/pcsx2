@@ -523,19 +523,6 @@ bool GSHwHack::GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_GodHand(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTME && (RFBP == 0x0) && (RTBP0 == 0x2800) && RFPSM == RTPSM && RTPSM == PSMCT32)
-		{
-			skip = 1; // Blur
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_KnightsOfTheTemple2(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1438,7 +1425,6 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 #define CRC_F(name) { #name, &GSHwHack::name }
 
 const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
-	CRC_F(GSC_GodHand),
 	CRC_F(GSC_KnightsOfTheTemple2),
 	CRC_F(GSC_Kunoichi),
 	CRC_F(GSC_Manhunt2),
