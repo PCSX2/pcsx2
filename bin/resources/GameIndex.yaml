@@ -6596,7 +6596,6 @@ SCKA-20090:
   gsHWFixes:
     mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly if CRC hack is off + Shifts buildings correctly.
-    getSkipCount: "GSC_GodHand"
 SCKA-20091:
   name: "MLB 07 - The Show"
   region: "NTSC-K"
@@ -22804,8 +22803,7 @@ SLES-54490:
   compat: 5
   gsHWFixes:
     mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
-    halfPixelOffset: 2 # Depth of field effect aligned properly if CRC hack is off + Shifts buildings correctly.
-    getSkipCount: "GSC_GodHand"
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLES-54492:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-E"
@@ -38291,8 +38289,7 @@ SLPM-66550:
   compat: 5
   gsHWFixes:
     mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
-    halfPixelOffset: 2 # Depth of field effect aligned properly if CRC hack is off + Shifts buildings correctly.
-    getSkipCount: "GSC_GodHand"
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLPM-66551:
   name: "Appleseed EX"
   region: "NTSC-J"
@@ -40617,8 +40614,7 @@ SLPM-74241:
   region: "NTSC-J"
   gsHWFixes:
     mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
-    halfPixelOffset: 2 # Depth of field effect aligned properly if CRC hack is off + Shifts buildings correctly.
-    getSkipCount: "GSC_GodHand"
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLPM-74242:
   name: "Devil May Cry 3 [Special Edition] [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -54758,8 +54754,7 @@ SLUS-21503:
   compat: 5
   gsHWFixes:
     mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
-    halfPixelOffset: 2 # Depth of field effect aligned properly if CRC hack is off + Shifts buildings correctly.
-    getSkipCount: "GSC_GodHand"
+    halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLUS-21536:
   name: "Sims 2, The - Pets"
   region: "NTSC-U"
