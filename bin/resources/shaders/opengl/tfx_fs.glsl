@@ -950,35 +950,30 @@ void ps_main()
 #if PS_SHUFFLE
 	uvec4 denorm_c = uvec4(C);
 	uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
+
+// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 #if PS_SHUFFLE_SAME
 #if (PS_READ_BA)
-	C.ga = vec2(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
-	C.rb = C.ga;
+	C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 #else
 	C.ga = C.rg;
-	C.rb = C.ga;
 #endif
-#else
-#if PS_READ16_SRC
+// Copy of a 16bit source in to this target
+#elif PS_READ16_SRC
 	C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 	if (bool(denorm_c.a & 0x80u))
 		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
 	else
 		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
-#else
-	// Write RB part. Mask will take care of the correct destination
-#if PS_READ_BA
+// Write RB part. Mask will take care of the correct destination
+#elif PS_READ_BA
 	C.rb = C.bb;
-#else
-	C.rb = C.rr;
-#endif
-
 	// FIXME precompute my_TA & 0x80
 
 	// Write GA part. Mask will take care of the correct destination
 	// Note: GLSL 4.50/GL_EXT_shader_integer_mix support a mix instruction to select a component\n"
 	// However Nvidia emulate it with an if (at least on kepler arch) ...\n"
-#if PS_READ_BA
+
 	// bit field operation requires GL4 HW. Could be nice to merge it with step/mix below
 	// uint my_ta = (bool(bitfieldExtract(denorm_c.a, 7, 1))) ? denorm_TA.y : denorm_TA.x;
 	// denorm_c.a = bitfieldInsert(denorm_c.a, bitfieldExtract(my_ta, 7, 1), 7, 1);
@@ -990,6 +985,7 @@ void ps_main()
 		C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
 
 #else
+	C.rb = C.rr;
 	if (bool(denorm_c.g & 0x80u))
 		C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
 	else
@@ -1001,9 +997,7 @@ void ps_main()
 	// float sel = step(128.0f, c.g);
 	// vec2 c_shuffle = vec2((denorm_c.gg & 0x7Fu) | (denorm_TA & 0x80u));
 	// c.ga = mix(c_shuffle.xx, c_shuffle.yy, sel);
-#endif // PS_READ_BA
 
-#endif // READ16_SRC
 #endif // PS_SHUFFLE_SAME
 #endif // PS_SHUFFLE
 
