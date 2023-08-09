@@ -320,13 +320,13 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 
 	// Required extensions.
 	if (!SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, true) ||
-		!SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, true) ||
 		!SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, true) ||
 		!SupportsExtension(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, true))
 	{
 		return false;
 	}
 
+	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_calibrated_timestamps =
 		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
@@ -525,11 +525,13 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 
-	provoking_vertex_feature.provokingVertexLast = VK_TRUE;
-	Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
+	if (m_optional_extensions.vk_ext_provoking_vertex)
+	{
+		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
+	}
 	line_rasterization_feature.bresenhamLines = VK_TRUE;
 	Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
-
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 	{
 		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
@@ -609,7 +611,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 
 	// add in optional feature structs
-	Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
+	if (m_optional_extensions.vk_ext_provoking_vertex)
+		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
 	Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
@@ -620,6 +623,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
 
 	// confirm we actually support it
+	m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
@@ -645,11 +649,6 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	{
 		Console.Error("maxPushDescriptors (%u) is below required (%u)", push_descriptor_properties.maxPushDescriptors,
 			NUM_TFX_TEXTURES);
-		return false;
-	}
-	if (!provoking_vertex_features.provokingVertexLast)
-	{
-		Console.Error("provokingVertexLast is not supported.");
 		return false;
 	}
 	if (!line_rasterization_feature.bresenhamLines)
@@ -692,6 +691,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 			m_optional_extensions.vk_ext_calibrated_timestamps = false;
 	}
 
+	Console.WriteLn(
+		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	Console.WriteLn(
 		"VK_EXT_memory_budget is %s", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
@@ -2604,7 +2605,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.primitive_id = m_device_features.geometryShader;
 
 	m_features.prefer_new_textures = true;
-	m_features.provoking_vertex_last = true;
+	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
 	m_features.dual_source_blend = m_device_features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
 	m_features.clip_control = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
@@ -3568,6 +3569,15 @@ static void AddUtilityVertexAttributes(Vulkan::GraphicsPipelineBuilder& gpb)
 	gpb.SetPrimitiveTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
 }
 
+static void SetPipelineProvokingVertex(const GSDevice::FeatureSupport& features, Vulkan::GraphicsPipelineBuilder& gpb)
+{
+	// We enable provoking vertex here anyway, in case it doesn't support multiple modes in the same pass.
+	// Normally we wouldn't enable it on the present/swap chain, but apparently the rule is it applies to the last
+	// pipeline bound before the render pass begun, and in this case, we can't bind null.
+	if (features.provoking_vertex_last)
+		gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
+}
+
 VkShaderModule GSDeviceVK::GetUtilityVertexShader(const std::string& source, const char* replace_main = nullptr)
 {
 	std::stringstream ss;
@@ -3811,8 +3821,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
+	SetPipelineProvokingVertex(m_features, gpb);
 	AddUtilityVertexAttributes(gpb);
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -3999,8 +4009,8 @@ bool GSDeviceVK::CompilePresentPipelines()
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
+	SetPipelineProvokingVertex(m_features, gpb);
 	AddUtilityVertexAttributes(gpb);
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -4055,8 +4065,8 @@ bool GSDeviceVK::CompileInterlacePipelines()
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
+	SetPipelineProvokingVertex(m_features, gpb);
 	AddUtilityVertexAttributes(gpb);
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -4106,8 +4116,8 @@ bool GSDeviceVK::CompileMergePipelines()
 	ScopedGuard vs_guard([this, &vs]() { vkDestroyShaderModule(m_device, vs, nullptr); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
+	SetPipelineProvokingVertex(m_features, gpb);
 	AddUtilityVertexAttributes(gpb);
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -4146,8 +4156,8 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 		return false;
 
 	Vulkan::GraphicsPipelineBuilder gpb;
+	SetPipelineProvokingVertex(m_features, gpb);
 	AddUtilityVertexAttributes(gpb);
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -4293,8 +4303,8 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	ScopedGuard ps_guard([this, &ps]() { vkDestroyShaderModule(m_device, ps, nullptr); });
 
 	Vulkan::GraphicsPipelineBuilder gpb;
+	SetPipelineProvokingVertex(m_features, gpb);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
 	gpb.SetRenderPass(m_swap_chain_render_pass, 0);
 	gpb.AddVertexBuffer(0, sizeof(ImDrawVert), VK_VERTEX_INPUT_RATE_VERTEX);
 	gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, pos));
@@ -4706,7 +4716,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		return VK_NULL_HANDLE;
 
 	Vulkan::GraphicsPipelineBuilder gpb;
-	gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
+	SetPipelineProvokingVertex(m_features, gpb);
 
 	// Common state
 	gpb.SetPipelineLayout(m_tfx_pipeline_layout);
