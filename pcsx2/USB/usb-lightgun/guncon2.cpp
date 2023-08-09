@@ -536,14 +536,19 @@ namespace usb_lightgun
 				ImGuiManager::ClearSoftwareCursor(prev_pointer_index);
 
 			// Pointer changed, so need to update software cursor.
-			if (!cursor_path.empty())
-				ImGuiManager::SetSoftwareCursor(new_pointer_index, cursor_path, cursor_scale, cursor_color);
-			else if (!s->cursor_path.empty())
-				ImGuiManager::ClearSoftwareCursor(new_pointer_index);
-
+			const bool had_software_cursor = !s->cursor_path.empty();
 			s->cursor_path = std::move(cursor_path);
 			s->cursor_scale = cursor_scale;
 			s->cursor_color = cursor_color;
+			if (!s->cursor_path.empty())
+			{
+				ImGuiManager::SetSoftwareCursor(new_pointer_index, s->cursor_path, s->cursor_scale, s->cursor_color);
+				s->UpdateSoftwarePointerPosition();
+			}
+			else if (had_software_cursor)
+			{
+				ImGuiManager::ClearSoftwareCursor(new_pointer_index);
+			}
 		}
 	}
 
