@@ -601,9 +601,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::SkipDrawEnd:
 			return (config.SkipDrawEnd == value);
 
-		case GSHWFixId::HalfBottomOverride:
-			return (config.UserHacks_HalfBottomOverride == value);
-
 		case GSHWFixId::HalfPixelOffset:
 			return (config.UpscaleMultiplier <= 1.0f || config.UserHacks_HalfPixelOffset == value);
 
@@ -780,10 +777,6 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::SkipDrawEnd:
 				config.SkipDrawEnd = value;
-				break;
-
-			case GSHWFixId::HalfBottomOverride:
-				config.UserHacks_HalfBottomOverride = value;
 				break;
 
 			case GSHWFixId::HalfPixelOffset:
