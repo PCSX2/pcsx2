@@ -138,9 +138,10 @@ bool ImGuiManager::Initialize()
 	io.BackendUsingLegacyNavInputArray = 0;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
+	s_window_width = static_cast<float>(g_gs_device->GetWindowWidth());
+	s_window_height = static_cast<float>(g_gs_device->GetWindowHeight());
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
-	io.DisplaySize.x = static_cast<float>(g_gs_device->GetWindowWidth());
-	io.DisplaySize.y = static_cast<float>(g_gs_device->GetWindowHeight());
+	io.DisplaySize = ImVec2(s_window_width, s_window_height);
 
 	SetKeyMap();
 	SetStyle();
@@ -656,7 +657,7 @@ void ImGuiManager::DrawOSDMessages()
 	const float margin = std::ceil(10.0f * scale);
 	const float padding = std::ceil(8.0f * scale);
 	const float rounding = std::ceil(5.0f * scale);
-	const float max_width = ImGui::GetIO().DisplaySize.x - (margin + padding) * 2.0f;
+	const float max_width = s_window_width - (margin + padding) * 2.0f;
 	float position_x = margin;
 	float position_y = margin;
 
@@ -679,7 +680,7 @@ void ImGuiManager::DrawOSDMessages()
 		const float opacity = std::min(time_remaining, 1.0f);
 		const u32 alpha = static_cast<u32>(opacity * 255.0f);
 
-		if (position_y >= ImGui::GetIO().DisplaySize.y)
+		if (position_y >= s_window_height)
 			break;
 
 		const ImVec2 pos(position_x, position_y);
