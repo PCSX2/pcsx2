@@ -787,25 +787,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="halfScreenFix">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Disabled</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Enabled</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_36">
          <property name="text">
