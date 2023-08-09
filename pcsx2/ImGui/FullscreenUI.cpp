@@ -3232,8 +3232,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			static constexpr const char* s_auto_flush_options[] = {
 				"Disabled (Default)", "Enabled (Sprites Only)", "Enabled (All Primitives)"};
 
-			DrawIntListSetting(bsi, "Half-Bottom Override", "Control the half-screen fix detection on texture shuffling.", "EmuCore/GS",
-				"UserHacks_Half_Bottom_Override", -1, s_generic_options, std::size(s_generic_options), -1);
 			DrawIntListSetting(bsi, "CPU Sprite Render Size", "Uses software renderer to draw texture decompression-like sprites.",
 				"EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0, s_cpu_sprite_render_bw_options, std::size(s_cpu_sprite_render_bw_options));
 			DrawIntListSetting(bsi, "CPU Sprite Render Level", "Determines filter level for CPU sprite render.", "EmuCore/GS",

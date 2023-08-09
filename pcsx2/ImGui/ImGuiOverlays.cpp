@@ -390,8 +390,6 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("AF={} ", EmuConfig.GS.MaxAnisotropy);
 		if (GSConfig.Dithering != 2)
 			APPEND("DI={} ", GSConfig.Dithering);
-		if (GSConfig.UserHacks_HalfBottomOverride >= 0)
-			APPEND("HBO={} ", GSConfig.UserHacks_HalfBottomOverride);
 		if (GSConfig.UserHacks_HalfPixelOffset > 0)
 			APPEND("HPO={} ", GSConfig.UserHacks_HalfPixelOffset);
 		if (GSConfig.UserHacks_RoundSprite > 0)
