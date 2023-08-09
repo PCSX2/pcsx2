@@ -52,6 +52,7 @@
 #define PS_POINT_SAMPLER 0
 #define PS_REGION_RECT 0
 #define PS_SHUFFLE 0
+#define PS_SHUFFLE_SAME 0
 #define PS_READ_BA 0
 #define PS_READ16_SRC 0
 #define PS_DFMT 0
@@ -940,8 +941,22 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	{
 		uint4 denorm_c = uint4(C);
 		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
-		
-		if (PS_READ16_SRC)
+
+		// Special case for 32bit input and 16bit output, shuffle used by The Godfather.
+		if (PS_SHUFFLE_SAME)
+		{
+			if (PS_READ_BA)
+			{
+				C.ga = (float2)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+				C.rb = C.ga;
+			}
+			else
+			{
+				C.ga = C.rg;
+				C.rb = C.ga;
+			}
+		}
+		else if (PS_READ16_SRC)
 		{
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
 			if (denorm_c.a & 0x80u)
