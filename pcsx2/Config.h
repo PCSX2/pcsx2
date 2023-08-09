@@ -765,7 +765,6 @@ struct Pcsx2Config
 		int SkipDrawEnd = 0;
 
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
-		s8 UserHacks_HalfBottomOverride = -1;
 		s8 UserHacks_HalfPixelOffset = 0;
 		s8 UserHacks_RoundSprite = 0;
 		s32 UserHacks_TCOffsetX = 0;
