@@ -119,209 +119,261 @@
     </message>
     <message>
         <location filename="../Settings/AchievementSettingsWidget.ui" line="38"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="45"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="70"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="80"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="75"/>
         <source>Show Challenge Indicators</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="52"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="59"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="45"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="64"/>
         <source>Enable RA&apos;s Rich Presence</source>
         <extracomment>This &quot;Rich Presence&quot; is not Discord&apos;s, but rather RetroAchivements own system.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="59"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="52"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="66"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="66"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="63"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="59"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="68"/>
         <source>Enable Leaderboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="73"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
         <source>Test Unofficial Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="80"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="87"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="58"/>
         <source>Enable Test Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="87"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="68"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="73"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="73"/>
         <source>Enable Sound Effects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="94"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="66"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="97"/>
+        <source>Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="71"/>
         <source>Show Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="104"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="124"/>
+        <source>Duration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="159"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="79"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="81"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="83"/>
+        <source>5 seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="171"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="119"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="161"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="186"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="180"/>
         <source>Login...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="126"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="193"/>
         <source>View Profile...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="144"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="211"/>
         <source>Game Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="160"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="227"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="51"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
+        <source> seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="59"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="58"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="64"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="66"/>
         <source>Unchecked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="52"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
         <source>When enabled and logged in, PCSX2 will scan for achievements on game load.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="59"/>
         <source>When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="62"/>
         <source>When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="60"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="65"/>
         <source>When enabled, rich presence information will be collected and sent to the RetroAchievements servers where supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="62"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="67"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="63"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="66"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="68"/>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="70"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="71"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="73"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="75"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="64"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="69"/>
         <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="67"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="72"/>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="69"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="74"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="71"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="76"/>
         <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="133"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="78"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="80"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="82"/>
+        <source>Notification Duration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="79"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="81"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="83"/>
+        <source>The duration, in seconds, an achievement popup notification will remain on screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="152"/>
         <source>Reset System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="134"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="153"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="153"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="172"/>
         <source>Username: %1
 Login token generated on %2.</source>
         <extracomment>Variable %1 is an username, variable %2 is a timestamp.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="156"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="175"/>
         <source>Logout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.cpp" line="160"/>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="179"/>
         <source>Not Logged In.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/AchievementSettingsWidget.cpp" line="221"/>
+        <source>%1 seconds</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="642"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="560"/>
+        <source>Hardcore mode will be enabled on system reset.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Achievements.cpp" line="595"/>
+        <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Achievements.cpp" line="649"/>
         <source>Hardcore mode is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="642"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="650"/>
         <source>Hardcore mode is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1093"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1103"/>
         <source> (Hardcore Mode)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1098"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1108"/>
         <source>You have earned {0} of {1} achievements, and {2} of {3} points.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1103"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1113"/>
         <source>This game has no achievements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1109"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1119"/>
         <source>Leaderboard submission is enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1506"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1516"/>
         <source>Failed to read executable from disc. Achievements disabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1537,29 +1589,29 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="200"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="207"/>
         <source>No devices available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="210"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="217"/>
         <source>Clear Bindings</source>
         <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="212"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="219"/>
         <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
         <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="241"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="248"/>
         <source>Automatic Binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="242"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="249"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1792,17 +1844,17 @@ Login token generated on %2.</source>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="709"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="716"/>
         <source>Restore Default Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="681"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="688"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="685"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="692"/>
         <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2018,33 +2070,33 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="390"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="397"/>
         <source>Not Configured</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="395"/>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="400"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="402"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="414"/>
         <source>Set Frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="407"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="414"/>
         <source>Frequency: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="434"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="441"/>
         <source>Macro will not repeat.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="436"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="443"/>
         <source>Macro will toggle buttons every %1 frames.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2052,12 +2104,12 @@ Login token generated on %2.</source>
 <context>
     <name>ControllerMacroWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="280"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="287"/>
         <source>Controller Port %1 Macros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="289"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="296"/>
         <source>Macro %1
 %2</source>
         <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -3691,52 +3743,52 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="992"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="991"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="435"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="444"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="447"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="456"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="454"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="463"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="525"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="534"/>
         <source>Host GPU device encountered an error and was recovered. This may have broken rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="627"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="636"/>
         <source>CAS is not available, your graphics driver does not support the required functionality.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="702"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="711"/>
         <source>Saving {0} GS dump {1} to &apos;{2}&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="723"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="732"/>
         <source>Failed to render/download screenshot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="734"/>
+        <location filename="../../pcsx2/GS/Renderers/Common/GSRenderer.cpp" line="743"/>
         <source>Saved GS dump to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/HW/GSRendererHW.cpp" line="151"/>
+        <location filename="../../pcsx2/GS/Renderers/HW/GSRendererHW.cpp" line="144"/>
         <source>Hash cache has used {:.2f} MB of VRAM, disabling.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4037,67 +4089,81 @@ graphical quality, but this will increase system requirements.</source>
     </message>
     <message>
         <location filename="../Settings/GameListSettingsWidget.ui" line="60"/>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="132"/>
-        <source>Add</source>
+        <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="77"/>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="149"/>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="173"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="80"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="178"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="174"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="91"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="97"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="96"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="102"/>
         <source>Scan Recursively</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="106"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="112"/>
         <source>Excluded Paths (will not be scanned)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="186"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="138"/>
+        <source>Directory...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="158"/>
+        <source>File...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="218"/>
         <source>Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="203"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="235"/>
         <source>Rescan All Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="175"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="176"/>
         <source>Open Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="184"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="185"/>
         <source>Select Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="190"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="191"/>
         <source>Scan Recursively?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="191"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="192"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="221"/>
-        <source>Select Path</source>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="222"/>
+        <source>Select File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="232"/>
+        <source>Select Directory</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6732,129 +6798,129 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1000"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1008"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1028"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1035"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1056"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1075"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1138"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="999"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1007"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1027"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1043"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1049"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1055"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1074"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1097"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1125"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1151"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1001"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1000"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1008"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1007"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1028"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1027"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1035"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1045"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1056"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1071"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1070"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1075"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1074"/>
         <source>Cycle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1087"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
         <source>Hardware mipmapping set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1097"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1120"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1125"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1132"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1133"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1132"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1138"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1146"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1145"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1146"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1159"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1165"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1164"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8614,7 +8680,7 @@ The saves will not be recoverable.</source>
     <name>MemoryCard</name>
     <message>
         <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="541"/>
-        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2357"/>
+        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2358"/>
         <source>Memory Card &apos;{}&apos; was saved to storage.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9505,7 +9571,7 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="570"/>
+        <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="548"/>
         <source>Controller port {}, slot {} has a {} connected, but the save state has a {}.
 Leaving the original controller type connected, but this may cause issues.</source>
         <translation type="unfinished"></translation>
@@ -9839,7 +9905,7 @@ Otherwise delete the savestate and do a fresh boot.</source>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="770"/>
         <location filename="../SettingWidgetBinder.h" line="410"/>
         <location filename="../SettingWidgetBinder.h" line="538"/>
-        <location filename="../SettingWidgetBinder.h" line="1102"/>
+        <location filename="../SettingWidgetBinder.h" line="1107"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10196,83 +10262,83 @@ Otherwise delete the savestate and do a fresh boot.</source>
     </message>
     <message>
         <location filename="../SetupWizardDialog.ui" line="374"/>
-        <source>Add</source>
+        <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="391"/>
+        <location filename="../SetupWizardDialog.ui" line="394"/>
         <location filename="../SetupWizardDialog.cpp" line="297"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="405"/>
+        <location filename="../SetupWizardDialog.ui" line="411"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="410"/>
+        <location filename="../SetupWizardDialog.ui" line="416"/>
         <source>Scan Recursively</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="437"/>
+        <location filename="../SetupWizardDialog.ui" line="443"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, PCSX2 will map your keyboard to the virtual PS2 controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="447"/>
+        <location filename="../SetupWizardDialog.ui" line="453"/>
         <source>Controller Port 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="456"/>
-        <location filename="../SetupWizardDialog.ui" line="527"/>
+        <location filename="../SetupWizardDialog.ui" line="462"/>
+        <location filename="../SetupWizardDialog.ui" line="533"/>
         <source>Controller Mapped To:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="463"/>
-        <location filename="../SetupWizardDialog.ui" line="517"/>
+        <location filename="../SetupWizardDialog.ui" line="469"/>
+        <location filename="../SetupWizardDialog.ui" line="523"/>
         <source>Controller Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="472"/>
-        <location filename="../SetupWizardDialog.ui" line="536"/>
+        <location filename="../SetupWizardDialog.ui" line="478"/>
+        <location filename="../SetupWizardDialog.ui" line="542"/>
         <location filename="../SetupWizardDialog.cpp" line="422"/>
         <source>Default (Keyboard)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="492"/>
-        <location filename="../SetupWizardDialog.ui" line="556"/>
+        <location filename="../SetupWizardDialog.ui" line="498"/>
+        <location filename="../SetupWizardDialog.ui" line="562"/>
         <source>Automatic Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="511"/>
+        <location filename="../SetupWizardDialog.ui" line="517"/>
         <source>Controller Port 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="604"/>
+        <location filename="../SetupWizardDialog.ui" line="610"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using PCSX2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="639"/>
+        <location filename="../SetupWizardDialog.ui" line="645"/>
         <source>&amp;Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="646"/>
+        <location filename="../SetupWizardDialog.ui" line="652"/>
         <location filename="../SetupWizardDialog.cpp" line="154"/>
         <source>&amp;Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="656"/>
+        <location filename="../SetupWizardDialog.ui" line="662"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11551,12 +11617,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>USBBindingWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1175"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1182"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1203"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1210"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11876,32 +11942,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="915"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="922"/>
         <source>USB Port %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1056"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1063"/>
         <source>No devices available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1065"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1072"/>
         <source>Clear Bindings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1066"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1073"/>
         <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1095"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1102"/>
         <source>Automatic Binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1096"/>
+        <location filename="../Settings/ControllerBindingWidgets.cpp" line="1103"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11909,12 +11975,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1576"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1580"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1561"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1565"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11945,197 +12011,197 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1608"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1612"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1615"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1619"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1702"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1706"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1715"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1719"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1732"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1736"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1794"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1798"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1800"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1804"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1807"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1811"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1815"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1819"/>
         <source>Failed to switch back to old disc image. Removing disc.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2251"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2255"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2305"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2309"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2309"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2313"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2314"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2318"/>
         <source>Audio is using async mix, expect desynchronization in FMVs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2317"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2321"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2321"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2325"/>
         <source>Mipmapping is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2326"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2330"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2332"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2336"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2338"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2342"/>
         <source>Blending is below basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2343"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2347"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2349"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2353"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2355"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2359"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2361"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2365"/>
         <source>VU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2368"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2372"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2373"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2377"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2378"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2382"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2382"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2386"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2384"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2388"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2403"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2407"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2408"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2412"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2413"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2417"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2418"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2422"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2423"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2427"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2428"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2432"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2433"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2437"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2438"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2442"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2443"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2447"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2448"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2452"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2453"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2457"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2458"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2462"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
