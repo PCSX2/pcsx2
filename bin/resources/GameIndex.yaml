@@ -5011,6 +5011,8 @@ SCES-53285:
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
+  gameFixes:
+    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -9802,6 +9804,8 @@ SCUS-97429:
   name: "Jak X - Combat Racing"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -10084,6 +10088,8 @@ SCUS-97485:
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -10107,6 +10113,8 @@ SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -10432,6 +10440,8 @@ SCUS-97572:
 SCUS-97574:
   name: "Jak X - Combat Racing [Greatest Hits]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -57884,6 +57894,8 @@ TCES-53286:
   name: "Jak X Beta Trial Code"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
