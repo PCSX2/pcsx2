@@ -1088,7 +1088,7 @@ void MTSAH( std::string& output )   { _sap("mtsah\t%s, 0x%04X") GPR_REG[DECODE_R
 
 
 //***************************SPECIAL 2 CPU OPCODES*******************
-const char* pmfhl_sub[] = { "lw", "uw", "slw", "lh", "sh" };
+const char* pmfhl_sub[] = {"lw", "uw", "slw", "lh", "sh", "??", "??"};
 
 void MADD( std::string& output )    { _sap("madd\t%s, %s %s")        GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void MADDU( std::string& output )   { _sap("maddu\t%s, %s %s")       GPR_REG[DECODE_RD],GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
@@ -1104,8 +1104,8 @@ void MULTU1( std::string& output )  { _sap("multu1\t%s, %s, %s")        GPR_REG[
 void DIV1( std::string& output )    { _sap("div1\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void DIVU1( std::string& output )   { _sap("divu1\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 //that have parametres that i haven't figure out how to display...
-void PMFHL( std::string& output )   { _sap("pmfhl.%s \t%s")          pmfhl_sub[DECODE_SA], GPR_REG[DECODE_RD]); }
-void PMTHL( std::string& output )   { _sap("pmthl.%s \t%s")          pmfhl_sub[DECODE_SA], GPR_REG[DECODE_RS]); }
+void PMFHL( std::string& output )   { _sap("pmfhl.%s \t%s")          pmfhl_sub[DECODE_SA & 0x7], GPR_REG[DECODE_RD]); }
+void PMTHL( std::string& output )   { _sap("pmthl.%s \t%s")          pmfhl_sub[DECODE_SA & 0x7], GPR_REG[DECODE_RS]); }
 void PSLLH( std::string& output )   { _sap("psllh   \t%s, %s, 0x%02X")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA); }
 void PSRLH( std::string& output )   { _sap("psrlh   \t%s, %s, 0x%02X")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA);}
 void PSRAH( std::string& output )   { _sap("psrah   \t%s, %s, 0x%02X")   GPR_REG[DECODE_RD], GPR_REG[DECODE_RT], DECODE_SA);}
