@@ -3042,6 +3042,8 @@ __forceinline void GSState::HandleAutoFlush()
 
 		GSVector4i tex_rect = tex_coord.xyxy();
 
+		const GSLocalMemory::psm_t tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+		const GSLocalMemory::psm_t frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
 		// Get the rest of the rect.
 		for (int i = 0; i < (n - 1); i++)
 		{
@@ -3069,16 +3071,9 @@ __forceinline void GSState::HandleAutoFlush()
 
 		// If the draw was 1 line thick, make it larger as rects are exclusive of ends.
 		if (tex_rect.x == tex_rect.z)
-			tex_rect += GSVector4i(0, 0, 1, 0);
+			tex_rect += GSVector4i::cxpr(0, 0, 1, 0);
 		if (tex_rect.y == tex_rect.w)
-			tex_rect += GSVector4i(0, 0, 0, 1);
-
-		const GSLocalMemory::psm_t tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
-		const GSLocalMemory::psm_t frame_psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
-
-		// Nothing being drawn intersect with the new texture, so no point in checking further.
-		if (tex_psm.depth == frame_psm.depth && tex_rect.rintersect(temp_draw_rect).rempty())
-			return;
+			tex_rect += GSVector4i::cxpr(0, 0, 0, 1);
 
 		// Get the last texture position from the last draw.
 		const GSVertex* v = &m_vertex.buff[m_index.buff[m_index.tail - (index_swap ? n : 1)]];
@@ -3097,11 +3092,65 @@ __forceinline void GSState::HandleAutoFlush()
 			tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
 		}
 
-		const int page_mask_x = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x - 1);
-		const int page_mask_y = ~(GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y - 1);
-		const GSVector4i page_mask = { page_mask_x, page_mask_y, page_mask_x, page_mask_y };
-		const GSVector4i last_tex_page = tex_coord.xyxy() & page_mask;
-		const GSVector4i tex_page = tex_rect.xyxy() & page_mask;
+		const int clamp_minu = m_context->CLAMP.MINU;
+		const int clamp_maxu = m_context->CLAMP.MAXU;
+		const int clamp_minv = m_context->CLAMP.MINV;
+		const int clamp_maxv = m_context->CLAMP.MAXV;
+
+		switch (m_context->CLAMP.WMS)
+		{
+			case CLAMP_REGION_CLAMP:
+				tex_rect.x = std::max(tex_rect.x, clamp_minu);
+				tex_rect.z = std::max(tex_rect.z, clamp_minu);
+				tex_coord.x = std::max(tex_coord.x, clamp_minu);
+				tex_rect.x = std::min(tex_rect.x, clamp_maxu);
+				tex_rect.z = std::min(tex_rect.z, clamp_maxu);
+				tex_coord.x = std::min(tex_coord.x, clamp_maxu);
+				break;
+
+			case CLAMP_REGION_REPEAT:
+				tex_rect.x = std::max(tex_rect.x, clamp_maxu);
+				tex_rect.z = std::max(tex_rect.z, clamp_maxu);
+				tex_coord.x = std::max(tex_coord.x, clamp_maxu);
+				tex_rect.x = std::min(tex_rect.x, (clamp_maxu | clamp_minu));
+				tex_rect.z = std::min(tex_rect.z, (clamp_maxu | clamp_minu));
+				tex_coord.x = std::min(tex_coord.x, (clamp_maxu | clamp_minu));
+				break;
+			default:
+				break;
+		}
+
+		switch (m_context->CLAMP.WMT)
+		{
+			case CLAMP_REGION_CLAMP:
+				tex_rect.y = std::max(tex_rect.y, clamp_minv);
+				tex_rect.w = std::max(tex_rect.w, clamp_minv);
+				tex_coord.y = std::max(tex_coord.y, clamp_minv);
+				tex_rect.y = std::min(tex_rect.y, clamp_maxv);
+				tex_rect.w = std::min(tex_rect.w, clamp_maxv);
+				tex_coord.y = std::min(tex_coord.y, clamp_maxv);
+				break;
+			case CLAMP_REGION_REPEAT:
+				tex_rect.y = std::max(tex_rect.y, clamp_maxv);
+				tex_rect.w = std::max(tex_rect.w, clamp_maxv);
+				tex_coord.y = std::max(tex_coord.y, clamp_maxv);
+				tex_rect.y = std::min(tex_rect.y, (clamp_maxv | clamp_minv));
+				tex_rect.w = std::min(tex_rect.w, (clamp_maxv | clamp_minv));
+				tex_coord.y = std::min(tex_coord.y, (clamp_maxv | clamp_minv));
+				break;
+			default:
+				break;
+		}
+
+		// Nothing being drawn intersect with the new texture, so no point in checking further.
+		if (tex_psm.depth == frame_psm.depth && tex_rect.rintersect(temp_draw_rect).rempty())
+			return;
+
+		const int tex_page_mask_x = ~(tex_psm.pgs.x - 1);
+		const int tex_page_mask_y = ~(tex_psm.pgs.y - 1);
+		const GSVector4i tex_page_mask = { tex_page_mask_x, tex_page_mask_y, tex_page_mask_x, tex_page_mask_y };
+		const GSVector4i last_tex_page = tex_coord.xyxy() & tex_page_mask;
+		const GSVector4i tex_page = tex_rect.xyxy() & tex_page_mask;
 
 		// Crossed page since last draw end
 		if (!tex_page.eq(last_tex_page) || m_texflush_flag)
@@ -3114,7 +3163,7 @@ __forceinline void GSState::HandleAutoFlush()
 			{
 				const GSVector2i offset = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 				const GSVector4i scissor = m_context->scissor.in;
-				GSVector4i old_tex_rect = GSVector4i::zero();
+				GSVector4i old_draw_rect = GSVector4i::zero();
 				int current_draw_end = m_index.tail;
 
 				while (current_draw_end >= n)
@@ -3148,24 +3197,24 @@ __forceinline void GSState::HandleAutoFlush()
 
 						if (i == (current_draw_end - 1))
 						{
-							old_tex_rect = tex_coord.xyxy();
+							old_draw_rect = tex_coord.xyxy();
 						}
 						else
 						{
-							old_tex_rect.x = std::min(old_tex_rect.x, tex_coord.x);
-							old_tex_rect.z = std::max(old_tex_rect.z, tex_coord.x);
-							old_tex_rect.y = std::min(old_tex_rect.y, tex_coord.y);
-							old_tex_rect.w = std::max(old_tex_rect.w, tex_coord.y);
+							old_draw_rect.x = std::min(old_draw_rect.x, tex_coord.x);
+							old_draw_rect.z = std::max(old_draw_rect.z, tex_coord.x);
+							old_draw_rect.y = std::min(old_draw_rect.y, tex_coord.y);
+							old_draw_rect.w = std::max(old_draw_rect.w, tex_coord.y);
 						}
 					}
 
-					if (old_tex_rect.x == old_tex_rect.z)
-						old_tex_rect += GSVector4i(0, 0, 1, 0);
-					if (old_tex_rect.y == old_tex_rect.w)
-						old_tex_rect += GSVector4i(0, 0, 0, 1);
+					if (old_draw_rect.x == old_draw_rect.z)
+						old_draw_rect += GSVector4i::cxpr(0, 0, 1, 0);
+					if (old_draw_rect.y == old_draw_rect.w)
+						old_draw_rect += GSVector4i::cxpr(0, 0, 0, 1);
 
-					old_tex_rect = tex_rect.rintersect(old_tex_rect);
-					if (!old_tex_rect.rintersect(scissor).rempty())
+					old_draw_rect = tex_rect.rintersect(old_draw_rect);
+					if (!old_draw_rect.rintersect(scissor).rempty())
 					{
 						Flush(GSFlushReason::AUTOFLUSH);
 						return;
@@ -3176,26 +3225,27 @@ __forceinline void GSState::HandleAutoFlush()
 			}
 			else // Storage of the TEX and FRAME/Z is different, so uhh, just fall back to flushing each page. It's slower, sorry.
 			{
-				if (m_context->FRAME.FBW == m_context->TEX0.TBW)
+				const int frame_width = (m_context->FRAME.FBW * 64) / frame_psm.pgs.x;
+				const int tex_width = (m_context->TEX0.TBW * 64) / tex_psm.pgs.x;
+				if ((frame_width == tex_width) || ((tex_rect.w / tex_psm.pgs.y) <= 1 && frame_width >= tex_width))
 				{
+					tex_rect += GSVector4i(0, 0, tex_page_mask.z, tex_page_mask.w); // round up to the next page as we will be comparing by page.
 					//We know we've changed page, so let's set the dimension to cover the page they're in (for different pixel orders)
-					tex_rect = tex_rect & page_mask;
-					tex_rect += GSVector4i(0, 0, 1, 1); // Intersect goes on space inside the rect
-					tex_rect.z += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x;
-					tex_rect.w += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y;
-
-					m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail - m_vertex.head, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
-
-					GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(m_context->scissor.in);
-					area_out = area_out & page_mask;
-					area_out += GSVector4i(0, 0, 1, 1); // Intersect goes on space inside the rect
-					area_out.z += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.x;
-					area_out.w += GSLocalMemory::m_psm[m_context->TEX0.PSM].pgs.y;
+					tex_rect &= tex_page_mask;
+					tex_rect = GSVector4i(tex_rect.x / tex_psm.pgs.x, tex_rect.y / tex_psm.pgs.y, tex_rect.z / tex_psm.pgs.x, tex_rect.w / tex_psm.pgs.y);
+					
+					const int frame_page_mask_x = ~(frame_psm.pgs.x - 1);
+					const int frame_page_mask_y = ~(frame_psm.pgs.y - 1);
+					const GSVector4i frame_page_mask = { frame_page_mask_x, frame_page_mask_y, frame_page_mask_x, frame_page_mask_y };
+					GSVector4i area_out = temp_draw_rect;
+					area_out += GSVector4i(0, 0, frame_page_mask.z, frame_page_mask.w); // round up to the next page as we will be comparing by page.
+					area_out &= frame_page_mask;
+					area_out = GSVector4i(area_out.x / frame_psm.pgs.x, area_out.y / frame_psm.pgs.y, area_out.z / frame_psm.pgs.x, area_out.w / frame_psm.pgs.y);
 
 					if (!area_out.rintersect(tex_rect).rempty())
 						Flush(GSFlushReason::AUTOFLUSH);
 				}
-				else // Page width is different, so it's much more difficult to calculate where it's modifying.
+				else // Formats are too different so just flush it.
 					Flush(GSFlushReason::AUTOFLUSH);
 			}
 		}
