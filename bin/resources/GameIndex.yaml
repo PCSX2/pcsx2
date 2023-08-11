@@ -10906,6 +10906,8 @@ SLAJ-25080:
   name: "Godfather, The"
   region: "NTSC-Unk"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLAJ-25081:
@@ -21423,6 +21425,8 @@ SLES-53967:
   name: "Godfather, The"
   region: "PAL-M6"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53968:
@@ -21441,12 +21445,16 @@ SLES-53970:
   name: "Padrino, Il"
   region: "PAL-I"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53971:
   name: "Padrino, El"
   region: "PAL-S"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLES-53972:
@@ -27520,6 +27528,8 @@ SLKA-25338:
   name: "Godfather, The"
   region: "NTSC-K"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLKA-25339:
@@ -39053,6 +39063,8 @@ SLPM-66710:
   name: "Godfather, The"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLPM-66712:
@@ -39994,6 +40006,8 @@ SLPM-66966:
   name: "Godfather, The [EA-SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLPM-66967:
@@ -54169,6 +54183,8 @@ SLUS-21385:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLUS-21386:
@@ -54283,6 +54299,8 @@ SLUS-21406:
   name: "Godfather, The - Collector's Edition"
   region: "NTSC-U"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post processing.
 SLUS-21407:
