@@ -352,7 +352,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 	int tex_pos = (PRIM->FST) ? first_vert.U : static_cast<int>(tw * first_vert.ST.S);
 	tex_pos &= 0xFF;
 	// "same group" means it can read blue and write alpha using C32 tricks
-	read_ba = (tex_pos > 112 && tex_pos < 144) || (m_same_group_texture_shuffle && (m_cached_ctx.FRAME.FBMSK & 0xFFFF0000) != 0xFFFF00000);
+	read_ba = (tex_pos > 112 && tex_pos < 144) || (m_same_group_texture_shuffle && (m_cached_ctx.FRAME.FBMSK & 0xFFFF0000) != 0xFFFF0000);
 
 	// Another way of selecting whether to read RG/BA is to use region repeat.
 	// Ace Combat 04 reads RG, writes to RGBA by setting a MINU of 1015.
