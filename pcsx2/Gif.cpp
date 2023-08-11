@@ -329,7 +329,7 @@ static u32 WRITERING_DMA(u32* pMem, u32 qwc)
 		// so we can get away with transferring "most" of it when it's a big packet.
 		// Use Wallace and Gromit Project Zoo or The Suffering for testing
 		if (qwc > 64)
-			qwc = qwc - 64;
+			qwc = qwc * 0.5f;
 		else
 			qwc = std::min(qwc, 8u);
 	}
