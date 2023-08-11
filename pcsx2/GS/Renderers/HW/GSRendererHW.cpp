@@ -3510,11 +3510,20 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.fixed_one_a = 1;
 		m_conf.ps.blend_c = 0;
 	}
-	// 24 bits doesn't have an alpha channel so use 128 (1.0f) fix factor as equivalent.
-	else if (m_conf.ps.dfmt == 1 && m_conf.ps.blend_c == 1)
+	else if (m_conf.ps.blend_c == 1)
 	{
-		AFIX = 128;
-		m_conf.ps.blend_c = 2;
+		// When both rt alpha min and max are equal replace Ad with Af, easier to manage.
+		if (rt_alpha_min == rt_alpha_max)
+		{
+			AFIX = rt_alpha_min;
+			m_conf.ps.blend_c = 2;
+		}
+		// 24 bits doesn't have an alpha channel so use 128 (1.0f) fix factor as equivalent.
+		else if (m_conf.ps.dfmt == 1)
+		{
+			AFIX = 128;
+			m_conf.ps.blend_c = 2;
+		}
 	}
 
 	// Get alpha value
@@ -3522,12 +3531,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	const bool alpha_c0_one = (m_conf.ps.blend_c == 0 && (GetAlphaMinMax().min == 128) && (GetAlphaMinMax().max == 128));
 	const bool alpha_c0_high_min_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().min > 128);
 	const bool alpha_c0_high_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max > 128);
-	const bool alpha_c1_zero = (m_conf.ps.blend_c == 1 && rt_alpha_min == 0 && rt_alpha_max == 0);
-	const bool alpha_c1_one = (m_conf.ps.blend_c == 1 && rt_alpha_min == 128 && rt_alpha_max == 128);
 	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && AFIX == 0u);
 	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && AFIX == 128u);
 	const bool alpha_c2_high_one = (m_conf.ps.blend_c == 2 && AFIX > 128u);
-	const bool alpha_one = alpha_c0_one || alpha_c1_one || alpha_c2_one;
+	const bool alpha_one = alpha_c0_one || alpha_c2_one;
 
 	// Optimize blending equations, must be done before index calculation
 	if ((m_conf.ps.blend_a == m_conf.ps.blend_b) || ((m_conf.ps.blend_b == m_conf.ps.blend_d) && alpha_one))
@@ -3546,7 +3553,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_c = 0;
 	}
-	else if (alpha_c0_zero || alpha_c1_zero || alpha_c2_zero)
+	else if (alpha_c0_zero || alpha_c2_zero)
 	{
 		// C == 0.0f
 		// (A - B) * C, result will be 0.0f so set A B to Cs

@@ -779,17 +779,19 @@ float As = As_rgba.a;
 		return;
 #endif
 
-	vec3 Cs = Color.rgb;
-
 #if SW_BLEND_NEEDS_RT
 	vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
+#else
+	// Not used, but we define it to make the selection below simpler.
+	vec4 RT = vec4(0.0f);
+#endif
 	// FIXME FMT_16 case
 	// FIXME Ad or Ad * 2?
 	float Ad = RT.a / 128.0f;
 
 	// Let the compiler do its jobs !
 	vec3 Cd = RT.rgb;
-#endif
+	vec3 Cs = Color.rgb;
 
 #if PS_BLEND_A == 0
 	vec3 A = Cs;
