@@ -62,9 +62,9 @@ SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterfac
 	std::string serial, u32 disc_crc, QString filename)
 	: QDialog(parent)
 	, m_sif(std::move(sif))
+	, m_filename(std::move(filename))
 	, m_serial(std::move(serial))
 	, m_disc_crc(disc_crc)
-	, m_filename(std::move(filename))
 {
 	setupUi(game);
 
