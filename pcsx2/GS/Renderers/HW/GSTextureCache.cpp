@@ -1344,7 +1344,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// if It's an old target and it's being completely overwritten, kill it.
 				if (!preserve_rgb && !preserve_alpha && TEX0.TBW != t->m_TEX0.TBW && TEX0.TBW > 1 && t->m_age >= 1)
 				{
-					GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to width change to %d", t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, TEX0.TBW);
+					GL_INS("TC: Deleting RT BP 0x%x BW %d PSM %s due to width change to %d", t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM), TEX0.TBW);
 					InvalidateSourcesFromTarget(t);
 					i = list.erase(i);
 					delete t;
