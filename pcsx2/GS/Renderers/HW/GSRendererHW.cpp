@@ -3466,21 +3466,23 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 
 void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass)
 {
-	// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
-	// it requires coverage sample so it's safer to turn it off instead.
-	const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
-	// PABE: Check condition early as an optimization.
-	const bool PABE = PRIM->ABE && m_draw_env->PABE.PABE && (GetAlphaMinMax().max < 128);
-	// FBMASK: Color is not written, no need to do blending.
-	const u32 temp_fbmask = m_conf.ps.dfmt == 2 ? 0x00F8F8F8 : 0x00FFFFFF;
-	const bool FBMASK = (m_cached_ctx.FRAME.FBMSK & temp_fbmask) == temp_fbmask;
-
-	// No blending or coverage anti-aliasing so early exit
-	if (FBMASK || PABE || !(PRIM->ABE || AA1))
 	{
-		m_conf.blend = {};
-		m_conf.ps.no_color1 = true;
-		return;
+		// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
+		// it requires coverage sample so it's safer to turn it off instead.
+		const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
+		// PABE: Check condition early as an optimization.
+		const bool PABE = PRIM->ABE && m_draw_env->PABE.PABE && (GetAlphaMinMax().max < 128);
+		// FBMASK: Color is not written, no need to do blending.
+		const u32 temp_fbmask = m_conf.ps.dfmt == 2 ? 0x00F8F8F8 : 0x00FFFFFF;
+		const bool FBMASK = (m_cached_ctx.FRAME.FBMSK & temp_fbmask) == temp_fbmask;
+
+		// No blending or coverage anti-aliasing so early exit
+		if (FBMASK || PABE || !(PRIM->ABE || AA1))
+		{
+			m_conf.blend = {};
+			m_conf.ps.no_color1 = true;
+			return;
+		}
 	}
 
 	// Compute the blending equation to detect special case
@@ -4024,7 +4026,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			m_conf.ps.blend_hw = 1;
 		}
-		else if (blend_flag & (BLEND_HW_CLR2))
+		else if (blend_flag & BLEND_HW_CLR2)
 		{
 			if (m_conf.ps.blend_c == 2)
 				m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
