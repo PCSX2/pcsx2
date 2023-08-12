@@ -11092,6 +11092,7 @@ SLED-51211:
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
     autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
+    halfPixelOffset: 2 # Aligns bloom effect a little bit better when upscaled.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLED-51212:
@@ -14061,6 +14062,7 @@ SLES-51044:
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
     autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
+    halfPixelOffset: 2 # Aligns bloom effect a little bit better when upscaled.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLES-51045:
@@ -18628,6 +18630,7 @@ SLES-52968:
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
     autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
+    halfPixelOffset: 2 # Aligns bloom effect a little bit better when upscaled.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLES-52973:
@@ -26412,6 +26415,7 @@ SLKA-25039:
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
     autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
+    halfPixelOffset: 2 # Aligns bloom effect a little bit better when upscaled.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLKA-25041:
@@ -44023,6 +44027,7 @@ SLPS-25351:
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
     autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
+    halfPixelOffset: 2 # Aligns bloom effect a little bit better when upscaled.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLPS-25352:
@@ -49322,6 +49327,7 @@ SLUS-20497:
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
     autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
+    halfPixelOffset: 2 # Aligns bloom effect a little bit better when upscaled.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLUS-20498:
