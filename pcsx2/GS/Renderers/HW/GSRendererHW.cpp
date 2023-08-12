@@ -2345,7 +2345,7 @@ void GSRendererHW::Draw()
 		{
 			// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
 			// Initially code also tested the RT but it gives too much false-positive
-			const int first_x = (v[0].XYZ.X + 8) >> 4;
+			const int first_x = ((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8) >> 4;
 			const int first_u = PRIM->FST ? ((v[0].U + 8) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[0].ST.S / v[1].RGBAQ.Q)) + 0.5f);
 			const bool shuffle_coords = (first_x ^ first_u) & 8;
 			const u32 draw_end = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r) + 1;
