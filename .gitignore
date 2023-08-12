@@ -44,6 +44,7 @@ Thumbs.db
 Debug.txt
 install_log.txt
 bad_shader_*
+crash-*.txt
 
 Debug
 Release
