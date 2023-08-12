@@ -60,11 +60,6 @@ void PadNotConnected::SetAxisScale(float deadzone, float scale)
 
 }
 
-void PadNotConnected::SetTriggerScale(float deadzone, float scale)
-{
-
-}
-
 float PadNotConnected::GetVibrationScale(u32 motor) const
 {
 	return 0;

@@ -337,11 +337,6 @@ void PadGuitar::SetAxisScale(float deadzone, float scale)
 	this->whammyAxisScale = scale;
 }
 
-void PadGuitar::SetTriggerScale(float deadzone, float scale)
-{
-
-}
-
 float PadGuitar::GetVibrationScale(u32 motor) const
 {
 	return 0;
