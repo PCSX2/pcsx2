@@ -1828,7 +1828,7 @@ void GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 			auto j = i;
 			Target* t = *j;
 
-			if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM)
+			if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->m_TEX0.TBW > 4)
 				if(t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid))
 				{
 					// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
