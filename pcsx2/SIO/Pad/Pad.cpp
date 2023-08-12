@@ -109,11 +109,8 @@ void Pad::LoadConfig(const SettingsInterface& si)
 
 		const float axis_deadzone = si.GetFloatValue(section.c_str(), "Deadzone", Pad::DEFAULT_STICK_DEADZONE);
 		const float axis_scale = si.GetFloatValue(section.c_str(), "AxisScale", Pad::DEFAULT_STICK_SCALE);
-		const float trigger_deadzone = si.GetFloatValue(section.c_str(), "TriggerDeadzone", Pad::DEFAULT_TRIGGER_DEADZONE);
-		const float trigger_scale = si.GetFloatValue(section.c_str(), "TriggerScale", Pad::DEFAULT_TRIGGER_SCALE);
 		const float button_deadzone = si.GetFloatValue(section.c_str(), "ButtonDeadzone", Pad::DEFAULT_BUTTON_DEADZONE);
 		pad->SetAxisScale(axis_deadzone, axis_scale);
-		pad->SetTriggerScale(trigger_deadzone, trigger_scale);
 		pad->SetButtonDeadzone(button_deadzone);
 
 		if (ci->vibration_caps != Pad::VibrationCapabilities::NoVibration)

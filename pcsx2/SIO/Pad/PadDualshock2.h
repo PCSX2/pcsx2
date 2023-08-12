@@ -88,8 +88,6 @@ private:
 	std::array<u8, VIBRATION_MOTORS> vibrationMotors;
 	float axisScale;
 	float axisDeadzone;
-	float triggerScale;
-	float triggerDeadzone;
 	std::array<float, 2> vibrationScale;
 	// When the pressure modifier binding is activated, this is multiplied against
 	// all values in pressures, to artificially reduce pressures and give players
@@ -133,7 +131,6 @@ public:
 	void Set(u32 index, float value) override;
 	void SetRawAnalogs(const std::tuple<u8, u8> left, const std::tuple<u8, u8> right) override;
 	void SetAxisScale(float deadzone, float scale) override;
-	void SetTriggerScale(float deadzone, float scale) override;
 	float GetVibrationScale(u32 motor) const override;
 	void SetVibrationScale(u32 motor, float scale) override;
 	float GetPressureModifier() const override;
