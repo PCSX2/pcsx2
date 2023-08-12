@@ -11091,7 +11091,7 @@ SLED-51211:
   region: "PAL-E"
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
-    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.  
+    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLED-51212:
@@ -14060,7 +14060,7 @@ SLES-51044:
   compat: 5
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
-    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.  
+    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLES-51045:
@@ -18627,7 +18627,7 @@ SLES-52968:
   compat: 5
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
-    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.  
+    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLES-52973:
@@ -26411,7 +26411,7 @@ SLKA-25039:
   region: "NTSC-K"
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
-    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.  
+    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLKA-25041:
@@ -44022,7 +44022,7 @@ SLPS-25351:
   region: "NTSC-J"
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
-    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.  
+    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLPS-25352:
@@ -49321,7 +49321,7 @@ SLUS-20497:
   compat: 5
   gsHWFixes:
     gpuTargetCLUT: 1 # Fixes bloom and sun rendering in front of everything.
-    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.  
+    autoFlush: 1 # Fixes bloom and sun rendering in front of everything.
   roundModes:
     vu1RoundMode: 1 # Bright lights in cars.
 SLUS-20498:
