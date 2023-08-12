@@ -479,7 +479,7 @@ namespace usb_pad
 		static constexpr const SettingInfo info[] = {
 			{SettingInfo::Type::Float, "TurntableMultiplier", TRANSLATE_NOOP("USB", "Turntable Multiplier"),
 				TRANSLATE_NOOP("USB", "Apply a multiplier to the turntable"),
-				"0.00", "0.00", "100.0", "1.0", "%.0fx", nullptr, nullptr, 1.0f}};
+				"1.00", "0.00", "100.0", "1.0", "%.0fx", nullptr, nullptr, 1.0f}};
 
 		return info;
 	}
