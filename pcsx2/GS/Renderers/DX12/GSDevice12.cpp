@@ -36,6 +36,13 @@
 #include <sstream>
 #include <limits>
 
+#ifdef ENABLE_OGL_DEBUG
+#define USE_PIX
+#include "WinPixEventRuntime/pix3.h"
+
+static u32 s_debug_scope_depth = 0;
+#endif
+
 static bool IsDATMConvertShader(ShaderConvert i)
 {
 	return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1);
@@ -1108,16 +1115,79 @@ void GSDevice12::EndPresent()
 	InvalidateCachedState();
 }
 
+#ifdef ENABLE_OGL_DEBUG
+static UINT Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
+	const std::array<float, 3>& c, const std::array<float, 3>& d)
+{
+	std::array<float, 3> result;
+	result[0] = a[0] + b[0] * std::cos(6.28318f * (c[0] * phase + d[0]));
+	result[1] = a[1] + b[1] * std::cos(6.28318f * (c[1] * phase + d[1]));
+	result[2] = a[2] + b[2] * std::cos(6.28318f * (c[2] * phase + d[2]));
+	return PIX_COLOR(static_cast<BYTE>(result[0] * 255.0f),
+		static_cast<BYTE>(result[1] * 255.0f),
+		static_cast<BYTE>(result[2] * 255.0f));
+}
+#endif
+
 void GSDevice12::PushDebugGroup(const char* fmt, ...)
 {
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	const UINT color = Palette(
+		++s_debug_scope_depth, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
+
+	PIXBeginEvent(GetCommandList(), color, "%s", buf.c_str());
+#endif
 }
 
 void GSDevice12::PopDebugGroup()
 {
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	s_debug_scope_depth = (s_debug_scope_depth == 0) ? 0 : (s_debug_scope_depth - 1u);
+
+	PIXEndEvent(GetCommandList());
+#endif
 }
 
 void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
 {
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	if (buf.empty())
+		return;
+
+	static constexpr float colors[][3] = {
+		{0.1f, 0.1f, 0.0f}, // Cache
+		{0.1f, 0.1f, 0.0f}, // Reg
+		{0.5f, 0.0f, 0.5f}, // Debug
+		{0.0f, 0.5f, 0.5f}, // Message
+		{0.0f, 0.2f, 0.0f} // Performance
+	};
+
+	const float* fcolor = colors[static_cast<int>(category)];
+	const UINT color = PIX_COLOR(static_cast<BYTE>(fcolor[0] * 255.0f),
+		static_cast<BYTE>(fcolor[1] * 255.0f),
+		static_cast<BYTE>(fcolor[2] * 255.0f));
+
+	PIXSetMarker(GetCommandList(), color, "%s", buf.c_str());
+#endif
 }
 
 bool GSDevice12::CheckFeatures()
