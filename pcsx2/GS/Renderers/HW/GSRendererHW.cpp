@@ -2518,7 +2518,7 @@ void GSRendererHW::Draw()
 			rt->m_TEX0 = FRAME_TEX0;
 		}
 
-		if (ds && (!is_possible_mem_clear || ds->m_TEX0.PSM != ZBUF_TEX0.PSM))
+		if (ds && (!is_possible_mem_clear || ds->m_TEX0.PSM != ZBUF_TEX0.PSM || (rt && ds->m_TEX0.TBW != rt->m_TEX0.TBW)))
 			ds->m_TEX0 = ZBUF_TEX0;
 	}
 	else if (!m_texture_shuffle)
@@ -2781,12 +2781,6 @@ void GSRendererHW::Draw()
 
 	// Temporary source *must* be invalidated before normal, because otherwise it'll be double freed.
 	g_texture_cache->InvalidateTemporarySource();
-
-	// Set the RT format back to 32bits after the shuffle.
-	if (rt && m_texture_shuffle && rt->m_32_bits_fmt)
-	{
-		rt->m_TEX0.PSM = PSMCT32;
-	}
 
 	// Invalidation of old targets when changing to double-buffering.
 	if (old_rt)
