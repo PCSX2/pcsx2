@@ -1910,7 +1910,7 @@ SCAJ-25037:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 2 # Fixes flame bloom.
+    autoFlush: 1 # Fixes flame bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
 SCAJ-25045:
   name: "Sakura Taisen V - Episode 0"
@@ -10725,7 +10725,7 @@ SLAJ-25037:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 2 # Fixes flame bloom.
+    autoFlush: 1 # Fixes flame bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
 SLAJ-25039:
   name: "Beni no Umi 2"
@@ -17299,7 +17299,7 @@ SLES-52486:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 2 # Fixes flame bloom.
+    autoFlush: 1 # Fixes flame bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
 SLES-52490:
   name: "Dance UK - Extra Trax"
@@ -24669,8 +24669,11 @@ SLES-55170:
 SLES-55172:
   name: "Code Lyoko - Quest for Infinity"
   region: "PAL-M4"
+  gameFixes:
+    - FpuNegDivHack # Fixes missing texts on in-game textboxes.
   gsHWFixes:
     deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
+    halfPixelOffset: 1 # Reduces ghosting effects.
 SLES-55174:
   name: "NHL 08"
   region: "PAL-R"
@@ -26816,7 +26819,7 @@ SLKA-25159:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 2 # Fixes flame bloom.
+    autoFlush: 1 # Fixes flame bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
 SLKA-25160:
   name: "Shin Megami Tensei III - Nocturne Maniax"
@@ -34465,7 +34468,7 @@ SLPM-65551:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 2 # Fixes flame bloom.
+    autoFlush: 1 # Fixes flame bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
 SLPM-65552:
   name: "Metal Wolf Rev [Limited Edition]"
@@ -51157,7 +51160,7 @@ SLUS-20867:
   roundModes:
     eeRoundMode: 0 # Fixes character behaviour.
   gsHWFixes:
-    autoFlush: 2 # Fixes flame bloom.
+    autoFlush: 1 # Fixes flame bloom.
     halfPixelOffset: 2 # Fixes misaligned bloom.
 SLUS-20868:
   name: "MVP Baseball 2004"
@@ -55953,8 +55956,11 @@ SLUS-21743:
   name: "Code Lyoko - Quest for Infinity"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - FpuNegDivHack # Fixes missing texts on in-game textboxes.
   gsHWFixes:
     deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
+    halfPixelOffset: 1 # Reduces ghosting effects.
 SLUS-21744:
   name: "NASCAR '09"
   region: "NTSC-U"
