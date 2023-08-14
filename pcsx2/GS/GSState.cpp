@@ -1808,8 +1808,11 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 		}
 	}
 
-	// Invalid the CLUT if it crosses paths.
-	m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
+	if (req_write)
+	{
+		// Invalid the CLUT if it crosses paths.
+		m_mem.m_clut.InvalidateRange(write_start_bp, write_end_bp);
+	}
 }
 
 void GSState::Write(const u8* mem, int len)
