@@ -1857,15 +1857,28 @@ void GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							continue;
 						}
 
-						const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
-						const int copy_height = y_reduction * t->m_scale;
-						const int old_height = (dst->m_valid.w - y_reduction) * dst->m_scale;
-						GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
+						if (preserve_target || preload)
+						{
+							const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
+							const int copy_height = y_reduction * t->m_scale;
+							const int old_height = (dst->m_valid.w - y_reduction) * dst->m_scale;
+							GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
 
-						// Clear the dirty first
-						dst->Update();
-						// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
-						g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+							// Clear the dirty first
+							dst->Update();
+							// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
+							if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low))
+							{
+								const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
+								const GSVector4 dst_rect = GSVector4(0, old_height, copy_width, copy_height);
+								g_gs_device->StretchRect(t->m_texture, src_rect, dst->m_texture, dst_rect, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_alpha_high || t->m_valid_alpha_low);
+							}
+							else
+							{
+								// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
+								g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+							}
+						}
 						if (src && src->m_target && src->m_from_target == t)
 						{
 							// This should never happen as we're making a new target so the src should never be something it overlaps, but just incase..
