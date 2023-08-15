@@ -1006,13 +1006,23 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 							}
 						}
 						else
-							dst = t;
+						{
+							// We don't have a shader for this.
+							if (!possible_shuffle && TEX0.PSM == PSMT8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32)
+							{
+								continue;
+							}
+							else
+							{
+								dst = t;
 
-						found_t = true;
-						tex_merge_rt = false;
-						x_offset = 0;
-						y_offset = 0;
-						break;
+								found_t = true;
+								tex_merge_rt = false;
+								x_offset = 0;
+								y_offset = 0;
+								break;
+							}
+						}
 					}
 				}
 				else if (t_clean && (t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM))
@@ -1242,7 +1252,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					}
 					else
 					{
-						return LookupDepthSource(TEX0, TEXA, CLAMP, r, possible_shuffle, linear, frame_fbp, true);
+						if (!possible_shuffle && TEX0.PSM == PSMT8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32)
+						{
+							continue;
+						}
+						else
+							return LookupDepthSource(TEX0, TEXA, CLAMP, r, possible_shuffle, linear, frame_fbp, true);
 					}
 				}
 			}
