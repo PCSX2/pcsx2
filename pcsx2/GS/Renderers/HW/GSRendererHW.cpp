@@ -4718,7 +4718,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 #endif
 
 	const GSDrawingEnvironment& env = *m_draw_env;
-	const bool DATE = m_cached_ctx.TEST.DATE && m_cached_ctx.FRAME.PSM != PSMCT24;
+	bool DATE = m_cached_ctx.TEST.DATE && m_cached_ctx.FRAME.PSM != PSMCT24;
 	bool DATE_PRIMID = false;
 	bool DATE_BARRIER = false;
 	bool DATE_one = false;
@@ -4754,101 +4754,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	EmulateTextureShuffleAndFbmask(rt, tex);
 
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
-
-	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
-	if (DATE)
-	{
-		// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
-		// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
-		if (features.framebuffer_fetch)
-		{
-			// Full DATE is "free" with framebuffer fetch. The barrier gets cleared below.
-			DATE_BARRIER = true;
-			m_conf.require_full_barrier = true;
-		}
-		else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) || m_texture_shuffle)
-		{
-			GL_PERF("DATE: Accurate with %s", (features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) ? "no overlap" : "texture shuffle");
-			if (features.texture_barrier)
-			{
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-		}
-		// When Blending is disabled and Edge Anti Aliasing is enabled,
-		// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
-		else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlpha()) && features.stencil_buffer)
-		{
-			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
-			DATE_one = !m_cached_ctx.TEST.DATM;
-		}
-		else if (m_conf.colormask.wa && !m_cached_ctx.TEST.ATE && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
-		{
-			// Performance note: check alpha range with GetAlphaMinMax()
-			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
-			// with big upscaling
-			if (m_cached_ctx.TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
-			{
-				// Only first pixel (write 0) will pass (alpha is 1)
-				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_one = true;
-			}
-			else if (!m_cached_ctx.TEST.DATM && GetAlphaMinMax().min >= 128 && features.stencil_buffer)
-			{
-				// Only first pixel (write 1) will pass (alpha is 0)
-				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_one = true;
-			}
-			else if (features.texture_barrier && ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 10) || (m_index.tail < 30)))
-			{
-				// texture barrier will split the draw call into n draw call. It is very efficient for
-				// few primitive draws. Otherwise it sucks.
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-			else if (features.primitive_id)
-			{
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_PRIMID = true;
-			}
-			else if (features.texture_barrier)
-			{
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-			else if (features.stencil_buffer)
-			{
-				// Might be inaccurate in some cases but we shouldn't hit this path.
-				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_one = true;
-			}
-		}
-		else if (!m_conf.colormask.wa && !m_cached_ctx.TEST.ATE)
-		{
-			GL_PERF("DATE: Accurate with no alpha write");
-			if (g_gs_device->Features().texture_barrier)
-			{
-				m_conf.require_one_barrier = true;
-				DATE_BARRIER = true;
-			}
-		}
-
-		// Will save my life !
-		ASSERT(!(DATE_BARRIER && DATE_one));
-		ASSERT(!(DATE_PRIMID && DATE_one));
-		ASSERT(!(DATE_PRIMID && DATE_BARRIER));
-	}
-
-	// Before emulateblending, dither will be used
-	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dfmt == 2 && env.DTHE.DTHE;
-
-	if (m_conf.ps.dfmt == 1)
-	{
-		// Disable writing of the alpha channel
-		m_conf.colormask.wa = 0;
-	}
 
 	// Blend
 	int blend_alpha_min = 0, blend_alpha_max = 255;
@@ -4918,6 +4823,142 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			rt->m_alpha_min &= 128;
 		}
 	}
+
+	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
+	if (DATE)
+	{
+		if (m_cached_ctx.TEST.DATM)
+		{
+			if (rt)
+			{
+				// Destination and incoming pixels are all 1 or higher, no need for DATE.
+				if ((rt->m_alpha_min >= 128 || (m_cached_ctx.FRAME.FBMSK & 0x80000000)) && blend_alpha_min >= 128)
+				{
+					DATE = false;
+					m_cached_ctx.TEST.DATE = false;
+				}
+				else if (blend_alpha_max < 128) // All dest pixels are less than 1, everything fails.
+				{
+					rt->m_alpha_max = blend_alpha_max;
+					rt->m_alpha_min = blend_alpha_min;
+					return;
+				}
+			}
+		}
+		else
+		{
+			if (rt)
+			{
+				// Destination and incoming pixels are all less than 1, no need for DATE.
+				if ((rt->m_alpha_max < 128 || (m_cached_ctx.FRAME.FBMSK & 0x80000000)) && blend_alpha_max < 128)
+				{
+					DATE = false;
+					m_cached_ctx.TEST.DATE = false;
+				}
+				else if (blend_alpha_min >= 128) // All dest pixels are 1 or higher, everything fails.
+				{
+					rt->m_alpha_max = blend_alpha_max;
+					rt->m_alpha_min = blend_alpha_min;
+					return;
+				}
+			}
+		}
+
+		if (DATE)
+		{
+			// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
+			// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
+			if (features.framebuffer_fetch)
+			{
+				// Full DATE is "free" with framebuffer fetch. The barrier gets cleared below.
+				DATE_BARRIER = true;
+				m_conf.require_full_barrier = true;
+			}
+			else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) || m_texture_shuffle)
+			{
+				GL_PERF("DATE: Accurate with %s", (features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) ? "no overlap" : "texture shuffle");
+				if (features.texture_barrier)
+				{
+					m_conf.require_full_barrier = true;
+					DATE_BARRIER = true;
+				}
+			}
+			// When Blending is disabled and Edge Anti Aliasing is enabled,
+			// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
+			else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlpha()) && features.stencil_buffer)
+			{
+				GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
+				DATE_one = !m_cached_ctx.TEST.DATM;
+			}
+			else if (m_conf.colormask.wa && !m_cached_ctx.TEST.ATE && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
+			{
+				// Performance note: check alpha range with GetAlphaMinMax()
+				// Note: all my dump are already above 120fps, but it seems to reduce GPU load
+				// with big upscaling
+				if (m_cached_ctx.TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
+				{
+					// Only first pixel (write 0) will pass (alpha is 1)
+					GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+					DATE_one = true;
+				}
+				else if (!m_cached_ctx.TEST.DATM && GetAlphaMinMax().min >= 128 && features.stencil_buffer)
+				{
+					// Only first pixel (write 1) will pass (alpha is 0)
+					GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+					DATE_one = true;
+				}
+				else if (features.texture_barrier && ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 10) || (m_index.tail < 30)))
+				{
+					// texture barrier will split the draw call into n draw call. It is very efficient for
+					// few primitive draws. Otherwise it sucks.
+					GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+					m_conf.require_full_barrier = true;
+					DATE_BARRIER = true;
+				}
+				else if (features.primitive_id)
+				{
+					GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+					DATE_PRIMID = true;
+				}
+				else if (features.texture_barrier)
+				{
+					GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+					m_conf.require_full_barrier = true;
+					DATE_BARRIER = true;
+				}
+				else if (features.stencil_buffer)
+				{
+					// Might be inaccurate in some cases but we shouldn't hit this path.
+					GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+					DATE_one = true;
+				}
+			}
+			else if (!m_conf.colormask.wa && !m_cached_ctx.TEST.ATE)
+			{
+				GL_PERF("DATE: Accurate with no alpha write");
+				if (g_gs_device->Features().texture_barrier)
+				{
+					m_conf.require_one_barrier = true;
+					DATE_BARRIER = true;
+				}
+			}
+
+			// Will save my life !
+			ASSERT(!(DATE_BARRIER && DATE_one));
+			ASSERT(!(DATE_PRIMID && DATE_one));
+			ASSERT(!(DATE_PRIMID && DATE_BARRIER));
+		}
+	}
+
+	// Before emulateblending, dither will be used
+	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dfmt == 2 && env.DTHE.DTHE;
+
+	if (m_conf.ps.dfmt == 1)
+	{
+		// Disable writing of the alpha channel
+		m_conf.colormask.wa = 0;
+	}
+
 
 	// Not gonna spend too much time with this, it's not likely to be used much, can't be less accurate than it was.
 	if (ds)
