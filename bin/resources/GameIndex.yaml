@@ -33481,6 +33481,27 @@ SLPM-65267:
 SLPM-65268:
   name: "Initial D - Special Stage"
   region: "NTSC-J"
+  patches:
+    A62EBC2C:
+      content: |-
+        author=refraction
+        // Fixes bad clip flag COP2 ordering.
+        patch=1,EE,0017D88C,word,48439000
+        patch=1,EE,0017D890,word,4BC319FF
+        patch=1,EE,0017D8B8,word,48439000
+        patch=1,EE,0017D8BC,word,4BC421FF
+        patch=1,EE,0017D8E8,word,48439000
+        patch=1,EE,0017D8EC,word,4BC529FF
+        patch=1,EE,0017D918,word,48439000
+        patch=1,EE,0017D91C,word,4BC631FF
+        patch=1,EE,0017D948,word,48439000
+        patch=1,EE,0017D94C,word,4BC739FF
+        patch=1,EE,0017D978,word,48439000
+        patch=1,EE,0017D97C,word,4BC841FF
+        patch=1,EE,0017D9A8,word,48439000
+        patch=1,EE,0017D9AC,word,4BC949FF
+        patch=1,EE,0017D9D8,word,48439000
+        patch=1,EE,0017D9DC,word,4BCA51FF
 SLPM-65269:
   name: "NBA 2K3"
   region: "NTSC-J"
