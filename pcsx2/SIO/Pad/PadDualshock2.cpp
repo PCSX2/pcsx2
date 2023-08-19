@@ -166,13 +166,16 @@ u8 PadDualshock2::Poll(u8 commandByte)
 					break;
 			}
 
+			// Small motor on the controller is only controlled by the LSB.
+			// Any value can be sent by the software, but only odd numbers
+			// (LSB set) will turn on the motor.
 			switch (this->smallMotorLastConfig)
 			{
 				case 0x00:
-					smallMotor = this->vibrationMotors[0];
+					smallMotor = this->vibrationMotors[0] & 0x01;
 					break;
 				case 0x01:
-					smallMotor = this->vibrationMotors[1];
+					smallMotor = this->vibrationMotors[1] & 0x01;
 					break;
 				default:
 					break;
