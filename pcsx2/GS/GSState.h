@@ -206,6 +206,7 @@ public:
 		GIFRegBITBLTBUF blit;
 		GSVector4i rect;
 		int draw;
+		bool zero_clear;
 	};
 
 	GIFPath m_path[4] = {};

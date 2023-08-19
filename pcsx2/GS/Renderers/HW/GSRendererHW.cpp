@@ -2054,6 +2054,17 @@ void GSRendererHW::Draw()
 						ds_end_bp, m_cached_ctx.ZBUF.PSM);
 				}
 
+				if (!no_rt && is_zero_clear)
+				{
+					GSUploadQueue clear_queue;
+					clear_queue.draw = s_n;
+					clear_queue.rect = m_r;
+					clear_queue.blit.DBP = m_cached_ctx.FRAME.Block();
+					clear_queue.blit.DBW = m_cached_ctx.FRAME.FBW;
+					clear_queue.blit.DPSM = m_cached_ctx.FRAME.PSM;
+					clear_queue.zero_clear = true;
+					m_draw_transfers.push_back(clear_queue);
+				}
 				CleanupDraw(false);
 				return;
 			}
@@ -2197,9 +2208,12 @@ void GSRendererHW::Draw()
 			tgt = nullptr;
 		}
 		const bool possible_shuffle = ((rt_32bit && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0) || IsPossibleChannelShuffle();
+		const bool req_color = m_context->ALPHA.IsUsingCs();
+		const bool req_alpha = m_context->TEX0.TCC && (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000);
 
-		src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block()) :
-								g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block());
+		src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha) :
+								g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
+															possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha);
 
 		if (unlikely(!src))
 		{
