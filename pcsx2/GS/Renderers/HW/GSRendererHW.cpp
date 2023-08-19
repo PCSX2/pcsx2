@@ -426,8 +426,8 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 		if (m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
 		{
 			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
-			int tex_width = tex->m_target ? tex->m_from_target->m_valid.z : (tex->m_TEX0.TBW * 64);
-			int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
+			const int tex_width = tex->m_target ? tex->m_from_target->m_valid.z : (tex->m_TEX0.TBW * 64);
+			const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
 			if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW || (m_cached_ctx.TEX0.TBW * 64) < floor(m_vt.m_max.t.x))
 			{
 				half_right_uv = false;
@@ -1984,20 +1984,6 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	const auto cleanup_draw = [&]() {
-		// Restore offsets.
-		if ((m_context->FRAME.U32[0] ^ m_cached_ctx.FRAME.U32[0]) & 0x3f3f01ff)
-			m_context->offset.fb = m_mem.GetOffset(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM);
-		if ((m_context->ZBUF.U32[0] ^ m_cached_ctx.ZBUF.U32[0]) & 0x3f0001ff)
-			m_context->offset.zb = m_mem.GetOffset(m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM);
-	};
-
-	const auto cleanup_cancelled_draw = [&]() {
-		// Remove any RT source.
-		g_texture_cache->InvalidateTemporarySource();
-		cleanup_draw();
-	};
-
 	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear)
 	{
 		GL_INS("WARNING: Possible mem clear.");
@@ -2005,7 +1991,7 @@ void GSRendererHW::Draw()
 		// We'll finish things off later.
 		if (IsStartingSplitClear())
 		{
-			cleanup_draw();
+			CleanupDraw(false);
 			return;
 		}
 
@@ -2068,7 +2054,7 @@ void GSRendererHW::Draw()
 						ds_end_bp, m_cached_ctx.ZBUF.PSM);
 				}
 
-				cleanup_draw();
+				CleanupDraw(false);
 				return;
 			}
 		}
@@ -2218,7 +2204,7 @@ void GSRendererHW::Draw()
 		if (unlikely(!src))
 		{
 			GL_INS("ERROR: Source lookup failed, skipping.");
-			cleanup_cancelled_draw();
+			CleanupDraw(true);
 			return;
 		}
 
@@ -2243,7 +2229,7 @@ void GSRendererHW::Draw()
 				if (no_rt && no_ds)
 				{
 					GL_INS("Late draw cancel because no pixels pass alpha test.");
-					cleanup_cancelled_draw();
+					CleanupDraw(true);
 					return;
 				}
 			}
@@ -2296,7 +2282,7 @@ void GSRendererHW::Draw()
 			if (is_clear)
 			{
 				GL_INS("Clear draw with no target, skipping.");
-				cleanup_cancelled_draw();
+				CleanupDraw(true);
 				TryGSMemClear();
 				return;
 			}
@@ -2306,7 +2292,7 @@ void GSRendererHW::Draw()
 			if (unlikely(!rt))
 			{
 				GL_INS("ERROR: Failed to create FRAME target, skipping.");
-				cleanup_cancelled_draw();
+				CleanupDraw(true);
 				return;
 			}
 		}
@@ -2330,7 +2316,7 @@ void GSRendererHW::Draw()
 			if (unlikely(!ds))
 			{
 				GL_INS("ERROR: Failed to create ZBUF target, skipping.");
-				cleanup_cancelled_draw();
+				CleanupDraw(true);
 				return;
 			}
 		}
@@ -2397,7 +2383,7 @@ void GSRendererHW::Draw()
 			if (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0)
 				g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false);
 
-			cleanup_cancelled_draw();
+			CleanupDraw(true);
 			return;
 		}
 
@@ -2721,14 +2707,14 @@ void GSRendererHW::Draw()
 	if (m_oi && !m_oi(*this, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, src))
 	{
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		cleanup_cancelled_draw();
+		CleanupDraw(true);
 		return;
 	}
 
 	if (!OI_BlitFMV(rt, src, m_r))
 	{
 		GL_INS("Warning skipping a draw call (%d)", s_n);
-		cleanup_cancelled_draw();
+		CleanupDraw(true);
 		return;
 	}
 
@@ -2866,7 +2852,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	cleanup_draw();
+	CleanupDraw(false);
 }
 
 /// Verifies assumptions we expect to hold about indices
@@ -4725,6 +4711,19 @@ void GSRendererHW::EmulateATST(float& AREF, GSHWDrawConfig::PSSelector& ps, bool
 	}
 }
 
+void GSRendererHW::CleanupDraw(bool invalidate_temp_src)
+{
+	// Remove any RT source.
+	if (invalidate_temp_src)
+		g_texture_cache->InvalidateTemporarySource();
+
+	// Restore offsets.
+	if ((m_context->FRAME.U32[0] ^ m_cached_ctx.FRAME.U32[0]) & 0x3f3f01ff)
+		m_context->offset.fb = m_mem.GetOffset(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM);
+	if ((m_context->ZBUF.U32[0] ^ m_cached_ctx.ZBUF.U32[0]) & 0x3f0001ff)
+		m_context->offset.zb = m_mem.GetOffset(m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM);
+}
+
 void GSRendererHW::ResetStates()
 {
 	// We don't want to zero out the constant buffers, since fields used by the current draw could result in redundant uploads.
@@ -5284,7 +5283,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	if (!ate_first_pass)
 	{
 		if (!m_conf.alpha_second_pass.enable)
+		{
+			CleanupDraw(true);
 			return;
+		}
 
 		// RenderHW always renders first pass, replace first pass with second
 		memcpy(&m_conf.ps,        &m_conf.alpha_second_pass.ps,        sizeof(m_conf.ps));
