@@ -231,7 +231,7 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 	else
 		m_contextMenu->clear();
 
-	int categoryIndex = ui.registerTabs->currentIndex();
+	const int categoryIndex = ui.registerTabs->currentIndex();
 
 	QAction* action = 0;
 
