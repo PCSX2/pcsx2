@@ -246,7 +246,6 @@ PAPX-90506:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 PAPX-90507:
   name: "Official Disc 2003"
   region: "NTSC-J"
@@ -450,7 +449,6 @@ PBPX-95516:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -740,7 +738,6 @@ PCPX-98017:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 PCPX-98041:
@@ -821,7 +818,6 @@ SCAJ-20001:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCAJ-20002:
   name: "Gallop Racer 6 - Revolution"
   region: "NTSC-Unk"
@@ -875,7 +871,6 @@ SCAJ-20011:
   region: "NTSC-HK"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -1015,8 +1010,6 @@ SCAJ-20044:
 SCAJ-20045:
   name: "Shadow Tower Abyss"
   region: "NTSC-Unk"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20046:
   name: "Siren"
   region: "NTSC-Unk"
@@ -1079,8 +1072,6 @@ SCAJ-20063:
 SCAJ-20064:
   name: "Nebula - Echo Night"
   region: "NTSC-Unk"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20065:
   name: "EyeToy - Play [with Camera]"
   region: "NTSC-Unk"
@@ -1155,7 +1146,6 @@ SCAJ-20076:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -1169,7 +1159,6 @@ SCAJ-20077:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -1189,7 +1178,6 @@ SCAJ-20078:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20079:
   name: "Katamari Damacy"
   region: "NTSC-Unk"
@@ -1320,7 +1308,6 @@ SCAJ-20105:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
@@ -1336,7 +1323,6 @@ SCAJ-20109:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCAJ-20110:
@@ -1366,8 +1352,6 @@ SCAJ-20114:
 SCAJ-20115:
   name: "Yoshitsune Eiyuuden"
   region: "NTSC-Unk"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20116:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-C-J"
@@ -1409,7 +1393,6 @@ SCAJ-20121:
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-20122:
@@ -1548,7 +1531,6 @@ SCAJ-20143:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
@@ -1627,7 +1609,6 @@ SCAJ-20157:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCAJ-20158:
@@ -1660,7 +1641,6 @@ SCAJ-20161:
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
-    partialTargetInvalidation: 1 # Fixes offset invalidation for post effect.
 SCAJ-20162:
   name: "Rogue Galaxy"
   region: "NTSC-Unk"
@@ -1669,7 +1649,6 @@ SCAJ-20162:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
 SCAJ-20163:
   name: "Tales of the Abyss"
   region: "NTSC-Unk"
@@ -1698,7 +1677,6 @@ SCAJ-20167:
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
-    partialTargetInvalidation: 1 # Fixes offset invalidation for post effect.
 SCAJ-20168:
   name: "Rule of Rose"
   region: "NTSC-Unk"
@@ -1723,8 +1701,6 @@ SCAJ-20171:
 SCAJ-20172:
   name: "Final Fantasy XII"
   region: "NTSC-Unk"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20173:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-Unk"
@@ -1809,8 +1785,6 @@ SCAJ-20185:
 SCAJ-20188:
   name: "Final Fantasy XII - International - Zodiac Job System"
   region: "NTSC-Unk"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCAJ-20190:
   name: "God of War II"
   region: "NTSC-Unk"
@@ -2059,8 +2033,6 @@ SCCS-40010:
 SCCS-40011:
   name: "Armored Core 2 - Another Age"
   region: "NTSC-C"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCCS-40014:
   name: "World Soccer Winning Eleven 7 - International"
   region: "NTSC-C"
@@ -2192,8 +2164,6 @@ SCED-50404:
 SCED-50449:
   name: "This is Football 2002 [Demo]"
   region: "PAL-M6"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCED-50450:
   name: "Le Monde des Bleus 2002 [Demo]"
   region: "PAL-F"
@@ -2386,7 +2356,6 @@ SCED-50916:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCED-50932:
   name: "Smash Court Tennis - Pro Tournament [Demo]"
   region: "PAL-M5"
@@ -2411,7 +2380,6 @@ SCED-51075:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCED-51111:
   name: "Magazine Ufficiale PlayStation 2 Demo Italia 08-02"
   region: "PAL-M5"
@@ -3115,7 +3083,6 @@ SCED-52847:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCED-52848:
@@ -3913,13 +3880,9 @@ SCES-50241:
 SCES-50244:
   name: "This is Football 2002"
   region: "PAL-M6"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCES-50245:
   name: "Le Monde des Bleus 2002"
   region: "PAL-F"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCES-50246:
   name: "AirBlade"
   region: "PAL-M5"
@@ -3939,7 +3902,6 @@ SCES-50295:
   compat: 5
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
-    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCES-50300:
@@ -4212,7 +4174,6 @@ SCES-50916:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCES-50917:
   name: "Sly Raccoon"
   region: "PAL-M5"
@@ -4373,7 +4334,6 @@ SCES-51190:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -4449,7 +4409,6 @@ SCES-51607:
   gsHWFixes:
     mipmap: 1
     autoFlush: 2
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
   dynaPatches:
     - pattern:
         - { offset: 0x0, value: 0x0280202d }
@@ -4788,7 +4747,6 @@ SCES-52456:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters: # Reads Ratchet 1 & 2 data.
@@ -5004,7 +4962,6 @@ SCES-53285:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCES-53286:
@@ -5030,7 +4987,6 @@ SCES-53300:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCES-53304:
   name: "Buzz! The Music Quiz"
   region: "PAL-E"
@@ -5201,7 +5157,6 @@ SCES-53851:
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
-    partialTargetInvalidation: 1 # Fixes offset invalidation for post effect.
   patches:
     default:
       content: |-
@@ -5447,7 +5402,6 @@ SCES-54477:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Mitigates grayer text font in bottom left but stuff in front can lower or increase opacity.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCES-54496:
   name: "Buzz! The Mega Quiz"
   region: "PAL-E"
@@ -5498,7 +5452,6 @@ SCES-54552:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
   patches:
     CBB4B383:
       content: |-
@@ -6110,7 +6063,6 @@ SCKA-20011:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCKA-20012:
   name: "Arc the Lad - Jeongryeongui Hwanghon"
   region: "NTSC-K"
@@ -6125,7 +6077,6 @@ SCKA-20014:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -6267,7 +6218,6 @@ SCKA-20037:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters:
@@ -6331,7 +6281,6 @@ SCKA-20047:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCKA-20047"
@@ -6419,7 +6368,6 @@ SCKA-20060:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCKA-20061:
@@ -6461,7 +6409,6 @@ SCKA-20064:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCKA-20065:
   name: "Urban Reign"
   region: "NTSC-K"
@@ -6488,7 +6435,6 @@ SCKA-20069:
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
-    partialTargetInvalidation: 1 # Fixes offset invalidation for post effect.
 SCKA-20070:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-K"
@@ -6518,8 +6464,6 @@ SCKA-20072:
 SCKA-20073:
   name: "Final Fantasy XII"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCKA-20074:
   name: "Sly Cooper 2 - Goedo Brothers Daejakjeon!"
   region: "NTSC-K"
@@ -6753,8 +6697,6 @@ SCKA-20137:
 SCKA-20138:
   name: "Final Fantasy XII [Ultimate Hits International Zodiac Job System]"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SCKA-20139:
   name: "SD Gundam - G Generation Wars"
   region: "NTSC-K"
@@ -7046,7 +6988,6 @@ SCPS-15004:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
-    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-15005:
@@ -7181,7 +7122,6 @@ SCPS-15033:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -7200,7 +7140,6 @@ SCPS-15037:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-15038:
   name: "Operator's Side"
   region: "NTSC-J"
@@ -7297,7 +7236,6 @@ SCPS-15056:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
   memcardFilters:
     - "SCPS-15056"
     - "SCPS-15037"
@@ -7446,7 +7384,6 @@ SCPS-15084:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters:
@@ -7561,7 +7498,6 @@ SCPS-15099:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-15100:
@@ -7572,7 +7508,6 @@ SCPS-15100:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-15101:
@@ -7586,7 +7521,6 @@ SCPS-15102:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
@@ -7609,7 +7543,6 @@ SCPS-15106:
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
-    partialTargetInvalidation: 1 # Fixes offset invalidation for post effect.
   patches:
     626552EB:
       content: |-
@@ -7723,7 +7656,6 @@ SCPS-17013:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
   patches:
     CDEE4B19:
       content: |-
@@ -7801,7 +7733,6 @@ SCPS-19203:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
-    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-19204:
@@ -7843,7 +7774,6 @@ SCPS-19211:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19213:
   name: "Operator's Side [PlayStation 2 The Best] [with Microphone]"
   region: "NTSC-J"
@@ -7861,7 +7791,6 @@ SCPS-19215:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7902,7 +7831,6 @@ SCPS-19254:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
 SCPS-19301:
   name: "Minna no Golf 4 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7913,7 +7841,6 @@ SCPS-19302:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19303:
   name: "Boku no Natsuyasumi 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7952,7 +7879,6 @@ SCPS-19306:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7967,7 +7893,6 @@ SCPS-19309:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19310:
@@ -7977,7 +7902,6 @@ SCPS-19310:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19311:
   name: "Saru Get You 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -8023,7 +7947,6 @@ SCPS-19316:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCPS-19317:
   name: "Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -8031,7 +7954,6 @@ SCPS-19317:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 2
   memcardFilters:
     - "SCAJ-20001"
@@ -8067,7 +7989,6 @@ SCPS-19321:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19322:
@@ -8126,7 +8047,6 @@ SCPS-19326:
   gsHWFixes:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
-    partialTargetInvalidation: 1 # Fixes offset invalidation for post effect.
 SCPS-19327:
   name: "Ape Escape 3 [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -8142,7 +8062,6 @@ SCPS-19328:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19329:
@@ -8287,7 +8206,6 @@ SCPS-55014:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -8332,8 +8250,6 @@ SCPS-55024:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -8450,7 +8366,6 @@ SCPS-55048:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -8689,7 +8604,6 @@ SCUS-97111:
   compat: 5
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
-    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCUS-97112:
@@ -8866,7 +8780,6 @@ SCUS-97152:
   region: "NTSC-U"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
-    partialTargetInvalidation: 1 # Fixes textures.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCUS-97153:
@@ -8951,8 +8864,6 @@ SCUS-97171:
 SCUS-97172:
   name: "World Tour Soccer 2002"
   region: "NTSC-U"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCUS-97173:
   name: "Jet X2O"
   region: "NTSC-U"
@@ -9013,8 +8924,6 @@ SCUS-97191:
 SCUS-97192:
   name: "World Tour Soccer 2002 [Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken loading screen and menus.
 SCUS-97194:
   name: "NFL GameDay 2003"
   region: "NTSC-U"
@@ -9041,7 +8950,6 @@ SCUS-97199:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCUS-97200:
   name: "Kiosk Demo Disc 2.05"
   region: "NTSC-U"
@@ -9082,7 +8990,6 @@ SCUS-97209:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCUS-97210:
   name: "Sly Cooper and the Thievius Raccoonus [Demo]"
   region: "NTSC-U"
@@ -9104,7 +9011,6 @@ SCUS-97213:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -9163,7 +9069,6 @@ SCUS-97229:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes clown suit textures.
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -9208,7 +9113,6 @@ SCUS-97240:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
 SCUS-97241:
   name: "Official U.S. PlayStation Magazine Demo Disc 066"
   region: "NTSC-U"
@@ -9314,7 +9218,6 @@ SCUS-97268:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 2
   memcardFilters:
     - "SCUS-97268"
@@ -9414,7 +9317,6 @@ SCUS-97322:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 2
 SCUS-97323:
   name: "Ratchet & Clank 2 - Going Commando [Retail Employees Demo]"
@@ -9423,7 +9325,6 @@ SCUS-97323:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 2
 SCUS-97324:
   name: "Kiosk Demo Disc 2.11"
@@ -9525,7 +9426,6 @@ SCUS-97353:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
   memcardFilters:
@@ -9723,7 +9623,6 @@ SCUS-97411:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97412:
@@ -9745,7 +9644,6 @@ SCUS-97413:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97414:
@@ -9955,7 +9853,6 @@ SCUS-97465:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97466:
@@ -10002,7 +9899,6 @@ SCUS-97474:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
   patches:
     75ED4282:
       content: |-
@@ -10018,7 +9914,6 @@ SCUS-97475:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
   patches:
     314F0905:
       content: |-
@@ -10079,7 +9974,6 @@ SCUS-97485:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97486:
@@ -10103,7 +9997,6 @@ SCUS-97487:
   gsHWFixes:
     mipmap: 1 # Fixes broken textures.
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
-    partialTargetInvalidation: 1 # Fixes bad textures being read back during scene transitions.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97488:
@@ -10127,7 +10020,6 @@ SCUS-97489:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCUS-97490:
   name: "Rogue Galaxy"
   region: "NTSC-U"
@@ -10137,7 +10029,6 @@ SCUS-97490:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
   patches:
     0643F90C:
       content: |-
@@ -10239,7 +10130,6 @@ SCUS-97513:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     autoFlush: 2
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
@@ -10278,7 +10168,6 @@ SCUS-97518:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCUS-97519:
@@ -10357,7 +10246,6 @@ SCUS-97545:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Mitigates grayer text font in bottom left but stuff in front can lower or increase opacity.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
   patches:
     D7CFDCCF:
       content: |-
@@ -10408,7 +10296,6 @@ SCUS-97560:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     recommendedBlendingLevel: 4 # Mitigates grayer text font in bottom left but stuff in front can lower or increase opacity.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SCUS-97563:
   name: "Gran Turismo 4"
   region: "NTSC-U"
@@ -10433,7 +10320,6 @@ SCUS-97572:
     roundSprite: 1 # Fix mini-map and field menu.
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
-    partialTargetInvalidation: 1 # Fixes broken character color.
 SCUS-97574:
   name: "Jak X - Combat Racing [Greatest Hits]"
   region: "NTSC-U"
@@ -11000,7 +10886,6 @@ SLED-50117:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-E"
@@ -11125,8 +11010,6 @@ SLED-51364:
 SLED-51380:
   name: "Zone of the Enders - The 2nd Runner [Demo]"
   region: "PAL"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLED-51472:
   name: "Tom Clancy's Splinter Cell"
   region: "PAL-Unk"
@@ -11801,8 +11684,6 @@ SLES-50050:
   name: "Evergrace"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLES-50051:
   name: "Eternal Ring"
   region: "PAL-E"
@@ -11810,7 +11691,6 @@ SLES-50051:
     eeRoundMode: 0 # Fixes FPU errors causing instant death in Limestone Cave.
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes graphics issues.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLES-50052:
   name: "Pool Master"
   region: "PAL-M3"
@@ -11835,18 +11715,12 @@ SLES-50056:
 SLES-50057:
   name: "Dynasty Warriors 2"
   region: "PAL-E"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLES-50058:
   name: "Dynasty Warriors 2"
   region: "PAL-F"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLES-50059:
   name: "Dynasty Warriors 2"
   region: "PAL-G"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLES-50060:
   name: "International Superstar Soccer"
   region: "PAL-M3"
@@ -12230,8 +12104,6 @@ SLES-50224:
   compat: 5
   speedHacks:
     mtvu: 0 # Prevents broken textures and graphics.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-50225:
   name: "Escape from Monkey Island"
   region: "PAL-E"
@@ -12587,7 +12459,6 @@ SLES-50383:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-50384:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-I"
@@ -12595,7 +12466,6 @@ SLES-50384:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
@@ -12603,7 +12473,6 @@ SLES-50385:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-50386:
   name: "Crash Bandicoot - The Wrath of Cortex"
   region: "PAL-M6"
@@ -13164,8 +13033,6 @@ SLES-50677:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLES-50679:
   name: "Tenchu 3 - Wrath of Heaven"
   region: "PAL-E"
@@ -13564,8 +13431,6 @@ SLES-50822:
   region: "PAL-M3"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLES-50826:
   name: "Star Wars - Clone Wars"
   region: "PAL-E"
@@ -13825,9 +13690,7 @@ SLES-50905:
   region: "PAL-E"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
-  #  Save import option was removed from PAL release.
+  # Save import option was removed from PAL release.
 SLES-50906:
   name: "Master Rally"
   region: "PAL-M6"
@@ -13848,7 +13711,6 @@ SLES-50920:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
-    partialTargetInvalidation: 1 # Fixes broken textures.
   patches:
     401F4726:
       content: |-
@@ -14242,8 +14104,6 @@ SLES-51113:
   compat: 5
   gameFixes:
     - InstantDMAHack # Fixes cut-off text.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLES-51114:
   name: "Pro Evolution Soccer 2"
   region: "PAL-M5"
@@ -14741,8 +14601,6 @@ SLES-51282:
 SLES-51283:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "PAL-E"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-51284:
   name: "Contra - Shattered Soldier"
   region: "PAL-M3"
@@ -14750,8 +14608,6 @@ SLES-51285:
   name: "Spongebob SquarePants - Revenge of the Flying Dutchman"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes game returning to main menu on selecting new game.
 SLES-51286:
   name: "X-Men 2 - Wolverine's Revenge"
   region: "PAL-E"
@@ -15055,7 +14911,6 @@ SLES-51399:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLES-51400:
   name: "Tenchu - Wrath of Heaven"
   region: "PAL-S"
@@ -15352,8 +15207,6 @@ SLES-51595:
 SLES-51600:
   name: "WWE Crush Hour"
   region: "PAL-E"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-51602:
   name: "All-Star Baseball 2004 featuring Derek Jeter"
   region: "PAL-E"
@@ -15416,8 +15269,6 @@ SLES-51630:
 SLES-51633:
   name: "Racing Simulation 3"
   region: "PAL-M5"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes crash during loading screen due to bad download.
 SLES-51636:
   name: "XGRA - Extreme G Racing Association"
   region: "PAL-M5"
@@ -16385,8 +16236,6 @@ SLES-52036:
   name: "WWE SmackDown! - Here Comes the Pain!"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-52038:
   name: "Terminator 3 - Rebellion der Maschinen"
   region: "PAL-G"
@@ -16671,7 +16520,6 @@ SLES-52203:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SLES-51399"
     - "SLES-52203"
@@ -18073,8 +17921,6 @@ SLES-52779:
 SLES-52781:
   name: "WWE SmackDown! vs. RAW"
   region: "PAL-E"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-52782:
   name: "Call of Duty - Finest Hour"
   region: "PAL-E"
@@ -18188,7 +18034,6 @@ SLES-52812:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52813:
   name: "Incredibles, The"
   region: "PAL-NL-F"
@@ -18198,7 +18043,6 @@ SLES-52813:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52814:
   name: "Incredibles, The"
   region: "PAL-I"
@@ -18207,7 +18051,6 @@ SLES-52814:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52815:
   name: "Disney-Pixar's The Incredibles"
   region: "PAL-G"
@@ -18216,7 +18059,6 @@ SLES-52815:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52816:
   name: "Increíbles, Los"
   region: "PAL-S"
@@ -18225,7 +18067,6 @@ SLES-52816:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52820:
   name: "Incredibles, The"
   region: "PAL-SC"
@@ -18234,7 +18075,6 @@ SLES-52820:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52821:
   name: "Incredibles, The"
   region: "PAL-P"
@@ -18243,7 +18083,6 @@ SLES-52821:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52822:
   name: "Prince of Persia - Warrior Within"
   region: "PAL-M6"
@@ -18400,7 +18239,6 @@ SLES-52895:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52896:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-F-G"
@@ -18409,7 +18247,6 @@ SLES-52896:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52897:
   name: "Spongebob SquarePants - The Movie"
   region: "PAL-I"
@@ -18418,7 +18255,6 @@ SLES-52897:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52898:
   name: "King of Fighters - Maximum Impact"
   region: "PAL-E-JP"
@@ -18669,7 +18505,6 @@ SLES-52985:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52986:
   name: "Bob Esponja - La Película"
   region: "PAL-S"
@@ -18678,7 +18513,6 @@ SLES-52986:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-52988:
   name: "Mega Man X8"
   region: "PAL-M5"
@@ -19450,7 +19284,6 @@ SLES-53300:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
     minimumBlendingLevel: 4 # Mitigates grayer text font in bottom left.
-    partialTargetInvalidation: 1 # Fixes loading screen picture.
 SLES-53301:
   name: "Bomberman Hardball"
   region: "PAL-E"
@@ -19670,7 +19503,6 @@ SLES-53390:
     vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -19682,7 +19514,6 @@ SLES-53391:
     vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -19759,7 +19590,6 @@ SLES-53411:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-53413:
   name: "Rebel Raiders - Operation Nighthawk"
   region: "PAL-M5"
@@ -19767,8 +19597,6 @@ SLES-53414:
   name: "Echo Night - Beyond"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-53415:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-E"
@@ -19927,7 +19755,6 @@ SLES-53473:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-53474:
   name: "Incredibles, The - Rise of the Underminer"
   region: "PAL-M3"
@@ -19936,7 +19763,6 @@ SLES-53474:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-53480:
   name: "Harvest Moon - A Wonderful Life [Special Edition]"
   region: "PAL-E"
@@ -20471,7 +20297,6 @@ SLES-53616:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -20486,7 +20311,6 @@ SLES-53617:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -20501,7 +20325,6 @@ SLES-53618:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -20637,7 +20460,6 @@ SLES-53658:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLES-53659:
   name: "Brothers In Arms - Earned in Blood"
   region: "PAL-M5"
@@ -20665,7 +20487,6 @@ SLES-53672:
     vu1ClampMode: 0 # Fixes Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -20674,13 +20495,9 @@ SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-53677:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-I"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-53682:
   name: "James Pond - Codename Robocod"
   region: "PAL-E"
@@ -21118,7 +20935,6 @@ SLES-53819:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-53819"
@@ -21131,7 +20947,6 @@ SLES-53820:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLES-53821:
   name: "Radio Helicopter II"
@@ -21146,7 +20961,6 @@ SLES-53825:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes corruption after taking a picture.
 SLES-53826:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "PAL-M5"
@@ -21329,7 +21143,6 @@ SLES-53904:
   clampModes:
     vuClampMode: 0 # Fixes black artifacts on tracks
   gsHWFixes:
-    partialTargetInvalidation: 1
     mipmap: 1
     autoFlush: 2
     estimateTextureRegion: 1 # Improves performance.
@@ -22451,29 +22264,19 @@ SLES-54354:
   name: "Final Fantasy XII"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54355:
   name: "Final Fantasy XII"
   region: "PAL-F"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54356:
   name: "Final Fantasy XII"
   region: "PAL-G"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54357:
   name: "Final Fantasy XII"
   region: "PAL-I"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54358:
   name: "Final Fantasy XII"
   region: "PAL-S"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLES-54359:
   name: "Legend of Spyro, The - A New Beginning"
   region: "PAL-M6"
@@ -22869,14 +22672,10 @@ SLES-54487:
 SLES-54488:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "PAL-I"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54489:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54490:
   name: "God Hand"
   region: "PAL-M5"
@@ -23690,8 +23489,6 @@ SLES-54793:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-E"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54795:
   name: "Falling Stars"
   region: "PAL-M6"
@@ -23909,8 +23706,6 @@ SLES-54878:
 SLES-54879:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-M5"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-54880:
   name: "NBA 2K8"
   region: "PAL-M5"
@@ -24109,28 +23904,24 @@ SLES-54947:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes bloom misalignment.
-    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54948:
   name: "Dogz"
   region: "PAL-M9"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes bloom misalignment.
-    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54949:
   name: "Catz"
   region: "PAL-M6"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes bloom misalignment.
-    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54950:
   name: "Catz"
   region: "PAL-M9"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes bloom misalignment.
-    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLES-54951:
   name: "Ben 10 - Protector of Earth"
   region: "PAL-M5"
@@ -24977,14 +24768,10 @@ SLES-55249:
 SLES-55250:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-A"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55252:
   name: "NHL 2K9"
   region: "PAL-M5"
@@ -25605,8 +25392,6 @@ SLES-55545:
   name: "WWE SmackDown vs. Raw 2010"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55546:
   name: "Secret Saturdays, The - Beasts of the 5th Sun"
   region: "PAL-M5"
@@ -25759,8 +25544,6 @@ SLES-55635:
   name: "WWE SmackDown vs. Raw 2011"
   region: "PAL-M4"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLES-55636:
   name: "Pro Evolution Soccer 2011"
   region: "PAL-M5"
@@ -25791,8 +25574,6 @@ SLES-55648:
   name: "WWE All-Stars"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLES-55652:
   name: "FIFA 12"
   region: "PAL-M4"
@@ -25870,7 +25651,6 @@ SLES-82009:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLES-82010:
   name: "Metal Gear Solid 2, Document of"
@@ -26006,7 +25786,6 @@ SLES-82036:
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-82036"
@@ -26016,7 +25795,6 @@ SLES-82037:
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLES-82036"
@@ -26273,8 +26051,6 @@ SLKA-15032:
 SLKA-15033:
   name: "Princess Maker 2"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes full screen C32->C16 frame invalidation.
 SLKA-15034:
   name: "Kinnikuman Generations"
   region: "NTSC-K"
@@ -26401,8 +26177,6 @@ SLKA-25029:
 SLKA-25030:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25031:
   name: "Tom Clancy's Ghost Recon"
   region: "NTSC-K"
@@ -26444,7 +26218,6 @@ SLKA-25041:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SLKA-25041"
     - "SLPM-67524"
@@ -26540,8 +26313,6 @@ SLKA-25066:
   name: "Zone of the Enders - The 2nd Runner SE"
   region: "NTSC-K"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLKA-25067:
   name: "Unlimited Saga"
   region: "NTSC-K"
@@ -26708,8 +26479,6 @@ SLKA-25115:
 SLKA-25116:
   name: "WWE SmackDown! Here Comes the Pain"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25117:
   name: "World Soccer Winning Eleven 7 International"
   region: "NTSC-K"
@@ -26877,8 +26646,6 @@ SLKA-25167:
 SLKA-25168:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLKA-25169:
   name: "UEFA Euro 2004 - Portugal"
   region: "NTSC-K"
@@ -26897,7 +26664,6 @@ SLKA-25171:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25172:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "NTSC-K"
@@ -27002,7 +26768,6 @@ SLKA-25201:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLKA-25201"
@@ -27012,7 +26777,6 @@ SLKA-25202:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLKA-25201"
@@ -27147,7 +26911,6 @@ SLKA-25226:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLKA-25227:
   name: "Neo Contra"
   region: "NTSC-K"
@@ -27182,8 +26945,6 @@ SLKA-25237:
 SLKA-25240:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25241:
   name: "Need for Speed - Underground 2"
   region: "NTSC-K"
@@ -27201,8 +26962,6 @@ SLKA-25243:
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25245:
   name: "Spongebob SquarePants - Movin' With Friends"
   region: "NTSC-K"
@@ -27255,8 +27014,6 @@ SLKA-25258:
   name: "Story of the Hero Yoshitsune, The"
   region: "NTSC-K"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLKA-25259:
   name: "Swords of Destiny"
   region: "NTSC-K"
@@ -27297,7 +27054,6 @@ SLKA-25270:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25271:
@@ -27482,8 +27238,6 @@ SLKA-25317:
 SLKA-25318:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25319:
   name: "Spongebob SquarePants - Lights, Camera, PANTS"
   region: "NTSC-K"
@@ -27691,8 +27445,6 @@ SLKA-25364:
 SLKA-25365:
   name: "WWE Smack Down Vs RAW 2008"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLKA-25366:
   name: "Naruto - Uzumaki Chronicles 2" # Naruto: Konoha Spirits!!"
   region: "NTSC-K"
@@ -27933,8 +27685,6 @@ SLKA-25447:
 SLKA-25448:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25449:
   name: "Call of Duty - World at War - Final Fronts"
   region: "NTSC-K"
@@ -27944,8 +27694,6 @@ SLKA-25450:
 SLKA-25451:
   name: "WWE SmackDown! vs. Raw 2008"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLKA-25452:
   name: "Viewtiful Joe - A New Hope"
   region: "NTSC-K"
@@ -27976,8 +27724,6 @@ SLKA-25459:
 SLKA-25463:
   name: "WWE SmackDown vs. Raw 2010"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLKA-25464:
   name: "FIFA 10"
   region: "NTSC-K"
@@ -28031,7 +27777,6 @@ SLKA-35001:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -28141,8 +27886,6 @@ SLPM-55021:
 SLPM-55022:
   name: "Final Fantasy XII [Ultimate Hits]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-55023:
   name: "Dragon Quest & Final Fantasy in Itadaki Street Special"
   region: "NTSC-J"
@@ -28665,8 +28408,6 @@ SLPM-55209:
 SLPM-55210:
   name: "Final Fantasy XII International Zodiac Job System [Ultimate Hits]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-55211:
   name: "Pachislot Higurashi no Naku Koro ni Matsuri"
   region: "NTSC-J"
@@ -28777,8 +28518,6 @@ SLPM-55250:
 SLPM-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-55252:
   name: "Pro Yakyuu Spirits 2010"
   region: "NTSC-J"
@@ -28981,8 +28720,6 @@ SLPM-60127:
   region: "NTSC-J"
   speedHacks:
     mtvu: 0 # Prevents broken textures and graphics.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-60128:
   name: "Sidewinder Max"
   region: "NTSC-J"
@@ -29158,8 +28895,6 @@ SLPM-60195:
 SLPM-60197:
   name: "Exciting Pro Wres 4"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-60198:
   name: "MotoGP 3 [Trial]"
   region: "NTSC-J"
@@ -29684,8 +29419,6 @@ SLPM-61097:
 SLPM-61098:
   name: "Exciting Pro Wres 6 - WWE SmackDown! vs. Raw"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-61100:
   name: "Juuouki - Project Altered Beast"
   region: "NTSC-J"
@@ -29756,7 +29489,6 @@ SLPM-61118:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-61119:
   name: "Armored Core - Last Raven [Trial]"
@@ -29765,7 +29497,6 @@ SLPM-61119:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-61120:
   name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Trial Version]"
@@ -29940,8 +29671,6 @@ SLPM-62004:
 SLPM-62005:
   name: "Shin Sangoku Musou"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-62006:
   name: "Eisei Meijin 4"
   region: "NTSC-J"
@@ -30058,7 +29787,6 @@ SLPM-62043:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-62044:
   name: "RC Revenge Pro"
   region: "NTSC-J"
@@ -31711,8 +31439,6 @@ SLPM-62567:
 SLPM-62568:
   name: "Shin Sangoku Musou [Koei The Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-62569:
   name: "PC Genjin [Hudson The Best]"
   region: "NTSC-J"
@@ -32118,8 +31844,6 @@ SLPM-62700:
 SLPM-62701:
   name: "Princess Maker 2 [Best Hit Selection]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes full screen C32->C16 frame invalidation.
 SLPM-62702:
   name: "Momotaro Densetsu 15"
   region: "NTSC-J"
@@ -32163,8 +31887,6 @@ SLPM-62713:
 SLPM-62714:
   name: "Shin Sangoku Musou Series Collection Joukan"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-62715:
   name: "Shin Sangoku Musou Series Collection Joukan Saikyou Data"
   region: "NTSC-J"
@@ -32367,8 +32089,6 @@ SLPM-62785:
 SLPM-64501:
   name: "Jin Samguk Mussang"
   region: "NTSC-K"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-64502:
   name: "Winback"
   region: "NTSC-K"
@@ -32818,7 +32538,6 @@ SLPM-65077:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -32829,7 +32548,6 @@ SLPM-65078:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
   memcardFilters:
     - "SLPM-65078"
     - "SLPM-65077"
@@ -33080,8 +32798,6 @@ SLPM-65162:
 SLPM-65163:
   name: "Zhen San Guo Wu Shuang 2"
   region: "NTSC-T"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
   patches:
     397F3835:
       content: |-
@@ -33389,8 +33105,6 @@ SLPM-65235:
 SLPM-65236:
   name: "Anubis - Zone of the Enders"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65237:
   name: "Z.O.E. - Zone of the Enders [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -33847,8 +33561,6 @@ SLPM-65361:
   name: "Anubis - Zone of the Enders Special Edition [Limited Edition]"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65362:
   name: "NHK Tensai Bit-Kun - Guramon Battle"
   region: "NTSC-J"
@@ -34347,8 +34059,6 @@ SLPM-65499:
 SLPM-65500:
   name: "Anubis - Zone of the Enders Special Edition"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65501:
   name: "Frogger Rescue"
   region: "NTSC-J"
@@ -35254,7 +34964,6 @@ SLPM-65754:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65755:
   name: "Samurai Western - Katsugeki Samurai-dou"
   region: "NTSC-J"
@@ -35281,7 +34990,6 @@ SLPM-65759:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLPM-65760:
   name: "Grand Theft Auto III [Capcom The Best]"
   region: "NTSC-J"
@@ -35347,8 +35055,6 @@ SLPM-65778:
 SLPM-65779:
   name: "Exciting Pro Wrestling 5 [Yuke's the Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-65780:
   name: "Kessen III [Treasure Box]"
   region: "NTSC-J"
@@ -35719,8 +35425,6 @@ SLPM-65880:
 SLPM-65881:
   name: "SmackDown vs. Raw - Exciting Professional Wrestling 6"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-65882:
   name: "Duel Masters"
   region: "NTSC-J"
@@ -36131,8 +35835,6 @@ SLPM-65990:
 SLPM-65991:
   name: "Anubis - Zone of the Enders Special Edition [Konami Dendou Collection]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-65994:
   name: "Remember 11 - The Age of Infinity [Superlite 2000 Series]"
   region: "NTSC-J"
@@ -36951,8 +36653,6 @@ SLPM-66186:
 SLPM-66187:
   name: "Exciting Pro Wrestling 6 - SmackDown vs. RAW [Yuke's the Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-66188:
   name: "Exciting Pro Wres 7"
   region: "NTSC-J"
@@ -37229,7 +36929,6 @@ SLPM-66248:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLPM-66249:
   name: "Growlanser V - Generations [Limited Edition]"
   region: "NTSC-J"
@@ -37306,8 +37005,6 @@ SLPM-66267:
 SLPM-66268:
   name: "Smackdown! vs. Raw 2006 - Exciting Pro Wrestling 7"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPM-66269:
   name: "Blazing Souls [Limited Edition]"
   region: "NTSC-J"
@@ -37524,8 +37221,6 @@ SLPM-66320:
   name: "Final Fantasy XII"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-66321:
   name: "Kurogane no Houkou - Warship Gunner 2"
   region: "NTSC-J"
@@ -37864,7 +37559,6 @@ SLPM-66404:
     vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -38168,7 +37862,6 @@ SLPM-66473:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -38313,7 +38006,6 @@ SLPM-66503:
     - DMABusyHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-66504:
   name: "Onimusha 2 [Mega Hits]"
   region: "NTSC-J"
@@ -38773,8 +38465,6 @@ SLPM-66626:
 SLPM-66627:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLPM-66628:
   name: "OutRun 2 SP [First Print Limited Edition]"
   region: "NTSC-J"
@@ -39320,8 +39010,6 @@ SLPM-66750:
   name: "Final Fantasy XII International - Zodiac Job System [with Bonus DVD]"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPM-66751:
   name: "Mahoroba Stories"
   region: "NTSC-J"
@@ -39479,7 +39167,6 @@ SLPM-66792:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-66793:
   name: "Metal Gear Solid 2 - Sons of Liberty [20th Anniversary Edition] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -39487,7 +39174,6 @@ SLPM-66793:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-66794:
   name: "Metal Gear Solid 3 - Snake Eater [20th Anniversary Edition]"
   region: "NTSC-J"
@@ -39718,8 +39404,6 @@ SLPM-66862:
 SLPM-66863:
   name: "WWE SmackDown vs. RAW 2008"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLPM-66864:
   name: "Umisho"
   region: "NTSC-J"
@@ -40200,7 +39884,6 @@ SLPM-67002:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
@@ -40231,7 +39914,6 @@ SLPM-67008:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-67009:
   name: "Sakura Taisen V - Saraba Itoshiki Hito Yo"
@@ -40342,7 +40024,6 @@ SLPM-67515:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-67516:
   name: "Soul Reaver 2"
   region: "NTSC-K"
@@ -40377,7 +40058,6 @@ SLPM-67524:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLPM-67525:
   name: "Medal of Honor - Frontline"
   region: "NTSC-K"
@@ -40525,7 +40205,6 @@ SLPM-68503:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-68504:
   name: "Tokimeki Memorial 3 - Special Sound Track"
   region: "NTSC-J"
@@ -40568,7 +40247,6 @@ SLPM-68520:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-68521:
   name: "Dot Hack Fraegment [Senkou Release-ban]"
@@ -40600,8 +40278,6 @@ SLPM-74001:
 SLPM-74002:
   name: "Shin Sangoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLPM-74003:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -40811,7 +40487,6 @@ SLPM-74243:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -40891,7 +40566,6 @@ SLPM-74255:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-74256:
   name: "Metal Gear Solid 2 - Sons of Liberty [PlayStation 2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -40899,7 +40573,6 @@ SLPM-74256:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLPM-74257:
   name: "Metal Gear Solid 3 - Subsistence (Disc 1) (Subsistence)"
   region: "NTSC-J"
@@ -41068,7 +40741,6 @@ SLPM-74901:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-84075:
   name: "Anubis Zone of Enders Special Edition [Konami Dendou Selection]"
@@ -42274,8 +41946,6 @@ SLPS-20392:
 SLPS-20393:
   name: "Princess Maker 2"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes full screen C32->C16 frame invalidation.
 SLPS-20394:
   name: "Suki na Mono wa Sukida Rashouganai + White Flower + Sukisyo!"
   region: "NTSC-J"
@@ -42662,7 +42332,6 @@ SLPS-25001:
     eeRoundMode: 0 # Fixes FPU errors causing instant death in Limestone Cave.
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes raphics issues.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLPS-25002:
   name: "Dead or Alive 2"
   region: "NTSC-J"
@@ -42692,8 +42361,6 @@ SLPS-25003:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes hanging before going in-game.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLPS-25004:
   name: "Kensetsu Juuki Kenka Battle - Buchigire Kongou!!"
   region: "NTSC-J"
@@ -42733,8 +42400,6 @@ SLPS-25013:
   region: "NTSC-J"
   speedHacks:
     mtvu: 0 # Prevents broken textures and graphics.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25014:
   name: "Choro Q HG [Jenny Hi-Grade Box]"
   region: "NTSC-J"
@@ -42857,8 +42522,6 @@ SLPS-25040:
   compat: 5
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -42870,8 +42533,6 @@ SLPS-25041:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLPS-25042:
   name: "Maken Shao [Limited Edition]"
   region: "NTSC-J"
@@ -42891,7 +42552,6 @@ SLPS-25044:
     textureInsideRT: 1 # Fixes missing effects.
     mipmap: 2 # Fixes shimmering noisy textures
     trilinearFiltering: 1 # Fixes shimmering noisy textures
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25045:
   name: "Lilie no Atelier - Salburg no Renkinjutsushi 3"
   region: "NTSC-J"
@@ -42948,7 +42608,6 @@ SLPS-25057:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
-    partialTargetInvalidation: 1 # Fixes broken textures.
   patches:
     04C3765E:
       content: |-
@@ -43155,7 +42814,6 @@ SLPS-25112:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLPS-25113:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
@@ -43387,7 +43045,6 @@ SLPS-25169:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -43555,8 +43212,6 @@ SLPS-25209:
 SLPS-25210:
   name: "Exciting Pro Wres 4"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPS-25212:
   name: "Giren no Yabou - Zeon Dokuritsu Sensouden"
   region: "NTSC-J"
@@ -43577,8 +43232,6 @@ SLPS-25217:
   name: "Shadow Tower Abyss"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25219:
   name: "Canary"
   region: "NTSC-J"
@@ -43880,8 +43533,6 @@ SLPS-25308:
 SLPS-25309:
   name: "Exciting Pro Wrestling 4 [Yuke's The Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPS-25310:
   name: "Disney-Pixar's Finding Nemo"
   region: "NTSC-J"
@@ -43901,8 +43552,6 @@ SLPS-25314:
   name: "Nebula - Echo Night"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25315:
   name: "One Piece - Grand Battle 3"
   region: "NTSC-J"
@@ -43947,13 +43596,9 @@ SLPS-25324:
 SLPS-25326:
   name: "WWE Smackdown! Here Comes the Pain - Exciting Pro Wrestling 5 [Limited Edition]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPS-25327:
   name: "Exciting Pro Wres 5"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLPS-25329:
   name: "Kuon"
   region: "NTSC-J"
@@ -43966,7 +43611,6 @@ SLPS-25329:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25330:
   name: "Dragon Ball Z - Budokai 2"
   region: "NTSC-J"
@@ -44007,7 +43651,6 @@ SLPS-25338:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -44021,7 +43664,6 @@ SLPS-25339:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -44264,8 +43906,6 @@ SLPS-25393:
 SLPS-25394:
   name: "Another Century's Episode"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25395:
   name: "Sentimental Prelude"
   region: "NTSC-J"
@@ -44324,7 +43964,6 @@ SLPS-25408:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLPS-25408"
@@ -44502,8 +44141,6 @@ SLPS-25453:
 SLPS-25454:
   name: "Daisenryaku VII Exceed"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25455:
   name: "Sanyo Pachinko Paradise 11"
   region: "NTSC-J"
@@ -44534,7 +44171,6 @@ SLPS-25461:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     cpuSpriteRenderBW: 1 # Fixes broken shadow caused by HPO 1.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLPS-25462:
@@ -44544,7 +44180,6 @@ SLPS-25462:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
   memcardFilters:
     - "SLPS-25338"
@@ -45108,8 +44743,6 @@ SLPS-25623:
   name: "Another Century's Episode 2"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25624:
   name: "Futakoi-Futakoi Island Collection"
   region: "NTSC-J"
@@ -45584,18 +45217,13 @@ SLPS-25730:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPS-25731:
   name: "Armored Core 2 [Machine Side Box]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25732:
   name: "Armored Core 3 [Machine Side Box]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25733:
   name: "Super Robot Taisen OG - Original Generations"
   region: "NTSC-J"
@@ -45781,8 +45409,6 @@ SLPS-25784:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Was used to fix game crash, but not sure it's required anymore.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25786:
   name: "Hisshou Pachinko-Pachislot Kouryaku Series Vol.10 - CR Shinseiki Evangelion - Kiseki no kachi Ha"
   region: "NTSC-J"
@@ -45936,8 +45562,6 @@ SLPS-25828:
 SLPS-25829:
   name: "Another Century's Episode 2 [Special Vocal Version]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-25830:
   name: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku [Limited Edition]"
   region: "NTSC-J"
@@ -46589,7 +46213,6 @@ SLPS-73202:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -46603,7 +46226,6 @@ SLPS-73203:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SCAJ-20076"
@@ -46757,8 +46379,6 @@ SLPS-73226:
 SLPS-73227:
   name: "Another Century's Episode [PlayStation 2 The Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLPS-73228:
   name: "Fuuun Bakumatsuden [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -46898,7 +46518,6 @@ SLPS-73247:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
   memcardFilters:
     - "SLPS-25338"
@@ -46974,7 +46593,6 @@ SLPS-73257:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes corruption after taking a picture.
 SLPS-73258:
   name: "Kenka Banchou 2 - Full Throttle [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -47071,8 +46689,6 @@ SLPS-73411:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters:
     - "SCPS-55024"
     - "SLPS-25007"
@@ -47099,14 +46715,11 @@ SLPS-73417:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLPS-73418:
   name: "Shadow Hearts [PlayStation 2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
 SLPS-73419:
   name: "Lupin III - Majutsu-Ou no Isan [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -47115,7 +46728,6 @@ SLPS-73420:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters:
     - "SCAJ-20011"
     - "SCPS-55014"
@@ -47240,13 +46852,10 @@ SLUS-20015:
     eeRoundMode: 0 # Fixes FPU errors causing instant death in Limestone Cave.
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes graphics issues.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLUS-20016:
   name: "Evergrace"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLUS-20017:
   name: "Maximo - Ghosts to Glory"
   region: "NTSC-U"
@@ -47480,8 +47089,6 @@ SLUS-20078:
 SLUS-20079:
   name: "Dynasty Warriors 2"
   region: "NTSC-U"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes invisible text.
 SLUS-20080:
   name: "GunGriffon Blaze"
   region: "NTSC-U"
@@ -47685,7 +47292,6 @@ SLUS-20144:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
@@ -48173,8 +47779,6 @@ SLUS-20249:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
   memcardFilters: # Can import data from regular Armored Core 2.
     - "SLUS-20249"
     - "SLUS-20014"
@@ -48473,7 +48077,6 @@ SLUS-20318:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
-    partialTargetInvalidation: 1 # Fixes broken textures.
   patches:
     36E02E91:
       content: |-
@@ -48592,7 +48195,6 @@ SLUS-20343:
     textureInsideRT: 1 # Fixes missing effects.
     mipmap: 2 # Fixes shimmering noisy textures
     trilinearFiltering: 1 # Fixes shimmering noisy textures
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20344:
   name: "Rez"
   region: "NTSC-U"
@@ -48615,8 +48217,6 @@ SLUS-20347:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes black screens on judgement wheel.
   patches:
     default:
       content: |-
@@ -48645,7 +48245,6 @@ SLUS-20353:
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
     halfPixelOffset: 2 # Fixes font rendering.
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20354:
   name: "Red Card Soccer 2003"
   region: "NTSC-U"
@@ -48798,8 +48397,6 @@ SLUS-20385:
   name: "WWE Crush Hour"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-20386:
   name: "Lethal Skies - Elite Pilot - Team SW"
   region: "NTSC-U"
@@ -49065,7 +48662,6 @@ SLUS-20435:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
 SLUS-20436:
   name: "Guilty Gear X2"
   region: "NTSC-U"
@@ -49295,8 +48891,6 @@ SLUS-20483:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-20484:
   name: "Devil May Cry 2 [Disc 1 of 2]"
   region: "NTSC-U"
@@ -49594,8 +49188,6 @@ SLUS-20545:
   name: "Zone of the Enders - The 2nd Runner"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-20546:
   name: "Evolution Snowboarding"
   region: "NTSC-U"
@@ -49645,7 +49237,6 @@ SLUS-20554:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLUS-20555:
   name: "Reel Fishing 3"
@@ -50125,7 +49716,6 @@ SLUS-20644:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
-    partialTargetInvalidation: 1 # Fixes corrupted textures.
   memcardFilters: # Can import data from AC3.
     - "SLUS-20435"
     - "SLUS-20644"
@@ -50859,8 +50449,6 @@ SLUS-20787:
   name: "WWE SmackDown! Here Comes the Pain"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-20788:
   name: "Ford Racing 2"
   region: "NTSC-U"
@@ -51246,7 +50834,6 @@ SLUS-20870:
     vu1ClampMode: 0 # Fixes wrong texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -51438,7 +51025,6 @@ SLUS-20904:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLUS-20905:
   name: "Incredibles, The"
   region: "NTSC-U"
@@ -51448,7 +51034,6 @@ SLUS-20905:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLUS-20906:
   name: "Fight Night 2004"
   region: "NTSC-U"
@@ -51591,8 +51176,6 @@ SLUS-20928:
   name: "Echo Night - Beyond"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20929:
   name: "Battle Assault 3 featuring Gundam Seed"
   region: "NTSC-U"
@@ -51778,8 +51361,6 @@ SLUS-20963:
   name: "Final Fantasy XII"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-20964:
   name: "Devil May Cry 3 - Dante's Awakening"
   region: "NTSC-U"
@@ -51920,7 +51501,6 @@ SLUS-20986:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLUS-20986"
@@ -52066,7 +51646,6 @@ SLUS-21007:
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting.
     preloadFrameData: 1 # Fixes red cracklines on walls.
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21008:
   name: "Katamari Damacy"
   region: "NTSC-U"
@@ -52364,8 +51943,6 @@ SLUS-21060:
   name: "WWE SmackDown! vs. RAW"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-21062:
   name: "Jaws Unleashed"
   region: "NTSC-U"
@@ -52454,7 +52031,6 @@ SLUS-21079:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters:
     - "SLUS-20986"
@@ -52521,7 +52097,6 @@ SLUS-21095:
   gsHWFixes:
     mipmap: 1
     autoFlush: 2
-    partialTargetInvalidation: 1
     estimateTextureRegion: 1 # Improves performance.
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
@@ -52585,7 +52160,6 @@ SLUS-21106:
     eeRoundMode: 0 # Fixes scene switching in intro.
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
-    partialTargetInvalidation: 1 # Needed due to procedural textures overlapping EE writes.
     preloadFrameData: 1 # Fixes numberplates and ensures above targets are valid.
     roundSprite: 1 # Fixes lines in some post-effects.
     gpuTargetCLUT: 1 # Fixes light occlusion.
@@ -53065,7 +52639,6 @@ SLUS-21200:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level brightness.
   memcardFilters: # Can import data from AC:Nexus.
     - "SLUS-21200"
@@ -53184,7 +52757,6 @@ SLUS-21217:
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
-    partialTargetInvalidation: 1 # Helps align bloom when upscaling.
 SLUS-21218:
   name: "Tak - The Great Juju Challenge"
   region: "NTSC-U"
@@ -53376,7 +52948,6 @@ SLUS-21244:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes corruption after taking a picture.
 SLUS-21245:
   name: "Suikoden Tactics"
   region: "NTSC-U"
@@ -53641,7 +53212,6 @@ SLUS-21285:
     vu1ClampMode: 0 # Fixes Spider-Man's eyes texture.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -53650,8 +53220,6 @@ SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-21287:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-U"
@@ -53966,7 +53534,6 @@ SLUS-21338:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
-    partialTargetInvalidation: 1 # Fixes broken textures.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
@@ -54545,8 +54112,6 @@ SLUS-21427:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21428:
   name: "Bionicle Heroes"
   region: "NTSC-U"
@@ -54797,8 +54362,6 @@ SLUS-21475:
   name: "Final Fantasy XII [Collector's Edition]"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-21476:
   name: "Madden NFL '07"
   region: "NTSC-U"
@@ -55553,8 +55116,6 @@ SLUS-21645:
   name: "WWE SmackDown! vs. Raw 2008"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21646:
   name: "Tiger Woods PGA Tour 08"
   region: "NTSC-U"
@@ -55678,7 +55239,6 @@ SLUS-21674:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes bloom misalignment.
-    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLUS-21675:
   name: "Petz - Catz 2"
   region: "NTSC-U"
@@ -55686,7 +55246,6 @@ SLUS-21675:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     halfPixelOffset: 1 # Fixes bloom misalignment.
-    partialTargetInvalidation: 1 # Fixes black sqaures effect.
 SLUS-21676:
   name: "Dancing with the Stars"
   region: "NTSC-U"
@@ -56368,8 +55927,6 @@ SLUS-21810:
   name: "WWE SmackDown vs. Raw 2009"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21811:
   name: "MotoGP 08"
   region: "NTSC-U"
@@ -56759,8 +56316,6 @@ SLUS-21901:
   name: "WWE SmackDown vs. Raw 2010"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21902:
   name: "Bakugan - Battle Brawlers"
   region: "NTSC-U"
@@ -56926,14 +56481,10 @@ SLUS-21939:
   name: "WWE SmackDown vs. Raw 2011"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken text.
 SLUS-21940:
   name: "WWE All-Stars"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-21941:
   name: "FIFA Soccer 11"
   region: "NTSC-U"
@@ -56994,8 +56545,6 @@ SLUS-21955:
 SLUS-27014:
   name: "WWE SmackDown vs Raw - Superstar Series [Bundle]"
   region: "NTSC-U"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-27029:
   name: "Disney Sing It [Bundle]"
   region: "NTSC-U"
@@ -57205,7 +56754,6 @@ SLUS-29003:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
-    partialTargetInvalidation: 1 # Fixes cutscene blur effects.
 SLUS-29004:
   name: "Unison & Dead or Alive 2 Hardcore [Demo]"
   region: "NTSC-U"
@@ -57551,8 +57099,6 @@ SLUS-29113:
 SLUS-29116:
   name: "WWE SmackDown! vs. RAW [Public Beta Vol.1.0]"
   region: "NTSC-U"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 SLUS-29117:
   name: "Battlefield 2 - Modern Combat [Public Beta Vol.1.0]"
   region: "NTSC-U"
@@ -57781,8 +57327,6 @@ SLUS-29170:
 SLUS-29171:
   name: "Final Fantasy XII [Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes broken textures.
 SLUS-29172:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "NTSC-U"
@@ -58007,7 +57551,6 @@ TCES-52456:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
-    partialTargetInvalidation: 1 # Fixes broken pause screen.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 TCES-52582:
@@ -58137,7 +57680,6 @@ TCPS-10158:
     vu1ClampMode: 0 # Fixes Spider-Man's eye texture colour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
-    partialTargetInvalidation: 1 # Fixes texture distortion.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
     autoFlush: 2 # Fixes shadow alignment along with HPO Special (Normal looks better but causes top left glitches).
@@ -58187,8 +57729,6 @@ TLES-52768:
 TLES-52781:
   name: "WWE - Smackdown Vs Raw Beta Trial Code"
   region: "PAL-E"
-  gsHWFixes:
-    partialTargetInvalidation: 1 # Fixes menu corruption.
 TLES-52940:
   name: "S.L.A.I. Phantom Crash Beta Trial Code"
   region: "PAL-E"
