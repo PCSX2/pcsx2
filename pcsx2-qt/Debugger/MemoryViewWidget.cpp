@@ -377,7 +377,11 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 	{
 		m_contextMenu = new QMenu(this);
 
-		QAction* action = new QAction(tr("Go to in disassembly"));
+		QAction* action = new QAction(tr("Copy Address"));
+		m_contextMenu->addAction(action);
+		connect(action, &QAction::triggered, this, [this]() { QApplication::clipboard()->setText(QString::number(m_table.selectedAddress, 16).toUpper()); });
+
+		action = new QAction(tr("Go to in disassembly"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { emit gotoInDisasm(m_table.selectedAddress); });
 
