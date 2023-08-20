@@ -1027,13 +1027,6 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="targetPartialInvalidation">
-           <property name="text">
-            <string>Target Partial Invalidation</string>
-           </property>
-          </widget>
-         </item>
          <item row="3" column="1">
           <widget class="QCheckBox" name="readTCOnClose">
            <property name="text">
