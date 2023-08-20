@@ -198,18 +198,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.textureInsideRt, "EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(
-		sif, m_ui.targetPartialInvalidation, "EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	connect(m_ui.cpuSpriteRenderBW, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onCPUSpriteRenderBWChanged);
-	connect(
-		m_ui.textureInsideRt, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onTextureInsideRtChanged);
 	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
 		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
 	onCPUSpriteRenderBWChanged();
-	onTextureInsideRtChanged();
 	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
 
 	//////////////////////////////////////////////////////////////////////////
@@ -559,10 +554,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* 
 			tr("Flushes all targets in the texture cache back to local memory when shutting down. Can prevent lost visuals when saving "
 			   "state or switching renderers, but can also cause graphical corruption."));
 
-		dialog->registerWidgetHelp(m_ui.targetPartialInvalidation, tr("Target Partial Invalidation"), tr("Unchecked"),
-			tr("Allows partial invalidation of render targets, which can fix graphical errors in some games. Texture Inside Render Target "
-			   "automatically enables this option."));
-
 		dialog->registerWidgetHelp(m_ui.estimateTextureRegion, tr("Estimate Texture Region"), tr("Unchecked"),
 			tr("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."));
 	}
@@ -889,13 +880,6 @@ void GraphicsSettingsWidget::onCPUSpriteRenderBWChanged()
 	m_ui.cpuSpriteRenderLevel->setEnabled(value != 0);
 }
 
-void GraphicsSettingsWidget::onTextureInsideRtChanged()
-{
-	const bool disabled = static_cast<GSTextureInRtMode>(m_ui.textureInsideRt->currentIndex()) >= GSTextureInRtMode::InsideTargets;
-
-	m_ui.targetPartialInvalidation->setDisabled(disabled);
-}
-
 GSRendererType GraphicsSettingsWidget::getEffectiveRenderer() const
 {
 	const GSRendererType type =
@@ -1060,7 +1044,6 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 		check_bool("EmuCore/GS", "UserHacks_DisablePartialInvalidation", false);
 		check_int("EmuCore/GS", "UserHacks_TextureInsideRt", static_cast<int>(GSTextureInRtMode::Disabled));
 		check_bool("EmuCore/GS", "UserHacks_ReadTCOnClose", false);
-		check_bool("EmuCore/GS", "UserHacks_TargetPartialInvalidation", false);
 		check_bool("EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 		check_bool("EmuCore/GS", "paltex", false);
 		check_int("EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
