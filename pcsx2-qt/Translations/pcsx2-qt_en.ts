@@ -9508,12 +9508,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="704"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="707"/>
         <source>Analog light is now on for port {} / slot {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="705"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="708"/>
         <source>Analog light is now off for port {} / slot {}</source>
         <translation type="unfinished"></translation>
     </message>
