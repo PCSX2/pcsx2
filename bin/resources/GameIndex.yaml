@@ -873,8 +873,6 @@ SCAJ-20010:
 SCAJ-20011:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-HK"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -8286,8 +8284,6 @@ SCPS-55013:
 SCPS-55014:
   name: "Armored Core 3"
   region: "NTSC-J"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
@@ -15055,8 +15051,6 @@ SLES-51398:
 SLES-51399:
   name: "Armored Core 3"
   region: "PAL-E"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
@@ -16674,8 +16668,6 @@ SLES-52203:
   name: "Armored Core 3 - Silent Line"
   region: "PAL-E"
   compat: 5
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -26434,8 +26426,6 @@ SLKA-25039:
 SLKA-25041:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-K"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -40368,8 +40358,6 @@ SLPM-67523:
 SLPM-67524:
   name: "Armored Core 3"
   region: "NTSC-K"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
@@ -43148,8 +43136,6 @@ SLPS-25112:
   name: "Armored Core 3"
   region: "NTSC-J"
   compat: 5
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
@@ -43383,8 +43369,6 @@ SLPS-25168:
 SLPS-25169:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-J"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -47096,8 +47080,6 @@ SLPS-73416:
 SLPS-73417:
   name: "Armored Core 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
@@ -47115,8 +47097,6 @@ SLPS-73419:
 SLPS-73420:
   name: "Armored Core 3 - Silent Line [PlayStation 2 The Best]"
   region: "NTSC-J"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
@@ -49066,8 +49046,6 @@ SLUS-20434:
 SLUS-20435:
   name: "Armored Core 3"
   region: "NTSC-U"
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     roundSprite: 2 # Reduces garbage on the UI whilst upscaling.
@@ -50129,8 +50107,6 @@ SLUS-20644:
   name: "Armored Core 3 - Silent Line"
   region: "NTSC-U"
   compat: 5
-  roundModes:
-    eeRoundMode: 0 # Fixes Z-Fighting.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
     partialTargetInvalidation: 1 # Fixes corrupted textures.
