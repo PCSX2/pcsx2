@@ -43617,6 +43617,15 @@ SLPS-25230:
 SLPS-25231:
   name: "Myst III - Exile"
   region: "NTSC-J"
+  patches:
+    D7CCA373:
+      content: |-
+        // Waits for IPU command to finish.
+        // Replaces wait loop that had a very short wait period.
+        patch=0,EE,001F0490,word,3C021000
+        patch=0,EE,001F0494,word,34422010
+        patch=0,EE,001F0498,word,8c430000
+        patch=0,EE,001F04A8,word,0460FFFA
 SLPS-25233:
   name: "Do DonPachi Daioujou"
   region: "NTSC-J"
