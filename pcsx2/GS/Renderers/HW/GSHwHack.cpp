@@ -1283,7 +1283,7 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIF
 		GSLocalMemory::m_psm[src_desc.PSM].depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget;
 	GSTextureCache::Target* tsrc =
 		g_texture_cache->LookupTarget(src_desc, GSVector2i(1, 1), r.GetTextureScaleFactor(), src_type);
-	if (!src)
+	if (!tsrc)
 		return false;
 
 	// The target might not.
