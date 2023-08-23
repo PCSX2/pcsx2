@@ -428,7 +428,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
 			const int tex_width = tex->m_target ? tex->m_from_target->m_valid.z : (tex->m_TEX0.TBW * 64);
 			const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
-			if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW || (m_cached_ctx.TEX0.TBW * 64) < floor(m_vt.m_max.t.x))
+			if ((static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW) || (m_cached_ctx.TEX0.TBW * 64) < floor(m_vt.m_max.t.x))
 			{
 				half_right_uv = false;
 				half_right_vert = false;
@@ -2802,7 +2802,7 @@ void GSRendererHW::Draw()
 	{
 		//ds->m_valid = ds->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
-		ds->UpdateValidity(m_r, can_update_size || m_r.w <= (resolution.y * 2) && !m_texture_shuffle);
+		ds->UpdateValidity(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
 
 		g_texture_cache->InvalidateVideoMem(context->offset.zb, m_r, false);
 
