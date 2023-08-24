@@ -27,9 +27,6 @@
 [submodule "3rdparty/sdl2/SDL"]
 	path = 3rdparty/sdl2/SDL
 	url = https://github.com/libsdl-org/SDL.git
-[submodule "3rdparty/libzip/libzip"]
-	path = 3rdparty/libzip/libzip
-	url = https://github.com/nih-at/libzip.git
 [submodule "3rdparty/zstd/zstd"]
 	path = 3rdparty/zstd/zstd
 	url = https://github.com/facebook/zstd.git

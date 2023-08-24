@@ -10,8 +10,6 @@ set(USE_SYSTEM_LIBS "AUTO" CACHE STRING "Use system libraries instead of bundled
 set(DEFAULT_USE_SYSTEM_RYML OFF) # System rapidyaml causes a lot of problems
 optional_system_library(fmt)
 optional_system_library(ryml)
-optional_system_library(zstd)
-optional_system_library(libzip)
 optional_system_library(SDL2)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
