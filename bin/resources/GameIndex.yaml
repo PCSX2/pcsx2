@@ -14764,6 +14764,7 @@ SLES-51289:
   compat: 5
   gameFixes:
     - GIFFIFOHack # Fixes flickering textures.
+    - EETimingHack # Further required to stop flickering.
 SLES-51290:
   name: "Sword of the Samurai"
   region: "PAL-E"
