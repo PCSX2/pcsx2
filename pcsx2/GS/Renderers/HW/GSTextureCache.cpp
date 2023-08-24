@@ -1634,26 +1634,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 				}
 
-				if (can_use && !is_shuffle && preserve_alpha && preserve_rgb && !(GSLocalMemory::m_psm[TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32) && TEX0.TBW != t->m_TEX0.TBW && t->m_dirty.size() >= 1 && !t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size).eq(t->m_valid))
+				if (can_use && !is_shuffle && preserve_alpha && preserve_rgb && TEX0.TBW != t->m_TEX0.TBW && t->m_dirty.size() >= 1)
 				{
-					std::vector<GSState::GSUploadQueue>::reverse_iterator iter;
-
-					const int start_draw = GSRendererHW::GetInstance()->m_draw_transfers.back().draw;
-
-					for (iter = GSRendererHW::GetInstance()->m_draw_transfers.rbegin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.rend(); )
-					{
-						if (TEX0.TBP0 == iter->blit.DBP && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM) && draw_rect.rintersect(iter->rect).eq(draw_rect))
-						{
-							can_use = false;
-							break;
-						}
-
-						// Give up after checking recent draw
-						if (start_draw - iter->draw > 0)
-							break;
-
-						++iter;
-					}
+					can_use = false;
 				}
 
 				if (can_use)
