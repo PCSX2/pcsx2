@@ -516,7 +516,9 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 		{
 			const int xblocks = in_rect.width() / src_info->bs.x;
 			const int yblocks = in_rect.height() / src_info->bs.y;
-			if ((!(block_offset & 0x7) && xblocks <= 4 && yblocks <= 2) || req_depth_offset)
+			// if !(block_offset & 0x7) is false, this is technically incorrect, but FFX hates it and starts making a mess, so it's better this way without adding complexity.
+			// TODO maybe: Add per block invalidation? ugh, would have to keep that to small blocks. 2 blocks in the case of FFX.
+			if ((xblocks <= 4 && yblocks <= 2) || req_depth_offset)
 			{
 				GSVector4i b2a_offset = GSVector4i::zero();
 				const GSVector4i target_rect = GSVector4i(0, 0, src_width, 2048);
