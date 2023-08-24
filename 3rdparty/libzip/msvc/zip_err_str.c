@@ -47,6 +47,8 @@ const struct _zip_err_info _zip_err_str[] = {
     { S, "Tell error" },
     { N, "Compressed data invalid" },
     { N, "Operation cancelled" },
+    { N, "Unexpected length of data" },
+    { N, "Not allowed in torrentzip" },
 };
 
 const int _zip_err_str_count = sizeof(_zip_err_str)/sizeof(_zip_err_str[0]);
