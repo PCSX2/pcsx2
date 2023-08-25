@@ -52177,6 +52177,7 @@ SLUS-21108:
     vuClampMode: 0 # Fixes bump mapping issues
   gsHWFixes:
     textureInsideRT: 1 # Fixes post processing.
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLUS-21109:
   name: "Drive to Survive"
   region: "NTSC-U"
@@ -57409,6 +57410,7 @@ SLUS-29191:
     vuClampMode: 0 # Fixes bump mapping issues
   gsHWFixes:
     textureInsideRT: 1 # Fixes post processing.
+    getSkipCount: "GSC_HitmanBloodMoney"
 SLUS-29192:
   name: "Test Drive Unlimited [Public Beta Vol.1.0]"
   region: "NTSC-U"
