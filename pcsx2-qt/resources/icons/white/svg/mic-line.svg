@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 26.5.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Mic_-_Pcsx2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+	 y="0px" viewBox="0 0 150 150" style="enable-background:new 0 0 150 150;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:none;stroke:#FFFFFF;stroke-width:12;stroke-linecap:round;stroke-miterlimit:10;}
+	.st2{fill:#FFFFFF;}
+	.st3{fill:none;stroke:#FFFFFF;stroke-width:12;stroke-miterlimit:10;}
+</style>
+<g id="tela">
+	<rect class="st0" width="150" height="150"/>
+</g>
+<g id="By_maxihplay">
+	<g id="suporte">
+		<line class="st1" x1="44.9" y1="137.8" x2="105.1" y2="137.8"/>
+		<line class="st1" x1="75" y1="114.8" x2="75" y2="137.8"/>
+		<path class="st1" d="M107.7,69v18.5c0,13.3-10.8,24.1-24.1,24.1H66.4c-13.3,0-24.1-10.8-24.1-24.1V69"/>
+	</g>
+	<g id="Mic">
+		<path class="st2" d="M75,77.1c-3.5,0-6.3-2.8-6.3-6.3s2.8-6.3,6.3-6.3s6.3,2.8,6.3,6.3S78.5,77.1,75,77.1z"/>
+		<line class="st1" x1="69.4" y1="96.4" x2="80.6" y2="96.4"/>
+		<line class="st3" x1="55.8" y1="43.9" x2="94.2" y2="43.7"/>
+		<path class="st3" d="M73.1,12.2h3.8c9.6,0,17.3,7.7,17.3,17.3v45.4c0,9.6-7.7,17.3-17.3,17.3h-3.8c-9.6,0-17.3-7.7-17.3-17.3V29.5
+			C55.8,20,63.5,12.2,73.1,12.2z"/>
+	</g>
+</g>
+</svg>
