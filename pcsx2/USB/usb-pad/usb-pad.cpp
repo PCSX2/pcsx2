@@ -1042,7 +1042,7 @@ namespace usb_pad
 
 	const char* KeyboardmaniaDevice::Name() const
 	{
-		return TRANSLATE_NOOP("USB", "Keyboardmania");
+		return TRANSLATE_NOOP("USB", "KeyboardMania");
 	}
 
 	const char* KeyboardmaniaDevice::TypeName() const
