@@ -1125,7 +1125,7 @@ namespace usb_hid
 
 	const char* BeatManiaDevice::Name() const
 	{
-		return TRANSLATE_NOOP("USB", "BeatMania Da Da Da!! Keyboard");
+		return TRANSLATE_NOOP("USB", "Konami Keyboard");
 	}
 
 	const char* BeatManiaDevice::TypeName() const
