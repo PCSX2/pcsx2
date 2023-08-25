@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 26.5.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Aim_-_Pcsx2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+	 y="0px" viewBox="0 0 150 150" style="enable-background:new 0 0 150 150;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;}
+	.st1{fill:none;stroke:#000000;stroke-width:12;stroke-miterlimit:10;}
+	.st2{fill:none;stroke:#000000;stroke-width:12;stroke-linecap:round;stroke-miterlimit:10;}
+</style>
+<g id="tela">
+	<path id="tela-2" class="st0" d="M0,0h150v150H0V0z"/>
+</g>
+<g id="By_Maxihplay">
+	<circle class="st1" cx="75" cy="75" r="52.2"/>
+	<circle class="st1" cx="75" cy="75" r="29.8"/>
+	<line class="st2" x1="75" y1="13.6" x2="75" y2="57.8"/>
+	<line class="st2" x1="75" y1="92.2" x2="75" y2="136.4"/>
+	<line class="st2" x1="57.7" y1="75" x2="13.6" y2="75"/>
+	<line class="st2" x1="136.4" y1="75" x2="92.3" y2="75"/>
+	<path d="M75,81.4c-3.5,0-6.4-2.9-6.4-6.4s2.9-6.4,6.4-6.4s6.4,2.9,6.4,6.4S78.5,81.4,75,81.4z"/>
+</g>
+</svg>

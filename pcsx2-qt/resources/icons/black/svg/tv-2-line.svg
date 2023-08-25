@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <g>
-        <path fill="none" d="M0 0h24v24H0z"/>
-        <path d="M2 4c0-.552.455-1 .992-1h18.016c.548 0 .992.445.992 1v14c0 .552-.455 1-.992 1H2.992A.994.994 0 0 1 2 18V4zm2 1v12h16V5H4zm1 15h14v2H5v-2z"/>
-    </g>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><style>.cls-1{stroke-linecap:round;}.cls-1,.cls-2,.cls-3{fill:none;}.cls-1,.cls-3{stroke:#000;stroke-miterlimit:10;stroke-width:12px;}</style></defs><g id="tela"><path id="tela-2" class="cls-2" d="M0,0H150V150H0V0Z"/></g><g id="Monitor_-_Pcsx2"><g id="By_Kam"><line id="pe" class="cls-1" x1="39.95" y1="129.07" x2="110.05" y2="129.07"/><rect id="monitor" class="cls-3" x="18.39" y="20.93" width="113.21" height="87.73" rx="2.83" ry="2.83"/></g></g></svg>

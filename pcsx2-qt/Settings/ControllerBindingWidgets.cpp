@@ -939,6 +939,31 @@ USBDeviceWidget::~USBDeviceWidget() = default;
 
 QIcon USBDeviceWidget::getIcon() const
 {
+	static constexpr const char* icons[][2] = {
+		{"Pad", "wheel-line"}, // Wheel Device
+		{"Msd", "msd-line"}, // Mass Storage Device
+		{"singstar", "singstar-line"}, // Singstar
+		{"logitech_usbmic", "mic-line"}, // Logitech USB Mic
+		{"headset", "headset-line"}, // Logitech Headset Mic
+		{"hidkbd", "keyboard-2-line"}, // HID Keyboard
+		{"hidmouse", "mouse-line"}, // HID Mouse
+		{"RBDrumKit", "drum-line"}, // Rock Band Drum Kit
+		{"BuzzDevice", "buzz-controller-line"}, // Buzz Controller
+		{"webcam", "eyetoy-line"}, // EyeToy
+		{"beatmania", "keyboard-2-line"}, // BeatMania Da Da Da!! (Konami Keyboard)
+		{"seamic", "seamic-line"}, // SEGA Seamic
+		{"printer", "printer-line"}, // Printer
+		{"Keyboardmania", "keyboardmania-line"}, // KeyboardMania
+		{"guncon2", "guncon2-line"}, // GunCon 2
+		{"DJTurntable", "dj-hero-line"} // DJ Hero TurnTable
+	};
+
+	for (size_t i = 0; i < std::size(icons); i++)
+	{
+		if (m_device_type == icons[i][0])
+			return QIcon::fromTheme(icons[i][1]);
+	}
+
 	return QIcon::fromTheme("usb-fill");
 }
 

@@ -8,6 +8,7 @@
     <file>icons/black/svg/at.svg</file>
     <file>icons/black/svg/band-aid-line.svg</file>
     <file>icons/black/svg/brush-line.svg</file>
+    <file>icons/black/svg/buzz-controller-line.svg</file>
     <file>icons/black/svg/cheats-line.svg</file>
     <file>icons/black/svg/checkbox-multiple-blank-line.svg</file>
     <file>icons/black/svg/chip-line.svg</file>
@@ -18,10 +19,13 @@
     <file>icons/black/svg/disc-2-line.svg</file>
     <file>icons/black/svg/disc-eject-line.svg</file>
     <file>icons/black/svg/discord.svg</file>
+    <file>icons/black/svg/dj-hero-line.svg</file>
+    <file>icons/black/svg/drum-line.svg</file>
     <file>icons/black/svg/door-open-line.svg</file>
     <file>icons/black/svg/download-2-line.svg</file>
     <file>icons/black/svg/eject-line.svg</file>
     <file>icons/black/svg/emulation-line.svg</file>
+    <file>icons/black/svg/eyetoy-line.svg</file>
     <file>icons/black/svg/file-add-line.svg</file>
     <file>icons/black/svg/file-line.svg</file>
     <file>icons/black/svg/file-list-line.svg</file>
@@ -36,36 +40,46 @@
     <file>icons/black/svg/folder-open-line.svg</file>
     <file>icons/black/svg/folder-reduce-line.svg</file>
     <file>icons/black/svg/guitar-line.svg</file>
+    <file>icons/black/svg/guncon2-line.svg</file>
     <file>icons/black/svg/folder-settings-line.svg</file>
     <file>icons/black/svg/fullscreen-line.svg</file>
     <file>icons/black/svg/function-line.svg</file>
     <file>icons/black/svg/github.svg</file>
     <file>icons/black/svg/global-line.svg</file>
+    <file>icons/black/svg/headset-line.svg</file>
     <file>icons/black/svg/heart-circle-line.svg</file>
     <file>icons/black/svg/heart-monitor-line.svg</file>
     <file>icons/black/svg/image-fill.svg</file>
     <file>icons/black/svg/interface-line.svg</file>
     <file>icons/black/svg/keyboard-line.svg</file>
+    <file>icons/black/svg/keyboard-2-line.svg</file>
+    <file>icons/black/svg/keyboardmania-line.svg</file>
     <file>icons/black/svg/lightbulb-line.svg</file>
     <file>icons/black/svg/list-check.svg</file>
     <file>icons/black/svg/login-box-line.svg</file>
     <file>icons/black/svg/memcard-line.svg</file>
     <file>icons/black/svg/mouse-line.svg</file>
+    <file>icons/black/svg/mic-line.svg</file>
+    <file>icons/black/svg/msd-line.svg</file>
     <file>icons/black/svg/pause-line.svg</file>
     <file>icons/black/svg/play-line.svg</file>
     <file>icons/black/svg/price-tag-3-line.svg</file>
+    <file>icons/black/svg/printer-line.svg</file>
     <file>icons/black/svg/refresh-line.svg</file>
     <file>icons/black/svg/restart-line.svg</file>
     <file>icons/black/svg/save-3-line.svg</file>
     <file>icons/black/svg/screenshot-2-line.svg</file>
+    <file>icons/black/svg/seamic-line.svg</file>
     <file>icons/black/svg/settings-3-line.svg</file>
     <file>icons/black/svg/shut-down-line.svg</file>
+    <file>icons/black/svg/singstar-line.svg</file>
     <file>icons/black/svg/tools-line.svg</file>
     <file>icons/black/svg/trophy-line.svg</file>
     <file>icons/black/svg/tv-2-line.svg</file>
     <file>icons/black/svg/usb-fill.svg</file>
     <file>icons/black/svg/volume-up-line.svg</file>
     <file>icons/black/svg/warning-line.svg</file>
+    <file>icons/black/svg/wheel-line.svg</file>
     <file>icons/black/svg/window-2-line.svg</file>
     <file>icons/black/svg/zoom-in-line.svg</file>
     <file>icons/black/svg/zoom-out-line.svg</file>
@@ -81,6 +95,7 @@
     <file>icons/white/svg/at.svg</file>
     <file>icons/white/svg/band-aid-line.svg</file>
     <file>icons/white/svg/brush-line.svg</file>
+    <file>icons/white/svg/buzz-controller-line.svg</file>
     <file>icons/white/svg/cheats-line.svg</file>
     <file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
     <file>icons/white/svg/chip-line.svg</file>
@@ -91,10 +106,13 @@
     <file>icons/white/svg/disc-2-line.svg</file>
     <file>icons/white/svg/disc-eject-line.svg</file>
     <file>icons/white/svg/discord.svg</file>
+    <file>icons/white/svg/dj-hero-line.svg</file>
+    <file>icons/white/svg/drum-line.svg</file>
     <file>icons/white/svg/door-open-line.svg</file>
     <file>icons/white/svg/download-2-line.svg</file>
     <file>icons/white/svg/eject-line.svg</file>
     <file>icons/white/svg/emulation-line.svg</file>
+    <file>icons/white/svg/eyetoy-line.svg</file>
     <file>icons/white/svg/file-add-line.svg</file>
     <file>icons/white/svg/file-line.svg</file>
     <file>icons/white/svg/file-list-line.svg</file>
@@ -114,25 +132,34 @@
     <file>icons/white/svg/github.svg</file>
     <file>icons/white/svg/global-line.svg</file>
     <file>icons/white/svg/guitar-line.svg</file>
+    <file>icons/white/svg/guncon2-line.svg</file>
+    <file>icons/white/svg/headset-line.svg</file>
     <file>icons/white/svg/heart-circle-line.svg</file>
     <file>icons/white/svg/heart-monitor-line.svg</file>
     <file>icons/white/svg/image-fill.svg</file>
     <file>icons/white/svg/interface-line.svg</file>
     <file>icons/white/svg/keyboard-line.svg</file>
+    <file>icons/white/svg/keyboard-2-line.svg</file>
+    <file>icons/white/svg/keyboardmania-line.svg</file>
     <file>icons/white/svg/lightbulb-line.svg</file>
     <file>icons/white/svg/list-check.svg</file>
     <file>icons/white/svg/login-box-line.svg</file>
     <file>icons/white/svg/memcard-line.svg</file>
     <file>icons/white/svg/mouse-line.svg</file>
+    <file>icons/white/svg/mic-line.svg</file>
+    <file>icons/white/svg/msd-line.svg</file>
     <file>icons/white/svg/pause-line.svg</file>
     <file>icons/white/svg/play-line.svg</file>
     <file>icons/white/svg/price-tag-3-line.svg</file>
+    <file>icons/white/svg/printer-line.svg</file>
     <file>icons/white/svg/refresh-line.svg</file>
     <file>icons/white/svg/restart-line.svg</file>
     <file>icons/white/svg/save-3-line.svg</file>
     <file>icons/white/svg/screenshot-2-line.svg</file>
     <file>icons/white/svg/settings-3-line.svg</file>
+    <file>icons/white/svg/seamic-line.svg</file>
     <file>icons/white/svg/shut-down-line.svg</file>
+    <file>icons/white/svg/singstar-line.svg</file>
     <file>icons/white/svg/tools-line.svg</file>
     <file>icons/white/svg/trophy-line.svg</file>
     <file>icons/white/svg/tv-2-line.svg</file>
@@ -140,6 +167,7 @@
     <file>icons/white/svg/volume-up-line.svg</file>
     <file>icons/white/svg/warning-line.svg</file>
     <file>icons/white/svg/window-2-line.svg</file>
+    <file>icons/white/svg/wheel-line.svg</file>
     <file>icons/white/svg/zoom-in-line.svg</file>
     <file>icons/white/svg/zoom-out-line.svg</file>
     <file>images/DrivingForce.png</file>
