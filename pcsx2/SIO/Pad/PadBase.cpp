@@ -41,7 +41,6 @@ bool PadBase::Freeze(StateWrapper& sw)
 		return false;
 
 	// Protected PadBase members
-	sw.Do(&rawInputs);
 	sw.Do(&unifiedSlot);
 	sw.Do(&isInConfig);
 	sw.Do(&currentMode);
