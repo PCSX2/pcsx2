@@ -996,6 +996,21 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 	MTGS::ApplySettings();
 }
 
+static void HotkeyToggleOSD()
+{
+	GSConfig.OsdShowMessages ^= EmuConfig.GS.OsdShowMessages;
+	GSConfig.OsdShowSpeed ^= EmuConfig.GS.OsdShowSpeed;
+	GSConfig.OsdShowFPS ^= EmuConfig.GS.OsdShowFPS;
+	GSConfig.OsdShowCPU ^= EmuConfig.GS.OsdShowCPU;
+	GSConfig.OsdShowGPU ^= EmuConfig.GS.OsdShowGPU;
+	GSConfig.OsdShowResolution ^= EmuConfig.GS.OsdShowResolution;
+	GSConfig.OsdShowGSStats ^= EmuConfig.GS.OsdShowGSStats;
+	GSConfig.OsdShowIndicators ^= EmuConfig.GS.OsdShowIndicators;
+	GSConfig.OsdShowSettings ^= EmuConfig.GS.OsdShowSettings;
+	GSConfig.OsdShowInputs ^= EmuConfig.GS.OsdShowInputs;
+	GSConfig.OsdShowFrameTimes ^= EmuConfig.GS.OsdShowFrameTimes;
+}
+
 BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 	TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
 	[](s32 pressed) {
@@ -1057,6 +1072,11 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 		[](s32 pressed) {
 			if (!pressed)
 				HotkeyAdjustUpscaleMultiplier(-1);
+		}},
+	{"ToggleOSD", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle On-Screen Display"),
+		[](s32 pressed) {
+			if (!pressed)
+				HotkeyToggleOSD();
 		}},
 	{"CycleAspectRatio", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Aspect Ratio"),
 		[](s32 pressed) {
