@@ -29,3 +29,5 @@ add_library(pcsx2-zlib
 target_include_directories(pcsx2-zlib PUBLIC .)
 
 add_library(ZLIB::ZLIB ALIAS pcsx2-zlib)
+
+disable_compiler_warnings_for_target(pcsx2-zlib)

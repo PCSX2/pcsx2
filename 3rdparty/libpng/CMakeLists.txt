@@ -19,3 +19,4 @@ add_library(png
 target_link_libraries(png PRIVATE ZLIB::ZLIB)
 target_include_directories(png PUBLIC .)
 add_library(PNG::PNG ALIAS png)
+disable_compiler_warnings_for_target(png)
