@@ -177,6 +177,7 @@ add_subdirectory(3rdparty/jpgd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/cpuinfo EXCLUDE_FROM_ALL)
+disable_compiler_warnings_for_target(cpuinfo)
 add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
@@ -192,7 +193,12 @@ endif()
 
 if(CUBEB_API)
 	add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
-	target_compile_options(cubeb PRIVATE "-w")
-	target_compile_options(speex PRIVATE "-w")
+	disable_compiler_warnings_for_target(cubeb)
+	disable_compiler_warnings_for_target(speex)
 endif()
 
+# Deliberately at the end. We don't want to set the flag on third-party projects.
+if(MSVC)
+	# Don't warn about "deprecated" POSIX functions.
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS" "-DCRT_SECURE_NO_DEPRECATE")
+endif()
