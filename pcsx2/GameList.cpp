@@ -1075,12 +1075,11 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 
 std::string GameList::FormatTimestamp(std::time_t timestamp)
 {
-	// TODO: All these strings should be translateable.
 	std::string ret;
 
 	if (timestamp == 0)
 	{
-		ret = "Never";
+		ret = TRANSLATE_STR("GameList", "Never");
 	}
 	else
 	{
@@ -1097,12 +1096,12 @@ std::string GameList::FormatTimestamp(std::time_t timestamp)
 
 		if (ctime.tm_year == ttime.tm_year && ctime.tm_yday == ttime.tm_yday)
 		{
-			ret = "Today";
+			ret = TRANSLATE_STR("GameList", "Today");
 		}
 		else if ((ctime.tm_year == ttime.tm_year && ctime.tm_yday == (ttime.tm_yday + 1)) ||
 				 (ctime.tm_yday == 0 && (ctime.tm_year - 1) == ttime.tm_year))
 		{
-			ret = "Yesterday";
+			ret = TRANSLATE_STR("GameList", "Yesterday");
 		}
 		else
 		{
@@ -1125,22 +1124,22 @@ std::string GameList::FormatTimespan(std::time_t timespan, bool long_format)
 	if (!long_format)
 	{
 		if (hours >= 100)
-			ret = fmt::format("{}h {}m", hours, minutes);
+			ret = fmt::format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
 		else if (hours > 0)
-			ret = fmt::format("{}h {}m {}s", hours, minutes, seconds);
+			ret = fmt::format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
 		else if (minutes > 0)
-			ret = fmt::format("{}m {}s", minutes, seconds);
+			ret = fmt::format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
 		else if (seconds > 0)
-			ret = fmt::format("{}s", seconds);
+			ret = fmt::format(TRANSLATE_FS("GameList", "{}s"), seconds);
 		else
 			ret = "None";
 	}
 	else
 	{
 		if (hours > 0)
-			ret = fmt::format("{} hours", hours);
+			ret = fmt::format(TRANSLATE_FS("GameList", "{} hours"), hours);
 		else
-			ret = fmt::format("{} minutes", minutes);
+			ret = fmt::format(TRANSLATE_FS("GameList", "{} minutes"), minutes);
 	}
 
 	return ret;
