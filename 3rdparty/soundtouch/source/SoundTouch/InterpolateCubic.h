@@ -38,7 +38,7 @@
 namespace soundtouch
 {
 
-class InterpolateCubic : public TransposerBase
+class InterpolateCubic final : public TransposerBase
 {
 protected:
     virtual int transposeMono(SAMPLETYPE *dest, 
@@ -58,7 +58,7 @@ public:
 
     virtual void resetRegisters() override;
 
-    int getLatency() const
+    int getLatency() const override
     {
         return 1;
     }
