@@ -6,10 +6,6 @@ set(PCSX2_DEFS "")
 #-------------------------------------------------------------------------------
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
-set(USE_SYSTEM_LIBS "AUTO" CACHE STRING "Use system libraries instead of bundled libraries.  ON - Always use system and fail if unavailable, OFF - Always use bundled, AUTO - Use system if available, otherwise use bundled.  Default is AUTO")
-set(DEFAULT_USE_SYSTEM_RYML OFF) # System rapidyaml causes a lot of problems
-optional_system_library(fmt)
-optional_system_library(ryml)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
@@ -24,9 +20,6 @@ option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 #-------------------------------------------------------------------------------
 # Path and lib option
 #-------------------------------------------------------------------------------
-option(CUBEB_API "Build Cubeb support on SPU2" ON)
-option(QT_BUILD "Build Qt frontend" ON)
-
 if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
 	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)

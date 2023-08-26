@@ -16,9 +16,6 @@
 #pragma once
 
 #include "USB/usb-pad/usb-pad.h"
-
-#ifdef SDL_BUILD
-
 #include "Input/SDLInputSource.h"
 
 namespace usb_pad
@@ -64,5 +61,3 @@ namespace usb_pad
 		bool m_autocenter_supported = false;
 	};
 } // namespace usb_pad
-
-#endif

@@ -16,13 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "usb-pad.h"
 #include "USB/qemu-usb/USBinternal.h"
+#include "USB/usb-pad/usb-pad-sdl-ff.h"
 #include "USB/USB.h"
 #include "Host.h"
 #include "StateWrapper.h"
-
-#ifdef SDL_BUILD
-#include "USB/usb-pad/usb-pad-sdl-ff.h"
-#endif
 
 namespace usb_pad
 {
@@ -627,10 +624,7 @@ namespace usb_pad
 			return;
 
 		mFFdev.reset();
-
-#ifdef SDL_BUILD
 		mFFdev = SDLFFDevice::Create(mFFdevName);
-#endif
 	}
 
 	static void pad_handle_data(USBDevice* dev, USBPacket* p)

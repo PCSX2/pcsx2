@@ -22,10 +22,7 @@
 #include "SettingWidgetBinder.h"
 
 #include "pcsx2/Input/InputManager.h"
-
-#ifdef SDL_BUILD
 #include "pcsx2/Input/SDLInputSource.h"
-#endif
 
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
 	: QWidget(parent)
@@ -35,17 +32,12 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
 	SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
-#ifdef SDL_BUILD
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
-#else
-	m_ui.enableSDLSource->setEnabled(false);
-	m_ui.ledSettings->setEnabled(false);
-#endif
 
-#if defined(SDL_BUILD) && defined(_WIN32)
+#ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
 #else
 	m_ui.gridLayout_2->removeWidget(m_ui.enableSDLRawInput);
@@ -157,7 +149,6 @@ ControllerLEDSettingsDialog::~ControllerLEDSettingsDialog() = default;
 
 void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 player_id)
 {
-#ifdef SDL_BUILD
 	std::string key(fmt::format("Player{}LED", player_id));
 	const u32 current_value = SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id);
 	button->setColor(current_value);
@@ -165,7 +156,6 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
 	connect(button, &ColorPickerButton::colorChanged, this, [this, key = std::move(key)](u32 new_rgb) {
 		m_dialog->setStringValue("SDLExtra", key.c_str(), fmt::format("{:06X}", new_rgb).c_str());
 	});
-#endif
 }
 
 ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)

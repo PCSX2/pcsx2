@@ -24,8 +24,6 @@
 
 #include <algorithm>
 
-#ifdef SDL_BUILD
-
 namespace usb_pad
 {
 	SDLFFDevice::SDLFFDevice(SDL_Haptic* haptic)
@@ -356,5 +354,3 @@ namespace usb_pad
 	}
 
 } // namespace usb_pad
-
-#endif
