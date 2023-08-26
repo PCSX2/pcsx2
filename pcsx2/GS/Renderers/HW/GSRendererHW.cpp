@@ -5704,16 +5704,16 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// Have to check both contexts, because God of War 2 likes to do this in-between setting TRXDIR, which
 	// causes a flush, and we don't have the next context backed up index set.
 	bool horizontal = false;
-	if ((m_env.CTXT[0].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
+	if (((m_env.CTXT[0].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
 			((m_env.CTXT[0].FRAME.FBP == base &&
 				 (!m_env.CTXT[0].ZBUF.ZMSK || (m_env.CTXT[0].TEST.ZTE && m_env.CTXT[0].TEST.ZTST >= ZTST_GEQUAL)) &&
 				 m_env.CTXT[0].ZBUF.ZBP != half) ||
-				(m_env.CTXT[0].ZBUF.ZBP == base && m_env.CTXT[0].FRAME.FBP != half))) ||
-		m_env.CTXT[1].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
+				(m_env.CTXT[0].ZBUF.ZBP == base && m_env.CTXT[0].FRAME.FBP != half)))) ||
+		(m_env.CTXT[1].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
 			((m_env.CTXT[1].FRAME.FBP == base && m_env.CTXT[1].ZBUF.ZBP != half) ||
 				(m_env.CTXT[1].ZBUF.ZBP == base &&
 					(!m_env.CTXT[1].ZBUF.ZMSK || (m_env.CTXT[1].TEST.ZTE && m_env.CTXT[1].TEST.ZTST >= ZTST_GEQUAL)) &&
-					m_env.CTXT[1].FRAME.FBP != half)))
+					m_env.CTXT[1].FRAME.FBP != half))))
 	{
 		// Needed for Spider-Man 2 (target was previously half size, double half cleared at new size).
 		GL_INS("Confirmed double-half clear by next FBP/ZBP");

@@ -159,11 +159,8 @@ bool GSDevice11::Create()
 	D3D11_RASTERIZER_DESC rd;
 	D3D11_BLEND_DESC bsd;
 
-	D3D_FEATURE_LEVEL level;
-
 	if (GSConfig.UseDebugDevice)
 		m_annotation = m_ctx.try_query<ID3DUserDefinedAnnotation>();
-	level = m_dev->GetFeatureLevel();
 
 	if (!m_shader_cache.Open(m_dev->GetFeatureLevel(), GSConfig.UseDebugDevice))
 		Console.Warning("Shader cache failed to open.");

@@ -38,6 +38,7 @@ public:
 	class IStream
 	{
 	public:
+		virtual ~IStream();
 		virtual u32 Read(void* buf, u32 count) = 0;
 		virtual u32 Write(const void* buf, u32 count) = 0;
 		virtual u32 GetPosition() = 0;
