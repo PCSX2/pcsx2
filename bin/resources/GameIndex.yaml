@@ -2223,7 +2223,6 @@ SCED-50642:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCED-50660:
   name: "Dropship - United Peace Force"
   region: "PAL-A"
@@ -2346,7 +2345,6 @@ SCED-50907:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCED-50916:
   name: "Ratchet & Clank [Demo]"
   region: "PAL-M5"
@@ -3976,7 +3974,6 @@ SCES-50490:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50491:
   name: "Final Fantasy X"
   region: "PAL-F"
@@ -3984,7 +3981,6 @@ SCES-50491:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50492:
   name: "Final Fantasy X"
   region: "PAL-G"
@@ -3993,7 +3989,6 @@ SCES-50492:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters..
 SCES-50493:
   name: "Final Fantasy X"
   region: "PAL-I"
@@ -4001,7 +3996,6 @@ SCES-50493:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50494:
   name: "Final Fantasy X"
   region: "PAL-S"
@@ -4009,7 +4003,6 @@ SCES-50494:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SCES-50499:
   name: "Ecco the Dolphin - Defender of the Future"
   region: "PAL-M5"
@@ -26838,7 +26831,6 @@ SLKA-25214:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLKA-25215:
   name: "Shining Wind"
   region: "NTSC-K"
@@ -32655,7 +32647,6 @@ SLPM-65115:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-65116:
   name: "Lilie no Atelier Plus - Salburg no Renkinjutsushi 3"
   region: "NTSC-J"
@@ -36373,7 +36364,6 @@ SLPM-66124:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-66125:
   name: "Final Fantasy X-2 [Ultimate Hits]"
   region: "NTSC-J"
@@ -38685,7 +38675,6 @@ SLPM-66677:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-66678:
   name: "Final Fantasy X-2 - International + Last Mission [Ultimate Hits]"
   region: "NTSC-J"
@@ -40001,7 +39990,6 @@ SLPM-67513:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPM-67514:
   name: "Kessen"
   region: "NTSC-K"
@@ -42560,7 +42548,6 @@ SLPS-25050:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPS-25051:
   name: "Missing Blue"
   region: "NTSC-J"
@@ -42720,7 +42707,6 @@ SLPS-25088:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPS-25089:
   name: "Salt Lake 2002"
   region: "NTSC-J"
@@ -46129,7 +46115,6 @@ SLPS-72501:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLPS-72502:
   name: "Tales of Destiny 2 [Mega Hits]"
   region: "NTSC-J"
@@ -48031,7 +48016,6 @@ SLUS-20312:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
-    textureInsideRT: 1 # Fixes wrong visuals for the summon Anima and The (Triple) Magus Sisters.
 SLUS-20313:
   name: "Wave Rally"
   region: "NTSC-U"
