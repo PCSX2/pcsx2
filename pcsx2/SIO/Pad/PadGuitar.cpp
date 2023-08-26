@@ -402,7 +402,6 @@ bool PadGuitar::Freeze(StateWrapper& sw)
 		return false;
 
 	// Private PadGuitar members
-	sw.Do(&buttons);
 	sw.Do(&whammy);
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);

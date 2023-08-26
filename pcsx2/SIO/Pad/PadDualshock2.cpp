@@ -815,7 +815,6 @@ bool PadDualshock2::Freeze(StateWrapper& sw)
 
 	// Private PadDualshock2 members
 	sw.Do(&buttons);
-	sw.DoBytes(&analogs, sizeof(Analogs));
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);
 	sw.Do(&analogPressed);
