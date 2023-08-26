@@ -18,6 +18,8 @@
 #include <cinttypes>
 #include <cstring>
 
+StateWrapper::IStream::~IStream() = default;
+
 StateWrapper::StateWrapper(IStream* stream, Mode mode, u32 version)
 	: m_stream(stream)
 	, m_mode(mode)

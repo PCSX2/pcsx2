@@ -15,6 +15,7 @@
 
 #include "common/Pcsx2Defs.h"
 
+[[maybe_unused]]
 __ri static void MemCopy_WrappedDest(const u128* src, u128* destBase, uint& destStart, uint destSize, uint len)
 {
 	uint endpos = destStart + len;
@@ -32,6 +33,7 @@ __ri static void MemCopy_WrappedDest(const u128* src, u128* destBase, uint& dest
 	}
 }
 
+[[maybe_unused]]
 __ri static void MemCopy_WrappedSrc(const u128* srcBase, uint& srcStart, uint srcSize, u128* dest, uint len)
 {
 	uint endpos = srcStart + len;
