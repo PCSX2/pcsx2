@@ -211,6 +211,7 @@ namespace FullscreenUI
 	static void PauseForMenuOpen();
 	static void ClosePauseMenu();
 	static void OpenPauseSubMenu(PauseSubMenu submenu);
+	static void ReturnToPreviousWindow();
 	static void ReturnToMainWindow();
 	static void DrawLandingWindow();
 	static void DrawPauseMenu(MainWindowType type);
@@ -629,7 +630,7 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 		MTGS::RunOnGSThread([]() {
 			if (s_current_main_window == MainWindowType::Achievements || s_current_main_window == MainWindowType::Leaderboards)
 			{
-				ReturnToMainWindow();
+				ReturnToPreviousWindow();
 			}
 		});
 		MTGS::WaitGS(false, false, false);
@@ -661,6 +662,8 @@ void FullscreenUI::OnVMDestroyed()
 			return;
 
 		s_pause_menu_was_open = false;
+		s_was_paused_on_quick_menu_open = false;
+		s_current_pause_submenu = PauseSubMenu::None;
 		SwitchToLanding();
 	});
 }
@@ -872,6 +875,24 @@ void FullscreenUI::InvalidateCoverCache()
 	MTGS::RunOnGSThread([]() { s_cover_image_map.clear(); });
 }
 
+void FullscreenUI::ReturnToPreviousWindow()
+{
+	if (!VMManager::HasValidVM())
+	{
+		SwitchToLanding();
+		return;
+	}
+	else if (s_pause_menu_was_open)
+	{
+		s_current_main_window = MainWindowType::PauseMenu;
+		QueueResetFocus();
+	}
+	else
+	{
+		s_current_main_window = MainWindowType::None;
+	}
+}
+
 void FullscreenUI::ReturnToMainWindow()
 {
 	if (s_pause_menu_was_open)
@@ -1069,7 +1090,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 
 		QueueResetFocus();
 		CloseFileSelector();
-		ReturnToMainWindow();
+		ReturnToPreviousWindow();
 	};
 
 	OpenFileSelector(ICON_FA_COMPACT_DISC " Select Disc Image", false, std::move(callback), GetDiscImageFilters(),
@@ -2546,7 +2567,7 @@ void FullscreenUI::DrawSettingsWindow()
 		if (WantsToCloseMenu())
 		{
 			if (ImGui::IsWindowFocused())
-				ReturnToMainWindow();
+				ReturnToPreviousWindow();
 		}
 
 		auto lock = Host::GetSettingsLock();
@@ -4386,8 +4407,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 {
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
-	const ImU32 text_color = IM_COL32(UIBackgroundTextColor.x * 255, UIBackgroundTextColor.y * 255, UIBackgroundTextColor.z * 255, 255);
-	dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, IM_COL32(UIBackgroundColor.x * 255, UIBackgroundColor.y * 255, UIBackgroundColor.z * 255, 200));
+	const ImU32 text_color =
+		IM_COL32(UIBackgroundTextColor.x * 255, UIBackgroundTextColor.y * 255, UIBackgroundTextColor.z * 255, 255);
+	dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size,
+		IM_COL32(UIBackgroundColor.x * 255, UIBackgroundColor.y * 255, UIBackgroundColor.z * 255, 200));
 
 	// title info
 	{
@@ -4400,17 +4423,17 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const float image_width = has_rich_presence ? 60.0f : 50.0f;
 		const float image_height = has_rich_presence ? 90.0f : 75.0f;
 		const std::string_view path_string(Path::GetFileName(s_current_disc_path));
-		const ImVec2 title_size(
-			g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
-		const ImVec2 path_size(path_string.empty() ?
-								   ImVec2(0.0f, 0.0f) :
-								   g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f,
-									   path_string.data(), path_string.data() + path_string.length()));
+		const ImVec2 title_size(g_large_font->CalcTextSizeA(
+			g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
+		const ImVec2 path_size(path_string.empty() ? ImVec2(0.0f, 0.0f) :
+													 g_medium_font->CalcTextSizeA(g_medium_font->FontSize,
+														 std::numeric_limits<float>::max(), -1.0f, path_string.data(),
+														 path_string.data() + path_string.length()));
 		const ImVec2 subtitle_size(g_medium_font->CalcTextSizeA(
 			g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, s_current_game_subtitle.c_str()));
 
-		ImVec2 title_pos(
-			display_size.x - LayoutScale(10.0f + image_width + 20.0f) - title_size.x, display_size.y - LayoutScale(10.0f + image_height));
+		ImVec2 title_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - title_size.x,
+			display_size.y - LayoutScale(10.0f + image_height));
 		ImVec2 path_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - path_size.x,
 			title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
 		ImVec2 subtitle_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - subtitle_size.x,
@@ -4434,8 +4457,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			if (!rp.empty())
 			{
 				const float wrap_width = LayoutScale(350.0f);
-				const ImVec2 rp_size = g_medium_font->CalcTextSizeA(
-					g_medium_font->FontSize, std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.size());
+				const ImVec2 rp_size = g_medium_font->CalcTextSizeA(g_medium_font->FontSize,
+					std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.size());
 
 				// we make the image one line higher, so we only need to compensate when it's multiline RP
 				rp_height = rp_size.y - g_medium_font->FontSize;
@@ -4454,11 +4477,12 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 
 		GSTexture* const cover = GetCoverForCurrentGame();
-		const ImVec2 image_min(
-			display_size.x - LayoutScale(10.0f + image_width) - rp_height, display_size.y - LayoutScale(10.0f + image_height) - rp_height);
-		const ImVec2 image_max(image_min.x + LayoutScale(image_width) + rp_height, image_min.y + LayoutScale(image_height) + rp_height);
-		const ImRect image_rect(CenterImage(
-			ImRect(image_min, image_max), ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
+		const ImVec2 image_min(display_size.x - LayoutScale(10.0f + image_width) - rp_height,
+			display_size.y - LayoutScale(10.0f + image_height) - rp_height);
+		const ImVec2 image_max(
+			image_min.x + LayoutScale(image_width) + rp_height, image_min.y + LayoutScale(image_height) + rp_height);
+		const ImRect image_rect(CenterImage(ImRect(image_min, image_max),
+			ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
 		dl->AddImage(cover->GetNativeHandle(), image_rect.Min, image_rect.Max);
 	}
 
@@ -4474,7 +4498,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 #endif
 		std::strftime(buf, sizeof(buf), "%X", &ltime);
 
-		const ImVec2 time_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+		const ImVec2 time_size(
+			g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
 		const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
 		DrawShadowedText(dl, g_large_font, time_pos, text_color, buf);
 
@@ -4486,15 +4511,17 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			const std::string session_time_str(GameList::FormatTimespan(session_time, true));
 
 			std::snprintf(buf, std::size(buf), "This Session: %s", session_time_str.c_str());
-			const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
-			const ImVec2 session_pos(
-				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+			const ImVec2 session_size(
+				g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+			const ImVec2 session_pos(display_size.x - LayoutScale(10.0f) - session_size.x,
+				time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
 			DrawShadowedText(dl, g_medium_font, session_pos, text_color, buf);
 
 			std::snprintf(buf, std::size(buf), "All Time: %s", played_time_str.c_str());
-			const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
-			const ImVec2 total_pos(
-				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
+			const ImVec2 total_size(
+				g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buf));
+			const ImVec2 total_pos(display_size.x - LayoutScale(10.0f) - total_size.x,
+				session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
 			DrawShadowedText(dl, g_medium_font, total_pos, text_color, buf);
 		}
 	}
@@ -4502,8 +4529,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 	const ImVec2 window_size(LayoutScale(500.0f, LAYOUT_SCREEN_HEIGHT));
 	const ImVec2 window_pos(0.0f, display_size.y - window_size.y);
 
-	if (BeginFullscreenWindow(
-			window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 10.0f, ImGuiWindowFlags_NoBackground))
+	if (BeginFullscreenWindow(window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 10.0f,
+			ImGuiWindowFlags_NoBackground))
 	{
 		static constexpr u32 submenu_item_count[] = {
 			11, // None
@@ -4514,8 +4541,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		};
 
 		const bool just_focused = ResetFocusHere();
-		BeginMenuButtons(submenu_item_count[static_cast<u32>(s_current_pause_submenu)], 1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-			ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		BeginMenuButtons(submenu_item_count[static_cast<u32>(s_current_pause_submenu)], 1.0f,
+			ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING,
+			ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
 		switch (s_current_pause_submenu)
 		{
@@ -4523,6 +4551,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			{
 				// NOTE: Menu close must come first, because otherwise VM destruction options will race.
 				const bool can_load_or_save_state = s_current_disc_crc != 0;
+
+				if (just_focused)
+					ImGui::SetFocusID(ImGui::GetID(ICON_FA_PLAY " Resume Game"), ImGui::GetCurrentWindow());
 
 				if (ActiveButton(ICON_FA_PLAY " Resume Game", false) || WantsToCloseMenu())
 					ClosePauseMenu();
@@ -4603,12 +4634,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::Exit:
 			{
 				if (just_focused)
-					ImGui::SetFocusID(ImGui::GetID(ICON_FA_POWER_OFF " Exit Without Saving"), ImGui::GetCurrentWindow());
-
-				if (ActiveButton(ICON_FA_BACKWARD " Back To Pause Menu", false))
 				{
-					OpenPauseSubMenu(PauseSubMenu::None);
+					ImGui::SetFocusID(
+						ImGui::GetID(ICON_FA_POWER_OFF " Exit Without Saving"), ImGui::GetCurrentWindow());
 				}
+
+				if (ActiveButton(ICON_FA_BACKWARD " Back To Pause Menu", false) || WantsToCloseMenu())
+					OpenPauseSubMenu(PauseSubMenu::None);
 
 				if (ActiveButton(ICON_FA_SYNC " Reset System", false))
 				{
@@ -4627,7 +4659,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 #ifdef ENABLE_ACHIEVEMENTS
 			case PauseSubMenu::Achievements:
 			{
-				if (ActiveButton(ICON_FA_BACKWARD "  Back To Pause Menu", false))
+				if (just_focused)
+					ImGui::SetFocusID(ImGui::GetID(ICON_FA_BACKWARD "  Back To Pause Menu"), ImGui::GetCurrentWindow());
+
+				if (ActiveButton(ICON_FA_BACKWARD "  Back To Pause Menu", false) || WantsToCloseMenu())
 					OpenPauseSubMenu(PauseSubMenu::None);
 
 				if (ActiveButton(ICON_FA_TROPHY "  Achievements", false))
@@ -4765,8 +4800,6 @@ void FullscreenUI::CloseSaveStateSelector()
 	s_save_state_selector_loading = false;
 	s_save_state_selector_resuming = false;
 	s_save_state_selector_game_path = {};
-	if (s_current_main_window != MainWindowType::GameList)
-		ReturnToMainWindow();
 }
 
 void FullscreenUI::DrawSaveStateSelector(bool is_loading)
@@ -4796,7 +4829,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 		ImGui::PopStyleVar(5);
 		if (!is_open)
+		{
 			CloseSaveStateSelector();
+			ReturnToPreviousWindow();
+		}
 		return;
 	}
 
@@ -4809,7 +4845,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 	{
 		BeginNavBar();
 		if (NavButton(ICON_FA_BACKWARD, true, true))
+		{
 			CloseSaveStateSelector();
+			ReturnToPreviousWindow();
+		}
 
 		NavTitle(is_loading ? "Load State" : "Save State");
 		EndNavBar();
@@ -4895,6 +4934,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 							Host::RunOnCPUThread([slot = entry.slot]() { VMManager::SaveStateToSlot(slot); });
 
 						CloseSaveStateSelector();
+						ReturnToMainWindow();
 						closed = true;
 					}
 
@@ -4917,6 +4957,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 							if (s_save_state_selector_slots.empty())
 							{
 								CloseSaveStateSelector();
+								ReturnToMainWindow();
 								closed = true;
 							}
 							else
@@ -5015,17 +5056,13 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 				if (pressed)
 				{
 					if (is_loading)
-					{
 						DoLoadState(entry.path);
-						CloseSaveStateSelector();
-						break;
-					}
 					else
-					{
 						Host::RunOnCPUThread([slot = entry.slot]() { VMManager::SaveStateToSlot(slot); });
-						CloseSaveStateSelector();
-						break;
-					}
+
+					CloseSaveStateSelector();
+					ReturnToMainWindow();
+					break;
 				}
 
 				if (hovered &&
@@ -5060,7 +5097,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 	ImGui::PopStyleVar(5);
 
 	if (!close_handled && WantsToCloseMenu())
+	{
 		CloseSaveStateSelector();
+		ReturnToPreviousWindow();
+	}
 }
 
 bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* entry)
@@ -5295,7 +5335,7 @@ void FullscreenUI::DrawGameListWindow()
 		}
 
 		if (NavButton(ICON_FA_BACKWARD, true, true))
-			ReturnToMainWindow();
+			ReturnToPreviousWindow();
 
 		NavTitle(titles[static_cast<u32>(s_game_list_page)]);
 		RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
@@ -5341,7 +5381,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 	if (WantsToCloseMenu())
 	{
 		if (ImGui::IsWindowFocused())
-			ReturnToMainWindow();
+			ReturnToPreviousWindow();
 	}
 
 	const GameList::Entry* selected_entry = nullptr;
@@ -5534,7 +5574,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 	if (WantsToCloseMenu())
 	{
 		if (ImGui::IsWindowFocused())
-			ReturnToMainWindow();
+			ReturnToPreviousWindow();
 	}
 
 	ResetFocusHere();
@@ -5701,7 +5741,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 	if (WantsToCloseMenu())
 	{
 		if (ImGui::IsWindowFocused())
-			ReturnToMainWindow();
+			ReturnToPreviousWindow();
 	}
 
 	auto lock = Host::GetSettingsLock();
@@ -6342,10 +6382,10 @@ void FullscreenUI::DrawAchievementsWindow()
 			const u32 current_points = Achievements::GetCurrentPointsForGame();
 			const u32 total_points = Achievements::GetMaximumPointsForGame();
 
-			if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) || WantsToCloseMenu())
-			{
+			if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font))
 				ReturnToMainWindow();
-			}
+			if (WantsToCloseMenu())
+				ReturnToPreviousWindow();
 
 			const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
 			text = Achievements::GetGameTitle();
@@ -6735,10 +6775,10 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
 			if (!is_leaderboard_open)
 			{
-				if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) || WantsToCloseMenu())
-				{
+				if (FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font))
 					ReturnToMainWindow();
-				}
+				if (WantsToCloseMenu())
+					ReturnToPreviousWindow();
 			}
 			else
 			{
