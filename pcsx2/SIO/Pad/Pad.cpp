@@ -150,9 +150,7 @@ void Pad::SetDefaultControllerConfig(SettingsInterface& si)
 			InputManager::InputSourceToString(static_cast<InputSourceType>(i)),
 			InputManager::GetInputSourceDefaultEnabled(static_cast<InputSourceType>(i)));
 	}
-#ifdef SDL_BUILD
 	si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-#endif
 	si.SetBoolValue("Pad", "MultitapPort1", false);
 	si.SetBoolValue("Pad", "MultitapPort2", false);
 	si.SetFloatValue("Pad", "PointerXScale", 8.0f);
@@ -321,9 +319,7 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 			dest_si->CopyBoolValue(src_si, "InputSources",
 				InputManager::InputSourceToString(static_cast<InputSourceType>(i)));
 		}
-#ifdef SDL_BUILD
 		dest_si->CopyBoolValue(src_si, "InputSources", "SDLControllerEnhancedMode");
-#endif
 	}
 
 	for (u32 port = 0; port < Pad::NUM_CONTROLLER_PORTS; port++)

@@ -3401,29 +3401,19 @@ void FullscreenUI::DrawAudioSettingsPage()
 	};
 	static constexpr const char* output_entries[] = {
 		"No Sound (Emulate SPU2 only)",
-#ifdef SPU2X_CUBEB
 		"Cubeb (Cross-platform)",
-#endif
 #ifdef _WIN32
 		"XAudio2",
 #endif
 	};
 	static constexpr const char* output_values[] = {
 		"nullout",
-#ifdef SPU2X_CUBEB
 		"cubeb",
-#endif
 #ifdef _WIN32
 		"xaudio2",
 #endif
 	};
-#if defined(SPU2X_CUBEB)
 	static constexpr const char* default_output_module = "cubeb";
-#elif defined(_WIN32)
-	static constexpr const char* default_output_module = "xaudio2";
-#else
-	static constexpr const char* default_output_module = "nullout";
-#endif
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -3802,18 +3792,14 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 	MenuHeading("Input Sources");
 
-#ifdef SDL_BUILD
 	DrawToggleSetting(bsi, ICON_FA_COG " Enable SDL Input Source", "The SDL input source supports most controllers.", "InputSources", "SDL",
 		true, true, false);
 	DrawToggleSetting(bsi, ICON_FA_WIFI " SDL DualShock 4 / DualSense Enhanced Mode",
 		"Provides vibration and LED control support over Bluetooth.", "InputSources", "SDLControllerEnhancedMode", false,
 		bsi->GetBoolValue("InputSources", "SDL", true), false);
-#endif
-#if defined(SDL_BUILD) && defined(_WIN32)
+#ifdef _WIN32
 	DrawToggleSetting(bsi, ICON_FA_COG " SDL Raw Input", "Allow SDL to use raw access to input devices.", "InputSources", "SDLRawInput",
 		false, bsi->GetBoolValue("InputSources", "SDL", true), false);
-#endif
-#ifdef _WIN32
 	DrawToggleSetting(bsi, ICON_FA_COG " Enable XInput Input Source",
 		"The XInput source provides support for XBox 360/XBox One/XBox Series controllers.", "InputSources", "XInput", false, true, false);
 #endif
