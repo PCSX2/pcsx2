@@ -52,7 +52,6 @@ public:
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
 	void Unmap() final;
 	void GenerateMipmap() final;
-	bool Save(const std::string& fn) final;
 	void Swap(GSTexture* tex) final;
 
 	bool IsIntegerFormat() const
