@@ -65,6 +65,7 @@
     <ClCompile Include="MemorySettingsInterface.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="ReadbackSpinManager.cpp" />
+    <ClCompile Include="SmallString.cpp" />
     <ClCompile Include="StackWalker.cpp" />
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="MemorySettingsInterface.h" />
     <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="ScopedGuard.h" />
+    <ClInclude Include="SmallString.h" />
     <ClInclude Include="StackWalker.h" />
     <ClInclude Include="StringUtil.h" />
     <ClInclude Include="SettingsInterface.h" />

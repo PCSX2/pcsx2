@@ -29,6 +29,7 @@ target_sources(common PRIVATE
 	ReadbackSpinManager.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
+	SmallString.cpp
 	StringUtil.cpp
 	TextureDecompress.cpp
 	Timer.cpp
@@ -93,6 +94,7 @@ target_sources(common PRIVATE
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
+	SmallString.h
 	StringUtil.h
 	Timer.h
 	TextureDecompress.h
