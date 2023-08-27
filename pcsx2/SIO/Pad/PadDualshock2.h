@@ -58,23 +58,22 @@ public:
 		LENGTH,
 	};
 
-	static constexpr u32 PRESSURE_BUTTONS = 12;
 	static constexpr u8 VIBRATION_MOTORS = 2;
 
 private:
 	struct Analogs
 	{
-		u8 lx = 0x7f;
-		u8 ly = 0x7f;
-		u8 rx = 0x7f;
-		u8 ry = 0x7f;
-		u8 lxInvert = 0x7f;
-		u8 lyInvert = 0x7f;
-		u8 rxInvert = 0x7f;
-		u8 ryInvert = 0x7f;
+		u8 lx = Pad::ANALOG_NEUTRAL_POSITION;
+		u8 ly = Pad::ANALOG_NEUTRAL_POSITION;
+		u8 rx = Pad::ANALOG_NEUTRAL_POSITION;
+		u8 ry = Pad::ANALOG_NEUTRAL_POSITION;
+		bool lxInvert = false;
+		bool lyInvert = false;
+		bool rxInvert = false;
+		bool ryInvert = false;
 	};
 
-	u32 buttons;
+	u32 buttons = 0xffffffffu;
 	Analogs analogs;
 	bool analogLight = false;
 	bool analogLocked = false;
@@ -83,17 +82,16 @@ private:
 	// and out of analog mode every frame.
 	bool analogPressed = false;
 	bool commandStage = false;
-	u32 responseBytes;
-	std::array<u8, PRESSURE_BUTTONS> pressures;
-	std::array<u8, VIBRATION_MOTORS> vibrationMotors;
-	float axisScale;
-	float axisDeadzone;
-	std::array<float, 2> vibrationScale;
+	u32 responseBytes = 0;
+	std::array<u8, VIBRATION_MOTORS> vibrationMotors = {};
+	float axisScale = 1.0f;
+	float axisDeadzone = 0.0f;
+	std::array<float, 2> vibrationScale = {1.0f, 1.0f};
 	// When the pressure modifier binding is activated, this is multiplied against
 	// all values in pressures, to artificially reduce pressures and give players
 	// a way to simulate pressure sensitive controls.
-	float pressureModifier;
-	float buttonDeadzone;
+	float pressureModifier = 0.5f;
+	float buttonDeadzone = 0.0f;
 	// Used to store the last vibration mapping request the PS2 made for the small motor.
 	u8 smallMotorLastConfig = 0xff;
 	// Used to store the last vibration mapping request the PS2 made for the large motor.
@@ -125,7 +123,6 @@ public:
 		return (index == Inputs::PAD_L2 || index == Inputs::PAD_R2);
 	}
 
-	void Init() override;
 	Pad::ControllerType GetType() const override;
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;

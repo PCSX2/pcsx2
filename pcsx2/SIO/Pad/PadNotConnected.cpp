@@ -30,11 +30,6 @@ PadNotConnected::PadNotConnected(u8 unifiedSlot)
 
 PadNotConnected::~PadNotConnected() = default;
 
-void PadNotConnected::Init()
-{
-
-}
-
 Pad::ControllerType PadNotConnected::GetType() const
 {
 	return Pad::ControllerType::NotConnected;
