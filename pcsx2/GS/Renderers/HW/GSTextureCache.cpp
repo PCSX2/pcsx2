@@ -3181,49 +3181,20 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// Not even going to go down the rabbit hole of palette formats on the GPU.. We shouldn't have any targets with P4/P8 anyway.
 	const GSLocalMemory::psm_t& spsm_s = GSLocalMemory::m_psm[SPSM];
 	const GSLocalMemory::psm_t& dpsm_s = GSLocalMemory::m_psm[DPSM];
-	if (SPSM != DPSM || ((spsm_s.pal + dpsm_s.pal) != 0 && !alpha_only))
+	if (spsm_s.bpp != dpsm_s.bpp || spsm_s.bpp < 16 || ((spsm_s.pal + dpsm_s.pal) != 0 && !alpha_only))
 	{
 		GL_CACHE("Skipping HW move from 0x%X to 0x%X with SPSM=%s DPSM=%s", SBP, DBP, psm_str(SPSM), psm_str(DPSM));
 		return false;
 	}
 
-	// DX11/12 is a bit lame and can't partial copy depth targets. We could do this with a blit instead,
-	// but so far haven't seen anything which needs it.
-	if (GSConfig.Renderer == GSRendererType::DX11 || GSConfig.Renderer == GSRendererType::DX12)
-	{
-		if (spsm_s.depth || dpsm_s.depth)
-			return false;
-	}
+	// We don't want to create P8H/P4HH targets.
+	const GIFRegTEX0 src_TEX0 = GIFRegTEX0::Create(SBP, SBW, (spsm_s.trbpp < 16 ? PSMCT32 : SPSM));
+	const GSVector2i req_size = GSVector2i(Common::AlignUpPow2(w, 64), h);
+	const float req_scale = GSRendererHW::GetInstance()->GetTextureScaleFactor();
 
-	// Look for an exact match on the targets.
-	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, spsm_s.depth ? DepthStencil : RenderTarget, SBP);
-	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
-
-	if (alpha_only && (!dst || GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp != 32))
-		return false;
-
-	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
-	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
-	// Good test case for this is the Xenosaga I cutscene transitions, or Gradius V.
-	if (src && !dst && dx == 0 && dy == 0 && ((static_cast<u32>(w) + 63) / 64) <= DBW)
-	{
-		GIFRegTEX0 new_TEX0 = {};
-		new_TEX0.TBP0 = DBP;
-		new_TEX0.TBW = DBW;
-		new_TEX0.PSM = DPSM;
-
-		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
-		dst = LookupTarget(new_TEX0, target_size, src->m_scale, src->m_type);
-		if (!dst)
-			dst = CreateTarget(new_TEX0, target_size, target_size, src->m_scale, src->m_type);
-		if (!dst)
-			return false;
-
-		dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
-		dst->OffsetHack_modxy = src->OffsetHack_modxy;
-	}
-
-	if (!src || !dst || src->m_scale != dst->m_scale)
+	// Don't bother checking for destination if we don't have a source.
+	GSTextureCache::Target* src = LookupTarget(src_TEX0, req_size, req_scale, spsm_s.depth ? DepthStencil : RenderTarget);
+	if (!src)
 		return false;
 
 	// Scale coordinates.
@@ -3236,7 +3207,34 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const int scaled_h = static_cast<int>(h * scale);
 
 	// The source isn't in our texture, otherwise it could falsely expand the texture causing a misdetection later, which then renders black.
+	// TODO: We could try expanding it instead... Can avoid a readback in Battle Assault 3 featuring Gundam Seed_SLUS-20929_20230213204903
 	if ((scaled_sx + scaled_w) > src->m_texture->GetWidth() || (scaled_sy + scaled_h) > src->m_texture->GetHeight())
+		return false;
+
+	const GIFRegTEX0 dst_TEX0 = GIFRegTEX0::Create(DBP, DBW, (dpsm_s.trbpp < 16 ? PSMCT32 : DPSM));
+	GSTextureCache::Target* dst = LookupTarget(dst_TEX0, req_size, src->m_scale, dpsm_s.depth ? DepthStencil : RenderTarget);
+	if (alpha_only && (!dst || GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp != 32))
+		return false;
+
+	// Beware of the case where a game might create a larger texture by moving a bunch of chunks around.
+	// We use dx/dy == 0 and the TBW check as a safeguard to make sure these go through to local memory.
+	// Good test case for this is the Xenosaga I cutscene transitions, or Gradius V.
+	if (src && !dst && dx == 0 && dy == 0 && ((static_cast<u32>(w) + 63) / 64) <= DBW)
+	{
+		dst = LookupTarget(dst_TEX0, req_size, src->m_scale, dpsm_s.depth ? DepthStencil : RenderTarget);
+		if (!dst)
+		{
+			const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(w, 64), h);
+			dst = CreateTarget(dst_TEX0, target_size, target_size, src->m_scale, dpsm_s.depth ? DepthStencil : RenderTarget);
+		}
+		if (!dst)
+			return false;
+
+		dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
+		dst->OffsetHack_modxy = src->OffsetHack_modxy;
+	}
+
+	if (!src || !dst || src->m_scale != dst->m_scale)
 		return false;
 
 	// We don't want to copy "old" data that the game has overwritten with writes,
@@ -3325,17 +3323,38 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	}
 	else
 	{
-		if (SPSM == PSMT8H && SPSM == DPSM)
+		const GSVector4i drc = GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
+		const GSVector4 drcf = GSVector4(drc);
+		const GSVector4 srcf = drcf / GSVector4(src->GetTexture()->GetSize()).xyxy();
+
+		if (SPSM == PSMT8H && SPSM == DPSM && dst->m_type == RenderTarget)
 		{
-			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h) / (GSVector4(src->m_texture->GetSize()).xyxy());
-			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
-			g_gs_device->StretchRect(src->m_texture, src_rect, dst->m_texture, dst_rect, false, false, false, true);
+			g_gs_device->StretchRect(src->m_texture, srcf, dst->m_texture, drcf, false, false, false, true);
+		}
+		else if (dst->m_type == src->m_type)
+		{
+			// DirectX can't partial copy depth targets.
+			if (dst->m_type == DepthStencil)
+				g_gs_device->StretchRect(src->m_texture, srcf, dst->m_texture, drcf, ShaderConvert::DEPTH_COPY);
+			else
+				g_gs_device->CopyRect(src->m_texture, dst->m_texture, drc, scaled_dx, scaled_dy);
 		}
 		else
 		{
-			g_gs_device->CopyRect(src->m_texture, dst->m_texture,
-				GSVector4i(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h),
-				scaled_dx, scaled_dy);
+			// Colour->Depth or Depth->Colour.
+			const bool fmt_16_bits = (dpsm_s.bpp != 32);
+			ShaderConvert shader;
+			if (dst->m_type == DepthStencil)
+			{
+				shader = fmt_16_bits ? ShaderConvert::RGB5A1_TO_FLOAT16 :
+									   (ShaderConvert)(static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32) + dpsm_s.fmt);
+			}
+			else
+			{
+				shader = fmt_16_bits ? ShaderConvert::FLOAT16_TO_RGB5A1 : ShaderConvert::FLOAT32_TO_RGBA8;
+			}
+
+			g_gs_device->StretchRect(src->m_texture, srcf, dst->m_texture, drcf, shader, false);
 		}
 	}
 
@@ -3351,6 +3370,9 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	dst->m_alpha_min = src->m_alpha_min;
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
+
+	// Invalidate alpha/RGB of other type.
+	InvalidateVideoMemType(dst->m_type == RenderTarget ? DepthStencil : RenderTarget, DBP, dst->m_TEX0.PSM, ~dpsm_s.fmsk, false);
 	return true;
 }
 

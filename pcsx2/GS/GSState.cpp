@@ -1463,8 +1463,16 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 			m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF, false);
 			break;
 		case 2: // local -> local
-			CheckWriteOverlap(true, true);
-			Move();
+			{
+				CheckWriteOverlap(true, true);
+
+				GL_PUSH("Move (TRXDIR) 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+					m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
+					m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
+					m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+					m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
+				Move();
+			}
 			break;
 		default: // 3 deactivated as stated by manual. Tested on hardware and no transfers happen.
 			break;
@@ -2028,12 +2036,6 @@ void GSState::Move()
 	const int w = m_env.TRXREG.RRW;
 	const int h = m_env.TRXREG.RRH;
 
-	GL_CACHE("Move! 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
-			 m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
-			 m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
-			 m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
-			 sx, sy, dx, dy, w, h);
-
 	InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
 	InvalidateVideoMem(m_env.BITBLTBUF, GSVector4i(dx, dy, dx + w, dy + h));
 
@@ -2444,7 +2446,14 @@ void GSState::Transfer(const u8* mem, u32 size)
 						Write(mem, len * 16);
 						break;
 					case 2:
-						Move();
+						{
+							GL_PUSH("Move (GIF_FLG_IMAGE)! 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+								m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
+								m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
+								m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+								m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
+							Move();
+						}
 						break;
 					default: // 1 and 3
 						// 1 is invalid because downloads can only be done
