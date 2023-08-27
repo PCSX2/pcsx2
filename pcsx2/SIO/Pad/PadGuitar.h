@@ -37,17 +37,17 @@ public:
 	};
 
 private:
-	u32 buttons;
-	u8 whammy;
+	u32 buttons = 0xffffffffu;
+	u8 whammy = Pad::ANALOG_NEUTRAL_POSITION;
 	// Technically guitars do not have an analog light, but they still use the same ModeSwitch command
 	// as a DS2, and are told to "turn on their light".
 	bool analogLight = false;
 	// Guitars are also instructed to "lock" their "analog light", despite not having one.
 	bool analogLocked = false;
 	bool commandStage = false;
-	float whammyAxisScale; // Guitars only have 1 axis on the whammy bar.
-	float whammyDeadzone;
-	float buttonDeadzone; // Button deadzone is still a good idea, in case a host analog stick is bound to a guitar button
+	float whammyAxisScale = 1.0f; // Guitars only have 1 axis on the whammy bar.
+	float whammyDeadzone = 0.0f;
+	float buttonDeadzone = 0.0f; // Button deadzone is still a good idea, in case a host analog stick is bound to a guitar button
 
 	u8 Mystery(u8 commandByte);
 	u8 ButtonQuery(u8 commandByte);
@@ -64,7 +64,6 @@ public:
 	PadGuitar(u8 unifiedSlot);
 	~PadGuitar() override;
 
-	void Init() override;
 	Pad::ControllerType GetType() const override;
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;

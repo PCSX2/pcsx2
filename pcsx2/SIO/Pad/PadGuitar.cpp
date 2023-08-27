@@ -243,21 +243,10 @@ u8 PadGuitar::VibrationMap(u8 commandByte)
 PadGuitar::PadGuitar(u8 unifiedSlot)
 	: PadBase(unifiedSlot)
 {
-	this->currentMode = Pad::Mode::DIGITAL;
-	Init();
+	currentMode = Pad::Mode::DIGITAL;
 }
 
 PadGuitar::~PadGuitar() = default;
-
-void PadGuitar::Init()
-{
-	this->buttons = 0xffffffff;
-	this->whammy = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogLight = false;
-	this->analogLocked = false;
-	this->whammyAxisScale = 1.0f;
-	this->whammyDeadzone = 0.0f;
-}
 
 Pad::ControllerType PadGuitar::GetType() const
 {

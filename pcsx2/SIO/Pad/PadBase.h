@@ -24,7 +24,7 @@
 class PadBase
 {
 protected:
-	std::array<u8, 32> rawInputs;
+	std::array<u8, 32> rawInputs = {};
 	u8 unifiedSlot;
 	bool isInConfig = false;
 	Pad::Mode currentMode = Pad::Mode::NOT_SET;
@@ -38,7 +38,6 @@ public: // Public members
 	void SoftReset();
 	void FullReset();
 
-	virtual void Init() = 0;
 	virtual Pad::ControllerType GetType() const = 0;
 	virtual const Pad::ControllerInfo& GetInfo() const = 0;
 

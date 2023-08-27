@@ -52,7 +52,7 @@ namespace Pad
 	static std::unique_ptr<PadBase> CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType);
 	static PadBase* ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType);
 
-	void LoadMacroButtonConfig(
+	static void LoadMacroButtonConfig(
 		const SettingsInterface& si, u32 pad, const ControllerInfo* ci, const std::string& section);
 	static void ApplyMacroButton(u32 controller, const MacroButton& mb);
 

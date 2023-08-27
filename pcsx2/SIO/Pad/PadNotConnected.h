@@ -23,7 +23,6 @@ public:
 	PadNotConnected(u8 unifiedSlot);
 	~PadNotConnected() override;
 
-	void Init() override;
 	Pad::ControllerType GetType() const override;
 	const Pad::ControllerInfo& GetInfo() const override;
 	void Set(u32 index, float value) override;

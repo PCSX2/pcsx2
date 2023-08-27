@@ -483,47 +483,10 @@ u8 PadDualshock2::ResponseBytes(u8 commandByte)
 PadDualshock2::PadDualshock2(u8 unifiedSlot)
 	: PadBase(unifiedSlot)
 {
-	this->currentMode = Pad::Mode::DIGITAL;
-	Init();
+	currentMode = Pad::Mode::DIGITAL;
 }
 
 PadDualshock2::~PadDualshock2() = default;
-
-void PadDualshock2::Init()
-{
-	this->buttons = 0xffffffff;
-	this->analogs.lx = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.ly = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.rx = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.ry = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.lxInvert = 0;
-	this->analogs.lyInvert = 0;
-	this->analogs.rxInvert = 0;
-	this->analogs.ryInvert = 0;
-	this->analogLight = false;
-	this->analogLocked = false;
-	this->analogPressed = false;
-	this->responseBytes = 0;
-
-	for (u8 i = 0; i < this->rawInputs.size(); i++)
-	{
-		this->rawInputs[i] = 0;
-	}
-
-	for (u8 i = 0; i < this->pressures.size(); i++)
-	{
-		this->pressures[i] = 0;
-	}
-
-	this->axisScale = 1.0f;
-	this->axisDeadzone = 0.0f;
-	
-	this->vibrationScale[0] = 0.0f;
-	this->vibrationScale[1] = 1.0f;
-
-	this->pressureModifier = 0.5f;
-	this->buttonDeadzone = 0.0f;
-}
 
 Pad::ControllerType PadDualshock2::GetType() const
 {
@@ -814,19 +777,12 @@ bool PadDualshock2::Freeze(StateWrapper& sw)
 		return false;
 
 	// Private PadDualshock2 members
-	sw.Do(&buttons);
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);
 	sw.Do(&analogPressed);
 	sw.Do(&commandStage);
 	sw.Do(&responseBytes);
-	sw.Do(&pressures);
 	sw.Do(&vibrationMotors);
-	sw.Do(&axisScale);
-	sw.Do(&axisDeadzone);
-	sw.Do(&vibrationScale);
-	sw.Do(&pressureModifier);
-	sw.Do(&buttonDeadzone);
 	sw.Do(&smallMotorLastConfig);
 	sw.Do(&largeMotorLastConfig);
 	return !sw.HasError();
