@@ -289,7 +289,7 @@ bool GSCapture::LoadFFmpeg(bool report_errors)
 						"  libavcodec: {}\n"
 						"  libavformat: {}\n"
 						"  libavutil: {}\n"
-						"  libswscale: {}\n",
+						"  libswscale: {}\n"
 				"  libswresample: {}\n", LIBAVCODEC_VERSION_MAJOR, LIBAVFORMAT_VERSION_MAJOR, LIBAVUTIL_VERSION_MAJOR,
 				LIBSWSCALE_VERSION_MAJOR, LIBSWRESAMPLE_VERSION_MAJOR));
 	}
