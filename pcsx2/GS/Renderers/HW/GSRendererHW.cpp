@@ -1873,7 +1873,7 @@ void GSRendererHW::Draw()
 	const u32 frame_end_bp = GSLocalMemory::GetUnwrappedEndBlockAddress(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r);
 	const bool tex_is_rt = (process_texture && m_cached_ctx.TEX0.TBP0 >= m_cached_ctx.FRAME.Block() &&
 		m_cached_ctx.TEX0.TBP0 < frame_end_bp);
-	const bool not_writing_to_all = (!PrimitiveCoversWithoutGaps() || !all_depth_tests_pass);
+	const bool not_writing_to_all = (!PrimitiveCoversWithoutGaps() || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
 	const bool preserve_rt_rgb = (!no_rt && (!IsDiscardingDstRGB() || not_writing_to_all || tex_is_rt));
 	const bool preserve_rt_alpha =
 		(!no_rt && (!IsDiscardingDstAlpha() || not_writing_to_all ||
@@ -6064,33 +6064,29 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 	return true;
 }
 
+bool GSRendererHW::AreAnyPixelsDiscarded() const
+{
+	return ((m_draw_env->SCANMSK.MSK & 2) || // skipping rows
+			m_cached_ctx.TEST.ATE || // testing alpha (might discard some pixels)
+			m_cached_ctx.TEST.DATE); // reading alpha
+}
+
 bool GSRendererHW::IsDiscardingDstColor()
 {
 	return ((!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
-			!(m_draw_env->SCANMSK.MSK & 2) && // not skipping rows
-			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
-			!m_cached_ctx.TEST.DATE && // not reading alpha
-			(m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0); // no channels masked
+			!AreAnyPixelsDiscarded() && (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == 0); // no channels masked
 }
 
 bool GSRendererHW::IsDiscardingDstRGB()
 {
 	return ((!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack()) && // no blending or writing black
-			!(m_draw_env->SCANMSK.MSK & 2) && // not skipping rows
-			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
-			!m_cached_ctx.TEST.DATE && // not reading alpha
-			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFFFFFFu) ==
-				0); // RGB isn't masked
+			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFFFFFFu) == 0); // RGB isn't masked
 }
 
-bool GSRendererHW::IsDiscardingDstAlpha()
+bool GSRendererHW::IsDiscardingDstAlpha() const
 {
 	return ((!PRIM->ABE || m_context->ALPHA.C != 1) && // not using Ad
-			!(m_draw_env->SCANMSK.MSK & 2) && // not skipping rows
-			!m_cached_ctx.TEST.ATE && // not testing alpha (might discard some pixels)
-			!m_cached_ctx.TEST.DATE && // not reading alpha
-			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFF000000u) ==
-				0); // alpha isn't masked
+			((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFF000000u) == 0); // alpha isn't masked
 }
 
 bool GSRendererHW::PrimitiveCoversWithoutGaps()
