@@ -2218,10 +2218,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 			AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 		}
 	}
-	else
-	{
-		dst->UpdateValidity(GSVector4i::loadh(valid_size));
-	}
+
+	dst->UpdateValidity(GSVector4i::loadh(valid_size));
 	
 	for (int type = 0; type < 2; type++)
 	{
@@ -2261,6 +2259,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 							const int copy_height = y_reduction * t->m_scale;
 							const int old_height = (dst->m_valid.w - y_reduction) * dst->m_scale;
 							GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
+
+							pxAssert(old_height > 0);
 
 							// Clear the dirty first
 							dst->Update();
