@@ -1583,7 +1583,7 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect, bool is_shuffle)
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect, bool is_shuffle, bool possible_clear)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1856,12 +1856,23 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 
 		// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
 		// some bad data.
+		auto& rev_list = m_dst[rev_type];
 		Target* dst_match = nullptr;
-		for (Target* t : m_dst[rev_type])
+		for (auto i = rev_list.begin(); i != rev_list.end(); ++i)
 		{
+			Target* t = *i;
 			// Don't pull in targets without valid lower 24 bits, it makes no sense to convert them.
 			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb)
 				continue;
+
+			// Probably an old target, get rid of it.
+			if (possible_clear && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp)
+			{
+				InvalidateSourcesFromTarget(t);
+				i = rev_list.erase(i);
+				delete t;
+				continue;
+			}
 
 			if (t->m_age == 0)
 			{
