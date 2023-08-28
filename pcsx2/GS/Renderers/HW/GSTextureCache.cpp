@@ -5476,13 +5476,8 @@ bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool
 			color_valid = m_valid_rgb;
 			break;
 	}
-	
-	if (req_color && color_valid && !alpha_valid && (m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(psm)) & 0x7)
-	{
-		alpha_valid = true;
-	}
 
-	return ((alpha_valid && req_alpha) || !req_alpha) && ((color_valid && req_color) || !req_color);
+	return (color_valid && req_color) || (!req_color && ((alpha_valid && req_alpha) || !req_alpha));
 }
 
 void GSTextureCache::Target::ResizeDrawn(const GSVector4i& rect)
