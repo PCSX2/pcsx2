@@ -1007,13 +1007,6 @@ __ri static bool mpeg2sliceIDEC()
 		ipu_cmd.pos[0] = 2;
 		while (1)
 		{
-			if (ready_to_decode == true)
-			{
-				ready_to_decode = false;
-				CPU_INT(IPU_PROCESS, 64); // Should probably be much higher, but myst 3 doesn't like it right now.
-				ipu_cmd.pos[0] = 2;
-				return false;
-			}
 			// IPU0 isn't ready for data, so let's wait for it to be
 			if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[1] <= 2)
 			{
@@ -1127,9 +1120,14 @@ __ri static bool mpeg2sliceIDEC()
 				[[fallthrough]];
 			case 2:
 			{
-
+				if (ready_to_decode == true)
+				{
+					ready_to_decode = false;
+					CPU_INT(IPU_PROCESS, 64); // Should probably be much higher, but myst 3 doesn't like it right now.
+					ipu_cmd.pos[1] = 2;
+					return false;
+				}
 				pxAssert(decoder.ipu0_data > 0);
-				ready_to_decode = true;
 				uint read = ipu_fifo.out.write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
 				decoder.AdvanceIpuDataBy(read);
 
@@ -1150,6 +1148,7 @@ __ri static bool mpeg2sliceIDEC()
 				[[fallthrough]];
 
 			case 3:
+				ready_to_decode = true;
 				while (1)
 				{
 					if (!GETWORD())
@@ -1210,7 +1209,6 @@ __ri static bool mpeg2sliceIDEC()
 
 			ipu_cmd.pos[1] = 0;
 			ipu_cmd.pos[2] = 0;
-			ready_to_decode = true;
 		}
 
 finish_idec:
@@ -1306,12 +1304,7 @@ __fi static bool mpeg2_slice()
 
 	case 2:
 		ipu_cmd.pos[0] = 2;
-		if (ready_to_decode == true)
-		{
-			ready_to_decode = false;
-			CPU_INT(IPU_PROCESS, 64); // Should probably be much higher, but myst 3 doesn't like it right now.
-			return false;
-		}
+
 		// IPU0 isn't ready for data, so let's wait for it to be
 		if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[0] <= 3)
 		{
@@ -1517,8 +1510,15 @@ __fi static bool mpeg2_slice()
 		[[fallthrough]];
 	case 3:
 	{
+		if (ready_to_decode == true)
+		{
+			ipu_cmd.pos[0] = 3;
+			ready_to_decode = false;
+			CPU_INT(IPU_PROCESS, 64); // Should probably be much higher, but myst 3 doesn't like it right now.
+			return false;
+		}
+
 		pxAssert(decoder.ipu0_data > 0);
-		ready_to_decode = true;
 		uint read = ipu_fifo.out.write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
 		decoder.AdvanceIpuDataBy(read);
 
