@@ -6158,11 +6158,24 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 		u32 last_pX = v[1].XYZ.X;
 		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-			if (dpX != first_dpX || v[i].XYZ.X != last_pX)
+			if (v[i].XYZ.X < v[i-2].XYZ.X)
 			{
-				m_primitive_covers_without_gaps = false;
-				return false;
+				const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+				const u32 prev_X = v[i - 2].XYZ.X - m_context->XYOFFSET.OFX;
+				if (dpX != prev_X || v[i].XYZ.X != m_context->XYOFFSET.OFX)
+				{
+					m_primitive_covers_without_gaps = false;
+					return false;
+				}
+			}
+			else
+			{
+				const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+				if (dpX != first_dpX || v[i].XYZ.X != last_pX)
+				{
+					m_primitive_covers_without_gaps = false;
+					return false;
+				}
 			}
 
 			last_pX = v[i + 1].XYZ.X;
