@@ -21301,7 +21301,6 @@ SLES-53974:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes missing bloom from surfaces like windows.
-    textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
@@ -31170,7 +31169,6 @@ SLPM-62490:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes missing bloom from surfaces like windows.
-    textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
@@ -35446,7 +35444,6 @@ SLPM-65888:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes missing bloom from surfaces like windows.
-    textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
@@ -37904,7 +37901,6 @@ SLPM-66481:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes missing bloom from surfaces like windows.
-    textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
@@ -52663,7 +52659,6 @@ SLUS-21207:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes missing bloom from surfaces like windows.
-    textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
@@ -57258,7 +57253,6 @@ SLUS-29157:
   region: "NTSC-U"
   gsHWFixes:
     autoFlush: 2 # Fixes missing bloom from surfaces like windows.
-    textureInsideRT: 1 # Fixes corruption.
     # halfPixelOffset: 1 # Aligns shadows properly, but causes grid lines to appear in sea travel.
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
