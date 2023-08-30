@@ -754,7 +754,7 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 		r.m_r.x = r.m_vt.m_min.p.x;
 		r.m_r.y = r.m_vt.m_min.p.y;
 		r.m_r.z = r.PCRTCDisplays.GetResolution().x;
-		r.m_r.w = r.m_vt.m_max.p.y;
+		r.m_r.w = r.PCRTCDisplays.GetResolution().y;
 
 		for (int vert = 32; vert < 40; vert+=2)
 		{
@@ -763,9 +763,9 @@ bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)
 			r.m_vertex.buff[vert].U = (vert * 16) << 4;
 			r.m_vertex.buff[vert].V = 0;
 			r.m_vertex.buff[vert+1].XYZ.X = context->XYOFFSET.OFX + ((((vert * 16) + 32) << 4) - 8);
-			r.m_vertex.buff[vert+1].XYZ.Y = context->XYOFFSET.OFY + 8184; //511.5
+			r.m_vertex.buff[vert+1].XYZ.Y = context->XYOFFSET.OFY + (r.PCRTCDisplays.GetResolution().y << 4) + 8;
 			r.m_vertex.buff[vert+1].U = ((vert * 16) + 32) << 4;
-			r.m_vertex.buff[vert+1].V = 512 << 4;
+			r.m_vertex.buff[vert+1].V = r.PCRTCDisplays.GetResolution().y << 4;
 		}
 
 		/*r.m_vertex.head = r.m_vertex.tail = r.m_vertex.next = 2;
