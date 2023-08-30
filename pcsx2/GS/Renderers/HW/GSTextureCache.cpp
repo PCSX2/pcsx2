@@ -1493,13 +1493,19 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 		if (!found_t && !dst && !GSConfig.UserHacks_DisableDepthSupport)
 		{
+			GSVector4i new_rect = r;
+
+			// Just in case the TextureMinMax trolls us as it does, when checking if inside the target.
+			new_rect.z -= 2;
+			new_rect.w -= 2;
+
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
 			//
 			// 1/ Check only current frame, I guess it is only used as a postprocessing effect
 			for (auto t : m_dst[DepthStencil])
 			{
-				if (t->m_age <= 1 && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+				if (t->m_age <= 1 && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM) && t->Inside(bp, bw, psm, new_rect))
 				{
 					GL_INS("TC: Warning depth format read as color format. Pixels will be scrambled");
 					// Let's fetch a depth format texture. Rational, it will avoid the texture allocation and the
