@@ -2029,6 +2029,9 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 		GL_CACHE("TC: Lookup %s(Color) %dx%d FBMSK %08x, miss (0x%x, TBW %d, %s) draw %d", is_frame ? "Frame" : "Target",
 			size.x, size.y, fbmask, TEX0.TBP0, TEX0.TBW, psm_str(TEX0.PSM), g_gs_renderer->s_n);
 	}
+	// Avoid making garbage targets (usually PCRTC).
+	if (GSVector4i::loadh(size).rempty())
+		return nullptr;
 
 	Target* dst = Target::Create(TEX0, size.x, size.y, scale, type, true);
 
@@ -5292,6 +5295,7 @@ GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unsc
 	, m_valid(GSVector4i::zero())
 {
 	m_TEX0 = TEX0;
+	m_end_block = m_TEX0.TBP0;
 	m_unscaled_size = unscaled_size;
 	m_scale = scale;
 	m_texture = texture;
