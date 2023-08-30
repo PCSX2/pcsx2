@@ -22743,6 +22743,11 @@ SLES-54521:
 SLES-54522:
   name: "Nickelodeon SpongeBob and Friends - Battle for Volcano Island"
   region: "PAL-A"
+  gsHWFixes:
+    mipmap: 2 # Better characters and environment.
+    trilinearFiltering: 1 # Using mipmaps, so may as well.
+    autoFlush: 2 # Fixes texture corruptions.
+    getSkipCount: "GSC_BlueTongueGames" # Render mipmaps on the CPU.
 SLES-54527:
   name: "Flushed Away"
   region: "PAL-M5"
@@ -24032,12 +24037,14 @@ SLES-54990:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-54991:
   name: "Nickelodeon SpongeBob and Friends - Attack of the Toybots"
   region: "PAL-M6"
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLES-54992:
   name: "PDC World Championship Darts 2008"
   region: "PAL-M6"
@@ -54867,6 +54874,7 @@ SLUS-21605:
   gsHWFixes:
     mipmap: 1 # Fixes garbage textures in the distance.
     halfPixelOffset: 2 # Corrects most vertical lines.
+    getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLUS-21606:
   name: "Metropolismania 2"
   region: "NTSC-U"
