@@ -48,6 +48,8 @@ call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/offic
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 3148f4f263bf9930d89107eb44bc452481a5f8c6178459e26ecbf3c8dca3b5c7 || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 8b99046b54c40106d4e310be63b41331b717cfd8b42da4b4fc1c9169604be7fc || goto error
 
+call :downloadfile "4b119f48f5cb5e1499f91a0791150231c47430d4.diff" "https://github.com/qt/qtbase/commit/4b119f48f5cb5e1499f91a0791150231c47430d4.diff" d86bd2bd4ee2aff5f5e97da027aa926178dca250d163427eb21503bb357730a5 || goto error
+
 if %DEBUG%==1 (
   echo Building debug and release libraries...
 ) else (
@@ -78,6 +80,7 @@ echo Building Qt base...
 rmdir /S /Q "qtbase-everywhere-src-%QT%"
 %SEVENZIP% x "qtbase-everywhere-src-%QT%.zip" || goto error
 cd "qtbase-everywhere-src-%QT%" || goto error
+"C:\Program Files\Git\usr\bin\patch" -p1 < ../4b119f48f5cb5e1499f91a0791150231c47430d4.diff || goto error
 cmake -B build -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes %QTBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
