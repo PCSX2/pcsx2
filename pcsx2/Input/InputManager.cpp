@@ -448,6 +448,7 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
 #ifdef _WIN32
 	"DInput",
 	"XInput",
+	"DS3Input",
 #endif
 }};
 
@@ -472,6 +473,8 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
 
 #ifdef _WIN32
 		case InputSourceType::DInput:
+			return false;
+		case InputSourceType::DS3Input:
 			return false;
 
 		case InputSourceType::XInput:
@@ -1515,6 +1518,7 @@ void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_loc
 #ifdef _WIN32
 #include "Input/DInputSource.h"
 #include "Input/XInputSource.h"
+#include "Input/DualShock3InputSource.h"
 #endif
 
 void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
@@ -1523,5 +1527,6 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
 #ifdef _WIN32
 	UpdateInputSourceState<DInputSource>(si, settings_lock, InputSourceType::DInput);
 	UpdateInputSourceState<XInputSource>(si, settings_lock, InputSourceType::XInput);
+	UpdateInputSourceState<DualShock3InputSource>(si, settings_lock, InputSourceType::DS3Input);
 #endif
 }

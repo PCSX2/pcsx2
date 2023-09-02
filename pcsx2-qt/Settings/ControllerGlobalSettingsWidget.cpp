@@ -54,6 +54,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDS3Source, "InputSources", "DS3Input", false);
 #else
 	m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
 	m_ui.xinputGroup->deleteLater();
@@ -61,6 +62,9 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
 	m_ui.dinputGroup->deleteLater();
 	m_ui.dinputGroup = nullptr;
+	m_ui.mainLayout->removeWidget(m_ui.ds3inputGroup);
+	m_ui.ds3inputGroup->deleteLater();
+	m_ui.ds3inputGroup = nullptr;
 #endif
 
 	if (dialog->isEditingProfile())

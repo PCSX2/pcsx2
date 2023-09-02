@@ -1349,6 +1349,12 @@
     <ClCompile Include="Input\DInputSource.cpp">
       <Filter>Misc\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Input\DualShock3InputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\WindowsHIDUtility.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
     <ClCompile Include="Input\XInputSource.cpp">
       <Filter>Misc\Input</Filter>
     </ClCompile>
@@ -2283,6 +2289,12 @@
       <Filter>Misc\Input</Filter>
     </ClInclude>
     <ClInclude Include="Input\DInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\DualShock3InputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\WindowsHIDUtility.h">
       <Filter>Misc\Input</Filter>
     </ClInclude>
     <ClInclude Include="Input\XInputSource.h">

@@ -37,6 +37,7 @@ enum class InputSourceType : u32
 #ifdef _WIN32
 	DInput,
 	XInput,
+	DS3Input,
 #endif
 	Count,
 };
