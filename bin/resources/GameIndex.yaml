@@ -32034,6 +32034,8 @@ SLPM-62767:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes white shadows.
+  gsHWFixes:
+    cpuCLUTRender: 2 # Fixes CLUT colours.
 SLPM-62768:
   name: "Sengoku Musou 2 & Sengoku Musou 2 - Empires Saikyou Data"
   region: "NTSC-J"
