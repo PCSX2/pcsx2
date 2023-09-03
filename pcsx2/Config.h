@@ -980,12 +980,6 @@ struct Pcsx2Config
 		bool HddEnable{false};
 		std::string HddFile;
 
-		/* The PS2's HDD max size is 2TB
-		 * which is 2^32 * 512 byte sectors
-		 * Note that we don't yet support
-		 * 48bit LBA, so our limit is lower */
-		uint HddSizeSectors{40 * (1024 * 1024 * 1024 / 512)};
-
 		DEV9Options();
 
 		void LoadSave(SettingsWrapper& wrap);
@@ -1011,8 +1005,7 @@ struct Pcsx2Config
 				   OpEqu(EthHosts) &&
 
 				   OpEqu(HddEnable) &&
-				   OpEqu(HddFile) &&
-				   OpEqu(HddSizeSectors);
+				   OpEqu(HddFile);
 		}
 
 		bool operator!=(const DEV9Options& right) const

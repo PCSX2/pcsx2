@@ -1089,7 +1089,6 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapSection("DEV9/Hdd");
 		SettingsWrapEntry(HddEnable);
 		SettingsWrapEntry(HddFile);
-		SettingsWrapEntry(HddSizeSectors);
 	}
 }
 

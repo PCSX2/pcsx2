@@ -47,12 +47,9 @@ private Q_SLOTS:
 
 	void onHddEnabledChanged(int state);
 	void onHddBrowseFileClicked();
+	void onHddFileTextChange();
 	void onHddFileEdit();
 	void onHddSizeSlide(int i);
-	// Per game only.
-	void onHddSizeSliderContext(const QPoint& pt);
-	void onHddSizeSliderReset(bool checked = false);
-	//
 	void onHddSizeAccessorSpin();
 	void onHddCreateClicked();
 
@@ -72,6 +69,9 @@ private:
 	std::vector<HostEntryUi> ListBaseHostsConfig();
 	void AddNewHostConfig(const HostEntryUi& host);
 	void DeleteHostConfig(int index);
+
+	void UpdateHddSizeUIEnabled();
+	void UpdateHddSizeUIValues();
 
 	SettingsDialog* m_dialog;
 
