@@ -5452,6 +5452,8 @@ void GSTextureCache::Target::Update()
 
 void GSTextureCache::Target::UpdateIfDirtyIntersects(const GSVector4i& rc)
 {
+	m_age = 0;
+
 	for (auto& dirty : m_dirty)
 	{
 		const GSVector4i dirty_rc(dirty.GetDirtyRect(m_TEX0));
