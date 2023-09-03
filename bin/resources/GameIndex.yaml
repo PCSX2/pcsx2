@@ -21617,7 +21617,8 @@ SLES-54122:
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Partially fixes PATH3 Masking timing, not enough on its own.
-    - EETimingHack # Massages the timing slightly further to make it work okay.
+  speedHacks:
+    eeCycleRate: 3 # Corrects timing of PATH3 further.
 SLES-54123:
   name: "Marvel - Ultimate Alliance"
   region: "PAL-E-I"
