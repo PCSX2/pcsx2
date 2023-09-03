@@ -54,8 +54,6 @@ int ATA::Open(const std::string& hddPath)
 	readBufferLen = 256 * 512;
 	readBuffer = new u8[readBufferLen];
 
-	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
-
 	//Open File
 	if (!FileSystem::FileExists(hddPath.c_str()))
 		return -1;
@@ -68,8 +66,9 @@ int ATA::Open(const std::string& hddPath)
 		return -1;
 	}
 
-	//Store HddImage size for later check
+	//Store HddImage size for later use
 	hddImageSize = static_cast<u64>(size);
+	CreateHDDinfo(hddImageSize / 512);
 
 	InitSparseSupport(hddPath);
 
@@ -560,7 +559,7 @@ bool ATA::HDD_CanSeek()
 
 bool ATA::HDD_CanAccess(int* sectors)
 {
-	s64 maxLBA = std::min<s64>(EmuConfig.DEV9.HddSizeSectors, hddImageSize / 512) - 1;
+	s64 maxLBA = hddImageSize / 512 - 1;
 	if ((regSelect & 0x40) == 0) //CHS mode
 		maxLBA = std::min<s64>(maxLBA, curCylinders * curHeads * curSectors);
 

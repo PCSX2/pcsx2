@@ -46,6 +46,11 @@ void ATA::WritePaddedString(u8* data, int* index, const std::string& value, u32 
 
 void ATA::CreateHDDinfo(u64 sizeSectors)
 {
+	//PS2 is limited to 32bit size HDD (2TB), however,
+	//we don't yet support 48bit, so limit to 24bit size
+	constexpr u32 maxSize = 1 << 24;
+	sizeSectors = std::min<u32>(sizeSectors, maxSize);
+
 	constexpr u16 sectorSize = 512;
 	DevCon.WriteLn("DEV9: HddSize : %i", sizeSectors * sectorSize / (1024 * 1024));
 	const u64 nbSectors = sizeSectors;

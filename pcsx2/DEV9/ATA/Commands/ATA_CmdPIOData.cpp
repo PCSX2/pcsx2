@@ -73,7 +73,7 @@ void ATA::HDD_IdentifyDevice()
 	DevCon.WriteLn("DEV9: HddidentifyDevice");
 
 	//IDE transfer start
-	CreateHDDinfo(EmuConfig.DEV9.HddSizeSectors);
+	CreateHDDinfo(hddImageSize / 512);
 
 	pioDRQEndTransferFunc = nullptr;
 	DRQCmdPIODataToHost(identifyData, 256 * 2, 0, 256 * 2, true);

@@ -259,7 +259,6 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	connect(m_ui.hddEnabled, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onHddEnabledChanged);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hddEnabled, "DEV9/Hdd", "HddEnable", false);
 
-	connect(m_ui.hddFile, &QLineEdit::editingFinished, this, &DEV9SettingsWidget::onHddFileEdit);
 	if (m_dialog->isPerGameSettings())
 	{
 		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "").value().c_str()));
@@ -267,31 +266,12 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	}
 	else
 		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw").value().c_str()));
+
+	UpdateHddSizeUIValues();
+
+	connect(m_ui.hddFile, &QLineEdit::textChanged, this, &DEV9SettingsWidget::onHddFileTextChange);
+	connect(m_ui.hddFile, &QLineEdit::editingFinished, this, &DEV9SettingsWidget::onHddFileEdit);
 	connect(m_ui.hddBrowseFile, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddBrowseFileClicked);
-
-	//TODO: need a getUintValue for if 48bit support occurs
-	const int size = (u64)m_dialog->getIntValue("DEV9/Hdd", "HddSizeSectors", 0).value() * 512 / (1024 * 1024 * 1024);
-
-	if (m_dialog->isPerGameSettings())
-	{
-		std::optional<int> sizeOpt = std::nullopt;
-		if (size > 0)
-			sizeOpt = size;
-		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
-
-		SettingWidgetBinder::SettingAccessor<QSpinBox>::makeNullableInt(m_ui.hddSizeSpinBox, sizeGlobal);
-		SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, sizeOpt);
-
-		m_ui.hddSizeSlider->setValue(sizeOpt.value_or(sizeGlobal));
-
-		m_ui.hddSizeSlider->setContextMenuPolicy(Qt::CustomContextMenu);
-		connect(m_ui.hddSizeSlider, &QSlider::customContextMenuRequested, this, &DEV9SettingsWidget::onHddSizeSliderContext);
-	}
-	else
-	{
-		m_ui.hddSizeSlider->setValue(size);
-		SettingWidgetBinder::SettingAccessor<QSpinBox>::setIntValue(m_ui.hddSizeSpinBox, size);
-	}
 
 	connect(m_ui.hddSizeSlider, QOverload<int>::of(&QSlider::valueChanged), this, &DEV9SettingsWidget::onHddSizeSlide);
 	SettingWidgetBinder::SettingAccessor<QSpinBox>::connectValueChanged(m_ui.hddSizeSpinBox, [&]() { onHddSizeAccessorSpin(); });
@@ -700,12 +680,9 @@ void DEV9SettingsWidget::onHddEnabledChanged(int state)
 	m_ui.hddFile->setEnabled(enabled);
 	m_ui.hddFileLabel->setEnabled(enabled);
 	m_ui.hddBrowseFile->setEnabled(enabled);
-	m_ui.hddSizeLabel->setEnabled(enabled);
-	m_ui.hddSizeSlider->setEnabled(enabled);
-	m_ui.hddSizeMaxLabel->setEnabled(enabled);
-	m_ui.hddSizeMinLabel->setEnabled(enabled);
-	m_ui.hddSizeSpinBox->setEnabled(enabled);
 	m_ui.hddCreate->setEnabled(enabled);
+
+	UpdateHddSizeUIEnabled();
 }
 
 void DEV9SettingsWidget::onHddBrowseFileClicked()
@@ -722,85 +699,39 @@ void DEV9SettingsWidget::onHddBrowseFileClicked()
 	m_ui.hddFile->editingFinished();
 }
 
+void DEV9SettingsWidget::onHddFileTextChange()
+{
+	UpdateHddSizeUIEnabled();
+
+	// Force update so user doesn't have to exit text box
+	std::string hddPath(m_ui.hddFile->text().toStdString());
+	if (hddPath.empty())
+		UpdateHddSizeUIValues();
+}
+
 void DEV9SettingsWidget::onHddFileEdit()
 {
 	// Check if file exists, if so set HddSize to correct value.
 	// Also save the hddPath setting
 	std::string hddPath(m_ui.hddFile->text().toStdString());
 	if (hddPath.empty())
-	{
 		m_dialog->setStringSettingValue("DEV9/Hdd", "HddFile", std::nullopt);
-		return;
-	}
 	else
 		m_dialog->setStringSettingValue("DEV9/Hdd", "HddFile", hddPath.c_str());
 
-	if (!Path::IsAbsolute(hddPath))
-		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
-
-	if (!FileSystem::FileExists(hddPath.c_str()))
-		return;
-
-	const s64 size = FileSystem::GetPathFileSize(hddPath.c_str());
-	if (size < 0)
-		return;
-
-	const u32 sizeSectors = static_cast<u32>(size / 512);
-	const int sizeGB = size / 1024 / 1024 / 1024;
-
-	QSignalBlocker sb1(m_ui.hddSizeSpinBox);
-	QSignalBlocker sb2(m_ui.hddSizeSlider);
-	m_ui.hddSizeSpinBox->setValue(sizeGB);
-	m_ui.hddSizeSlider->setValue(sizeGB);
-
-	m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", (int)sizeSectors);
+	UpdateHddSizeUIValues();
 }
 
 void DEV9SettingsWidget::onHddSizeSlide(int i)
 {
-	// We have to call onHddSizeAccessorSpin() ourself, as the value could still be considered null when the valueChanged signal is fired
 	QSignalBlocker sb(m_ui.hddSizeSpinBox);
-	SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, i);
-	onHddSizeAccessorSpin();
-}
-
-void DEV9SettingsWidget::onHddSizeSliderContext(const QPoint& pt)
-{
-	QMenu menu(m_ui.hddSizeSlider);
-	connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, this, &DEV9SettingsWidget::onHddSizeSliderReset);
-	menu.exec(m_ui.hddSizeSlider->mapToGlobal(pt));
-}
-
-void DEV9SettingsWidget::onHddSizeSliderReset([[maybe_unused]] bool checked)
-{
-	// We have to call onHddSizeAccessorSpin() ourself, as the value could still be considered non-null when the valueChanged signal is fired
-	QSignalBlocker sb(m_ui.hddSizeSpinBox);
-	SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(m_ui.hddSizeSpinBox, std::nullopt);
-	onHddSizeAccessorSpin();
+	m_ui.hddSizeSpinBox->setValue(i);
 }
 
 void DEV9SettingsWidget::onHddSizeAccessorSpin()
 {
-	//TODO: need a getUintValue for if 48bit support occurs
 	QSignalBlocker sb(m_ui.hddSizeSlider);
-	if (m_dialog->isPerGameSettings())
-	{
-		std::optional<int> new_value = SettingWidgetBinder::SettingAccessor<QSpinBox>::getNullableIntValue(m_ui.hddSizeSpinBox);
-
-		const int sizeGlobal = (u64)Host::GetBaseIntSettingValue("DEV9/Hdd", "HddSizeSectors", 0) * 512 / (1024 * 1024 * 1024);
-		m_ui.hddSizeSlider->setValue(new_value.value_or(sizeGlobal));
-
-		if (new_value.has_value())
-			m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", new_value.value() * (1024 * 1024 * 1024 / 512));
-		else
-			m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", std::nullopt);
-	}
-	else
-	{
-		const int new_value = SettingWidgetBinder::SettingAccessor<QSpinBox>::getIntValue(m_ui.hddSizeSpinBox);
-		m_ui.hddSizeSlider->setValue(new_value);
-		m_dialog->setIntSettingValue("DEV9/Hdd", "HddSizeSectors", new_value * (1024 * 1024 * 1024 / 512));
-	}
+	m_ui.hddSizeSlider->setValue(m_ui.hddSizeSpinBox->value());
 }
 
 void DEV9SettingsWidget::onHddCreateClicked()
@@ -808,7 +739,8 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	//Do the thing
 	std::string hddPath(m_ui.hddFile->text().toStdString());
 
-	u64 sizeBytes = (u64)m_dialog->getEffectiveIntValue("DEV9/Hdd", "HddSizeSectors", 0) * 512;
+	const u64 sizeBytes = (u64)m_ui.hddSizeSpinBox->value() * (u64)(1024 * 1024 * 1024);
+
 	if (sizeBytes == 0 || hddPath.empty())
 	{
 		QMessageBox::warning(this, QObject::tr("HDD Creator"),
@@ -846,6 +778,49 @@ void DEV9SettingsWidget::onHddCreateClicked()
 			tr("HDD image created"),
 			QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 	}
+}
+
+void DEV9SettingsWidget::UpdateHddSizeUIEnabled()
+{
+	std::string hddPath(m_ui.hddFile->text().toStdString());
+
+	bool enableSizeUI;
+	if (m_dialog->isPerGameSettings() && hddPath.empty())
+		enableSizeUI = false;
+	else
+		enableSizeUI = m_ui.hddFile->isEnabled();
+
+	m_ui.hddSizeLabel->setEnabled(enableSizeUI);
+	m_ui.hddSizeSlider->setEnabled(enableSizeUI);
+	m_ui.hddSizeMaxLabel->setEnabled(enableSizeUI);
+	m_ui.hddSizeMinLabel->setEnabled(enableSizeUI);
+	m_ui.hddSizeSpinBox->setEnabled(enableSizeUI);
+}
+
+void DEV9SettingsWidget::UpdateHddSizeUIValues()
+{
+	std::string hddPath(m_ui.hddFile->text().toStdString());
+
+	if (m_dialog->isPerGameSettings() && hddPath.empty())
+		hddPath = m_ui.hddFile->placeholderText().toStdString();
+
+	if (!Path::IsAbsolute(hddPath))
+		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
+
+	if (!FileSystem::FileExists(hddPath.c_str()))
+		return;
+
+	const s64 size = FileSystem::GetPathFileSize(hddPath.c_str());
+	if (size < 0)
+		return;
+
+	const u32 sizeSectors = static_cast<u32>(size / 512);
+	const int sizeGB = size / 1024 / 1024 / 1024;
+
+	QSignalBlocker sb1(m_ui.hddSizeSpinBox);
+	QSignalBlocker sb2(m_ui.hddSizeSlider);
+	m_ui.hddSizeSpinBox->setValue(sizeGB);
+	m_ui.hddSizeSlider->setValue(sizeGB);
 }
 
 void DEV9SettingsWidget::showEvent(QShowEvent* event)
