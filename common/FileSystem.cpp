@@ -726,13 +726,6 @@ int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
 #ifdef _WIN32
 	return _fseeki64(fp, offset, whence);
 #else
-	// Prevent truncation on platforms which don't have a 64-bit off_t.
-	if constexpr (sizeof(off_t) != sizeof(s64))
-	{
-		if (offset < std::numeric_limits<off_t>::min() || offset > std::numeric_limits<off_t>::max())
-			return -1;
-	}
-
 	return fseeko(fp, static_cast<off_t>(offset), whence);
 #endif
 }
@@ -1474,6 +1467,9 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 
 #else
 
+// No 32-bit file offsets breaking stuff please.
+static_assert(sizeof(off_t) == sizeof(s64));
+
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
 	u32 Flags, FileSystem::FindResultsArray* pResults)
 {
@@ -1528,16 +1524,9 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 		FILESYSTEM_FIND_DATA outData;
 		outData.Attributes = 0;
 
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
 		struct stat sDir;
 		if (stat(full_path.c_str(), &sDir) < 0)
 			continue;
-
-#else
-		struct stat64 sDir;
-		if (stat64(full_path.c_str(), &sDir) < 0)
-			continue;
-#endif
 
 		if (S_ISDIR(sDir.st_mode))
 		{
@@ -1640,14 +1629,9 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 	if (path[0] == '\0')
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (stat64(path, &sysStatData) < 0)
-#endif
 		return false;
 
 	// parse attributes
@@ -1673,14 +1657,9 @@ bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
 	if (fd < 0)
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (fstat(fd, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (fstat64(fd, &sysStatData) < 0)
-#endif
 		return false;
 
 	// parse attributes
@@ -1706,14 +1685,9 @@ bool FileSystem::FileExists(const char* path)
 	if (path[0] == '\0')
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (stat64(path, &sysStatData) < 0)
-#endif
 		return false;
 
 	if (S_ISDIR(sysStatData.st_mode))
@@ -1728,14 +1702,9 @@ bool FileSystem::DirectoryExists(const char* path)
 	if (path[0] == '\0')
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (stat64(path, &sysStatData) < 0)
-#endif
 		return false;
 
 	if (S_ISDIR(sysStatData.st_mode))
