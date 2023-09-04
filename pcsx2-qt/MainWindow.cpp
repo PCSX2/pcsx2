@@ -1730,6 +1730,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	if (!s_vm_valid)
 	{
 		saveStateToConfig();
+		if (m_display_widget)
+			g_emu_thread->stopFullscreenUI();
 		QMainWindow::closeEvent(event);
 		return;
 	}
