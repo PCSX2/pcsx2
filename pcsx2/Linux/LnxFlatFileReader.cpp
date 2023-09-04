@@ -88,7 +88,6 @@ void FlatFileReader::CancelRead(void)
 
 void FlatFileReader::Close(void)
 {
-
 	if (m_fd != -1)
 		close(m_fd);
 
@@ -100,15 +99,9 @@ void FlatFileReader::Close(void)
 
 uint FlatFileReader::GetBlockCount(void) const
 {
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
 	struct stat sysStatData;
 	if (fstat(m_fd, &sysStatData) < 0)
 		return 0;
-#else
-	struct stat64 sysStatData;
-	if (fstat64(m_fd, &sysStatData) < 0)
-		return 0;
-#endif
 
-	return (int)(sysStatData.st_size / m_blocksize);
+	return static_cast<uint>(sysStatData.st_size / m_blocksize);
 }
