@@ -302,6 +302,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.menuChangeDisc, &QMenu::aboutToHide, this, &MainWindow::onChangeDiscMenuAboutToHide);
 	connect(m_ui.actionPowerOff, &QAction::triggered, this, [this]() { requestShutdown(true, true, EmuConfig.SaveStateOnShutdown); });
 	connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this, [this]() { requestShutdown(false, false, false); });
+	connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
+	connect(m_ui.actionToolbarStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
 	connect(m_ui.actionToolbarStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
 	connect(m_ui.actionToolbarStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
 	connect(m_ui.actionToolbarStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
@@ -409,13 +411,12 @@ void MainWindow::connectSignals()
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
-	connect(m_ui.actionStartFullscreenUI, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
-	connect(m_ui.actionToolbarStartFullscreenUI, &QAction::triggered, thread, &EmuThread::startFullscreenUI);
 	connect(thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested);
 	connect(thread, &EmuThread::onMouseModeRequested, this, &MainWindow::mouseModeRequested);
+	connect(thread, &EmuThread::onFullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
 	connect(thread, &EmuThread::onVMStarting, this, &MainWindow::onVMStarting);
 	connect(thread, &EmuThread::onVMStarted, this, &MainWindow::onVMStarted);
 	connect(thread, &EmuThread::onVMPaused, this, &MainWindow::onVMPaused);
@@ -715,6 +716,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionToolbarStartFile->setDisabled(starting_or_running || stopping);
 	m_ui.actionToolbarStartDisc->setDisabled(starting_or_running || stopping);
 	m_ui.actionToolbarStartBios->setDisabled(starting_or_running || stopping);
+	m_ui.actionStartFullscreenUI->setDisabled(starting_or_running || stopping);
+	m_ui.actionToolbarStartFullscreenUI->setDisabled(starting_or_running || stopping);
 
 	m_ui.actionPowerOff->setEnabled(running);
 	m_ui.actionPowerOffWithoutSaving->setEnabled(running);
@@ -1284,6 +1287,20 @@ void MainWindow::onSaveStateMenuAboutToShow()
 	m_ui.menuSaveState->clear();
 	updateSaveStateMenusEnableState(!m_current_disc_serial.isEmpty());
 	populateSaveStateMenu(m_ui.menuSaveState, m_current_disc_serial, m_current_disc_crc);
+}
+
+void MainWindow::onStartFullscreenUITriggered()
+{
+	if (m_display_widget)
+		g_emu_thread->stopFullscreenUI();
+	else
+		g_emu_thread->startFullscreenUI(Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
+}
+
+void MainWindow::onFullscreenUIStateChange(bool running)
+{
+	m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
+	m_ui.actionToolbarStartFullscreenUI->setText(running ? tr("Exit Big Picture", "In Toolbar") : tr("Big Picture", "In Toolbar"));
 }
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
@@ -1914,9 +1931,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 	updateWindowTitle();
 	updateWindowState();
 
-	m_ui.actionStartFullscreenUI->setEnabled(false);
-	m_ui.actionToolbarStartFullscreenUI->setEnabled(false);
-
 	updateDisplayWidgetCursor();
 	m_display_widget->setFocus();
 
@@ -2035,8 +2049,6 @@ void MainWindow::releaseRenderWindow()
 
 	m_ui.actionViewSystemDisplay->setEnabled(false);
 	m_ui.actionFullscreen->setEnabled(false);
-	m_ui.actionStartFullscreenUI->setEnabled(true);
-	m_ui.actionToolbarStartFullscreenUI->setEnabled(true);
 }
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)
