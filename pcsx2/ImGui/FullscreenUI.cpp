@@ -2490,15 +2490,7 @@ void FullscreenUI::DoCopyGameSettings()
 	if (!s_game_settings_interface)
 		return;
 
-	Pcsx2Config temp;
-	{
-		SettingsLoadWrapper wrapper(*GetEditingSettingsInterface(false));
-		temp.LoadSave(wrapper);
-	}
-	{
-		SettingsSaveWrapper wrapper(*s_game_settings_interface.get());
-		temp.LoadSave(wrapper);
-	}
+	Pcsx2Config::CopyConfiguration(s_game_settings_interface.get(), *GetEditingSettingsInterface(false));
 
 	SetSettingsChanged(s_game_settings_interface.get());
 
@@ -2511,9 +2503,7 @@ void FullscreenUI::DoClearGameSettings()
 	if (!s_game_settings_interface)
 		return;
 
-	s_game_settings_interface->Clear();
-	if (!s_game_settings_interface->GetFileName().empty())
-		FileSystem::DeleteFilePath(s_game_settings_interface->GetFileName().c_str());
+	Pcsx2Config::ClearConfiguration(s_game_settings_interface.get());
 
 	SetSettingsChanged(s_game_settings_interface.get());
 

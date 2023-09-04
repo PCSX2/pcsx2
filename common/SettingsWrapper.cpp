@@ -169,3 +169,60 @@ void SettingsSaveWrapper::_EnumEntry(const char* section, const char* var, int& 
 	const int index = (value < 0 || value >= cnt) ? defvalue : value;
 	m_si.SetStringValue(section, var, enumArray[index]);
 }
+
+SettingsClearWrapper::SettingsClearWrapper(SettingsInterface& si)
+	: SettingsWrapper(si)
+{
+}
+
+bool SettingsClearWrapper::IsLoading() const
+{
+	return false;
+}
+
+bool SettingsClearWrapper::IsSaving() const
+{
+	return true;
+}
+
+void SettingsClearWrapper::Entry(const char* section, const char* var, int& value, const int defvalue /*= 0*/)
+{
+	m_si.DeleteValue(section, var);
+}
+
+void SettingsClearWrapper::Entry(const char* section, const char* var, uint& value, const uint defvalue /*= 0*/)
+{
+	m_si.DeleteValue(section, var);
+}
+
+void SettingsClearWrapper::Entry(const char* section, const char* var, bool& value, const bool defvalue /*= false*/)
+{
+	m_si.DeleteValue(section, var);
+}
+
+void SettingsClearWrapper::Entry(const char* section, const char* var, float& value, const float defvalue /*= 0.0*/)
+{
+	m_si.DeleteValue(section, var);
+}
+
+void SettingsClearWrapper::Entry(const char* section, const char* var, std::string& value, const std::string& default_value /*= std::string()*/)
+{
+	m_si.DeleteValue(section, var);
+}
+
+bool SettingsClearWrapper::EntryBitBool(const char* section, const char* var, bool value, const bool defvalue /*= false*/)
+{
+	m_si.DeleteValue(section, var);
+	return defvalue;
+}
+
+int SettingsClearWrapper::EntryBitfield(const char* section, const char* var, int value, const int defvalue /*= 0*/)
+{
+	m_si.DeleteValue(section, var);
+	return defvalue;
+}
+
+void SettingsClearWrapper::_EnumEntry(const char* section, const char* var, int& value, const char* const* enumArray, int defvalue)
+{
+	m_si.DeleteValue(section, var);
+}

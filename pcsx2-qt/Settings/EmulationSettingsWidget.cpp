@@ -166,7 +166,7 @@ void EmulationSettingsWidget::initializeSpeedCombo(QComboBox* cb, const char* se
 	if (m_dialog->isPerGameSettings())
 	{
 		cb->addItem(tr("Use Global Setting [%1%]").arg(value * 100.0f, 0, 'f', 0));
-		if (!m_dialog->getSettingsInterface()->GetFloatValue(key, section, &value))
+		if (!m_dialog->getSettingsInterface()->GetFloatValue(section, key, &value))
 		{
 			// set to something without data
 			value = -1.0f;

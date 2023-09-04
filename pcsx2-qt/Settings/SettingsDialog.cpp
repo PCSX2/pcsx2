@@ -58,17 +58,23 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 	setupUi(nullptr);
 }
 
-SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game,
+SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<INISettingsInterface> sif, const GameList::Entry* game,
 	std::string serial, u32 disc_crc, QString filename)
 	: QDialog(parent)
 	, m_sif(std::move(sif))
 	, m_filename(std::move(filename))
+	, m_game_list_filename(game ? game->path : std::string())
 	, m_serial(std::move(serial))
 	, m_disc_crc(disc_crc)
 {
 	setupUi(game);
 
 	s_open_game_properties_dialogs.push_back(this);
+}
+
+SettingsInterface* SettingsDialog::getSettingsInterface() const
+{
+	return m_sif.get();
 }
 
 void SettingsDialog::setupUi(const GameList::Entry* game)
@@ -98,6 +104,21 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		}
 
 		m_ui.restoreDefaultsButton->setVisible(false);
+		m_ui.footerLayout->removeWidget(m_ui.restoreDefaultsButton);
+		m_ui.restoreDefaultsButton->deleteLater();
+		m_ui.restoreDefaultsButton = nullptr;
+	}
+	else
+	{
+		m_ui.copyGlobalSettingsButton->setVisible(false);
+		m_ui.footerLayout->removeWidget(m_ui.copyGlobalSettingsButton);
+		m_ui.copyGlobalSettingsButton->deleteLater();
+		m_ui.copyGlobalSettingsButton = nullptr;
+
+		m_ui.clearGameSettingsButton->setVisible(false);
+		m_ui.footerLayout->removeWidget(m_ui.clearGameSettingsButton);
+		m_ui.clearGameSettingsButton->deleteLater();
+		m_ui.clearGameSettingsButton = nullptr;
 	}
 
 	addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
@@ -213,7 +234,12 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	m_ui.helpText->setText(m_category_help_text[0]);
 	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
 	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::close);
-	connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
+	if (m_ui.restoreDefaultsButton)
+		connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
+	if (m_ui.copyGlobalSettingsButton)
+		connect(m_ui.copyGlobalSettingsButton, &QPushButton::clicked, this, &SettingsDialog::onCopyGlobalSettingsClicked);
+	if (m_ui.clearGameSettingsButton)
+		connect(m_ui.clearGameSettingsButton, &QPushButton::clicked, this, &SettingsDialog::onClearSettingsClicked);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -272,6 +298,71 @@ void SettingsDialog::onRestoreDefaultsClicked()
 		return;
 
 	g_main_window->resetSettings(ui_cb->isChecked());
+}
+
+void SettingsDialog::onCopyGlobalSettingsClicked()
+{
+	if (!isPerGameSettings())
+		return;
+
+	if (QMessageBox::question(this, tr("PCSX2 Settings"),
+			tr("The configuration for this game will be replaced by the current global settings.\n\nAny current setting values will be "
+			   "overwritten.\n\nDo you want to continue?"),
+			QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	{
+		auto lock = Host::GetSettingsLock();
+		Pcsx2Config::CopyConfiguration(m_sif.get(), *Host::Internal::GetBaseSettingsLayer());
+	}
+	m_sif->Save();
+	g_emu_thread->reloadGameSettings();
+
+	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration copied from global settings."));
+}
+
+void SettingsDialog::onClearSettingsClicked()
+{
+	if (!isPerGameSettings())
+		return;
+
+	if (QMessageBox::question(this, tr("PCSX2 Settings"),
+			tr("The configuration for this game will be cleared.\n\nAny current setting values will be lost.\n\nDo you want to continue?"),
+			QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	Pcsx2Config::ClearConfiguration(m_sif.get());
+	m_sif->Save();
+	g_emu_thread->reloadGameSettings();
+
+	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration cleared."));
+}
+
+SettingsDialog* SettingsDialog::reopen()
+{
+	// This doesn't work for global settings, because MainWindow maintains a pointer.
+	if (!m_sif)
+		return this;
+
+	close();
+
+	std::unique_ptr<INISettingsInterface> new_sif = std::make_unique<INISettingsInterface>(m_sif->GetFileName());
+	if (FileSystem::FileExists(new_sif->GetFileName().c_str()))
+		new_sif->Load();
+
+	auto lock = GameList::GetLock();
+	const GameList::Entry* game = m_game_list_filename.empty() ? nullptr : GameList::GetEntryForPath(m_game_list_filename.c_str());
+
+	SettingsDialog* dlg = new SettingsDialog(g_main_window, std::move(new_sif), game, m_serial, m_disc_crc, m_filename);
+	dlg->QDialog::setWindowTitle(windowTitle());
+	dlg->setModal(false);
+	dlg->show();
+
+	return dlg;
 }
 
 void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
@@ -566,3 +657,4 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const
 	dialog->setModal(false);
 	dialog->show();
 }
+
