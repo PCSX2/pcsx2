@@ -12133,8 +12133,8 @@ SLES-50233:
 SLES-50243:
   name: "David Beckham Soccer"
   region: "PAL-M5"
-  gameFixes:
-    - SkipMPEGHack # Fixes game hang.
+  speedHacks:
+    eeCycleRate: -2 # Fixes FMV playback.
 SLES-50247:
   name: "Onimusha - Warlords"
   region: "PAL-M3"
@@ -27974,6 +27974,8 @@ SLPM-55055:
 SLPM-55056:
   name: "Wrestle Angels Survivor 2"
   region: "NTSC-J"
+  speedHacks:
+    eeCycleRate: -2 # Fixes FMV playback.
 SLPM-55057:
   name: "Hakushaku to Yousei - Yume to Kizuna ni Omoi o Hasete"
   region: "NTSC-J"
