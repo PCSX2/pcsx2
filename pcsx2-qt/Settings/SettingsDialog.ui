@@ -81,11 +81,25 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="footerLayout">
      <item>
       <widget class="QPushButton" name="restoreDefaultsButton">
        <property name="text">
         <string>Restore Defaults</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="copyGlobalSettingsButton">
+       <property name="text">
+        <string>Copy Global Settings</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="clearGameSettingsButton">
+       <property name="text">
+        <string>Clear Settings</string>
        </property>
       </widget>
      </item>

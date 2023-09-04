@@ -51,12 +51,13 @@ class SettingsDialog final : public QDialog
 
 public:
 	explicit SettingsDialog(QWidget* parent);
-	SettingsDialog(QWidget* parent, std::unique_ptr<SettingsInterface> sif, const GameList::Entry* game, std::string serial, u32 disc_crc, QString filename = QString());
+	SettingsDialog(QWidget* parent, std::unique_ptr<INISettingsInterface> sif, const GameList::Entry* game, std::string serial,
+		u32 disc_crc, QString filename = QString());
 	~SettingsDialog();
 
 	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc);
 
-	__fi SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
+	SettingsInterface* getSettingsInterface() const;
 	__fi bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
 	__fi const std::string& getSerial() const { return m_serial; }
 	__fi u32 getDiscCRC() const { return m_disc_crc; }
@@ -108,6 +109,8 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void onCategoryCurrentRowChanged(int row);
 	void onRestoreDefaultsClicked();
+	void onCopyGlobalSettingsClicked();
+	void onClearSettingsClicked();
 
 protected:
 	void closeEvent(QCloseEvent*) override;
@@ -122,7 +125,9 @@ private:
 
 	void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
 
-	std::unique_ptr<SettingsInterface> m_sif;
+	SettingsDialog* reopen();
+
+	std::unique_ptr<INISettingsInterface> m_sif;
 
 	Ui::SettingsDialog m_ui;
 
@@ -149,6 +154,7 @@ private:
 
 	QString m_filename;
 
+	std::string m_game_list_filename;
 	std::string m_serial;
 	u32 m_disc_crc;
 };

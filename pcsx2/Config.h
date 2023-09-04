@@ -1350,6 +1350,7 @@ struct Pcsx2Config
 
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);
+	void LoadSaveCore(SettingsWrapper& wrap);
 	void LoadSaveMemcards(SettingsWrapper& wrap);
 
 	/// Reloads options affected by patches.
@@ -1366,6 +1367,12 @@ struct Pcsx2Config
 
 	/// Copies runtime configuration settings (e.g. frame limiter state).
 	void CopyRuntimeConfig(Pcsx2Config& cfg);
+
+	/// Copies configuration from one file to another. Does not copy controller settings.
+	static void CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si);
+
+	/// Clears all core keys from the specified interface.
+	static void ClearConfiguration(SettingsInterface* dest_si);
 };
 
 extern Pcsx2Config EmuConfig;

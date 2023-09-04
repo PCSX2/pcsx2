@@ -1485,7 +1485,7 @@ Pcsx2Config::Pcsx2Config()
 	PINESlot = 28011;
 }
 
-void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
+void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 {
 	// Switch the rounding mode back to the system default for loading settings.
 	// That way, we'll get exactly the same values as what we loaded when we first started.
@@ -1531,8 +1531,6 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);
-	USB.LoadSave(wrap);
-	Pad.LoadSave(wrap);
 
 #ifdef ENABLE_ACHIEVEMENTS
 	Achievements.LoadSave(wrap);
@@ -1558,6 +1556,13 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	}
 
 	SSE_MXCSR::SetCurrent(prev_mxcsr);
+}
+
+void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
+{
+	LoadSaveCore(wrap);
+	USB.LoadSave(wrap);
+	Pad.LoadSave(wrap);
 }
 
 void Pcsx2Config::LoadSaveMemcards(SettingsWrapper& wrap)
@@ -1633,6 +1638,26 @@ void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 	{
 		Mcd[i].Type = cfg.Mcd[i].Type;
 	}
+}
+
+void Pcsx2Config::CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si)
+{
+	Pcsx2Config temp;
+	{
+		SettingsLoadWrapper wrapper(src_si);
+		temp.LoadSaveCore(wrapper);
+	}
+	{
+		SettingsSaveWrapper wrapper(*dest_si);
+		temp.LoadSaveCore(wrapper);
+	}
+}
+
+void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
+{
+	Pcsx2Config temp;
+	SettingsClearWrapper wrapper(*dest_si);
+	temp.LoadSaveCore(wrapper);
 }
 
 bool EmuFolders::InitializeCriticalFolders()
