@@ -5445,6 +5445,9 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	// image is now filled with either -1 or INT_MAX, so now we can do the prepass
 	UploadHWDrawVerticesAndIndices(config);
 
+	// primid texture will get re-bound, so clear it since we're using push descriptors
+	PSSetShaderResource(3, m_null_texture.get(), false);
+
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
 	PipelineSelector& pipe = m_pipeline_selector;
 	UpdateHWPipelineSelector(config, pipe);
