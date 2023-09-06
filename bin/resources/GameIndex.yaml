@@ -11436,12 +11436,16 @@ SLED-53980:
     autoFlush: 1 # Fixes misaligned lights at native resolution.
 SLED-53983:
   name: "Fight Night Round 3 [Demo]"
-  region: "PAL"
+  region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Fixes flag corruption.
 SLED-54022:
-  name: "Lara Croft Tomb Raider - Legend"
-  region: "PAL-Unk"
+  name: "Lara Croft Tomb Raider - Legend [Demo]"
+  region: "PAL-E"
+  gsHWFixes:
+    mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
+    textureInsideRT: 1 # Needed for post processing effects.
+    minimumBlendingLevel: 4 # Fixes multiple lighting effects from lights, computers, cave walls and more.
 SLED-54032:
   name: "Sonic Riders [Demo]"
   region: "PAL-E"
@@ -17290,15 +17294,27 @@ SLES-52544:
   name: "Trivial Pursuit Unhinged"
   region: "PAL-M3"
 SLES-52545:
-  name: "Star Wars Battlefront"
+  name: "Star Wars - Battlefront"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLES-52546:
-  name: "Star Wars Battlefront"
+  name: "Star Wars - Battlefront"
   region: "PAL-F"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLES-52547:
-  name: "Star Wars Battlefront"
+  name: "Star Wars - Battlefront"
   region: "PAL-G"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLES-52551:
   name: "Samurai Warriors"
   region: "PAL-E"
@@ -18754,6 +18770,8 @@ SLES-53045:
 SLES-53046:
   name: "Counter Terrorist Special Forces - Fire for Effect"
   region: "PAL-M5"
+  clampModes:
+    vu1ClampMode: 3 # Fixes smoke particles.
 SLES-53047:
   name: "Punisher, The"
   region: "PAL-E-F"
@@ -21150,6 +21168,7 @@ SLES-53908:
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
     textureInsideRT: 1 # Needed for post processing effects.
+    minimumBlendingLevel: 4 # Fixes multiple lighting effects from lights, computers, cave walls and more.
 SLES-53909:
   name: "Full Spectrum Warrior - Ten Hammers"
   region: "PAL-G"
@@ -29625,6 +29644,10 @@ SLPM-61154:
 SLPM-61155:
   name: "Lara Croft Tomb Raider - Legend"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
+    textureInsideRT: 1 # Needed for post processing effects.
+    minimumBlendingLevel: 4 # Fixes multiple lighting effects from lights, computers, cave walls and more.
 SLPM-61156:
   name: "Dengeki PS2 PlayStation D93"
   region: "NTSC-J"
@@ -34681,6 +34704,10 @@ SLPM-65686:
 SLPM-65687:
   name: "Star Wars - Battlefront"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLPM-65688:
   name: "Berserk - Millennium Falcon-hen - Seima Senki no Shou"
   region: "NTSC-J"
@@ -36474,6 +36501,10 @@ SLPM-66147:
 SLPM-66148:
   name: "Star Wars - Battlefront [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLPM-66149:
   name: "Shirogane no Torikago [Limited Edition]"
   region: "NTSC-J"
@@ -36657,7 +36688,7 @@ SLPM-66189:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
 SLPM-66190:
-  name: "Star Wars Battlefront II"
+  name: "Star Wars - Battlefront II"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
@@ -37646,6 +37677,8 @@ SLPM-66427:
 SLPM-66429:
   name: "Special Forces - Fire for Effect"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes smoke particles.
 SLPM-66430:
   name: "Destroy All Humans!"
   region: "NTSC-J"
@@ -38170,6 +38203,7 @@ SLPM-66558:
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
     textureInsideRT: 1 # Needed for post processing effects.
+    minimumBlendingLevel: 4 # Fixes multiple lighting effects from lights, computers, cave walls and more.
 SLPM-66559:
   name: "Winning Post 6 [KOEI Selection]"
   region: "NTSC-J"
@@ -45950,6 +45984,10 @@ SLPS-25944:
 SLPS-25945:
   name: "Lara Croft Tomb Raider - Legend"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
+    textureInsideRT: 1 # Needed for post processing effects.
+    minimumBlendingLevel: 4 # Fixes multiple lighting effects from lights, computers, cave walls and more.
 SLPS-25947:
   name: "Summon Night Gran-These - Horobi no Ken to Yakusoku no Kishi"
   region: "NTSC-J"
@@ -50977,9 +51015,13 @@ SLUS-20897:
   name: "Swords of Yi"
   region: "NTSC-U"
 SLUS-20898:
-  name: "Star Wars Battlefront"
+  name: "Star Wars - Battlefront"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLUS-20899:
   name: "Samurai Jack - The Shadow of Aku"
   region: "NTSC-U"
@@ -52646,6 +52688,7 @@ SLUS-21203:
   gsHWFixes:
     mipmap: 1 # Fixes distant characters and models but there are still some flickering textures.
     textureInsideRT: 1 # Needed for post processing effects.
+    minimumBlendingLevel: 4 # Fixes multiple lighting effects from lights, computers, cave walls and more.
 SLUS-21204:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "NTSC-U"
@@ -52884,7 +52927,7 @@ SLUS-21239:
   region: "NTSC-U"
   compat: 5
 SLUS-21240:
-  name: "Star Wars Battlefront II"
+  name: "Star Wars - Battlefront II"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -57281,7 +57324,7 @@ SLUS-29163:
   name: "NCAA March Madness '06 [Demo]"
   region: "NTSC-U"
 SLUS-29164:
-  name: "Star Wars Battlefront II [Online Public Beta]"
+  name: "Star Wars - Battlefront II [Online Public Beta]"
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
