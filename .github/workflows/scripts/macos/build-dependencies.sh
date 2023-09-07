@@ -48,9 +48,27 @@ shasum -a 256 --check SHASUMS
 echo "Installing SDL..."
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-./configure --prefix "$INSTALLDIR" --without-x
-make "-j$NPROCS"
-make install
+
+# MFI causes multiple joystick connection events, I'm guessing because both the HIDAPI and MFI interfaces
+# race each other, and sometimes both end up getting through. So, just force MFI off.
+patch -u CMakeLists.txt <<EOF
+--- CMakeLists.txt	2023-08-03 01:33:11
++++ CMakeLists.txt	2023-08-26 12:58:53
+@@ -2105,7 +2105,7 @@
+           #import <Foundation/Foundation.h>
+           #import <CoreHaptics/CoreHaptics.h>
+           int main() { return 0; }" HAVE_FRAMEWORK_COREHAPTICS)
+-      if(HAVE_FRAMEWORK_GAMECONTROLLER AND HAVE_FRAMEWORK_COREHAPTICS)
++      if(HAVE_FRAMEWORK_GAMECONTROLLER AND HAVE_FRAMEWORK_COREHAPTICS AND FALSE)
+         # Only enable MFI if we also have CoreHaptics to ensure rumble works
+         set(SDL_JOYSTICK_MFI 1)
+         set(SDL_FRAMEWORK_GAMECONTROLLER 1)
+
+EOF
+
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSDL_X11=OFF
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Installing libpng..."
