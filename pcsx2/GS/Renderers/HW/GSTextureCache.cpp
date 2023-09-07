@@ -408,9 +408,6 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	GSVector4i in_rect = src_r;
 	u32 target_bp = t->m_TEX0.TBP0;
 	int block_offset = static_cast<int>(sbp) - static_cast<int>(target_bp);
-	int page_offset = (block_offset) >> 5;
-	const int start_page = page_offset + (src_r.x / src_info->pgs.x) + ((src_r.y / src_info->pgs.y) * std::max(static_cast<int>(sbw), 1));
-
 	// Different format needs to be page aligned, unless the block layout matches, then we can block align
 	// Might be able to translate the original rect.
 	if (!(src_info->bpp == dst_info->bpp))
@@ -453,6 +450,10 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	// FIXME: Is this a problem? Does having buffer widths less than pages in size throw a real spanner in the works?
 	const int src_pg_width = std::max((src_width + (src_info->pgs.x - 1)) / src_info->pgs.x, 1);
 	const int dst_pg_width = std::max((dst_width + (dst_info->pgs.x - 1)) / dst_info->pgs.x, 1);
+
+	int page_offset = (block_offset) >> 5;
+	// remove any hoizontal offset, this is added back on later.
+	const int start_page = (page_offset - (page_offset % src_pg_width)) + (src_r.x / src_info->pgs.x) + ((src_r.y / src_info->pgs.y) * std::max(static_cast<int>(sbw), 1));
 
 	// Pages aligned.
 	const GSVector4i page_mask(GSVector4i((src_info->pgs.x - 1), (src_info->pgs.y - 1)).xyxy());
