@@ -159,8 +159,10 @@ public:
 	static void SetCorePaused(bool b) { corePaused = b; };
 
 	// This will have to do until a full fledged debugger host interface is made
-	static void SetUpdateHandler(std::function<void()> f) {cb_bpUpdated_ = f; };
-	static std::function<void()> GetUpdateHandler() { return cb_bpUpdated_; };
+	static void SetUIUpdateHandler(std::function<void()> f) { uiUpdateHandler_ = f; };
+	static std::function<void()> GetUIUpdateHandler() { return uiUpdateHandler_; };
+	static void SetDebugServerUpdateHandler(std::function<void()> f) { debugServerUpdateHandler_ = f; };
+	static std::function<void()> GetDebugServerUpdateHandler() { return debugServerUpdateHandler_; };
 
 private:
 	static size_t FindBreakpoint(BreakPointCpu cpu, u32 addr, bool matchTemp = false, bool temp = false);
@@ -176,7 +178,8 @@ private:
 	static bool breakpointTriggered_;
 	static bool corePaused;
 
-	static std::function<void()> cb_bpUpdated_;
+	static std::function<void()> uiUpdateHandler_;
+	static std::function<void()> debugServerUpdateHandler_;
 
 	static std::vector<MemCheck> memChecks_;
 	static std::vector<MemCheck *> cleanupMemChecks_;

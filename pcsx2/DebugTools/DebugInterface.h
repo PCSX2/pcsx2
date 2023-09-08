@@ -41,7 +41,9 @@ enum BreakPointCpu
 {
 	BREAKPOINT_EE = 0x01,
 	BREAKPOINT_IOP = 0x02,
-	BREAKPOINT_IOP_AND_EE = 0x03
+	BREAKPOINT_IOP_AND_EE = 0x03,
+	BREAKPOINT_VU0 = 0x04,
+	BREAKPOINT_VU1 = 0x05
 };
 
 class DebugInterface
@@ -85,8 +87,9 @@ public:
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	virtual BreakPointCpu getCpuType() = 0;
-	[[nodiscard]] virtual SymbolMap& GetSymbolMap() const = 0;
-	[[nodiscard]] virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
+	[[nodiscard]] virtual SymbolMap& getSymbolMap() const = 0;
+	[[nodiscard]] virtual std::unique_ptr<BiosThread> getCurrentThread() const = 0;
+	[[nodiscard]] virtual std::vector<std::unique_ptr<BiosThread>> getThreadList() const = 0;
 
 	bool initExpression(const char* exp, PostfixExpression& dest);
 	bool parseExpression(PostfixExpression& exp, u64& dest);
@@ -133,8 +136,9 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
-	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	[[nodiscard]] SymbolMap& getSymbolMap() const override;
+	[[nodiscard]] std::unique_ptr<BiosThread> getCurrentThread() const override;
+	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> getThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
@@ -173,8 +177,9 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
-	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
+	[[nodiscard]] SymbolMap& getSymbolMap() const override;
+	[[nodiscard]] std::unique_ptr<BiosThread> getCurrentThread() const override;
+	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> getThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;

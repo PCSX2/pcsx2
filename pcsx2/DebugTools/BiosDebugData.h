@@ -190,5 +190,7 @@ private:
 	IOPInternalThread data;
 };
 
+std::unique_ptr<BiosThread> getCurrentEEThread();
+std::unique_ptr<BiosThread> getCurrentIOPThread();
 std::vector<std::unique_ptr<BiosThread>> getIOPThreads();
 std::vector<std::unique_ptr<BiosThread>> getEEThreads();

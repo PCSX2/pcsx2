@@ -203,6 +203,18 @@ namespace VMManager
 	/// Called when the rich presence string, provided by RetroAchievements, changes.
 	void UpdateDiscordPresence(const std::string& rich_presence);
 
+	/// Returns true if the EE debug server is running
+	bool IsEEDebugServerRunning();
+
+	/// Returns true if the IOP debug server is running
+	bool IsIOPDebugServerRunning();
+
+	/// Returns true if the debug client is connected to the EE debug server
+	bool IsEEDebugServerConnectionUp();
+
+	/// Returns true if the debug client is connected to the IOP debug server
+	bool IsIOPDebugServerConnectionUp();
+
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal
 	{

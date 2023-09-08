@@ -62,7 +62,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
 	m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
 
-	CBreakPoints::SetUpdateHandler(std::bind(&DebuggerWindow::onBreakpointsChanged, this));
+	CBreakPoints::SetUIUpdateHandler(std::bind(&DebuggerWindow::onBreakpointsChanged, this));
 
 	return;
 }
@@ -88,17 +88,22 @@ void DebuggerWindow::onVMStateChanged()
 		m_actionStepInto->setEnabled(true);
 		m_actionStepOver->setEnabled(true);
 		m_actionStepOut->setEnabled(true);
-		Host::RunOnCPUThread([] {
-			if (CBreakPoints::GetBreakpointTriggered())
-			{
-				CBreakPoints::ClearTemporaryBreakPoints();
-				CBreakPoints::SetBreakpointTriggered(false);
-				// Our current PC is on a breakpoint.
-				// When we run the core again, we want to skip this breakpoint and run
-				CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
-				CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
-			}
-		});
+
+		// Debug server will clean up all break points
+		if (!VMManager::IsEEDebugServerConnectionUp() && !VMManager::IsIOPDebugServerConnectionUp())
+		{
+			Host::RunOnCPUThread([] {
+				if (CBreakPoints::GetBreakpointTriggered())
+				{
+					CBreakPoints::ClearTemporaryBreakPoints();
+					CBreakPoints::SetBreakpointTriggered(false);
+					// Our current PC is on a breakpoint.
+					// When we run the core again, we want to skip this breakpoint and run
+					CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
+					CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
+				}
+			});
+		}
 		
 	}
 	return;

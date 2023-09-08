@@ -344,7 +344,7 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 
 	const auto demangler = demangler::CDemangler::createGcc();
 	const QString filter = m_ui.txtFuncSearch->text().toLower();
-	for (const auto& symbol : m_cpu.GetSymbolMap().GetAllSymbols(SymbolType::ST_FUNCTION))
+	for (const auto& symbol : m_cpu.getSymbolMap().GetAllSymbols(SymbolType::ST_FUNCTION))
 	{
 		QString symbolName = symbol.name.c_str();
 		if (m_demangleFunctions)
@@ -435,7 +435,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 		// Resolve the function name by fetching the symbolmap and filtering the address
 
 		const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
-		const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelString(selectedItem->data(256).toUInt()).c_str());
+		const QString functionName = QString(m_cpu.getSymbolMap().GetLabelString(selectedItem->data(256).toUInt()).c_str());
 		QApplication::clipboard()->setText(functionName);
 	});
 	m_funclistContextMenu->addAction(copyName);
