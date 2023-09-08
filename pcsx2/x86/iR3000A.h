@@ -67,8 +67,8 @@ extern void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot);
 	{ \
 		if ((reg) < 32) \
 		{ \
-			g_psxHasConstReg |= (1 << (reg)); \
-			g_psxFlushedConstReg &= ~(1 << (reg)); \
+			g_psxHasConstReg |= (1u << (reg)); \
+			g_psxFlushedConstReg &= ~(1u << (reg)); \
 		} \
 	}
 
