@@ -8487,9 +8487,11 @@ SCPS-56016:
   gameFixes:
     - GIFFIFOHack
   gsHWFixes:
-    mipmap: 1
-    autoFlush: 2
-    estimateTextureRegion: 1 # Improves performance.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SCPS-72001:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
@@ -21153,9 +21155,11 @@ SLES-53904:
   clampModes:
     vuClampMode: 0 # Fixes black artifacts on tracks
   gsHWFixes:
-    mipmap: 1
-    autoFlush: 2
-    estimateTextureRegion: 1 # Improves performance.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SLES-53906:
   name: "50 Cent - Bulletproof"
   region: "PAL-F"
@@ -52121,9 +52125,11 @@ SLUS-21095:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
-    autoFlush: 2
-    estimateTextureRegion: 1 # Improves performance.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
@@ -55873,6 +55879,12 @@ SLUS-21793:
   name: "DT Carnage"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SLUS-21794:
   name: "Go, Diego, Go! Great Dinosaur Rescue"
   region: "NTSC-U"
