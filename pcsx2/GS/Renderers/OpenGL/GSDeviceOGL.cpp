@@ -2230,7 +2230,7 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 		if (is_constant && GLState::bf != constant)
 		{
 			GLState::bf = constant;
-			const float bf = (float)constant / 128.0f;
+			const float bf = static_cast<float>(constant) / 128.0f;
 			glBlendColor(bf, bf, bf, bf);
 		}
 

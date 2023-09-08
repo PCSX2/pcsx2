@@ -178,7 +178,7 @@ private:
 		ID3D11DepthStencilState* dss;
 		u8 sref;
 		ID3D11BlendState* bs;
-		float bf;
+		u8 bf;
 		ID3D11RenderTargetView* rt_view;
 		ID3D11DepthStencilView* dsv;
 	} m_state;
@@ -352,7 +352,7 @@ public:
 	void PSSetSamplerState(ID3D11SamplerState* ss0);
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
-	void OMSetBlendState(ID3D11BlendState* bs, float bf);
+	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);

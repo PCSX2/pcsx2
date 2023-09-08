@@ -2019,16 +2019,16 @@ void GSDevice11::OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref)
 	}
 }
 
-void GSDevice11::OMSetBlendState(ID3D11BlendState* bs, float bf)
+void GSDevice11::OMSetBlendState(ID3D11BlendState* bs, u8 bf)
 {
 	if (m_state.bs != bs || m_state.bf != bf)
 	{
 		m_state.bs = bs;
 		m_state.bf = bf;
 
-		const float BlendFactor[] = {bf, bf, bf, 0};
+		const GSVector4 col(static_cast<float>(bf) / 128.0f);
 
-		m_ctx->OMSetBlendState(bs, BlendFactor, 0xffffffff);
+		m_ctx->OMSetBlendState(bs, col.v, 0xffffffff);
 	}
 }
 
