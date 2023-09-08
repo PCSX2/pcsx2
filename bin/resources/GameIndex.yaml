@@ -28912,8 +28912,11 @@ SLPM-60194:
   name: "Kotoba no Puzzle - Mojipittan"
   region: "NTSC-J"
 SLPM-60195:
-  name: "Kaidou Battle - Nikko, Haruna, Rokko, Hakone"
+  name: "Kaido Battle - Nikko, Haruna, Rokko, Hakone [Taikenban]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-60197:
   name: "Exciting Pro Wres 4"
   region: "NTSC-J"
@@ -28940,8 +28943,12 @@ SLPM-60205:
   name: "Initial D - Special Stage"
   region: "NTSC-J"
 SLPM-60206:
-  name: "Shutokou Battle 01"
+  name: "Shutokou Battle 01 [Taikenban]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-60207:
   name: "Rockman X7"
   region: "NTSC-J"
@@ -28995,8 +29002,11 @@ SLPM-60226:
   name: "Shadow Hearts II"
   region: "NTSC-J"
 SLPM-60228:
-  name: "Kaidou Battle 2 - Chain Reaction"
+  name: "Kaido Battle 2 - Chain Reaction [Taikenban]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-60237:
   name: "Densha de Go! Final"
   region: "NTSC-J"
@@ -29494,8 +29504,11 @@ SLPM-61114:
   name: "Shadow of Rome"
   region: "NTSC-J"
 SLPM-61115:
-  name: "Racing Battle - C1 Grand Prix"
+  name: "Racing Battle - C1 Grand Prix [Taikenban]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-61116:
   name: "Bouken-ou Beet - Darkness Century"
   region: "NTSC-J"
@@ -29530,8 +29543,11 @@ SLPM-61120:
     mergeSprite: 1 # Align sprite fixes FMVs but not garbage in-game, so needs merge sprite instead.
     texturePreloading: 1 # Performs better with partial preload because it is slow on locations outside gameplay foremost.
 SLPM-61121:
-  name: "Kaidou - Touge no Densetsu"
+  name: "Kaido - Touge no Densetsu [Taikenban]"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-61122:
   name: "Dengeki PS2 PlayStation D81"
   region: "NTSC-J"
@@ -35511,7 +35527,7 @@ SLPM-65897:
   name: "Racing Battle - C1 Grand Prix"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes black lines when upscaling.
+    alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-65898:
   name: "Castle Fantasia [Deluxe Pack]"
@@ -35985,7 +36001,7 @@ SLPM-66022:
   name: "Kaido Touge no Densetsu"
   region: "NTSC-J"
   gsHWFixes:
-    alignSprite: 1 # Fixes black lines when upscaling.
+    alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-66023:
   name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Limited Edition]"
@@ -53937,7 +53953,8 @@ SLUS-21394:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    alignSprite: 1 # Fixes black lines when upscaling.
+    alignSprite: 1 # Fixes vertical lines.
+    wildArmsHack: 1 # De-blurs the 3D image.
 SLUS-21395:
   name: "Avatar - The Last Airbender"
   region: "NTSC-U"
