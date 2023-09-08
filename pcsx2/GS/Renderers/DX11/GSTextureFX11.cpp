@@ -334,5 +334,5 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 		j = m_om_bs.try_emplace(bsel, std::move(bs)).first;
 	}
 
-	OMSetBlendState(j->second.get(), (float)(int)afix / 0x80);
+	OMSetBlendState(j->second.get(), afix);
 }
