@@ -363,14 +363,11 @@ void ElfObject::LoadSectionHeaders()
 
 	if ((i_st >= 0) && (i_dt >= 0))
 	{
-		const char* SymNames;
-		Elf32_Sym* eS;
-
 		if (secthead[i_dt].sh_offset < data.size() &&
 			secthead[i_st].sh_offset < data.size())
 		{
-			SymNames = (char*)(data.data() + secthead[i_dt].sh_offset);
-			eS = (Elf32_Sym*)(data.data() + secthead[i_st].sh_offset);
+			const char* SymNames = (char*)(data.data() + secthead[i_dt].sh_offset);
+			Elf32_Sym* eS = (Elf32_Sym*)(data.data() + secthead[i_st].sh_offset);
 			Console.WriteLn("found %d symbols", secthead[i_st].sh_size / sizeof(Elf32_Sym));
 
 			R5900SymbolMap.Clear();
