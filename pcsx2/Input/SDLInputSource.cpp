@@ -584,8 +584,6 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!gcontroller && !joystick)
 	{
 		Console.Error("(SDLInputSource) Failed to open controller %d", index);
-		if (gcontroller)
-			SDL_GameControllerClose(gcontroller);
 
 		return false;
 	}
