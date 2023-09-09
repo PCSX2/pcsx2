@@ -25988,7 +25988,7 @@ SLES-55520:
     9E36E023:
       content: |-
         //Patched by kozarrov
-        //Fix Pause menu, some hud parts, etc. 
+        //Fix Pause menu, some hud parts, etc.
         patch=1,EE,0016ee38,word,3464fff0
         patch=1,EE,0016ee58,word,3464fffc
 SLES-55522:
