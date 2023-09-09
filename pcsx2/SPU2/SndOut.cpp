@@ -445,6 +445,11 @@ bool SndBuffer::Init(const char* modname)
 	return true;
 }
 
+bool SndBuffer::IsOpen()
+{
+	return (s_output_module != nullptr);
+}
+
 void SndBuffer::Cleanup()
 {
 	if (s_output_module)

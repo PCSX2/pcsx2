@@ -42,9 +42,6 @@ namespace PerformanceMetrics
 	void SetGSSWThreadCount(u32 count);
 	void SetGSSWThread(u32 index, Threading::ThreadHandle thread);
 
-	/// Sets the vertical frequency, used in speed calculations.
-	void SetVerticalFrequency(float rate);
-
 	u64 GetFrameNumber();
 
 	InternalFPSMethod GetInternalFPSMethod();

@@ -156,11 +156,11 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 		{
 			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
-			// We read the main config here, since MTGS doesn't get updated with speed toggles.
-			if (EmuConfig.GS.LimitScalar == 0.0f)
+			const float target_speed = VMManager::GetTargetSpeed();
+			if (target_speed == 0.0f)
 				text += " (Max)";
 			else
-				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0f);
+				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", target_speed * 100.0f);
 		}
 		if (!text.empty())
 		{
@@ -249,10 +249,11 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 
 		if (GSConfig.OsdShowIndicators)
 		{
-			const bool is_normal_speed = (EmuConfig.GS.LimitScalar == EmuConfig.Framerate.NominalScalar);
+			const float target_speed = VMManager::GetTargetSpeed();
+			const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar);
 			if (!is_normal_speed)
 			{
-				const bool is_slowmo = (EmuConfig.GS.LimitScalar < EmuConfig.Framerate.NominalScalar);
+				const bool is_slowmo = (target_speed < EmuConfig.EmulationSpeed.NominalScalar);
 				DRAW_LINE(standard_font, is_slowmo ? ICON_FA_FORWARD : ICON_FA_FAST_FORWARD, IM_COL32(255, 255, 255, 255));
 			}
 		}
