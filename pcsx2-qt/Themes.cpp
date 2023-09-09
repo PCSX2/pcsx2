@@ -29,7 +29,6 @@
 namespace QtHost
 {
 	static void SetStyleFromSettings();
-	static void SetIconThemeFromStyle();
 } // namespace QtHost
 
 static QString s_unthemed_style_name;

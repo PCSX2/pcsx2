@@ -1504,6 +1504,11 @@ void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
 void MainWindow::updateTheme()
 {
 	QtHost::UpdateApplicationTheme();
+	reloadThemeSpecificImages();
+}
+
+void MainWindow::reloadThemeSpecificImages()
+{
 	m_game_list_widget->reloadThemeSpecificImages();
 }
 
@@ -1787,6 +1792,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 	// Application will be exited in VM stopped handler.
 	m_is_closing = true;
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+	QMainWindow::changeEvent(event);
+
+	if (event->type() == QEvent::StyleChange)
+	{
+		QtHost::SetIconThemeFromStyle();
+		reloadThemeSpecificImages();
+	}
 }
 
 static QString getFilenameFromMimeData(const QMimeData* md)
