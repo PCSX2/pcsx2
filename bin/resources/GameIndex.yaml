@@ -10417,6 +10417,8 @@ SCUS-97621:
   name: "Twisted Metal - Head-On [Extra Twisted Edition]"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing textures.
   gameFixes:
     - VUSyncHack # Fixes black doors on vehicles.
   patches:
