@@ -1076,7 +1076,7 @@ void FullscreenUI::DoToggleFrameLimit()
 			return;
 
 		VMManager::SetLimiterMode(
-			(EmuConfig.LimiterMode != LimiterModeType::Unlimited) ? LimiterModeType::Unlimited : LimiterModeType::Nominal);
+			(VMManager::GetLimiterMode() != LimiterModeType::Unlimited) ? LimiterModeType::Unlimited : LimiterModeType::Nominal);
 	});
 }
 

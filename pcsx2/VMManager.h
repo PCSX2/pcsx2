@@ -18,10 +18,8 @@
 #include <functional>
 #include <optional>
 #include <string>
-#include <vector>
-#include <string>
 #include <string_view>
-#include <optional>
+#include <vector>
 
 #include "common/Pcsx2Defs.h"
 
@@ -149,6 +147,16 @@ namespace VMManager
 	/// Updates the host vsync state, as well as timer frequencies. Call when the speed limiter is adjusted.
 	void SetLimiterMode(LimiterModeType type);
 
+	/// Returns the target speed, based on the limiter mode.
+	float GetTargetSpeed();
+
+	/// Ensures the target speed reflects the current configuration. Call if you change anything in
+	/// EmuConfig.EmulationSpeed without going through the usual config apply.
+	void UpdateTargetSpeed();
+
+	/// Returns the current frame rate of the virtual machine.
+	float GetFrameRate();
+
 	/// Runs the virtual machine for the specified number of video frames, and then automatically pauses.
 	void FrameAdvance(u32 num_frames = 1);
 
@@ -235,6 +243,12 @@ namespace VMManager
 
 		/// Returns the PC of the currently-executing ELF's entry point.
 		u32 GetCurrentELFEntryPoint();
+
+		/// Called when the internal frame rate changes.
+		void FrameRateChanged();
+
+		/// Throttles execution, or limits the frame rate.
+		void Throttle();
 
 		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();

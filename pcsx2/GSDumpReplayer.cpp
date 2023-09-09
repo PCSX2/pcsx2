@@ -237,7 +237,7 @@ static void GSDumpReplayerSendPacketToMTGS(GIF_PATH path, const u8* data, u32 le
 static void GSDumpReplayerUpdateFrameLimit()
 {
 	constexpr u32 default_frame_limit = 60;
-	const u32 frame_limit = static_cast<u32>(default_frame_limit * EmuConfig.GS.LimitScalar);
+	const u32 frame_limit = static_cast<u32>(default_frame_limit * VMManager::GetTargetSpeed());
 
 	if (frame_limit > 0)
 		s_frame_ticks = (GetTickFrequency() + (frame_limit / 2)) / frame_limit;

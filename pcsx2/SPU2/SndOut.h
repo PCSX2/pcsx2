@@ -304,6 +304,7 @@ namespace SndBuffer
 {
 	void UpdateTempoChangeAsyncMixing();
 	bool Init(const char* modname);
+	bool IsOpen();
 	void Cleanup();
 	void Write(StereoOut16 Sample);
 	void ClearContents();

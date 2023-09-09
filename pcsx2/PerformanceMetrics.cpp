@@ -32,7 +32,6 @@
 
 static const float UPDATE_INTERVAL = 0.5f;
 
-static float s_vertical_frequency = 0.0f;
 static float s_fps = 0.0f;
 static float s_internal_fps = 0.0f;
 static float s_minimum_frame_time = 0.0f;
@@ -268,11 +267,6 @@ void PerformanceMetrics::SetGSSWThread(u32 index, Threading::ThreadHandle thread
 	s_gs_sw_threads[index].handle = std::move(thread);
 }
 
-void PerformanceMetrics::SetVerticalFrequency(float rate)
-{
-	s_vertical_frequency = rate;
-}
-
 u64 PerformanceMetrics::GetFrameNumber()
 {
 	return s_frame_number;
@@ -300,7 +294,7 @@ float PerformanceMetrics::GetInternalFPS()
 
 float PerformanceMetrics::GetSpeed()
 {
-	return (s_fps / s_vertical_frequency) * 100.0;
+	return (s_fps / VMManager::GetFrameRate()) * 100.0;
 }
 
 float PerformanceMetrics::GetAverageFrameTime()

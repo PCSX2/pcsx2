@@ -42,38 +42,6 @@ void gsReset()
 	UpdateVSyncRate(true);
 }
 
-void gsUpdateFrequency(Pcsx2Config& config)
-{
-	if (config.GS.FrameLimitEnable &&
-		(!config.EnableFastBootFastForward || !VMManager::Internal::IsFastBootInProgress()))
-	{
-		switch (config.LimiterMode)
-		{
-		case LimiterModeType::Nominal:
-			config.GS.LimitScalar = config.Framerate.NominalScalar;
-			break;
-		case LimiterModeType::Slomo:
-			config.GS.LimitScalar = config.Framerate.SlomoScalar;
-			break;
-		case LimiterModeType::Turbo:
-			config.GS.LimitScalar = config.Framerate.TurboScalar;
-			break;
-		case LimiterModeType::Unlimited:
-			config.GS.LimitScalar = 0.0f;
-			break;
-		default:
-			pxAssert("Unknown framelimiter mode!");
-		}
-	}
-	else
-	{
-		config.GS.LimitScalar = 0.0f;
-	}
-
-	MTGS::UpdateVSyncMode();
-	UpdateVSyncRate(true);
-}
-
 static __fi void gsCSRwrite( const tGS_CSR& csr )
 {
 	if (csr.RESET) {
