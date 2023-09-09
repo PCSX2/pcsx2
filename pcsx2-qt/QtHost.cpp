@@ -1296,6 +1296,7 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	si.SetBoolValue("UI", "RenderToSeparateWindow", false);
 	si.SetBoolValue("UI", "HideMainWindowWhenRunning", false);
 	si.SetBoolValue("UI", "DisableWindowResize", false);
+	si.SetBoolValue("UI", "PreferEnglishGameList", false);
 	si.SetStringValue("UI", "Theme", QtHost::GetDefaultThemeName());
 }
 

@@ -97,8 +97,17 @@ namespace GameList
 		std::time_t last_played_time = 0;
 		std::time_t total_played_time = 0;
 
-		const std::string& GetTitleEN() const { return title_en.empty() ? title : title_en; }
-		const std::string& GetTitleSort() const { return title_sort.empty() ? title : title_sort; }
+		const std::string& GetTitle(bool force_en = false) const
+		{
+			return title_en.empty() || !force_en ? title : title_en;
+		}
+		const std::string& GetTitleSort(bool force_en = false) const
+		{
+			// If there's a separate EN title, then title_sort is in the wrong language and we can't use it
+			if (force_en && !title_en.empty())
+				return title_en;
+			return title_sort.empty() ? title : title_sort;
+		}
 
 		u32 crc = 0;
 

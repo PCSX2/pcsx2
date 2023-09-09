@@ -30,11 +30,20 @@
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
+#include "SettingWidgetBinder.h"
 
 GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
+	SettingsInterface* sif = dialog->getSettingsInterface();
+
 	m_ui.setupUi(this);
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferEnglishGameList, "UI", "PreferEnglishGameList", false);
+	connect(m_ui.preferEnglishGameList, &QCheckBox::stateChanged, [this]{ emit preferEnglishGameListChanged(); });
+
+	dialog->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Titles"), tr("Unchecked"),
+		tr("For games with both a title in the game's native language and one in English, prefer the English title."));
 
 	m_ui.searchDirectoryList->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_ui.searchDirectoryList->setSelectionBehavior(QAbstractItemView::SelectRows);
