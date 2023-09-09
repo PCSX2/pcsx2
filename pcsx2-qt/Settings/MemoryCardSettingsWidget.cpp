@@ -481,6 +481,8 @@ MemoryCardSlotWidget::MemoryCardSlotWidget(QWidget* parent)
 {
 	setAcceptDrops(true);
 	setSelectionMode(NoSelection);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 MemoryCardSlotWidget::~MemoryCardSlotWidget() = default;
@@ -537,4 +539,6 @@ void MemoryCardSlotWidget::setCard(const std::optional<std::string>& name, bool 
 		item->setFont(font);
 		item->setForeground(palette().brush(QPalette::Disabled, QPalette::Text));
 	}
+
+	item->setToolTip(item->text());
 }
