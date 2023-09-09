@@ -20,12 +20,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install Packages
+        run: |
+          npm install -g ajv-cli prettier
+          sudo apt-get -y install yamllint
+
+      - name: Validate YAML
+        run: |
+          yamllint -sd "{extends: relaxed, rules: {line-length: disable}}" ./bin/resources/GameIndex.yaml
+
       - name: Validate Contents
         run: |
-          npm install -g ajv-cli
           ajv validate -s ./pcsx2/Docs/gamedb-schema.json --spec=draft2020 -d ./bin/resources/GameIndex.yaml
 
       - name: Check Formatting
         run: |
-          npm install -g prettier
           prettier --check ./bin/resources/GameIndex.yaml
