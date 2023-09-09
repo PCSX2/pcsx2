@@ -18,6 +18,7 @@ class ByteStream;
 
 class QAction;
 class QComboBox;
+class QFileInfo;
 class QFrame;
 class QKeyEvent;
 class QTableView;
@@ -48,6 +49,12 @@ namespace QtUtils
 	/// Returns a key id for a key event, including any modifiers that we need (e.g. Keypad).
 	/// NOTE: Defined in QtKeyCodes.cpp, not QtUtils.cpp.
 	u32 KeyEventToCode(const QKeyEvent* ev);
+
+	/// Shows a file, or the containing folder if unsupported, with the system file explorer
+	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file);
+
+	/// Get the context menu name for the action performed by ShowInFileExplorer
+	QString GetShowInFileExplorerMessage();
 
 	/// Opens a URL with the default handler.
 	void OpenURL(QWidget* parent, const QUrl& qurl);

@@ -1318,11 +1318,10 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 			});
 		}
 
-		//: Refers to the directory where a game is contained.
-		action = menu.addAction(tr("Open Containing Directory..."));
+		action = menu.addAction(QtUtils::GetShowInFileExplorerMessage());
 		connect(action, &QAction::triggered, [this, entry]() {
 			const QFileInfo fi(QString::fromStdString(entry->path));
-			QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
+			QtUtils::ShowInFileExplorer(this, fi);
 		});
 
 		action = menu.addAction(tr("Set Cover Image..."));
