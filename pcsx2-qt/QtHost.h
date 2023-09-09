@@ -106,6 +106,8 @@ public Q_SLOTS:
 	void toggleSoftwareRendering();
 	void switchRenderer(GSRendererType renderer);
 	void changeDisc(CDVD_SourceType source, const QString& path);
+	void setELFOverride(const QString& path);
+	void changeGSDump(const QString& path);
 	void reloadPatches();
 	void reloadInputSources();
 	void reloadInputBindings();

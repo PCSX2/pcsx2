@@ -1820,25 +1820,61 @@ void MainWindow::dropEvent(QDropEvent* event)
 	const std::string filename_str(filename.toStdString());
 	if (VMManager::IsSaveStateFileName(filename_str))
 	{
+		event->acceptProposedAction();
+
 		// can't load a save state without a current VM
 		if (s_vm_valid)
-		{
-			event->acceptProposedAction();
 			g_emu_thread->loadState(filename);
-		}
 		else
-		{
 			QMessageBox::critical(this, tr("Load State Failed"), tr("Cannot load a save state without a running VM."));
-		}
+
+		return;
 	}
-	else if (VMManager::IsLoadableFileName(filename_str))
+
+	if (!VMManager::IsLoadableFileName(filename_str))
+		return;
+
+	// if we're already running, do a disc change, otherwise start
+	if (!s_vm_valid)
 	{
-		// if we're already running, do a disc change, otherwise start
 		event->acceptProposedAction();
-		if (s_vm_valid)
-			doDiscChange(CDVD_SourceType::Iso, filename);
-		else
-			doStartFile(std::nullopt, filename);
+		doStartFile(std::nullopt, filename);
+		return;
+	}
+
+	if (VMManager::IsDiscFileName(filename_str) || VMManager::IsBlockDumpFileName(filename_str))
+	{
+		event->acceptProposedAction();
+		doDiscChange(CDVD_SourceType::Iso, filename);
+	}
+	else if (VMManager::IsElfFileName(filename_str))
+	{
+		const auto lock = pauseAndLockVM();
+
+		event->acceptProposedAction();
+
+		if (QMessageBox::question(this, tr("Confirm Reset"),
+				tr("The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?")) !=
+			QMessageBox::Yes)
+		{
+			return;
+		}
+
+		g_emu_thread->setELFOverride(filename);
+		switchToEmulationView();
+	}
+	else if (VMManager::IsGSDumpFileName(filename_str))
+	{
+		event->acceptProposedAction();
+
+		if (!GSDumpReplayer::IsReplayingDump())
+		{
+			QMessageBox::critical(this, tr("Error"), tr("Cannot change from game to GS dump without shutting down first."));
+			return;
+		}
+
+		g_emu_thread->changeGSDump(filename);
+		switchToEmulationView();
 	}
 }
 
@@ -2610,7 +2646,7 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 {
 	bool reset_system = false;
-	if (!m_was_disc_change_request && !GSDumpReplayer::IsReplayingDump())
+	if (!m_was_disc_change_request)
 	{
 		QMessageBox message(QMessageBox::Question, tr("Confirm Disc Change"),
 			tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton, this);
@@ -2629,7 +2665,13 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 
 	g_emu_thread->changeDisc(source, path);
 	if (reset_system)
-		g_emu_thread->resetVM();
+	{
+		// Clearing ELF override will reset the system.
+		if (!m_current_elf_override.isEmpty())
+			g_emu_thread->setELFOverride(QString());
+		else
+			g_emu_thread->resetVM();
+	}
 }
 
 MainWindow::VMLock MainWindow::pauseAndLockVM()

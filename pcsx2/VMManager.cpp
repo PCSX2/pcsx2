@@ -1923,20 +1923,6 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 
 bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 {
-	if (GSDumpReplayer::IsReplayingDump())
-	{
-		if (!GSDumpReplayer::ChangeDump(path.c_str()))
-			return false;
-
-		UpdateDiscDetails(false);
-		return true;
-	}
-	else if (IsGSDumpFileName(path))
-	{
-		Host::ReportErrorAsync("Error", "Cannot change from game to GS dump without shutting down first.");
-		return false;
-	}
-
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
@@ -1981,6 +1967,36 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	cdvd.Tray.trayState = CDVD_DISC_OPEN;
 	UpdateDiscDetails(false);
 	return result;
+}
+
+bool VMManager::SetELFOverride(std::string path)
+{
+	if (!HasValidVM() || (!path.empty() && !FileSystem::FileExists(path.c_str())))
+		return false;
+
+	s_elf_override = std::move(path);
+	UpdateDiscDetails(false);
+
+	s_fast_boot_requested = !s_elf_override.empty() || EmuConfig.EnableFastBoot;
+	if (s_elf_override.empty())
+		Hle_ClearElfPath();
+	else
+		Hle_SetElfPath(s_elf_override.c_str());
+
+	Reset();
+	return true;
+}
+
+bool VMManager::ChangeGSDump(const std::string& path)
+{
+	if (!HasValidVM() || !GSDumpReplayer::IsReplayingDump() || !IsGSDumpFileName(path))
+		return false;
+
+	if (!GSDumpReplayer::ChangeDump(path.c_str()))
+		return false;
+
+	UpdateDiscDetails(false);
+	return true;
 }
 
 bool VMManager::IsElfFileName(const std::string_view& path)

@@ -164,6 +164,12 @@ namespace VMManager
 	/// Returns false if the new disc can't be opened.
 	bool ChangeDisc(CDVD_SourceType source, std::string path);
 
+	/// Changes the ELF to boot ("ELF override"). The VM will be reset.
+	bool SetELFOverride(std::string path);
+
+	/// Changes the current GS dump being played back.
+	bool ChangeGSDump(const std::string& path);
+
 	/// Returns true if the specified path is an ELF.
 	bool IsElfFileName(const std::string_view& path);
 
