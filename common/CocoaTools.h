@@ -23,6 +23,8 @@ namespace CocoaTools
 	std::optional<std::string> MoveToTrash(std::string_view file);
 	/// Launch the given application once this one quits
 	bool DelayedLaunch(std::string_view file);
+	/// Open a Finder window to the given URL
+	bool ShowInFinder(std::string_view file);
 }
 
 #endif // __APPLE__

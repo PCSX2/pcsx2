@@ -4,6 +4,7 @@
 #include "QtUtils.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QFileInfo>
 #include <QtCore/QMetaObject>
 #include <QtGui/QAction>
 #include <QtGui/QGuiApplication>
@@ -26,10 +27,12 @@
 #include <array>
 #include <map>
 
+#include "common/CocoaTools.h"
 #include "common/Console.h"
 
 #if defined(_WIN32)
 #include "common/RedtapeWindows.h"
+#include <Shlobj.h>
 #elif !defined(APPLE)
 #include <qpa/qplatformnativeinterface.h>
 #endif
@@ -127,6 +130,42 @@ namespace QtUtils
 	void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 	{
 		ResizeColumnsForView(view, widths);
+	}
+
+	void ShowInFileExplorer(QWidget* parent, const QFileInfo& file)
+	{
+#if defined(_WIN32)
+		std::wstring wstr = QDir::toNativeSeparators(file.absoluteFilePath()).toStdWString();
+		bool ok = false;
+		if (PIDLIST_ABSOLUTE pidl = ILCreateFromPath(wstr.c_str()))
+		{
+			ok = SUCCEEDED(SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0));
+			ILFree(pidl);
+		}
+#elif defined(__APPLE__)
+		bool ok = CocoaTools::ShowInFinder(file.absoluteFilePath().toStdString());
+#else
+		bool ok = QDesktopServices::openUrl(QUrl::fromLocalFile(file.absolutePath()));
+#endif
+		if (!ok)
+		{
+			QMessageBox::critical(parent, QCoreApplication::translate("FileOperations", "Failed to show file"),
+				QCoreApplication::translate("FileOperations", "Failed to show file in file explorer.\n\nThe file was: %1").arg(file.absoluteFilePath()));
+		}
+	}
+
+	QString GetShowInFileExplorerMessage()
+	{
+#if defined(_WIN32)
+		//: Windows action to show a file in Windows Explorer
+		return QCoreApplication::translate("FileOperations", "Show in Folder");
+#elif defined(__APPLE__)
+		//: macOS action to show a file in Finder
+		return QCoreApplication::translate("FileOperations", "Show in Finder");
+#else
+		//: Opens the system file manager to the directory containing a selected file
+		return QCoreApplication::translate("FileOperations", "Open Containing Directory");
+#endif
 	}
 
 	void OpenURL(QWidget* parent, const QUrl& qurl)

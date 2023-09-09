@@ -176,3 +176,12 @@ bool CocoaTools::DelayedLaunch(std::string_view file)
 		return [task launchAndReturnError:nil];
 	}
 }
+
+// MARK: - Directory Services
+
+bool CocoaTools::ShowInFinder(std::string_view file)
+{
+	NSString* str = [[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding];
+	return [[NSWorkspace sharedWorkspace] selectFile:str
+	                        inFileViewerRootedAtPath:nil];
+}
