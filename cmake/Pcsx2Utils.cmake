@@ -213,6 +213,9 @@ function(fixup_file_properties target)
 			if("${source}" MATCHES "\\.(inl|h)$")
 				set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
 			endif()
+			if("${source}" MATCHES "\\.(qm)$")
+				set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE compiled)
+			endif()
 			# CMake makefile and ninja generators will attempt to share one PCH for both cpp and mm files
 			# That's not actually OK
 			if("${source}" MATCHES "\\.mm$")
