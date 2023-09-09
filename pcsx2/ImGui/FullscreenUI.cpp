@@ -2460,7 +2460,7 @@ void FullscreenUI::DrawSettingsWindow()
 		if (s_game_settings_entry)
 		{
 			NavTitle(SmallString::from_fmt(
-				"{} ({})", Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]), s_game_settings_entry->title));
+				"{} ({})", Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]), s_game_settings_entry->GetTitleEN()));
 		}
 		else
 		{
@@ -2575,8 +2575,8 @@ void FullscreenUI::DrawSummarySettingsPage()
 
 	if (s_game_settings_entry)
 	{
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"), s_game_settings_entry->title.c_str(), true))
-			CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->title);
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"), s_game_settings_entry->GetTitleEN().c_str(), true))
+			CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_game_settings_entry->GetTitleEN());
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_PAGER, "Serial"), s_game_settings_entry->serial.c_str(), true))
 			CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_game_settings_entry->serial);
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_CODE, "CRC"), fmt::format("{:08X}", s_game_settings_entry->crc).c_str(), true))
@@ -5438,7 +5438,7 @@ void FullscreenUI::PopulateGameListEntryList()
 			}
 
 			// fallback to title when all else is equal
-			const int res = StringUtil::Strcasecmp(lhs->title.c_str(), rhs->title.c_str());
+			const int res = StringUtil::Strcasecmp(lhs->GetTitleEN().c_str(), rhs->GetTitleEN().c_str());
 			return reverse ? (res > 0) : (res < 0);
 		});
 }
@@ -5574,7 +5574,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
 			ImGui::PushFont(g_large_font);
-			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->title.c_str(), entry->title.c_str() + entry->title.size(), nullptr,
+			// TODO: Fix font fallback issues and enable native-language titles
+			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->GetTitleEN().c_str(), entry->GetTitleEN().c_str() + entry->GetTitleEN().size(), nullptr,
 				ImVec2(0.0f, 0.0f), &title_bb);
 			ImGui::PopFont();
 
@@ -5634,12 +5635,11 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		{
 			// title
 			ImGui::PushFont(g_large_font);
-			const std::string_view title(
-				std::string_view(selected_entry->title).substr(0, (selected_entry->title.length() > 37) ? 37 : std::string_view::npos));
+			const std::string_view title(std::string_view(selected_entry->GetTitleEN()).substr(0, 37));
 			text_width = ImGui::CalcTextSize(title.data(), title.data() + title.length(), false, work_width).x;
 			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
 			ImGui::TextWrapped(
-				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == selected_entry->title.length()) ? "" : "...");
+				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == selected_entry->GetTitleEN().length()) ? "" : "...");
 			ImGui::PopFont();
 
 			ImGui::PushFont(g_medium_font);
@@ -5785,10 +5785,9 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 				ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
 			const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-			const std::string_view title(
-				std::string_view(entry->title).substr(0, (entry->title.length() > 31) ? 31 : std::string_view::npos));
+			const std::string_view title(std::string_view(entry->GetTitleEN()).substr(0, 31));
 			draw_title.clear();
-			fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
+			fmt::format_to(std::back_inserter(draw_title), "{}{}", title, (title.length() == entry->GetTitleEN().length()) ? "" : "...");
 			ImGui::PushFont(g_medium_font);
 			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.c_str() + draw_title.length(), nullptr,
 				ImVec2(0.5f, 0.0f), &title_bb);
@@ -5842,7 +5841,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 	};
 
 	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
-	OpenChoiceDialog(entry->title.c_str(), false, std::move(options),
+	OpenChoiceDialog(entry->GetTitleEN().c_str(), false, std::move(options),
 		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
 			switch (index)
 			{
