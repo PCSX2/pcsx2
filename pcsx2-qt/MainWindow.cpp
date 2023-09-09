@@ -1478,7 +1478,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 void MainWindow::updateTheme()
 {
 	QtHost::UpdateApplicationTheme();
-	m_game_list_widget->refreshImages();
+	m_game_list_widget->reloadThemeSpecificImages();
 }
 
 void MainWindow::updateLanguage()
