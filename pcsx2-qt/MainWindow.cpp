@@ -148,7 +148,7 @@ void MainWindow::initialize()
 	restoreStateFromConfig();
 	switchToGameListView();
 	updateWindowTitle();
-	updateSaveStateMenusEnableState(false);
+	updateGameDependentActions();
 
 #ifdef _WIN32
 	registerForDeviceNotifications();
@@ -389,6 +389,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionShowAdvancedSettings, &QAction::toggled, this, &MainWindow::onShowAdvancedSettingsToggled);
 	connect(m_ui.actionSaveGSDump, &QAction::triggered, this, &MainWindow::onSaveGSDumpActionTriggered);
 	connect(m_ui.actionToolsVideoCapture, &QAction::toggled, this, &MainWindow::onToolsVideoCaptureToggled);
+	connect(m_ui.actionEditPatches, &QAction::triggered, this, [this]() { onToolsEditCheatsPatchesTriggered(false); });
+	connect(m_ui.actionEditCheats, &QAction::triggered, this, [this]() { onToolsEditCheatsPatchesTriggered(true); });
 
 	// Input Recording
 	connect(m_ui.actionInputRecNew, &QAction::triggered, this, &MainWindow::onInputRecNewActionTriggered);
@@ -1278,14 +1280,12 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 void MainWindow::onLoadStateMenuAboutToShow()
 {
 	m_ui.menuLoadState->clear();
-	updateSaveStateMenusEnableState(!m_current_disc_serial.isEmpty());
 	populateLoadStateMenu(m_ui.menuLoadState, m_current_disc_path, m_current_disc_serial, m_current_disc_crc);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
 	m_ui.menuSaveState->clear();
-	updateSaveStateMenusEnableState(!m_current_disc_serial.isEmpty());
 	populateSaveStateMenu(m_ui.menuSaveState, m_current_disc_serial, m_current_disc_crc);
 }
 
@@ -1475,6 +1475,32 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 	dlg.exec();
 }
 
+void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
+{
+	if (m_current_disc_serial.isEmpty() || m_current_running_crc == 0)
+		return;
+
+	const std::string path = Patch::GetPnachFilename(m_current_disc_serial.toStdString(), m_current_running_crc, cheats);
+	if (!FileSystem::FileExists(path.c_str()))
+	{
+		if (QMessageBox::question(this, tr("Confirm File Creation"),
+				tr("The pnach file '%1' does not currently exist. Do you want to create it?")
+					.arg(QtUtils::StringViewToQString(Path::GetFileName(path))),
+				QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+		{
+			return;
+		}
+
+		if (!FileSystem::WriteStringToFile(path.c_str(), std::string_view()))
+		{
+			QMessageBox::critical(this, tr("Error"), tr("Failed to create '%1'.").arg(QString::fromStdString(path)));
+			return;
+		}
+	}
+
+	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(path)));
+}
+
 void MainWindow::updateTheme()
 {
 	QtHost::UpdateApplicationTheme();
@@ -1616,15 +1642,11 @@ void MainWindow::onInputRecOpenViewer()
 	}
 }
 
-
 void MainWindow::onVMStarting()
 {
 	s_vm_valid = true;
 	updateEmulationActions(true, false, false);
 	updateWindowTitle();
-
-	// prevent loading state until we're fully initialized
-	updateSaveStateMenusEnableState(false);
 }
 
 void MainWindow::onVMStarted()
@@ -1632,6 +1654,7 @@ void MainWindow::onVMStarted()
 	s_vm_valid = true;
 	m_was_disc_change_request = false;
 	updateEmulationActions(true, true, false);
+	updateGameDependentActions();
 	updateWindowTitle();
 	updateStatusBarWidgetVisibility();
 	updateInputRecordingActions(true);
@@ -1689,6 +1712,7 @@ void MainWindow::onVMStopped()
 	s_vm_paused = false;
 	m_last_fps_status = QString();
 	updateEmulationActions(false, false, false);
+	updateGameDependentActions();
 	updateWindowTitle();
 	updateWindowState();
 	updateStatusBarWidgetVisibility();
@@ -1722,7 +1746,7 @@ void MainWindow::onGameChanged(const QString& title, const QString& elf_override
 	m_current_disc_crc = disc_crc;
 	m_current_running_crc = crc;
 	updateWindowTitle();
-	updateSaveStateMenusEnableState(!serial.isEmpty());
+	updateGameDependentActions();
 }
 
 void MainWindow::showEvent(QShowEvent* event)
@@ -2544,14 +2568,18 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 	}
 }
 
-void MainWindow::updateSaveStateMenusEnableState(bool enable)
+void MainWindow::updateGameDependentActions()
 {
-	const bool load_enabled = enable;
-	const bool save_enabled = enable && s_vm_valid;
-	m_ui.menuLoadState->setEnabled(load_enabled);
-	m_ui.actionToolbarLoadState->setEnabled(load_enabled);
-	m_ui.menuSaveState->setEnabled(save_enabled);
-	m_ui.actionToolbarSaveState->setEnabled(save_enabled);
+	const bool valid_serial_and_crc = (s_vm_valid && !m_current_disc_serial.isEmpty() && m_current_disc_crc != 0);
+	m_ui.menuLoadState->setEnabled(valid_serial_and_crc);
+	m_ui.actionToolbarLoadState->setEnabled(valid_serial_and_crc);
+	m_ui.menuSaveState->setEnabled(valid_serial_and_crc);
+	m_ui.actionToolbarSaveState->setEnabled(valid_serial_and_crc);
+
+	const bool can_use_pnach = (s_vm_valid && !m_current_disc_serial.isEmpty() && m_current_running_crc != 0);
+	m_ui.actionEditCheats->setEnabled(can_use_pnach);
+	m_ui.actionEditPatches->setEnabled(can_use_pnach);
+	m_ui.actionReloadPatches->setEnabled(s_vm_valid);
 }
 
 void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QString& path)

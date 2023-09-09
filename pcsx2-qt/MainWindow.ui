@@ -186,7 +186,7 @@
      </property>
      <property name="icon">
       <iconset theme="keyboard-line">
-      <normaloff>.</normaloff>.</iconset>
+       <normaloff>.</normaloff>.</iconset>
      </property>
      <addaction name="actionInputRecNew"/>
      <addaction name="actionInputRecPlay"/>
@@ -201,8 +201,11 @@
     <addaction name="actionOpenDataDirectory"/>
     <addaction name="actionCoverDownloader"/>
     <addaction name="separator"/>
-    <addaction name="actionToggleSoftwareRendering"/>
+    <addaction name="actionEditCheats"/>
+    <addaction name="actionEditPatches"/>
     <addaction name="actionReloadPatches"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="menuInput_Recording"/>
     <addaction name="actionToolsVideoCapture"/>
     <addaction name="separator"/>
@@ -864,12 +867,12 @@
    </property>
   </action>
   <action name="actionToggleSoftwareRendering">
-   <property name="text">
-    <string>Toggle Software Rendering</string>
-   </property>
    <property name="icon">
     <iconset theme="brush-line">
      <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle Software Rendering</string>
    </property>
   </action>
   <action name="actionDebugger">
@@ -882,12 +885,12 @@
    </property>
   </action>
   <action name="actionReloadPatches">
-   <property name="text">
-    <string>Reload Cheats/Patches</string>
-   </property>
    <property name="icon">
     <iconset theme="refresh-line">
      <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Cheats/Patches</string>
    </property>
   </action>
   <action name="actionEnableSystemConsole">
@@ -923,12 +926,12 @@
    </property>
   </action>
   <action name="actionSaveGSDump">
-   <property name="text">
-    <string>Save Single Frame GS Dump</string>
-   </property>
    <property name="icon">
     <iconset theme="save-3-line">
      <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Save Single Frame GS Dump</string>
    </property>
   </action>
   <action name="actionInputRecNew">
@@ -1062,6 +1065,16 @@
    </property>
    <property name="text">
     <string>Video Capture</string>
+   </property>
+  </action>
+  <action name="actionEditCheats">
+   <property name="text">
+    <string>Edit Cheats...</string>
+   </property>
+  </action>
+  <action name="actionEditPatches">
+   <property name="text">
+    <string>Edit Patches...</string>
    </property>
   </action>
  </widget>
