@@ -65,6 +65,7 @@ void BIOSSettingsWidget::refreshList()
 {
 	if (m_refresh_thread)
 	{
+		m_refresh_thread->requestInterruption();
 		m_refresh_thread->wait();
 		delete m_refresh_thread;
 	}
@@ -176,6 +177,9 @@ void BIOSSettingsWidget::RefreshThread::run()
 	{
 		for (const QFileInfo& info : dir.entryInfoList(QDir::Files))
 		{
+			if (isInterruptionRequested())
+				break;
+
 			BIOSInfo bi;
 			QString full_path(info.absoluteFilePath());
 			if (!IsBIOS(full_path.toUtf8().constData(), bi.version, bi.description, bi.region, bi.zone))
