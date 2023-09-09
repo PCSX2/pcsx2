@@ -471,6 +471,11 @@ Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc
 	return ret;
 }
 
+std::string Patch::GetPnachFilename(const std::string_view& serial, u32 crc, bool cheats)
+{
+	return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetPnachTemplate(serial, crc, true, false, false));
+}
+
 void Patch::ReloadEnabledLists()
 {
 	if (EmuConfig.EnableCheats && !Achievements::ChallengeModeActive())
