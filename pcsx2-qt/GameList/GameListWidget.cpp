@@ -260,9 +260,9 @@ void GameListWidget::cancelRefresh()
 		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 }
 
-void GameListWidget::refreshImages()
+void GameListWidget::reloadThemeSpecificImages()
 {
-	m_model->refreshImages();
+	m_model->reloadThemeSpecificImages();
 }
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)

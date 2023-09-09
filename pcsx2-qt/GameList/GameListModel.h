@@ -66,7 +66,7 @@ public:
 	__fi const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
 
 	void refresh();
-	void refreshImages();
+	void reloadThemeSpecificImages();
 
 	bool titlesLessThan(int left_row, int right_row) const;
 
@@ -85,6 +85,7 @@ public:
 
 private:
 	void loadCommonImages();
+	void loadThemeSpecificImages();
 	void setColumnDisplayNames();
 	void loadOrGenerateCover(const GameList::Entry* ge);
 	void invalidateCoverForPath(const std::string& path);
