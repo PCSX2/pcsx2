@@ -2294,14 +2294,24 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 
 void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 {
-	const QString filename(
+	const QString filename = QDir::toNativeSeparators(
 		QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png)")));
 	if (filename.isEmpty())
 		return;
 
 	const QString old_filename = QString::fromStdString(GameList::GetCoverImagePathForEntry(entry));
+	const QString new_filename = QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toUtf8().constData()));
+	if (new_filename.isEmpty())
+		return;
+
 	if (!old_filename.isEmpty())
 	{
+		if (QFileInfo(old_filename) == QFileInfo(filename))
+		{
+			QMessageBox::critical(this, tr("Copy Error"), tr("You must select a different file to the current cover image."));
+			return;
+		}
+
 		if (QMessageBox::question(this, tr("Cover Already Exists"),
 				tr("A cover image for this game already exists, do you wish to replace it?"), QMessageBox::Yes,
 				QMessageBox::No) != QMessageBox::Yes)
@@ -2309,10 +2319,6 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 			return;
 		}
 	}
-
-	const QString new_filename(QString::fromStdString(GameList::GetNewCoverImagePathForEntry(entry, filename.toUtf8().constData())));
-	if (new_filename.isEmpty())
-		return;
 
 	if (QFile::exists(new_filename) && !QFile::remove(new_filename))
 	{
