@@ -249,4 +249,5 @@ if(WIN32)
 	)
 endif()
 
+fixup_file_properties(pcsx2-qt)
 setup_main_executable(pcsx2-qt)
