@@ -66,6 +66,9 @@ namespace QtHost
 	static const GlyphInfo* GetGlyphInfo(const std::string_view& language);
 
 	static std::vector<ImWchar> s_glyph_ranges;
+
+	static QLocale s_current_locale;
+	static QCollator s_current_collator;
 } // namespace QtHost
 
 static std::vector<QTranslator*> s_translators;
@@ -111,6 +114,11 @@ void QtHost::InstallTranslator()
 		QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Language", GetDefaultLanguage()));
 	if (language == QStringLiteral("system"))
 		language = getSystemLanguage();
+
+	QString qlanguage = language;
+	qlanguage.replace('-', '_');
+	s_current_locale = QLocale(qlanguage);
+	s_current_collator = QCollator(s_current_locale);
 
 	// Install the base qt translation first.
 #ifdef __APPLE__
@@ -374,4 +382,9 @@ const QtHost::GlyphInfo* QtHost::GetGlyphInfo(const std::string_view& language)
 	}
 
 	return nullptr;
+}
+
+int QtHost::LocaleSensitiveCompare(QStringView lhs, QStringView rhs)
+{
+	return s_current_collator.compare(lhs, rhs);
 }

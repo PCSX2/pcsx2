@@ -283,4 +283,7 @@ namespace QtHost
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();
 	bool IsVMPaused();
+
+	/// Compare strings in the locale of the current UI language
+	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);
 } // namespace QtHost

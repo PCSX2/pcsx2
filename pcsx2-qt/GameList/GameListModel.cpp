@@ -438,7 +438,7 @@ bool GameListModel::titlesLessThan(int left_row, int right_row) const
 
 	const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
 	const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
-	return (StringUtil::Strcasecmp(left->GetTitleSort().c_str(), right->GetTitleSort().c_str()) < 0);
+	return QtHost::LocaleSensitiveCompare(QString::fromStdString(left->GetTitleSort()), QString::fromStdString(right->GetTitleSort())) < 0;
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const
