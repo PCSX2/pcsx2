@@ -2661,6 +2661,8 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 
 void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 {
+	const auto lock = pauseAndLockVM();
+
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
