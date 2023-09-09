@@ -81,12 +81,20 @@ void GameSummaryWidget::populateInputProfiles()
 void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 {
 	m_ui.title->setText(QString::fromStdString(entry->title));
+	m_ui.titleSort->setText(QString::fromStdString(entry->title_sort));
+	m_ui.titleEN->setText(QString::fromStdString(entry->title_en));
 	m_ui.path->setText(QString::fromStdString(entry->path));
 	m_ui.serial->setText(QString::fromStdString(entry->serial));
 	m_ui.crc->setText(QString::fromStdString(fmt::format("{:08X}", entry->crc)));
 	m_ui.type->setCurrentIndex(static_cast<int>(entry->type));
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
 	m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility_rating));
+
+	int row = 0;
+	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleSort, &row, nullptr);
+	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_sort.empty());
+	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleEN, &row, nullptr);
+	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_en.empty());
 
 	std::optional<std::string> profile(m_dialog->getStringValue("EmuCore", "InputProfileName", std::nullopt));
 	if (profile.has_value())
@@ -128,7 +136,9 @@ void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
 	else
 	{
 		// Makes no sense to have disc override for a disc.
-		m_ui.detailsFormLayout->removeRow(8);
+		int row = 0;
+		m_ui.detailsFormLayout->getWidgetPosition(m_ui.label_discPath, &row, nullptr);
+		m_ui.detailsFormLayout->removeRow(row);
 		m_ui.discPath = nullptr;
 		m_ui.discPathBrowse = nullptr;
 		m_ui.discPathClear = nullptr;
