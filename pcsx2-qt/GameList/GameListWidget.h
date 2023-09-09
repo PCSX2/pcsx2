@@ -92,6 +92,7 @@ private Q_SLOTS:
 	void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
 	void onListViewItemActivated(const QModelIndex& index);
 	void onListViewContextMenuRequested(const QPoint& point);
+	void onCoverScaleChanged();
 
 public Q_SLOTS:
 	void showGameList();
@@ -112,7 +113,6 @@ private:
 	void loadTableViewColumnSortSettings();
 	void saveTableViewColumnSortSettings();
 	void listZoom(float delta);
-	void updateListFont();
 	void updateToolbar();
 
 	Ui::GameListWidget m_ui;

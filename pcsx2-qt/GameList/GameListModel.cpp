@@ -127,12 +127,12 @@ const char* GameListModel::getColumnName(Column col)
 	return s_column_names[static_cast<int>(col)];
 }
 
-GameListModel::GameListModel(QObject* parent /* = nullptr */)
+GameListModel::GameListModel(float cover_scale, bool show_cover_titles, QObject* parent /* = nullptr */)
 	: QAbstractTableModel(parent)
-	, m_cover_pixmap_cache(MIN_COVER_CACHE_SIZE)
+	, m_show_titles_for_covers(show_cover_titles)
 {
 	loadCommonImages();
-	setCoverScale(1.0f);
+	setCoverScale(cover_scale);
 	setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
@@ -153,6 +153,8 @@ void GameListModel::setCoverScale(float scale)
 	m_cover_scale_counter.fetch_add(1, std::memory_order_release);
 	m_loading_pixmap = QPixmap(getCoverArtWidth(), getCoverArtHeight());
 	m_loading_pixmap.fill(QColor(0, 0, 0, 0));
+
+	emit coverScaleChanged();
 }
 
 void GameListModel::refreshCovers()
@@ -386,7 +388,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return m_compatibility_pixmaps[static_cast<u32>(
 						(static_cast<u32>(ge->compatibility_rating) >= GameList::CompatibilityRatingCount) ?
 							GameList::CompatibilityRating::Unknown :
-                            ge->compatibility_rating)];
+							ge->compatibility_rating)];
 				}
 
 				case Column_Cover:
