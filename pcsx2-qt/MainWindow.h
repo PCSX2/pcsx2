@@ -167,6 +167,7 @@ private Q_SLOTS:
 	void onToolsCoverDownloaderTriggered();
 	void onToolsEditCheatsPatchesTriggered(bool cheats);
 	void updateTheme();
+	void reloadThemeSpecificImages();
 	void updateLanguage();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
@@ -199,6 +200,7 @@ private Q_SLOTS:
 protected:
 	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
+	void changeEvent(QEvent* event) override;
 	void dragEnterEvent(QDragEnterEvent* event) override;
 	void dropEvent(QDropEvent* event) override;
 
