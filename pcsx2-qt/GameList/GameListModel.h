@@ -55,7 +55,7 @@ public:
 	static QIcon getIconForType(GameList::EntryType type);
 	static QIcon getIconForRegion(GameList::Region region);
 
-	GameListModel(QObject* parent = nullptr);
+	GameListModel(float cover_scale, bool show_cover_titles, QObject* parent = nullptr);
 	~GameListModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -82,6 +82,9 @@ public:
 	int getCoverArtSpacing() const;
 	void refreshCovers();
 	void updateCacheSize(int width, int height);
+
+Q_SIGNALS:
+	void coverScaleChanged();
 
 private:
 	void loadCommonImages();
