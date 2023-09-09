@@ -96,6 +96,7 @@ private:
 	float m_cover_scale = 0.0f;
 	std::atomic<u32> m_cover_scale_counter{0};
 	bool m_show_titles_for_covers = false;
+	bool m_prefer_english_titles = false;
 
 	std::array<QString, Column_Count> m_column_display_names;
 	std::array<QPixmap, static_cast<u32>(GameList::EntryType::Count)> m_type_pixmaps;

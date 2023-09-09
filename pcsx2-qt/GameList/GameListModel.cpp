@@ -179,7 +179,7 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 	// while there's outstanding jobs, the old jobs won't proceed (at the wrong size), or get added into the grid.
 	const u32 counter = m_cover_scale_counter.load(std::memory_order_acquire);
 
-	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->title, serial = ge->serial, counter]() -> QPixmap {
+	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->GetTitle(m_prefer_english_titles), serial = ge->serial, counter]() -> QPixmap {
 		QPixmap image;
 		if (m_cover_scale_counter.load(std::memory_order_acquire) == counter)
 		{
@@ -294,7 +294,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return QString::fromStdString(ge->serial);
 
 				case Column_Title:
-					return QString::fromStdString(ge->title);
+					return QString::fromStdString(ge->GetTitle(m_prefer_english_titles));
 
 				case Column_FileTitle:
 					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -319,7 +319,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 				case Column_Cover:
 				{
 					if (m_show_titles_for_covers)
-						return QString::fromStdString(ge->title);
+						return QString::fromStdString(ge->GetTitle(m_prefer_english_titles));
 					else
 						return {};
 				}
@@ -341,7 +341,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 
 				case Column_Title:
 				case Column_Cover:
-					return QString::fromStdString(ge->GetTitleSort());
+					return QString::fromStdString(ge->GetTitleSort(m_prefer_english_titles));
 
 				case Column_FileTitle:
 					return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -424,6 +424,7 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
 
 void GameListModel::refresh()
 {
+	m_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
 	beginResetModel();
 	endResetModel();
 }
@@ -438,7 +439,8 @@ bool GameListModel::titlesLessThan(int left_row, int right_row) const
 
 	const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
 	const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
-	return QtHost::LocaleSensitiveCompare(QString::fromStdString(left->GetTitleSort()), QString::fromStdString(right->GetTitleSort())) < 0;
+	return QtHost::LocaleSensitiveCompare(QString::fromStdString(left->GetTitleSort(m_prefer_english_titles)),
+	                                      QString::fromStdString(right->GetTitleSort(m_prefer_english_titles))) < 0;
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const

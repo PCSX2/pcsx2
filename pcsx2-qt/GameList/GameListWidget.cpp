@@ -87,7 +87,8 @@ public:
 			if (!m_filter_name.isEmpty() &&
 				!QString::fromStdString(entry->path).contains(m_filter_name, Qt::CaseInsensitive) &&
 				!QString::fromStdString(entry->serial).contains(m_filter_name, Qt::CaseInsensitive) &&
-				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive) &&
+				!QString::fromStdString(entry->title_en).contains(m_filter_name, Qt::CaseInsensitive))
 				return false;
 		}
 
