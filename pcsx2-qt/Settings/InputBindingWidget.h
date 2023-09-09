@@ -38,7 +38,7 @@ public:
 		QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name);
 	~InputBindingWidget();
 
-	static bool isMouseMappingEnabled();
+	static bool isMouseMappingEnabled(SettingsInterface* sif);
 
 	void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name);
 
