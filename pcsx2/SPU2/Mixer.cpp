@@ -576,14 +576,6 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	//
 	// On the other hand, updating the buffer is cheap and easy, so might as well. ;)
 
-	Reverb_AdvanceBuffer(); // Updates the reverb work area as well, if needed.
-
-	// ToDo:
-	// Bad EndA causes memory corruption. Bad for us, unknown on PS2!
-	// According to no$psx, effects always run but don't always write back, so the FxEnable check may be wrong
-	if (!FxEnable || EffectsEndA >= 0x100000)
-		return TD;
-
 	StereoOut32 TW;
 
 	// Mix Input, Voice, and External data:
