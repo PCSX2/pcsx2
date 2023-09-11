@@ -3225,22 +3225,22 @@ Enter function name</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../QtHost.cpp" line="1042"/>
+        <location filename="../QtHost.cpp" line="1070"/>
         <source>%1x%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1050"/>
+        <location filename="../QtHost.cpp" line="1078"/>
         <source>Game: %1 FPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1057"/>
+        <location filename="../QtHost.cpp" line="1085"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1105"/>
+        <location filename="../QtHost.cpp" line="1133"/>
         <source>Game ID: %1
 Game Title: %2
 Achievements: %5 (%6)
@@ -3249,7 +3249,7 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../QtHost.cpp" line="1111"/>
+        <location filename="../QtHost.cpp" line="1139"/>
         <source>%n points</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -3257,12 +3257,12 @@ Achievements: %5 (%6)
         </translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1117"/>
+        <location filename="../QtHost.cpp" line="1145"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1121"/>
+        <location filename="../QtHost.cpp" line="1149"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8345,52 +8345,52 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="583"/>
+        <location filename="../GameList/GameListModel.cpp" line="590"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="584"/>
+        <location filename="../GameList/GameListModel.cpp" line="591"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="585"/>
+        <location filename="../GameList/GameListModel.cpp" line="592"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="586"/>
+        <location filename="../GameList/GameListModel.cpp" line="593"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="587"/>
+        <location filename="../GameList/GameListModel.cpp" line="594"/>
         <source>CRC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="588"/>
+        <location filename="../GameList/GameListModel.cpp" line="595"/>
         <source>Time Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="589"/>
+        <location filename="../GameList/GameListModel.cpp" line="596"/>
         <source>Last Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="590"/>
+        <location filename="../GameList/GameListModel.cpp" line="597"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="591"/>
+        <location filename="../GameList/GameListModel.cpp" line="598"/>
         <source>Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="592"/>
+        <location filename="../GameList/GameListModel.cpp" line="599"/>
         <source>Compatibility</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10651,6 +10651,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="426"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="986"/>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="992"/>
         <source>Borderless Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11085,7 +11086,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="957"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="963"/>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="992"/>
         <source>(Default)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11226,272 +11226,272 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="48"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="51"/>
         <source>Target speed set to {:.0f}%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="69"/>
         <source>Volume: Muted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="74"/>
         <source>Volume: {}%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="106"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="109"/>
         <source>Save slot {} selected (last save: {}).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="112"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="115"/>
         <source>Save slot {} selected (no save yet).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="124"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="127"/>
         <source>No save state found in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="138"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="144"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="149"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="156"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="160"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="165"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="174"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="190"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="207"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="212"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="222"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="227"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="232"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="236"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="241"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="246"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="141"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="147"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="152"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="159"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="163"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="168"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="177"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="185"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="193"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="210"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="215"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="220"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="225"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="230"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="235"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="239"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="244"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="249"/>
         <source>System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="138"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="141"/>
         <source>Open Pause Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="145"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="148"/>
         <source>Open Achievements List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="150"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="153"/>
         <source>Open Leaderboards List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="156"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="159"/>
         <source>Toggle Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="160"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="163"/>
         <source>Toggle Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="165"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="168"/>
         <source>Toggle Frame Limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="175"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="178"/>
         <source>Toggle Turbo / Fast Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="182"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="185"/>
         <source>Toggle Slow Motion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="191"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="194"/>
         <source>Turbo / Fast Forward (Hold)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="207"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="210"/>
         <source>Increase Target Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="212"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="215"/>
         <source>Decrease Target Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="217"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="220"/>
         <source>Increase Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="222"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="225"/>
         <source>Decrease Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="227"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="230"/>
         <source>Toggle Mute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="232"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="235"/>
         <source>Frame Advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="236"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="239"/>
         <source>Shut Down Virtual Machine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="241"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="244"/>
         <source>Reset Virtual Machine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="247"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="250"/>
         <source>Toggle Input Recording Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="252"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="257"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="262"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="267"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="255"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="260"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="265"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="270"/>
         <source>Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="253"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="256"/>
         <source>Select Previous Save Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="258"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="261"/>
         <source>Select Next Save Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="263"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="266"/>
         <source>Save State To Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="268"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="271"/>
         <source>Load State From Selected Slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="283"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
         <source>Save State To Slot 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="284"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
         <source>Load State From Slot 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="285"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
         <source>Save State To Slot 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
         <source>Load State From Slot 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="287"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
         <source>Save State To Slot 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="288"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
         <source>Load State From Slot 3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="289"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="292"/>
         <source>Save State To Slot 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="290"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="293"/>
         <source>Load State From Slot 4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
         <source>Save State To Slot 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="292"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="295"/>
         <source>Load State From Slot 5</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="293"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="296"/>
         <source>Save State To Slot 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="294"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="297"/>
         <source>Load State From Slot 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="295"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
         <source>Save State To Slot 7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="296"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="299"/>
         <source>Load State From Slot 7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="297"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="300"/>
         <source>Save State To Slot 8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="298"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="301"/>
         <source>Load State From Slot 8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="299"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="302"/>
         <source>Save State To Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="300"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="303"/>
         <source>Load State From Slot 9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="301"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="304"/>
         <source>Save State To Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="302"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="305"/>
         <source>Load State From Slot 10</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12052,14 +12052,14 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="40"/>
-        <location filename="../MainWindow.cpp" line="1196"/>
-        <location filename="../MainWindow.cpp" line="1257"/>
+        <location filename="../MainWindow.cpp" line="1198"/>
+        <location filename="../MainWindow.cpp" line="1259"/>
         <source>Change Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="55"/>
-        <location filename="../MainWindow.cpp" line="2367"/>
+        <location filename="../MainWindow.cpp" line="2449"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12109,492 +12109,502 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="229"/>
+        <location filename="../MainWindow.ui" line="232"/>
         <source>Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="272"/>
+        <location filename="../MainWindow.ui" line="275"/>
         <source>Start &amp;File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="290"/>
+        <location filename="../MainWindow.ui" line="293"/>
         <source>Start &amp;Disc...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="308"/>
+        <location filename="../MainWindow.ui" line="311"/>
         <source>Start &amp;BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="326"/>
+        <location filename="../MainWindow.ui" line="329"/>
         <source>&amp;Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="335"/>
+        <location filename="../MainWindow.ui" line="338"/>
         <source>&amp;Rescan All Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="344"/>
+        <location filename="../MainWindow.ui" line="347"/>
         <source>Shut &amp;Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="362"/>
+        <location filename="../MainWindow.ui" line="365"/>
         <source>Shut Down &amp;Without Saving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="371"/>
+        <location filename="../MainWindow.ui" line="374"/>
         <source>&amp;Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="392"/>
+        <location filename="../MainWindow.ui" line="395"/>
         <source>&amp;Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="431"/>
+        <location filename="../MainWindow.ui" line="434"/>
         <source>E&amp;xit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="440"/>
+        <location filename="../MainWindow.ui" line="443"/>
         <source>&amp;BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="449"/>
+        <location filename="../MainWindow.ui" line="452"/>
         <source>Emulation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="458"/>
+        <location filename="../MainWindow.ui" line="461"/>
         <source>&amp;Controllers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="476"/>
+        <location filename="../MainWindow.ui" line="479"/>
         <source>&amp;Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="485"/>
+        <location filename="../MainWindow.ui" line="488"/>
         <source>&amp;Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="494"/>
+        <location filename="../MainWindow.ui" line="497"/>
         <source>A&amp;chievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="499"/>
+        <location filename="../MainWindow.ui" line="502"/>
         <source>&amp;Post-Processing Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="508"/>
+        <location filename="../MainWindow.ui" line="511"/>
         <source>Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="522"/>
+        <location filename="../MainWindow.ui" line="525"/>
         <source>Resolution Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="531"/>
+        <location filename="../MainWindow.ui" line="534"/>
         <source>&amp;GitHub Repository...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="540"/>
+        <location filename="../MainWindow.ui" line="543"/>
         <source>Support &amp;Forums...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="549"/>
+        <location filename="../MainWindow.ui" line="552"/>
         <source>&amp;Discord Server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="558"/>
+        <location filename="../MainWindow.ui" line="561"/>
         <source>Check for &amp;Updates...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="567"/>
+        <location filename="../MainWindow.ui" line="570"/>
         <source>About &amp;Qt...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="576"/>
+        <location filename="../MainWindow.ui" line="579"/>
         <source>&amp;About PCSX2...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="517"/>
+        <location filename="../MainWindow.ui" line="520"/>
         <source>Fullscreen</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="585"/>
+        <location filename="../MainWindow.ui" line="588"/>
         <source>Change Disc...</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="594"/>
+        <location filename="../MainWindow.ui" line="597"/>
         <source>&amp;Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="603"/>
+        <location filename="../MainWindow.ui" line="606"/>
         <source>Game List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="612"/>
+        <location filename="../MainWindow.ui" line="615"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="621"/>
+        <location filename="../MainWindow.ui" line="624"/>
         <source>Add Game Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="630"/>
+        <location filename="../MainWindow.ui" line="633"/>
         <source>&amp;Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="650"/>
+        <location filename="../MainWindow.ui" line="653"/>
         <source>From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="655"/>
+        <location filename="../MainWindow.ui" line="658"/>
         <source>From Device...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="660"/>
+        <location filename="../MainWindow.ui" line="663"/>
         <source>From Game List...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="665"/>
+        <location filename="../MainWindow.ui" line="668"/>
         <source>Remove Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="670"/>
+        <location filename="../MainWindow.ui" line="673"/>
         <source>Global State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="679"/>
+        <location filename="../MainWindow.ui" line="682"/>
         <source>&amp;Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="281"/>
+        <location filename="../MainWindow.ui" line="284"/>
         <source>Start File</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="299"/>
+        <location filename="../MainWindow.ui" line="302"/>
         <source>Start Disc</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="317"/>
+        <location filename="../MainWindow.ui" line="320"/>
         <source>Start BIOS</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="353"/>
+        <location filename="../MainWindow.ui" line="356"/>
         <source>Shut Down</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="380"/>
+        <location filename="../MainWindow.ui" line="383"/>
         <source>Reset</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="404"/>
+        <location filename="../MainWindow.ui" line="407"/>
         <source>Pause</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="413"/>
+        <location filename="../MainWindow.ui" line="416"/>
         <source>Load State</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="422"/>
+        <location filename="../MainWindow.ui" line="425"/>
         <source>Save State</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="467"/>
+        <location filename="../MainWindow.ui" line="470"/>
         <source>Controllers</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="642"/>
+        <location filename="../MainWindow.ui" line="645"/>
         <source>Settings</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="688"/>
+        <location filename="../MainWindow.ui" line="691"/>
         <source>Screenshot</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="697"/>
+        <location filename="../MainWindow.ui" line="700"/>
         <source>&amp;Memory Cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="706"/>
+        <location filename="../MainWindow.ui" line="709"/>
         <source>&amp;Network &amp;&amp; HDD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="715"/>
+        <location filename="../MainWindow.ui" line="718"/>
         <source>&amp;Folders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="726"/>
+        <location filename="../MainWindow.ui" line="729"/>
         <source>&amp;Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="737"/>
+        <location filename="../MainWindow.ui" line="740"/>
         <source>Lock Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="748"/>
+        <location filename="../MainWindow.ui" line="751"/>
         <source>&amp;Status Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="759"/>
+        <location filename="../MainWindow.ui" line="762"/>
         <source>Verbose Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="768"/>
+        <location filename="../MainWindow.ui" line="771"/>
         <source>Game &amp;List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="780"/>
+        <location filename="../MainWindow.ui" line="783"/>
         <source>System &amp;Display</source>
         <extracomment>This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="792"/>
+        <location filename="../MainWindow.ui" line="795"/>
         <source>Game &amp;Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="801"/>
+        <location filename="../MainWindow.ui" line="804"/>
         <source>Game &amp;Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="812"/>
+        <location filename="../MainWindow.ui" line="815"/>
         <source>Show Titles (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="821"/>
+        <location filename="../MainWindow.ui" line="824"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="824"/>
+        <location filename="../MainWindow.ui" line="827"/>
         <source>Ctrl++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="833"/>
+        <location filename="../MainWindow.ui" line="836"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="836"/>
+        <location filename="../MainWindow.ui" line="839"/>
         <source>Ctrl+-</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="845"/>
+        <location filename="../MainWindow.ui" line="848"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="854"/>
+        <location filename="../MainWindow.ui" line="857"/>
         <source>Open Memory Card Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="863"/>
+        <location filename="../MainWindow.ui" line="866"/>
         <source>Open Data Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="868"/>
+        <location filename="../MainWindow.ui" line="875"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="881"/>
+        <location filename="../MainWindow.ui" line="884"/>
         <source>Open Debugger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="886"/>
+        <location filename="../MainWindow.ui" line="893"/>
         <source>Reload Cheats/Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="898"/>
+        <location filename="../MainWindow.ui" line="901"/>
         <source>Enable System Console</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="906"/>
+        <location filename="../MainWindow.ui" line="909"/>
         <source>Enable Verbose Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="914"/>
+        <location filename="../MainWindow.ui" line="917"/>
         <source>Enable EE Console Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="922"/>
+        <location filename="../MainWindow.ui" line="925"/>
         <source>Enable IOP Console Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="927"/>
+        <location filename="../MainWindow.ui" line="934"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="939"/>
+        <location filename="../MainWindow.ui" line="942"/>
         <source>New</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="947"/>
+        <location filename="../MainWindow.ui" line="950"/>
         <source>Play</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="955"/>
+        <location filename="../MainWindow.ui" line="958"/>
         <source>Stop</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="963"/>
+        <location filename="../MainWindow.ui" line="966"/>
         <source>Settings</source>
         <extracomment>This section refers to the Input Recording submenu.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="968"/>
-        <location filename="../MainWindow.ui" line="984"/>
+        <location filename="../MainWindow.ui" line="971"/>
+        <location filename="../MainWindow.ui" line="987"/>
         <source>Input Recording Logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="976"/>
+        <location filename="../MainWindow.ui" line="979"/>
         <source>Controller Logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="992"/>
+        <location filename="../MainWindow.ui" line="995"/>
         <source>Enable &amp;File Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1000"/>
+        <location filename="../MainWindow.ui" line="1003"/>
         <source>Enable CDVD Read Logging</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1008"/>
+        <location filename="../MainWindow.ui" line="1011"/>
         <source>Save CDVD Block Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1016"/>
+        <location filename="../MainWindow.ui" line="1019"/>
         <source>Enable Log Timestamps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1025"/>
+        <location filename="../MainWindow.ui" line="1028"/>
         <location filename="../MainWindow.cpp" line="1302"/>
         <source>Start Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1034"/>
+        <location filename="../MainWindow.ui" line="1037"/>
         <location filename="../MainWindow.cpp" line="1303"/>
         <source>Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1043"/>
+        <location filename="../MainWindow.ui" line="1046"/>
         <source>Cover Downloader...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1051"/>
-        <location filename="../MainWindow.cpp" line="552"/>
+        <location filename="../MainWindow.ui" line="1054"/>
+        <location filename="../MainWindow.cpp" line="554"/>
         <source>Show Advanced Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1056"/>
+        <location filename="../MainWindow.ui" line="1059"/>
         <source>Recording Viewer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1064"/>
-        <location filename="../MainWindow.cpp" line="609"/>
+        <location filename="../MainWindow.ui" line="1067"/>
+        <location filename="../MainWindow.cpp" line="611"/>
         <source>Video Capture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.ui" line="1072"/>
+        <source>Edit Cheats...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.ui" line="1077"/>
+        <source>Edit Patches...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12608,17 +12618,17 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="532"/>
+        <location filename="../MainWindow.cpp" line="534"/>
         <source>Select location to save block dump:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="550"/>
+        <location filename="../MainWindow.cpp" line="552"/>
         <source>Do not show again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="553"/>
+        <location filename="../MainWindow.cpp" line="555"/>
         <source>Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and even corrupted save files. We do not recommend changing advanced settings unless you know what you are doing, and the implications of changing each setting.
 
 The PCSX2 team will not provide any support for configurations that modify these settings, you are on your own.
@@ -12627,101 +12637,103 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="606"/>
+        <location filename="../MainWindow.cpp" line="608"/>
         <source>%1 Files (*.%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="997"/>
+        <location filename="../MainWindow.cpp" line="999"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="998"/>
+        <location filename="../MainWindow.cpp" line="1000"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1000"/>
+        <location filename="../MainWindow.cpp" line="1002"/>
         <source>Save State For Resume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1106"/>
-        <location filename="../MainWindow.cpp" line="1924"/>
-        <location filename="../MainWindow.cpp" line="2285"/>
-        <location filename="../MainWindow.cpp" line="2386"/>
+        <location filename="../MainWindow.cpp" line="1108"/>
+        <location filename="../MainWindow.cpp" line="1496"/>
+        <location filename="../MainWindow.cpp" line="1888"/>
+        <location filename="../MainWindow.cpp" line="2000"/>
+        <location filename="../MainWindow.cpp" line="2361"/>
+        <location filename="../MainWindow.cpp" line="2468"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1106"/>
+        <location filename="../MainWindow.cpp" line="1108"/>
         <source>You must select a disc to change discs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1138"/>
+        <location filename="../MainWindow.cpp" line="1140"/>
         <source>Properties...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1150"/>
+        <location filename="../MainWindow.cpp" line="1152"/>
         <source>Open Containing Directory...</source>
         <extracomment>Refers to the directory where a game is contained.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1156"/>
+        <location filename="../MainWindow.cpp" line="1158"/>
         <source>Set Cover Image...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1159"/>
+        <location filename="../MainWindow.cpp" line="1161"/>
         <source>Exclude From List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1162"/>
+        <location filename="../MainWindow.cpp" line="1164"/>
         <source>Reset Play Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1168"/>
+        <location filename="../MainWindow.cpp" line="1170"/>
         <source>Default Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1175"/>
+        <location filename="../MainWindow.cpp" line="1177"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1178"/>
+        <location filename="../MainWindow.cpp" line="1180"/>
         <source>Full Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1183"/>
+        <location filename="../MainWindow.cpp" line="1185"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1207"/>
+        <location filename="../MainWindow.cpp" line="1209"/>
         <source>Add Search Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1216"/>
+        <location filename="../MainWindow.cpp" line="1218"/>
         <source>Start File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1225"/>
+        <location filename="../MainWindow.cpp" line="1227"/>
         <source>Start Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1242"/>
+        <location filename="../MainWindow.cpp" line="1244"/>
         <source>Select Disc Image</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12741,27 +12753,52 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1537"/>
+        <location filename="../MainWindow.cpp" line="1486"/>
+        <source>Confirm File Creation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="1487"/>
+        <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="1496"/>
+        <source>Failed to create &apos;%1&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="1568"/>
         <source>Input Recording Files (*.p2m2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1656"/>
+        <location filename="../MainWindow.cpp" line="1684"/>
         <source>Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1807"/>
+        <location filename="../MainWindow.cpp" line="1845"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1807"/>
+        <location filename="../MainWindow.cpp" line="1845"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1924"/>
+        <location filename="../MainWindow.cpp" line="1873"/>
+        <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="1888"/>
+        <source>Cannot change from game to GS dump without shutting down first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="2000"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12797,81 +12834,88 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2243"/>
+        <location filename="../MainWindow.cpp" line="2319"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2261"/>
+        <location filename="../MainWindow.cpp" line="2337"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2285"/>
+        <location filename="../MainWindow.cpp" line="2361"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2298"/>
+        <location filename="../MainWindow.cpp" line="2374"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2298"/>
+        <location filename="../MainWindow.cpp" line="2374"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2305"/>
+        <location filename="../MainWindow.cpp" line="2391"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2306"/>
+        <location filename="../MainWindow.cpp" line="2392"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2319"/>
-        <location filename="../MainWindow.cpp" line="2325"/>
-        <location filename="../MainWindow.cpp" line="2331"/>
+        <location filename="../MainWindow.cpp" line="2387"/>
+        <location filename="../MainWindow.cpp" line="2401"/>
+        <location filename="../MainWindow.cpp" line="2407"/>
+        <location filename="../MainWindow.cpp" line="2413"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2319"/>
+        <location filename="../MainWindow.cpp" line="2401"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2325"/>
+        <location filename="../MainWindow.cpp" line="2407"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2331"/>
+        <location filename="../MainWindow.cpp" line="2413"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2340"/>
+        <location filename="../MainWindow.cpp" line="1872"/>
+        <location filename="../MainWindow.cpp" line="2422"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2341"/>
+        <location filename="../MainWindow.cpp" line="2387"/>
+        <source>You must select a different file to the current cover image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="2423"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2362"/>
+        <location filename="../MainWindow.cpp" line="2444"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2364"/>
+        <location filename="../MainWindow.cpp" line="2446"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -12880,112 +12924,112 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2368"/>
+        <location filename="../MainWindow.cpp" line="2450"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2369"/>
+        <location filename="../MainWindow.cpp" line="2451"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2386"/>
+        <location filename="../MainWindow.cpp" line="2468"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2444"/>
+        <location filename="../MainWindow.cpp" line="2526"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2444"/>
+        <location filename="../MainWindow.cpp" line="2526"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2446"/>
-        <location filename="../MainWindow.cpp" line="2516"/>
+        <location filename="../MainWindow.cpp" line="2528"/>
+        <location filename="../MainWindow.cpp" line="2598"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2446"/>
-        <location filename="../MainWindow.cpp" line="2516"/>
+        <location filename="../MainWindow.cpp" line="2528"/>
+        <location filename="../MainWindow.cpp" line="2598"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2453"/>
+        <location filename="../MainWindow.cpp" line="2535"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2458"/>
+        <location filename="../MainWindow.cpp" line="2540"/>
         <source>Undo Load State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2472"/>
+        <location filename="../MainWindow.cpp" line="2554"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2488"/>
+        <location filename="../MainWindow.cpp" line="2570"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2497"/>
-        <location filename="../MainWindow.cpp" line="2505"/>
+        <location filename="../MainWindow.cpp" line="2579"/>
+        <location filename="../MainWindow.cpp" line="2587"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2498"/>
+        <location filename="../MainWindow.cpp" line="2580"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2505"/>
+        <location filename="../MainWindow.cpp" line="2587"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2515"/>
+        <location filename="../MainWindow.cpp" line="2597"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2534"/>
+        <location filename="../MainWindow.cpp" line="2616"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2536"/>
+        <location filename="../MainWindow.cpp" line="2618"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2581"/>
+        <location filename="../MainWindow.cpp" line="2669"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2582"/>
+        <location filename="../MainWindow.cpp" line="2670"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2583"/>
+        <location filename="../MainWindow.cpp" line="2671"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2584"/>
+        <location filename="../MainWindow.cpp" line="2672"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13500,12 +13544,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
 <context>
     <name>MemoryCardSlotWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="524"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="526"/>
         <source>%1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="530"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="532"/>
         <source>%1 [Missing]</source>
         <extracomment>Ignore Crowdin&apos;s warning for [Missing], the text should be translated.</extracomment>
         <translation type="unfinished"></translation>
@@ -13974,27 +14018,27 @@ Leaving the original controller type connected, but this may cause issues.</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="595"/>
+        <location filename="../../pcsx2/Patch.cpp" line="600"/>
         <source>{} GameDB patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="601"/>
+        <location filename="../../pcsx2/Patch.cpp" line="606"/>
         <source>{}{} game patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="608"/>
+        <location filename="../../pcsx2/Patch.cpp" line="613"/>
         <source>{}{} cheat patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="620"/>
+        <location filename="../../pcsx2/Patch.cpp" line="625"/>
         <source>{} are active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Patch.cpp" line="625"/>
+        <location filename="../../pcsx2/Patch.cpp" line="630"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14184,12 +14228,12 @@ The URL was: %1</source>
 <context>
     <name>SPU2</name>
     <message>
-        <location filename="../../pcsx2/SPU2/SndOut_Cubeb.cpp" line="295"/>
+        <location filename="../../pcsx2/SPU2/SndOut_Cubeb.cpp" line="299"/>
         <source>Requested audio output device &apos;{}&apos; not found, using default.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SPU2/SndOut_Cubeb.cpp" line="380"/>
+        <location filename="../../pcsx2/SPU2/SndOut_Cubeb.cpp" line="384"/>
         <source>Cubeb (Cross-platform)</source>
         <extracomment>Cubeb is an audio engine name. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
@@ -14222,20 +14266,44 @@ Otherwise delete the savestate and do a fresh boot.</source>
     <message>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="283"/>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="770"/>
-        <location filename="../SettingWidgetBinder.h" line="410"/>
-        <location filename="../SettingWidgetBinder.h" line="538"/>
-        <location filename="../SettingWidgetBinder.h" line="1107"/>
+        <location filename="../SettingWidgetBinder.h" line="414"/>
+        <location filename="../SettingWidgetBinder.h" line="542"/>
+        <location filename="../SettingWidgetBinder.h" line="1133"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="311"/>
-        <location filename="../SettingWidgetBinder.h" line="439"/>
+        <location filename="../SettingWidgetBinder.h" line="315"/>
+        <location filename="../SettingWidgetBinder.h" line="443"/>
         <source>Default: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="1055"/>
+        <location filename="../SettingWidgetBinder.h" line="1034"/>
+        <source>Confirm Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingWidgetBinder.h" line="1035"/>
+        <source>The chosen directory does not currently exist:
+
+%1
+
+Do you want to create this directory?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingWidgetBinder.h" line="1057"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingWidgetBinder.h" line="1058"/>
+        <source>Folder path cannot be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingWidgetBinder.h" line="1076"/>
         <source>Select folder for %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14496,20 +14564,20 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="128"/>
+        <location filename="../SettingWidgetBinder.h" line="132"/>
         <source>Use Global Setting [Enabled]</source>
         <extracomment>THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin&apos;s warning regarding [Enabled]: the text must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="130"/>
+        <location filename="../SettingWidgetBinder.h" line="134"/>
         <source>Use Global Setting [Disabled]</source>
         <extracomment>THIS STRING IS SHARED ACROSS MULTIPLE OPTIONS. Be wary about gender/number. Also, ignore Crowdin&apos;s warning regarding [Disabled]: the text must be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingWidgetBinder.h" line="138"/>
-        <location filename="../SettingWidgetBinder.h" line="154"/>
+        <location filename="../SettingWidgetBinder.h" line="142"/>
+        <location filename="../SettingWidgetBinder.h" line="158"/>
         <source>Use Global Setting [%1]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16331,32 +16399,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1588"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1592"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1573"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1577"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="837"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="847"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="890"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="900"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1136"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1141"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1137"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1142"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -16367,197 +16435,197 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1620"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1624"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1627"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1631"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1714"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1718"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1727"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1731"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1744"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1748"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1806"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1939"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1812"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1945"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1819"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1952"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1827"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1960"/>
         <source>Failed to switch back to old disc image. Removing disc.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2263"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2427"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2317"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2481"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2321"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2485"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2326"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2490"/>
         <source>Audio is using async mix, expect desynchronization in FMVs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2329"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2493"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2333"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2497"/>
         <source>Mipmapping is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2338"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2502"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2344"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2508"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2350"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2514"/>
         <source>Blending is below basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2355"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2519"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2361"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2525"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2367"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2531"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2373"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2537"/>
         <source>VU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2380"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2544"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2385"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2549"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2390"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2554"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2394"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2558"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2396"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2560"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2415"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2579"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2420"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2584"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2425"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2589"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2430"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2594"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2435"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2599"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2440"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2604"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2445"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2609"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2450"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2614"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2455"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2619"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2460"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2624"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2465"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2629"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2470"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2634"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
