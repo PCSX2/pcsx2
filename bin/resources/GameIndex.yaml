@@ -17610,69 +17610,113 @@ SLES-52646:
 SLES-52647:
   name: "Club Football 2005 - Manchester United"
   region: "PAL-M6"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52648:
   name: "Club Football 2005 - Borussia Dortmund"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52649:
   name: "Club Football 2005 - Olympique de Marseille"
   region: "PAL-E-F"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52650:
   name: "Club Football 2005 - Juventus"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52651:
   name: "Club Football 2005 - FC Barcelona"
   region: "PAL-M4"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52652:
   name: "Club Football 2005 - Liverpool FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52653:
   name: "Club Football 2005 - Liverpool FC"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52654:
   name: "Club Football 2005 - Real Madrid"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52655:
   name: "Club Football 2005 - FC Bayern München"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52656:
   name: "Club Football 2005 - AC Milan"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52657:
   name: "Club Football 2005 - Arsenal"
   region: "PAL-E-F"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52658:
   name: "Club Football 2005 - Hamburger SV"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52659:
   name: "Club Football 2005 - Paris Saint-Germain"
   region: "PAL-E-F"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52660:
   name: "Club Football 2005 - FC Internazionale"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52661:
   name: "Club Football 2005 - Ajax Amsterdam"
   region: "PAL-M4"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52662:
   name: "Club Football 2005 - Newcastle United"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52663:
   name: "Club Football 2005 - Chelsea FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52664:
   name: "Club Football 2005 - Rangers FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52665:
   name: "Club Football 2005 - Celtic FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52666:
   name: "Club Football 2005 - Tottenham Hotspur"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52667:
   name: "Club Football 2005 - Birmingham City"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52668:
   name: "Club Football 2005 - Aston Villa"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52669:
   name: "Forgotten Realms - Demon Stone"
   region: "PAL-M5"
