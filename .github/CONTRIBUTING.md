@@ -10,9 +10,9 @@ As a first step, please review these links as they'll help you understand how th
 
 ## Just Starting Out
 
-*   If you're unfamilar with git, check out this [brief introduction to Git](https://github.com/PCSX2/pcsx2/wiki/Git-survival-guide)
-*   [How to build PCSX2 for Windows](https://github.com/PCSX2/pcsx2/wiki/Setting-up-the-PCSX2-repository-on-Windows-\(WIP---maybe-more-useful-as-a-manpage-instead%3F\))
-*   [How to build PCSX2 for Linux](https://github.com/PCSX2/pcsx2/wiki/Installing-on-Linux)
+*   If you're unfamilar with git, check out this [brief introduction to Git](https://github.com/PCSX2/pcsx2/wiki/07-Git-survival-guide)
+*   [How to build PCSX2 for Windows](https://github.com/PCSX2/pcsx2/wiki/12-Building-on-Windows)
+*   [How to build PCSX2 for Linux](https://github.com/PCSX2/pcsx2/wiki/10-Building-on-Linux)
 
 ## Issue Reporting
 
@@ -44,13 +44,11 @@ The following is a list of *general* style recommendations that will make review
 
 ## General Documentation And Coding Strategies
 
-*   [Commenting Etiquette](https://github.com/PCSX2/pcsx2/wiki/Commenting-Etiquette)
+*   [Commenting Etiquette](https://github.com/PCSX2/pcsx2/wiki/06-Commenting-Etiquette)
 
 *   [Coding style](https://github.com/PCSX2/pcsx2/wiki/Code-Formatting-Guidelines)
     *   [More comprehensive style-guide (Currently in Draft)](https://github.com/tadanokojin/pcsx2/blob/coding-guide/pcsx2/Docs/Coding_Guidelines.md)
 
 ## Tasks
 
-*   [Todo List](https://github.com/PCSX2/pcsx2/wiki/Contributing-\(TODO-List\))
 *   [Issues](https://github.com/PCSX2/pcsx2/issues)
-*   [A collection of ideas to improve GS OGL](https://github.com/PCSX2/pcsx2/wiki/Todo-List)
