@@ -4724,6 +4724,9 @@ void GSRendererHW::CleanupDraw(bool invalidate_temp_src)
 	if (invalidate_temp_src)
 		g_texture_cache->InvalidateTemporarySource();
 
+	// Restore Scissor.
+	m_context->UpdateScissor();
+
 	// Restore offsets.
 	if ((m_context->FRAME.U32[0] ^ m_cached_ctx.FRAME.U32[0]) & 0x3f3f01ff)
 		m_context->offset.fb = m_mem.GetOffset(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM);
