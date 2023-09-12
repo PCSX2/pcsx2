@@ -10419,6 +10419,8 @@ SCUS-97621:
   compat: 5
   clampModes:
     vu1ClampMode: 3 # Fixes missing textures.
+  gsHWFixes:
+    minimumBlendingLevel: 2 # Fixes smoke effects.
   gameFixes:
     - VUSyncHack # Fixes black doors on vehicles.
   patches:
