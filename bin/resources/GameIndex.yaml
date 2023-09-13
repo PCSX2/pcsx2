@@ -13092,6 +13092,8 @@ SLES-50713:
         // Snow effect has to be removed for this fix (needs accurate emulation).
         // Fixed by rearranging COP2 instructions.
         patch=1,EE,00214aec,word,00000000
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes broken FMVs.
 SLES-50714:
   name: "Defender"
   region: "PAL-M5"
@@ -14141,6 +14143,9 @@ SLES-51128:
   name: "Total Immersion Racing"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Needed for post processing effects.
+    roundSprite: 1 # Fixes upscaling lines.
 SLES-51130:
   name: "Tony Hawk's Pro Skater 4"
   region: "PAL-E"
@@ -18389,6 +18394,8 @@ SLES-52920:
 SLES-52921:
   name: "Rogue Trooper"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes ghosting.
 SLES-52922:
   name: "EyeToy - Disney Move"
   region: "PAL-M5"
@@ -48035,6 +48042,8 @@ SLUS-20284:
         // Snow effect has to be removed for this fix (and that needs accurate emulation).
         // Fixed by rearranging COP2 instructions.
         patch=1,EE,002131bc,word,00000000
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes broken  FMVs.
 SLUS-20285:
   name: "MotoGP 2"
   region: "NTSC-U"
@@ -48614,6 +48623,9 @@ SLUS-20409:
   name: "Total Immersion Racing"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Needed for post processing effects.
+    roundSprite: 1 # Fixes upscaling lines.
 SLUS-20412:
   name: "Hot Wheels - Velocity X"
   region: "NTSC-U"
@@ -53523,6 +53535,8 @@ SLUS-21320:
   name: "Rogue Trooper"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes ghosting.
 SLUS-21321:
   name: "Squadra Course Alfa Romeo"
   region: "NTSC-U"
