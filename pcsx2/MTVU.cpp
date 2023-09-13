@@ -400,10 +400,10 @@ void VU_Thread::Get_MTVUChanges()
 	{
 		mtvuInterrupts.fetch_and(~InterruptFlagFinish, std::memory_order_relaxed);
 		GUNIT_WARN("Finish firing");
-		CSRreg.FINISH = true;
 		gifUnit.gsFINISH.gsFINISHFired = false;
+		gifUnit.gsFINISH.gsFINISHPending = true;
 
-		if (!gifRegs.stat.APATH)
+		if (!gifUnit.checkPaths(true, true, true, true))
 			Gif_FinishIRQ();
 	}
 	if (interrupts & InterruptFlagLabel)
