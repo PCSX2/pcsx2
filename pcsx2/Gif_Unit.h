@@ -177,6 +177,7 @@ struct GS_SIGNAL
 struct GS_FINISH
 {
 	bool gsFINISHFired;
+	bool gsFINISHPending;
 
 	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
@@ -838,7 +839,8 @@ struct Gif_Unit
 			FlushToMTGS();
 		}
 
-		Gif_FinishIRQ();
+		if(!checkPaths(true, true, true, true))
+			Gif_FinishIRQ();
 
 		//Path3 can rewind the DMA, so we send back the amount we go back!
 		if (isPath3)
