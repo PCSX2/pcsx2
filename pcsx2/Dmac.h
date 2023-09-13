@@ -336,6 +336,7 @@ union tDMAC_CTRL {
 	tDMAC_CTRL(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
+	bool is_mfifo(bool is_vif) const { return (is_vif) ? (MFD == MFD_VIF1) : (MFD == MFD_GIF); }
 	void set_flags(u32 flags) { _u32 |= flags; }
 	void clear_flags(u32 flags) { _u32 &= ~flags; }
 	void reset() { _u32 = 0; }
