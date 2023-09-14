@@ -824,7 +824,7 @@ bool GSRendererHW::NextDrawMatchesShuffle() const
 	return true;
 }
 
-bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
+bool GSRendererHW::IsSplitTextureShuffle(GSTextureCache::Target* rt)
 {
 	// For this to work, we're peeking into the next draw, therefore we need dirty registers.
 	if (m_dirty_gs_regs == 0)
@@ -866,7 +866,8 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 	// We should have the same number of pages in both the position and UV.
 	const u32 pages_high = static_cast<u32>(aligned_rc.height()) / frame_psm.pgs.y;
 	const u32 num_pages = m_context->FRAME.FBW * pages_high;
-
+	// Jurassic - The Hunted will do a split shuffle with a height of 512 (256) when it's supposed to be 448, so it redoes one row of the shuffle.
+	const u32 rt_half = (((rt->m_valid.height() / GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y) / 2) * rt->m_TEX0.TBW) + (rt->m_TEX0.TBP0 >> 5);
 	// If this is a split texture shuffle, the next draw's FRAME/TEX0 should line up.
 	// Re-add the offset we subtracted in Draw() to get the original FBP/TBP0.. this won't handle wrapping. Oh well.
 	// "Potential" ones are for Jak3 which does a split shuffle on a 128x128 texture with a width of 256, writing to the lower half then offsetting 2 pages.
@@ -877,14 +878,15 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 	GL_CACHE("IsSplitTextureShuffle: Draw covers %ux%u pages, next FRAME %x TEX %x",
 		static_cast<u32>(aligned_rc.width()) / frame_psm.pgs.x, pages_high, expected_next_FBP * BLOCKS_PER_PAGE,
 		expected_next_TBP0);
-	if (next_ctx.TEX0.TBP0 != expected_next_TBP0 && next_ctx.TEX0.TBP0 != potential_expected_next_TBP0)
+
+	if (next_ctx.TEX0.TBP0 != expected_next_TBP0 && next_ctx.TEX0.TBP0 != potential_expected_next_TBP0 && next_ctx.TEX0.TBP0 != (rt_half << 5))
 	{
 		GL_CACHE("IsSplitTextureShuffle: Mismatch on TBP0, expecting %x, got %x", expected_next_TBP0, next_ctx.TEX0.TBP0);
 		return false;
 	}
 
 	// Some games don't offset the FBP.
-	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP && next_ctx.FRAME.FBP != potential_expected_next_FBP)
+	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP && next_ctx.FRAME.FBP != potential_expected_next_FBP && next_ctx.FRAME.FBP != rt_half)
 	{
 		GL_CACHE("IsSplitTextureShuffle: Mismatch on FBP, expecting %x, got %x", expected_next_FBP * BLOCKS_PER_PAGE,
 			next_ctx.FRAME.FBP * BLOCKS_PER_PAGE);
@@ -901,16 +903,25 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 
 		// If the game has changed the texture width to 1 we need to retanslate it to whatever the rt has so the final rect is correct.
 		if (m_cached_ctx.FRAME.FBW == 1)
-			m_split_texture_shuffle_fbw = rt_tbw;
+			m_split_texture_shuffle_fbw = rt->m_TEX0.TBW;
 		else
 			m_split_texture_shuffle_fbw = m_cached_ctx.FRAME.FBW;
 	}
 
+	u32 vertical_pages = pages_high;
+	u32 total_pages = num_pages;
+
+	// If the current draw is further than the half way point and the next draw is the half way point, then we can assume it's just overdrawing.
+	if (next_ctx.FRAME.FBP == rt_half && num_pages > (rt_half - (rt->m_TEX0.TBP0 >> 5)))
+	{
+		vertical_pages = (rt->m_valid.height() / GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y) / 2;
+		total_pages = vertical_pages * rt->m_TEX0.TBW;
+	}
+
 	if ((m_split_texture_shuffle_pages % m_split_texture_shuffle_fbw) == 0)
-		m_split_texture_shuffle_pages_high += pages_high;
+		m_split_texture_shuffle_pages_high += vertical_pages;
 
-	m_split_texture_shuffle_pages += num_pages;
-
+	m_split_texture_shuffle_pages += total_pages;
 	return true;
 }
 
@@ -2263,7 +2274,8 @@ void GSRendererHW::Draw()
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
-		const bool possible_shuffle = ((src && src->m_target && src->m_from_target->m_32_bits_fmt) && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || IsPossibleChannelShuffle();
+		const bool possible_shuffle = draw_sprite_tex && ((src && src->m_target && src->m_from_target->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].depth == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].depth) &&
+									GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || IsPossibleChannelShuffle();
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
 			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block());
 
@@ -2376,7 +2388,7 @@ void GSRendererHW::Draw()
 			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
 		}
 
-		if (m_texture_shuffle && IsSplitTextureShuffle(rt->m_TEX0.TBW))
+		if (m_texture_shuffle && IsSplitTextureShuffle(rt))
 		{
 			// If TEX0 == FBP, we're going to have a source left in the TC.
 			// That source will get used in the actual draw unsafely, so kick it out.
