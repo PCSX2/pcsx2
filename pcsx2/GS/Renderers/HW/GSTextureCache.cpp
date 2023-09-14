@@ -1918,7 +1918,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			GIFRegTEX0 new_TEX0;
 			new_TEX0.TBP0 = TEX0.TBP0;
 			new_TEX0.TBW = (!half_width) ? dst_match->m_TEX0.TBW : TEX0.TBW;
-			new_TEX0.PSM = TEX0.PSM;
+			new_TEX0.PSM = is_shuffle ? dst_match->m_TEX0.PSM :TEX0.PSM;
 
 			dst = Target::Create(new_TEX0, new_size.x, new_size.y, scale, type, clear);
 			if (!dst)

@@ -109,7 +109,7 @@ private:
 
 	bool IsPossibleChannelShuffle() const;
 	bool NextDrawMatchesShuffle() const;
-	bool IsSplitTextureShuffle(u32 rt_tbw);
+	bool IsSplitTextureShuffle(GSTextureCache::Target* rt);
 	GSVector4i GetSplitTextureShuffleDrawRect() const;
 	u32 GetEffectiveTextureShuffleFbmsk() const;
 
