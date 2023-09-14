@@ -1010,6 +1010,7 @@ __ri static bool mpeg2sliceIDEC()
 			// IPU0 isn't ready for data, so let's wait for it to be
 			if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[1] <= 2)
 			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
 				return false;
 			}
 			macroblock_8& mb8 = decoder.mb8;
@@ -1123,6 +1124,8 @@ __ri static bool mpeg2sliceIDEC()
 				if (ready_to_decode == true)
 				{
 					ready_to_decode = false;
+					IPUCoreStatus.WaitingOnIPUFrom = false;
+					IPUCoreStatus.WaitingOnIPUTo = false;
 					CPU_INT(IPU_PROCESS, 64); // Should probably be much higher, but myst 3 doesn't like it right now.
 					ipu_cmd.pos[1] = 2;
 					return false;
@@ -1134,6 +1137,7 @@ __ri static bool mpeg2sliceIDEC()
 				if (decoder.ipu0_data != 0)
 				{
 					// IPU FIFO filled up -- Will have to finish transferring later.
+					IPUCoreStatus.WaitingOnIPUFrom = true;
 					ipu_cmd.pos[1] = 2;
 					return false;
 				}
@@ -1141,6 +1145,7 @@ __ri static bool mpeg2sliceIDEC()
 				mbaCount = 0;
 				if (read)
 				{
+					IPUCoreStatus.WaitingOnIPUFrom = true;
 					ipu_cmd.pos[1] = 3;
 					return false;
 				}
@@ -1308,6 +1313,7 @@ __fi static bool mpeg2_slice()
 		// IPU0 isn't ready for data, so let's wait for it to be
 		if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[0] <= 3)
 		{
+			IPUCoreStatus.WaitingOnIPUFrom = true;
 			return false;
 		}
 
@@ -1514,6 +1520,8 @@ __fi static bool mpeg2_slice()
 		{
 			ipu_cmd.pos[0] = 3;
 			ready_to_decode = false;
+			IPUCoreStatus.WaitingOnIPUFrom = false;
+			IPUCoreStatus.WaitingOnIPUTo = false;
 			CPU_INT(IPU_PROCESS, 64); // Should probably be much higher, but myst 3 doesn't like it right now.
 			return false;
 		}
@@ -1525,6 +1533,7 @@ __fi static bool mpeg2_slice()
 		if (decoder.ipu0_data != 0)
 		{
 			// IPU FIFO filled up -- Will have to finish transferring later.
+			IPUCoreStatus.WaitingOnIPUFrom = true;
 			ipu_cmd.pos[0] = 3;
 			return false;
 		}
@@ -1532,6 +1541,7 @@ __fi static bool mpeg2_slice()
 		mbaCount = 0;
 		if (read)
 		{
+			IPUCoreStatus.WaitingOnIPUFrom = true;
 			ipu_cmd.pos[0] = 4;
 			return false;
 		}
@@ -1801,12 +1811,20 @@ __ri static bool ipuCSC(tIPU_CMD_CSC csc)
 		if (csc.OFM)
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 32) return false;
+			if (ipu_cmd.pos[1] < 32)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 		else
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*) & decoder.rgb32) + 4 * ipu_cmd.pos[1], 64 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 64) return false;
+			if (ipu_cmd.pos[1] < 64)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 
 		ipu_cmd.pos[0] = 0;
@@ -1834,12 +1852,20 @@ __ri static bool ipuPACK(tIPU_CMD_CSC csc)
 		if (csc.OFM)
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 32) return false;
+			if (ipu_cmd.pos[1] < 32)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 		else
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*)g_ipu_indx4) + 4 * ipu_cmd.pos[1], 8 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 8) return false;
+			if (ipu_cmd.pos[1] < 8)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 
 		ipu_cmd.pos[0] = 0;
