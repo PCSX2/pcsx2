@@ -635,10 +635,12 @@ void MainWindow::onCaptureStopped()
 
 void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
+#ifdef ENABLE_ACHIEVEMENTS
 	auto lock = pauseAndLockVM();
 
 	AchievementLoginDialog dlg(this, reason);
 	dlg.exec();
+#endif
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()

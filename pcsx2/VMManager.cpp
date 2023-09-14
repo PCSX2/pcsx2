@@ -369,8 +369,10 @@ bool VMManager::Internal::CPUThreadInitialize()
 	// This also sorts out input sources.
 	LoadSettings();
 
+#ifdef ENABLE_ACHIEVEMENTS
 	if (EmuConfig.Achievements.Enabled)
 		Achievements::Initialize();
+#endif
 
 	ReloadPINE();
 
@@ -2174,8 +2176,10 @@ void VMManager::Internal::VSyncOnCPUThread()
 		}
 	}
 
+#ifdef ENABLE_ACHIEVEMENTS
 	if (Achievements::IsActive())
 		Achievements::VSyncUpdate();
+#endif
 
 	PollDiscordPresence();
 
@@ -2380,8 +2384,10 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	if (HasValidVM() || MTGS::IsOpen())
 		CheckForGSConfigChanges(old_config);
 
+#ifdef ENABLE_ACHIEVEMENTS
 	if (EmuConfig.Achievements != old_config.Achievements)
 		Achievements::UpdateSettings(old_config.Achievements);
+#endif
 
 	FullscreenUI::CheckForConfigChanges(old_config);
 

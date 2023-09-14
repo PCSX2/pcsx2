@@ -196,6 +196,19 @@ namespace Achievements
 // Make noops when compiling without cheevos.
 namespace Achievements
 {
+	enum class LoginRequestReason
+	{
+		UserInitiated,
+		TokenInvalid,
+	};
+
+	enum class AchievementCategory : u8
+	{
+		Local = 0,
+		Core = 3,
+		Unofficial = 5
+	};
+
 	static inline void Initialize()
 	{
 	}
@@ -219,7 +232,7 @@ namespace Achievements
 	{
 		return {};
 	}
-	static inline void GameChanged()
+	static inline void GameChanged(u32 disc_crc, u32 crc)
 	{
 	}
 
@@ -250,10 +263,16 @@ namespace Achievements
 	{
 	}
 
+	static std::string GetRichPresenceString()
+	{
+		return {};
+	}
+
 	static std::string SafeGetRichPresenceString()
 	{
 		return {};
 	}
+
 } // namespace Achievements
 
 #endif

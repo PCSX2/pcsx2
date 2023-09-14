@@ -1241,7 +1241,6 @@ struct Pcsx2Config
 
 	// ------------------------------------------------------------------------
 
-#ifdef ENABLE_ACHIEVEMENTS
 	struct AchievementsOptions
 	{
 		BITFIELD32()
@@ -1272,7 +1271,6 @@ struct Pcsx2Config
 			return !this->operator==(right);
 		}
 	};
-#endif
 
 	// ------------------------------------------------------------------------
 
