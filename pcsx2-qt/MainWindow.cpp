@@ -1991,9 +1991,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
 	createDisplayWidget(fullscreen, render_to_main);
 
-	// we need the surface visible.. this might be able to be replaced with something else
-	QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-
 	std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
 	if (!wi.has_value())
 	{
@@ -2165,7 +2162,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 
 	if (m_display_widget)
 	{
-		m_display_widget->deleteLater();
+		m_display_widget->destroy();
 		m_display_widget = nullptr;
 	}
 
@@ -2247,7 +2244,7 @@ SettingsDialog* MainWindow::getSettingsDialog()
 			updateLanguage();
 			// If you doSettings now, on macOS, the window will somehow end up underneath the main window that was created above
 			// Delay it slightly...
-			QtHost::RunOnUIThread([]{
+			QtHost::RunOnUIThread([] {
 				g_main_window->doSettings("Interface");
 			});
 		});
