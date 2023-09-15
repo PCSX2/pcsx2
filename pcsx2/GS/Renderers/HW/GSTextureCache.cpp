@@ -1802,19 +1802,24 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			!dst->m_valid_rgb && !FullRectDirty(dst, 0x7) &&
 			(GSLocalMemory::m_psm[TEX0.PSM].trbpp < 24 || fbmask != 0x00FFFFFFu))
 		{
-			GL_CACHE("TC: Attempt to repopulate RGB for %s[%x]", to_string(type), dst->m_TEX0.TBP0);
-			for (Target* dst_match : m_dst[DepthStencil])
+			// Neo Contra clears 0x1400 with Z16S, then uses that address to upload C32 frames, this gets confused and makes a mess of it.
+			// TODO: Look in to making sure bad format conversions don't happen.
+			if (!is_frame)
 			{
-				if (dst_match->m_TEX0.TBP0 != TEX0.TBP0 || !dst_match->m_valid_rgb)
-					continue;
-
-				if (!CopyRGBFromDepthToColor(dst, dst_match))
+				GL_CACHE("TC: Attempt to repopulate RGB for %s[%x]", to_string(type), dst->m_TEX0.TBP0);
+				for (Target* dst_match : m_dst[DepthStencil])
 				{
-					// Needed new texture and memory allocation failed.
-					return nullptr;
-				}
+					if (dst_match->m_TEX0.TBP0 != TEX0.TBP0 || !dst_match->m_valid_rgb)
+						continue;
 
-				break;
+					if (!CopyRGBFromDepthToColor(dst, dst_match))
+					{
+						// Needed new texture and memory allocation failed.
+						return nullptr;
+					}
+
+					break;
+				}
 			}
 
 			if (!dst->m_valid_rgb)
