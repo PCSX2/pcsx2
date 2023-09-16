@@ -22,7 +22,6 @@ option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 #-------------------------------------------------------------------------------
 if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
-	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
 endif()

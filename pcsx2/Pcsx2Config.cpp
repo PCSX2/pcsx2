@@ -1737,16 +1737,12 @@ void EmuFolders::SetDataDirectory()
 		const char* home_dir = getenv("HOME");
 		if (home_dir)
 		{
-#ifdef USE_LEGACY_USER_DIRECTORY
-			DataRoot = Path::Combine(home_dir, "PCSX2");
-#else
 			// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
 			const std::string config_dir(Path::Combine(home_dir, ".config"));
 			if (!FileSystem::DirectoryExists(config_dir.c_str()))
 				FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
 
 			DataRoot = Path::Combine(config_dir, "PCSX2");
-#endif
 		}
 	}
 #elif defined(__APPLE__)
