@@ -16241,6 +16241,8 @@ SLES-52034:
   name: "Cat in the Hat, The"
   region: "PAL-M5"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SLES-52036:
   name: "WWE SmackDown! - Here Comes the Pain!"
@@ -22048,10 +22050,18 @@ SLES-54230:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    recommendedBlendingLevel: 4 # Fixes dark stage rendering.
+    mipmap: 2 # Mipmap + trilinear, improves stadium crowd to match sw renderer.
+    trilinearFiltering: 1
+    cpuSpriteRenderBW: 4 # Fixes garbage menus.
 SLES-54231:
   name: "Ricky Ponting International Cricket 2007"
   region: "PAL-A"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes dark stage rendering.
+    mipmap: 2 # Mipmap + trilinear, improves stadium crowd to match sw renderer.
+    trilinearFiltering: 1
+    cpuSpriteRenderBW: 4 # Fixes garbage menus.
 SLES-54232:
   name: "Kingdom Hearts II"
   region: "PAL-F"
@@ -35562,7 +35572,7 @@ SLPM-65889:
   name: "Kazoku Keikaku - Kokoro no Kizuna"
   region: "NTSC-J"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes broken colors.
+    cpuCLUTRender: 1 # Fixes broken colors.
 SLPM-65890:
   name: "Shin Sangoku Musou 4"
   region: "NTSC-J"
@@ -50601,6 +50611,8 @@ SLUS-20797:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SLUS-20798:
   name: "Starcraft - Ghost"
