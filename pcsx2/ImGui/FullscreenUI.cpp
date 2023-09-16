@@ -3626,7 +3626,7 @@ void FullscreenUI::DrawAudioSettingsPage()
 	};
 	static constexpr const char* expansion_modes[] = {
 		FSUI_NSTR("Stereo (None, Default)"),
-		FSUI_NSTR("Quadrafonic"),
+		FSUI_NSTR("Quadraphonic"),
 		FSUI_NSTR("Surround 5.1"),
 		FSUI_NSTR("Surround 7.1"),
 	};
@@ -4663,7 +4663,7 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 	DrawToggleSetting(bsi, FSUI_CSTR("VU XGkick Sync"), FSUI_CSTR("Use accurate timing for VU XGKicks (slower)."), "EmuCore/Gamefixes",
 		"XgKickHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Use Blit for internal FPS"),
-		FSUI_CSTR("Use alternative method to calclate internal FPS to avoid false readings in some games."), "EmuCore/Gamefixes",
+		FSUI_CSTR("Use alternative method to calculate internal FPS to avoid false readings in some games."), "EmuCore/Gamefixes",
 		"BlitInternalFPSHack", false);
 
 	EndMenuButtons();
@@ -7838,7 +7838,7 @@ TRANSLATE_NOOP("FullscreenUI", "To check for possible float overflows (Superman 
 TRANSLATE_NOOP("FullscreenUI", "VU XGkick Sync");
 TRANSLATE_NOOP("FullscreenUI", "Use accurate timing for VU XGKicks (slower).");
 TRANSLATE_NOOP("FullscreenUI", "Use Blit for internal FPS");
-TRANSLATE_NOOP("FullscreenUI", "Use alternative method to calclate internal FPS to avoid false readings in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Use alternative method to calculate internal FPS to avoid false readings in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Load State");
 TRANSLATE_NOOP("FullscreenUI", "Save State");
 TRANSLATE_NOOP("FullscreenUI", "Load Resume State");
@@ -8103,7 +8103,7 @@ TRANSLATE_NOOP("FullscreenUI", "TimeStretch (Recommended)");
 TRANSLATE_NOOP("FullscreenUI", "Async Mix (Breaks some games!)");
 TRANSLATE_NOOP("FullscreenUI", "None (Audio can skip.)");
 TRANSLATE_NOOP("FullscreenUI", "Stereo (None, Default)");
-TRANSLATE_NOOP("FullscreenUI", "Quadrafonic");
+TRANSLATE_NOOP("FullscreenUI", "Quadraphonic");
 TRANSLATE_NOOP("FullscreenUI", "Surround 5.1");
 TRANSLATE_NOOP("FullscreenUI", "Surround 7.1");
 TRANSLATE_NOOP("FullscreenUI", "No Sound (Emulate SPU2 only)");
