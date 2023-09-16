@@ -142,8 +142,7 @@ rm -fr "$DEPSDIR"
 mv "$DEPSDIR.bak" "$DEPSDIR"
 
 # Fix up translations.
-rm -fr "$OUTDIR/usr/bin/translations"
-mv "$OUTDIR/usr/translations" "$OUTDIR/usr/bin"
+rm -fr "$OUTDIR/usr/bin/translations" "$OUTDIR/usr/translations"
 cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 
 # Generate AppStream meta-info.
