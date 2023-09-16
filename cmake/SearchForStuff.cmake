@@ -138,6 +138,8 @@ add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
 
 if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
@@ -165,12 +167,6 @@ if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" V
 		message("Qt compiled with std::filesystem support, requires macOS 10.15")
 		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 	endif()
-endif()
-
-# Discord-RPC library for rich presence.
-if(USE_DISCORD_PRESENCE)
-	add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
 endif()
 
 # Demangler for the debugger

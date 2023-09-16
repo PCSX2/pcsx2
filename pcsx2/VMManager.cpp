@@ -65,6 +65,7 @@
 #include "common/emitter/tools.h"
 
 #include "IconsFontAwesome5.h"
+#include "discord_rpc.h"
 #include "fmt/core.h"
 
 #include <atomic>
@@ -83,10 +84,6 @@
 
 #ifdef __APPLE__
 #include "common/Darwin/DarwinMisc.h"
-#endif
-
-#ifdef ENABLE_DISCORD_PRESENCE
-#include "discord_rpc.h"
 #endif
 
 namespace VMManager
@@ -192,9 +189,7 @@ static bool s_screensaver_inhibited = false;
 
 static PINEServer s_pine_server;
 
-#ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
-#endif
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -2966,8 +2961,6 @@ void VMManager::ReloadPINE()
 	}
 }
 
-#ifdef ENABLE_DISCORD_PRESENCE
-
 void VMManager::InitializeDiscordPresence()
 {
 	if (s_discord_presence_active)
@@ -3028,22 +3021,3 @@ void VMManager::PollDiscordPresence()
 	Discord_RunCallbacks();
 }
 
-#else // ENABLE_DISCORD_PRESENCE
-
-void VMManager::InitializeDiscordPresence()
-{
-}
-
-void VMManager::ShutdownDiscordPresence()
-{
-}
-
-void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
-{
-}
-
-void VMManager::PollDiscordPresence()
-{
-}
-
-#endif // ENABLE_DISCORD_PRESENCE
