@@ -118,18 +118,22 @@ void QtHost::InstallTranslator()
 #else
 	const QString base_dir = QStringLiteral("%1/translations").arg(qApp->applicationDirPath());
 #endif
-	QString base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(language);
+
+	// Qt base uses underscores instead of hyphens.
+	const QString qt_language = QString(language).replace(QChar('-'), QChar('_'));
+	QString base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qt_language);
 	bool has_base_ts = QFile::exists(base_path);
 	if (!has_base_ts)
 	{
 		// Try without the country suffix.
-		const int index = language.indexOf('-');
+		const int index = language.lastIndexOf('-');
 		if (index > 0)
 		{
 			base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(language.left(index));
 			has_base_ts = QFile::exists(base_path);
 		}
 	}
+
 	if (has_base_ts)
 	{
 		QTranslator* base_translator = new QTranslator(qApp);
