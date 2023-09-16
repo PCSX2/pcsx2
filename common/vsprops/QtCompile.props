@@ -167,25 +167,38 @@
     />
   </Target>
   
-  <!--Copies base translation files, need to rename them from qtbase_ to qt_ -->
+  <!--Copies base translation files, and combines split into one -->
   <ItemGroup>
-    <BaseTsFiles Include="$(QtTranslationsDir)\*.qm" />
+    <AllQmFiles Include="$(QtTranslationsDir)qt*.qm">
+    <Language>$([System.String]::Copy('%(Filename)').Substring($([MSBuild]::Add($([System.String]::Copy('%(Filename)').IndexOf('_')), 1))))</Language>
+    </AllQmFiles>
+    <BaseQmFiles Include="$(QtTranslationsDir)qtbase_*.qm" />
+    <SourceMergeQmFileNames Include="@(BaseQmFiles -> '%(Filename)%(Extension)'->Replace('qtbase_', 'qt_'))" />
+    <SourceMergeQmFiles Include="@(SourceMergeQmFileNames -> '$(QtTranslationsDir)%(Filename)%(Extension)')" />
+    <MergedQmFiles Include="@(SourceMergeQmFileNames -> '$(QtTsOutDir)%(Filename)%(Extension)')">
+    <Language>$([System.String]::Copy('%(Filename)').Replace('qt_', ''))</Language>
+    </MergedQmFiles>
+    <CopyTsFilesSource Include="$(QtTranslationsDir)qt_*.qm" Exclude="@(SourceMergeQmFiles);$(QtTranslationsDir)\qt_help_*.qm" />
+    <CopyTsFilesDest Include="@(CopyTsFilesSource -> '$(QtTsOutDir)%(Filename)%(Extension)')" />
   </ItemGroup>
+  <Target Name="QtGenerateBaseTranslations" AfterTargets="Build" Inputs="@(SourceMergeQmFiles)" Outputs="%(MergedQmFiles.FullPath)">
+    <PropertyGroup>
+      <Language>%(MergedQmFiles.Language)</Language>
+    </PropertyGroup>
+    <Message Text="Generate Base Translation qt_$(Language).qm" Importance="High" />
+    <ItemGroup>
+      <SourceQmFiles Include="%(AllQmFiles.FullPath)" Condition="'%(AllQmFiles.Language)' == '$(Language)'" />
+    </ItemGroup>
+    <Error Condition="!$(QtDirValid)" Text="Qt directory non-existent (download/extract the zip)" />
+    <MakeDir Directories="$(QtTsOutDir)" />
+    <Exec Command="&quot;$(QtHostBinDir)lconvert.exe&quot; -verbose -of qm -o &quot;$(QtTsOutDir)qt_$(Language).qm&quot; @(SourceQmFiles -> '&quot;%(FullPath)&quot;', ' ')" />
+  </Target>
   <Target Name="QtCopyBaseTranslations"
     AfterTargets="Build"
-    Inputs="@(BaseTsFiles)"
-    Outputs="@(BaseTsFiles -> '$(QtTsOutDir)%(RecursiveDir)%(Filename.Replace('qtbase_', 'qt_'))%(Extension)')">
-	<!-- https://stackoverflow.com/a/15379344 -->
-	<ItemGroup>
-	  <TempItems Include="@(BaseTsFiles->'%(Filename)%(Extension)'->Replace('qtbase_', 'qt_'))">
-	    <OriginalPath>%(Identity)</OriginalPath>
-	    <SavedRecursiveDir>%(RecursiveDir)</SavedRecursiveDir>
-	  </TempItems>
-	</ItemGroup>
-    <Message Text="Copying base translation files" Importance="High" />
-	<Copy SourceFiles="@(TempItems->'%(OriginalPath)')"
-		  DestinationFiles="@(TempItems->'$(QtTsOutDir)%(SavedRecursiveDir)%(Identity)')"
-	      SkipUnchangedFiles="true" />
+    Inputs="@(CopyTsFilesSource)"
+    Outputs="@(CopyTsFilesDest.FullPath)">
+      <Message Text="Copy Base Translation %(CopyTsFilesSource.Filename)%(CopyTsFilesSource.Extension)" />
+      <Copy SourceFiles="@(CopyTsFilesSource)" DestinationFiles="@(CopyTsFilesDest)" SkipUnchangedFiles="true" />
   </Target>
 
   <!--Compiles all translation files-->
