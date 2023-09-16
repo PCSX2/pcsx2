@@ -163,17 +163,13 @@ if(APPLE)
 	)
 endif()
 
-if(DBUS_API)
-	target_compile_definitions(common PRIVATE DBUS_API)
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(DBUS REQUIRED dbus-1)
+if(UNIX AND NOT APPLE)
 	target_include_directories(common PRIVATE ${DBUS_INCLUDE_DIRS})
-	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES})
-endif()
-
-if(X11_API AND TARGET PkgConfig::XRANDR)
-	target_link_libraries(common PRIVATE PkgConfig::XRANDR)
-	target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
+	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES} X11::X11 X11::Xrandr)
+  if(TARGET libbacktrace::libbacktrace)
+		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
+		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
+  endif()
 endif()
 
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
@@ -188,11 +184,6 @@ if(NOT WIN32)
 		HTTPDownloaderCurl.h
 	)
 	target_link_libraries(common PRIVATE CURL::libcurl)
-endif()
-
-if(UNIX AND NOT APPLE AND TARGET libbacktrace::libbacktrace)
-	target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
-	target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
 endif()
 
 target_link_libraries(common PRIVATE
