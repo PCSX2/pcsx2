@@ -119,12 +119,6 @@ class GSVector8i;
 
 #endif
 
-// _d is defined for translations in our utilities, unfortunately we do some
-// input concatenation on GSVectors and end up making new tokens named _d, so we
-// undefine it and reinclude our utilities to redefine its original value right
-// after
-#undef _d
-
 // Position and order is important
 #include "GSVector4i.h"
 #include "GSVector4.h"
