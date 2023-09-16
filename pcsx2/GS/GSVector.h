@@ -49,8 +49,6 @@ enum Round_Mode
 	Round_Truncate = 11
 };
 
-#pragma pack(push, 1)
-
 template <class T>
 class GSVector2T
 {
@@ -252,4 +250,3 @@ gsforceinline GSVector8 GSVector8::cast(const GSVector8i& v)
 
 #endif
 
-#pragma pack(pop)
