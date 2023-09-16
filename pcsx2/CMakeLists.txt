@@ -863,10 +863,6 @@ if(WIN32)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE ENABLE_RAINTEGRATION)
 	target_link_libraries(PCSX2_FLAGS INTERFACE rainterface)
 endif()
-if(USE_DISCORD_PRESENCE)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE ENABLE_DISCORD_PRESENCE)
-	target_link_libraries(PCSX2_FLAGS INTERFACE discord-rpc)
-endif()
 if(WIN32)
 	list(APPEND pcsx2InputSources
 		Input/DInputSource.cpp
@@ -1134,6 +1130,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	zydis
 	cubeb
 	rcheevos
+	discord-rpc
 	SDL2::SDL2
 	ZLIB::ZLIB
 	SoundTouch::SoundTouch
