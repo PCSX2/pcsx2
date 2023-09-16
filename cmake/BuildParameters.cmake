@@ -25,7 +25,6 @@ if(UNIX AND NOT APPLE)
 	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
-	option(DBUS_API "Enable DBus support for screensaver inhibiting" ON)
 endif()
 
 if(UNIX)
