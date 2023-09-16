@@ -1110,7 +1110,6 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
 	emit g_emu_thread->onAchievementsLoginRequested(reason);
@@ -1151,7 +1150,6 @@ void Host::OnAchievementsRefreshed()
 
 	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info, achievement_count, max_points);
 }
-#endif
 
 void Host::VSyncOnCPUThread()
 {

@@ -194,7 +194,6 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 		QString help_text =
 			tr("<strong>Achievements Settings</strong><hr>"
 			   "These options control the RetroAchievements implementation in PCSX2, allowing you to earn achievements in your games.");
-#ifdef ENABLE_ACHIEVEMENTS
 		if (Achievements::IsUsingRAIntegration())
 		{
 			QLabel* placeholder_label =
@@ -207,12 +206,6 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 			addWidget((m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer)), std::move(title),
 				std::move(icon_text), std::move(help_text));
 		}
-#else
-		QLabel* placeholder_label =
-			new QLabel(tr("This PCSX2 build was not compiled with RetroAchievements support."), m_ui.settingsContainer);
-		placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-		addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
-#endif
 	}
 
 	if (show_advanced_settings)

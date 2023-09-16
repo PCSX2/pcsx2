@@ -1428,8 +1428,6 @@ bool Pcsx2Config::PadOptions::Port::operator!=(const PadOptions::Port& right) co
 	return !this->operator==(right);
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
-
 Pcsx2Config::AchievementsOptions::AchievementsOptions()
 {
 	Enabled = false;
@@ -1465,8 +1463,6 @@ void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 		NotificationsDuration = std::clamp(NotificationsDuration, 3, 10);
 	}
 }
-
-#endif
 
 Pcsx2Config::Pcsx2Config()
 {
@@ -1549,9 +1545,7 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	Debugger.LoadSave(wrap);
 	Trace.LoadSave(wrap);
 
-#ifdef ENABLE_ACHIEVEMENTS
 	Achievements.LoadSave(wrap);
-#endif
 
 	SettingsWrapEntry(GzipIsoIndexTemplate);
 	SettingsWrapEntry(PINESlot);

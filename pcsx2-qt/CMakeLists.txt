@@ -44,6 +44,12 @@ target_sources(pcsx2-qt PRIVATE
 	GameList/GameListRefreshThread.h
 	GameList/GameListWidget.cpp
 	GameList/GameListWidget.h
+	Settings/AchievementLoginDialog.cpp
+	Settings/AchievementLoginDialog.h
+	Settings/AchievementLoginDialog.ui
+	Settings/AchievementSettingsWidget.cpp
+	Settings/AchievementSettingsWidget.h
+	Settings/AchievementSettingsWidget.ui
 	Settings/AdvancedSettingsWidget.cpp
 	Settings/AdvancedSettingsWidget.h
 	Settings/AdvancedSettingsWidget.ui
@@ -167,17 +173,6 @@ target_sources(pcsx2-qt PRIVATE
 	Tools/InputRecording/InputRecordingViewer.ui
 	resources/resources.qrc
 )
-
-if(USE_ACHIEVEMENTS)
-	target_sources(pcsx2-qt PRIVATE
-		Settings/AchievementLoginDialog.cpp
-		Settings/AchievementLoginDialog.h
-		Settings/AchievementLoginDialog.ui
-		Settings/AchievementSettingsWidget.cpp
-		Settings/AchievementSettingsWidget.h
-		Settings/AchievementSettingsWidget.ui
-	)
-endif()
 
 file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/*.ts)
 

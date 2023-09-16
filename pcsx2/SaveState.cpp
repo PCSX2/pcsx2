@@ -653,7 +653,6 @@ public:
 	bool IsRequired() const { return true; }
 };
 
-#ifdef ENABLE_ACHIEVEMENTS
 class SaveStateEntry_Achievements final : public BaseSavestateEntry
 {
 	~SaveStateEntry_Achievements() override = default;
@@ -694,7 +693,6 @@ class SaveStateEntry_Achievements final : public BaseSavestateEntry
 
 	bool IsRequired() const override { return false; }
 };
-#endif
 
 // (cpuRegs, iopRegs, VPU/GIF/DMAC structures should all remain as part of a larger unified
 //  block, since they're all PCSX2-dependent and having separate files in the archie for them
@@ -715,9 +713,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_GS),
-#ifdef ENABLE_ACHIEVEMENTS
 	std::unique_ptr<BaseSavestateEntry>(new SaveStateEntry_Achievements),
-#endif
 };
 
 std::unique_ptr<ArchiveEntryList> SaveState_DownloadState(Error* error)

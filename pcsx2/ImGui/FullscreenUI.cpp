@@ -178,19 +178,15 @@ namespace FullscreenUI
 		GameList,
 		Settings,
 		PauseMenu,
-#ifdef ENABLE_ACHIEVEMENTS
 		Achievements,
 		Leaderboards,
-#endif
 	};
 
 	enum class PauseSubMenu
 	{
 		None,
 		Exit,
-#ifdef ENABLE_ACHIEVEMENTS
 		Achievements,
-#endif
 	};
 
 	enum class SettingsPage
@@ -482,7 +478,6 @@ namespace FullscreenUI
 	static std::vector<const GameList::Entry*> s_game_list_sorted_entries;
 	static GameListPage s_game_list_page = GameListPage::Grid;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	//////////////////////////////////////////////////////////////////////////
 	// Achievements
 	//////////////////////////////////////////////////////////////////////////
@@ -498,7 +493,6 @@ namespace FullscreenUI
 		const Achievements::LeaderboardEntry& lbEntry, float rank_column_width, float name_column_width, float column_spacing);
 
 	static std::optional<u32> s_open_leaderboard_id;
-#endif
 } // namespace FullscreenUI
 
 //////////////////////////////////////////////////////////////////////////
@@ -653,7 +647,6 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 	if (!IsInitialized())
 		return;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	// If achievements got disabled, we might have the menu open...
 	// That means we're going to be reaching achievement state.
 	if (old_config.Achievements.Enabled && !EmuConfig.Achievements.Enabled)
@@ -667,7 +660,6 @@ void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
 		});
 		MTGS::WaitGS(false, false, false);
 	}
-#endif
 }
 
 void FullscreenUI::OnVMStarted()
@@ -827,14 +819,12 @@ void FullscreenUI::Render()
 
 	ImGuiFullscreen::BeginLayout();
 
-#ifdef ENABLE_ACHIEVEMENTS
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
 	if (EmuConfig.Achievements.PrimedIndicators && s_current_main_window == MainWindowType::None &&
 		Achievements::GetPrimedAchievementCount() > 0)
 	{
 		DrawPrimedAchievementsIcons();
 	}
-#endif
 
 	switch (s_current_main_window)
 	{
@@ -850,14 +840,12 @@ void FullscreenUI::Render()
 		case MainWindowType::PauseMenu:
 			DrawPauseMenu(s_current_main_window);
 			break;
-#ifdef ENABLE_ACHIEVEMENTS
 		case MainWindowType::Achievements:
 			DrawAchievementsWindow();
 			break;
 		case MainWindowType::Leaderboards:
 			DrawLeaderboardsWindow();
 			break;
-#endif
 		default:
 			break;
 	}
@@ -4700,11 +4688,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 	// title info
 	{
-#ifdef ENABLE_ACHIEVEMENTS
 		const bool has_rich_presence = Achievements::IsActive() && !Achievements::GetRichPresenceString().empty();
-#else
-		const bool has_rich_presence = false;
-#endif
 
 		const float image_width = has_rich_presence ? 60.0f : 50.0f;
 		const float image_height = has_rich_presence ? 90.0f : 75.0f;
@@ -4734,7 +4718,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		}
 		DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, s_current_game_subtitle.c_str());
 
-#ifdef ENABLE_ACHIEVEMENTS
 		if (has_rich_presence)
 		{
 			const auto lock = Achievements::GetLock();
@@ -4758,7 +4741,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.size(), wrap_width);
 			}
 		}
-#endif
 
 
 		GSTexture* const cover = GetCoverForCurrentGame();
@@ -4817,9 +4799,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		static constexpr u32 submenu_item_count[] = {
 			11, // None
 			4, // Exit
-#ifdef ENABLE_ACHIEVEMENTS
 			3, // Achievements
-#endif
 		};
 
 		const bool just_focused = ResetFocusHere();
@@ -4862,7 +4842,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					SwitchToGameSettings();
 				}
 
-#ifdef ENABLE_ACHIEVEMENTS
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false,
 						Achievements::HasActiveGame() && Achievements::SafeHasAchievementsOrLeaderboards()))
 				{
@@ -4874,9 +4853,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					else
 						OpenPauseSubMenu(PauseSubMenu::Achievements);
 				}
-#else
-				ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false, false);
-#endif
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot"), false))
 				{
@@ -4936,7 +4912,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			}
 			break;
 
-#ifdef ENABLE_ACHIEVEMENTS
 			case PauseSubMenu::Achievements:
 			{
 				if (just_focused)
@@ -4952,7 +4927,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					SwitchToLeaderboardsWindow();
 			}
 			break;
-#endif
 		}
 
 		EndMenuButtons();
@@ -4960,11 +4934,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		EndFullscreenWindow();
 	}
 
-#ifdef ENABLE_ACHIEVEMENTS
 	// Primed achievements must come first, because we don't want the pause screen to be behind them.
 	if (Achievements::GetPrimedAchievementCount() > 0)
 		DrawPrimedAchievementsList();
-#endif
 }
 
 void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot)
@@ -6497,8 +6469,6 @@ void FullscreenUI::ProgressCallback::SetCancelled()
 		m_cancelled = true;
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
-
 void FullscreenUI::OpenAchievementsWindow()
 {
 	if (!VMManager::HasValidVM() || !Achievements::IsActive())
@@ -7454,30 +7424,6 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 	ImGui::PopFont();
 	ImGui::PopStyleVar(2);
 }
-
-#else
-
-void FullscreenUI::OpenAchievementsWindow()
-{
-}
-
-void FullscreenUI::OpenLeaderboardsWindow()
-{
-}
-
-void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
-{
-	BeginMenuButtons();
-	ActiveButton(FSUI_ICONSTR(ICON_FA_BAN, "This build was not compiled with RetroAchievements support."), false, false,
-		ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-	EndMenuButtons();
-}
-
-void FullscreenUI::DrawAchievementsLoginWindow()
-{
-}
-
-#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Translation String Area
