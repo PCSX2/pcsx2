@@ -143,7 +143,6 @@ DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NO
 		if (!pressed && VMManager::HasValidVM())
 			FullscreenUI::OpenPauseMenu();
 	})
-#ifdef ENABLE_ACHIEVEMENTS
 DEFINE_HOTKEY("OpenAchievementsList", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Open Achievements List"), [](s32 pressed) {
 		if (!pressed)
@@ -154,7 +153,6 @@ DEFINE_HOTKEY("OpenLeaderboardsList", TRANSLATE_NOOP("Hotkeys", "System"),
 		if (!pressed)
 			FullscreenUI::OpenLeaderboardsWindow();
 	})
-#endif
 DEFINE_HOTKEY(
 	"TogglePause", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())

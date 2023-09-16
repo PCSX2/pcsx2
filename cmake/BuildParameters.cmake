@@ -8,7 +8,6 @@ option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
-option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
 option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
 
 #-------------------------------------------------------------------------------

@@ -137,6 +137,7 @@ disable_compiler_warnings_for_target(cpuinfo)
 add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 
 if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
@@ -154,19 +155,15 @@ disable_compiler_warnings_for_target(speex)
 # Find the Qt components that we need.
 find_package(Qt6 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets Network LinguistTools REQUIRED)
 
+if(WIN32)
+  add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
+endif()
+
 if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.15)
 	get_target_property(QT_FEATURES Qt6::Core QT_ENABLED_PUBLIC_FEATURES)
 	if (cxx17_filesystem IN_LIST QT_FEATURES)
 		message("Qt compiled with std::filesystem support, requires macOS 10.15")
 		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-	endif()
-endif()
-
-# rcheevos backend for RetroAchievements.
-if(USE_ACHIEVEMENTS)
-	add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
-	if(WIN32)
-		add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
 	endif()
 endif()
 

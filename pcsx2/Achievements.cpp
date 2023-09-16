@@ -15,8 +15,6 @@
 
 #include "PrecompiledHeader.h"
 
-#ifdef ENABLE_ACHIEVEMENTS
-
 #include "Achievements.h"
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
@@ -2319,4 +2317,3 @@ void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, un
 
 #endif // ENABLE_RAINTEGRATION
 
-#endif // ENABLE_ACHIEVEMENTS

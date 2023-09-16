@@ -1241,7 +1241,6 @@ struct Pcsx2Config
 
 	// ------------------------------------------------------------------------
 
-#ifdef ENABLE_ACHIEVEMENTS
 	struct AchievementsOptions
 	{
 		BITFIELD32()
@@ -1272,7 +1271,6 @@ struct Pcsx2Config
 			return !this->operator==(right);
 		}
 	};
-#endif
 
 	// ------------------------------------------------------------------------
 
@@ -1327,9 +1325,7 @@ struct Pcsx2Config
 
 	FilenameOptions BaseFilenames;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	AchievementsOptions Achievements;
-#endif
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
