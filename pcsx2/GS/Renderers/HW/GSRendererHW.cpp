@@ -6222,7 +6222,7 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 
 bool GSRendererHW::IsConstantDirectWriteMemClear()
 {
-	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS);
+	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (((m_index.tail % 6) == 0 && TrianglesAreQuads()) && m_vt.m_primclass == GS_TRIANGLE_CLASS);
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 	if (direct_draw && !PRIM->TME // Direct write
 		&& !(m_draw_env->SCANMSK.MSK & 2)
@@ -6329,6 +6329,7 @@ void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, co
 
 	m_r = unscaled_rect;
 	m_context->scissor.in = scissor;
+	m_vt.m_primclass = GS_SPRITE_CLASS;
 }
 
 void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector2i& unscaled_size)
