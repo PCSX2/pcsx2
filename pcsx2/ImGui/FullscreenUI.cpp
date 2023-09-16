@@ -376,7 +376,7 @@ namespace FullscreenUI
 	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, const char* const* options, const char* const* option_values, size_t option_count,
 		bool translate_options, bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-		ImFont* summary_font = g_medium_font);
+		ImFont* summary_font = g_medium_font, const char* translation_ctx = TR_CONTEXT);
 	static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, SettingInfo::GetOptionsCallback options_callback, bool enabled = true,
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
@@ -401,7 +401,8 @@ namespace FullscreenUI
 		const char* display_name, bool show_type = true);
 	static void ClearInputBindingVariables();
 	static void StartAutomaticBinding(u32 port);
-	static void DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si);
+	static void DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si,
+		const char* translation_ctx);
 
 	static SettingsPage s_settings_page = SettingsPage::Interface;
 	static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
@@ -2059,7 +2060,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 
 void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, const char* default_value, const char* const* options, const char* const* option_values, size_t option_count,
-	bool translate_options, bool enabled, float height, ImFont* font, ImFont* summary_font)
+	bool translate_options, bool enabled, float height, ImFont* font, ImFont* summary_font, const char* translation_ctx)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<std::string> value(
@@ -2087,7 +2088,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 
 	if (MenuButtonWithValue(title, summary,
 			value.has_value() ?
-				((index < option_count) ? (translate_options ? Host::TranslateToCString(TR_CONTEXT, options[index]) : options[index]) :
+				((index < option_count) ? (translate_options ? Host::TranslateToCString(translation_ctx, options[index]) : options[index]) :
 										  FSUI_CSTR("Unknown")) :
 				FSUI_CSTR("Use Global Setting"),
 			enabled, height, font, summary_font))
@@ -2098,7 +2099,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 			cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
 		for (size_t i = 0; i < option_count; i++)
 		{
-			cd_options.emplace_back(translate_options ? Host::TranslateToString(TR_CONTEXT, options[i]) : std::string(options[i]),
+			cd_options.emplace_back(translate_options ? Host::TranslateToString(translation_ctx, options[i]) : std::string(options[i]),
 				(value.has_value() && i == static_cast<size_t>(index)));
 		}
 		OpenChoiceDialog(title, false, std::move(cd_options),
@@ -2347,9 +2348,11 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 	});
 }
 
-void FullscreenUI::DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si)
+void FullscreenUI::DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si,
+	const char* translation_ctx)
 {
-	std::string title(fmt::format(ICON_FA_COG " {}", si.display_name));
+	SmallString title;
+	title.fmt(ICON_FA_COG " {}", Host::TranslateToStringView(translation_ctx, si.display_name));
 	switch (si.type)
 	{
 		case SettingInfo::Type::Boolean:
@@ -2374,10 +2377,15 @@ void FullscreenUI::DrawSettingInfoSetting(SettingsInterface* bsi, const char* se
 		case SettingInfo::Type::StringList:
 		{
 			if (si.get_options)
+			{
 				DrawStringListSetting(bsi, title.c_str(), si.description, section, key, si.StringDefaultValue(), si.get_options, true);
+			}
 			else
+			{
 				DrawStringListSetting(
-					bsi, title.c_str(), si.description, section, key, si.StringDefaultValue(), si.options, si.options, 0, false, true);
+					bsi, title.c_str(), si.description, section, key, si.StringDefaultValue(), si.options, si.options, 0, false, true,
+					LAYOUT_MENU_BUTTON_HEIGHT, g_large_font, g_medium_font, translation_ctx);
+			}
 		}
 		break;
 
@@ -2802,7 +2810,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE_POINTER, "Hide Cursor In Fullscreen"),
 		FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "UI", "HideMouseCursor", false);
 
-	MenuHeading("On-Screen Display");
+	MenuHeading(FSUI_CSTR("On-Screen Display"));
 	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
 		FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "EmuCore/GS", "OsdScale", 100, 25, 500, 1, "%d%%");
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show Messages"),
@@ -2840,7 +2848,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXCLAMATION_CIRCLE, "Warn About Unsafe Settings"),
 		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
 
-	MenuHeading("Operations");
+	MenuHeading(FSUI_CSTR("Operations"));
 	if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Settings"),
 			FSUI_CSTR("Resets configuration to defaults (excluding controller settings)."), !IsEditingGameSettings(bsi)))
 	{
@@ -2856,7 +2864,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 
 	BeginMenuButtons();
 
-	MenuHeading("BIOS Configuration");
+	MenuHeading(FSUI_CSTR("BIOS Configuration"));
 
 	DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Change Search Directory"), "Folders", "Bios", EmuFolders::Bios);
 
@@ -2866,7 +2874,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 			bios_selection.empty() ? FSUI_CSTR("Automatic") : bios_selection.c_str()))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions choices;
-		choices.emplace_back("Automatic", bios_selection.empty());
+		choices.emplace_back(FSUI_STR("Automatic"), bios_selection.empty());
 
 		std::vector<std::string> values;
 		values.push_back("");
@@ -2898,7 +2906,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 			});
 	}
 
-	MenuHeading("Options and Patches");
+	MenuHeading(FSUI_CSTR("Options and Patches"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Fast Boot"), FSUI_CSTR("Skips the intro screen, and bypasses region checks."),
 		"EmuCore", "EnableFastBoot", true);
 
@@ -3489,7 +3497,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				FSUI_CSTR("Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games."),
 				"EmuCore/GS", "paltex", false);
 
-			MenuHeading("Upscaling Fixes");
+			MenuHeading(FSUI_CSTR("Upscaling Fixes"));
 			DrawIntListSetting(bsi, FSUI_CSTR("Half-Pixel Offset"), FSUI_CSTR("Adjusts vertices relative to upscaling."), "EmuCore/GS",
 				"UserHacks_HalfPixelOffset", 0, s_half_pixel_offset_options, std::size(s_half_pixel_offset_options), true);
 			DrawIntListSetting(bsi, FSUI_CSTR("Round Sprite"), FSUI_CSTR("Adjusts sprite coordinates."), "EmuCore/GS",
@@ -3703,8 +3711,9 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 	for (u32 port = 0; port < NUM_MEMORY_CARD_PORTS; port++)
 	{
-		const std::string title(fmt::format("Console Port {}", port + 1));
-		MenuHeading(title.c_str());
+		SmallString str;
+		str.fmt(FSUI_FSTR("Console Port {}"), port + 1);
+		MenuHeading(str.c_str());
 
 		std::string enable_key(fmt::format("Slot{}_Enable", port + 1));
 		std::string file_key(fmt::format("Slot{}_Filename", port + 1));
@@ -3753,7 +3762,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 				}
 				names.push_back(std::move(mci.name));
 			}
-			OpenChoiceDialog(title.c_str(), false, std::move(options),
+			OpenChoiceDialog(str.c_str(), false, std::move(options),
 				[game_settings = IsEditingGameSettings(bsi), names = std::move(names), file_key = std::move(file_key)](
 					s32 index, const std::string& title, bool checked) {
 					if (index < 0)
@@ -4102,7 +4111,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 		const char* section = sections[global_slot];
 		const Pad::ControllerInfo* ci = Pad::GetConfigControllerType(*bsi, section, global_slot);
-		if (MenuButton(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), ci ? ci->display_name : "Unknown"))
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), ci ? ci->GetLocalizedName() : FSUI_CSTR("Unknown")))
 		{
 			const std::vector<std::pair<const char*, const char*>> raw_options = Pad::GetControllerTypeNames();
 			ImGuiFullscreen::ChoiceDialogOptions options;
@@ -4288,7 +4297,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			}
 
 			for (const SettingInfo& si : ci->settings)
-				DrawSettingInfoSetting(bsi, section, si.name, si);
+				DrawSettingInfoSetting(bsi, section, Host::TranslateToCString("Pad", si.name), si, "Pad");
 		}
 
 		ImGui::PopID();
@@ -4381,7 +4390,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 			const std::string section(USB::GetConfigSection(port));
 			for (const SettingInfo& si : settings)
-				DrawSettingInfoSetting(bsi, section.c_str(), USB::GetConfigSubKey(type, si.name).c_str(), si);
+				DrawSettingInfoSetting(bsi, section.c_str(), USB::GetConfigSubKey(type, si.name).c_str(), si, "USB");
 		}
 		ImGui::PopID();
 	}
@@ -4451,7 +4460,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			"UI", "ShowAdvancedSettings", false);
 	}
 
-	MenuHeading("Logging");
+	MenuHeading(FSUI_CSTR("Logging"));
 
 	DrawToggleSetting(bsi, FSUI_CSTR("System Console"),
 		FSUI_CSTR("Writes log messages to the system console (console window/standard output)."), "Logging", "EnableSystemConsole", false);
@@ -7293,7 +7302,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		if (Achievements::IsActive())
 			Achievements::ProcessPendingHTTPRequestsFromGSThread();
 
-		MenuHeading("Account");
+		MenuHeading(FSUI_CSTR("Account"));
 		if (Achievements::HasSavedCredentials())
 		{
 			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
@@ -7326,7 +7335,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		}
 	}
 
-	MenuHeading("Current Game");
+	MenuHeading(FSUI_CSTR("Current Game"));
 	if (Achievements::HasActiveGame())
 	{
 		ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
@@ -7442,6 +7451,7 @@ TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game region copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game compatibility copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game path copied to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Automatic");
 TRANSLATE_NOOP("FullscreenUI", "Per-game controller configuration initialized with global settings.");
 TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
 TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
@@ -7489,6 +7499,7 @@ TRANSLATE_NOOP("FullscreenUI", "Game Display");
 TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when the program is started.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
 TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.");
+TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
 TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
 TRANSLATE_NOOP("FullscreenUI", "Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.");
@@ -7502,10 +7513,12 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the current configuration in the bottom-ri
 TRANSLATE_NOOP("FullscreenUI", "Shows the current controller state of the system in the bottom-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows a visual history of frame times in the upper-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Displays warnings when settings are enabled which may break games.");
+TRANSLATE_NOOP("FullscreenUI", "Operations");
 TRANSLATE_NOOP("FullscreenUI", "Resets configuration to defaults (excluding controller settings).");
+TRANSLATE_NOOP("FullscreenUI", "BIOS Configuration");
 TRANSLATE_NOOP("FullscreenUI", "Changes the BIOS image used to start future sessions.");
-TRANSLATE_NOOP("FullscreenUI", "Automatic");
 TRANSLATE_NOOP("FullscreenUI", "BIOS Selection");
+TRANSLATE_NOOP("FullscreenUI", "Options and Patches");
 TRANSLATE_NOOP("FullscreenUI", "Skips the intro screen, and bypasses region checks.");
 TRANSLATE_NOOP("FullscreenUI", "Speed Control");
 TRANSLATE_NOOP("FullscreenUI", "Normal Speed");
@@ -7632,6 +7645,7 @@ TRANSLATE_NOOP("FullscreenUI", "Estimate Texture Region");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).");
 TRANSLATE_NOOP("FullscreenUI", "GPU Palette Conversion");
 TRANSLATE_NOOP("FullscreenUI", "Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Upscaling Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Half-Pixel Offset");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts vertices relative to upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Round Sprite");
@@ -7746,6 +7760,7 @@ TRANSLATE_NOOP("FullscreenUI", "Clears all bindings for this USB controller.");
 TRANSLATE_NOOP("FullscreenUI", "Data Save Locations");
 TRANSLATE_NOOP("FullscreenUI", "Show Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.");
+TRANSLATE_NOOP("FullscreenUI", "Logging");
 TRANSLATE_NOOP("FullscreenUI", "System Console");
 TRANSLATE_NOOP("FullscreenUI", "Writes log messages to the system console (console window/standard output).");
 TRANSLATE_NOOP("FullscreenUI", "File Logging");
@@ -7856,7 +7871,6 @@ TRANSLATE_NOOP("FullscreenUI", "Determines which field the game list will be sor
 TRANSLATE_NOOP("FullscreenUI", "Reverses the game list sort order from the default (usually ascending to descending).");
 TRANSLATE_NOOP("FullscreenUI", "Cover Settings");
 TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
-TRANSLATE_NOOP("FullscreenUI", "Operations");
 TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
 TRANSLATE_NOOP("FullscreenUI", "Download Covers");
@@ -7887,8 +7901,10 @@ TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achieveme
 TRANSLATE_NOOP("FullscreenUI", "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.");
+TRANSLATE_NOOP("FullscreenUI", "Account");
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Login");
 TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org.");
 TRANSLATE_NOOP("FullscreenUI", "Your password will not be saved in PCSX2, an access token will be generated and used instead.");
@@ -7899,6 +7915,7 @@ TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings for '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings have been cleared for '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Console Port {}");
 TRANSLATE_NOOP("FullscreenUI", "{} (Current)");
 TRANSLATE_NOOP("FullscreenUI", "{} (Folder)");
 TRANSLATE_NOOP("FullscreenUI", "Memory card name '{}' is not valid.");
@@ -8280,7 +8297,6 @@ TRANSLATE_NOOP("FullscreenUI", "Game Title: {}");
 TRANSLATE_NOOP("FullscreenUI", "Achievements: {} ({} points)");
 TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
 TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements available.");
-TRANSLATE_NOOP("FullscreenUI", "This build was not compiled with RetroAchievements support.");
 TRANSLATE_NOOP("FullscreenUI", "Card Enabled");
 TRANSLATE_NOOP("FullscreenUI", "Card Name");
 TRANSLATE_NOOP("FullscreenUI", "Eject Card");
