@@ -32,6 +32,7 @@
 #include "VMManager.h"
 
 #include "common/FileSystem.h"
+#include "common/Easing.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
@@ -67,8 +68,8 @@ namespace ImGuiManager
 	static ImFont* AddTextFont(float size);
 	static ImFont* AddFixedFont(float size);
 	static bool AddIconFonts(float size);
-	static void AcquirePendingOSDMessages();
-	static void DrawOSDMessages();
+	static void AcquirePendingOSDMessages(Common::Timer::Value current_time);
+	static void DrawOSDMessages(Common::Timer::Value current_time);
 	static void CreateSoftwareCursorTextures();
 	static void UpdateSoftwareCursorTexture(u32 index);
 	static void DestroySoftwareCursorTextures();
@@ -101,6 +102,9 @@ static std::atomic_bool s_imgui_wants_text{false};
 
 // mapping of host key -> imgui key
 static std::unordered_map<u32, ImGuiKey> s_imgui_key_map;
+
+static constexpr float OSD_FADE_IN_TIME = 0.1f;
+static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
 // need to keep track of this, so we can reinitialize on renderer switch
 static bool s_fullscreen_ui_was_initialized = false;
@@ -543,8 +547,11 @@ struct OSDMessage
 {
 	std::string key;
 	std::string text;
-	std::chrono::steady_clock::time_point time;
+	Common::Timer::Value start_time;
+	Common::Timer::Value move_time;
 	float duration;
+	float target_y;
+	float last_y;
 };
 
 static std::deque<OSDMessage> s_osd_active_messages;
@@ -563,11 +570,16 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 	else
 		Console.WriteLn(Color_StrongGreen, fmt::format("OSD: {}", message));
 
+	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+
 	OSDMessage msg;
 	msg.key = std::move(key);
 	msg.text = std::move(message);
 	msg.duration = duration;
-	msg.time = std::chrono::steady_clock::now();
+	msg.start_time = current_time;
+	msg.move_time = current_time;
+	msg.target_y = -1.0f;
+	msg.last_y = -1.0f;
 
 	std::unique_lock<std::mutex> lock(s_osd_messages_lock);
 	s_osd_posted_messages.push_back(std::move(msg));
@@ -580,11 +592,15 @@ void Host::AddIconOSDMessage(std::string key, const char* icon, const std::strin
 	else
 		Console.WriteLn(Color_StrongGreen, fmt::format("OSD: {}", message));
 
-	OSDMessage msg;
+	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+
+	OSDMessage msg = {};
 	msg.key = std::move(key);
 	msg.text = fmt::format("{}  {}", icon, message);
-	msg.duration = duration;
-	msg.time = std::chrono::steady_clock::now();
+	msg.start_time = current_time;
+	msg.move_time = current_time;
+	msg.target_y = -1.0f;
+	msg.last_y = -1.0f;
 
 	std::unique_lock<std::mutex> lock(s_osd_messages_lock);
 	s_osd_posted_messages.push_back(std::move(msg));
@@ -592,10 +608,9 @@ void Host::AddIconOSDMessage(std::string key, const char* icon, const std::strin
 
 void Host::RemoveKeyedOSDMessage(std::string key)
 {
-	OSDMessage msg;
+	OSDMessage msg = {};
 	msg.key = std::move(key);
 	msg.duration = 0.0f;
-	msg.time = std::chrono::steady_clock::now();
 
 	std::unique_lock<std::mutex> lock(s_osd_messages_lock);
 	s_osd_posted_messages.push_back(std::move(msg));
@@ -611,12 +626,11 @@ void Host::ClearOSDMessages()
 	s_osd_active_messages.clear();
 }
 
-void ImGuiManager::AcquirePendingOSDMessages()
+void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
 {
 	std::atomic_thread_fence(std::memory_order_consume);
 	if (s_osd_posted_messages.empty())
 		return;
-
 	std::unique_lock lock(s_osd_messages_lock);
 	for (;;)
 	{
@@ -627,20 +641,25 @@ void ImGuiManager::AcquirePendingOSDMessages()
 		{
 			OSDMessage& new_msg = s_osd_posted_messages.front();
 			std::deque<OSDMessage>::iterator iter;
-			if (!new_msg.key.empty() &&
-				(iter = std::find_if(s_osd_active_messages.begin(), s_osd_active_messages.end(),
-					 [&new_msg](const OSDMessage& other) { return new_msg.key == other.key; })) != s_osd_active_messages.end())
+			if (!new_msg.key.empty() && (iter = std::find_if(s_osd_active_messages.begin(), s_osd_active_messages.end(),
+											 [&new_msg](const OSDMessage& other) {
+												 return new_msg.key == other.key;
+											 })) != s_osd_active_messages.end())
 			{
 				iter->text = std::move(new_msg.text);
 				iter->duration = new_msg.duration;
-				iter->time = new_msg.time;
+
+				// Don't fade it in again
+				const float time_passed =
+					static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - iter->start_time));
+				iter->start_time =
+					current_time - Common::Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
 			}
 			else
 			{
 				s_osd_active_messages.push_back(std::move(new_msg));
 			}
 		}
-
 		s_osd_posted_messages.pop_front();
 
 		static constexpr size_t MAX_ACTIVE_OSD_MESSAGES = 512;
@@ -649,8 +668,10 @@ void ImGuiManager::AcquirePendingOSDMessages()
 	}
 }
 
-void ImGuiManager::DrawOSDMessages()
+void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 {
+	static constexpr float MOVE_DURATION = 0.5f;
+
 	ImFont* const font = ImGui::GetFont();
 	const float scale = s_global_scale;
 	const float spacing = std::ceil(5.0f * scale);
@@ -666,10 +687,9 @@ void ImGuiManager::DrawOSDMessages()
 	auto iter = s_osd_active_messages.begin();
 	while (iter != s_osd_active_messages.end())
 	{
-		const OSDMessage& msg = *iter;
-		const double time = std::chrono::duration<double>(now - msg.time).count();
-		const float time_remaining = static_cast<float>(msg.duration - time);
-		if (time_remaining <= 0.0f)
+		OSDMessage& msg = *iter;
+		const float time_passed = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - msg.start_time));
+		if (time_passed >= msg.duration)
 		{
 			iter = s_osd_active_messages.erase(iter);
 			continue;
@@ -677,22 +697,53 @@ void ImGuiManager::DrawOSDMessages()
 
 		++iter;
 
-		const float opacity = std::min(time_remaining, 1.0f);
-		const u32 alpha = static_cast<u32>(opacity * 255.0f);
+		u8 opacity;
+		if (time_passed < OSD_FADE_IN_TIME)
+			opacity = static_cast<u8>((time_passed / OSD_FADE_IN_TIME) * 255.0f);
+		else if (time_passed > (msg.duration - OSD_FADE_OUT_TIME))
+			opacity = static_cast<u8>(std::min((msg.duration - time_passed) / OSD_FADE_OUT_TIME, 1.0f) * 255.0f);
+		else
+			opacity = 255;
 
-		if (position_y >= s_window_height)
+		const float expected_y = position_y;
+		float actual_y = msg.last_y;
+		if (msg.target_y != expected_y)
+		{
+			msg.move_time = current_time;
+			msg.target_y = expected_y;
+			msg.last_y = (msg.last_y < 0.0f) ? expected_y : msg.last_y;
+			actual_y = msg.last_y;
+		}
+		else if (actual_y != expected_y)
+		{
+			const float time_since_move =
+				static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - msg.move_time));
+			if (time_since_move >= MOVE_DURATION)
+			{
+				msg.move_time = current_time;
+				msg.last_y = msg.target_y;
+				actual_y = msg.last_y;
+			}
+			else
+			{
+				const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
+				actual_y = msg.last_y - ((msg.last_y - msg.target_y) * frac);
+			}
+		}
+
+		if (actual_y >= s_window_height)
 			break;
 
-		const ImVec2 pos(position_x, position_y);
+		const ImVec2 pos(position_x, actual_y);
 		const ImVec2 text_size(
 			font->CalcTextSizeA(font->FontSize, max_width, max_width, msg.text.c_str(), msg.text.c_str() + msg.text.length()));
 		const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
 		const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
 		ImDrawList* dl = ImGui::GetBackgroundDrawList();
-		dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, alpha), rounding);
-		dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, alpha), rounding);
-		dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, alpha), msg.text.c_str(),
+		dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, opacity), rounding);
+		dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, opacity), rounding);
+		dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, opacity), msg.text.c_str(),
 			msg.text.c_str() + msg.text.length(), max_width, &text_rect);
 		position_y += size.y + spacing;
 	}
@@ -707,8 +758,11 @@ void ImGuiManager::RenderOSD()
 	if (VMManager::HasValidVM())
 		RenderOverlays();
 
-	AcquirePendingOSDMessages();
-	DrawOSDMessages();
+	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+	AcquirePendingOSDMessages(current_time);
+	DrawOSDMessages(current_time);
+
+	// Cursors are always last.
 	DrawSoftwareCursors();
 }
 
