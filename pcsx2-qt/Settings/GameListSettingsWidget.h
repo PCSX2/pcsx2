@@ -49,7 +49,7 @@ private Q_SLOTS:
 	void onRescanAllGamesClicked();
 
 protected:
-	void resizeEvent(QResizeEvent* event);
+	bool event(QEvent* event);
 
 private:
 	void addPathToTable(const std::string& path, bool recursive);

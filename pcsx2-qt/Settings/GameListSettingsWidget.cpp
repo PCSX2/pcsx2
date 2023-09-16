@@ -93,11 +93,19 @@ void GameListSettingsWidget::refreshExclusionList()
 		m_ui.excludedPaths->addItem(QString::fromStdString(path));
 }
 
-void GameListSettingsWidget::resizeEvent(QResizeEvent* event)
+bool GameListSettingsWidget::event(QEvent* event)
 {
-	QWidget::resizeEvent(event);
+	bool res = QWidget::event(event);
 
-	QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
+	switch (event->type())
+	{
+		case QEvent::LayoutRequest:
+		case QEvent::Resize:
+			QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
+			break;
+	}
+
+	return res;
 }
 
 void GameListSettingsWidget::addPathToTable(const std::string& path, bool recursive)
