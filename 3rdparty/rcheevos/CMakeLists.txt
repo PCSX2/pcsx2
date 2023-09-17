@@ -4,6 +4,7 @@ add_library(rcheevos
 	rcheevos/include/rc_api_request.h
 	rcheevos/include/rc_api_runtime.h
 	rcheevos/include/rc_api_user.h
+	rcheevos/include/rc_client.h
 	rcheevos/include/rc_consoles.h
 	rcheevos/include/rc_error.h
 	rcheevos/include/rc_hash.h
@@ -26,6 +27,8 @@ add_library(rcheevos
 	rcheevos/src/rcheevos/lboard.c
 	rcheevos/src/rcheevos/memref.c
 	rcheevos/src/rcheevos/operand.c
+	rcheevos/src/rcheevos/rc_client.c
+	rcheevos/src/rcheevos/rc_client_internal.h
 	rcheevos/src/rcheevos/rc_compat.h
 	rcheevos/src/rcheevos/rc_internal.h
 	rcheevos/src/rcheevos/rc_validate.c
