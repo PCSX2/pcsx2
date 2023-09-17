@@ -575,9 +575,9 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 	OSDMessage msg;
 	msg.key = std::move(key);
 	msg.text = std::move(message);
-	msg.duration = duration;
 	msg.start_time = current_time;
 	msg.move_time = current_time;
+	msg.duration = duration;
 	msg.target_y = -1.0f;
 	msg.last_y = -1.0f;
 
@@ -599,6 +599,7 @@ void Host::AddIconOSDMessage(std::string key, const char* icon, const std::strin
 	msg.text = fmt::format("{}  {}", icon, message);
 	msg.start_time = current_time;
 	msg.move_time = current_time;
+	msg.duration = duration;
 	msg.target_y = -1.0f;
 	msg.last_y = -1.0f;
 
@@ -681,8 +682,6 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 	const float max_width = s_window_width - (margin + padding) * 2.0f;
 	float position_x = margin;
 	float position_y = margin;
-
-	const auto now = std::chrono::steady_clock::now();
 
 	auto iter = s_osd_active_messages.begin();
 	while (iter != s_osd_active_messages.end())
