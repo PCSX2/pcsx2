@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,6 +14,7 @@
  */
 
 #pragma once
+#include "HeterogeneousContainers.h"
 #include <cstdint>
 #include <map>
 
@@ -28,7 +29,7 @@ class LRUCache
 		CounterType last_access;
 	};
 
-	using MapType = std::map<K, Item>;
+	using MapType = std::conditional_t<std::is_same_v<K, std::string>, StringMap<Item>, std::map<K, Item>>;
 
 public:
 	LRUCache(std::size_t max_capacity = 16, bool manual_evict = false)
@@ -50,7 +51,7 @@ public:
 			Evict(m_items.size() - m_max_capacity);
 	}
 
-	template<typename KeyT>
+	template <typename KeyT>
 	V* Lookup(const KeyT& key)
 	{
 		auto iter = m_items.find(key);
@@ -97,24 +98,21 @@ public:
 		}
 	}
 
-	template<typename KeyT>
+	template <typename KeyT>
 	bool Remove(const KeyT& key)
 	{
 		auto iter = m_items.find(key);
 		if (iter == m_items.end())
 			return false;
-
 		m_items.erase(iter);
 		return true;
 	}
-
 	void SetManualEvict(bool block)
 	{
 		m_manual_evict = block;
 		if (!m_manual_evict)
 			ManualEvict();
 	}
-
 	void ManualEvict()
 	{
 		// evict if we went over
