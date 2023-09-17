@@ -24,7 +24,7 @@ import functools
 
 src_dirs = [os.path.join(os.path.dirname(__file__), "..", "pcsx2"), os.path.join(os.path.dirname(__file__), "..", "pcsx2-qt")]
 fa_file = os.path.join(os.path.dirname(__file__), "..", "3rdparty", "include", "IconsFontAwesome5.h")
-dst_file = os.path.join(os.path.dirname(__file__), "..", "pcsx2", "Frontend", "ImGuiManager.cpp")
+dst_file = os.path.join(os.path.dirname(__file__), "..", "pcsx2", "ImGui", "ImGuiManager.cpp")
 
 all_source_files = list(functools.reduce(lambda prev, src_dir: prev + glob.glob(os.path.join(src_dir, "**", "*.cpp"), recursive=True) + \
     glob.glob(os.path.join(src_dir, "**", "*.h"), recursive=True) + \
