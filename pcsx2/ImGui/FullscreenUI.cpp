@@ -3366,7 +3366,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			FSUI_CSTR("Selects where trilinear filtering is utilized when rendering textures."), "EmuCore/GS", "TriFilter",
 			static_cast<int>(TriFiltering::Automatic), s_trilinear_options, std::size(s_trilinear_options), true, -1);
 		DrawStringListSetting(bsi, FSUI_CSTR("Anisotropic Filtering"),
-			FSUI_CSTR("Selects where anistropic filtering is utilized when rendering textures."), "EmuCore/GS", "MaxAnisotropy", "0",
+			FSUI_CSTR("Selects where anisotropic filtering is utilized when rendering textures."), "EmuCore/GS", "MaxAnisotropy", "0",
 			s_anisotropic_filtering_entries, s_anisotropic_filtering_values, std::size(s_anisotropic_filtering_entries), true);
 		DrawIntListSetting(bsi, FSUI_CSTR("Dithering"), FSUI_CSTR("Selects the type of dithering applies when the game requests it."),
 			"EmuCore/GS", "dithering_ps2", 2, s_dithering_options, std::size(s_dithering_options), true);
@@ -7598,7 +7598,7 @@ TRANSLATE_NOOP("FullscreenUI", "Selects where bilinear filtering is utilized whe
 TRANSLATE_NOOP("FullscreenUI", "Trilinear Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Selects where trilinear filtering is utilized when rendering textures.");
 TRANSLATE_NOOP("FullscreenUI", "Anisotropic Filtering");
-TRANSLATE_NOOP("FullscreenUI", "Selects where anistropic filtering is utilized when rendering textures.");
+TRANSLATE_NOOP("FullscreenUI", "Selects where anisotropic filtering is utilized when rendering textures.");
 TRANSLATE_NOOP("FullscreenUI", "Dithering");
 TRANSLATE_NOOP("FullscreenUI", "Selects the type of dithering applies when the game requests it.");
 TRANSLATE_NOOP("FullscreenUI", "Blending Accuracy");
