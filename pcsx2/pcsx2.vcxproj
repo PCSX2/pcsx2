@@ -317,7 +317,6 @@
     <ClCompile Include="GS\Renderers\OpenGL\GSTextureOGL.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSTextureCache.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp" />
-    <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp" />
     <ClCompile Include="GS\GSUtil.cpp" />
     <ClCompile Include="GS\GSVector.cpp" />
@@ -875,9 +874,7 @@
   <ItemGroup>
     <Natvis Include="GS\GS.natvis" />
   </ItemGroup>
-
   <Import Condition="$(Configuration.Contains(Debug)) Or $(Configuration.Contains(Devel))" Project="$(SolutionDir)3rdparty\winpixeventruntime\WinPixEventRuntime.props" />
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
