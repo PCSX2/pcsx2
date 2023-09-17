@@ -87,6 +87,9 @@
     <ClCompile Include="rcheevos\src\rurl\url.c">
       <Filter>rurl</Filter>
     </ClCompile>
+    <ClCompile Include="rcheevos\src\rcheevos\rc_client.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rcheevos\src\rapi\rc_api_common.h">
@@ -139,6 +142,12 @@
     </ClInclude>
     <ClInclude Include="rcheevos\include\rc_api_request.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="rcheevos\include\rc_client.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="rcheevos\src\rcheevos\rc_client_internal.h">
+      <Filter>rcheevos</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
