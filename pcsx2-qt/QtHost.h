@@ -167,8 +167,14 @@ Q_SIGNALS:
 	/// Called when achievements login is requested.
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
+	/// Called when achievements login succeeds. Also happens on startup.
+	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
+
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
-	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+	void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
+
+	/// Called when hardcore mode is enabled or disabled.
+	void onAchievementsHardcoreModeChanged(bool enabled);
 
 	/// Called when video capture starts/stops.
 	void onCaptureStarted(const QString& filename);

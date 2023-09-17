@@ -1431,15 +1431,14 @@ bool Pcsx2Config::PadOptions::Port::operator!=(const PadOptions::Port& right) co
 Pcsx2Config::AchievementsOptions::AchievementsOptions()
 {
 	Enabled = false;
-	TestMode = false;
+	HardcoreMode = false;
+	EncoreMode = false;
+	SpectatorMode = false;
 	UnofficialTestMode = false;
-	RichPresence = true;
-	ChallengeMode = false;
-	Leaderboards = true;
 	Notifications = true;
+	LeaderboardNotifications = true;
 	SoundEffects = true;
-	PrimedIndicators = true;
-	NotificationsDuration = 5;
+	Overlays = true;
 }
 
 void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
@@ -1447,21 +1446,33 @@ void Pcsx2Config::AchievementsOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapSection("Achievements");
 
 	SettingsWrapBitBool(Enabled);
-	SettingsWrapBitBool(TestMode);
+	SettingsWrapBitBoolEx(HardcoreMode, "ChallengeMode");
+	SettingsWrapBitBool(EncoreMode);
+	SettingsWrapBitBool(SpectatorMode);
 	SettingsWrapBitBool(UnofficialTestMode);
-	SettingsWrapBitBool(RichPresence);
-	SettingsWrapBitBool(ChallengeMode);
-	SettingsWrapBitBool(Leaderboards);
 	SettingsWrapBitBool(Notifications);
+	SettingsWrapBitBool(LeaderboardNotifications);
 	SettingsWrapBitBool(SoundEffects);
-	SettingsWrapBitBool(PrimedIndicators);
-	SettingsWrapBitfield(NotificationsDuration);
+	SettingsWrapBitBool(Overlays);
+	SettingsWrapEntry(NotificationsDuration);
+	SettingsWrapEntry(LeaderboardsDuration);
 
 	if (wrap.IsLoading())
 	{
 		//Clamp in case setting was updated manually using the INI
-		NotificationsDuration = std::clamp(NotificationsDuration, 3, 10);
+		NotificationsDuration = std::clamp(NotificationsDuration, MINIMUM_NOTIFICATION_DURATION, MAXIMUM_NOTIFICATION_DURATION);
+		LeaderboardsDuration = std::clamp(LeaderboardsDuration, MINIMUM_NOTIFICATION_DURATION, MAXIMUM_NOTIFICATION_DURATION);
 	}
+}
+
+bool Pcsx2Config::AchievementsOptions::operator==(const AchievementsOptions& right) const
+{
+	return OpEqu(bitset) && OpEqu(NotificationsDuration) && OpEqu(LeaderboardsDuration);
+}
+
+bool Pcsx2Config::AchievementsOptions::operator!=(const AchievementsOptions& right) const
+{
+	return !this->operator==(right);
 }
 
 Pcsx2Config::Pcsx2Config()

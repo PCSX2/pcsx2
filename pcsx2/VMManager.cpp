@@ -59,6 +59,7 @@
 #include "common/FileSystem.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/Timer.h"
@@ -256,7 +257,7 @@ void VMManager::SetState(VMState state)
 		}
 
 		SPU2::SetOutputPaused(paused);
-		Achievements::OnPaused(paused);
+		Achievements::OnVMPaused(paused);
 
 		UpdateInhibitScreensaver(!paused && EmuConfig.InhibitScreensaver);
 
@@ -381,7 +382,7 @@ void VMManager::Internal::CPUThreadShutdown()
 
 	s_pine_server.Deinitialize();
 
-	Achievements::Shutdown();
+	Achievements::Shutdown(false);
 
 	InputManager::CloseSources();
 	WaitForSaveStateFlush();
@@ -911,16 +912,12 @@ void VMManager::UpdateDiscDetails(bool booting)
 	// Patches are game-dependent, thus should get applied after game settings ia loaded.
 	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, true, false, false);
 
-	// Per-game ini enabling of hardcore mode. We need to re-enforce the settings if so.
-	if (booting && Achievements::ResetChallengeMode())
-		ApplySettings();
-
 	ReportGameChangeToHost();
 	Achievements::GameChanged(s_disc_crc, s_current_crc);
 	if (MTGS::IsOpen())
 		MTGS::GameChanged();
 	ReloadPINE();
-	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+	UpdateDiscordPresence();
 
 	if (!GSDumpReplayer::IsReplayingDump())
 		FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
@@ -1182,9 +1179,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	}
 
 	// Check for resuming with hardcore mode.
-	Achievements::ResetChallengeMode();
-	if (!state_to_load.empty() && Achievements::ChallengeModeActive() &&
-		!Achievements::ConfirmChallengeModeDisable("Resuming state"))
+	Achievements::ResetHardcoreMode();
+	if (!state_to_load.empty() && Achievements::IsHardcoreModeActive() &&
+		!Achievements::ConfirmHardcoreModeDisable("Resuming state"))
 	{
 		return false;
 	}
@@ -1353,7 +1350,7 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	Achievements::GameChanged(0, 0);
 	FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
-	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+	UpdateDiscordPresence();
 	Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
 
 	s_fast_boot_requested = false;
@@ -1420,11 +1417,11 @@ void VMManager::Reset()
 		return;
 	}
 
-	if (!Achievements::OnReset())
+	if (!Achievements::ConfirmSystemReset())
 		return;
 
 	// Re-enforce hardcode mode constraints if we're now enabling it.
-	if (Achievements::ResetChallengeMode())
+	if (Achievements::ResetHardcoreMode())
 		ApplySettings();
 
 	vu1Thread.WaitVU();
@@ -1685,7 +1682,7 @@ u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also
 
 bool VMManager::LoadState(const char* filename)
 {
-	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Loading state"))
+	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Loading state"))
 		return false;
 
 	// TODO: Save the current state so we don't need to reset.
@@ -1707,7 +1704,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 		return false;
 	}
 
-	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Loading state"))
+	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Loading state"))
 		return false;
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
@@ -1895,7 +1892,7 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 	if (!HasValidVM())
 		return;
 
-	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Frame advancing"))
+	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Frame advancing"))
 		return;
 
 	s_frame_advance_count = num_frames;
@@ -2034,6 +2031,15 @@ void VMManager::Execute()
 	Cpu->Execute();
 }
 
+void VMManager::IdlePollUpdate()
+{
+	Achievements::IdleUpdate();
+
+	PollDiscordPresence();
+
+	InputManager::PollSources();
+}
+
 void VMManager::SetPaused(bool paused)
 {
 	if (!HasValidVM())
@@ -2155,8 +2161,7 @@ void VMManager::Internal::VSyncOnCPUThread()
 		}
 	}
 
-	if (Achievements::IsActive())
-		Achievements::VSyncUpdate();
+	Achievements::FrameUpdate();
 
 	PollDiscordPresence();
 
@@ -2385,7 +2390,7 @@ void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool 
 
 void VMManager::EnforceAchievementsChallengeModeSettings()
 {
-	if (!Achievements::ChallengeModeActive())
+	if (!Achievements::IsHardcoreModeActive())
 	{
 		Host::RemoveKeyedOSDMessage("ChallengeDisableCheats");
 		return;
@@ -2970,7 +2975,7 @@ void VMManager::InitializeDiscordPresence()
 	Discord_Initialize("1025789002055430154", &handlers, 0, nullptr);
 	s_discord_presence_active = true;
 
-	UpdateDiscordPresence(Achievements::GetRichPresenceString());
+	UpdateDiscordPresence();
 }
 
 void VMManager::ShutdownDiscordPresence()
@@ -2984,7 +2989,7 @@ void VMManager::ShutdownDiscordPresence()
 	s_discord_presence_active = false;
 }
 
-void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
+void VMManager::UpdateDiscordPresence()
 {
 	if (!s_discord_presence_active)
 		return;
@@ -2996,18 +3001,12 @@ void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
 	rp.startTimestamp = std::time(nullptr);
 	rp.details = s_title.empty() ? "No Game Running" : s_title.c_str();
 
-	// Trim to 128 bytes as per Discord-RPC requirements
 	std::string state_string;
-	if (rich_presence.length() >= 128)
+	if (Achievements::HasRichPresence())
 	{
-		// 124 characters + 3 dots + null terminator
-		state_string = fmt::format("{}...", std::string_view(rich_presence).substr(0, 124));
+		state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128);
+		rp.state = state_string.c_str();
 	}
-	else
-	{
-		state_string = rich_presence;
-	}
-	rp.state = state_string.c_str();
 
 	Discord_UpdatePresence(&rp);
 	Discord_RunCallbacks();
@@ -3020,4 +3019,3 @@ void VMManager::PollDiscordPresence()
 
 	Discord_RunCallbacks();
 }
-

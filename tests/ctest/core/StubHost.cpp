@@ -214,7 +214,15 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
 }
 
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+}
+
 void Host::OnAchievementsRefreshed()
+{
+}
+
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
 }
 

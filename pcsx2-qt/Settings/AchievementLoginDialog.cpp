@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -20,10 +20,13 @@
 
 #include "pcsx2/Achievements.h"
 
+#include "common/Error.h"
+
 #include <QtWidgets/QMessageBox>
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
 	: QDialog(parent)
+	, m_reason(reason)
 {
 	m_ui.setupUi(this);
 	m_ui.loginIcon->setPixmap(QIcon::fromTheme("login-box-line").pixmap(32));
@@ -55,22 +58,34 @@ void AchievementLoginDialog::loginClicked()
 	enableUI(false);
 
 	Host::RunOnCPUThread([this, username = std::move(username), password = std::move(password)]() {
-		const bool result = Achievements::Login(username.c_str(), password.c_str());
-		QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result));
+		Error error;
+		const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
+		const QString message = QString::fromStdString(error.GetDescription());
+		QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result), Q_ARG(const QString&, message));
 	});
 }
 
 void AchievementLoginDialog::cancelClicked()
 {
+	// Disable hardcore mode if we cancelled reauthentication.
+	if (m_reason == Achievements::LoginRequestReason::TokenInvalid && QtHost::IsVMValid())
+	{
+		Host::RunOnCPUThread([]() {
+			if (VMManager::HasValidVM() && !Achievements::HasActiveGame())
+				Achievements::DisableHardcoreMode();
+		});
+	}
+
 	done(1);
 }
 
-void AchievementLoginDialog::processLoginResult(bool result)
+void AchievementLoginDialog::processLoginResult(bool result, const QString& message)
 {
 	if (!result)
 	{
-		QMessageBox::critical(this, tr("Login Error"),
-			tr("Login failed. Please check your username and password, and try again."));
+		QMessageBox::critical(
+			this, tr("Login Error"),
+			tr("Login failed.\nError: %1\n\nPlease check your username and password, and try again.").arg(message));
 		m_ui.status->setText(tr("Login failed."));
 		enableUI(true);
 		return;

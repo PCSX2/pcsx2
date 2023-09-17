@@ -102,6 +102,9 @@ namespace VMManager
 	/// Runs the VM until the CPU execution is canceled.
 	void Execute();
 
+	/// Polls input, updates subsystems which are present while paused/inactive.
+	void IdlePollUpdate();
+
 	/// Changes the pause state of the VM, resetting anything needed when unpausing.
 	void SetPaused(bool paused);
 
@@ -215,7 +218,7 @@ namespace VMManager
 	u64 GetSessionPlayedTime();
 
 	/// Called when the rich presence string, provided by RetroAchievements, changes.
-	void UpdateDiscordPresence(const std::string& rich_presence);
+	void UpdateDiscordPresence();
 
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal

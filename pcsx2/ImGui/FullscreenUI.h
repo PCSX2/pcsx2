@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,8 +14,12 @@
  */
 
 #pragma once
+
 #include "common/Pcsx2Defs.h"
 #include "common/ProgressCallback.h"
+#include "common/SmallString.h"
+
+#include <ctime>
 #include <string>
 #include <memory>
 
@@ -31,12 +35,19 @@ namespace FullscreenUI
 	void OnVMDestroyed();
 	void GameChanged(std::string title, std::string path, std::string serial, u32 disc_crc, u32 crc);
 	void OpenPauseMenu();
-	void OpenAchievementsWindow();
-	void OpenLeaderboardsWindow();
+	bool OpenAchievementsWindow();
+	bool OpenLeaderboardsWindow();
+
+	// NOTE: Only call from GS thread.
+	bool IsAchievementsWindowOpen();
+	bool IsLeaderboardsWindowOpen();
+	void ReturnToPreviousWindow();
+	void ReturnToMainWindow();
 
 	void Shutdown(bool clear_state);
 	void Render();
 	void InvalidateCoverCache();
+	TinyString TimeToPrintableString(time_t t);
 
 	class ProgressCallback final : public BaseProgressCallback
 	{
