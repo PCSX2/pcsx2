@@ -6378,7 +6378,7 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.nindices = static_cast<u32>(std::size(indices));
 	config.indices_per_prim = 3;
 	config.drawlist = nullptr;
-	config.scissor = rt_or_ds->GetRect().rintersect(GSVector4i(GSVector4(rt->GetRect()) * tex_scale));
+	config.scissor = rt_or_ds->GetRect();
 	config.drawarea = config.scissor;
 	config.topology = GSHWDrawConfig::Topology::Triangle;
 	config.blend = GSHWDrawConfig::BlendState();
