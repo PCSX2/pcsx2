@@ -831,8 +831,8 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	// For some reason, instead of being sensible and masking Z, they set up AFAIL instead.
 	if (!RZMSK)
 	{
-		u32 fm = 0, fm_mask = 0, zm = 0;
-		if (!r.m_cached_ctx.TEST.ATE || !r.TryAlphaTest(fm, fm_mask, zm) || zm == 0)
+		u32 fm = 0, zm = 0;
+		if (!r.m_cached_ctx.TEST.ATE || !r.TryAlphaTest(fm, zm) || zm == 0)
 			return false;
 	}
 

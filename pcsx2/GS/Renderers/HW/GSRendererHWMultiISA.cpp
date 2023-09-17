@@ -129,7 +129,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 
 	if (context->TEST.ATE)
 	{
-		if (!hw.TryAlphaTest(fm, fm_mask, zm))
+		if (!hw.TryAlphaTest(fm, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
 			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);

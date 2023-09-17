@@ -992,7 +992,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if (context->TEST.ATE)
 	{
-		if (!TryAlphaTest(fm, fm_mask, zm))
+		if (!TryAlphaTest(fm, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
 			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);

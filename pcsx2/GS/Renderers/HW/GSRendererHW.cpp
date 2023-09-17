@@ -1758,7 +1758,7 @@ void GSRendererHW::Draw()
 		m_mem.m_clut.Read32(m_cached_ctx.TEX0, env.TEXA);
 
 	//  Test if we can optimize Alpha Test as a NOP
-	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, fm_mask, zm);
+	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
 
 	// Need to fix the alpha test, since the alpha will be fixed to 1.0 if ABE is disabled and AA1 is enabled
 	// So if it doesn't meet the condition, always fail, if it does, always pass (turn off the test).
@@ -2210,7 +2210,7 @@ void GSRendererHW::Draw()
 
 			u32 new_fm = m_context->FRAME.FBMSK;
 			u32 new_zm = m_context->ZBUF.ZMSK || m_context->TEST.ZTE == 0 ? 0xffffffff : 0;
-			if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, fm_mask, new_zm))
+			if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, new_zm))
 			{
 				m_cached_ctx.TEST.ATE = false;
 				m_cached_ctx.FRAME.FBMSK = new_fm;
