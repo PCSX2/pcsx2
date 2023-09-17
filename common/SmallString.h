@@ -171,6 +171,9 @@ public:
 	// gets a writable char array, do not write more than reserve characters to it.
 	__fi char* data() { return m_buffer; }
 
+	// returns the end of the string (pointer is past the last character)
+	__fi const char* end_ptr() const { return m_buffer + m_length; }
+
 	// STL adapters
 	__fi void push_back(value_type&& val) { append(val); }
 
