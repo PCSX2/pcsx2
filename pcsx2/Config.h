@@ -1243,33 +1243,32 @@ struct Pcsx2Config
 
 	struct AchievementsOptions
 	{
+		static constexpr u32 MINIMUM_NOTIFICATION_DURATION = 3;
+		static constexpr u32 MAXIMUM_NOTIFICATION_DURATION = 30;
+		static constexpr u32 DEFAULT_NOTIFICATION_DURATION = 5;
+		static constexpr u32 DEFAULT_LEADERBOARD_DURATION = 10;
+
 		BITFIELD32()
 		bool
 			Enabled : 1,
-			TestMode : 1,
+			HardcoreMode : 1,
+			EncoreMode : 1,
+			SpectatorMode : 1,
 			UnofficialTestMode : 1,
-			RichPresence : 1,
-			ChallengeMode : 1,
-			Leaderboards : 1,
 			Notifications : 1,
+			LeaderboardNotifications : 1,
 			SoundEffects : 1,
-			PrimedIndicators : 1;
+			Overlays : 1;
 		BITFIELD_END
 
-		s32 NotificationsDuration = 5;
+		u32 NotificationsDuration = DEFAULT_NOTIFICATION_DURATION;
+		u32 LeaderboardsDuration = DEFAULT_LEADERBOARD_DURATION;
 
 		AchievementsOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const AchievementsOptions& right) const
-		{
-			return OpEqu(bitset) && OpEqu(NotificationsDuration);
-		}
-
-		bool operator!=(const AchievementsOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const AchievementsOptions& right) const;
+		bool operator!=(const AchievementsOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------

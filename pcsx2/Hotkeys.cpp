@@ -40,7 +40,7 @@ void VMManager::Internal::ResetVMHotkeyState()
 
 static void HotkeyAdjustTargetSpeed(double delta)
 {
-	const double min_speed = Achievements::ChallengeModeActive() ? 1.0 : 0.1;
+	const double min_speed = Achievements::IsHardcoreModeActive() ? 1.0 : 0.1;
 	EmuConfig.EmulationSpeed.NominalScalar = std::max(min_speed, EmuConfig.EmulationSpeed.NominalScalar + delta);
 	if (VMManager::GetLimiterMode() != LimiterModeType::Nominal)
 		VMManager::SetLimiterMode(LimiterModeType::Nominal);

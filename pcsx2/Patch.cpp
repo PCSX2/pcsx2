@@ -354,7 +354,7 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 {
 	// Prefer files on disk over the zip.
 	std::vector<std::string> disk_patch_files;
-	if (for_ui || !Achievements::ChallengeModeActive())
+	if (for_ui || !Achievements::IsHardcoreModeActive())
 		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats, for_ui);
 
 	if (!disk_patch_files.empty())
@@ -478,7 +478,7 @@ std::string Patch::GetPnachFilename(const std::string_view& serial, u32 crc, boo
 
 void Patch::ReloadEnabledLists()
 {
-	if (EmuConfig.EnableCheats && !Achievements::ChallengeModeActive())
+	if (EmuConfig.EnableCheats && !Achievements::IsHardcoreModeActive())
 		s_enabled_cheats = Host::GetStringListSetting(CHEATS_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
 	else
 		s_enabled_cheats = {};

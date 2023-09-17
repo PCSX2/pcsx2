@@ -428,6 +428,8 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onCaptureStarted, this, &MainWindow::onCaptureStarted);
 	connect(thread, &EmuThread::onCaptureStopped, this, &MainWindow::onCaptureStopped);
 	connect(thread, &EmuThread::onAchievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
+	connect(thread, &EmuThread::onAchievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
+	connect(thread, &EmuThread::onAchievementsHardcoreModeChanged, this, &MainWindow::onAchievementsHardcoreModeChanged);
 
 	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
@@ -637,8 +639,30 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 {
 	auto lock = pauseAndLockVM();
 
-	AchievementLoginDialog dlg(this, reason);
+	AchievementLoginDialog dlg(lock.getDialogParent(), reason);
 	dlg.exec();
+}
+
+void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages)
+{
+	const QString message =
+		tr("RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.").arg(display_name).arg(points).arg(sc_points).arg(unread_messages);
+	m_ui.statusBar->showMessage(message);
+}
+
+void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
+{
+	// disable debugger while hardcore mode is active
+	m_ui.actionDebugger->setDisabled(enabled);
+	if (enabled)
+	{
+		if (m_debugger_window)
+		{
+			m_debugger_window->close();
+			m_debugger_window->deleteLater();
+			m_debugger_window = nullptr;
+		}
+	}
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()

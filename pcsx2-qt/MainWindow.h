@@ -196,6 +196,8 @@ private Q_SLOTS:
 	void onCaptureStopped();
 
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
+	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
+	void onAchievementsHardcoreModeChanged(bool enabled);
 
 protected:
 	void showEvent(QShowEvent* event) override;

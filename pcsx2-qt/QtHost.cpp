@@ -491,7 +491,7 @@ void EmuThread::stopBackgroundControllerPollTimer()
 
 void EmuThread::doBackgroundControllerPoll()
 {
-	InputManager::PollSources();
+	VMManager::IdlePollUpdate();
 }
 
 void EmuThread::toggleFullscreen()
@@ -1115,31 +1115,29 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 	emit g_emu_thread->onAchievementsLoginRequested(reason);
 }
 
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+	emit g_emu_thread->onAchievementsLoginSucceeded(QString::fromUtf8(username), points, sc_points, unread_messages);
+}
+
 void Host::OnAchievementsRefreshed()
 {
 	u32 game_id = 0;
-	u32 achievement_count = 0;
-	u32 max_points = 0;
 
 	QString game_info;
 
 	if (Achievements::HasActiveGame())
 	{
 		game_id = Achievements::GetGameID();
-		achievement_count = Achievements::GetAchievementCount();
-		max_points = Achievements::GetMaximumPointsForGame();
 
-		game_info = qApp->translate("EmuThread", "Game ID: %1\n"
-												 "Game Title: %2\n"
-												 "Achievements: %5 (%6)\n\n")
-						.arg(game_id)
+		game_info = qApp
+						->translate("EmuThread", "Game: %1 (%2)\n")
 						.arg(QString::fromStdString(Achievements::GetGameTitle()))
-						.arg(achievement_count)
-						.arg(qApp->translate("EmuThread", "%n points", "", max_points));
+						.arg(game_id);
 
-		const std::string rich_presence_string(Achievements::GetRichPresenceString());
+		const std::string& rich_presence_string = Achievements::GetRichPresenceString();
 		if (!rich_presence_string.empty())
-			game_info.append(QString::fromStdString(rich_presence_string));
+			game_info.append(QString::fromStdString(StringUtil::Ellipsise(rich_presence_string, 128)));
 		else
 			game_info.append(qApp->translate("EmuThread", "Rich presence inactive or unsupported."));
 	}
@@ -1148,7 +1146,12 @@ void Host::OnAchievementsRefreshed()
 		game_info = qApp->translate("EmuThread", "Game not loaded or no RetroAchievements available.");
 	}
 
-	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info, achievement_count, max_points);
+	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info);
+}
+
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+	emit g_emu_thread->onAchievementsHardcoreModeChanged(enabled);
 }
 
 void Host::VSyncOnCPUThread()
