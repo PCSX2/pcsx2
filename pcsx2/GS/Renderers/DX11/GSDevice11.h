@@ -357,7 +357,6 @@ public:
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
 
-	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
 	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
