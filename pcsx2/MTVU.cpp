@@ -403,7 +403,7 @@ void VU_Thread::Get_MTVUChanges()
 		gifUnit.gsFINISH.gsFINISHFired = false;
 		gifUnit.gsFINISH.gsFINISHPending = true;
 
-		if (!gifUnit.checkPaths(true, true, true, true))
+		if (!gifUnit.checkPaths(false, true, true, true))
 			Gif_FinishIRQ();
 	}
 	if (interrupts & InterruptFlagLabel)
