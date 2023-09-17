@@ -839,7 +839,7 @@ struct Gif_Unit
 			FlushToMTGS();
 		}
 
-		if(!checkPaths(true, true, true, true))
+		if(!checkPaths(stat.APATH != 1, stat.APATH != 2, stat.APATH != 3, true))
 			Gif_FinishIRQ();
 
 		//Path3 can rewind the DMA, so we send back the amount we go back!
