@@ -4518,11 +4518,6 @@ Achievements: %5 (%6)
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
-        <source>Selects where anistropic filtering is utilized when rendering textures.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7602"/>
         <source>Dithering</source>
         <translation type="unfinished"></translation>
@@ -5887,6 +5882,11 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7516"/>
         <source>Operations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="7601"/>
+        <source>Selects where anisotropic filtering is utilized when rendering textures.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
