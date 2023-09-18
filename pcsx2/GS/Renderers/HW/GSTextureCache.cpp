@@ -389,8 +389,13 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	const u32 end_bp = GSLocalMemory::GetEndBlockAddress(sbp, sbw, spsm, src_r);
 	GL_INS("Invalidating BP: 0x%x (%x -> %x) BW: %d PSM %s Target BP: 0x%x BW %x PSM %s", sbp, start_bp, end_bp, sbw, psm_str(spsm), t->m_TEX0.TBP0, t->m_TEX0.TBW, psm_str(t->m_TEX0.PSM));
 
-	// If the whole thing is covered, just invalidate the whole rect.
-	if (start_bp <= t->m_TEX0.TBP0 && end_bp >= t->UnwrappedEndBlock())
+	// This was added basically for FFX-2 which does some shuffling with the Z buffer, causing it to later be picked up again.
+	// It might be better to get rid of targets that have been translated from Z once we're finished with them, however this was essentially the next draw, but got invalidated (badly).
+	// FIXME I guess, I don't like this solution, it shouldn't be the invalidations job to manage draws swapping around Z and RT's.
+	const bool incompatible_formats = (GSLocalMemory::m_psm[spsm].bpp == 16) != (GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16 && !t->m_32_bits_fmt) &&
+										GSUtil::GetChannelMask(spsm) != GSUtil::GetChannelMask(t->m_TEX0.PSM);
+	// If the whole thing is covered, just invalidate the whole rect or it's a 16bit target trying to take a non 16bit value (fundamentally incompatible).
+	if ((start_bp <= t->m_TEX0.TBP0 && end_bp >= t->UnwrappedEndBlock()) || incompatible_formats)
 	{
 		RGBAMask rgba;
 		rgba._u32 = GSUtil::GetChannelMask(spsm);
