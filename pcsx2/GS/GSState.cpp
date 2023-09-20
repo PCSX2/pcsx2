@@ -825,16 +825,22 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 	// Even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing.
 	const bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
+	// No need to flush on CLUT if we aren't texture mapping.
 	if (wt)
 	{
 		m_mem.m_clut.SetNextCLUTTEX0(TEX0.U64);
 		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
 		{
-			m_mem.m_clut.ClearDrawInvalidity();
-			CLUTAutoFlush(PRIM->PRIM);
+			m_mem.m_clut.ClearDrawInvalidity(true);
+			CLUTAutoFlush(m_prev_env.PRIM.PRIM);
 		}
 
-		Flush(GSFlushReason::CLUTCHANGE);
+		if (m_prev_env.PRIM.TME || m_mem.m_clut.IsInvalid())
+		{
+			Flush(GSFlushReason::CLUTCHANGE);
+		}
+		else
+			FlushWrite();
 
 		// Abort any channel shuffle skipping, since this is likely part of a new shuffle.
 		// Test case: Tomb Raider series. This is gated by the CBP actually changing, because
@@ -2957,19 +2963,34 @@ __forceinline void GSState::CLUTAutoFlush(u32 prim)
 			break;
 	}
 
-	if ((m_index.tail > 0 || (m_vertex.tail == n - 1)) && (GSLocalMemory::m_psm[m_context->TEX0.PSM].pal == 0 || !PRIM->TME))
+	const int ctx = m_prev_env.PRIM.CTXT;
+	if ((m_index.tail > 0 || (m_vertex.tail == n - 1)) && (GSLocalMemory::m_psm[m_prev_env.CTXT[ctx].TEX0.PSM].pal == 0 || !m_prev_env.PRIM.TME))
 	{
-		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_context->FRAME.PSM];
+		const GSLocalMemory::psm_t& fpsm = GSLocalMemory::m_psm[m_prev_env.CTXT[ctx].FRAME.PSM];
 
-		if ((m_context->FRAME.FBMSK & psm.fmsk) != psm.fmsk && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == psm.bpp)
+		if ((m_prev_env.CTXT[ctx].FRAME.FBMSK & fpsm.fmsk) != fpsm.fmsk && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == fpsm.bpp)
 		{
-			const u32 startbp = psm.info.bn(temp_draw_rect.x, temp_draw_rect.y, m_context->FRAME.Block(), m_context->FRAME.FBW);
+			const u32 startbp = fpsm.info.bn(temp_draw_rect.x, temp_draw_rect.y, m_prev_env.CTXT[ctx].FRAME.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
 
 			// If it's a point, then we only have one coord, so the address for start and end will be the same, which is bad for the following check.
 			u32 endbp = startbp;
 			// otherwise calculate the end.
 			if (prim != GS_POINTLIST || (m_index.tail > 1))
-				endbp = psm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_context->FRAME.Block(), m_context->FRAME.FBW);
+				endbp = fpsm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_prev_env.CTXT[ctx].FRAME.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
+
+			m_mem.m_clut.InvalidateRange(startbp, endbp, true);
+		}
+
+		const GSLocalMemory::psm_t& zpsm = GSLocalMemory::m_psm[m_prev_env.CTXT[ctx].ZBUF.PSM];
+		if (!m_prev_env.CTXT[ctx].ZBUF.ZMSK && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == zpsm.bpp)
+		{
+			const u32 startbp = zpsm.info.bn(temp_draw_rect.x, temp_draw_rect.y, m_prev_env.CTXT[ctx].ZBUF.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
+
+			// If it's a point, then we only have one coord, so the address for start and end will be the same, which is bad for the following check.
+			u32 endbp = startbp;
+			// otherwise calculate the end.
+			if (prim != GS_POINTLIST || (m_index.tail > 1))
+				endbp = zpsm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_prev_env.CTXT[ctx].ZBUF.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
 
 			m_mem.m_clut.InvalidateRange(startbp, endbp, true);
 		}
