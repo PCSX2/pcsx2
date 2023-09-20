@@ -84,8 +84,8 @@ bool Gif_HandlerAD(u8* pMem)
 	else if (reg == GIF_A_D_REG_FINISH)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
-		CSRreg.FINISH = true;
 		gifUnit.gsFINISH.gsFINISHFired = false;
+		gifUnit.gsFINISH.gsFINISHPending = true;
 	}
 	else if (reg == GIF_A_D_REG_LABEL)
 	{ // LABEL
@@ -188,6 +188,11 @@ bool Gif_HandlerAD_Debug(u8* pMem)
 
 void Gif_FinishIRQ()
 {
+	if (gifUnit.gsFINISH.gsFINISHPending)
+	{
+		CSRreg.FINISH = true;
+		gifUnit.gsFINISH.gsFINISHPending = false;
+	}
 	if (CSRreg.FINISH && !GSIMR.FINISHMSK && !gifUnit.gsFINISH.gsFINISHFired)
 	{
 		gsIrq();

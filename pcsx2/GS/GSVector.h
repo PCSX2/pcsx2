@@ -49,8 +49,6 @@ enum Round_Mode
 	Round_Truncate = 11
 };
 
-#pragma pack(push, 1)
-
 template <class T>
 class GSVector2T
 {
@@ -120,12 +118,6 @@ class GSVector8;
 class GSVector8i;
 
 #endif
-
-// _d is defined for translations in our utilities, unfortunately we do some
-// input concatenation on GSVectors and end up making new tokens named _d, so we
-// undefine it and reinclude our utilities to redefine its original value right
-// after
-#undef _d
 
 // Position and order is important
 #include "GSVector4i.h"
@@ -252,4 +244,3 @@ gsforceinline GSVector8 GSVector8::cast(const GSVector8i& v)
 
 #endif
 
-#pragma pack(pop)

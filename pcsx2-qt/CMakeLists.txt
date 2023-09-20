@@ -1,3 +1,5 @@
+include(CopyBaseTranslations)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -44,6 +46,12 @@ target_sources(pcsx2-qt PRIVATE
 	GameList/GameListRefreshThread.h
 	GameList/GameListWidget.cpp
 	GameList/GameListWidget.h
+	Settings/AchievementLoginDialog.cpp
+	Settings/AchievementLoginDialog.h
+	Settings/AchievementLoginDialog.ui
+	Settings/AchievementSettingsWidget.cpp
+	Settings/AchievementSettingsWidget.h
+	Settings/AchievementSettingsWidget.ui
 	Settings/AdvancedSettingsWidget.cpp
 	Settings/AdvancedSettingsWidget.h
 	Settings/AdvancedSettingsWidget.ui
@@ -168,17 +176,6 @@ target_sources(pcsx2-qt PRIVATE
 	resources/resources.qrc
 )
 
-if(USE_ACHIEVEMENTS)
-	target_sources(pcsx2-qt PRIVATE
-		Settings/AchievementLoginDialog.cpp
-		Settings/AchievementLoginDialog.h
-		Settings/AchievementLoginDialog.ui
-		Settings/AchievementSettingsWidget.cpp
-		Settings/AchievementSettingsWidget.h
-		Settings/AchievementSettingsWidget.ui
-	)
-endif()
-
 file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/*.ts)
 
 target_precompile_headers(pcsx2-qt PRIVATE PrecompiledHeader.h)
@@ -205,6 +202,7 @@ target_compile_definitions(pcsx2-qt PRIVATE QT_NO_EXCEPTIONS)
 if(WIN32)
 	set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_SOURCE_DIR}/bin/translations")
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES})
+	copy_base_translations(pcsx2-qt)
 elseif(APPLE)
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
 	set(PCSX2_MACOS_LOCALIZATIONS)
@@ -223,8 +221,8 @@ elseif(APPLE)
 		target_sources(pcsx2-qt PRIVATE ${QM_FILE})
 		set_source_files_properties(${QM_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations/)
 	endforeach()
+	copy_base_translations(pcsx2-qt)
 else()
-	# TODO: Copy base translations.
 	qt_add_lrelease(pcsx2-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
 	set(QM_OUTPUT_DIR "$<TARGET_FILE_DIR:pcsx2-qt>/translations")
 	add_custom_command(TARGET pcsx2-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E make_directory "${QM_OUTPUT_DIR}")
@@ -232,6 +230,7 @@ else()
 		get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
 		add_custom_command(TARGET pcsx2-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${QM_FILE}" "${QM_OUTPUT_DIR}/${QM_FILE_NAME}")
 	endforeach()
+	copy_base_translations(pcsx2-qt)
 endif()
 
 

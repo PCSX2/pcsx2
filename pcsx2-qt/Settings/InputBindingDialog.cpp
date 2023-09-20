@@ -177,7 +177,7 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 {
 	m_value_ranges.clear();
 	m_new_bindings.clear();
-	m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled();
+	m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled(m_sif);
 	m_input_listen_start_position = QCursor::pos();
 	m_input_listen_timer = new QTimer(this);
 	m_input_listen_timer->setSingleShot(false);

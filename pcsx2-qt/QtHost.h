@@ -106,6 +106,8 @@ public Q_SLOTS:
 	void toggleSoftwareRendering();
 	void switchRenderer(GSRendererType renderer);
 	void changeDisc(CDVD_SourceType source, const QString& path);
+	void setELFOverride(const QString& path);
+	void changeGSDump(const QString& path);
 	void reloadPatches();
 	void reloadInputSources();
 	void reloadInputBindings();
@@ -235,6 +237,9 @@ namespace QtHost
 
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
+
+	/// Sets the icon theme, based on the current style (light/dark).
+	void SetIconThemeFromStyle();
 
 	/// Sets batch mode (exit after game shutdown).
 	bool InBatchMode();

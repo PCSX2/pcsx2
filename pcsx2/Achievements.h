@@ -27,8 +27,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef ENABLE_ACHIEVEMENTS
-
 namespace Achievements
 {
 	enum class LoginRequestReason
@@ -190,73 +188,6 @@ namespace Achievements
 	/// Returns true if features such as save states should be disabled.
 	bool ChallengeModeActive();
 } // namespace Achievements
-
-#else
-
-// Make noops when compiling without cheevos.
-namespace Achievements
-{
-	static inline void Initialize()
-	{
-	}
-
-	static inline void UpdateSettings(const Pcsx2Config::AchievementsOptions& old_config)
-	{
-	}
-
-	static inline void Shutdown()
-	{
-	}
-
-	static inline bool OnReset()
-	{
-		return true;
-	}
-	static inline void LoadState(const u8* state_data, u32 state_data_size)
-	{
-	}
-	static inline std::vector<u8> SaveState()
-	{
-		return {};
-	}
-	static inline void GameChanged()
-	{
-	}
-
-	static constexpr inline bool ChallengeModeActive()
-	{
-		return false;
-	}
-
-	static inline bool ResetChallengeMode()
-	{
-		return false;
-	}
-
-	static inline void DisableChallengeMode()
-	{
-	}
-
-	static inline bool ConfirmChallengeModeDisable(const char* trigger)
-	{
-		return true;
-	}
-
-	static inline void OnPaused(bool paused)
-	{
-	}
-
-	static inline void VSyncUpdate()
-	{
-	}
-
-	static std::string SafeGetRichPresenceString()
-	{
-		return {};
-	}
-} // namespace Achievements
-
-#endif
 
 /// Functions implemented in the frontend.
 namespace Host

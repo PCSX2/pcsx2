@@ -174,7 +174,8 @@ void SPU2::SetDeviceSampleRateMultiplier(double multiplier)
 		return;
 
 	s_device_sample_rate_multiplier = multiplier;
-	UpdateSampleRate();
+	if (SndBuffer::IsOpen())
+		UpdateSampleRate();
 }
 
 bool SPU2::Open()

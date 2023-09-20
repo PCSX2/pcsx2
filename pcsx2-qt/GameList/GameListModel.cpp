@@ -127,18 +127,19 @@ const char* GameListModel::getColumnName(Column col)
 	return s_column_names[static_cast<int>(col)];
 }
 
-GameListModel::GameListModel(QObject* parent /* = nullptr */)
+GameListModel::GameListModel(float cover_scale, bool show_cover_titles, QObject* parent /* = nullptr */)
 	: QAbstractTableModel(parent)
-	, m_cover_pixmap_cache(MIN_COVER_CACHE_SIZE)
+	, m_show_titles_for_covers(show_cover_titles)
 {
 	loadCommonImages();
+	setCoverScale(cover_scale);
 	setColumnDisplayNames();
 }
 GameListModel::~GameListModel() = default;
 
-void GameListModel::refreshImages()
+void GameListModel::reloadThemeSpecificImages()
 {
-	loadCommonImages();
+	loadThemeSpecificImages();
 	refresh();
 }
 
@@ -152,6 +153,8 @@ void GameListModel::setCoverScale(float scale)
 	m_cover_scale_counter.fetch_add(1, std::memory_order_release);
 	m_loading_pixmap = QPixmap(getCoverArtWidth(), getCoverArtHeight());
 	m_loading_pixmap.fill(QColor(0, 0, 0, 0));
+
+	emit coverScaleChanged();
 }
 
 void GameListModel::refreshCovers()
@@ -385,7 +388,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
 					return m_compatibility_pixmaps[static_cast<u32>(
 						(static_cast<u32>(ge->compatibility_rating) >= GameList::CompatibilityRatingCount) ?
 							GameList::CompatibilityRating::Unknown :
-                            ge->compatibility_rating)];
+							ge->compatibility_rating)];
 				}
 
 				case Column_Cover:
@@ -562,20 +565,24 @@ QIcon GameListModel::getIconForRegion(GameList::Region region)
 		QStringLiteral("%1/icons/flags/%2.png").arg(QtHost::GetResourcesBasePath()).arg(GameList::RegionToString(region)));
 }
 
-void GameListModel::loadCommonImages()
+void GameListModel::loadThemeSpecificImages()
 {
 	for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
 		m_type_pixmaps[type] = getIconForType(static_cast<GameList::EntryType>(type)).pixmap(QSize(24, 24));
 
 	for (u32 i = 0; i < static_cast<u32>(GameList::Region::Count); i++)
 		m_region_pixmaps[i] = getIconForRegion(static_cast<GameList::Region>(i)).pixmap(QSize(42, 30));
+}
+
+void GameListModel::loadCommonImages()
+{
+	loadThemeSpecificImages();
 
 	const QString base_path(QtHost::GetResourcesBasePath());
 	for (u32 i = 1; i < GameList::CompatibilityRatingCount; i++)
 		m_compatibility_pixmaps[i].load(QStringLiteral("%1/icons/star-%2.png").arg(base_path).arg(i - 1));
 
 	m_placeholder_pixmap.load(QStringLiteral("%1/cover-placeholder.png").arg(base_path));
-	setCoverScale(1.0f);
 }
 
 void GameListModel::setColumnDisplayNames()

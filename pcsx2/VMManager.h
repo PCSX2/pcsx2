@@ -18,10 +18,8 @@
 #include <functional>
 #include <optional>
 #include <string>
-#include <vector>
-#include <string>
 #include <string_view>
-#include <optional>
+#include <vector>
 
 #include "common/Pcsx2Defs.h"
 
@@ -149,12 +147,28 @@ namespace VMManager
 	/// Updates the host vsync state, as well as timer frequencies. Call when the speed limiter is adjusted.
 	void SetLimiterMode(LimiterModeType type);
 
+	/// Returns the target speed, based on the limiter mode.
+	float GetTargetSpeed();
+
+	/// Ensures the target speed reflects the current configuration. Call if you change anything in
+	/// EmuConfig.EmulationSpeed without going through the usual config apply.
+	void UpdateTargetSpeed();
+
+	/// Returns the current frame rate of the virtual machine.
+	float GetFrameRate();
+
 	/// Runs the virtual machine for the specified number of video frames, and then automatically pauses.
 	void FrameAdvance(u32 num_frames = 1);
 
 	/// Changes the disc in the virtual CD/DVD drive. Passing an empty will remove any current disc.
 	/// Returns false if the new disc can't be opened.
 	bool ChangeDisc(CDVD_SourceType source, std::string path);
+
+	/// Changes the ELF to boot ("ELF override"). The VM will be reset.
+	bool SetELFOverride(std::string path);
+
+	/// Changes the current GS dump being played back.
+	bool ChangeGSDump(const std::string& path);
 
 	/// Returns true if the specified path is an ELF.
 	bool IsElfFileName(const std::string_view& path);
@@ -235,6 +249,12 @@ namespace VMManager
 
 		/// Returns the PC of the currently-executing ELF's entry point.
 		u32 GetCurrentELFEntryPoint();
+
+		/// Called when the internal frame rate changes.
+		void FrameRateChanged();
+
+		/// Throttles execution, or limits the frame rate.
+		void Throttle();
 
 		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();

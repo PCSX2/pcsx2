@@ -989,7 +989,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		if (m_dialog->isPerGameSettings())
 		{
 			m_ui.fullscreenModes->insertItem(
-				0, tr("Use Global Setting [%1]").arg(current_mode.empty() ? tr("(Default)") : QString::fromStdString(current_mode)));
+				0, tr("Use Global Setting [%1]").arg(current_mode.empty() ? tr("Borderless Fullscreen") : QString::fromStdString(current_mode)));
 			if (!m_dialog->getSettingsInterface()->GetStringValue("EmuCore/GS", "FullscreenMode", &current_mode))
 			{
 				current_mode.clear();

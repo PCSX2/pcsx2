@@ -14,16 +14,6 @@
  */
 
 #if !defined(_WIN32) && !defined(__APPLE__)
-#include <ctype.h>
-#include <time.h>
-#include <unistd.h>
-#include <optional>
-#include <spawn.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
-#include "fmt/core.h"
 
 #include "common/Pcsx2Types.h"
 #include "common/General.h"
@@ -32,9 +22,17 @@
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 
-#ifdef DBUS_API
+#include "fmt/core.h"
+
+#include <ctype.h>
+#include <time.h>
+#include <unistd.h>
+#include <optional>
+#include <spawn.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <dbus/dbus.h>
-#endif
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
@@ -68,8 +66,6 @@ std::string GetOSVersionString()
 	return "Other Unix";
 #endif
 }
-
-#ifdef DBUS_API
 
 static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
@@ -139,81 +135,9 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
 	return true;
 }
 
-#endif
-
-#if !defined(DBUS_API) && defined(X11_API)
-
-static bool SetScreensaverInhibitX11(const WindowInfo& wi, bool inhibit)
-{
-	extern char** environ;
-
-	const char* command = "xdg-screensaver";
-	const char* operation = inhibit ? "suspend" : "resume";
-	std::string id = fmt::format("0x{:X}", static_cast<u64>(reinterpret_cast<uintptr_t>(wi.window_handle)));
-
-	char* argv[4] = {const_cast<char*>(command), const_cast<char*>(operation), const_cast<char*>(id.c_str()),
-		nullptr};
-
-	// Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
-	pid_t pid;
-	int res = posix_spawnp(&pid, "xdg-screensaver", nullptr, nullptr, argv, environ);
-	return (res == 0);
-}
-
-static bool SetScreensaverInhibit(const WindowInfo& wi, bool inhibit)
-{
-	switch (wi.type)
-	{
-#ifdef X11_API
-		case WindowInfo::Type::X11:
-			return SetScreensaverInhibitX11(wi, inhibit);
-#endif
-
-		default:
-			return false;
-	}
-}
-
-static std::optional<WindowInfo> s_inhibit_window_info;
-
-#endif
-
 bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 {
-
-#ifdef DBUS_API
-
 	return SetScreensaverInhibitDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
-
-#else
-
-	if (s_inhibit_window_info.has_value())
-	{
-		// Bit of extra logic here, because wx spams it and we don't want to
-		// spawn processes unnecessarily.
-		if (s_inhibit_window_info->type == wi.type &&
-			s_inhibit_window_info->window_handle == wi.window_handle &&
-			s_inhibit_window_info->surface_handle == wi.surface_handle)
-		{
-			return true;
-		}
-		// Clear the old.
-		SetScreensaverInhibit(s_inhibit_window_info.value(), false);
-		s_inhibit_window_info.reset();
-	}
-
-	if (!inhibit)
-		return true;
-
-	// New window.
-	if (!SetScreensaverInhibit(wi, true))
-		return false;
-
-	s_inhibit_window_info = wi;
-	return true;
-
-#endif
-
 }
 
 bool Common::PlaySoundAsync(const char* path)

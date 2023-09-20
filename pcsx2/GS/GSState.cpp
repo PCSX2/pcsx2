@@ -2755,16 +2755,24 @@ bool GSState::TrianglesAreQuads() const
 	{
 		const u16* const i = m_index.buff + idx;
 
+		// Make sure the next set of triangles matches an edge of the previous triangle.
+		if (idx > 0)
+		{
+			const u16* const prev_tri= m_index.buff + (idx - 3);
+			const GSVertex& vert = v[i[0]];
+			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
+				return false;
+		}
 		// Degenerate triangles should've been culled already, so we can check indices.
 		u32 extra_verts = 0;
 		for (u32 j = 3; j < 6; j++)
 		{
-			const u16 idx = i[j];
-			if (idx != i[0] && idx != i[1] && idx != i[2])
+			const u16 tri2_idx = i[j];
+			if (tri2_idx != i[0] && tri2_idx != i[1] && tri2_idx != i[2])
 				extra_verts++;
 		}
 		if (extra_verts == 1)
-			return true;
+			continue;
 
 		// As a fallback, they might've used different vertices with a tri list, not strip.
 		// Note that this won't work unless the quad is axis-aligned.
@@ -3912,7 +3920,7 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 	m_vt.m_alpha.valid = true;
 }
 
-bool GSState::TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm)
+bool GSState::TryAlphaTest(u32& fm, u32& zm)
 {
 	// Shortcut for the easy case
 	if (m_context->TEST.ATST == ATST_ALWAYS)

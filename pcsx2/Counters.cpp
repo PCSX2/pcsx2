@@ -36,12 +36,9 @@
 #include "VMManager.h"
 #include "VUmicro.h"
 
-using namespace Threading;
-
 extern u8 psxhblankgate;
 static const uint EECNT_FUTURE_TARGET = 0x10000000;
 static int gates = 0;
-static bool s_use_vsync_for_timing = false;
 
 uint g_FrameCount = 0;
 
@@ -187,14 +184,6 @@ void rcntInit()
 	cpuRcntSet();
 }
 
-
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
-
-static s64 m_iTicks=0;
-static u64 m_iStart=0;
-
 struct vSyncTimingInfo
 {
 	double Framerate;       // frames per second (8 bit fixed)
@@ -210,9 +199,7 @@ struct vSyncTimingInfo
 	u32 hScanlinesPerFrame; // number of scanlines per frame (525/625 for NTSC/PAL)
 };
 
-
 static vSyncTimingInfo vSyncInfo;
-
 
 static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 scansPerFrame)
 {
@@ -350,39 +337,6 @@ double GetVerticalFrequency()
 	}
 }
 
-static double AdjustToHostRefreshRate(double vertical_frequency, double frame_limit)
-{
-	if (!EmuConfig.GS.SyncToHostRefreshRate || EmuConfig.GS.LimitScalar != 1.0f)
-	{
-		SPU2::SetDeviceSampleRateMultiplier(1.0);
-		s_use_vsync_for_timing = false;
-		return frame_limit;
-	}
-
-	float host_refresh_rate;
-	if (!GSGetHostRefreshRate(&host_refresh_rate))
-	{
-		Console.Warning("Cannot sync to host refresh since the query failed.");
-		SPU2::SetDeviceSampleRateMultiplier(1.0);
-		s_use_vsync_for_timing = false;
-		return frame_limit;
-	}
-
-	const double ratio = host_refresh_rate / vertical_frequency;
-	const bool syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-	s_use_vsync_for_timing = (syncing_to_host && !EmuConfig.GS.SkipDuplicateFrames && EmuConfig.GS.VsyncEnable != VsyncMode::Off);
-	Console.WriteLn("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s %s", host_refresh_rate,
-		vertical_frequency, ratio, syncing_to_host ? "can sync" : "can't sync",
-		s_use_vsync_for_timing ? "and using vsync for pacing" : "and using sleep for pacing");
-
-	if (!syncing_to_host)
-		return frame_limit;
-
-	frame_limit *= ratio;
-	SPU2::SetDeviceSampleRateMultiplier(ratio);
-	return frame_limit;
-}
-
 void UpdateVSyncRate(bool force)
 {
 	// Notice:  (and I probably repeat this elsewhere, but it's worth repeating)
@@ -397,11 +351,6 @@ void UpdateVSyncRate(bool force)
 
 	if (vSyncInfo.Framerate != frames_per_second || vSyncInfo.VideoMode != gsVideoMode || force)
 	{
-		const double frame_limit = AdjustToHostRefreshRate(vertical_frequency, frames_per_second * EmuConfig.GS.LimitScalar);
-
-		const double tick_rate = GetTickFrequency() / 2.0;
-		const s64 ticks = static_cast<s64>(tick_rate / std::max(frame_limit, 1.0));
-
 		u32 total_scanlines = 0;
 		bool custom = false;
 
@@ -465,25 +414,14 @@ void UpdateVSyncRate(bool force)
 		if (custom && video_mode_initialized)
 			Console.Indent().WriteLn(Color_StrongGreen, "... with user configured refresh rate: %.02f Hz", vertical_frequency);
 
-		hsyncCounter.CycleT = vSyncInfo.hRender; // Amount of cycles before the counter will be updated
-		vsyncCounter.CycleT = vSyncInfo.Render;  // Amount of cycles before the counter will be updated
-		hsyncCounter.sCycle = cpuRegs.cycle;
-		vsyncCounter.sCycle = cpuRegs.cycle;
-		vsyncCounter.Mode = MODE_VRENDER;
+		hsyncCounter.CycleT = (hsyncCounter.Mode == MODE_HBLANK) ? vSyncInfo.hBlank : vSyncInfo.hRender;
+		vsyncCounter.CycleT = (vsyncCounter.Mode == MODE_GSBLANK) ?
+								  vSyncInfo.GSBlank :
+								  ((vsyncCounter.Mode == MODE_VSYNC) ? vSyncInfo.Blank : vSyncInfo.Render);
 		cpuRcntSet();
 
-		PerformanceMetrics::SetVerticalFrequency(vertical_frequency);
-
-		if (m_iTicks != ticks)
-			m_iTicks = ticks;
-
-		m_iStart = GetCPUTicks();
+		VMManager::Internal::FrameRateChanged();
 	}
-}
-
-void frameLimitReset()
-{
-	m_iStart = GetCPUTicks();
 }
 
 // FMV switch stuff
@@ -547,55 +485,16 @@ static __fi void DoFMVSwitch()
 		RendererSwitched = false;
 }
 
-// Framelimiter - Measures the delta time between calls and stalls until a
-// certain amount of time passes if such time hasn't passed yet.
-static __fi void frameLimit()
-{
-	// Framelimiter off in settings? Framelimiter go brrr.
-	if (EmuConfig.GS.LimitScalar == 0.0f || s_use_vsync_for_timing)
-		return;
-
-	const u64 uExpectedEnd = m_iStart + m_iTicks;  // Compute when we would expect this frame to end, assuming everything goes perfectly perfect.
-	const u64 iEnd = GetCPUTicks();                // The current tick we actually stopped on.
-	const s64 sDeltaTime = iEnd - uExpectedEnd;    // The diff between when we stopped and when we expected to.
-
-	// If frame ran too long...
-	if (sDeltaTime >= m_iTicks)
-	{
-		// ... Fudge the next frame start over a bit. Prevents fast forward zoomies.
-		m_iStart += (sDeltaTime / m_iTicks) * m_iTicks;
-		return;
-	}
-
-	// Conversion of delta from CPU ticks (microseconds) to milliseconds
-	s32 msec = (int) ((sDeltaTime * -1000) / (s64) GetTickFrequency());
-
-	// If any integer value of milliseconds exists, sleep it off.
-	// Prior comments suggested that 1-2 ms sleeps were inaccurate on some OSes;
-	// further testing suggests instead that this was utter bullshit.
-	if (msec > 1)
-	{
-		Threading::Sleep(msec - 1);
-	}
-
-	// Conversion to milliseconds loses some precision; after sleeping off whole milliseconds,
-	// spin the thread without sleeping until we finally reach our expected end time.
-	while (GetCPUTicks() < uExpectedEnd)
-	{
-		// SKREEEEEEEE
-	}
-
-	// Finally, set our next frame start to when this one ends
-	m_iStart = uExpectedEnd;
-}
-
 static __fi void VSyncStart(u32 sCycle)
 {
 	// End-of-frame tasks.
 	DoFMVSwitch();
 	VMManager::Internal::VSyncOnCPUThread();
 
-	frameLimit(); // limit FPS
+	// Don't bother throttling if we're going to pause.
+	if (!VMManager::Internal::IsExecutionInterrupted())
+		VMManager::Internal::Throttle();
+
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
 	
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
@@ -629,7 +528,8 @@ static __fi void VSyncStart(u32 sCycle)
 	// Without the patch and fixing this, the games have other issues, so I'm not going to rush to fix it.
 	// Refraction
 
-	// Bail out before the next frame starts if we're paused, or the CPU has changed
+	// Bail out before the next frame starts if we're paused, or the CPU has changed.
+	// Need to re-check this, because we might've paused during the sleep time.
 	if (VMManager::Internal::IsExecutionInterrupted())
 		Cpu->ExitExecution();
 }
@@ -683,7 +583,7 @@ __fi void rcntUpdate_hScanline()
 	if( !cpuTestCycle( hsyncCounter.sCycle, hsyncCounter.CycleT ) ) return;
 
 	//iopEventAction = 1;
-	if (hsyncCounter.Mode & MODE_HBLANK) { //HBLANK Start
+	if (hsyncCounter.Mode == MODE_HBLANK) { //HBLANK Start
 		rcntStartGate(false, hsyncCounter.sCycle);
 		psxCheckStartGate16(0);
 

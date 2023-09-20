@@ -669,6 +669,34 @@ void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
 	VMManager::ChangeDisc(source, path.toStdString());
 }
 
+void EmuThread::setELFOverride(const QString& path)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "setELFOverride", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	VMManager::SetELFOverride(path.toStdString());
+}
+
+void EmuThread::changeGSDump(const QString& path)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "changeGSDump", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	VMManager::ChangeGSDump(path.toStdString());
+}
+
 void EmuThread::reloadPatches()
 {
 	if (!isOnEmuThread())
@@ -1082,7 +1110,6 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
 	emit g_emu_thread->onAchievementsLoginRequested(reason);
@@ -1123,7 +1150,6 @@ void Host::OnAchievementsRefreshed()
 
 	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info, achievement_count, max_points);
 }
-#endif
 
 void Host::VSyncOnCPUThread()
 {

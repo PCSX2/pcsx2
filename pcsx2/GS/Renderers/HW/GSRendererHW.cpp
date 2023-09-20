@@ -162,6 +162,9 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 	GSPCRTCRegs::PCRTCDisplay& curFramebuffer = PCRTCDisplays.PCRTCDisplays[index];
 	const GSVector2i framebufferSize(PCRTCDisplays.GetFramebufferSize(i));
 
+	if (curFramebuffer.framebufferRect.rempty() || curFramebuffer.FBW == 0)
+		return nullptr;
+
 	PCRTCDisplays.RemoveFramebufferOffset(i);
 	// TRACE(_T("[%d] GetOutput %d %05x (%d)\n"), (int)m_perfmon.GetFrame(), i, (int)TEX0.TBP0, (int)TEX0.PSM);
 
@@ -428,7 +431,23 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
 			const int tex_width = tex->m_target ? tex->m_from_target->m_valid.z : (tex->m_TEX0.TBW * 64);
 			const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
-			if ((static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW) || (m_cached_ctx.TEX0.TBW * 64) < floor(m_vt.m_max.t.x))
+			const int clamp_minu = m_context->CLAMP.MINU;
+			const int clamp_maxu = m_context->CLAMP.MAXU;
+			int max_tex_draw_width = std::min(static_cast<int>(m_vt.m_max.t.x), 1 << m_cached_ctx.TEX0.TW);
+
+			switch (m_context->CLAMP.WMS)
+			{
+				case CLAMP_REGION_CLAMP:
+					max_tex_draw_width = std::min(max_tex_draw_width, clamp_maxu);
+					break;
+				case CLAMP_REGION_REPEAT:
+					max_tex_draw_width = std::min(max_tex_draw_width, (clamp_maxu | clamp_minu));
+					break;
+				default:
+					break;
+			}
+
+			if ((static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW) || (m_cached_ctx.TEX0.TBW * 64) < floor(max_tex_draw_width))
 			{
 				half_right_uv = false;
 				half_right_vert = false;
@@ -824,7 +843,7 @@ bool GSRendererHW::NextDrawMatchesShuffle() const
 	return true;
 }
 
-bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
+bool GSRendererHW::IsSplitTextureShuffle(GSTextureCache::Target* rt)
 {
 	// For this to work, we're peeking into the next draw, therefore we need dirty registers.
 	if (m_dirty_gs_regs == 0)
@@ -866,7 +885,8 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 	// We should have the same number of pages in both the position and UV.
 	const u32 pages_high = static_cast<u32>(aligned_rc.height()) / frame_psm.pgs.y;
 	const u32 num_pages = m_context->FRAME.FBW * pages_high;
-
+	// Jurassic - The Hunted will do a split shuffle with a height of 512 (256) when it's supposed to be 448, so it redoes one row of the shuffle.
+	const u32 rt_half = (((rt->m_valid.height() / GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y) / 2) * rt->m_TEX0.TBW) + (rt->m_TEX0.TBP0 >> 5);
 	// If this is a split texture shuffle, the next draw's FRAME/TEX0 should line up.
 	// Re-add the offset we subtracted in Draw() to get the original FBP/TBP0.. this won't handle wrapping. Oh well.
 	// "Potential" ones are for Jak3 which does a split shuffle on a 128x128 texture with a width of 256, writing to the lower half then offsetting 2 pages.
@@ -877,14 +897,15 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 	GL_CACHE("IsSplitTextureShuffle: Draw covers %ux%u pages, next FRAME %x TEX %x",
 		static_cast<u32>(aligned_rc.width()) / frame_psm.pgs.x, pages_high, expected_next_FBP * BLOCKS_PER_PAGE,
 		expected_next_TBP0);
-	if (next_ctx.TEX0.TBP0 != expected_next_TBP0 && next_ctx.TEX0.TBP0 != potential_expected_next_TBP0)
+
+	if (next_ctx.TEX0.TBP0 != expected_next_TBP0 && next_ctx.TEX0.TBP0 != potential_expected_next_TBP0 && next_ctx.TEX0.TBP0 != (rt_half << 5))
 	{
 		GL_CACHE("IsSplitTextureShuffle: Mismatch on TBP0, expecting %x, got %x", expected_next_TBP0, next_ctx.TEX0.TBP0);
 		return false;
 	}
 
 	// Some games don't offset the FBP.
-	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP && next_ctx.FRAME.FBP != potential_expected_next_FBP)
+	if (next_ctx.FRAME.FBP != expected_next_FBP && next_ctx.FRAME.FBP != m_cached_ctx.FRAME.FBP && next_ctx.FRAME.FBP != potential_expected_next_FBP && next_ctx.FRAME.FBP != rt_half)
 	{
 		GL_CACHE("IsSplitTextureShuffle: Mismatch on FBP, expecting %x, got %x", expected_next_FBP * BLOCKS_PER_PAGE,
 			next_ctx.FRAME.FBP * BLOCKS_PER_PAGE);
@@ -901,16 +922,25 @@ bool GSRendererHW::IsSplitTextureShuffle(u32 rt_tbw)
 
 		// If the game has changed the texture width to 1 we need to retanslate it to whatever the rt has so the final rect is correct.
 		if (m_cached_ctx.FRAME.FBW == 1)
-			m_split_texture_shuffle_fbw = rt_tbw;
+			m_split_texture_shuffle_fbw = rt->m_TEX0.TBW;
 		else
 			m_split_texture_shuffle_fbw = m_cached_ctx.FRAME.FBW;
 	}
 
+	u32 vertical_pages = pages_high;
+	u32 total_pages = num_pages;
+
+	// If the current draw is further than the half way point and the next draw is the half way point, then we can assume it's just overdrawing.
+	if (next_ctx.FRAME.FBP == rt_half && num_pages > (rt_half - (rt->m_TEX0.TBP0 >> 5)))
+	{
+		vertical_pages = (rt->m_valid.height() / GSLocalMemory::m_psm[rt->m_TEX0.PSM].pgs.y) / 2;
+		total_pages = vertical_pages * rt->m_TEX0.TBW;
+	}
+
 	if ((m_split_texture_shuffle_pages % m_split_texture_shuffle_fbw) == 0)
-		m_split_texture_shuffle_pages_high += pages_high;
+		m_split_texture_shuffle_pages_high += vertical_pages;
 
-	m_split_texture_shuffle_pages += num_pages;
-
+	m_split_texture_shuffle_pages += total_pages;
 	return true;
 }
 
@@ -1755,7 +1785,7 @@ void GSRendererHW::Draw()
 		m_mem.m_clut.Read32(m_cached_ctx.TEX0, env.TEXA);
 
 	//  Test if we can optimize Alpha Test as a NOP
-	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, fm_mask, zm);
+	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
 
 	// Need to fix the alpha test, since the alpha will be fixed to 1.0 if ABE is disabled and AA1 is enabled
 	// So if it doesn't meet the condition, always fail, if it does, always pass (turn off the test).
@@ -2185,7 +2215,7 @@ void GSRendererHW::Draw()
 		}
 		const bool possible_shuffle = ((rt_32bit && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0) || IsPossibleChannelShuffle();
 		const bool req_color = (!PRIM->ABE || (PRIM->ABE && m_context->ALPHA.IsUsingCs())) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF));
-		const bool req_alpha = m_context->TEX0.TCC && ((m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
+		const bool req_alpha = (GSUtil::GetChannelMask(m_context->TEX0.PSM) & 0x8) && m_context->TEX0.TCC && ((m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
 
 		src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha) :
 								g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
@@ -2207,7 +2237,7 @@ void GSRendererHW::Draw()
 
 			u32 new_fm = m_context->FRAME.FBMSK;
 			u32 new_zm = m_context->ZBUF.ZMSK || m_context->TEST.ZTE == 0 ? 0xffffffff : 0;
-			if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, fm_mask, new_zm))
+			if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, new_zm))
 			{
 				m_cached_ctx.TEST.ATE = false;
 				m_cached_ctx.FRAME.FBMSK = new_fm;
@@ -2263,8 +2293,10 @@ void GSRendererHW::Draw()
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
+		const bool possible_shuffle = draw_sprite_tex && ((src && src->m_target && src->m_from_target->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].depth == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].depth) &&
+									GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || IsPossibleChannelShuffle();
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, IsPossibleChannelShuffle(), is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block());
+			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block());
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
@@ -2375,7 +2407,7 @@ void GSRendererHW::Draw()
 			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
 		}
 
-		if (m_texture_shuffle && IsSplitTextureShuffle(rt->m_TEX0.TBW))
+		if (m_texture_shuffle && IsSplitTextureShuffle(rt))
 		{
 			// If TEX0 == FBP, we're going to have a source left in the TC.
 			// That source will get used in the actual draw unsafely, so kick it out.
@@ -4724,6 +4756,9 @@ void GSRendererHW::CleanupDraw(bool invalidate_temp_src)
 	if (invalidate_temp_src)
 		g_texture_cache->InvalidateTemporarySource();
 
+	// Restore Scissor.
+	m_context->UpdateScissor();
+
 	// Restore offsets.
 	if ((m_context->FRAME.U32[0] ^ m_cached_ctx.FRAME.U32[0]) & 0x3f3f01ff)
 		m_context->offset.fb = m_mem.GetOffset(m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM);
@@ -5687,6 +5722,14 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	if (half > (base + written_pages) || half <= base)
 		return false;
 
+	GSTextureCache::Target* half_point = g_texture_cache->GetExactTarget(half << 5, m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::RenderTarget : GSTextureCache::DepthStencil, half << 5);
+
+	if (half_point)
+	{
+		half_point = nullptr;
+		return false;
+	}
+
 	// Don't allow double half clear to go through when the number of bits written through FRAME and Z are different.
 	// GTA: LCS does this setup, along with a few other games. Thankfully if it's a zero clear, we'll clear both
 	// separately, and the end result is the same because it gets invalidated. That's better than falsely detecting
@@ -5704,19 +5747,28 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// Have to check both contexts, because God of War 2 likes to do this in-between setting TRXDIR, which
 	// causes a flush, and we don't have the next context backed up index set.
 	bool horizontal = false;
-	if (((m_env.CTXT[0].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
-			((m_env.CTXT[0].FRAME.FBP == base &&
-				 (!m_env.CTXT[0].ZBUF.ZMSK || (m_env.CTXT[0].TEST.ZTE && m_env.CTXT[0].TEST.ZTST >= ZTST_GEQUAL)) &&
-				 m_env.CTXT[0].ZBUF.ZBP != half) ||
-				(m_env.CTXT[0].ZBUF.ZBP == base && m_env.CTXT[0].FRAME.FBP != half)))) ||
-		(m_env.CTXT[1].FRAME.FBW == m_cached_ctx.FRAME.FBW &&
-			((m_env.CTXT[1].FRAME.FBP == base && m_env.CTXT[1].ZBUF.ZBP != half) ||
-				(m_env.CTXT[1].ZBUF.ZBP == base &&
-					(!m_env.CTXT[1].ZBUF.ZMSK || (m_env.CTXT[1].TEST.ZTE && m_env.CTXT[1].TEST.ZTST >= ZTST_GEQUAL)) &&
-					m_env.CTXT[1].FRAME.FBP != half))))
+
+	const bool ctx0_match = ((((m_env.CTXT[0].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2) || (m_env.CTXT[0].FRAME.FBW == m_cached_ctx.FRAME.FBW)) &&
+		((m_env.CTXT[0].FRAME.FBP == base &&
+		(!m_env.CTXT[0].ZBUF.ZMSK || (m_env.CTXT[0].TEST.ZTE && m_env.CTXT[0].TEST.ZTST >= ZTST_GEQUAL)) &&
+		m_env.CTXT[0].ZBUF.ZBP != half) ||
+		(m_env.CTXT[0].ZBUF.ZBP == base && m_env.CTXT[0].FRAME.FBP != half));
+
+	const bool ctx1_match = ((((m_env.CTXT[1].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2) || (m_env.CTXT[1].FRAME.FBW == m_cached_ctx.FRAME.FBW)) && 
+		((m_env.CTXT[1].FRAME.FBP == base && m_env.CTXT[1].ZBUF.ZBP != half) ||
+		(m_env.CTXT[1].ZBUF.ZBP == base &&
+			(!m_env.CTXT[1].ZBUF.ZMSK || (m_env.CTXT[1].TEST.ZTE && m_env.CTXT[1].TEST.ZTST >= ZTST_GEQUAL)) &&
+			m_env.CTXT[1].FRAME.FBP != half));
+
+	if (ctx0_match || ctx1_match)
 	{
 		// Needed for Spider-Man 2 (target was previously half size, double half cleared at new size).
 		GL_INS("Confirmed double-half clear by next FBP/ZBP");
+
+		const int ctx = ctx1_match ? 1 : 0;
+
+		if (((m_env.CTXT[ctx].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2)
+			horizontal = true;
 	}
 	else
 	{
@@ -5929,6 +5981,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
+				current_page &= 0x7ff;
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
@@ -5943,6 +5996,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
+				current_page &= 0x7ff;
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
@@ -5961,6 +6015,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
+				current_page &= 0x7ff;
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
@@ -6199,7 +6254,7 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 
 bool GSRendererHW::IsConstantDirectWriteMemClear()
 {
-	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_index.tail == 6 && m_vt.m_primclass == GS_TRIANGLE_CLASS);
+	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (((m_index.tail % 6) == 0 && TrianglesAreQuads()) && m_vt.m_primclass == GS_TRIANGLE_CLASS);
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 	if (direct_draw && !PRIM->TME // Direct write
 		&& !(m_draw_env->SCANMSK.MSK & 2)
@@ -6306,6 +6361,7 @@ void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, co
 
 	m_r = unscaled_rect;
 	m_context->scissor.in = scissor;
+	m_vt.m_primclass = GS_SPRITE_CLASS;
 }
 
 void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector2i& unscaled_size)
@@ -6355,7 +6411,7 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.nindices = static_cast<u32>(std::size(indices));
 	config.indices_per_prim = 3;
 	config.drawlist = nullptr;
-	config.scissor = rt_or_ds->GetRect().rintersect(GSVector4i(GSVector4(rt->GetRect()) * tex_scale));
+	config.scissor = rt_or_ds->GetRect();
 	config.drawarea = config.scissor;
 	config.topology = GSHWDrawConfig::Topology::Triangle;
 	config.blend = GSHWDrawConfig::BlendState();

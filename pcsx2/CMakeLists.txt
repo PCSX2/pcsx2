@@ -47,10 +47,6 @@ elseif("${PGO}" STREQUAL "use")
 	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-use)
 endif()
 
-if(USE_LEGACY_USER_DIRECTORY)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_LEGACY_USER_DIRECTORY)
-endif()
-
 if(USE_LINKED_FFMPEG)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_LINKED_FFMPEG)
 	target_link_libraries(PCSX2_FLAGS INTERFACE FFMPEG::avcodec FFMPEG::avformat FFMPEG::avutil FFMPEG::swscale FFMPEG::swresample)
@@ -688,7 +684,6 @@ if(WIN32)
 		GS/Renderers/DX11/D3D11ShaderCache.cpp
 		GS/Renderers/DX11/GSDevice11.cpp
 		GS/Renderers/DX11/GSTexture11.cpp
-		GS/Renderers/DX11/GSTextureFX11.cpp
 		GS/Renderers/DX12/D3D12Builders.cpp
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.cpp
 		GS/Renderers/DX12/D3D12ShaderCache.cpp
@@ -862,30 +857,10 @@ if(APPLE)
 	)
 endif()
 
-if(USE_ACHIEVEMENTS)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE
-		ENABLE_ACHIEVEMENTS
-	)
-	target_link_libraries(PCSX2_FLAGS INTERFACE
-		rcheevos
-	)
-	if(WIN32)
-		# RAIntegration is only supported on Windows.
-		target_compile_definitions(PCSX2_FLAGS INTERFACE
-			ENABLE_RAINTEGRATION
-		)
-		target_link_libraries(PCSX2_FLAGS INTERFACE
-			rainterface
-		)
-	endif()
-endif()
-if(USE_DISCORD_PRESENCE)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE
-		ENABLE_DISCORD_PRESENCE
-	)
-	target_link_libraries(PCSX2_FLAGS INTERFACE
-		discord-rpc
-	)
+if(WIN32)
+	# RAIntegration is only supported on Windows.
+	target_compile_definitions(PCSX2_FLAGS INTERFACE ENABLE_RAINTEGRATION)
+	target_link_libraries(PCSX2_FLAGS INTERFACE rainterface)
 endif()
 if(WIN32)
 	list(APPEND pcsx2InputSources
@@ -1153,6 +1128,8 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	cpuinfo
 	zydis
 	cubeb
+	rcheevos
+	discord-rpc
 	SDL2::SDL2
 	ZLIB::ZLIB
 	SoundTouch::SoundTouch
@@ -1296,7 +1273,7 @@ function(setup_main_executable target)
 			endif()
 		endif()
 		find_program(WINDEPLOYQT_EXE windeployqt HINTS "${QT_BINARY_DIRECTORY}")
-		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" --no-compiler-runtime --no-system-d3d-compiler COMMAND_ERROR_IS_FATAL ANY)")
+		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" --no-compiler-runtime --no-system-d3d-compiler --no-translations COMMAND_ERROR_IS_FATAL ANY)")
 		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")
 	endif()
 

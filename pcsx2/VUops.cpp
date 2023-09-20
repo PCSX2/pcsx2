@@ -2693,10 +2693,10 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 		{
 			VUM_LOG("XGKICK transfer finished");
 			VU1.xgkickenable = false;
+			VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
 			// Check if VIF is waiting for the GIF to not be busy
 			if (vif1Regs.stat.VGW)
 			{
-				VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
 				vif1Regs.stat.VGW = false;
 				CPU_INT(DMAC_VIF1, 8);
 			}

@@ -8,8 +8,6 @@ option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
-option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
-option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
 
 #-------------------------------------------------------------------------------
 # Graphical option
@@ -22,10 +20,8 @@ option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 #-------------------------------------------------------------------------------
 if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
-	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
-	option(DBUS_API "Enable DBus support for screensaver inhibiting" ON)
 endif()
 
 if(UNIX)

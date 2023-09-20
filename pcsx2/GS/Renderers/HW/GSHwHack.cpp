@@ -831,8 +831,8 @@ bool GSHwHack::GSC_MetalGearSolid3(GSRendererHW& r, int& skip)
 	// For some reason, instead of being sensible and masking Z, they set up AFAIL instead.
 	if (!RZMSK)
 	{
-		u32 fm = 0, fm_mask = 0, zm = 0;
-		if (!r.m_cached_ctx.TEST.ATE || !r.TryAlphaTest(fm, fm_mask, zm) || zm == 0)
+		u32 fm = 0, zm = 0;
+		if (!r.m_cached_ctx.TEST.ATE || !r.TryAlphaTest(fm, zm) || zm == 0)
 			return false;
 	}
 
@@ -1065,8 +1065,8 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 									std::max(rt_again->m_unscaled_size.y, src->m_unscaled_size.y));
 			rt_again->ResizeTexture(new_size.x, new_size.y);
 			rt = rt_again->m_texture;
-			rt_size = new_size;
-			rt_again->UpdateDrawn(GSVector4i::loadh(rt_size));
+			rt_size = new_size * GSVector2i(src->GetScale());
+			rt_again->UpdateDrawn(GSVector4i::loadh(new_size));
 		}
 	}
 

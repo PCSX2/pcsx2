@@ -47,7 +47,7 @@ void Error::SetErrno(int err)
 
 #ifdef _MSC_VER
 	char buf[128];
-	if (strerror_s(buf, sizeof(buf), err) != 0)
+	if (strerror_s(buf, sizeof(buf), err) == 0)
 		m_description = fmt::format("errno {}: {}", err, buf);
 	else
 		m_description = fmt::format("errno {}: <Could not get error message>", err);

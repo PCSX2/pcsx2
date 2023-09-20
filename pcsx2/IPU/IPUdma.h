@@ -17,10 +17,15 @@
 
 #include "IPU.h"
 
-struct IPUStatus {
+struct IPUDMAStatus {
 	bool InProgress;
 	bool DMAFinished;
+};
+
+struct IPUStatus {
 	bool DataRequested;
+	bool WaitingOnIPUFrom;
+	bool WaitingOnIPUTo;
 };
 
 extern void ipuCMDProcess();
@@ -33,4 +38,5 @@ extern void IPU0dma();
 extern void IPU1dma();
 
 extern void ipuDmaReset();
-extern IPUStatus IPU1Status;
+extern IPUDMAStatus IPU1Status;
+extern IPUStatus IPUCoreStatus;

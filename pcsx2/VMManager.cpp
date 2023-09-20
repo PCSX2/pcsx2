@@ -65,6 +65,7 @@
 #include "common/emitter/tools.h"
 
 #include "IconsFontAwesome5.h"
+#include "discord_rpc.h"
 #include "fmt/core.h"
 
 #include <atomic>
@@ -85,10 +86,6 @@
 #include "common/Darwin/DarwinMisc.h"
 #endif
 
-#ifdef ENABLE_DISCORD_PRESENCE
-#include "discord_rpc.h"
-#endif
-
 namespace VMManager
 {
 	static void ApplyGameFixes();
@@ -96,7 +93,7 @@ namespace VMManager
 	static void CheckForConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForCPUConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForGSConfigChanges(const Pcsx2Config& old_config);
-	static void CheckForFramerateConfigChanges(const Pcsx2Config& old_config);
+	static void CheckForEmulationSpeedConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForPatchConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForDEV9ConfigChanges(const Pcsx2Config& old_config);
 	static void CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config);
@@ -104,7 +101,6 @@ namespace VMManager
 	static void EnforceAchievementsChallengeModeSettings();
 	static void LogUnsafeSettingsToConsole(const std::string& messages);
 	static void WarnAboutUnsafeSettings();
-	static void ResetFrameLimiterState();
 
 	static bool AutoDetectSource(const std::string& filename);
 	static void UpdateDiscDetails(bool booting);
@@ -132,6 +128,11 @@ namespace VMManager
 	static void UpdateInhibitScreensaver(bool allow);
 	static void SaveSessionTime(const std::string& prev_serial);
 	static void ReloadPINE();
+
+	static LimiterModeType GetInitialLimiterMode();
+	static float GetTargetSpeedForLimiterMode(LimiterModeType mode);
+	static void ResetFrameLimiter();
+	static double AdjustToHostRefreshRate(float frame_rate, float target_speed);
 
 	static void SetTimerResolutionIncreased(bool enabled);
 	static void SetHardwareDependentDefaultSettings(SettingsInterface& si);
@@ -175,6 +176,12 @@ static u32 s_mxcsr_saved;
 static bool s_fast_boot_requested = false;
 static bool s_gs_open_on_initialize = false;
 
+static LimiterModeType s_limiter_mode = LimiterModeType::Nominal;
+static s64 s_limiter_ticks_per_frame = 0;
+static u64 s_limiter_frame_start = 0;
+static float s_target_speed = 0.0f;
+static bool s_use_vsync_for_timing = false;
+
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
 static u64 s_session_start_time = 0;
 
@@ -182,9 +189,7 @@ static bool s_screensaver_inhibited = false;
 
 static PINEServer s_pine_server;
 
-#ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
-#endif
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -247,7 +252,7 @@ void VMManager::SetState(VMState state)
 		else
 		{
 			PerformanceMetrics::Reset();
-			frameLimitReset();
+			ResetFrameLimiter();
 		}
 
 		SPU2::SetOutputPaused(paused);
@@ -997,11 +1002,6 @@ bool VMManager::HasBootedELF()
 	return s_current_crc != 0 && s_elf_executed;
 }
 
-static LimiterModeType GetInitialLimiterMode()
-{
-	return EmuConfig.GS.FrameLimitEnable ? LimiterModeType::Nominal : LimiterModeType::Unlimited;
-}
-
 bool VMManager::AutoDetectSource(const std::string& filename)
 {
 	if (!filename.empty())
@@ -1181,7 +1181,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Hle_ClearElfPath();
 	}
 
-#ifdef ENABLE_ACHIEVEMENTS
 	// Check for resuming with hardcore mode.
 	Achievements::ResetChallengeMode();
 	if (!state_to_load.empty() && Achievements::ChallengeModeActive() &&
@@ -1189,9 +1188,10 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	{
 		return false;
 	}
-#endif
 
-	EmuConfig.LimiterMode = GetInitialLimiterMode();
+	s_limiter_mode = GetInitialLimiterMode();
+	s_target_speed = GetTargetSpeedForLimiterMode(s_limiter_mode);
+	s_use_vsync_for_timing = false;
 
 	Console.WriteLn("Opening GS...");
 	s_gs_open_on_initialize = MTGS::IsOpen();
@@ -1297,8 +1297,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
 
-	gsUpdateFrequency(EmuConfig);
-	frameLimitReset();
 	cpuReset();
 
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
@@ -1308,8 +1306,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
 
 	SetEmuThreadAffinities();
-
-	PerformanceMetrics::Clear();
 
 	// do we want to load state?
 	if (!GSDumpReplayer::IsReplayingDump() && !state_to_load.empty())
@@ -1321,6 +1317,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 	}
 
+	PerformanceMetrics::Clear();
 	return true;
 }
 
@@ -1423,14 +1420,12 @@ void VMManager::Reset()
 		return;
 	}
 
-#ifdef ENABLE_ACHIEVEMENTS
 	if (!Achievements::OnReset())
 		return;
 
 	// Re-enforce hardcode mode constraints if we're now enabling it.
 	if (Achievements::ResetChallengeMode())
 		ApplySettings();
-#endif
 
 	vu1Thread.WaitVU();
 	vu1Thread.Reset();
@@ -1443,8 +1438,6 @@ void VMManager::Reset()
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
-	UpdateVSyncRate(true);
-	frameLimitReset();
 	cpuReset();
 
 	if (g_InputRecording.isActive())
@@ -1452,6 +1445,8 @@ void VMManager::Reset()
 		g_InputRecording.handleReset();
 		MTGS::PresentCurrentFrame();
 	}
+
+	ResetFrameLimiter();
 
 	// If we were paused, state won't be resetting, so don't flip back to running.
 	if (s_state.load(std::memory_order_acquire) == VMState::Resetting)
@@ -1690,12 +1685,8 @@ u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also
 
 bool VMManager::LoadState(const char* filename)
 {
-#ifdef ENABLE_ACHIEVEMENTS
 	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Loading state"))
-	{
 		return false;
-	}
-#endif
 
 	// TODO: Save the current state so we don't need to reset.
 	if (DoLoadState(filename))
@@ -1716,12 +1707,8 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 		return false;
 	}
 
-#ifdef ENABLE_ACHIEVEMENTS
 	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Loading state"))
-	{
 		return false;
-	}
-#endif
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
 		fmt::format(TRANSLATE_FS("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
@@ -1747,17 +1734,160 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 
 LimiterModeType VMManager::GetLimiterMode()
 {
-	return EmuConfig.LimiterMode;
+	return s_limiter_mode;
 }
 
 void VMManager::SetLimiterMode(LimiterModeType type)
 {
-	if (EmuConfig.LimiterMode == type)
+	if (s_limiter_mode == type)
 		return;
 
-	EmuConfig.LimiterMode = type;
-	gsUpdateFrequency(EmuConfig);
-	SPU2::OnTargetSpeedChanged();
+	s_limiter_mode = type;
+	UpdateTargetSpeed();
+}
+
+float VMManager::GetTargetSpeed()
+{
+	return s_target_speed;
+}
+
+LimiterModeType VMManager::GetInitialLimiterMode()
+{
+	return EmuConfig.EmulationSpeed.FrameLimitEnable ? LimiterModeType::Nominal : LimiterModeType::Unlimited;
+}
+
+double VMManager::AdjustToHostRefreshRate(float frame_rate, float target_speed)
+{
+	if (!EmuConfig.EmulationSpeed.SyncToHostRefreshRate || target_speed != 1.0f)
+	{
+		SPU2::SetDeviceSampleRateMultiplier(1.0);
+		s_use_vsync_for_timing = false;
+		return target_speed;
+	}
+
+	float host_refresh_rate;
+	if (!GSGetHostRefreshRate(&host_refresh_rate))
+	{
+		Console.Warning("Cannot sync to host refresh since the query failed.");
+		SPU2::SetDeviceSampleRateMultiplier(1.0);
+		s_use_vsync_for_timing = false;
+		return target_speed;
+	}
+
+	const double ratio = host_refresh_rate / frame_rate;
+	const bool syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
+	s_use_vsync_for_timing = (syncing_to_host && !EmuConfig.GS.SkipDuplicateFrames && EmuConfig.GS.VsyncEnable != VsyncMode::Off);
+	Console.WriteLn("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s %s", host_refresh_rate, frame_rate, ratio,
+		syncing_to_host ? "can sync" : "can't sync", s_use_vsync_for_timing ? "and using vsync for pacing" : "and using sleep for pacing");
+
+	if (!syncing_to_host)
+		return target_speed;
+
+	target_speed *= ratio;
+	SPU2::SetDeviceSampleRateMultiplier(ratio);
+	return target_speed;
+}
+
+float VMManager::GetTargetSpeedForLimiterMode(LimiterModeType mode)
+{
+	if (EmuConfig.EmulationSpeed.FrameLimitEnable && (!EmuConfig.EnableFastBootFastForward || !VMManager::Internal::IsFastBootInProgress()))
+	{
+		switch (s_limiter_mode)
+		{
+			case LimiterModeType::Nominal:
+				return EmuConfig.EmulationSpeed.NominalScalar;
+
+			case LimiterModeType::Slomo:
+				return EmuConfig.EmulationSpeed.SlomoScalar;
+
+			case LimiterModeType::Turbo:
+				return EmuConfig.EmulationSpeed.TurboScalar;
+
+			case LimiterModeType::Unlimited:
+				return 0.0f;
+
+				jNO_DEFAULT
+		}
+	}
+
+	return 0.0f;
+}
+
+void VMManager::UpdateTargetSpeed()
+{
+	const float frame_rate = GetFrameRate();
+	const float target_speed = AdjustToHostRefreshRate(frame_rate, GetTargetSpeedForLimiterMode(s_limiter_mode));
+	const float target_frame_rate = frame_rate * target_speed;
+
+	s_limiter_ticks_per_frame =
+		static_cast<s64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(std::max(frame_rate * target_speed, 1.0f)));
+
+	DevCon.WriteLn(fmt::format("Frame rate: {}, target speed: {}, target frame rate: {}, ticks per frame: {}", frame_rate, target_speed,
+		target_frame_rate, s_limiter_ticks_per_frame));
+
+	if (s_target_speed != target_speed)
+	{
+		s_target_speed = target_speed;
+
+		MTGS::UpdateVSyncMode();
+		SPU2::OnTargetSpeedChanged();
+		ResetFrameLimiter();
+	}
+}
+
+float VMManager::GetFrameRate()
+{
+	return GetVerticalFrequency();
+}
+
+void VMManager::ResetFrameLimiter()
+{
+	s_limiter_frame_start = GetCPUTicks();
+}
+
+void VMManager::Internal::Throttle()
+{
+	if (s_target_speed == 0.0f || s_use_vsync_for_timing)
+		return;
+
+	const u64 uExpectedEnd =
+		s_limiter_frame_start +
+		s_limiter_ticks_per_frame; // Compute when we would expect this frame to end, assuming everything goes perfectly perfect.
+	const u64 iEnd = GetCPUTicks(); // The current tick we actually stopped on.
+	const s64 sDeltaTime = iEnd - uExpectedEnd; // The diff between when we stopped and when we expected to.
+
+	// If frame ran too long...
+	if (sDeltaTime >= s_limiter_ticks_per_frame)
+	{
+		// ... Fudge the next frame start over a bit. Prevents fast forward zoomies.
+		s_limiter_frame_start += (sDeltaTime / s_limiter_ticks_per_frame) * s_limiter_ticks_per_frame;
+		return;
+	}
+
+	// Conversion of delta from CPU ticks (microseconds) to milliseconds
+	const s32 msec = static_cast<s32>((sDeltaTime * -1000) / static_cast<s64>(GetTickFrequency()));
+
+	// If any integer value of milliseconds exists, sleep it off.
+	// Prior comments suggested that 1-2 ms sleeps were inaccurate on some OSes;
+	// further testing suggests instead that this was utter bullshit.
+	if (msec > 1)
+	{
+		Threading::Sleep(msec - 1);
+	}
+
+	// Conversion to milliseconds loses some precision; after sleeping off whole milliseconds,
+	// spin the thread without sleeping until we finally reach our expected end time.
+	while (GetCPUTicks() < uExpectedEnd)
+	{
+	}
+
+	// Finally, set our next frame start to when this one ends
+	s_limiter_frame_start = uExpectedEnd;
+}
+
+void VMManager::Internal::FrameRateChanged()
+{
+	UpdateTargetSpeed();
 }
 
 void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
@@ -1765,10 +1895,8 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 	if (!HasValidVM())
 		return;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	if (Achievements::ChallengeModeActive() && !Achievements::ConfirmChallengeModeDisable("Frame advancing"))
 		return;
-#endif
 
 	s_frame_advance_count = num_frames;
 	SetState(VMState::Running);
@@ -1776,20 +1904,6 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 
 bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 {
-	if (GSDumpReplayer::IsReplayingDump())
-	{
-		if (!GSDumpReplayer::ChangeDump(path.c_str()))
-			return false;
-
-		UpdateDiscDetails(false);
-		return true;
-	}
-	else if (IsGSDumpFileName(path))
-	{
-		Host::ReportErrorAsync("Error", "Cannot change from game to GS dump without shutting down first.");
-		return false;
-	}
-
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
@@ -1834,6 +1948,36 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	cdvd.Tray.trayState = CDVD_DISC_OPEN;
 	UpdateDiscDetails(false);
 	return result;
+}
+
+bool VMManager::SetELFOverride(std::string path)
+{
+	if (!HasValidVM() || (!path.empty() && !FileSystem::FileExists(path.c_str())))
+		return false;
+
+	s_elf_override = std::move(path);
+	UpdateDiscDetails(false);
+
+	s_fast_boot_requested = !s_elf_override.empty() || EmuConfig.EnableFastBoot;
+	if (s_elf_override.empty())
+		Hle_ClearElfPath();
+	else
+		Hle_SetElfPath(s_elf_override.c_str());
+
+	Reset();
+	return true;
+}
+
+bool VMManager::ChangeGSDump(const std::string& path)
+{
+	if (!HasValidVM() || !GSDumpReplayer::IsReplayingDump() || !IsGSDumpFileName(path))
+		return false;
+
+	if (!GSDumpReplayer::ChangeDump(path.c_str()))
+		return false;
+
+	UpdateDiscDetails(false);
+	return true;
 }
 
 bool VMManager::IsElfFileName(const std::string_view& path)
@@ -1904,7 +2048,7 @@ VsyncMode Host::GetEffectiveVSyncMode()
 	const bool has_vm = VMManager::GetState() != VMState::Shutdown;
 
 	// Force vsync off when not running at 100% speed.
-	if (has_vm && EmuConfig.GS.LimitScalar != 1.0f)
+	if (has_vm && (s_target_speed != 1.0f && !s_use_vsync_for_timing))
 		return VsyncMode::Off;
 
 	// Otherwise use the config setting.
@@ -1925,7 +2069,7 @@ void VMManager::Internal::DisableFastBoot()
 
 	// Stop fast forwarding boot if enabled.
 	if (EmuConfig.EnableFastBootFastForward && !s_elf_executed)
-		ResetFrameLimiterState();
+		UpdateTargetSpeed();
 }
 
 bool VMManager::Internal::HasBootedELF()
@@ -1978,7 +2122,7 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 
 	if (reset_speed_limiter)
 	{
-		ResetFrameLimiterState();
+		UpdateTargetSpeed();
 		PerformanceMetrics::Reset();
 	}
 
@@ -2077,22 +2221,30 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 
 	Console.WriteLn("Updating GS configuration...");
 
-	if (EmuConfig.GS.FrameLimitEnable != old_config.GS.FrameLimitEnable)
-		EmuConfig.LimiterMode = GetInitialLimiterMode();
+	// We could just check whichever NTSC or PAL is appropriate for our current mode,
+	// but people _really_ shouldn't be screwing with framerate, so whatever.
+	if (EmuConfig.GS.FramerateNTSC != old_config.GS.FramerateNTSC ||
+		EmuConfig.GS.FrameratePAL != old_config.GS.FrameratePAL)
+	{
+		UpdateVSyncRate(false);
+		UpdateTargetSpeed();
+	}
+	else if (EmuConfig.GS.VsyncEnable != old_config.GS.VsyncEnable)
+	{
+		// Still need to update target speed, because of sync-to-host-refresh.	
+		UpdateTargetSpeed();
+	}
 
-	ResetFrameLimiterState();
 	MTGS::ApplySettings();
 }
 
-void VMManager::CheckForFramerateConfigChanges(const Pcsx2Config& old_config)
+void VMManager::CheckForEmulationSpeedConfigChanges(const Pcsx2Config& old_config)
 {
-	if (EmuConfig.Framerate == old_config.Framerate)
+	if (EmuConfig.EmulationSpeed == old_config.EmulationSpeed)
 		return;
 
-	Console.WriteLn("Updating frame rate configuration");
-	gsUpdateFrequency(EmuConfig);
-	UpdateVSyncRate(true);
-	frameLimitReset();
+	Console.WriteLn("Updating emulation speed configuration");
+	UpdateTargetSpeed();
 }
 
 void VMManager::CheckForPatchConfigChanges(const Pcsx2Config& old_config)
@@ -2176,7 +2328,7 @@ void VMManager::CheckForMiscConfigChanges(const Pcsx2Config& old_config)
 	if (EmuConfig.EnableFastBootFastForward && !old_config.EnableFastBootFastForward &&
 		VMManager::Internal::IsFastBootInProgress())
 	{
-		ResetFrameLimiterState();
+		UpdateTargetSpeed();
 	}
 
 	if (EmuConfig.InhibitScreensaver != old_config.InhibitScreensaver)
@@ -2196,7 +2348,7 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	if (HasValidVM())
 	{
 		CheckForCPUConfigChanges(old_config);
-		CheckForFramerateConfigChanges(old_config);
+		CheckForEmulationSpeedConfigChanges(old_config);
 		CheckForPatchConfigChanges(old_config);
 		SPU2::CheckForConfigChanges(old_config);
 		CheckForDEV9ConfigChanges(old_config);
@@ -2217,13 +2369,6 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 	CheckForMiscConfigChanges(old_config);
 
 	Host::CheckForSettingsChanges(old_config);
-}
-
-void VMManager::ResetFrameLimiterState()
-{
-	gsUpdateFrequency(EmuConfig);
-	UpdateVSyncRate(true);
-	frameLimitReset();
 }
 
 void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
@@ -2252,9 +2397,9 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	};
 
 	// Can't use slow motion.
-	ClampSpeed(EmuConfig.Framerate.NominalScalar);
-	ClampSpeed(EmuConfig.Framerate.TurboScalar);
-	ClampSpeed(EmuConfig.Framerate.SlomoScalar);
+	ClampSpeed(EmuConfig.EmulationSpeed.NominalScalar);
+	ClampSpeed(EmuConfig.EmulationSpeed.TurboScalar);
+	ClampSpeed(EmuConfig.EmulationSpeed.SlomoScalar);
 
 	// Can't use cheats.
 	if (EmuConfig.EnableCheats)
@@ -2816,8 +2961,6 @@ void VMManager::ReloadPINE()
 	}
 }
 
-#ifdef ENABLE_DISCORD_PRESENCE
-
 void VMManager::InitializeDiscordPresence()
 {
 	if (s_discord_presence_active)
@@ -2878,22 +3021,3 @@ void VMManager::PollDiscordPresence()
 	Discord_RunCallbacks();
 }
 
-#else // ENABLE_DISCORD_PRESENCE
-
-void VMManager::InitializeDiscordPresence()
-{
-}
-
-void VMManager::ShutdownDiscordPresence()
-{
-}
-
-void VMManager::UpdateDiscordPresence(const std::string& rich_presence)
-{
-}
-
-void VMManager::PollDiscordPresence()
-{
-}
-
-#endif // ENABLE_DISCORD_PRESENCE

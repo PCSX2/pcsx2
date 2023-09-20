@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -86,7 +86,7 @@ jobs:
           flatpak run org.freedesktop.appstream-glib validate .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
 
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.2
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           manifest-path: .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
@@ -105,7 +105,7 @@ jobs:
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
-        uses: flatpak/flatpak-github-actions/flat-manager@v6.1
+        uses: flatpak/flatpak-github-actions/flat-manager@v6.2
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: beta
@@ -113,7 +113,7 @@ jobs:
 
       - name: Push to Flathub stable
         if: inputs.publish == true && inputs.branch == 'stable'
-        uses: flatpak/flatpak-github-actions/flat-manager@v6.1
+        uses: flatpak/flatpak-github-actions/flat-manager@v6.2
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: stable

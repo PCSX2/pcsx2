@@ -8487,9 +8487,11 @@ SCPS-56016:
   gameFixes:
     - GIFFIFOHack
   gsHWFixes:
-    mipmap: 1
-    autoFlush: 2
-    estimateTextureRegion: 1 # Improves performance.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SCPS-72001:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
@@ -10415,6 +10417,10 @@ SCUS-97621:
   name: "Twisted Metal - Head-On [Extra Twisted Edition]"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing textures.
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes smoke effects.
   gameFixes:
     - VUSyncHack # Fixes black doors on vehicles.
   patches:
@@ -10423,6 +10429,8 @@ SCUS-97621:
         author=refraction
         // COP2 rearrangement. RSQRT directly followed by DIV and a few ops using Q causes issues
         // Fixes fire effects
+        patch=1,EE,00237eb0,word,4b000060
+        patch=1,EE,00237ec0,word,4a0203bd
         patch=1,EE,002461d8,word,4bf4b33c
         patch=1,EE,002461dc,word,4b806d9c
         patch=1,EE,002461e0,word,4bc069fc
@@ -13084,6 +13092,8 @@ SLES-50713:
         // Snow effect has to be removed for this fix (needs accurate emulation).
         // Fixed by rearranging COP2 instructions.
         patch=1,EE,00214aec,word,00000000
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes broken FMVs.
 SLES-50714:
   name: "Defender"
   region: "PAL-M5"
@@ -13706,7 +13716,8 @@ SLES-50920:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
-    halfPixelOffset: 2 # Fixes font rendering.
+    cpuSpriteRenderBW: 2 # Fixes sky and lava when upscaling.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   patches:
     401F4726:
       content: |-
@@ -14132,6 +14143,9 @@ SLES-51128:
   name: "Total Immersion Racing"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Needed for post processing effects.
+    roundSprite: 1 # Fixes upscaling lines.
 SLES-51130:
   name: "Tony Hawk's Pro Skater 4"
   region: "PAL-E"
@@ -16227,6 +16241,8 @@ SLES-52034:
   name: "Cat in the Hat, The"
   region: "PAL-M5"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SLES-52036:
   name: "WWE SmackDown! - Here Comes the Pain!"
@@ -17603,69 +17619,113 @@ SLES-52646:
 SLES-52647:
   name: "Club Football 2005 - Manchester United"
   region: "PAL-M6"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52648:
   name: "Club Football 2005 - Borussia Dortmund"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52649:
   name: "Club Football 2005 - Olympique de Marseille"
   region: "PAL-E-F"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52650:
   name: "Club Football 2005 - Juventus"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52651:
   name: "Club Football 2005 - FC Barcelona"
   region: "PAL-M4"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52652:
   name: "Club Football 2005 - Liverpool FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52653:
   name: "Club Football 2005 - Liverpool FC"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52654:
   name: "Club Football 2005 - Real Madrid"
   region: "PAL-M5"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52655:
   name: "Club Football 2005 - FC Bayern München"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52656:
   name: "Club Football 2005 - AC Milan"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52657:
   name: "Club Football 2005 - Arsenal"
   region: "PAL-E-F"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52658:
   name: "Club Football 2005 - Hamburger SV"
   region: "PAL-G"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52659:
   name: "Club Football 2005 - Paris Saint-Germain"
   region: "PAL-E-F"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52660:
   name: "Club Football 2005 - FC Internazionale"
   region: "PAL-M3"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52661:
   name: "Club Football 2005 - Ajax Amsterdam"
   region: "PAL-M4"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52662:
   name: "Club Football 2005 - Newcastle United"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52663:
   name: "Club Football 2005 - Chelsea FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52664:
   name: "Club Football 2005 - Rangers FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52665:
   name: "Club Football 2005 - Celtic FC"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52666:
   name: "Club Football 2005 - Tottenham Hotspur"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52667:
   name: "Club Football 2005 - Birmingham City"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52668:
   name: "Club Football 2005 - Aston Villa"
   region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes upscaling lines.
 SLES-52669:
   name: "Forgotten Realms - Demon Stone"
   region: "PAL-M5"
@@ -18336,6 +18396,8 @@ SLES-52920:
 SLES-52921:
   name: "Rogue Trooper"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes ghosting.
 SLES-52922:
   name: "EyeToy - Disney Move"
   region: "PAL-M5"
@@ -21153,9 +21215,11 @@ SLES-53904:
   clampModes:
     vuClampMode: 0 # Fixes black artifacts on tracks
   gsHWFixes:
-    mipmap: 1
-    autoFlush: 2
-    estimateTextureRegion: 1 # Improves performance.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SLES-53906:
   name: "50 Cent - Bulletproof"
   region: "PAL-F"
@@ -21986,10 +22050,18 @@ SLES-54230:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    recommendedBlendingLevel: 4 # Fixes dark stage rendering.
+    mipmap: 2 # Mipmap + trilinear, improves stadium crowd to match sw renderer.
+    trilinearFiltering: 1
+    cpuSpriteRenderBW: 4 # Fixes garbage menus.
 SLES-54231:
   name: "Ricky Ponting International Cricket 2007"
   region: "PAL-A"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes dark stage rendering.
+    mipmap: 2 # Mipmap + trilinear, improves stadium crowd to match sw renderer.
+    trilinearFiltering: 1
+    cpuSpriteRenderBW: 4 # Fixes garbage menus.
 SLES-54232:
   name: "Kingdom Hearts II"
   region: "PAL-F"
@@ -35500,7 +35572,7 @@ SLPM-65889:
   name: "Kazoku Keikaku - Kokoro no Kizuna"
   region: "NTSC-J"
   gsHWFixes:
-    gpuTargetCLUT: 1 # Fixes broken colors.
+    cpuCLUTRender: 1 # Fixes broken colors.
 SLPM-65890:
   name: "Shin Sangoku Musou 4"
   region: "NTSC-J"
@@ -42645,7 +42717,8 @@ SLPS-25057:
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
-    halfPixelOffset: 2 # Fixes font rendering.
+    cpuSpriteRenderBW: 2 # Fixes sky and lava when upscaling.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   patches:
     04C3765E:
       content: |-
@@ -47979,6 +48052,8 @@ SLUS-20284:
         // Snow effect has to be removed for this fix (and that needs accurate emulation).
         // Fixed by rearranging COP2 instructions.
         patch=1,EE,002131bc,word,00000000
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes broken  FMVs.
 SLUS-20285:
   name: "MotoGP 2"
   region: "NTSC-U"
@@ -48114,7 +48189,8 @@ SLUS-20318:
   compat: 5
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
-    halfPixelOffset: 2 # Fixes font rendering.
+    cpuSpriteRenderBW: 2 # Fixes sky and lava when upscaling.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   patches:
     36E02E91:
       content: |-
@@ -48282,7 +48358,8 @@ SLUS-20353:
   region: "NTSC-U"
   gsHWFixes:
     preloadFrameData: 1 # Fixes invisible lava, there is another issue that needs skipdraw 1 for blurry font but it removes much brightness.
-    halfPixelOffset: 2 # Fixes font rendering.
+    cpuSpriteRenderBW: 2 # Fixes sky and lava when upscaling.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-20354:
   name: "Red Card Soccer 2003"
   region: "NTSC-U"
@@ -48556,6 +48633,9 @@ SLUS-20409:
   name: "Total Immersion Racing"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Needed for post processing effects.
+    roundSprite: 1 # Fixes upscaling lines.
 SLUS-20412:
   name: "Hot Wheels - Velocity X"
   region: "NTSC-U"
@@ -50531,6 +50611,8 @@ SLUS-20797:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SLUS-20798:
   name: "Starcraft - Ghost"
@@ -52137,9 +52219,11 @@ SLUS-21095:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
-    autoFlush: 2
-    estimateTextureRegion: 1 # Improves performance.
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
@@ -53463,6 +53547,8 @@ SLUS-21320:
   name: "Rogue Trooper"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 3 # Fixes ghosting.
 SLUS-21321:
   name: "Squadra Course Alfa Romeo"
   region: "NTSC-U"
@@ -55890,6 +55976,12 @@ SLUS-21793:
   name: "DT Carnage"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
+    gpuPaletteConversion: 2 # Improves performance and reduces hash cache size.
+    autoFlush: 1 # Corrects shadows (Currently still broken even with this).
+    mipmap: 2 # Mipmap + trilinear, matches sw renderer.
+    trilinearFiltering: 1
 SLUS-21794:
   name: "Go, Diego, Go! Great Dinosaur Rescue"
   region: "NTSC-U"
