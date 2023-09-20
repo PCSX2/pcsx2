@@ -30667,7 +30667,7 @@ SLPM-62297:
   name: "Got To Do! Hot Spring Table Tennis"
   region: "NTSC-J"
 SLPM-62298:
-  name: "PuchiCopter"
+  name: "Petit Copter"
   region: "NTSC-J"
 SLPM-62299:
   name: "Winback [Koei The Best]"
@@ -31731,7 +31731,7 @@ SLPM-62623:
         patch=1,EE,0053B740,word,00009400
         patch=1,EE,0053B768,word,00009400
 SLPM-62624:
-  name: "Indoor Helicopter Adventure 2"
+  name: "Petit Copter 2"
   region: "NTSC-J"
 SLPM-62625:
   name: "Onihama Bakusou Gurentai Gekitou Hen"
