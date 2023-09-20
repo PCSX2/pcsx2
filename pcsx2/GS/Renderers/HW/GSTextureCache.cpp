@@ -2209,8 +2209,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 						if (iter->blit.DBP == TEX0.TBP0 && transfer_end == rect_end)
 						{
-							std::advance(iter, 1);
-							GSRendererHW::GetInstance()->m_draw_transfers.erase(iter.base());
+							iter = std::vector<GSState::GSUploadQueue>::reverse_iterator(GSRendererHW::GetInstance()->m_draw_transfers.erase(iter.base() - 1));
 						}
 						else
 							++iter;
