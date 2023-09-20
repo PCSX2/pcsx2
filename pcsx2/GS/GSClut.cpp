@@ -120,9 +120,13 @@ u8 GSClut::IsInvalid()
 	return m_write.dirty;
 }
 
-void GSClut::ClearDrawInvalidity()
+void GSClut::ClearDrawInvalidity(bool clear_all)
 {
-	if (m_write.dirty & 2)
+	if (clear_all)
+	{
+		m_write.dirty = 0;
+	}
+	else if (m_write.dirty & 2)
 	{
 		m_write.dirty = 1;
 	}
