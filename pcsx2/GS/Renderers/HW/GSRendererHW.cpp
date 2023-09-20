@@ -1917,7 +1917,7 @@ void GSRendererHW::Draw()
 	if (GSConfig.UserHacks_CPUCLUTRender > 0 || GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 	{
 		const CLUTDrawTestResult result = (GSConfig.UserHacks_CPUCLUTRender == 2) ? PossibleCLUTDrawAggressive() : PossibleCLUTDraw();
-		m_mem.m_clut.ClearDrawInvalidity();
+		m_mem.m_clut.ClearDrawInvalidity(false);
 		if (result == CLUTDrawTestResult::CLUTDrawOnCPU && GSConfig.UserHacks_CPUCLUTRender > 0)
 		{
 			if (SwPrimRender(*this, true, true))
@@ -5742,34 +5742,26 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		return false;
 	}
 
+	const int next_ctx = (m_state_flush_reason == CONTEXTCHANGE) ? m_env.PRIM.CTXT : (1 - m_env.PRIM.CTXT);
+
+	// This is likely a full screen, can only really tell if this frame is used in the next draw, and we need to check if the height fills the next scissor.
+	if (m_env.CTXT[next_ctx].FRAME.FBP == m_cached_ctx.FRAME.FBP && m_env.CTXT[next_ctx].FRAME.FBW == m_cached_ctx.FRAME.FBW && m_r.width() == static_cast<int>(m_cached_ctx.FRAME.FBW * 64) && m_r.height() >= static_cast<int>(m_env.CTXT[next_ctx].SCISSOR.SCAY1 + 1))
+		return false;
+
 	// Try peeking ahead to confirm whether this is a "normal" clear, where the two buffers just happen to be
 	// bang up next to each other, or a double half clear. The two are really difficult to differentiate.
 	// Have to check both contexts, because God of War 2 likes to do this in-between setting TRXDIR, which
 	// causes a flush, and we don't have the next context backed up index set.
 	bool horizontal = false;
+	const bool possible_next_clear = !m_env.PRIM.TME && !(m_env.SCANMSK.MSK & 2) && !m_env.CTXT[next_ctx].TEST.ATE && !m_env.CTXT[next_ctx].TEST.DATE &&
+		(!m_env.CTXT[next_ctx].TEST.ZTE || m_env.CTXT[next_ctx].TEST.ZTST == ZTST_ALWAYS);
 
-	const bool ctx0_match = ((((m_env.CTXT[0].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2) || (m_env.CTXT[0].FRAME.FBW == m_cached_ctx.FRAME.FBW)) &&
-		((m_env.CTXT[0].FRAME.FBP == base &&
-		(!m_env.CTXT[0].ZBUF.ZMSK || (m_env.CTXT[0].TEST.ZTE && m_env.CTXT[0].TEST.ZTST >= ZTST_GEQUAL)) &&
-		m_env.CTXT[0].ZBUF.ZBP != half) ||
-		(m_env.CTXT[0].ZBUF.ZBP == base && m_env.CTXT[0].FRAME.FBP != half));
+	const bool next_draw_match = m_env.CTXT[next_ctx].FRAME.FBP == m_cached_ctx.FRAME.FBP && m_env.CTXT[next_ctx].ZBUF.ZBP == m_cached_ctx.ZBUF.ZBP;
 
-	const bool ctx1_match = ((((m_env.CTXT[1].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2) || (m_env.CTXT[1].FRAME.FBW == m_cached_ctx.FRAME.FBW)) && 
-		((m_env.CTXT[1].FRAME.FBP == base && m_env.CTXT[1].ZBUF.ZBP != half) ||
-		(m_env.CTXT[1].ZBUF.ZBP == base &&
-			(!m_env.CTXT[1].ZBUF.ZMSK || (m_env.CTXT[1].TEST.ZTE && m_env.CTXT[1].TEST.ZTST >= ZTST_GEQUAL)) &&
-			m_env.CTXT[1].FRAME.FBP != half));
-
-	if (ctx0_match || ctx1_match)
-	{
-		// Needed for Spider-Man 2 (target was previously half size, double half cleared at new size).
-		GL_INS("Confirmed double-half clear by next FBP/ZBP");
-
-		const int ctx = ctx1_match ? 1 : 0;
-
-		if (((m_env.CTXT[ctx].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2)
-			horizontal = true;
-	}
+	// Match either because we got here early or the information is the same on the next draw and the next draw is not a clear.
+	// Likely a misdetection.
+	if (next_draw_match && !possible_next_clear)
+		return false;
 	else
 	{
 		// Check for a target matching the starting point. It might be in Z or FRAME...
@@ -5785,23 +5777,38 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 
 		if (tgt)
 		{
+			// Games generally write full pages when doing half clears, so if the half of the buffer doesn't match, we need to round it up to the page edge.
+			// Dropship does this with half buffers of 128 high (32 * 4) when the final buffer is only actually 224 high (112 is half, centre of a page).
+			GSVector4i target_rect = tgt->GetUnscaledRect();
+			if ((target_rect.w / 2) & (frame_psm.pgs.y - 1))
+			{
+				target_rect.w = ((target_rect.w / 2) + (frame_psm.pgs.y - 1)) & ~(frame_psm.pgs.y - 1);
+				target_rect.w *= 2;
+			}
 			// If the full size is an odd width and it's trying to do half (in the case of FF7 DoC it goes from 7 to 4), we need to recalculate our end check.
 			if ((m_cached_ctx.FRAME.FBW * 2) == (tgt->m_TEX0.TBW + 1))
-				end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(tgt->m_TEX0.TBP0, tgt->m_TEX0.TBW + 1, tgt->m_TEX0.PSM, tgt->GetUnscaledRect());
+				end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(tgt->m_TEX0.TBP0, tgt->m_TEX0.TBW + 1, tgt->m_TEX0.PSM, target_rect);
 			else
-				end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(tgt->m_TEX0.TBP0, tgt->m_TEX0.TBW, tgt->m_TEX0.PSM, tgt->GetUnscaledRect());
+				end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(tgt->m_TEX0.TBP0, (m_cached_ctx.FRAME.FBW == (tgt->m_TEX0.TBW / 2)) ? tgt->m_TEX0.TBW : m_cached_ctx.FRAME.FBW, tgt->m_TEX0.PSM, target_rect);
 		}
+		const int ctx = next_ctx;
+
+		if (tgt)
+		{
+			// Siren double half clears horizontally with half FBW instead of vertically.
+			// We could use the FBW here, but using the rectangle seems a bit safer, because changing FBW
+			// from one RT to another isn't uncommon.
+			const GSVector4 vr = GSVector4(m_r.rintersect(tgt->m_valid)) / GSVector4(tgt->m_valid);
+			horizontal = (vr.z < vr.w);
+		}
+		else if (((m_env.CTXT[next_ctx].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2)
+			horizontal = true;
+
 		// Are we clearing over the middle of this target?
-		if (!tgt || (((half + written_pages) * BLOCKS_PER_PAGE) - 1) > end_block)
+		if ((((half + written_pages) * BLOCKS_PER_PAGE) - 1) > end_block)
 		{
 			return false;
 		}
-
-		// Siren double half clears horizontally with half FBW instead of vertically.
-		// We could use the FBW here, but using the rectangle seems a bit safer, because changing FBW
-		// from one RT to another isn't uncommon.
-		const GSVector4 vr = GSVector4(m_r.rintersect(tgt->m_valid)) / GSVector4(tgt->m_valid);
-		horizontal = (vr.z < vr.w);
 	}
 
 	GL_INS("DetectDoubleHalfClear(): Clearing %s %s, fbp=%x, zbp=%x, pages=%u, base=%x, half=%x, rect=(%d,%d=>%d,%d)",
@@ -6261,8 +6268,7 @@ bool GSRendererHW::IsConstantDirectWriteMemClear()
 		&& !m_cached_ctx.TEST.ATE // no alpha test
 		&& !m_cached_ctx.TEST.DATE // no destination alpha test
 		&& (!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST == ZTST_ALWAYS) // no depth test
-		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex.next == 2) // constant color write
-		&& m_r.x == 0 && m_r.y == 0) // Likely full buffer write
+		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex.next == 2)) // constant color write
 		return true;
 
 	return false;
