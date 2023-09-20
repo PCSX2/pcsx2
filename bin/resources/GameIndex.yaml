@@ -436,7 +436,7 @@ PBPX-95509:
   region: "PAL-E"
 PBPX-95510:
   name: "Linux (for PlayStation 2) Release 1.0 (Disc 2) (Software Packages)"
-  region: "PAL-Unk"
+  region: "PAL-E"
 PBPX-95514:
   name: "PlayStation 2 - Demo Disc 2002"
   region: "PAL-M5"
@@ -717,6 +717,13 @@ PCPX-96649:
 PCPX-96653:
   name: "Ratchet & Clank 3"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes SPR errors while going in-game.
+  gsHWFixes:
+    mipmap: 1 # Fixes garbage textures in the distance.
+    disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 2 # Helps fix misaligned bloom.
 PCPX-96655:
   name: "Play-Pre 2 Volume 12 - 2004 December"
   region: "NTSC-J"
@@ -2203,7 +2210,7 @@ SCED-50610:
   region: "PAL-M5"
 SCED-50614:
   name: "Jak and Daxter - The Precursor Legacy [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-M6"
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
     trilinearFiltering: 1 # Fixes water textures.
@@ -2391,7 +2398,7 @@ SCED-51140:
   region: "PAL-M5"
 SCED-51146:
   name: "Selector Demo 03"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
@@ -2406,7 +2413,7 @@ SCED-51163:
   region: "PAL-S"
 SCED-51165:
   name: "This Is Football 2003"
-  region: "PAL-Unk"
+  region: "PAL-M7"
 SCED-51166:
   name: "Le Monde des Bleus 2003 - Un Nouveau DÃ©fi"
   region: "PAL-F"
@@ -2418,16 +2425,16 @@ SCED-51185:
   region: "PAL-E-G"
 SCED-51187:
   name: "SCEE Catalogue Video"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51262:
   name: "Official PlayStation 2 Magazine Demo 25" # German
   region: "PAL-E-G"
 SCED-51269:
   name: "Selector Demo 04"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51278:
   name: "SCEE Catalogue Video 3+"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51279:
   name: "Official PlayStation 2 Magazine Demo 25"
   region: "PAL-M5"
@@ -2446,7 +2453,7 @@ SCED-51305:
     halfPixelOffset: 1 # Fixes texture misalignment.
 SCED-51314:
   name: "Kingdom Hearts"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51319:
   name: "Official PlayStation 2 Magazine Demo 27" # German
   region: "PAL-E-G"
@@ -2487,13 +2494,13 @@ SCED-51384:
   region: "PAL-M5"
 SCED-51389:
   name: "Best PS2 Games Ever 10"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51405:
   name: "Space Channel 5 - Part 2 Special Demo"
   region: "PAL-A"
 SCED-51406:
   name: "The Mark of Kri"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51411:
   name: "Magazine Ufficiale PlayStation 2 Italia 02/03"
   region: "PAL-I"
@@ -2508,10 +2515,10 @@ SCED-51444:
   region: "PAL-E"
 SCED-51452:
   name: "Sly Raccoon"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51454:
   name: "Tango - Game On Demo Disc 1"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51457:
   name: "Official PlayStation 2 Magazine Demo 30"
   region: "PAL-M5"
@@ -2520,7 +2527,12 @@ SCED-51483:
   region: "PAL-E-G"
 SCED-51484:
   name: "Primal"
-  region: "PAL-Unk"
+  region: "PAL-M5"
+  roundModes:
+    vu1RoundMode: 1 # Fixes SPS.
+    eeRoundMode: 0 # Fixes textures on the doors.
+  clampModes:
+    vu1ClampMode: 0 # Fix other SPS.
 SCED-51485:
   name: "Official PlayStation 2 Magazine Demo 30" # Australian
   region: "PAL-E"
@@ -2532,13 +2544,13 @@ SCED-51489:
   region: "PAL-M5"
 SCED-51491:
   name: "Primal + The Mark of Kri"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51505:
   name: "Official PlayStation 2 Magazine-UK Special Edition 11 - The World's Best PS2 Games Ever"
   region: "PAL-E"
 SCED-51506:
   name: "Primal + The Mark of Kri + War of the Monsters"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51512:
   name: "Official PlayStation 2 Magazine Germany Special Edition 2003/01"
   region: "PAL-G"
@@ -2662,16 +2674,16 @@ SCED-51591:
   region: "PAL-F"
 SCED-51596:
   name: "Selector Demo 06"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51597:
   name: "Selector Demo 7"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51598:
   name: "Selector Demo 08"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51601:
   name: "Shinobi"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-51632:
   name: "WRC II Extreme [Special Demo]"
   region: "PAL-E"
@@ -2681,10 +2693,10 @@ SCED-51632:
     halfPixelOffset: 1 # Fixes texture misalignment.
 SCED-51643:
   name: "Tango - Game On Demo Disc 2"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51644:
   name: "Tango - Game On Demo Disc 3"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51652:
   name: "Magazine Ufficiale PlayStation 2 Demo Italia 04/03"
   region: "PAL-I"
@@ -2693,7 +2705,7 @@ SCED-51656:
   region: "PAL-S"
 SCED-51657:
   name: "Official PlayStation Magazine Demo 33"
-  region: "PAL-Unk"
+  region: "PAL-P"
   compat: 5
   patches:
     90C0E5F1:
@@ -2701,16 +2713,24 @@ SCED-51657:
         comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
 SCED-51669:
   name: "MotoGP 3"
-  region: "PAL-Unk"
+  region: "PAL-E"
+  gsHWFixes:
+    roundSprite: 2 # Fixes lines at the edges of the HUD.
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
 SCED-51677:
   name: "My Street"
-  region: "PAL-Unk"
+  region: "PAL-M5"
+  gameFixes:
+    - VUSyncHack # Fixes SPS.
 SCED-51683:
   name: "Selector Demo 05"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51692:
   name: "SOCOM - U.S. Navy SEALs"
-  region: "PAL-Unk"
+  region: "PAL-M5"
+  clampModes:
+    vuClampMode: 2 # Fixes bad shadows.
 SCED-51700:
   name: "Jak II - Renegade [Demo]"
   region: "PAL-M5"
@@ -2731,7 +2751,7 @@ SCED-51760:
   region: "PAL-S"
 SCED-51779:
   name: "EyeToy - Play"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51836:
   name: "Magazine Ufficiale PlayStation 2 Demo Italia 07/03"
   region: "PAL-I"
@@ -2746,7 +2766,7 @@ SCED-51899:
   region: "PAL-E"
 SCED-51905:
   name: "Amplitude"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-51922:
   name: "Ghosthunter [Demo]"
   region: "PAL-G"
@@ -2840,7 +2860,11 @@ SCED-52094:
   region: "PAL-G"
 SCED-52098:
   name: "Destruction Derby Arenas"
-  region: "PAL-Unk"
+  region: "PAL-M5"
+  roundModes:
+    vu1RoundMode: 0 # Fixes tire textures.
+  gsHWFixes:
+    halfPixelOffset: 2 # Corrects shadow position.
 SCED-52119:
   name: "Official PlayStation 2 Magazine Germany Special Edition 01/2004"
   region: "PAL-G"
@@ -2866,7 +2890,7 @@ SCED-52141:
     autoFlush: 2 # Fixes sun luminosity.
 SCED-52147:
   name: "EyeToy - Christmas Wishi Washi"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-52158:
   name: "Official PlayStation 2 Magazine Demo 41"
   region: "PAL-S"
@@ -2926,7 +2950,7 @@ SCED-52196:
   region: "PAL-E"
 SCED-52225:
   name: "PlayStation 2 Christmas Special 2003"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-52260:
   name: "Forbidden Siren [Demo]"
   region: "PAL-M5"
@@ -2951,7 +2975,7 @@ SCED-52273:
   region: "PAL-M5"
 SCED-52311:
   name: "I-Ninja"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-52354:
   name: "Official PlayStation 2 Magazine Demo 43"
   region: "PAL-M5"
@@ -2992,18 +3016,23 @@ SCED-52452:
   region: "PAL-M5"
 SCED-52455:
   name: "Gran Turismo Special Edition 2004 Geneva Version"
-  region: "PAL-Unk"
+  region: "PAL-E"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
+  # eeClampMode = 3  Text in races works.
+  # vuClampMode = 2  Text in GT mode works.
 SCED-52461:
   name: "SingStar [Press Kit]"
   region: "PAL-E"
 SCED-52491:
   name: "Athens 2004"
-  region: "PAL-Unk"
+  region: "PAL-M6"
 SCED-52497:
   name: "This Is Football 2004"
-  region: "PAL-Unk"
+  region: "PAL-M4"
 SCED-52549:
   name: "Official PlayStation 2 Magazine Demo 47"
   region: "PAL-M5"
@@ -3065,7 +3094,7 @@ SCED-52818:
   region: "PAL-M11"
 SCED-52841:
   name: "Jackie Chan Adventures"
-  region: "PAL-Unk"
+  region: "PAL-M7"
 SCED-52846:
   name: "Killzone [Demo]"
   region: "PAL-E"
@@ -3075,7 +3104,7 @@ SCED-52846:
     halfPixelOffset: 2 # Fixes blurriness.
 SCED-52847:
   name: "Ratchet & Clank 3"
-  region: "PAL-Unk"
+  region: "PAL-E"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
@@ -3085,7 +3114,7 @@ SCED-52847:
     autoFlush: 2 # Helps fix misaligned bloom.
 SCED-52848:
   name: "Ratchet & Clank 3 + Sly 2 - Band of Thieves"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-52855:
   name: "Magazine Ufficiale PlayStation 2 Italia 09/04"
   region: "PAL-I"
@@ -3188,7 +3217,7 @@ SCED-52952:
     autoFlush: 2 # Fixes lighting.
 SCED-52969:
   name: "EyeToy - Play 2"
-  region: "PAL-Unk"
+  region: "PAL-M12"
 SCED-52970:
   name: "SCEE Hits Demo"
   region: "PAL-M5"
@@ -3253,10 +3282,10 @@ SCED-53115:
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SCED-53116:
   name: "Bonus Demo 9 (You)"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-53117:
   name: "Bonus Demo 9 (Old)"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-53122:
   name: "Official PlayStation 2 Magazine Demo 56"
   region: "PAL-M5"
@@ -3313,7 +3342,7 @@ SCED-53176:
   region: "PAL-M5"
 SCED-53177:
   name: "EyeToy Special Demo"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-53206:
   name: "Official PlayStation 2 Magazine Demo 58" # German
   region: "PAL-G"
@@ -3415,7 +3444,7 @@ SCED-53516:
   region: "PAL-I"
 SCED-53522:
   name: "EyeToy - Kinetic"
-  region: "PAL-Unk"
+  region: "PAL-M7"
 SCED-53538:
   name: "Tekken 5 [Demo]"
   region: "PAL-M5"
@@ -3429,7 +3458,7 @@ SCED-53611:
   region: "PAL-G"
 SCED-53613:
   name: "EyeToy - Play 3 + SpyToy"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-53622:
   name: "24 - The Game [Demo]"
   region: "PAL-M9"
@@ -3467,10 +3496,10 @@ SCED-53684:
   region: "PAL-E"
 SCED-53733:
   name: "Genji Special Demo"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-53792:
   name: "EyeToy - Antigrav + SpyToy Demo"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-53798:
   name: "Ufficiale PlayStation 2 Italia Kids Special 2005 Demo"
   region: "PAL-I"
@@ -3522,7 +3551,7 @@ SCED-53978:
   region: "PAL-M5"
 SCED-53990:
   name: "Shadow of the Colossus + Ico"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-54001:
   name: "Official PlayStation 2 Magazine Demo 69"
   region: "PAL-M5"
@@ -3619,7 +3648,7 @@ SCED-54105:
   region: "PAL-M5"
 SCED-54134:
   name: "EyeToy - Play Sports"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-54144:
   name: "Official PlayStation 2 Magazine Demo 72" # French
   region: "PAL-M5"
@@ -3646,7 +3675,7 @@ SCED-54208:
   region: "PAL-I"
 SCED-54238:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-54314:
   name: "Magazine Ufficiale PlayStation 2 Demo Italia 07-2006"
   region: "PAL-I"
@@ -3655,19 +3684,19 @@ SCED-54338:
   region: "PAL-M5"
 SCED-54345:
   name: "Buzz! Junior - Jungle Party"
-  region: "PAL-Unk"
+  region: "PAL-M14"
 SCED-54363:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-Unk"
+  region: "PAL-M4"
 SCED-54397:
   name: "Bonus Demo 12 (You)"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-54398:
-  name: "Bonus Demo 12m"
-  region: "PAL-Unk"
+  name: "Bonus Demo 12m (Old)"
+  region: "PAL-M5"
 SCED-54399:
   name: "Bonus Demo 12"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-54403:
   name: "Official PlayStation 2 Magazine Demo 78"
   region: "PAL-M5"
@@ -3724,7 +3753,7 @@ SCED-54481:
   region: "PAL-M5"
 SCED-54495:
   name: "EyeToy - Kinetic Combat"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCED-54523:
   name: "Magazine Ufficiale PlayStation 2 Italia Speciale Kids"
   region: "PAL-I"
@@ -3754,7 +3783,12 @@ SCED-54642:
   region: "PAL-M5"
 SCED-54680:
   name: "God of War II"
-  region: "PAL-Unk"
+  region: "PAL-M6"
+  gsHWFixes:
+    alignSprite: 1 # Fixes water vertical lines.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    roundSprite: 1 # Fixes chromatic effect.
+    autoFlush: 1 # Fixes sun occlusion.
 SCED-54682:
   name: "UPS2 Speciale Platinum 2007"
   region: "PAL-M5"
@@ -3772,7 +3806,7 @@ SCED-54758:
   region: "PAL-G"
 SCED-54808:
   name: "Buzz! Junior - RoboJam + Buzz! Junior - Jungle Party"
-  region: "PAL-Unk"
+  region: "PAL-M14"
 SCED-55113:
   name: "Official PlayStation 2 Magazine Demo 94"
   region: "PAL-M5"
@@ -4061,7 +4095,7 @@ SCES-50601:
   region: "PAL-I"
 SCES-50602:
   name: "Monsterbedriften - Skrekkøya"
-  region: "PAL-Unk"
+  region: "PAL-NO"
 SCES-50603:
   name: "Monstruos, S.A. - Isla de los sustos"
   region: "PAL-S"
@@ -4195,10 +4229,10 @@ SCES-50956:
     roundSprite: 1 # Fixes text alignment.
 SCES-50957:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-Unk"
+  region: "PAL-NL-I"
 SCES-50959:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-Unk"
+  region: "PAL-P-S"
 SCES-50960:
   name: "Disney's Stitch - Experiment 626"
   region: "PAL-F-G"
@@ -4238,7 +4272,7 @@ SCES-50987:
   region: "PAL-Unk"
 SCES-51003:
   name: "Network Access Disc"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCES-51004:
   name: "Formula One 2002"
   region: "PAL-M6"
@@ -4534,7 +4568,7 @@ SCES-51979:
   name: "Destruction Derby Arenas"
   region: "PAL-M6"
   roundModes:
-    vu1RoundMode: 0 # Fixes tyre textures.
+    vu1RoundMode: 0 # Fixes tire textures.
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow position.
 SCES-52004:
@@ -4579,7 +4613,12 @@ SCES-52124:
   region: "PAL-M5"
 SCES-52137:
   name: "WRC 3 - The Official Game of the FIA World Rally Championship"
-  region: "PAL-Unk"
+  region: "PAL-M8"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 2 # Fixes sun luminosity.
 SCES-52154:
   name: "EyeToy - Chat"
   region: "PAL-M11"
@@ -4798,6 +4837,11 @@ SCES-52677:
 SCES-52684:
   name: "WRC 3 - The Official Game of the FIA World Rally Championship"
   region: "PAL-A"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
+  gsHWFixes:
+    roundSprite: 2 # Correct misaligned font, better aligns car shadow.
+    autoFlush: 2 # Fixes sun luminosity.
 SCES-52748:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
@@ -5264,7 +5308,7 @@ SCES-54071:
   region: "PAL-Unk"
 SCES-54073:
   name: "Buzz! The Big Quiz"
-  region: "PAL-Unk"
+  region: "PAL-R"
 SCES-54077:
   name: "SingStar top.it"
   region: "PAL-I"
@@ -5424,7 +5468,7 @@ SCES-54507:
   region: "PAL-M3"
 SCES-54524:
   name: "Buzz! Junior - Jungle Party"
-  region: "PAL-Unk"
+  region: "PAL-SW" # Austria + Switzerland
 SCES-54526:
   name: "The Big! Sports Quiz"
   region: "PAL-M"
@@ -5489,7 +5533,7 @@ SCES-54601:
   region: "PAL-G"
 SCES-54613:
   name: "SingStar Pop Hits"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCES-54625:
   name: "Buzz! Junior - Monster Rumble"
   region: "PAL-M7"
@@ -5519,10 +5563,10 @@ SCES-54690:
   region: "PAL-PL"
 SCES-54701:
   name: "Buzz! Junior - RoboJam"
-  region: "PAL-Unk"
+  region: "PAL-M8"
 SCES-54703:
   name: "Buzz! Junior - Monster Rumble"
-  region: "PAL-Unk"
+  region: "PAL-M9"
 SCES-54704:
   name: "Monsterspass"
   region: "PAL-M"
@@ -5537,7 +5581,7 @@ SCES-54749:
   region: "PAL-M8"
 SCES-54750:
   name: "Buzz! Junior - Dino Den"
-  region: "PAL-Unk"
+  region: "PAL-M8"
 SCES-54760:
   name: "SingStar R&B"
   region: "PAL-E"
@@ -5597,7 +5641,7 @@ SCES-54852:
     - EETimingHack # Fixes long delays between questions.
 SCES-54854:
   name: "Buzz! Hollywood Quiz"
-  region: "PAL-Unk"
+  region: "PAL-NL-E-FR"
 SCES-54856:
   name: "Buzz! The Hollywood Quiz"
   region: "PAL-P"
@@ -5617,7 +5661,7 @@ SCES-54924:
   region: "PAL-M5"
 SCES-54941:
   name: "Buzz! The Schools Quiz"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCES-55019:
   name: "Ratchet & Clank - Size Matters"
   region: "PAL-M5"
@@ -5661,7 +5705,7 @@ SCES-55094:
   region: "PAL-M3"
 SCES-55095:
   name: "Buzz! The Pop Quiz"
-  region: "PAL-Unk"
+  region: "PAL-P-S"
 SCES-55096:
   name: "Buzz! The Pop Quiz"
   region: "PAL-SC"
@@ -5721,7 +5765,7 @@ SCES-55210:
   region: "PAL-M6"
 SCES-55211:
   name: "Buzz! Junior - Ace Racers"
-  region: "PAL-Unk"
+  region: "PAL-M8"
 SCES-55213:
   name: "Buzz! Escuela de Talentos"
   region: "PAL-S"
@@ -5790,7 +5834,7 @@ SCES-55421:
   region: "PAL-M"
 SCES-55423:
   name: "Buzz! Brain of the World"
-  region: "PAL-Unk"
+  region: "PAL-D-E-NW"
 SCES-55424:
   name: "Buzz! Brain of the World"
   region: "PAL-Unk"
@@ -5902,7 +5946,7 @@ SCES-55567:
   region: "PAL-E"
 SCES-55568:
   name: "SingStar Svenska Stjärnor"
-  region: "PAL-E"
+  region: "PAL-SW"
 SCES-55570:
   name: "SingStar Chartbreaker"
   region: "PAL-G"
