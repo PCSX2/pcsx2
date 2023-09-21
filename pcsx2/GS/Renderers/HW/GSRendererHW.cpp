@@ -5742,6 +5742,10 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		return false;
 	}
 
+	// Shortcut, if it's clearing Z then the clut overlap is not reading Z.
+	if (m_state_flush_reason == CLUTCHANGE && clear_depth)
+		return false;
+
 	const int next_ctx = (m_state_flush_reason == CONTEXTCHANGE) ? m_env.PRIM.CTXT : (1 - m_env.PRIM.CTXT);
 
 	// This is likely a full screen, can only really tell if this frame is used in the next draw, and we need to check if the height fills the next scissor.
