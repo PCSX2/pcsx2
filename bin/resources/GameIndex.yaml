@@ -21667,15 +21667,9 @@ SLES-54087:
 SLES-54089:
   name: "State of Emergency 2"
   region: "PAL-M3"
-  gsHWFixes:
-    cpuSpriteRenderBW: 1 # Fixes Text.
-    cpuSpriteRenderLevel: 2 # Needed to fix text.
 SLES-54092:
   name: "State of Emergency 2"
   region: "PAL-M3"
-  gsHWFixes:
-    cpuSpriteRenderBW: 1 # Fixes Text.
-    cpuSpriteRenderLevel: 2 # Needed to fix text.
 SLES-54093:
   name: "Guitar Hero"
   region: "PAL-M5"
@@ -51554,9 +51548,6 @@ SLUS-20966:
   name: "State of Emergency 2"
   region: "NTSC-U"
   compat: 4
-  gsHWFixes:
-    cpuSpriteRenderBW: 1 # Fixes Text.
-    cpuSpriteRenderLevel: 2 # Needed to fix text.
 SLUS-20967:
   name: "Enthusia Professional Racing"
   region: "NTSC-U"
@@ -56885,9 +56876,6 @@ SLUS-28054:
 SLUS-28056:
   name: "State of Emergency 2 [Trade Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    cpuSpriteRenderBW: 1 # Fixes Text.
-    cpuSpriteRenderLevel: 2 # Needed to fix text.
 SLUS-28059:
   name: "Metal Saga [Trade Demo]"
   region: "NTSC-U"
