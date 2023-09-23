@@ -38,20 +38,10 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Monospace'"));
 #endif
 
-	m_actionRunPause = new QAction(tr("Run"), this);
-	m_actionStepInto = new QAction(tr("Step Into"), this);
-	m_actionStepOver = new QAction(tr("Step Over"), this);
-	m_actionStepOut = new QAction(tr("Step Out"), this);
-
-	m_ui.menubar->addAction(m_actionRunPause);
-	m_ui.menubar->addAction(m_actionStepInto);
-	m_ui.menubar->addAction(m_actionStepOver);
-	m_ui.menubar->addAction(m_actionStepOut);
-
-	connect(m_actionRunPause, &QAction::triggered, this, &DebuggerWindow::onRunPause);
-	connect(m_actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
-	connect(m_actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
-	connect(m_actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
+	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
+	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
+	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
+	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DebuggerWindow::onVMStateChanged);
 	connect(g_emu_thread, &EmuThread::onVMResumed, this, &DebuggerWindow::onVMStateChanged);
@@ -78,18 +68,20 @@ void DebuggerWindow::onVMStateChanged()
 	if (!QtHost::IsVMPaused())
 	{
 		nextStatePaused = true;
-		m_actionRunPause->setText(tr("Pause"));
-		m_actionStepInto->setEnabled(false);
-		m_actionStepOver->setEnabled(false);
-		m_actionStepOut->setEnabled(false);
+		m_ui.actionRun->setText(tr("Pause"));
+		m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("pause-line")));
+		m_ui.actionStepInto->setEnabled(false);
+		m_ui.actionStepOver->setEnabled(false);
+		m_ui.actionStepOut->setEnabled(false);
 	}
 	else
 	{
 		nextStatePaused = false;
-		m_actionRunPause->setText(tr("Run"));
-		m_actionStepInto->setEnabled(true);
-		m_actionStepOver->setEnabled(true);
-		m_actionStepOut->setEnabled(true);
+		m_ui.actionRun->setText(tr("Run"));
+		m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("play-line")));
+		m_ui.actionStepInto->setEnabled(true);
+		m_ui.actionStepOver->setEnabled(true);
+		m_ui.actionStepOut->setEnabled(true);
 		Host::RunOnCPUThread([] {
 			if (CBreakPoints::GetBreakpointTriggered())
 			{
@@ -101,7 +93,6 @@ void DebuggerWindow::onVMStateChanged()
 				CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
 			}
 		});
-		
 	}
 	return;
 }
