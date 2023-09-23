@@ -61,13 +61,10 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 DebuggerWindow::~DebuggerWindow() = default;
 
-// TODO: not this
-bool nextStatePaused = true;
 void DebuggerWindow::onVMStateChanged()
 {
 	if (!QtHost::IsVMPaused())
 	{
-		nextStatePaused = true;
 		m_ui.actionRun->setText(tr("Pause"));
 		m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("pause-line")));
 		m_ui.actionStepInto->setEnabled(false);
@@ -76,7 +73,6 @@ void DebuggerWindow::onVMStateChanged()
 	}
 	else
 	{
-		nextStatePaused = false;
 		m_ui.actionRun->setText(tr("Run"));
 		m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("play-line")));
 		m_ui.actionStepInto->setEnabled(true);
@@ -99,7 +95,7 @@ void DebuggerWindow::onVMStateChanged()
 
 void DebuggerWindow::onRunPause()
 {
-	g_emu_thread->setVMPaused(nextStatePaused);
+	g_emu_thread->setVMPaused(!QtHost::IsVMPaused());
 }
 
 void DebuggerWindow::onStepInto()
