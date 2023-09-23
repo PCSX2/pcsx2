@@ -320,11 +320,18 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 
 	// Required extensions.
 	if (!SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, true) ||
-		!SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, true) ||
 		!SupportsExtension(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, true))
 	{
 		return false;
 	}
+
+	// MoltenVK does not support VK_EXT_line_rasterization. We want it for other platforms,
+	// but on Mac, the implicit line rasterization apparently matches Bresenham anyway.
+#ifdef __APPLE__
+	static constexpr bool require_line_rasterization = false;
+#else
+	static constexpr bool require_line_rasterization = true;
+#endif
 
 	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
@@ -333,9 +340,11 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
 		SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
-	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
+	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
+		require_line_rasterization);
+	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 
 #ifdef _WIN32
 	m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -530,8 +539,11 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
 	}
-	line_rasterization_feature.bresenhamLines = VK_TRUE;
-	Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
+	if (m_optional_extensions.vk_ext_line_rasterization)
+	{
+		line_rasterization_feature.bresenhamLines = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
+	}
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 	{
 		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
@@ -613,7 +625,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
-	Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
+	if (m_optional_extensions.vk_ext_line_rasterization)
+		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
 	if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
@@ -651,10 +664,16 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 			NUM_TFX_TEXTURES);
 		return false;
 	}
+
 	if (!line_rasterization_feature.bresenhamLines)
 	{
+		// See note in SelectDeviceExtensions().
 		Console.Error("bresenhamLines is not supported.");
+#ifndef __APPLE__
 		return false;
+#else
+		m_optional_extensions.vk_ext_line_rasterization = false;
+#endif
 	}
 
 	// VK_EXT_calibrated_timestamps checking
@@ -4737,8 +4756,11 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-	if (p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
+	if (m_optional_extensions.vk_ext_line_rasterization &&
+		p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
+	{
 		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT);
+	}
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
