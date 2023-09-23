@@ -513,6 +513,8 @@ extern u16 OutPos;
 extern u16 InputPos;
 // SPU Mixing Cycles ("Ticks mixed" counter)
 extern u32 Cycles;
+// DC Filter state
+extern StereoOut16 DCFilterIn, DCFilterOut;
 
 extern s16 spu2regs[0x010000 / sizeof(s16)];
 extern s16 _spu2mem[0x200000 / sizeof(s16)];
