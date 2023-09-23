@@ -1227,6 +1227,10 @@ if (APPLE)
 	# We have a bunch of page-sized arrays in bss that we use for jit
 	# Obviously not being able to make those arrays executable would be a problem
 	target_link_options(PCSX2_FLAGS INTERFACE -Wl,-segprot,__DATA,rwx,rw)
+	if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 15)
+		# FB13200673: Xcode 15's new linker's segprot handling is broken, request old linker
+		target_link_options(PCSX2_FLAGS INTERFACE -ld_classic)
+	endif()
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
