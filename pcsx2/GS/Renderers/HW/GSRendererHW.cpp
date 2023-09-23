@@ -5823,12 +5823,16 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// Double the clear rect.
 	if (horizontal)
 	{
+		const int width = m_r.width();
 		m_cached_ctx.FRAME.FBW *= 2;
-		m_r.z += m_r.x + m_r.width();
+		m_r.z = (w_pages * frame_psm.pgs.x);
+		m_r.z += m_r.x + width;
 	}
 	else
 	{
-		m_r.w += m_r.y + m_r.height();
+		const int height = m_r.height();
+		m_r.w = ((half - base) / m_cached_ctx.FRAME.FBW) * frame_psm.pgs.y;
+		m_r.w += m_r.y + height;
 	}
 	ReplaceVerticesWithSprite(m_r, GSVector2i(1, 1));
 
