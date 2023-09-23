@@ -1327,7 +1327,6 @@ static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GIF
 	return true;
 }
 
-// Disabled to avoid compiler warnings, enable when it is needed.
 static bool GetMoveTargetPair(GSRendererHW& r, GSTextureCache::Target** src, GSTextureCache::Target** dst,
 	bool req_target = false, bool preserve_target = false)
 {
@@ -1399,17 +1398,23 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 	// Store B -> A using a channel shuffle.
 	u32 pal[256];
 	for (u32 i = 0; i < std::size(pal); i++)
-		pal[i] = i << 24;	
+		pal[i] = i << 24;
 	std::shared_ptr<GSTextureCache::Palette> palette = g_texture_cache->LookupPaletteObject(pal, 256, true);
 	if (!palette)
 		return false;
 
-	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT);
+	if (dst->GetUnscaledWidth() < static_cast<int>(RWIDTH) || dst->GetUnscaledHeight() < static_cast<int>(RHEIGHT))
+	{
+		if (!dst->ResizeTexture(dst->GetUnscaledWidth(), static_cast<int>(RWIDTH), std::max(dst->GetUnscaledHeight(), static_cast<int>(RHEIGHT))))
+			return false;
+	}
+
+	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT).rintersect(dst->GetUnscaledRect());
 	dst->UpdateValidChannels(PSMCT32, 0);
 	dst->UpdateValidity(draw_rc);
 
-	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(dst->GetTexture(), nullptr,
-		dst->GetScale(), src->GetTexture(), src->GetScale(), draw_rc);
+	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(
+		dst->GetTexture(), nullptr, dst->GetScale(), src->GetTexture(), src->GetScale(), draw_rc);
 	config.pal = palette->GetPaletteGSTexture();
 	config.ps.channel = ChannelFetch_BLUE;
 	config.ps.depth_fmt = 1;
