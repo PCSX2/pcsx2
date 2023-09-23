@@ -1841,7 +1841,7 @@ bool FileSystem::DeleteDirectory(const char* path)
 	if (stat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
 		return false;
 
-	return (unlink(path) == 0);
+	return (rmdir(path) == 0);
 }
 
 std::string FileSystem::GetProgramPath()
