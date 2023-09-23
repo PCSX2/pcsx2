@@ -30,10 +30,12 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 // Easiest way to handle cross platform monospace fonts
 // There are issues related to TabWidget -> Children font inheritance otherwise
-#ifdef WIN32
-	this->setStyleSheet("font: 8pt 'Lucida Console'");
+#if defined(WIN32)
+	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Lucida Console'"));
+#elif defined(__APPLE__)
+	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 10pt 'Monaco'"));
 #else
-	this->setStyleSheet("font: 8pt 'Monospace'");
+	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Monospace'"));
 #endif
 
 	m_actionRunPause = new QAction(tr("Run"), this);
