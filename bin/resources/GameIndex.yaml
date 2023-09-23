@@ -755,6 +755,8 @@ PCPX-98041:
 PCPX-98042:
   name: "Minna no Tennis"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 PDPX-99109:
   name: "DVD Player Version 3.04"
   region: "NTSC-J"
@@ -1773,6 +1775,8 @@ SCAJ-20180:
 SCAJ-20181:
   name: "Minna no Tennis"
   region: "NTSC-Unk"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCAJ-20182:
   name: "Tales of Destiny"
   region: "NTSC-Unk"
@@ -6549,6 +6553,8 @@ SCKA-20084:
 SCKA-20085:
   name: "Minna no Tennis"
   region: "NTSC-K"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc 1 of 2]"
   region: "NTSC-K"
@@ -6706,6 +6712,8 @@ SCKA-20129:
 SCKA-20130:
   name: "Minna no Tennis"
   region: "NTSC-K"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCKA-20131:
   name: "Super Robot Taisen Z"
   region: "NTSC-J-K"
@@ -7607,6 +7615,8 @@ SCPS-15112:
 SCPS-15113:
   name: "Minna no Tennis"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCPS-15114:
   name: "Kikou Souhei Armodyne"
   region: "NTSC-J"
@@ -8116,6 +8126,8 @@ SCPS-19331:
 SCPS-19332:
   name: "Minna no Tennis [PlayStation 2 The Best]"
   region: "NTSC-J"
+  roundModes:
+    vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCPS-19333:
   name: "Wild Arms - The Vth Vanguard"
   region: "NTSC-J"
