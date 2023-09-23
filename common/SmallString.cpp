@@ -69,56 +69,61 @@ SmallStringBase::~SmallStringBase()
 
 void SmallStringBase::reserve(u32 new_reserve)
 {
-	if (m_buffer_size >= new_reserve)
+	const u32 real_reserve = new_reserve + 1;
+	if (m_buffer_size >= real_reserve)
 		return;
 
 	if (m_on_heap)
 	{
-		char* new_ptr = static_cast<char*>(std::realloc(m_buffer, new_reserve));
+		char* new_ptr = static_cast<char*>(std::realloc(m_buffer, real_reserve));
 		if (!new_ptr)
 			pxFailRel("Memory allocation failed.");
 
 #ifdef _DEBUG
-		std::memset(new_ptr + m_length, 0, new_reserve - m_length);
+		std::memset(new_ptr + m_length, 0, real_reserve - m_length);
 #endif
 		m_buffer = new_ptr;
 	}
 	else
 	{
-		char* new_ptr = static_cast<char*>(std::malloc(new_reserve));
+		char* new_ptr = static_cast<char*>(std::malloc(real_reserve));
 		if (!new_ptr)
 			pxFailRel("Memory allocation failed.");
 
 		if (m_length > 0)
 			std::memcpy(new_ptr, m_buffer, m_length);
 #ifdef _DEBUG
-		std::memset(new_ptr + m_length, 0, new_reserve - m_length);
+		std::memset(new_ptr + m_length, 0, real_reserve - m_length);
 #else
 		new_ptr[m_length] = 0;
 #endif
 		m_buffer = new_ptr;
 		m_on_heap = true;
 	}
+
+	m_buffer_size = real_reserve;
 }
 
 void SmallStringBase::shrink_to_fit()
 {
-	if (!m_on_heap || m_length == m_buffer_size)
+	const u32 buffer_size = (m_length + 1);
+	if (!m_on_heap || buffer_size == m_buffer_size)
 		return;
 
 	if (m_length == 0)
 	{
 		std::free(m_buffer);
+		m_buffer = nullptr;
 		m_buffer_size = 0;
 		return;
 	}
 
-	char* new_ptr = static_cast<char*>(std::realloc(m_buffer, m_length));
+	char* new_ptr = static_cast<char*>(std::realloc(m_buffer, buffer_size));
 	if (!new_ptr)
 		pxFailRel("Memory allocation failed.");
 
 	m_buffer = new_ptr;
-	m_buffer_size = m_length;
+	m_buffer_size = buffer_size;
 }
 
 std::string_view SmallStringBase::view() const
