@@ -2512,7 +2512,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			GSTexture* tex = GetCachedTexture(notif.badge_path.c_str());
 			if (tex)
 			{
-				dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+				dl->AddImage(tex->GetNativeHandle(), badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
 					IM_COL32(255, 255, 255, opacity));
 			}
 		}
