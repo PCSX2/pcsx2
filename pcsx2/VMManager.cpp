@@ -1181,7 +1181,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// Check for resuming with hardcore mode.
 	Achievements::ResetHardcoreMode();
 	if (!state_to_load.empty() && Achievements::IsHardcoreModeActive() &&
-		!Achievements::ConfirmHardcoreModeDisable("Resuming state"))
+		!Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Resuming state")))
 	{
 		return false;
 	}
@@ -1682,7 +1682,7 @@ u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also
 
 bool VMManager::LoadState(const char* filename)
 {
-	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Loading state"))
+	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Loading state")))
 		return false;
 
 	// TODO: Save the current state so we don't need to reset.
@@ -1704,7 +1704,7 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 		return false;
 	}
 
-	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Loading state"))
+	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Loading state")))
 		return false;
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
@@ -1892,7 +1892,7 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 	if (!HasValidVM())
 		return;
 
-	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Frame advancing"))
+	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Frame advancing")))
 		return;
 
 	s_frame_advance_count = num_frames;
