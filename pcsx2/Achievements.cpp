@@ -1014,7 +1014,7 @@ void Achievements::DisplayAchievementSummary()
 		std::string summary;
 		if (s_game_summary.num_core_achievements > 0)
 		{
-			summary = fmt::format(TRANSLATE_FS("Achievements", "You have earned {} of {} achievements, and {} of {} points."),
+			summary = fmt::format(TRANSLATE_FS("Achievements", "You have unlocked {} of {} achievements, and earned {} of {} points."),
 				s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
 				s_game_summary.points_core);
 		}
