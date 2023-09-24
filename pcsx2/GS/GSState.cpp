@@ -595,7 +595,8 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
-	CheckFlushes();
+	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+		CheckFlushes();
 
 	GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
 	GSVector4i zf = GSVector4i::loadl(&r->U64[1]);
@@ -611,7 +612,8 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
-	CheckFlushes();
+	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+		CheckFlushes();
 
 	const GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
 	const GSVector4i z = GSVector4i::loadl(&r->U64[1]);
@@ -641,7 +643,13 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 {
 	ASSERT(size > 0 && size % 3 == 0);
 
-	CheckFlushes();
+	bool flushes_checked = false;
+
+	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	{
+		flushes_checked = true;
+		CheckFlushes();
+	}
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
@@ -662,7 +670,13 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
-		VertexKick<prim, auto_flush, index_swap>(r[2].XYZF2.Skip());
+		const bool skip = r[2].XYZF2.Skip();
+		if (!flushes_checked && !skip)
+		{
+			flushes_checked = true;
+			CheckFlushes();
+		}
+		VertexKick<prim, auto_flush, index_swap>(skip);
 
 		r += 3;
 	}
@@ -674,8 +688,13 @@ template <u32 prim, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
+	bool flushes_checked = false;
 
-	CheckFlushes();
+	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	{
+		flushes_checked = true;
+		CheckFlushes();
+	}
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
@@ -695,7 +714,13 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
-		VertexKick<prim, auto_flush, index_swap>(r[2].XYZ2.Skip());
+		const bool skip = r[2].XYZF2.Skip();
+		if (!flushes_checked && !skip)
+		{
+			flushes_checked = true;
+			CheckFlushes();
+		}
+		VertexKick<prim, auto_flush, index_swap>(skip);
 
 		r += 3;
 	}
@@ -783,7 +808,8 @@ void GSState::GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 {
-	CheckFlushes();
+	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+		CheckFlushes();
 
 	const GSVector4i xyzf = GSVector4i::loadl(&r->XYZF);
 	const GSVector4i xyz = xyzf & (GSVector4i::xffffffff().upl32(GSVector4i::x00ffffff()));
@@ -797,7 +823,8 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 {
-	CheckFlushes();
+	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+		CheckFlushes();
 
 	m_v.m[1] = GSVector4i::load(&r->XYZ, &m_v.UV);
 
@@ -835,10 +862,8 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 			CLUTAutoFlush(m_prev_env.PRIM.PRIM);
 		}
 
-		if (m_prev_env.PRIM.TME || m_mem.m_clut.IsInvalid())
-		{
+		if ((m_prev_env.PRIM.TME && (m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.PSM & 0x7) >= 3) || m_mem.m_clut.IsInvalid())
 			Flush(GSFlushReason::CLUTCHANGE);
-		}
 		else
 			FlushWrite();
 
@@ -1546,33 +1571,33 @@ inline bool GSState::TestDrawChanged()
 	if ((m_dirty_gs_regs & ((1 << DIRTY_REG_TEST) | (1 << DIRTY_REG_SCISSOR) | (1 << DIRTY_REG_XYOFFSET) | (1 << DIRTY_REG_SCANMSK) | (1 << DIRTY_REG_DTHE))) || ((m_dirty_gs_regs & (1 << DIRTY_REG_DIMX)) && m_prev_env.DTHE.DTHE))
 		return true;
 
-	if (m_env.PRIM.ABE && (m_dirty_gs_regs & ((1 << DIRTY_REG_ALPHA) | (1 << DIRTY_REG_PABE))))
+	if (m_prev_env.PRIM.ABE && (m_dirty_gs_regs & ((1 << DIRTY_REG_ALPHA) | (1 << DIRTY_REG_PABE))))
 		return true;
 
-	if (m_env.PRIM.FGE && (m_dirty_gs_regs & (1 << DIRTY_REG_FOGCOL)))
+	if (m_prev_env.PRIM.FGE && (m_dirty_gs_regs & (1 << DIRTY_REG_FOGCOL)))
 		return true;
 
-	const int context = m_env.PRIM.CTXT;
-
+	const int context = m_prev_env.PRIM.CTXT;
+	const GSDrawingContext ctx = m_prev_env.CTXT[context];
 	// If the frame is getting updated check the FRAME, otherwise, we can ignore it
-	if ((m_env.CTXT[context].TEST.ATST != ATST_NEVER) || !m_env.CTXT[context].TEST.ATE || (m_env.CTXT[context].TEST.AFAIL & 1) || m_env.CTXT[context].TEST.DATE)
+	if ((ctx.TEST.ATST != ATST_NEVER) || !ctx.TEST.ATE || (ctx.TEST.AFAIL & 1) || ctx.TEST.DATE)
 	{
 		if ((m_dirty_gs_regs & ((1 << DIRTY_REG_FRAME) | (1 << DIRTY_REG_COLCLAMP) | (1 << DIRTY_REG_FBA))))
 			return true;
 	}
 
-	if ((m_env.CTXT[context].TEST.ATST != ATST_NEVER) || !m_env.CTXT[context].TEST.ATE || m_env.CTXT[context].TEST.AFAIL == AFAIL_ZB_ONLY)
+	if ((ctx.TEST.ATST != ATST_NEVER) || !ctx.TEST.ATE || ctx.TEST.AFAIL == AFAIL_ZB_ONLY)
 	{
 		if (m_dirty_gs_regs & (1 << DIRTY_REG_ZBUF))
 			return true;
 	}
 
-	if (m_env.PRIM.TME)
+	if (m_prev_env.PRIM.TME)
 	{
 		if (m_dirty_gs_regs & ((1 << DIRTY_REG_TEX0) | (1 << DIRTY_REG_TEX1) | (1 << DIRTY_REG_CLAMP) | (1 << DIRTY_REG_TEXA)))
 			return true;
 
-		if(m_env.CTXT[context].TEX1.MXL > 0 && (m_dirty_gs_regs & ((1 << DIRTY_REG_MIPTBP1) | (1 << DIRTY_REG_MIPTBP2))))
+		if(ctx.TEX1.MXL > 0 && (m_dirty_gs_regs & ((1 << DIRTY_REG_MIPTBP1) | (1 << DIRTY_REG_MIPTBP2))))
 			return true;
 	}
 
