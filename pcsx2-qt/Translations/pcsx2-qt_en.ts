@@ -116,109 +116,104 @@ Please check your username and password, and try again.</source>
 <context>
     <name>AchievementSettingsWidget</name>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="45"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="42"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="53"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="63"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="52"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="49"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
         <source>Test Unofficial Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="174"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="171"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="57"/>
         <source>Enable Sound Effects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="76"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="73"/>
         <source>Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="112"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="158"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="109"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="155"/>
         <source>5 seconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="191"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="188"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="217"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="214"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="176"/>
         <source>Login...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="210"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="207"/>
         <source>View Profile...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="29"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="35"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="60"/>
         <source>Enable Spectator Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="59"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="56"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="59"/>
         <source>Enable Encore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="121"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="118"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="55"/>
         <source>Show Achievement Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="167"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="164"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
         <source>Show Leaderboard Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="181"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="178"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="58"/>
         <source>Enable In-Game Overlays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="197"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="194"/>
         <source>Username:
 Login token generated at:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="235"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="232"/>
         <source>Game Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="251"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="248"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -812,220 +807,220 @@ Unread messages: {}</source>
 <context>
     <name>AdvancedSystemSettingsWidget</name>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="56"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="53"/>
         <source>Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="63"/>
         <source>EmotionEngine (MIPS-IV)</source>
         <extracomment>Emotion Engine = Commercial name of one of PS2&apos;s processors. Leave as-is unless there&apos;s an official name (like for Japanese).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="72"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="69"/>
         <source>Rounding Mode:</source>
         <extracomment>Rounding refers here to the mathematical term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="80"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="197"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="291"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="77"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="194"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="288"/>
         <source>Nearest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="85"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="202"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="296"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="82"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="199"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="293"/>
         <source>Negative</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="90"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="207"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="301"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="87"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="204"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="298"/>
         <source>Positive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="95"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="212"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="306"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="92"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="209"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="303"/>
         <source>Chop / Zero (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="100"/>
         <source>Clamping Mode:</source>
         <extracomment>Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs&apos; IEEE754 floats) to non-infinite ones.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="246"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="315"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="243"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="312"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="116"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="251"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="320"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="113"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="248"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="317"/>
         <source>Normal (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="111"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="108"/>
         <source>None</source>
         <comment>ClampMode</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="121"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="261"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="330"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="118"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="258"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="327"/>
         <source>Extra + Preserve Sign</source>
         <extracomment>Sign: refers here to the mathematical meaning (plus/minus).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="126"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="123"/>
         <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="136"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="133"/>
         <source>Wait Loop Detection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="143"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="347"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="140"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="344"/>
         <source>Enable Recompiler</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="150"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="147"/>
         <source>Enable Fast Memory Access</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="157"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="154"/>
         <source>Enable Cache (Slow)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="164"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="161"/>
         <source>INTC Spin Detection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="171"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="168"/>
         <source>Pause On TLB Miss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="183"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="180"/>
         <source>Vector Units (VU)</source>
         <extracomment>Vector Unit/VU: refers to two of PS2&apos;s processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="189"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="186"/>
         <source>VU1 Rounding Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="222"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="219"/>
         <source>mVU Flag Hack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="229"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="226"/>
         <source>Enable VU1 Recompiler</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="236"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="233"/>
         <source>Enable VU0 Recompiler (Micro Mode)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="256"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="325"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="253"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="322"/>
         <source>Extra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="269"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="266"/>
         <source>VU0 Clamping Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="276"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="273"/>
         <source>VU0 Rounding Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="283"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="280"/>
         <source>VU1 Clamping Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="341"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="338"/>
         <source>I/O Processor (IOP, MIPS-I)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="357"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="354"/>
         <source>Game Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="363"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="360"/>
         <source>Enable Game Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="370"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="367"/>
         <source>Enable Compatibility Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="380"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="377"/>
         <source>Frame Rate Control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="386"/>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="396"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="383"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="393"/>
         <source> hz</source>
         <extracomment>hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who&apos;d need to remove the space or do something in between should do so.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="406"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="403"/>
         <source>PAL Frame Rate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="413"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="410"/>
         <source>NTSC Frame Rate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="423"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="420"/>
         <source>PINE Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="445"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="442"/>
         <source>Slot:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AdvancedSettingsWidget.ui" line="452"/>
+        <location filename="../Settings/AdvancedSettingsWidget.ui" line="449"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1033,182 +1028,182 @@ Unread messages: {}</source>
 <context>
     <name>AudioSettingsWidget</name>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="29"/>
         <source>Timestretch Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="35"/>
         <source>Sequence Length:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="69"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="66"/>
         <source>30</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="78"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="75"/>
         <source>Seekwindow Size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="109"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="106"/>
         <source>20</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="118"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="115"/>
         <source>Overlap:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="149"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="146"/>
         <source>10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="179"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="176"/>
         <source>Restore Defaults</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="193"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="190"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="133"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="236"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="233"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="133"/>
         <source>100%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="277"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="274"/>
         <source>Mixing Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="283"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="280"/>
         <source>Synchronization:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="291"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="288"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="103"/>
         <source>TimeStretch (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="296"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="293"/>
         <source>Async Mix (Breaks some games!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="301"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="298"/>
         <source>None (Audio can skip.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="309"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="306"/>
         <source>Expansion:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="317"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="314"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="106"/>
         <source>Stereo (None, Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="322"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="319"/>
         <source>Quadraphonic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="327"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="324"/>
         <source>Surround 5.1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="332"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="329"/>
         <source>Surround 7.1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="340"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="337"/>
         <source>ProLogic Level:</source>
         <extracomment>ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="348"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="345"/>
         <source>None (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="353"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="350"/>
         <source>ProLogic Decoding (basic)</source>
         <extracomment>ProLogic is a Dolby brand. Leave the name as-is unless there is an official translation for your language.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="358"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="355"/>
         <source>ProLogic II Decoding (gigaherz)</source>
         <extracomment>ProLogic II is a Dolby brand. Leave the name as-is unless there is an official translation for your language. gigaherz is the nickname of one of PCSX2&apos;s developers. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="366"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="363"/>
         <source>Target Latency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="397"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="394"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="119"/>
         <source>60 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="409"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="406"/>
         <source>Output Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="415"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="412"/>
         <source>Output Module:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="425"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="422"/>
         <source>Output Latency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="456"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="453"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="122"/>
         <location filename="../Settings/AudioSettingsWidget.cpp" line="129"/>
         <source>20 ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="463"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="460"/>
         <source>Minimal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="472"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="469"/>
         <source>Output Backend:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="482"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="479"/>
         <source>Maximum Latency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AudioSettingsWidget.ui" line="492"/>
+        <location filename="../Settings/AudioSettingsWidget.ui" line="489"/>
         <source>Output Device:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1474,63 +1469,63 @@ Unread messages: {}</source>
 <context>
     <name>BIOSSettingsWidget</name>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="29"/>
         <source>BIOS Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="35"/>
         <source>PCSX2 will search for BIOS images in this directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="53"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="50"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="60"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="57"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="72"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="69"/>
         <source>BIOS Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="93"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="90"/>
         <source>Open in Explorer...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="100"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="97"/>
         <source>Refresh List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="119"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="116"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="124"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="121"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="135"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="132"/>
         <source>Options and Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="143"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="140"/>
         <location filename="../Settings/BIOSSettingsWidget.cpp" line="44"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/BIOSSettingsWidget.ui" line="150"/>
+        <location filename="../Settings/BIOSSettingsWidget.ui" line="147"/>
         <location filename="../Settings/BIOSSettingsWidget.cpp" line="47"/>
         <source>Fast Forward Boot</source>
         <translation type="unfinished"></translation>
@@ -1789,32 +1784,32 @@ Unread messages: {}</source>
 <context>
     <name>ControllerBindingWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.ui" line="32"/>
+        <location filename="../Settings/ControllerBindingWidget.ui" line="29"/>
         <source>Virtual Controller Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.ui" line="43"/>
+        <location filename="../Settings/ControllerBindingWidget.ui" line="40"/>
         <source>Bindings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.ui" line="63"/>
+        <location filename="../Settings/ControllerBindingWidget.ui" line="60"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.ui" line="83"/>
+        <location filename="../Settings/ControllerBindingWidget.ui" line="80"/>
         <source>Macros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.ui" line="120"/>
+        <location filename="../Settings/ControllerBindingWidget.ui" line="117"/>
         <source>Automatic Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.ui" line="134"/>
+        <location filename="../Settings/ControllerBindingWidget.ui" line="131"/>
         <source>Clear Mapping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1854,146 +1849,146 @@ Unread messages: {}</source>
 <context>
     <name>ControllerBindingWidget_DualShock2</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="46"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="43"/>
         <source>D-Pad</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="52"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="221"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="864"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="49"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="218"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="861"/>
         <source>Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="92"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="261"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="824"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="89"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="258"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="821"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="132"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="301"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="944"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="129"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="298"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="941"/>
         <source>Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="172"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="341"/>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="904"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="169"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="338"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="901"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="215"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="212"/>
         <source>Left Analog</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="384"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="381"/>
         <source>Large Motor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="441"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="438"/>
         <source>L2</source>
         <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="475"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="472"/>
         <source>R2</source>
         <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="509"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="506"/>
         <source>L1</source>
         <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="543"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="540"/>
         <source>R1</source>
         <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="577"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="574"/>
         <source>Start</source>
         <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="611"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="608"/>
         <source>Select</source>
         <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="649"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="646"/>
         <source>Face Buttons</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="655"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="652"/>
         <source>Cross</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="695"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="692"/>
         <source>Square</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="735"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="732"/>
         <source>Triangle</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="775"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="772"/>
         <source>Circle</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="818"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="815"/>
         <source>Right Analog</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="987"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="984"/>
         <source>Small Motor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1112"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1109"/>
         <source>L3</source>
         <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1152"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1149"/>
         <source>R3</source>
         <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1192"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1189"/>
         <source>Pressure Modifier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1226"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock2.ui" line="1223"/>
         <source>Analog</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2001,77 +1996,72 @@ Unread messages: {}</source>
 <context>
     <name>ControllerBindingWidget_Guitar</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="86"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="83"/>
         <source>Yellow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="98"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="118"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="138"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="158"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="178"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="198"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="218"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="238"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="258"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="278"/>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="298"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="95"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="115"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="135"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="155"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="175"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="195"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="215"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="235"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="255"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="275"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="295"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="106"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="103"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="126"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="123"/>
         <source>Red</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="146"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="143"/>
         <source>Green</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="166"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="163"/>
         <source>Orange</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="186"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="183"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="206"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="203"/>
         <source>Strum Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="226"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="223"/>
         <source>Strum Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="246"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="243"/>
         <source>Blue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="266"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="263"/>
         <source>Whammy Bar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="286"/>
+        <location filename="../Settings/ControllerBindingWidget_Guitar.ui" line="283"/>
         <source>Tilt</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2097,123 +2087,123 @@ Unread messages: {}</source>
 <context>
     <name>ControllerGlobalSettingsWidget</name>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="58"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="55"/>
         <source>SDL Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="71"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="68"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="64"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="61"/>
         <source>Enable SDL Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="83"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="80"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="126"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="123"/>
         <source>XInput Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="142"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="139"/>
         <source>Enable XInput Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="210"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="207"/>
         <source>DInput Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="216"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="213"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="226"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="223"/>
         <source>Enable DInput Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="29"/>
         <source>Profile Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="35"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="48"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="45"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="90"/>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="261"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="87"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="258"/>
         <source>Controller LED Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="100"/>
         <source>Enable SDL Raw Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="132"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="129"/>
         <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="152"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="149"/>
         <source>Controller Multitap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="158"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="155"/>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="168"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="165"/>
         <source>Multitap on Console Port 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="175"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="172"/>
         <source>Multitap on Console Port 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="236"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="233"/>
         <source>Mouse/Pointer Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="242"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="239"/>
         <source>PCSX2 allows you to use your mouse to simulate analog stick movement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="264"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="261"/>
         <source>Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="254"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="251"/>
         <source>Enable Mouse Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="185"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="182"/>
         <source>Detected Devices</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2249,58 +2239,58 @@ Unread messages: {}</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="32"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="29"/>
         <source>Binds/Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="41"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="38"/>
         <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="54"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="51"/>
         <source>Pressure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="60"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="57"/>
         <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="94"/>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="163"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="91"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="160"/>
         <source>100%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="106"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="103"/>
         <source>Trigger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="112"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="109"/>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="134"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="131"/>
         <source>Deadzone:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="175"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="172"/>
         <source>Frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="183"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="180"/>
         <source>Macro will toggle every N frames.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerMacroEditWidget.ui" line="190"/>
+        <location filename="../Settings/ControllerMacroEditWidget.ui" line="187"/>
         <source>Set...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2876,22 +2866,22 @@ You cannot undo this action.</source>
 <context>
     <name>DEV9SettingsWidget</name>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="32"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="29"/>
         <source>Ethernet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="41"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="38"/>
         <source>Ethernet Device:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="48"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="45"/>
         <source>Ethernet Device Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="62"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="59"/>
         <source>Intercept DHCP</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2901,133 +2891,128 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="71"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="68"/>
         <source>Enabled</source>
         <comment>InterceptDHCP</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="88"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="85"/>
         <source>Subnet Mask:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="95"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="92"/>
         <source>Gateway Address:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="102"/>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="123"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="99"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="120"/>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="54"/>
         <source>Auto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="109"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="106"/>
         <source>Intercept DHCP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="130"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="127"/>
         <source>PS2 Address:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="144"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="141"/>
         <source>DNS1 Address:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="158"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="155"/>
         <source>DNS2 Address:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="176"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="173"/>
         <source>Internal DNS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="184"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="181"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="191"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="188"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="198"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="195"/>
         <source>Export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="205"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="202"/>
         <source>Import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="212"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="209"/>
         <source>Per game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="234"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="231"/>
         <source>Internal DNS can be selected using the DNS1/2 dropdowns, or by setting them to 192.0.2.1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="264"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="261"/>
         <source>Enabled</source>
         <comment>InternalDNSTable</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="277"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="274"/>
         <source>Hard Disk Drive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="283"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="280"/>
         <source>HDD File:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="292"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="289"/>
         <source>40</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="321"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="318"/>
         <source>120</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="340"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="337"/>
         <source>HDD Size (GiB):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="347"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="344"/>
         <source>Enabled</source>
         <comment>HDD</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="357"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="354"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.ui" line="367"/>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="364"/>
         <source>Create Image</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="44"/>
-        <source> </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3183,69 +3168,69 @@ Do you want to overwrite?</source>
 <context>
     <name>DebugSettingsWidget</name>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="39"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="36"/>
         <source>GS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="45"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="42"/>
         <source>Draw Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="53"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="50"/>
         <source>Dump GS Draws</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="60"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="57"/>
         <source>Save RT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="67"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="64"/>
         <source>Save Frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="74"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="71"/>
         <source>Save Texture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="81"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="78"/>
         <source>Save Depth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="90"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="87"/>
         <source>Start Draw Number:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="104"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="101"/>
         <source>Draw Dump Count:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="121"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="118"/>
         <source>Hardware Dump Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="128"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="125"/>
         <source>Software Dump Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="140"/>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="161"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="137"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="158"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="147"/>
-        <location filename="../Settings/DebugSettingsWidget.ui" line="168"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="144"/>
+        <location filename="../Settings/DebugSettingsWidget.ui" line="165"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3258,43 +3243,38 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="25"/>
-        <source>toolBar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="58"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="55"/>
         <location filename="../Debugger/DebuggerWindow.cpp" line="76"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="66"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="63"/>
         <source>Step Into</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="69"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="66"/>
         <source>F11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="77"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="74"/>
         <source>Step Over</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="80"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="77"/>
         <source>F10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="88"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="85"/>
         <source>Step Out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DebuggerWindow.ui" line="91"/>
+        <location filename="../Debugger/DebuggerWindow.ui" line="88"/>
         <source>Shift+F11</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3461,17 +3441,17 @@ Enter function name</source>
 <context>
     <name>EmptyGameListWidget</name>
     <message>
-        <location filename="../GameList/EmptyGameListWidget.ui" line="33"/>
+        <location filename="../GameList/EmptyGameListWidget.ui" line="30"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/EmptyGameListWidget.ui" line="68"/>
+        <location filename="../GameList/EmptyGameListWidget.ui" line="65"/>
         <source>Add Game Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/EmptyGameListWidget.ui" line="105"/>
+        <location filename="../GameList/EmptyGameListWidget.ui" line="102"/>
         <source>Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3513,192 +3493,192 @@ Enter function name</source>
 <context>
     <name>EmulationSettingsWidget</name>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="29"/>
         <source>Speed Control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="47"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="44"/>
         <source>Normal Speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="68"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="65"/>
         <source>Enable Speed Limiter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="78"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="75"/>
         <source>System Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="86"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="83"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="135"/>
         <source>Enable Instant VU1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="93"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="90"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
         <source>Enable Cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="54"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="51"/>
         <source>Slow-Motion Speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="61"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="58"/>
         <source>Fast-Forward Speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="100"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="97"/>
         <source>Enable Multithreaded VU1 (MTVU)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="107"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="104"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="142"/>
         <source>Enable Host Filesystem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="114"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="111"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="138"/>
         <source>Enable Fast CDVD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="123"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="120"/>
         <source>EE Cycle Skipping:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="131"/>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="208"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="128"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="205"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="136"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="133"/>
         <source>Mild Underclock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="141"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="138"/>
         <source>Moderate Underclock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="146"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="143"/>
         <source>Maximum Underclock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="154"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="151"/>
         <source>EE Cycle Rate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="162"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="159"/>
         <source>50% (Underclock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="167"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="164"/>
         <source>60% (Underclock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="172"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="169"/>
         <source>75% (Underclock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="177"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="174"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="121"/>
         <source>100% (Normal Speed)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="182"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="179"/>
         <source>130% (Overclock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="187"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="184"/>
         <source>180% (Overclock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="192"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="189"/>
         <source>300% (Overclock)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="200"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="197"/>
         <source>Affinity Control:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="213"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="210"/>
         <source>EE &gt; VU &gt; GS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="218"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="215"/>
         <source>EE &gt; GS &gt; VU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="223"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="220"/>
         <source>VU &gt; EE &gt; GS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="228"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="225"/>
         <source>VU &gt; GS &gt; EE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="233"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="230"/>
         <source>GS &gt; EE &gt; VU</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="238"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="235"/>
         <source>GS &gt; VU &gt; EE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="249"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="246"/>
         <source>Frame Pacing / Latency Control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="255"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="252"/>
         <source> frames</source>
         <extracomment>This string will appear next to the amount of frames selected, in a dropdown box.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="268"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="265"/>
         <source>Maximum Frame Latency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="277"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="274"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="145"/>
         <source>Optimal Frame Pacing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.ui" line="284"/>
+        <location filename="../Settings/EmulationSettingsWidget.ui" line="281"/>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="151"/>
         <source>Scale To Host Refresh Rate</source>
         <translation type="unfinished"></translation>
@@ -3901,79 +3881,79 @@ Enter function name</source>
 <context>
     <name>FolderSettingsWidget</name>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="29"/>
         <source>Cache Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="41"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="81"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="121"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="161"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="201"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="78"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="118"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="158"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="198"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="48"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="88"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="128"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="168"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="208"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="45"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="85"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="125"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="165"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="205"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="55"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="95"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="135"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="175"/>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="215"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="52"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="92"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="132"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="172"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="212"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="62"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="59"/>
         <source>Used for storing shaders, game list, and achievement data.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="72"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="69"/>
         <source>Cheats Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="102"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="99"/>
         <source>Used for storing .pnach files containing game cheats.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="112"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="109"/>
         <source>Covers Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="142"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="139"/>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="152"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="149"/>
         <source>Snapshots Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="182"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="179"/>
         <source>Used for screenshots and saving GS dumps.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="192"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="189"/>
         <source>Save States Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.ui" line="222"/>
+        <location filename="../Settings/FolderSettingsWidget.ui" line="219"/>
         <source>Used for storing save states.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8233,12 +8213,12 @@ ${serial}: Serial of the game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2677"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2696"/>
         <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="4952"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="4974"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8343,138 +8323,138 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameFixSettingsWidget</name>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="59"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="56"/>
         <source>Game Fixes (NOT recommended to change globally)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="65"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="62"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="55"/>
         <source>FPU Negative Divide Hack</source>
         <extracomment>FPU = Floating Point Unit. A part of the PS2&apos;s CPU. Do not translate.\nNegative Divide: mathematical term.\nGundam: a multimedia franchise name. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="72"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="69"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="54"/>
         <source>FPU Multiply Hack</source>
         <extracomment>FPU = Floating Point Unit. A part of the PS2&apos;s CPU. Do not translate.\nMultiply: mathematical term.\nTales of Destiny: a game&apos;s name. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="86"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="83"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="58"/>
         <source>Skip MPEG Hack</source>
         <extracomment>MPEG: video codec, leave as-is. FMV: Full Motion Video. Find the common used term in your language.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="93"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="90"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="56"/>
         <source>Preload TLB Hack</source>
         <extracomment>TLB: Translation Lookaside Buffer. Leave as-is. Goemon: name of a character from the series with his name. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="100"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="97"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="60"/>
         <source>EE Timing Hack</source>
         <extracomment>EE: Emotion Engine. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="107"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="104"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="61"/>
         <source>Instant DMA Hack</source>
         <extracomment>DMA: Direct Memory Access. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="114"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="111"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="59"/>
         <source>OPH Flag Hack</source>
         <extracomment>OPH: Name of a flag (Output PatH) in the GIF_STAT register in the EE. Leave as-is.\nBleach Blade Battles: a game&apos;s name. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="121"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="118"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="63"/>
         <source>Emulate GIF FIFO</source>
         <extracomment>GIF = GS (Graphics Synthesizer, the GPU) Interface. Leave as-is.\nFIFO = First-In-First-Out, a type of buffer. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="128"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="125"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="62"/>
         <source>DMA Busy Hack</source>
         <extracomment>DMA: Direct Memory Access. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="135"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="132"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="65"/>
         <source>Delay VIF1 Stalls</source>
         <extracomment>VIF = VU (Vector Unit) Interface. Leave as-is. SOCOM 2 and Spy Hunter: names of two different games. Leave as-is or use an official translation.\nHUD = Heads-Up Display. The games&apos; interfaces.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="142"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="139"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="64"/>
         <source>Emulate VIF FIFO</source>
         <extracomment>VIF = VU (Vector Unit) Interface. Leave as-is.\nFIFO = First-In-First-Out, a type of buffer. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="149"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="146"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="68"/>
         <source>Full VU0 Synchronization</source>
         <extracomment>VU0 = VU (Vector Unit) 0. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="156"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="153"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="67"/>
         <source>VU I Bit Hack</source>
         <extracomment>VU = Vector Unit. Leave as-is.\nI Bit = A bit referred as I, not as 1.\nScarface The World is Yours and Crash Tag Team Racing: names of two different games. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="163"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="160"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="66"/>
         <source>VU Add Hack</source>
         <extracomment>VU = Vector Unit. Leave as-is.\nTri-Ace: a game development company name. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="170"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="167"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="70"/>
         <source>VU Overflow Hack</source>
         <extracomment>VU = Vector Unit. Leave as-is.\nSuperman Returns: a game&apos;s name. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="177"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="174"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="69"/>
         <source>VU Sync</source>
         <extracomment>VU = Vector Unit. Leave as-is.\nRun Behind: watch out for misleading capitalization for non-English: this refers to making the VUs run behind (delayed relative to) the EE.\nM-Bit: a bitflag in VU instructions that tells VU0 to synchronize with the EE. M-Bit Game: A game that uses instructions with the M-Bit enabled (unofficial PCSX2 name).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="184"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="181"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="71"/>
         <source>VU XGKick Sync</source>
         <extracomment>VU = Vector Unit. Leave as-is.\nXGKick: the name of one of the VU&apos;s instructions. Leave as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="191"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="188"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="72"/>
         <source>Force Blit Internal FPS Detection</source>
         <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit  This option tells PCSX2 to estimate internal FPS by detecting blits (image copies) onto visible display memory.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameFixSettingsWidget.ui" line="79"/>
+        <location filename="../Settings/GameFixSettingsWidget.ui" line="76"/>
         <location filename="../Settings/GameFixSettingsWidget.cpp" line="57"/>
         <source>Use Software Renderer For FMVs</source>
         <extracomment>FMV: Full Motion Video. Find the common used term in your language.</extracomment>
@@ -8703,54 +8683,54 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameListSettingsWidget</name>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="34"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="31"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="60"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="57"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="80"/>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="178"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="77"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="175"/>
         <location filename="../Settings/GameListSettingsWidget.cpp" line="174"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="97"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="94"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="102"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="99"/>
         <source>Scan Recursively</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="112"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="109"/>
         <source>Excluded Paths (will not be scanned)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="138"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="135"/>
         <source>Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="158"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="155"/>
         <source>File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="218"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="215"/>
         <source>Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.ui" line="235"/>
+        <location filename="../Settings/GameListSettingsWidget.ui" line="232"/>
         <source>Rescan All Games</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8790,32 +8770,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GameListWidget</name>
     <message>
-        <location filename="../GameList/GameListWidget.ui" line="60"/>
+        <location filename="../GameList/GameListWidget.ui" line="57"/>
         <source>Game List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.ui" line="83"/>
+        <location filename="../GameList/GameListWidget.ui" line="80"/>
         <source>Game Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.ui" line="106"/>
+        <location filename="../GameList/GameListWidget.ui" line="103"/>
         <source>Show Titles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.ui" line="169"/>
+        <location filename="../GameList/GameListWidget.ui" line="166"/>
         <source>All Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.ui" line="182"/>
+        <location filename="../GameList/GameListWidget.ui" line="179"/>
         <source>All Regions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.ui" line="200"/>
+        <location filename="../GameList/GameListWidget.ui" line="197"/>
         <source>Search...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9288,62 +9268,62 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GraphicsSettingsWidget</name>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="35"/>
         <source>Renderer:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="48"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="45"/>
         <source>Adapter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="68"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="65"/>
         <source>Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="74"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="71"/>
         <source>Fullscreen Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="84"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="81"/>
         <source>Aspect Ratio:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="92"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="89"/>
         <source>Fit to Window / Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="97"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="128"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="94"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="125"/>
         <source>Auto Standard (4:3 Interlaced / 3:2 Progressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="102"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="133"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="99"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="130"/>
         <source>Standard (4:3)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="107"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="138"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="104"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="135"/>
         <source>Widescreen (16:9)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="115"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="112"/>
         <source>FMV Aspect Ratio:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="123"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1092"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1123"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="120"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1089"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1120"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="61"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="392"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="459"/>
@@ -9353,12 +9333,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="154"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="484"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="546"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1220"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2093"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2128"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="151"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="481"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="543"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1217"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2090"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2125"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="36"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="409"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="451"/>
@@ -9369,92 +9349,92 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="159"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="156"/>
         <source>None (Interlaced, also used by Progressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="164"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="161"/>
         <source>Weave (Top Field First, Sawtooth)</source>
         <extracomment>Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="169"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="166"/>
         <source>Weave (Bottom Field First, Sawtooth)</source>
         <extracomment>Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="174"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="171"/>
         <source>Bob (Top Field First, Full Frames)</source>
         <extracomment>Bob: deinterlacing method that refers to the way it makes video look like it&apos;s bobbing up and down.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="179"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="176"/>
         <source>Bob (Bottom Field First, Full Frames)</source>
         <extracomment>Bob: deinterlacing method that refers to the way it makes video look like it&apos;s bobbing up and down.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="184"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="181"/>
         <source>Blend (Top Field First, Merge 2 Fields)</source>
         <extracomment>Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="189"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="186"/>
         <source>Blend (Bottom Field First, Merge 2 Fields)</source>
         <extracomment>Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="194"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="191"/>
         <source>Adaptive (Top Field First, Similar to Bob + Weave)</source>
         <extracomment>Adaptive: deinterlacing method that should be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="199"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="196"/>
         <source>Adaptive (Bottom Field First, Similar to Bob + Weave)</source>
         <extracomment>Adaptive: deinterlacing method that should be translated.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="207"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="204"/>
         <source>Bilinear Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="215"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="654"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="212"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="651"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="220"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="217"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="379"/>
         <source>Bilinear (Smooth)</source>
         <extracomment>Smooth: Refers to the texture clarity.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="225"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="222"/>
         <source>Bilinear (Sharp)</source>
         <extracomment>Sharp: Refers to the texture clarity.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="233"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="230"/>
         <source>Vertical Stretch:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="240"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="444"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1399"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1594"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="237"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="441"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1396"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1591"/>
         <source>%</source>
         <extracomment>Percentage sign that shows next to a value. You might want to add a space before if your language requires it.
 ----------
@@ -9462,360 +9442,360 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="253"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="250"/>
         <source>Crop:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="262"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="259"/>
         <source>Left:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="269"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="286"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="303"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="320"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="266"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="283"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="300"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="317"/>
         <source>px</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="279"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="276"/>
         <source>Top:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="296"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="293"/>
         <source>Right:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="313"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="310"/>
         <source>Bottom:</source>
         <extracomment>Warning: short space constraints. Abbreviate if necessary.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="334"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="331"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="383"/>
         <source>Screen Offsets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="348"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="345"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="397"/>
         <source>VSync</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="355"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="352"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="388"/>
         <source>Show Overscan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="362"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="359"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="370"/>
         <source>Enable Widescreen Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="369"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="366"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="373"/>
         <source>Enable No-Interlacing Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="376"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="373"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="394"/>
         <source>Anti-Blur</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="379"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="376"/>
         <source>Ctrl+S</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="386"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="383"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="376"/>
         <source>Disable Interlace Offset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="395"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="392"/>
         <source>Screenshot Size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="405"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="402"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="411"/>
         <source>Screen Resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="410"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="407"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="445"/>
         <source>Internal Resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="415"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="412"/>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="424"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="421"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="415"/>
         <source>PNG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="429"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="426"/>
         <source>JPEG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="437"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="434"/>
         <source>Quality:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="460"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="698"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="457"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="695"/>
         <source>Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="466"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="463"/>
         <source>Internal Resolution:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="476"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="473"/>
         <source>Mipmapping:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="489"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="587"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="486"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="584"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="494"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="491"/>
         <source>Basic (Generated Mipmaps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="499"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="496"/>
         <source>Full (PS2 Mipmaps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="507"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="704"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="504"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="701"/>
         <source>Texture Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="515"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="724"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="512"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="721"/>
         <source>Nearest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="520"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="729"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="517"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="726"/>
         <source>Bilinear (Forced)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="525"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="734"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="522"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="731"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="454"/>
         <source>Bilinear (PS2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="530"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="739"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="527"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="736"/>
         <source>Bilinear (Forced excluding sprite)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="538"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="535"/>
         <source>Trilinear Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="551"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="548"/>
         <source>Off (None)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="556"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="553"/>
         <source>Trilinear (PS2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="561"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="558"/>
         <source>Trilinear (Forced)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="569"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="566"/>
         <source>Anisotropic Filtering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="579"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="576"/>
         <source>Dithering:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="592"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="589"/>
         <source>Scaled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="597"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="594"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="462"/>
         <source>Unscaled (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="605"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="602"/>
         <source>Blending Accuracy:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="613"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="610"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="618"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="615"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="468"/>
         <source>Basic (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="623"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="620"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="628"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="625"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="633"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="630"/>
         <source>Full (Slow)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="638"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="635"/>
         <source>Maximum (Very Slow)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="646"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="643"/>
         <source>Texture Preloading:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="659"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="656"/>
         <source>Partial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="664"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="661"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="474"/>
         <source>Full (Hash Cache)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="747"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="744"/>
         <source>Software Rendering Threads:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="985"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="982"/>
         <source>Skip Draw Range:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1047"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1044"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="478"/>
         <source>GPU Palette Conversion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="681"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="678"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="482"/>
         <source>Manual Hardware Renderer Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="674"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="671"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="491"/>
         <source>Spin GPU During Readbacks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="688"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="685"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="487"/>
         <source>Spin CPU During Readbacks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="754"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="751"/>
         <source> threads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="763"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="760"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="451"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="507"/>
         <source>Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="770"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="767"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="502"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="522"/>
         <source>Auto Flush</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="780"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="777"/>
         <source>Hardware Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2133"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2130"/>
         <source>Force Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2138"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2135"/>
         <source>Force Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="786"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="783"/>
         <source>CPU Sprite Render Size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="796"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="882"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="889"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="793"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="879"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="886"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="512"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="514"/>
         <source>0 (Disabled)</source>
@@ -9823,74 +9803,74 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="801"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="798"/>
         <source>1 (64 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="806"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="803"/>
         <source>2 (128 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="811"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="808"/>
         <source>3 (192 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="816"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="813"/>
         <source>4 (256 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="821"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="818"/>
         <source>5 (320 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="826"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="823"/>
         <source>6 (384 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="831"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="828"/>
         <source>7 (448 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="836"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="833"/>
         <source>8 (512 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="841"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="838"/>
         <source>9 (576 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="846"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="843"/>
         <source>10 (640 Max Width)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1054"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1051"/>
         <source>Frame Buffer Conversion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1012"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1009"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="526"/>
         <source>Disable Depth Emulation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1026"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1023"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="530"/>
         <source>Disable Safe Features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1040"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1037"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="547"/>
         <source>Preload Frame Data</source>
         <translation type="unfinished"></translation>
@@ -9901,612 +9881,612 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="894"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="891"/>
         <source>1 (Normal)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="899"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="896"/>
         <source>2 (Aggressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="875"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="872"/>
         <source>Software CLUT Render:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="907"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="904"/>
         <source>GPU Target CLUT:</source>
         <extracomment>CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="915"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="941"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="967"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="912"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="938"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="964"/>
         <source>Disabled (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="920"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="917"/>
         <source>Enabled (Exact Match)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="925"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="922"/>
         <source>Enabled (Check Inside Target)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1078"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1075"/>
         <source>Upscaling Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1084"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1081"/>
         <source>Half Pixel Offset:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1097"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1094"/>
         <source>Normal (Vertex)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1102"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1099"/>
         <source>Special (Texture)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1107"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1104"/>
         <source>Special (Texture - Aggressive)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1115"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1112"/>
         <source>Round Sprite:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1128"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1125"/>
         <source>Half</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1133"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1130"/>
         <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1141"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1138"/>
         <source>Texture Offsets:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1150"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1147"/>
         <source>X:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1164"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1161"/>
         <source>Y:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1203"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1200"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="593"/>
         <source>Merge Sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1182"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1179"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="581"/>
         <source>Align Sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="146"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="143"/>
         <source>Deinterlacing:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="855"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="852"/>
         <source>Sprites Only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="860"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="857"/>
         <source>Sprites/Triangles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="865"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="862"/>
         <source>Blended Sprites/Triangles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="933"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="930"/>
         <source>Auto Flush:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="946"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="943"/>
         <source>Enabled (Sprites Only)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="951"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="948"/>
         <source>Enabled (All Primitives)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="959"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="956"/>
         <source>Texture Inside RT:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="972"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="969"/>
         <source>Inside Target</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="977"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="974"/>
         <source>Merge Targets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1019"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1016"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="539"/>
         <source>Disable Partial Source Invalidation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1033"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1030"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="553"/>
         <source>Read Targets When Closing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1061"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1058"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="557"/>
         <source>Estimate Texture Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1068"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1065"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
         <source>Disable Render Fixes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1189"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1186"/>
         <source>Unscaled Palette Texture Draws</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1196"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1193"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="586"/>
         <source>Wild Arms Hack</source>
         <extracomment>Wild Arms: name of a game series. Leave as-is or use an official translation.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1212"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1209"/>
         <source>Bilinear Dirty Upscale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1225"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1222"/>
         <source>Force Bilinear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1230"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1227"/>
         <source>Force Nearest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1239"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1236"/>
         <source>Texture Replacement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1245"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1242"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1254"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1729"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1251"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1726"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1261"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1736"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1258"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1733"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1268"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1743"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1265"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1740"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1275"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1272"/>
         <source>PCSX2 will dump and load texture replacements from this directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1285"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1282"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1291"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1288"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="599"/>
         <source>Dump Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1298"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1295"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="601"/>
         <source>Dump Mipmaps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1305"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1302"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="603"/>
         <source>Dump FMV Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1319"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1316"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="607"/>
         <source>Load Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1326"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1323"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="609"/>
         <source>Precache Textures</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1350"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1347"/>
         <source>Post-Processing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1356"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1353"/>
         <source>Sharpening/Anti-Aliasing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1362"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1359"/>
         <source>Contrast Adaptive Sharpening:</source>
         <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1372"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1440"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1369"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1437"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="615"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="632"/>
         <source>None (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1377"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1374"/>
         <source>Sharpen Only (Internal Resolution)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1382"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1379"/>
         <source>Sharpen and Resize (Display Resolution)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1392"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1389"/>
         <source>Sharpness:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1416"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1413"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="624"/>
         <source>FXAA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1426"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1423"/>
         <source>Filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1432"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1429"/>
         <source>TV Shader:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1445"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1442"/>
         <source>Scanline Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1450"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1447"/>
         <source>Diagonal Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1455"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1452"/>
         <source>Triangular Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1460"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1457"/>
         <source>Wave Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1465"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1462"/>
         <source>Lottes CRT</source>
         <extracomment>Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1470"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1467"/>
         <source>4xRGSS downsampling (4x Rotated Grid SuperSampling)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1475"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1472"/>
         <source>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1483"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1480"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="619"/>
         <source>Shade Boost</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1505"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1502"/>
         <source>Brightness:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1522"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1519"/>
         <source>Contrast:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1539"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1536"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="630"/>
         <source>Saturation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1575"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1572"/>
         <source>OSD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1581"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1578"/>
         <source>On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1587"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1584"/>
         <source>OSD Scale:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1609"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1606"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="660"/>
         <source>Show Indicators</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1616"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1613"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="650"/>
         <source>Show Resolution</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1623"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1620"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="666"/>
         <source>Show Inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1630"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1627"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="655"/>
         <source>Show GPU Usage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1637"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1634"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="663"/>
         <source>Show Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1644"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1641"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="644"/>
         <source>Show FPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2155"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2152"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="706"/>
         <source>Disable Dual-Source Blending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2162"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2159"/>
         <source>Disable Shader Cache</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2176"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2173"/>
         <source>Disable Vertex Shader Expand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1658"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1655"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="657"/>
         <source>Show Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1312"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1309"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
         <source>Asynchronous Texture Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1665"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1662"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="653"/>
         <source>Show CPU Usage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1679"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1676"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="672"/>
         <source>Warn About Unsafe Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1686"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1683"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="670"/>
         <source>Show Frame Times</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1712"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1709"/>
         <source>Recording</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1718"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1715"/>
         <source>Video Dumping Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1755"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1752"/>
         <source>Capture Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1761"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1758"/>
         <source>Container:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1794"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1862"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1791"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1859"/>
         <source>Codec:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1827"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1952"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1824"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1949"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="680"/>
         <source>Extra Arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1840"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1837"/>
         <source>Capture Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1895"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1892"/>
         <source>Resolution:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1920"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1917"/>
         <source>x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1943"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1940"/>
         <source>Auto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1965"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1962"/>
         <source>Capture Video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1991"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1988"/>
         <source>Advanced</source>
         <extracomment>Advanced here refers to the advanced graphics options.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1997"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1994"/>
         <source>Advanced Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2003"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2000"/>
         <source>Hardware Download Mode:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2011"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2008"/>
         <source>Accurate (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2016"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2013"/>
         <source>Disable Readbacks (Synchronize GS Thread)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2021"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2018"/>
         <source>Unsynchronized (Non-Deterministic)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2026"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2023"/>
         <source>Disabled (Ignore Transfers)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2034"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2031"/>
         <source>GS Dump Compression:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2042"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2039"/>
         <source>Uncompressed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2047"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2044"/>
         <source>LZMA (xz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2052"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2049"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="690"/>
         <source>Zstandard (zst)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2062"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2059"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="710"/>
         <source>Skip Presenting Duplicate Frames</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2069"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2066"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="694"/>
         <source>Use Blit Swap Chain</source>
         <extracomment>Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft&apos;s Terminology Portal.
@@ -10516,63 +10496,63 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2076"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2073"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="716"/>
         <source>Disable Threaded Presentation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1804"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1872"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1801"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1869"/>
         <source>Bitrate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1811"/>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1879"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1808"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1876"/>
         <source> kbps</source>
         <extracomment>Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2085"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2082"/>
         <source>Allow Exclusive Fullscreen:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2098"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2095"/>
         <source>Disallowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2103"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2100"/>
         <source>Allowed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2114"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2111"/>
         <source>Debugging Options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2120"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2117"/>
         <source>Override Texture Barriers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2169"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2166"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="704"/>
         <source>Use Debug Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1672"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1669"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="647"/>
         <source>Show Speed Percentages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2148"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="2145"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="708"/>
         <source>Disable Framebuffer Fetch</source>
         <translation type="unfinished"></translation>
@@ -10927,7 +10907,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="341"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="338"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="401"/>
         <source>Integer Scaling</source>
         <translation type="unfinished"></translation>
@@ -11326,7 +11306,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1651"/>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1648"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="640"/>
         <source>Show OSD Messages</source>
         <translation type="unfinished"></translation>
@@ -12043,137 +12023,137 @@ Right click to clear binding</source>
 <context>
     <name>InterfaceSettingsWidget</name>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="32"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="29"/>
         <source>Behaviour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="38"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="35"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="155"/>
         <source>Pause On Focus Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="45"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="42"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="144"/>
         <source>Inhibit Screensaver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="52"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="49"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="150"/>
         <source>Save State On Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="59"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="153"/>
         <source>Pause On Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="63"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="147"/>
         <source>Confirm Shutdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="73"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="70"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="158"/>
         <source>Create Save State Backups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="80"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="174"/>
         <source>Enable Discord Presence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="87"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="84"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="171"/>
         <source>Enable Per-Game Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="97"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="94"/>
         <source>Game Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="100"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="161"/>
         <source>Start Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="110"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="107"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="177"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="117"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="114"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="166"/>
         <source>Render To Separate Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="124"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="121"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="169"/>
         <source>Hide Main Window When Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="131"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="128"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="180"/>
         <source>Disable Window Resizing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="138"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="135"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="163"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="148"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="145"/>
         <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="154"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="151"/>
         <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="164"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="161"/>
         <source>Theme:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="177"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="174"/>
         <source>Automatic Updater</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="183"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="180"/>
         <source>Update Channel:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="193"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="190"/>
         <source>Current Version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="207"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="204"/>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="115"/>
         <source>Enable Automatic Update Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.ui" line="229"/>
+        <location filename="../Settings/InterfaceSettingsWidget.ui" line="226"/>
         <source>Check for Updates...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13675,103 +13655,103 @@ The saves will not be recoverable.</source>
 <context>
     <name>MemoryCardSettingsWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="50"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="47"/>
         <source>Console Ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="58"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="55"/>
         <source>Memory Cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="66"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="63"/>
         <source>Folder:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="76"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="73"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="83"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="80"/>
         <source>Open...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="90"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="87"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="133"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="100"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="108"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="105"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="113"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="110"/>
         <source>Formatted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="118"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="115"/>
         <source>Last Modified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="128"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="125"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="148"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="145"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="155"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="152"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="315"/>
         <source>Duplicate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="162"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="159"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="316"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="169"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="166"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="317"/>
         <source>Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="176"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="173"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="318"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="188"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="185"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="194"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="191"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="82"/>
         <source>Automatically manage saves based on running game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="201"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="198"/>
         <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="79"/>
         <source>Auto-eject Memory Cards when loading save states</source>
         <translation type="unfinished"></translation>
@@ -16425,117 +16405,117 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>USBBindingWidget_DrivingForce</name>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="40"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="37"/>
         <source>Hints</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="46"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="43"/>
         <source>To bind steering for most modern 900 degree wheels, turn the wheel one rotation in the desired direction, then back again to center.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="59"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="56"/>
         <source>Force Feedback</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="103"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="100"/>
         <source>D-Pad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="109"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="106"/>
         <source>Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="149"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="146"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="189"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="186"/>
         <source>Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="229"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="226"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="272"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="269"/>
         <source>L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="312"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="309"/>
         <source>L2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="365"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="362"/>
         <source>Brake</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="424"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="421"/>
         <source>Steering Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="464"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="461"/>
         <source>Steering Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="572"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="569"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="606"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="603"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="665"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="662"/>
         <source>Face Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="671"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="668"/>
         <source>Circle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="711"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="708"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="751"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="748"/>
         <source>Triangle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="791"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="788"/>
         <source>Square</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="834"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="831"/>
         <source>R1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="874"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="871"/>
         <source>R2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="927"/>
+        <location filename="../Settings/USBBindingWidget_DrivingForce.ui" line="924"/>
         <source>Accelerator</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16543,67 +16523,67 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>USBBindingWidget_GTForce</name>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="46"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="43"/>
         <source>Hints</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="52"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="49"/>
         <source>To bind steering for most modern 900 degree wheels, turn the wheel one rotation in the desired direction, then back again to center.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="65"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="62"/>
         <source>Force Feedback</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="122"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="119"/>
         <source>X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="162"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="159"/>
         <source>A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="215"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="212"/>
         <source>Brake</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="274"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="271"/>
         <source>Steering Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="314"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="311"/>
         <source>Steering Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="413"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="410"/>
         <source>Left Paddle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="453"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="450"/>
         <source>Right Paddle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="525"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="522"/>
         <source>Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="565"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="562"/>
         <source>B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="618"/>
+        <location filename="../Settings/USBBindingWidget_GTForce.ui" line="615"/>
         <source>Accelerator</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16611,100 +16591,100 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>USBBindingWidget_GunCon2</name>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="32"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="29"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="38"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="35"/>
         <source>A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="78"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="75"/>
         <source>C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="118"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="115"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="164"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="161"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="198"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="195"/>
         <source>B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="241"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="238"/>
         <source>D-Pad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="247"/>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="466"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="244"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="463"/>
         <source>Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="287"/>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="506"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="284"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="503"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="327"/>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="546"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="324"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="543"/>
         <source>Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="367"/>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="586"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="364"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="583"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="410"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="407"/>
         <source>Pointer Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="416"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="413"/>
         <source>&lt;p&gt;By default, GunCon2 will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
 
 &lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="460"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="457"/>
         <source>Relative Aiming</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="629"/>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="635"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="626"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="632"/>
         <source>Trigger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="675"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="672"/>
         <source>Shoot Offscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="715"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="712"/>
         <source>Calibration Shot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="740"/>
+        <location filename="../Settings/USBBindingWidget_GunCon2.ui" line="737"/>
         <source>Calibration shot is required to pass the setup screen in some games.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16712,27 +16692,27 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>USBDeviceWidget</name>
     <message>
-        <location filename="../Settings/USBDeviceWidget.ui" line="32"/>
+        <location filename="../Settings/USBDeviceWidget.ui" line="29"/>
         <source>Device Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBDeviceWidget.ui" line="46"/>
+        <location filename="../Settings/USBDeviceWidget.ui" line="43"/>
         <source>Bindings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBDeviceWidget.ui" line="66"/>
+        <location filename="../Settings/USBDeviceWidget.ui" line="63"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBDeviceWidget.ui" line="103"/>
+        <location filename="../Settings/USBDeviceWidget.ui" line="100"/>
         <source>Automatic Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/USBDeviceWidget.ui" line="117"/>
+        <location filename="../Settings/USBDeviceWidget.ui" line="114"/>
         <source>Clear Mapping</source>
         <translation type="unfinished"></translation>
     </message>
