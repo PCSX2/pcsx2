@@ -691,8 +691,8 @@ __forceinline
 	// Edit: I'm sorry Jake, but I know of no good audio system that arbitrary distorts and clips
 	// output by design.
 	// Good thing though that this code gets the volume exactly right, as per tests :)
-	Out = clamp_mix(Out);
 	Out = DCFilter(Out);
+	Out = clamp_mix(Out);
 	SndBuffer::Write(StereoOut16(Out));
 
 	// Update AutoDMA output positioning
