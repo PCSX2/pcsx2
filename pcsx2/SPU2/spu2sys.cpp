@@ -37,7 +37,7 @@ V_CoreDebug DebugCores[2];
 V_Core Cores[2];
 V_SPDIF Spdif;
 
-StereoOut16 DCFilterIn, DCFilterOut;
+StereoOut32 DCFilterIn, DCFilterOut;
 u16 OutPos;
 u16 InputPos;
 u32 Cycles;
