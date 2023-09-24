@@ -744,7 +744,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Extra Rendering Threads:</string>
+          <string>Software Rendering Threads:</string>
          </property>
         </widget>
        </item>
@@ -982,7 +982,7 @@
        <item row="6" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>Skipdraw Range:</string>
+          <string>Skip Draw Range:</string>
          </property>
         </widget>
        </item>
@@ -1309,7 +1309,7 @@
           <item row="1" column="1">
            <widget class="QCheckBox" name="loadTextureReplacementsAsync">
             <property name="text">
-             <string>Async Texture Loading</string>
+             <string>Asynchronous Texture Loading</string>
             </property>
            </widget>
           </item>
@@ -2152,7 +2152,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="disableDualSource">
               <property name="text">
-               <string>Disable Dual Source Blending</string>
+               <string>Disable Dual-Source Blending</string>
               </property>
              </widget>
             </item>

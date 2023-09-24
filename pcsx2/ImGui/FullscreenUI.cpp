@@ -2725,7 +2725,7 @@ void FullscreenUI::DrawSummarySettingsPage()
 	}
 	else
 	{
-		MenuButton(FSUI_ICONSTR(ICON_FA_BAN, "Details unavailable for game not scanned in game list."), "");
+		MenuButton(FSUI_ICONSTR(ICON_FA_BAN, "Cannot show details for games which were not scanned in the game list."), "");
 	}
 
 	MenuHeading(FSUI_CSTR("Options"));
@@ -2749,7 +2749,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
 		FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."), "EmuCore",
 		"InhibitScreensaver", true);
-	DrawToggleSetting(bsi, "Enable Discord Presence",
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
 		FSUI_CSTR("Shows the game you are currently playing as part of your profile on Discord."), "UI", "DiscordPresence", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"), FSUI_CSTR("Pauses the emulator when a game is started."), "UI",
 		"StartPaused", false);
@@ -2766,7 +2766,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 				  "off next time."),
 		"EmuCore", "SaveStateOnShutdown", false);
 	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WRENCH, "Enable Per-Game Settings"),
-			FSUI_CSTR("Enables loading ini overlays from gamesettings, or custom settings per-game."), "EmuCore", "EnablePerGameSettings",
+			FSUI_CSTR("When enabled, custom per-game settings will be applied. Disable to always use the global configuration."), "EmuCore", "EnablePerGameSettings",
 			IsEditingGameSettings(bsi)))
 	{
 		Host::RunOnCPUThread(&VMManager::ReloadGameSettings);
@@ -2779,7 +2779,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Game Display"));
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Start Fullscreen"),
-		FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "UI", "StartFullscreen", false);
+		FSUI_CSTR("Automatically switches to fullscreen mode when a game is started."), "UI", "StartFullscreen", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE, "Double-Click Toggles Fullscreen"),
 		FSUI_CSTR("Switches between full screen and windowed when the window is double-clicked."), "UI", "DoubleClickTogglesFullscreen",
 		true);
@@ -2805,7 +2805,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SPINNER, "Show GPU Usage"),
 		FSUI_CSTR("Shows the host's GPU usage in the top-right corner of the display."), "EmuCore/GS", "OsdShowGPU", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER_VERTICAL, "Show Resolution"),
-		FSUI_CSTR("Shows the resolution the game is rendering at in the top-right corner of the display."), "EmuCore/GS",
+		FSUI_CSTR("Shows the resolution of the game in the top-right corner of the display."), "EmuCore/GS",
 		"OsdShowResolution", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BARS, "Show GS Statistics"),
 		FSUI_CSTR("Shows statistics about GS (primitives, draw calls) in the top-right corner of the display."), "EmuCore/GS",
@@ -2980,15 +2980,15 @@ void FullscreenUI::DrawEmulationSettingsPage()
 	DrawIntListSetting(bsi, FSUI_CSTR("EE Cycle Rate"), FSUI_CSTR("Underclocks or overclocks the emulated Emotion Engine CPU."),
 		"EmuCore/Speedhacks", "EECycleRate", 0, ee_cycle_rate_settings, std::size(ee_cycle_rate_settings), true, -3);
 	DrawIntListSetting(bsi, FSUI_CSTR("EE Cycle Skipping"),
-		FSUI_CSTR("Adds a penalty to the Emulated Emotion Engine for executing VU programs."), "EmuCore/Speedhacks", "EECycleSkip", 0,
+		FSUI_CSTR("Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it's harmful to performance."), "EmuCore/Speedhacks", "EECycleSkip", 0,
 		ee_cycle_skip_settings, std::size(ee_cycle_skip_settings), true);
 	DrawIntListSetting(bsi, FSUI_CSTR("Affinity Control Mode"),
 		FSUI_CSTR("Pins emulation threads to CPU cores to potentially improve performance/frame time variance."), "EmuCore/CPU",
 		"AffinityControlMode", 0, affinity_control_settings, std::size(affinity_control_settings), true);
 	DrawToggleSetting(bsi, FSUI_CSTR("Enable MTVU (Multi-Threaded VU1)"),
-		FSUI_CSTR("Uses a second thread for VU1 micro programs. Sizable speed boost."), "EmuCore/Speedhacks", "vuThread", false);
+		FSUI_CSTR("Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang."), "EmuCore/Speedhacks", "vuThread", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Enable Instant VU1"),
-		FSUI_CSTR("Reduces timeslicing between VU1 and EE recompilers, effectively running VU1 at an infinite clock speed."),
+		FSUI_CSTR("Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors."),
 		"EmuCore/Speedhacks", "vu1Instant", true);
 	DrawToggleSetting(
 		bsi, FSUI_CSTR("Enable Cheats"), FSUI_CSTR("Enables loading cheats from pnach files."), "EmuCore", "EnableCheats", false);
@@ -3016,7 +3016,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		SetSettingsChanged(bsi);
 	}
 
-	DrawToggleSetting(bsi, FSUI_CSTR("Adjust To Host Refresh Rate"),
+	DrawToggleSetting(bsi, FSUI_CSTR("Scale To Host Refresh Rate"),
 		FSUI_CSTR("Speeds up emulation so that the guest refresh rate matches the host."), "EmuCore/GS", "SyncToHostRefreshRate", false);
 
 	EndMenuButtons();
@@ -3254,7 +3254,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	static constexpr const char* s_screenshot_sizes[] = {
 		FSUI_NSTR("Screen Resolution"),
 		FSUI_NSTR("Internal Resolution"),
-		FSUI_NSTR("Internal Resolution (Uncorrected)"),
+		FSUI_NSTR("Internal Resolution (Aspect Uncorrected)"),
 	};
 	static constexpr const char* s_screenshot_formats[] = {
 		FSUI_NSTR("PNG"),
@@ -3446,20 +3446,20 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, FSUI_CSTR("CPU Framebuffer Conversion"),
 				FSUI_CSTR("Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU."), "EmuCore/GS",
 				"UserHacks_CPU_FB_Conversion", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, FSUI_CSTR("Disable Depth Support"),
-				FSUI_CSTR("Disable the support of depth buffer in the texture cache."), "EmuCore/GS", "UserHacks_DisableDepthSupport",
+			DrawToggleSetting(bsi, FSUI_CSTR("Disable Depth Emulation"),
+				FSUI_CSTR("Disable the support of depth buffers in the texture cache."), "EmuCore/GS", "UserHacks_DisableDepthSupport",
 				false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("Disable Safe Features"), FSUI_CSTR("This option disables multiple safe features."),
 				"EmuCore/GS", "UserHacks_Disable_Safe_Features", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, FSUI_CSTR("Disable Render Features"), FSUI_CSTR("This option disables game-specific render fixes."),
+			DrawToggleSetting(bsi, FSUI_CSTR("Disable Render Fixes"), FSUI_CSTR("This option disables game-specific render fixes."),
 				"EmuCore/GS", "UserHacks_DisableRenderFixes", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, FSUI_CSTR("Preload Frame"),
+			DrawToggleSetting(bsi, FSUI_CSTR("Preload Frame Data"),
 				FSUI_CSTR("Uploads GS data when rendering a new frame to reproduce some effects accurately."), "EmuCore/GS",
 				"preload_frame_with_gs_data", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("Disable Partial Invalidation"),
 				FSUI_CSTR("Removes texture cache entries when there is any intersection, rather than only the intersected areas."),
 				"EmuCore/GS", "UserHacks_DisablePartialInvalidation", false, manual_hw_fixes);
-			DrawIntListSetting(bsi, FSUI_CSTR("Texture Inside Render Target"),
+			DrawIntListSetting(bsi, FSUI_CSTR("Texture Inside RT"),
 				FSUI_CSTR("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer."),
 				"EmuCore/GS", "UserHacks_TextureInsideRt", 0, s_texture_inside_rt_options, std::size(s_texture_inside_rt_options), true, 0,
 				manual_hw_fixes);
@@ -3470,11 +3470,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				FSUI_CSTR("Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games)."), "EmuCore/GS",
 				"UserHacks_EstimateTextureRegion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("GPU Palette Conversion"),
-				FSUI_CSTR("Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games."),
+				FSUI_CSTR("When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU."),
 				"EmuCore/GS", "paltex", false);
 
 			MenuHeading(FSUI_CSTR("Upscaling Fixes"));
-			DrawIntListSetting(bsi, FSUI_CSTR("Half-Pixel Offset"), FSUI_CSTR("Adjusts vertices relative to upscaling."), "EmuCore/GS",
+			DrawIntListSetting(bsi, FSUI_CSTR("Half Pixel Offset"), FSUI_CSTR("Adjusts vertices relative to upscaling."), "EmuCore/GS",
 				"UserHacks_HalfPixelOffset", 0, s_half_pixel_offset_options, std::size(s_half_pixel_offset_options), true);
 			DrawIntListSetting(bsi, FSUI_CSTR("Round Sprite"), FSUI_CSTR("Adjusts sprite coordinates."), "EmuCore/GS",
 				"UserHacks_round_sprite_offset", 0, s_round_sprite_options, std::size(s_round_sprite_options), true);
@@ -3482,9 +3482,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				FSUI_CSTR("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."), "EmuCore/GS",
 				"UserHacks_BilinearHack", static_cast<int>(GSBilinearDirtyMode::Automatic), s_bilinear_dirty_options,
 				std::size(s_bilinear_dirty_options), true);
-			DrawIntSpinBoxSetting(bsi, FSUI_CSTR("TC Offset X"), FSUI_CSTR("Adjusts target texture offsets."), "EmuCore/GS",
+			DrawIntSpinBoxSetting(bsi, FSUI_CSTR("Texture Offset X"), FSUI_CSTR("Adjusts target texture offsets."), "EmuCore/GS",
 				"UserHacks_TCOffsetX", 0, -4096, 4096, 1);
-			DrawIntSpinBoxSetting(bsi, FSUI_CSTR("TC Offset Y"), FSUI_CSTR("Adjusts target texture offsets."), "EmuCore/GS",
+			DrawIntSpinBoxSetting(bsi, FSUI_CSTR("Texture Offset Y"), FSUI_CSTR("Adjusts target texture offsets."), "EmuCore/GS",
 				"UserHacks_TCOffsetY", 0, -4096, 4096, 1);
 			DrawToggleSetting(bsi, FSUI_CSTR("Align Sprite"), FSUI_CSTR("Fixes issues with upscaling (vertical lines) in some games."),
 				"EmuCore/GS", "UserHacks_align_sprite_X", false, manual_hw_fixes);
@@ -3517,7 +3517,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		DrawFolderSetting(bsi, FSUI_CSTR("Replacements Directory"), FSUI_CSTR("Folders"), "Textures", EmuFolders::Textures);
 
 		MenuHeading(FSUI_CSTR("Texture Dumping"));
-		DrawToggleSetting(bsi, FSUI_CSTR("Dump Textures"), FSUI_CSTR("Dumps replacable textures to disk. Will reduce performance."),
+		DrawToggleSetting(bsi, FSUI_CSTR("Dump Textures"), FSUI_CSTR("Dumps replaceable textures to disk. Will reduce performance."),
 			"EmuCore/GS", "DumpReplaceableTextures", false);
 		DrawToggleSetting(bsi, FSUI_CSTR("Dump Mipmaps"), FSUI_CSTR("Includes mipmaps when dumping textures."), "EmuCore/GS",
 			"DumpReplaceableMipmaps", false, dumping_active);
@@ -3559,7 +3559,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		static constexpr const char* s_tv_shaders[] = {FSUI_NSTR("None (Default)"), FSUI_NSTR("Scanline Filter"),
 			FSUI_NSTR("Diagonal Filter"), FSUI_NSTR("Triangular Filter"), FSUI_NSTR("Wave Filter"), FSUI_NSTR("Lottes CRT"),
 			FSUI_NSTR("4xRGSS"), FSUI_NSTR("NxAGSS")};
-		DrawIntListSetting(bsi, FSUI_CSTR("TV Shaders"), FSUI_CSTR("Selects post-processing TV shader."), "EmuCore/GS", "TVShader", 0,
+		DrawIntListSetting(bsi, FSUI_CSTR("TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
 			s_tv_shaders, std::size(s_tv_shaders), true);
 	}
 
@@ -3567,12 +3567,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Advanced"));
 	DrawToggleSetting(bsi, FSUI_CSTR("Skip Presenting Duplicate Frames"),
-		FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed but increase input lag/make frame pacing "
+		FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
 				  "worse."),
 		"EmuCore/GS", "SkipDuplicateFrames", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Threaded Presentation"),
-		FSUI_CSTR("Presents frames on a worker thread, instead of on the GS thread. Can improve frame times on some systems, at the cost "
-				  "of potentially worse frame pacing."),
+		FSUI_CSTR("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues."),
 		"EmuCore/GS", "DisableThreadedPresentation", false);
 	if (hw_fixes_visible)
 	{
@@ -4506,7 +4505,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			"EnableIOP", true);
 
 		MenuHeading(FSUI_CSTR("Graphics"));
-		DrawToggleSetting(bsi, FSUI_CSTR("Use Debug Device"), FSUI_CSTR("Enables API-level validation of graphics commands"), "EmuCore/GS",
+		DrawToggleSetting(bsi, FSUI_CSTR("Use Debug Device"), FSUI_CSTR("Enables API-level validation of graphics commands."), "EmuCore/GS",
 			"UseDebugDevice", false);
 	}
 
@@ -4608,46 +4607,46 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 		FSUI_CSTR("Game fixes should not be modified unless you are aware of what each option does and the implications of doing so."),
 		false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-	DrawToggleSetting(bsi, FSUI_CSTR("FPU Multiply Hack"), FSUI_CSTR("For Tales of Destiny."), "EmuCore/Gamefixes", "FpuMulHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("FPU Negative Div Hack"), FSUI_CSTR("For Gundam games."), "EmuCore/Gamefixes", "FpuNegDivHack", false);
-	DrawToggleSetting(
-		bsi, FSUI_CSTR("Preload TLB Hack"), FSUI_CSTR("To avoid tlb miss on Goemon."), "EmuCore/Gamefixes", "GoemonTlbHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Switch to Software renderer for FMVs."),
+	DrawToggleSetting(bsi, FSUI_CSTR("FPU Multiply Hack"), FSUI_CSTR("For Tales of Destiny."), "EmuCore/Gamefixes", "FpuMulHack", false);
+	DrawToggleSetting(bsi, FSUI_CSTR("Use Software Renderer For FMVs"),
 		FSUI_CSTR("Needed for some games with complex FMV rendering."), "EmuCore/Gamefixes", "SoftwareRendererFMVHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Skip MPEG Hack"), FSUI_CSTR("Skips videos/FMVs in games to avoid game hanging/freezes."),
 		"EmuCore/Gamefixes", "SkipMPEGHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("OPH Flag Hack"),
-		FSUI_CSTR("Known to affect following games: Bleach Blade Battler, Growlanser II and III, Wizardry."), "EmuCore/Gamefixes",
-		"OPHFlagHack", false);
+	DrawToggleSetting(
+		bsi, FSUI_CSTR("Preload TLB Hack"), FSUI_CSTR("To avoid TLB miss on Goemon."), "EmuCore/Gamefixes", "GoemonTlbHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("EE Timing Hack"),
-		FSUI_CSTR("Known to affect following games: Digital Devil Saga (Fixes FMV and crashes), SSX (Fixes bad graphics and crashes)."),
+		FSUI_CSTR("General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX."),
 		"EmuCore/Gamefixes", "EETimingHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Instant DMA Hack"),
-		FSUI_CSTR("Known to affect following games: Fire Pro Wrestling Z (Bad ring graphics)."), "EmuCore/Gamefixes", "InstantDMAHack",
+		FSUI_CSTR("Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z."), "EmuCore/Gamefixes", "InstantDMAHack",
 		false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Handle DMAC writes when it is busy."),
+	DrawToggleSetting(bsi, FSUI_CSTR("OPH Flag Hack"),
+		FSUI_CSTR("Known to affect following games: Bleach Blade Battlers, Growlanser II and III, Wizardry."), "EmuCore/Gamefixes",
+		"OPHFlagHack", false);
+	DrawToggleSetting(
+		bsi, FSUI_CSTR("Emulate GIF FIFO"), FSUI_CSTR("Correct but slower. Known to affect the following games: Fifa Street 2."), "EmuCore/Gamefixes", "GIFFIFOHack", false);
+	DrawToggleSetting(bsi, FSUI_CSTR("DMA Busy Hack"),
 		FSUI_CSTR("Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines."), "EmuCore/Gamefixes",
 		"DMABusyHack", false);
-	DrawToggleSetting(
-		bsi, FSUI_CSTR("Force GIF PATH3 transfers through FIFO"), FSUI_CSTR("(Fifa Street 2)."), "EmuCore/Gamefixes", "GIFFIFOHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Simulate VIF1 FIFO read ahead. Fixes slow loading games."),
-		FSUI_CSTR("Known to affect following games: Test Drive Unlimited, Transformers."), "EmuCore/Gamefixes", "VIFFIFOHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Delay VIF1 Stalls (VIF1 FIFO)"), FSUI_CSTR("For SOCOM 2 HUD and Spy Hunter loading hang."),
+	DrawToggleSetting(bsi, FSUI_CSTR("Delay VIF1 Stalls"), FSUI_CSTR("For SOCOM 2 HUD and Spy Hunter loading hang."),
 		"EmuCore/Gamefixes", "VIF1StallHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("VU Add Hack"),
-		FSUI_CSTR("Games that need this hack to boot: Star Ocean 3, Radiata Stories, Valkyrie Profile 2."), "EmuCore/Gamefixes",
-		"VuAddSubHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("VU I bit Hack avoid constant recompilation in some games"),
-		FSUI_CSTR("Scarface The World Is Yours, Crash Tag Team Racing."), "EmuCore/Gamefixes", "IbitHack", false);
+	DrawToggleSetting(bsi, FSUI_CSTR("Emulate VIF FIFO"),
+		FSUI_CSTR("Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers."), "EmuCore/Gamefixes", "VIFFIFOHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Full VU0 Synchronization"), FSUI_CSTR("Forces tight VU0 sync on every COP2 instruction."),
 		"EmuCore/Gamefixes", "FullVU0SyncHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("VU Sync (Run behind)"), FSUI_CSTR("To avoid sync problems when reading or writing VU registers."),
-		"EmuCore/Gamefixes", "VUSyncHack", false);
+	DrawToggleSetting(bsi, FSUI_CSTR("VU I Bit Hack"),
+		FSUI_CSTR("Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing."), "EmuCore/Gamefixes", "IbitHack", false);
+	DrawToggleSetting(bsi, FSUI_CSTR("VU Add Hack"),
+		FSUI_CSTR("For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2."), "EmuCore/Gamefixes",
+		"VuAddSubHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("VU Overflow Hack"), FSUI_CSTR("To check for possible float overflows (Superman Returns)."),
 		"EmuCore/Gamefixes", "VUOverflowHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("VU XGkick Sync"), FSUI_CSTR("Use accurate timing for VU XGKicks (slower)."), "EmuCore/Gamefixes",
+	DrawToggleSetting(bsi, FSUI_CSTR("VU Sync"), FSUI_CSTR("Run behind. To avoid sync problems when reading or writing VU registers."),
+		"EmuCore/Gamefixes", "VUSyncHack", false);
+	DrawToggleSetting(bsi, FSUI_CSTR("VU XGKick Sync"), FSUI_CSTR("Use accurate timing for VU XGKicks (slower)."), "EmuCore/Gamefixes",
 		"XgKickHack", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Use Blit for internal FPS"),
+	DrawToggleSetting(bsi, FSUI_CSTR("Force Blit Internal FPS Detection"),
 		FSUI_CSTR("Use alternative method to calculate internal FPS to avoid false readings in some games."), "EmuCore/Gamefixes",
 		"BlitInternalFPSHack", false);
 
@@ -4900,11 +4899,11 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
 					OpenPauseSubMenu(PauseSubMenu::None);
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
-          OpenAchievementsWindow();
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
+					OpenAchievementsWindow();
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"), false))
-          OpenLeaderboardsWindow();
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"), false))
+					OpenLeaderboardsWindow();
 			}
 			break;
 		}
@@ -5390,7 +5389,7 @@ void FullscreenUI::DrawResumeStateSelector()
 			is_open = false;
 		}
 
-		if (ActiveButton(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot"), false))
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Default Boot"), false))
 		{
 			DoStartPath(s_save_state_selector_game_path);
 			is_open = false;
@@ -5929,7 +5928,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 		{FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false},
 		{FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Default Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Fast Boot"), false},
-		{FSUI_ICONSTR(ICON_FA_MAGIC, "Slow Boot"), false},
+		{FSUI_ICONSTR(ICON_FA_MAGIC, "Full Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Play Time"), false},
 		{FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
 	};
@@ -5954,7 +5953,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 				case 4: // Fast Boot
 					DoStartPath(entry_path, std::nullopt, true);
 					break;
-				case 5: // Slow Boot
+				case 5: // Full Boot
 					DoStartPath(entry_path, std::nullopt, false);
 					break;
 				case 6: // Reset Play Time
@@ -6718,10 +6717,10 @@ TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you minimize the window
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you open the quick menu, and unpauses when you close it.");
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
-TRANSLATE_NOOP("FullscreenUI", "Enables loading ini overlays from gamesettings, or custom settings per-game.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, custom per-game settings will be applied. Disable to always use the global configuration.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a light coloured theme instead of the default dark theme.");
 TRANSLATE_NOOP("FullscreenUI", "Game Display");
-TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when the program is started.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when a game is started.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
 TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.");
 TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
@@ -6731,7 +6730,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the current emulation speed of the system 
 TRANSLATE_NOOP("FullscreenUI", "Shows the number of video frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the CPU usage based on threads in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU usage in the top-right corner of the display.");
-TRANSLATE_NOOP("FullscreenUI", "Shows the resolution the game is rendering at in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the resolution of the game in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows statistics about GS (primitives, draw calls) in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows indicators when fast forwarding, pausing, and other abnormal states are active.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current configuration in the bottom-right corner of the display.");
@@ -6758,13 +6757,13 @@ TRANSLATE_NOOP("FullscreenUI", "System Settings");
 TRANSLATE_NOOP("FullscreenUI", "EE Cycle Rate");
 TRANSLATE_NOOP("FullscreenUI", "Underclocks or overclocks the emulated Emotion Engine CPU.");
 TRANSLATE_NOOP("FullscreenUI", "EE Cycle Skipping");
-TRANSLATE_NOOP("FullscreenUI", "Adds a penalty to the Emulated Emotion Engine for executing VU programs.");
+TRANSLATE_NOOP("FullscreenUI", "Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it's harmful to performance.");
 TRANSLATE_NOOP("FullscreenUI", "Affinity Control Mode");
 TRANSLATE_NOOP("FullscreenUI", "Pins emulation threads to CPU cores to potentially improve performance/frame time variance.");
 TRANSLATE_NOOP("FullscreenUI", "Enable MTVU (Multi-Threaded VU1)");
-TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for VU1 micro programs. Sizable speed boost.");
+TRANSLATE_NOOP("FullscreenUI", "Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Instant VU1");
-TRANSLATE_NOOP("FullscreenUI", "Reduces timeslicing between VU1 and EE recompilers, effectively running VU1 at an infinite clock speed.");
+TRANSLATE_NOOP("FullscreenUI", "Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading cheats from pnach files.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Host Filesystem");
@@ -6776,7 +6775,7 @@ TRANSLATE_NOOP("FullscreenUI", "Maximum Frame Latency");
 TRANSLATE_NOOP("FullscreenUI", "Sets the number of frames which can be queued.");
 TRANSLATE_NOOP("FullscreenUI", "Optimal Frame Pacing");
 TRANSLATE_NOOP("FullscreenUI", "Synchronize EE and GS threads after each frame. Lowest input latency, but increases system requirements.");
-TRANSLATE_NOOP("FullscreenUI", "Adjust To Host Refresh Rate");
+TRANSLATE_NOOP("FullscreenUI", "Scale To Host Refresh Rate");
 TRANSLATE_NOOP("FullscreenUI", "Speeds up emulation so that the guest refresh rate matches the host.");
 TRANSLATE_NOOP("FullscreenUI", "Renderer");
 TRANSLATE_NOOP("FullscreenUI", "Selects the API used to render the emulated GS.");
@@ -6852,34 +6851,34 @@ TRANSLATE_NOOP("FullscreenUI", "Skip Draw End");
 TRANSLATE_NOOP("FullscreenUI", "Auto Flush (Hardware)");
 TRANSLATE_NOOP("FullscreenUI", "CPU Framebuffer Conversion");
 TRANSLATE_NOOP("FullscreenUI", "Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU.");
-TRANSLATE_NOOP("FullscreenUI", "Disable Depth Support");
-TRANSLATE_NOOP("FullscreenUI", "Disable the support of depth buffer in the texture cache.");
+TRANSLATE_NOOP("FullscreenUI", "Disable Depth Emulation");
+TRANSLATE_NOOP("FullscreenUI", "Disable the support of depth buffers in the texture cache.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Safe Features");
 TRANSLATE_NOOP("FullscreenUI", "This option disables multiple safe features.");
-TRANSLATE_NOOP("FullscreenUI", "Disable Render Features");
+TRANSLATE_NOOP("FullscreenUI", "Disable Render Fixes");
 TRANSLATE_NOOP("FullscreenUI", "This option disables game-specific render fixes.");
-TRANSLATE_NOOP("FullscreenUI", "Preload Frame");
+TRANSLATE_NOOP("FullscreenUI", "Preload Frame Data");
 TRANSLATE_NOOP("FullscreenUI", "Uploads GS data when rendering a new frame to reproduce some effects accurately.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Partial Invalidation");
 TRANSLATE_NOOP("FullscreenUI", "Removes texture cache entries when there is any intersection, rather than only the intersected areas.");
-TRANSLATE_NOOP("FullscreenUI", "Texture Inside Render Target");
+TRANSLATE_NOOP("FullscreenUI", "Texture Inside RT");
 TRANSLATE_NOOP("FullscreenUI", "Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.");
 TRANSLATE_NOOP("FullscreenUI", "Read Targets When Closing");
 TRANSLATE_NOOP("FullscreenUI", "Flushes all targets in the texture cache back to local memory when shutting down.");
 TRANSLATE_NOOP("FullscreenUI", "Estimate Texture Region");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).");
 TRANSLATE_NOOP("FullscreenUI", "GPU Palette Conversion");
-TRANSLATE_NOOP("FullscreenUI", "Applies palettes to textures on the GPU instead of the CPU. Can result in speed improvements in some games.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.");
 TRANSLATE_NOOP("FullscreenUI", "Upscaling Fixes");
-TRANSLATE_NOOP("FullscreenUI", "Half-Pixel Offset");
+TRANSLATE_NOOP("FullscreenUI", "Half Pixel Offset");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts vertices relative to upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Round Sprite");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts sprite coordinates.");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear Upscale");
 TRANSLATE_NOOP("FullscreenUI", "Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare.");
-TRANSLATE_NOOP("FullscreenUI", "TC Offset X");
+TRANSLATE_NOOP("FullscreenUI", "Texture Offset X");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts target texture offsets.");
-TRANSLATE_NOOP("FullscreenUI", "TC Offset Y");
+TRANSLATE_NOOP("FullscreenUI", "Texture Offset Y");
 TRANSLATE_NOOP("FullscreenUI", "Align Sprite");
 TRANSLATE_NOOP("FullscreenUI", "Fixes issues with upscaling (vertical lines) in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Merge Sprite");
@@ -6899,7 +6898,7 @@ TRANSLATE_NOOP("FullscreenUI", "Replacements Directory");
 TRANSLATE_NOOP("FullscreenUI", "Folders");
 TRANSLATE_NOOP("FullscreenUI", "Texture Dumping");
 TRANSLATE_NOOP("FullscreenUI", "Dump Textures");
-TRANSLATE_NOOP("FullscreenUI", "Dumps replacable textures to disk. Will reduce performance.");
+TRANSLATE_NOOP("FullscreenUI", "Dumps replaceable textures to disk. Will reduce performance.");
 TRANSLATE_NOOP("FullscreenUI", "Dump Mipmaps");
 TRANSLATE_NOOP("FullscreenUI", "Includes mipmaps when dumping textures.");
 TRANSLATE_NOOP("FullscreenUI", "Dump FMV Textures");
@@ -6921,12 +6920,12 @@ TRANSLATE_NOOP("FullscreenUI", "Adjusts contrast. 50 is normal.");
 TRANSLATE_NOOP("FullscreenUI", "Shade Boost Saturation");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts saturation. 50 is normal.");
 TRANSLATE_NOOP("FullscreenUI", "TV Shaders");
-TRANSLATE_NOOP("FullscreenUI", "Selects post-processing TV shader.");
+TRANSLATE_NOOP("FullscreenUI", "Applies a shader which replicates the visual effects of different styles of television set.");
 TRANSLATE_NOOP("FullscreenUI", "Advanced");
 TRANSLATE_NOOP("FullscreenUI", "Skip Presenting Duplicate Frames");
-TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed but increase input lag/make frame pacing worse.");
+TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Threaded Presentation");
-TRANSLATE_NOOP("FullscreenUI", "Presents frames on a worker thread, instead of on the GS thread. Can improve frame times on some systems, at the cost of potentially worse frame pacing.");
+TRANSLATE_NOOP("FullscreenUI", "Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues.");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Download Mode");
 TRANSLATE_NOOP("FullscreenUI", "Changes synchronization behavior for GS downloads.");
 TRANSLATE_NOOP("FullscreenUI", "Allow Exclusive Fullscreen");
@@ -7030,7 +7029,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enable IOP Recompiler");
 TRANSLATE_NOOP("FullscreenUI", "Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.");
 TRANSLATE_NOOP("FullscreenUI", "Graphics");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug Device");
-TRANSLATE_NOOP("FullscreenUI", "Enables API-level validation of graphics commands");
+TRANSLATE_NOOP("FullscreenUI", "Enables API-level validation of graphics commands.");
 TRANSLATE_NOOP("FullscreenUI", "Settings");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "Cheat Codes");
@@ -7041,43 +7040,43 @@ TRANSLATE_NOOP("FullscreenUI", "Activating game patches can cause unpredictable 
 TRANSLATE_NOOP("FullscreenUI", "Use patches at your own risk, the PCSX2 team will provide no support for users who have enabled game patches.");
 TRANSLATE_NOOP("FullscreenUI", "Game Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Game fixes should not be modified unless you are aware of what each option does and the implications of doing so.");
-TRANSLATE_NOOP("FullscreenUI", "FPU Multiply Hack");
-TRANSLATE_NOOP("FullscreenUI", "For Tales of Destiny.");
 TRANSLATE_NOOP("FullscreenUI", "FPU Negative Div Hack");
 TRANSLATE_NOOP("FullscreenUI", "For Gundam games.");
-TRANSLATE_NOOP("FullscreenUI", "Preload TLB Hack");
-TRANSLATE_NOOP("FullscreenUI", "To avoid tlb miss on Goemon.");
-TRANSLATE_NOOP("FullscreenUI", "Switch to Software renderer for FMVs.");
+TRANSLATE_NOOP("FullscreenUI", "FPU Multiply Hack");
+TRANSLATE_NOOP("FullscreenUI", "For Tales of Destiny.");
+TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Needed for some games with complex FMV rendering.");
 TRANSLATE_NOOP("FullscreenUI", "Skip MPEG Hack");
 TRANSLATE_NOOP("FullscreenUI", "Skips videos/FMVs in games to avoid game hanging/freezes.");
-TRANSLATE_NOOP("FullscreenUI", "OPH Flag Hack");
-TRANSLATE_NOOP("FullscreenUI", "Known to affect following games: Bleach Blade Battler, Growlanser II and III, Wizardry.");
+TRANSLATE_NOOP("FullscreenUI", "Preload TLB Hack");
+TRANSLATE_NOOP("FullscreenUI", "To avoid TLB miss on Goemon.");
 TRANSLATE_NOOP("FullscreenUI", "EE Timing Hack");
-TRANSLATE_NOOP("FullscreenUI", "Known to affect following games: Digital Devil Saga (Fixes FMV and crashes), SSX (Fixes bad graphics and crashes).");
+TRANSLATE_NOOP("FullscreenUI", "General-purpose timing hack. Known to affect following games: Digital Devil Saga, SSX.");
 TRANSLATE_NOOP("FullscreenUI", "Instant DMA Hack");
-TRANSLATE_NOOP("FullscreenUI", "Known to affect following games: Fire Pro Wrestling Z (Bad ring graphics).");
-TRANSLATE_NOOP("FullscreenUI", "Handle DMAC writes when it is busy.");
+TRANSLATE_NOOP("FullscreenUI", "Good for cache emulation problems. Known to affect following games: Fire Pro Wrestling Z.");
+TRANSLATE_NOOP("FullscreenUI", "OPH Flag Hack");
+TRANSLATE_NOOP("FullscreenUI", "Known to affect following games: Bleach Blade Battlers, Growlanser II and III, Wizardry.");
+TRANSLATE_NOOP("FullscreenUI", "Emulate GIF FIFO");
+TRANSLATE_NOOP("FullscreenUI", "Correct but slower. Known to affect the following games: Fifa Street 2.");
+TRANSLATE_NOOP("FullscreenUI", "DMA Busy Hack");
 TRANSLATE_NOOP("FullscreenUI", "Known to affect following games: Mana Khemia 1, Metal Saga, Pilot Down Behind Enemy Lines.");
-TRANSLATE_NOOP("FullscreenUI", "Force GIF PATH3 transfers through FIFO");
-TRANSLATE_NOOP("FullscreenUI", "(Fifa Street 2).");
-TRANSLATE_NOOP("FullscreenUI", "Simulate VIF1 FIFO read ahead. Fixes slow loading games.");
-TRANSLATE_NOOP("FullscreenUI", "Known to affect following games: Test Drive Unlimited, Transformers.");
-TRANSLATE_NOOP("FullscreenUI", "Delay VIF1 Stalls (VIF1 FIFO)");
+TRANSLATE_NOOP("FullscreenUI", "Delay VIF1 Stalls");
 TRANSLATE_NOOP("FullscreenUI", "For SOCOM 2 HUD and Spy Hunter loading hang.");
-TRANSLATE_NOOP("FullscreenUI", "VU Add Hack");
-TRANSLATE_NOOP("FullscreenUI", "Games that need this hack to boot: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.");
-TRANSLATE_NOOP("FullscreenUI", "VU I bit Hack avoid constant recompilation in some games");
-TRANSLATE_NOOP("FullscreenUI", "Scarface The World Is Yours, Crash Tag Team Racing.");
+TRANSLATE_NOOP("FullscreenUI", "Emulate VIF FIFO");
+TRANSLATE_NOOP("FullscreenUI", "Simulate VIF1 FIFO read ahead. Known to affect following games: Test Drive Unlimited, Transformers.");
 TRANSLATE_NOOP("FullscreenUI", "Full VU0 Synchronization");
 TRANSLATE_NOOP("FullscreenUI", "Forces tight VU0 sync on every COP2 instruction.");
-TRANSLATE_NOOP("FullscreenUI", "VU Sync (Run behind)");
-TRANSLATE_NOOP("FullscreenUI", "To avoid sync problems when reading or writing VU registers.");
+TRANSLATE_NOOP("FullscreenUI", "VU I Bit Hack");
+TRANSLATE_NOOP("FullscreenUI", "Avoids constant recompilation in some games. Known to affect the following games: Scarface The World is Yours, Crash Tag Team Racing.");
+TRANSLATE_NOOP("FullscreenUI", "VU Add Hack");
+TRANSLATE_NOOP("FullscreenUI", "For Tri-Ace Games: Star Ocean 3, Radiata Stories, Valkyrie Profile 2.");
 TRANSLATE_NOOP("FullscreenUI", "VU Overflow Hack");
 TRANSLATE_NOOP("FullscreenUI", "To check for possible float overflows (Superman Returns).");
-TRANSLATE_NOOP("FullscreenUI", "VU XGkick Sync");
+TRANSLATE_NOOP("FullscreenUI", "VU Sync");
+TRANSLATE_NOOP("FullscreenUI", "Run behind. To avoid sync problems when reading or writing VU registers.");
+TRANSLATE_NOOP("FullscreenUI", "VU XGKick Sync");
 TRANSLATE_NOOP("FullscreenUI", "Use accurate timing for VU XGKicks (slower).");
-TRANSLATE_NOOP("FullscreenUI", "Use Blit for internal FPS");
+TRANSLATE_NOOP("FullscreenUI", "Force Blit Internal FPS Detection");
 TRANSLATE_NOOP("FullscreenUI", "Use alternative method to calculate internal FPS to avoid false readings in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Load State");
 TRANSLATE_NOOP("FullscreenUI", "Save State");
@@ -7107,34 +7106,19 @@ TRANSLATE_NOOP("FullscreenUI", "Use Serial File Names");
 TRANSLATE_NOOP("FullscreenUI", "About PCSX2");
 TRANSLATE_NOOP("FullscreenUI", "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.");
 TRANSLATE_NOOP("FullscreenUI", "PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.");
-TRANSLATE_NOOP("FullscreenUI", "XXX points");
-TRANSLATE_NOOP("FullscreenUI", "Unlocked Achievements");
-TRANSLATE_NOOP("FullscreenUI", "Locked Achievements");
-TRANSLATE_NOOP("FullscreenUI", "Active Challenge Achievements");
-TRANSLATE_NOOP("FullscreenUI", "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.");
-TRANSLATE_NOOP("FullscreenUI", "Rank");
-TRANSLATE_NOOP("FullscreenUI", "Name");
-TRANSLATE_NOOP("FullscreenUI", "Time");
-TRANSLATE_NOOP("FullscreenUI", "Score");
-TRANSLATE_NOOP("FullscreenUI", "Downloading leaderboard data, please wait...");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, PCSX2 will scan for achievements on startup.");
-TRANSLATE_NOOP("FullscreenUI", "When enabled, rich presence information will be collected and sent to the server where supported.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
-TRANSLATE_NOOP("FullscreenUI", "Enables tracking and submission of leaderboards in supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
-TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, each session will behave as if no achievements have been unlocked.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Account");
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
-TRANSLATE_NOOP("FullscreenUI", "Achievements Login");
-TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org.");
-TRANSLATE_NOOP("FullscreenUI", "Your password will not be saved in PCSX2, an access token will be generated and used instead.");
-TRANSLATE_NOOP("FullscreenUI", "User Name: ");
-TRANSLATE_NOOP("FullscreenUI", "Password: ");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
@@ -7170,11 +7154,6 @@ TRANSLATE_NOOP("FullscreenUI", "CRC: {:08X}");
 TRANSLATE_NOOP("FullscreenUI", "Time Played: {}");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: {}");
 TRANSLATE_NOOP("FullscreenUI", "Size: {:.2f} MB");
-TRANSLATE_NOOP("FullscreenUI", "{} points");
-TRANSLATE_NOOP("FullscreenUI", "{} (Hardcore Mode)");
-TRANSLATE_NOOP("FullscreenUI", "You have unlocked all achievements and earned {} points!");
-TRANSLATE_NOOP("FullscreenUI", "You have unlocked {} of {} achievements, earning {} of {} possible points.");
-TRANSLATE_NOOP("FullscreenUI", "This game has {} leaderboards.");
 TRANSLATE_NOOP("FullscreenUI", "Summary");
 TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
 TRANSLATE_NOOP("FullscreenUI", "BIOS Settings");
@@ -7298,7 +7277,7 @@ TRANSLATE_NOOP("FullscreenUI", "Disable Readbacks (Synchronize GS Thread)");
 TRANSLATE_NOOP("FullscreenUI", "Unsynchronized (Non-Deterministic)");
 TRANSLATE_NOOP("FullscreenUI", "Disabled (Ignore Transfers)");
 TRANSLATE_NOOP("FullscreenUI", "Screen Resolution");
-TRANSLATE_NOOP("FullscreenUI", "Internal Resolution (Uncorrected)");
+TRANSLATE_NOOP("FullscreenUI", "Internal Resolution (Aspect Uncorrected)");
 TRANSLATE_NOOP("FullscreenUI", "PNG");
 TRANSLATE_NOOP("FullscreenUI", "JPEG");
 TRANSLATE_NOOP("FullscreenUI", "0 (Disabled)");
@@ -7385,10 +7364,11 @@ TRANSLATE_NOOP("FullscreenUI", "Compatibility Rating");
 TRANSLATE_NOOP("FullscreenUI", "Path");
 TRANSLATE_NOOP("FullscreenUI", "Disc Path");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Path");
-TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
+TRANSLATE_NOOP("FullscreenUI", "Cannot show details for games which were not scanned in the game list.");
 TRANSLATE_NOOP("FullscreenUI", "Copy Settings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
+TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Start");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Focus Loss");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Menu");
@@ -7481,10 +7461,9 @@ TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Delete Save");
 TRANSLATE_NOOP("FullscreenUI", "Close Menu");
-TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
-TRANSLATE_NOOP("FullscreenUI", "Delete State");
 TRANSLATE_NOOP("FullscreenUI", "Default Boot");
-TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
+TRANSLATE_NOOP("FullscreenUI", "Delete State");
+TRANSLATE_NOOP("FullscreenUI", "Full Boot");
 TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
 TRANSLATE_NOOP("FullscreenUI", "Add Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Open in File Browser");
@@ -7504,22 +7483,20 @@ TRANSLATE_NOOP("FullscreenUI", "License");
 TRANSLATE_NOOP("FullscreenUI", "Close");
 TRANSLATE_NOOP("FullscreenUI", "RAIntegration is being used instead of the built-in achievements implementation.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Achievements");
-TRANSLATE_NOOP("FullscreenUI", "Rich Presence");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
-TRANSLATE_NOOP("FullscreenUI", "Show Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Sound Effects");
-TRANSLATE_NOOP("FullscreenUI", "Show Challenge Indicators");
+TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Overlays");
+TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
+TRANSLATE_NOOP("FullscreenUI", "Spectator Mode");
 TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
-TRANSLATE_NOOP("FullscreenUI", "Test Mode");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
 TRANSLATE_NOOP("FullscreenUI", "Logout");
 TRANSLATE_NOOP("FullscreenUI", "Not Logged In");
 TRANSLATE_NOOP("FullscreenUI", "Login");
-TRANSLATE_NOOP("FullscreenUI", "Achievements are disabled.");
-TRANSLATE_NOOP("FullscreenUI", "Game ID: {}");
-TRANSLATE_NOOP("FullscreenUI", "Game Title: {}");
-TRANSLATE_NOOP("FullscreenUI", "Achievements: {} ({} points)");
+TRANSLATE_NOOP("FullscreenUI", "Game: {} ({})");
 TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
 TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements available.");
 TRANSLATE_NOOP("FullscreenUI", "Card Enabled");

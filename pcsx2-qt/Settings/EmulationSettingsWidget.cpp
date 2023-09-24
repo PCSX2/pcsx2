@@ -149,8 +149,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsDialog* dialog, QWidget
 		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
 		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
 	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Scale To Host Refresh Rate"), tr("Unchecked"),
-		tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
-		   "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
+		tr("Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of "
 		   "potentially increasing the emulation speed by less than 1%. Scale To Host Refresh Rate will not take effect if "
 		   "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
 		   "should disable this option."));
