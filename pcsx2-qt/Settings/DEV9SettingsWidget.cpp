@@ -41,7 +41,7 @@
 #include "DEV9/sockets.h"
 
 static const char* s_api_name[] = {
-	QT_TRANSLATE_NOOP("DEV9SettingsWidget", " "),
+	" ",
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "PCAP Bridged"),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "PCAP Switched"),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "TAP"),
