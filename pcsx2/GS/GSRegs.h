@@ -85,8 +85,17 @@ enum GIF_REG
 
 enum GIF_REG_COMPLEX
 {
-	GIF_REG_STQRGBAXYZF2 = 0x00,
-	GIF_REG_STQRGBAXYZ2 = 0x01,
+	GIF_REG_RGBAXYZF2 = 0x00,
+	GIF_REG_STQXYZF2 = 0x01,
+	GIF_REG_UVXYZF2 = 0x02,
+	GIF_REG_RGBAXYZ2 = 0x03,
+	GIF_REG_STQXYZ2 = 0x04,
+	GIF_REG_UVXYZ2 = 0x05,
+	GIF_REG_STQRGBAXYZF2 = 0x06,
+	GIF_REG_UVRGBAXYZF2 = 0x07,
+	GIF_REG_STQRGBAXYZ2 = 0x08,
+	GIF_REG_UVRGBAXYZ2 = 0x09,
+	GIF_REG_RGBAUVXYZF2 = 0x0A,
 };
 
 enum GIF_A_D_REG
@@ -1112,6 +1121,23 @@ REG128_SET(GIFPackedReg)
 	GIFPackedNOP    NOP;
 REG_SET_END
 
+enum PATH_TYPE
+{
+	TYPE_RGBAXYZF2,
+	TYPE_STQXYZF2,
+	TYPE_UVXYZF2,
+	TYPE_RGBAXYZ2,
+	TYPE_STQXYZ2,
+	TYPE_UVXYZ2,
+	TYPE_STQRGBAXYZF2,
+	TYPE_UVRGBAXYZF2,
+	TYPE_STQRGBAXYZ2,
+	TYPE_UVRGBAXYZ2,
+	TYPE_RGBAUVXYZF2,
+	TYPE_ADONLY,
+	TYPE_UNKNOWN,
+};
+
 struct alignas(32) GIFPath
 {
 	GIFTag tag;
@@ -1121,34 +1147,24 @@ struct alignas(32) GIFPath
 	u32 type;
 	GSVector4i regs;
 
-	enum
-	{
-		TYPE_UNKNOWN,
-		TYPE_ADONLY,
-		TYPE_STQRGBAXYZF2,
-		TYPE_STQRGBAXYZ2
-	};
-
 	__forceinline void SetTag(const void* mem)
 	{
 		const GIFTag* RESTRICT src = (const GIFTag*)mem;
 
 		// the compiler has a hard time not reloading every time a field of src is accessed
 
-		u32 a = src->U32[0];
-		u32 b = src->U32[1];
+		const u64 a = src->U64[0];
 
-		tag.U32[0] = a;
-		tag.U32[1] = b;
+		tag.U64[0] = a;
 
 		nloop = a & 0x7fff;
 
 		if (nloop == 0)
 			return;
 
-		GSVector4i v = GSVector4i::loadl(&src->REGS); // REGS not stored to tag.REGS, only into this->regs, restored before saving the state though
+		const GSVector4i v = GSVector4i::loadl(&src->REGS); // REGS not stored to tag.REGS, only into this->regs, restored before saving the state though
 
-		nreg = (b & 0xf0000000) ? (b >> 28) : 16; // src->NREG
+		nreg = (a & 0xf000000000000000ULL) ? (a >> 60) : 16; // src->NREG
 		regs = v.upl8(v >> 4) & GSVector4i::x0f(nreg);
 		reg = 0;
 
@@ -1156,32 +1172,77 @@ struct alignas(32) GIFPath
 
 		if (tag.FLG == GIF_FLG_PACKED)
 		{
-			if (regs.eq8(GSVector4i(0x0e0e0e0e)).mask() == (1 << nreg) - 1)
+			if (regs.eq8(GSVector4i::cxpr(0x0e0e0e0e)).mask() == (1 << nreg) - 1)
 			{
 				type = TYPE_ADONLY;
 			}
-			else
+			else if(nloop > 1)
 			{
+				const u64 val = regs.U64[0];
+
 				switch (nreg)
 				{
 					case 1:
 						break;
 					case 2:
+						if ((val >> 8) == 0x04)
+						{
+							type = (val >= 0x401 && val <= 0x403) ? (TYPE_RGBAXYZF2 + (val & 0xf) - 1) : type;
+						}
+						else if ((val >> 8) == 0x05)
+						{
+							type = (val >= 0x501 && val <= 0x503) ? (TYPE_RGBAXYZ2 + (val & 0xf) - 1) : type;
+						}
 						break;
 					case 3:
-						// many games, TODO: formats mixed with NOPs (xeno2: 040f010f02, 04010f020f, mgs3: 04010f0f02, 0401020f0f, 04010f020f)
-						if (regs.U32[0] == 0x00040102)
-							type = TYPE_STQRGBAXYZF2;
-						// GoW (has other crazy formats, like ...030503050103)
-						if (regs.U32[0] == 0x00050102)
-							type = TYPE_STQRGBAXYZ2;
-						// TODO: common types with UV instead
+						if ((val >> 16) == 0x04)
+						{
+							if ((val & 0xFF00) == 0x0100)
+								type = (val >= 0x040102 && val <= 0x040103) ? (TYPE_STQRGBAXYZF2 + (val & 0xf) - 2) : type;
+							else if (val == 0x00040301)
+								type = TYPE_RGBAUVXYZF2;
+
+						}
+						else if ((val >> 16) == 0x05)
+						{
+							type = (val >= 0x050102 && val <= 0x050103) ? (TYPE_STQRGBAXYZ2 + (val & 0xf) - 2) : type;
+						}
 						break;
 					case 4:
+						if (val == 0x04030403)
+						{
+							type = TYPE_UVXYZF2;
+							nreg = 2;
+							nloop *= 2;
+						}
+						else if (val == 0x05030503)
+						{
+							type = TYPE_UVXYZ2;
+							nreg = 2;
+							nloop *= 2;
+						}
 						break;
 					case 5:
 						break;
 					case 6:
+						if (val == 0x0000040103040103ULL)
+						{
+							type = TYPE_UVRGBAXYZF2;
+							nreg = 3;
+							nloop *= 2;
+						}
+						else if (val == 0x0000040301040301ULL)
+						{
+							type = TYPE_RGBAUVXYZF2;
+							nreg = 3;
+							nloop *= 2;
+						}
+						else if (val == 0x0000050103050103ULL)
+						{
+							type = TYPE_UVRGBAXYZ2;
+							nreg = 3;
+							nloop *= 2;
+						}
 						break;
 					case 7:
 						break;
@@ -1189,7 +1250,7 @@ struct alignas(32) GIFPath
 						break;
 					case 9:
 						// ffx
-						if (regs.U32[0] == 0x02040102 && regs.U32[1] == 0x01020401 && regs.U32[2] == 0x00000004)
+						if (val == 0x0102040102040102ULL && regs.U32[2] == 0x00000004)
 						{
 							type = TYPE_STQRGBAXYZF2;
 							nreg = 3;
@@ -1202,7 +1263,7 @@ struct alignas(32) GIFPath
 						break;
 					case 12:
 						// dq8 (not many, mostly 040102)
-						if (regs.U32[0] == 0x02040102 && regs.U32[1] == 0x01020401 && regs.U32[2] == 0x04010204)
+						if (val == 0x0102040102040102ULL && regs.U32[2] == 0x04010204)
 						{
 							type = TYPE_STQRGBAXYZF2;
 							nreg = 3;

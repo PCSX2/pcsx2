@@ -210,7 +210,16 @@ void GSState::SetPrimHandlers()
 	m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0, auto_flush, index_swap>; \
 	m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1, auto_flush, index_swap>; \
 	m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P, auto_flush, index_swap>; \
-	m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush, index_swap>;
+	m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerUVRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerUVRGBAXYZ2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerRGBAXYZ2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerRGBAXYZF2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerSTQXYZ2[P] = &GSState::GIFPackedRegHandlerSTQXYZ2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerSTQXYZF2[P] = &GSState::GIFPackedRegHandlerSTQXYZF2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerUVXYZ2[P] = &GSState::GIFPackedRegHandlerUVXYZ2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerUVXYZF2[P] = &GSState::GIFPackedRegHandlerUVXYZF2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerRGBAUVXYZF2[P] = &GSState::GIFPackedRegHandlerRGBAUVXYZF2<P, auto_flush, index_swap>; \
+	m_fpGIFPackedRegHandlerUVRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerUVRGBAXYZF2<P, auto_flush, index_swap>;
 
 	SetHandlerXYZ(GS_POINTLIST, true, false);
 	SetHandlerXYZ(GS_LINELIST, auto_flush, index_swap);
@@ -595,33 +604,37 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
-	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	const bool skip = adc || r->XYZF2.Skip();
+
+	if (!skip || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
 		CheckFlushes();
 
-	GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
-	GSVector4i zf = GSVector4i::loadl(&r->U64[1]);
+	GSVector4i xy = GSVector4i::loadnt(r);
+	GSVector4i zf = xy.zwzw();
 
 	xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
 	zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZF2.Skip());
+	VertexKick<prim, auto_flush, index_swap>(skip);
 }
 
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
-	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	const bool skip = adc || r->XYZ2.Skip();
+
+	if (!skip || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
 		CheckFlushes();
 
-	const GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
-	const GSVector4i z = GSVector4i::loadl(&r->U64[1]);
+	const GSVector4i xy = GSVector4i::loadnt(r);
+	const GSVector4i z = xy.zzzz();
 	const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZ2.Skip());
+	VertexKick<prim, auto_flush, index_swap>(skip);
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -643,40 +656,30 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 {
 	ASSERT(size > 0 && size % 3 == 0);
 
-	bool flushes_checked = false;
-
-	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
-	{
-		flushes_checked = true;
-		CheckFlushes();
-	}
+	CheckFlushes();
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+	const GSVector4i ffffff_mask = GSVector4i::x00ffffff().upl32(ff_mask);
 
 	while (r < r_end)
 	{
-		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
-		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		const GSVector4i st = GSVector4i::loadnt(&r[0]);
+		GSVector4i q = st.zzzz();
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & ff_mask).ps32().pu16();
 
 		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
 
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
+		m_v.m[0] = st.upl64(rgba.upl32(q));
 
-		GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		GSVector4i zf = GSVector4i::loadl(&r[2].U64[1]);
+		GSVector4i xy = GSVector4i::loadnt(&r[2]);
+		GSVector4i zf = xy.zwzw();
 		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-		zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
+		zf = zf.srl32(4) & ffffff_mask;
 
-		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
+		m_v.m[1] = xy.upl32(zf);
 
-		const bool skip = r[2].XYZF2.Skip();
-		if (!flushes_checked && !skip)
-		{
-			flushes_checked = true;
-			CheckFlushes();
-		}
-		VertexKick<prim, auto_flush, index_swap>(skip);
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZF2.Skip());
 
 		r += 3;
 	}
@@ -688,44 +691,317 @@ template <u32 prim, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
-	bool flushes_checked = false;
 
-	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+
+	while (r < r_end)
 	{
-		flushes_checked = true;
-		CheckFlushes();
+		const GSVector4i st = GSVector4i::loadnt(&r[0]);
+		GSVector4i q = st.zzzz();
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & ff_mask).ps32().pu16();
+
+		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
+
+		m_v.m[0] = st.upl64(rgba.upl32(q));
+
+		const GSVector4i xy = GSVector4i::loadnt(&r[2]);
+		const GSVector4i z = xy.zzzz();
+		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
+
+		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
+
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZ2.Skip());
+
+		r += 3;
 	}
+
+	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerUVRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 3 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+
+	const GSVector4i st = GSVector4i::loadl(&m_v.ST);
+	const GSVector4i q = GSVector4i::loadl(&m_v.RGBAQ.U32[1]).blend8(GSVector4i::cast(GSVector4::m_one), GSVector4i::loadl(&m_v.RGBAQ.U32[1]) == GSVector4i::zero());
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+	constexpr GSVector4i mask_3fff = GSVector4i::cxpr(0x00003fff);
+
+	while (r < r_end)
+	{
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & ff_mask).ps32().pu16();
+
+		m_v.m[0] = st.upl64(rgba.upl32(q));
+
+		const GSVector4i xy = GSVector4i::loadnt(&r[2]);
+		const GSVector4i z = xy.zzzz();
+		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
+
+		const GSVector4i uv = GSVector4i::loadl(&r[0]) & mask_3fff;
+
+		m_v.m[1] = xyz.upl64(uv.ps32(uv));
+
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZ2.Skip());
+
+		r += 3;
+	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 2 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+
+	const GSVector4i st = GSVector4i::loadl(&m_v.ST);
+	const GSVector4i q = GSVector4i(m_v.RGBAQ.U32[1]);
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+
+	while (r < r_end)
+	{
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[0]) & ff_mask).ps32().pu16();
+
+		m_v.m[0] = st.upl64(rgba.upl32(q));
+
+		const GSVector4i xy = GSVector4i::loadnt(&r[1]);
+		const GSVector4i z = xy.zzzz();
+		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
+
+		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
+
+		VertexKick<prim, auto_flush, index_swap>(r[1].XYZ2.Skip());
+
+		r += 2;
+	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 2 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+
+	const GSVector4i st = GSVector4i::loadl(&m_v.ST);
+	const GSVector4i q = GSVector4i(m_v.RGBAQ.U32[1]);
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+	const GSVector4i ffffff_mask = GSVector4i::cxpr(0x00ffffff).upl32(ff_mask);
+
+	while (r < r_end)
+	{
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[0]) & ff_mask).ps32().pu16();
+
+		m_v.m[0] = st.upl64(rgba.upl32(q));
+
+		GSVector4i xy = GSVector4i::loadnt(&r[1]);
+		GSVector4i zf = xy.zwzw();
+		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
+		zf = zf.srl32(4) & ffffff_mask;
+
+		m_v.m[1] = xy.upl32(zf);
+
+		VertexKick<prim, auto_flush, index_swap>(r[1].XYZF2.Skip());
+
+		r += 2;
+	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerUVRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 3 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+
+	const GSVector4i st = GSVector4i::loadl(&m_v.ST);
+	const GSVector4i q = GSVector4i(m_v.RGBAQ.U32[1]);
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+	constexpr GSVector4i mask_3fff = GSVector4i::cxpr(0x00003fff);
+	const GSVector4i ffffff_mask = GSVector4i::cxpr(0x00ffffff).upl32(ff_mask);
+
+	while (r < r_end)
+	{
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & ff_mask).ps32().pu16();
+
+		m_v.m[0] = st.upl64(rgba.upl32(q));
+
+		GSVector4i xy = GSVector4i::loadnt(&r[2]);
+		GSVector4i zf = xy.zwzw();
+
+		const GSVector4i uv = GSVector4i::loadl(&r[0]) & mask_3fff;
+
+		xy = xy.upl16(xy.srl<4>()).upl32(uv.ps32(uv));
+		zf = zf.srl32(4) & ffffff_mask;
+
+		m_v.m[1] = xy.upl32(zf);
+
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZF2.Skip());
+
+		r += 3;
+	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerRGBAUVXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 3 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+
+	const GSVector4i st = GSVector4i::loadl(&m_v.ST);
+	const GSVector4i q = GSVector4i(m_v.RGBAQ.U32[1]);
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+	constexpr GSVector4i mask_3fff = GSVector4i::cxpr(0x00003fff);
+	const GSVector4i ffffff_mask = GSVector4i::cxpr(0x00ffffff).upl32(ff_mask);
+
+	while (r < r_end)
+	{
+		const GSVector4i rgba = (GSVector4i::load<false>(&r[0]) & ff_mask).ps32().pu16();
+
+		m_v.m[0] = st.upl64(rgba.upl32(q));
+
+		GSVector4i xy = GSVector4i::loadnt(&r[2]);
+		GSVector4i zf = xy.zwzw();
+
+		const GSVector4i uv = GSVector4i::loadl(&r[1]) & mask_3fff;
+
+		xy = xy.upl16(xy.srl<4>()).upl32(uv.ps32(uv));
+		zf = zf.srl32(4) & ffffff_mask;
+
+		m_v.m[1] = xy.upl32(zf);
+
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZF2.Skip());
+
+		r += 3;
+	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerSTQXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 2 == 0);
+	
+	CheckFlushes();
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
 	while (r < r_end)
 	{
 		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
-		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		m_v.ST.U64 = st.U64[0];
 
-		q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
-
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
-
-		const GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		const GSVector4i z = GSVector4i::loadl(&r[2].U64[1]);
+		const GSVector4i xy = GSVector4i::loadnt(&r[1]);
+		const GSVector4i z = xy.zzzz();
 		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
 
-		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
+		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-		const bool skip = r[2].XYZF2.Skip();
-		if (!flushes_checked && !skip)
-		{
-			flushes_checked = true;
-			CheckFlushes();
-		}
-		VertexKick<prim, auto_flush, index_swap>(skip);
+		VertexKick<prim, auto_flush, index_swap>(r[1].XYZ2.Skip());
 
-		r += 3;
+		r += 2;
 	}
 
-	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
+	m_q = r[-2].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerSTQXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 2 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+	constexpr GSVector4i ff_mask = GSVector4i::cxpr(0x000000ff);
+	const GSVector4i ffffff_mask = GSVector4i::cxpr(0x00ffffff).upl32(ff_mask);
+
+	while (r < r_end)
+	{
+		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
+		m_v.ST.U64 = st.U64[0];
+
+		GSVector4i xy = GSVector4i::loadnt(&r[1]);
+		GSVector4i zf = xy.zwzw();
+		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
+		zf = zf.srl32(4) & ffffff_mask;
+
+		m_v.m[1] = xy.upl32(zf);
+
+		VertexKick<prim, auto_flush, index_swap>(r[1].XYZF2.Skip());
+
+		r += 2;
+	}
+
+	m_q = r[-2].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerUVXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 2 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+	constexpr GSVector4i mask_3fff = GSVector4i::cxpr(0x00003fff);
+
+	while (r < r_end)
+	{
+		GSVector4i xy = GSVector4i::loadnt(&r[1]);
+		GSVector4i z = xy.zzzz();
+		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
+		const GSVector4i uv = GSVector4i::loadl(&r[0]) & mask_3fff;
+
+		m_v.m[1] = xyz.upl64(uv.ps32(uv));
+
+		VertexKick<prim, auto_flush, index_swap>(r[1].XYZ2.Skip());
+
+		r += 2;
+	}
+}
+
+template <u32 prim, bool auto_flush, bool index_swap>
+void GSState::GIFPackedRegHandlerUVXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
+{
+	ASSERT(size > 0 && size % 2 == 0);
+
+	CheckFlushes();
+
+	const GIFPackedReg* RESTRICT r_end = r + size;
+	constexpr GSVector4i mask_3fff = GSVector4i::cxpr(0x00003fff);
+	const GSVector4i ffffff_mask = GSVector4i::cxpr(0x00ffffff).upl32(GSVector4i::cxpr(0x000000ff));
+
+	while (r < r_end)
+	{
+		GSVector4i xy = GSVector4i::loadnt(&r[1]);
+		GSVector4i zf = xy.zwzw();
+		const GSVector4i uv = GSVector4i::loadl(&r[0]) & mask_3fff;
+		xy = xy.upl16(xy.srl<4>()).upl32(uv.ps32(uv));
+		zf = zf.srl32(4) & ffffff_mask;
+
+		m_v.m[1] = xy.upl32(zf);
+
+		VertexKick<prim, auto_flush, index_swap>(r[1].XYZF2.Skip());
+
+		r += 2;
+	}
 }
 
 void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r, u32 size)
@@ -2328,6 +2604,8 @@ void GSState::Transfer(const u8* mem, u32 size)
 				if (path.tag.PRE && path.tag.FLG == GIF_FLG_PACKED)
 					ApplyPRIM(path.tag.PRIM);
 			}
+
+			continue;
 		}
 		else
 		{
@@ -2358,7 +2636,7 @@ void GSState::Transfer(const u8* mem, u32 size)
 
 						switch (path.type)
 						{
-							case GIFPath::TYPE_UNKNOWN:
+							case PATH_TYPE::TYPE_UNKNOWN:
 							{
 								u32 reg = 0;
 
@@ -2372,29 +2650,19 @@ void GSState::Transfer(const u8* mem, u32 size)
 								} while (--total > 0);
 							}
 							break;
-							case GIFPath::TYPE_ADONLY: // very common
+							case PATH_TYPE::TYPE_ADONLY: // very common
 								do
 								{
 									(this->*m_fpGIFRegHandlers[((GIFPackedReg*)mem)->A_D.ADDR & 0x7F])(&((GIFPackedReg*)mem)->r);
 
 									mem += sizeof(GIFPackedReg);
 								} while (--total > 0);
-
-								break;
-							case GIFPath::TYPE_STQRGBAXYZF2: // majority of the vertices are formatted like this
-								(this->*m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZF2])((GIFPackedReg*)mem, total);
-
-								mem += total * sizeof(GIFPackedReg);
-
-								break;
-							case GIFPath::TYPE_STQRGBAXYZ2:
-								(this->*m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZ2])((GIFPackedReg*)mem, total);
-
-								mem += total * sizeof(GIFPackedReg);
-
-								break;
+							break;
 							default:
-								__assume(0);
+								(this->*m_fpGIFPackedRegHandlersC[path.type])((GIFPackedReg*)mem, total);
+
+								mem += total * sizeof(GIFPackedReg);
+							break;
 						}
 
 						path.nloop = 0;
@@ -2744,6 +3012,15 @@ void GSState::UpdateVertexKick()
 
 	m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZF2] = m_fpGIFPackedRegHandlerSTQRGBAXYZF2[prim];
 	m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZ2] = m_fpGIFPackedRegHandlerSTQRGBAXYZ2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_UVRGBAXYZ2] = m_fpGIFPackedRegHandlerUVRGBAXYZ2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_RGBAXYZ2] = m_fpGIFPackedRegHandlerRGBAXYZ2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_RGBAXYZF2] = m_fpGIFPackedRegHandlerRGBAXYZF2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_STQXYZ2] = m_fpGIFPackedRegHandlerSTQXYZ2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_STQXYZF2] = m_fpGIFPackedRegHandlerSTQXYZF2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_RGBAUVXYZF2] = m_fpGIFPackedRegHandlerRGBAUVXYZF2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_UVRGBAXYZF2] = m_fpGIFPackedRegHandlerUVRGBAXYZF2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_UVXYZ2] = m_fpGIFPackedRegHandlerUVXYZ2[prim];
+	m_fpGIFPackedRegHandlersC[GIF_REG_UVXYZF2] = m_fpGIFPackedRegHandlerUVXYZF2[prim];
 }
 
 void GSState::GrowVertexBuffer()

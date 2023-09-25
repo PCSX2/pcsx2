@@ -63,12 +63,31 @@ private:
 
 	typedef void (GSState::*GIFPackedRegHandlerC)(const GIFPackedReg* RESTRICT r, u32 size);
 
-	GIFPackedRegHandlerC m_fpGIFPackedRegHandlersC[2] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlersC[11] = {};
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZF2[8] = {};
 	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQRGBAXYZ2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerUVRGBAXYZ2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerRGBAXYZ2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerRGBAXYZF2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQXYZ2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerSTQXYZF2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerUVXYZ2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerUVXYZF2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerRGBAUVXYZF2[8] = {};
+	GIFPackedRegHandlerC m_fpGIFPackedRegHandlerUVRGBAXYZF2[8] = {};
 
 	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
 	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerUVRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerSTQXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerUVXYZ2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerUVXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerRGBAUVXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+	template<u32 prim, bool auto_flush, bool index_swap> void GIFPackedRegHandlerUVRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size);
+
 	void GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r, u32 size);
 
 	template<int i> void ApplyTEX0(GIFRegTEX0& TEX0);
