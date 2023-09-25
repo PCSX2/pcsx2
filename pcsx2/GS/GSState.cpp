@@ -849,20 +849,20 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	GL_REG("Apply TEX0_%d = 0x%x_%x", i, TEX0.U32[1], TEX0.U32[0]);
 
+	if ((TEX0.PSM & 0x7) >= 3 && TEX0.CLD)
+	{
+		m_mem.m_clut.ClearDrawInvalidity();
+		m_mem.m_clut.SetNextCLUTTEX0(TEX0.U64);
+		CheckCLUTValidity(m_prev_env.PRIM.PRIM);
+	}
+
 	// Even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing.
 	const bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
 	// No need to flush on CLUT if we aren't texture mapping.
 	if (wt)
 	{
-		m_mem.m_clut.SetNextCLUTTEX0(TEX0.U64);
-		if (TEX0.CBP != m_mem.m_clut.GetCLUTCBP())
-		{
-			m_mem.m_clut.ClearDrawInvalidity(true);
-			CLUTAutoFlush(m_prev_env.PRIM.PRIM);
-		}
-
-		if ((m_prev_env.PRIM.TME && (m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.PSM & 0x7) >= 3) || m_mem.m_clut.IsInvalid())
+		if ((m_prev_env.PRIM.TME && (m_prev_env.CTXT[m_prev_env.PRIM.CTXT].TEX0.PSM & 0x7) >= 3) || (m_mem.m_clut.IsInvalid() & 2))
 			Flush(GSFlushReason::CLUTCHANGE);
 		else
 			FlushWrite();
@@ -924,7 +924,10 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 		m_mem.m_clut.Write(m_env.CTXT[i].TEX0, m_env.TEXCLUT);
 	}
 
-	constexpr u64 mask = 0x1f78001fffffffffull; // TBP0 TBW PSM TW TH TCC TFX CPSM CSA
+	u64 mask = 0x1fffffffffull; // TBP0 TBW PSM TW TH TCC TFX
+	if ((TEX0.PSM & 0x7) >= 3)
+		mask |= 0x1f78000000000000ull; // CPSM CSA
+
 	if (i == m_prev_env.PRIM.CTXT)
 	{
 		if ((m_prev_env.CTXT[i].TEX0.U64 ^ m_env.CTXT[i].TEX0.U64) & mask)
@@ -1488,6 +1491,9 @@ void GSState::Flush(GSFlushReason reason)
 	{
 		m_state_flush_reason = reason;
 
+		// Used to prompt the current draw that it's modifying its own CLUT.
+		CheckCLUTValidity(m_prev_env.PRIM.PRIM);
+
 		if (m_dirty_gs_regs)
 		{
 			m_draw_env = &m_prev_env;
@@ -1578,7 +1584,7 @@ inline bool GSState::TestDrawChanged()
 		return true;
 
 	const int context = m_prev_env.PRIM.CTXT;
-	const GSDrawingContext ctx = m_prev_env.CTXT[context];
+	const GSDrawingContext& ctx = m_prev_env.CTXT[context];
 	// If the frame is getting updated check the FRAME, otherwise, we can ignore it
 	if ((ctx.TEST.ATST != ATST_NEVER) || !ctx.TEST.ATE || (ctx.TEST.AFAIL & 1) || ctx.TEST.DATE)
 	{
@@ -2959,63 +2965,72 @@ __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 	return false;
 }
 
-__forceinline void GSState::CLUTAutoFlush(u32 prim)
+static constexpr u32 NumIndicesForPrim(u32 prim)
+{
+	switch (prim)
+	{
+		case GS_POINTLIST:
+		case GS_INVALID:
+			return 1;
+		case GS_LINELIST:
+		case GS_SPRITE:
+		case GS_LINESTRIP:
+			return 2;
+		case GS_TRIANGLELIST:
+		case GS_TRIANGLESTRIP:
+		case GS_TRIANGLEFAN:
+			return 3;
+		default:
+			return 0;
+	}
+}
+
+static constexpr u32 MaxVerticesForPrim(u32 prim)
+{
+	switch (prim)
+	{
+		// Four indices per 1 vertex.
+		case GS_POINTLIST:
+		case GS_INVALID:
+
+		// Indices are shifted left by 2 to form quads.
+		case GS_LINELIST:
+		case GS_LINESTRIP:
+			return (std::numeric_limits<u16>::max() / 4) - 4;
+
+		// Four indices per two vertices.
+		case GS_SPRITE:
+			return (std::numeric_limits<u16>::max() / 2) - 2;
+
+		case GS_TRIANGLELIST:
+		case GS_TRIANGLESTRIP:
+		case GS_TRIANGLEFAN:
+		default:
+			return (std::numeric_limits<u16>::max() - 3);
+	}
+}
+
+__forceinline void GSState::CheckCLUTValidity(u32 prim)
 {
 	if (m_mem.m_clut.IsInvalid() & 2)
 		return;
 
-	u32 n = 1;
+	u32 n = NumIndicesForPrim(prim);
 
-	switch (prim)
+	const GSDrawingContext& ctx = m_prev_env.CTXT[m_prev_env.PRIM.CTXT];
+	if ((m_index.tail > 0 || (m_vertex.tail == n - 1)) && (GSLocalMemory::m_psm[ctx.TEX0.PSM].pal == 0 || !m_prev_env.PRIM.TME))
 	{
-		case GS_POINTLIST:
-			n = 1;
-			break;
-		case GS_LINELIST:
-		case GS_LINESTRIP:
-		case GS_SPRITE:
-			n = 2;
-			break;
-		case GS_TRIANGLELIST:
-		case GS_TRIANGLESTRIP:
-			n = 3;
-			break;
-		case GS_TRIANGLEFAN:
-			n = 3;
-			break;
-		case GS_INVALID:
-		default:
-			break;
-	}
-
-	const int ctx = m_prev_env.PRIM.CTXT;
-	if ((m_index.tail > 0 || (m_vertex.tail == n - 1)) && (GSLocalMemory::m_psm[m_prev_env.CTXT[ctx].TEX0.PSM].pal == 0 || !m_prev_env.PRIM.TME))
-	{
-		const GSLocalMemory::psm_t& fpsm = GSLocalMemory::m_psm[m_prev_env.CTXT[ctx].FRAME.PSM];
-
-		if ((m_prev_env.CTXT[ctx].FRAME.FBMSK & fpsm.fmsk) != fpsm.fmsk && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == fpsm.bpp)
+		const GSLocalMemory::psm_t& fpsm = GSLocalMemory::m_psm[ctx.FRAME.PSM];
+		const bool frame_needed = !(ctx.TEST.ATE && ctx.TEST.ATST == 0 && ctx.TEST.AFAIL == 2) && ((ctx.FRAME.FBMSK & fpsm.fmsk) != fpsm.fmsk);
+		if (frame_needed && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == fpsm.bpp)
 		{
-			const u32 startbp = fpsm.info.bn(temp_draw_rect.x, temp_draw_rect.y, m_prev_env.CTXT[ctx].FRAME.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
+			const u32 startbp = fpsm.info.bn(temp_draw_rect.x, temp_draw_rect.y, ctx.FRAME.Block(), ctx.FRAME.FBW);
 
 			// If it's a point, then we only have one coord, so the address for start and end will be the same, which is bad for the following check.
 			u32 endbp = startbp;
 			// otherwise calculate the end.
 			if (prim != GS_POINTLIST || (m_index.tail > 1))
-				endbp = fpsm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_prev_env.CTXT[ctx].FRAME.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
-
-			m_mem.m_clut.InvalidateRange(startbp, endbp, true);
-		}
-
-		const GSLocalMemory::psm_t& zpsm = GSLocalMemory::m_psm[m_prev_env.CTXT[ctx].ZBUF.PSM];
-		if (!m_prev_env.CTXT[ctx].ZBUF.ZMSK && GSLocalMemory::m_psm[m_mem.m_clut.GetCLUTCPSM()].bpp == zpsm.bpp)
-		{
-			const u32 startbp = zpsm.info.bn(temp_draw_rect.x, temp_draw_rect.y, m_prev_env.CTXT[ctx].ZBUF.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
-
-			// If it's a point, then we only have one coord, so the address for start and end will be the same, which is bad for the following check.
-			u32 endbp = startbp;
-			// otherwise calculate the end.
-			if (prim != GS_POINTLIST || (m_index.tail > 1))
-				endbp = zpsm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, m_prev_env.CTXT[ctx].ZBUF.Block(), m_prev_env.CTXT[ctx].FRAME.FBW);
+				endbp = fpsm.info.bn(temp_draw_rect.z - 1, temp_draw_rect.w - 1, ctx.FRAME.Block(), ctx.FRAME.FBW);
 
 			m_mem.m_clut.InvalidateRange(startbp, endbp, true);
 		}
@@ -3292,51 +3307,6 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-static constexpr u32 NumIndicesForPrim(u32 prim)
-{
-	switch (prim)
-	{
-		case GS_POINTLIST:
-		case GS_INVALID:
-			return 1;
-		case GS_LINELIST:
-		case GS_SPRITE:
-		case GS_LINESTRIP:
-			return 2;
-		case GS_TRIANGLELIST:
-		case GS_TRIANGLESTRIP:
-		case GS_TRIANGLEFAN:
-			return 3;
-		default:
-			return 0;
-	}
-}
-
-static constexpr u32 MaxVerticesForPrim(u32 prim)
-{
-	switch (prim)
-	{
-			// Four indices per 1 vertex.
-		case GS_POINTLIST:
-		case GS_INVALID:
-
-			// Indices are shifted left by 2 to form quads.
-		case GS_LINELIST:
-		case GS_LINESTRIP:
-			return (std::numeric_limits<u16>::max() / 4) - 4;
-
-			// Four indices per two vertices.
-		case GS_SPRITE:
-			return (std::numeric_limits<u16>::max() / 2) - 2;
-
-		case GS_TRIANGLELIST:
-		case GS_TRIANGLESTRIP:
-		case GS_TRIANGLEFAN:
-		default:
-			return (std::numeric_limits<u16>::max() - 3);
-	}
-}
-
 template <u32 prim, bool auto_flush, bool index_swap>
 __forceinline void GSState::VertexKick(u32 skip)
 {
@@ -3584,8 +3554,6 @@ __forceinline void GSState::VertexKick(u32 skip)
 	else
 		temp_draw_rect = draw_min.blend32<12>(draw_max);
 	temp_draw_rect = temp_draw_rect.rintersect(m_context->scissor.in);
-
-	CLUTAutoFlush(prim);
 
 	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
 	if (max_vertices != 0 && m_vertex.tail >= max_vertices)
