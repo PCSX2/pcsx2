@@ -164,7 +164,7 @@ protected:
 	bool IsAutoFlushDraw(u32 prim);
 	template<u32 prim, bool index_swap>
 	void HandleAutoFlush();
-	void CLUTAutoFlush(u32 prim);
+	void CheckCLUTValidity(u32 prim);
 
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);

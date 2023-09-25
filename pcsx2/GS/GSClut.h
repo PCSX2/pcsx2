@@ -110,7 +110,7 @@ public:
 
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();
-	void ClearDrawInvalidity(bool clear_all);
+	void ClearDrawInvalidity();
 	u32 GetCLUTCBP();
 	u32 GetCLUTCPSM();
 	void SetNextCLUTTEX0(u64 CBP);
