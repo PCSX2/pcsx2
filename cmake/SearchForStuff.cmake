@@ -119,6 +119,7 @@ add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
+disable_compiler_warnings_for_target(libchdr)
 add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
 
 # rapidyaml includes fast_float as a submodule, saves us pulling it in directly.

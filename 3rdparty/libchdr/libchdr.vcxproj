@@ -34,16 +34,16 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);_7ZIP_ST</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(ProjectDir)libchdr\include;$(ProjectDir)\libchdr\src;$(SolutionDir)3rdparty\lzma\include;$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(SolutionDir)3rdparty\lzma\include;$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libchdr\src\libchdr_bitstream.c" />
-    <ClCompile Include="libchdr\src\libchdr_cdrom.c" />
-    <ClCompile Include="libchdr\src\libchdr_chd.c" />
-    <ClCompile Include="libchdr\src\libchdr_flac.c" />
-    <ClCompile Include="libchdr\src\libchdr_huffman.c" />
+    <ClCompile Include="src\libchdr_bitstream.c" />
+    <ClCompile Include="src\libchdr_cdrom.c" />
+    <ClCompile Include="src\libchdr_chd.c" />
+    <ClCompile Include="src\libchdr_flac.c" />
+    <ClCompile Include="src\libchdr_huffman.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lzma\lzma.vcxproj">
