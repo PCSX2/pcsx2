@@ -1123,7 +1123,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	imgui
 	fmt::fmt
 	ryml
-	chdr-static
+	libchdr
 	libzip::zip
 	cpuinfo
 	zydis
