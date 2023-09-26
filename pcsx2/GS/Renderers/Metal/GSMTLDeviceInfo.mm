@@ -180,7 +180,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	if (char* env = getenv("MTL_SLOW_COLOR_COMPRESSION"))
 		features.slow_color_compression = env[0] == '1' || env[0] == 'y' || env[0] == 'Y';
 	else
-		features.slow_color_compression = [[dev name] containsString:@"AMD"];
+		features.slow_color_compression = [[dev name] containsString:@"AMD"] || [[dev name] isEqualToString:@"Intel HD Graphics 4000"];
 
 	features.max_texsize = 8192;
 	if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])
