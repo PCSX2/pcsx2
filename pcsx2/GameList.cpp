@@ -1296,7 +1296,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 				continue;
 			}
 
-			progress->SetFormattedStatusText("Downloading cover for %s [%s]...", entry->title.c_str(), entry->serial.c_str());
+			progress->SetStatusText(fmt::format(TRANSLATE_FS("GameList","Downloading cover for {0} [{1}]..."), entry->title, entry->serial).c_str());
 		}
 
 		// we could actually do a few in parallel here...
