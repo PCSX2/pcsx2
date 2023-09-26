@@ -24,22 +24,6 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="gameListGroup">
-     <property name="title">
-      <string>Display</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_gameList">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="preferEnglishGameList">
-        <property name="text">
-         <string>Prefer English Titles</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="gameScanningGroup">
      <property name="title">
       <string>Game Scanning</string>
@@ -260,6 +244,22 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="gameListGroup">
+     <property name="title">
+      <string>Display</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_gameList">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="preferEnglishGameList">
+        <property name="text">
+         <string>Prefer English Titles</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
