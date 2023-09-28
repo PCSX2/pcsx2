@@ -814,9 +814,7 @@ void DEV9SettingsWidget::UpdateHddSizeUIValues()
 	if (size < 0)
 		return;
 
-	const u32 sizeSectors = static_cast<u32>(size / 512);
 	const int sizeGB = size / 1024 / 1024 / 1024;
-
 	QSignalBlocker sb1(m_ui.hddSizeSpinBox);
 	QSignalBlocker sb2(m_ui.hddSizeSlider);
 	m_ui.hddSizeSpinBox->setValue(sizeGB);
