@@ -1532,7 +1532,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
 	const std::optional<int> value =
 		bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
 	const std::string value_text(
-		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) : std::string(FSUI_STR("Use Global Setting")));
+		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) : FSUI_STR("Use Global Setting"));
 
 	if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
 		ImGui::OpenPopup(title);
@@ -1587,7 +1587,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 	const std::optional<int> value =
 		bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
 	const std::string value_text(
-		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) : std::string(FSUI_STR("Use Global Setting")));
+		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) : FSUI_STR("Use Global Setting"));
 
 	static bool manual_input = false;
 
@@ -1708,7 +1708,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
 	const std::optional<float> value =
 		bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
 	const std::string value_text(
-		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) : std::string(FSUI_STR("Use Global Setting")));
+		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) : FSUI_STR("Use Global Setting"));
 
 	if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
 		ImGui::OpenPopup(title);
@@ -1766,7 +1766,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 	const std::optional<float> value =
 		bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
 	const std::string value_text(
-		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) : std::string(FSUI_STR("Use Global Setting")));
+		value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) : FSUI_STR("Use Global Setting"));
 
 	static bool manual_input = false;
 
@@ -1898,11 +1898,11 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 		bsi->GetOptionalIntValue(section, right_key, game_settings ? std::nullopt : std::optional<int>(default_right));
 	const std::optional<int> bottom_value =
 		bsi->GetOptionalIntValue(section, bottom_key, game_settings ? std::nullopt : std::optional<int>(default_bottom));
-	const std::string value_text(fmt::format(FSUI_NSTR("{0}/{1}/{2}/{3}"),
-		left_value.has_value() ? StringUtil::StdStringFromFormat(format, left_value.value()) : std::string(FSUI_STR("Default")),
-		top_value.has_value() ? StringUtil::StdStringFromFormat(format, top_value.value()) : std::string(FSUI_STR("Default")),
-		right_value.has_value() ? StringUtil::StdStringFromFormat(format, right_value.value()) : std::string(FSUI_STR("Default")),
-		bottom_value.has_value() ? StringUtil::StdStringFromFormat(format, bottom_value.value()) : std::string(FSUI_STR("Default"))));
+	const std::string value_text(fmt::format(FSUI_FSTR("{0}/{1}/{2}/{3}"),
+		left_value.has_value() ? StringUtil::StdStringFromFormat(format, left_value.value()) : FSUI_STR("Default"),
+		top_value.has_value() ? StringUtil::StdStringFromFormat(format, top_value.value()) : FSUI_STR("Default"),
+		right_value.has_value() ? StringUtil::StdStringFromFormat(format, right_value.value()) : FSUI_STR("Default"),
+		bottom_value.has_value() ? StringUtil::StdStringFromFormat(format, bottom_value.value()) : FSUI_STR("Default")));
 
 	static bool manual_input = false;
 
@@ -1952,7 +1952,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 			// Align value text in middle.
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
 								 ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
-			ImGui::TextUnformatted(labels[i]);
+			ImGui::TextUnformatted(Host::TranslateToCString(TR_CONTEXT, labels[i]));
 			ImGui::SameLine(midpoint);
 			ImGui::SetNextItemWidth(end);
 			button_pos.x = ImGui::GetCursorPosX();
