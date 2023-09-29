@@ -49,6 +49,8 @@ private:
 	float whammyDeadzone = 0.0f;
 	float buttonDeadzone = 0.0f; // Button deadzone is still a good idea, in case a host analog stick is bound to a guitar button
 
+	void ConfigLog();
+
 	u8 Mystery(u8 commandByte);
 	u8 ButtonQuery(u8 commandByte);
 	u8 Poll(u8 commandByte);

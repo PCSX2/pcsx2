@@ -95,6 +95,79 @@ static const SettingInfo s_settings[] = {
 const Pad::ControllerInfo PadDualshock2::ControllerInfo = {Pad::ControllerType::DualShock2, "DualShock2",
 	TRANSLATE_NOOP("Pad", "DualShock 2"), s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
 
+void PadDualshock2::ConfigLog()
+{
+	const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+	std::string_view smallMotorStr;
+
+	switch (this->smallMotorLastConfig)
+	{
+		case 0xff:
+			smallMotorStr = "Disabled";
+			break;
+		case 0x00:
+			smallMotorStr = "Normal";
+			break;
+		case 0x01:
+			smallMotorStr = "Inverted";
+			break;
+		default:
+			smallMotorStr = "Undefined";
+			break;
+	}
+
+	std::string_view largeMotorStr;
+
+	switch (this->largeMotorLastConfig)
+	{
+		case 0xff:
+			largeMotorStr = "Disabled";
+			break;
+		case 0x00:
+			largeMotorStr = "Inverted";
+			break;
+		case 0x01:
+			largeMotorStr = "Normal";
+			break;
+		default:
+			largeMotorStr = "Undefined";
+			break;
+	}
+
+	std::string_view pressureStr;
+
+	switch (this->responseBytes)
+	{
+		case static_cast<u32>(Pad::ResponseBytes::DUALSHOCK2):
+			pressureStr = "D+A+P";
+			break;
+		case static_cast<u32>(Pad::ResponseBytes::ANALOG):
+			pressureStr = "D+A";
+			break;
+		case static_cast<u32>(Pad::ResponseBytes::DIGITAL):
+			pressureStr = "D";
+			break;
+		default:
+			pressureStr = "U";
+			break;
+	}
+
+	// AL: Analog Light (is it turned on right now)
+	// AB: Analog Button (is it useable or is it locked in its current state)
+	// VS: Vibration Small (how is the small vibration motor mapped)
+	// VL: Vibration Large (how is the large vibration motor mapped)
+	// RB: Response Bytes (what data is included in the controller's responses - D = Digital, A = Analog, P = Pressure)
+	Console.WriteLn(fmt::format("[Pad] DS2 Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - VS: {4} - VL: {5} - RB: {6} (0x{7:08X})",
+		port + 1,
+		slot + 1,
+		(this->analogLight ? "On" : "Off"),
+		(this->analogLocked ? "Locked" : "Usable"),
+		smallMotorStr,
+		largeMotorStr,
+		pressureStr,
+		this->responseBytes));
+}
+
 u8 PadDualshock2::Mystery(u8 commandByte)
 {
 	switch (commandBytesReceived)
@@ -257,13 +330,7 @@ u8 PadDualshock2::Config(u8 commandByte)
 			if (this->isInConfig)
 			{
 				this->isInConfig = false;
-				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
-				Console.WriteLn(StringUtil::StdStringFromFormat("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: %s",
-					port + 1,
-					slot + 1,
-					(this->analogLight ? "On" : "Off"),
-					(this->analogLocked ? "Locked" : "Usable"),
-					(this->responseBytes == static_cast<u32>(Pad::ResponseBytes::DUALSHOCK2) ? "On" : "Off")));
+				this->ConfigLog();
 			}
 			else
 			{
