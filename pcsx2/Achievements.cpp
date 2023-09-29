@@ -1014,7 +1014,7 @@ void Achievements::DisplayAchievementSummary()
 		std::string summary;
 		if (s_game_summary.num_core_achievements > 0)
 		{
-			summary = fmt::format(TRANSLATE_FS("Achievements", "You have unlocked {} of {} achievements, and earned {} of {} points."),
+			summary = fmt::format(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, and earned {2} of {3} points."),
 				s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
 				s_game_summary.points_core);
 		}
@@ -1097,7 +1097,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 	if (EmuConfig.Achievements.Notifications)
 	{
 		std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_game_title);
-		std::string message = fmt::format(TRANSLATE_FS("Achievements", "{} achievements, {} points"),
+		std::string message = fmt::format(TRANSLATE_FS("Achievements", "{0} achievements, {1} points"),
 			s_game_summary.num_unlocked_achievements, s_game_summary.points_unlocked);
 
 		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
@@ -1188,13 +1188,13 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 	if (EmuConfig.Achievements.LeaderboardNotifications)
 	{
 		static const char* value_strings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
-			TRANSLATE_NOOP("Achievements", "Your Time: {} (Best: {})"),
-			TRANSLATE_NOOP("Achievements", "Your Score: {} (Best: {})"),
-			TRANSLATE_NOOP("Achievements", "Your Value: {} (Best: {})"),
+			TRANSLATE_NOOP("Achievements", "Your Time: {0} (Best: {1})"),
+			TRANSLATE_NOOP("Achievements", "Your Score: {0} (Best: {1})"),
+			TRANSLATE_NOOP("Achievements", "Your Value: {0} (Best: {1})"),
 		};
 
 		std::string title = event->leaderboard->title;
-		std::string message = fmt::format(TRANSLATE_FS("Achievements", "{}\nLeaderboard Position: {} of {}"),
+		std::string message = fmt::format(TRANSLATE_FS("Achievements", "{0}\nLeaderboard Position: {1} of {2}"),
 			fmt::format(fmt::runtime(Host::TranslateToStringView("Achievements",
 							value_strings[std::min<u8>(event->leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)])),
 				event->leaderboard_scoreboard->submitted_score, event->leaderboard_scoreboard->best_score),
@@ -1326,7 +1326,7 @@ void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client
 
 void Achievements::HandleServerErrorEvent(const rc_client_event_t* event)
 {
-	std::string message = fmt::format(TRANSLATE_FS("Achievements", "Server error in {}:\n{}"),
+	std::string message = fmt::format(TRANSLATE_FS("Achievements", "Server error in {0}:\n{1}"),
 		event->server_error->api ? event->server_error->api : "UNKNOWN",
 		event->server_error->error_message ? event->server_error->error_message : "UNKNOWN");
 	Console.Error("(Achievements) %s", message.c_str());
@@ -1755,7 +1755,7 @@ void Achievements::ShowLoginSuccess(const rc_client_t* client)
 
 		//: Summary for login notification.
 		std::string title = user->display_name;
-		std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)\nUnread messages: {}"), user->score,
+		std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {0} ({1} softcore)\nUnread messages: {2}"), user->score,
 			user->score_softcore, user->num_unread_messages);
 
 		MTGS::RunOnGSThread([title = std::move(title), summary = std::move(summary), badge_path = std::move(badge_path)]() {
@@ -2148,7 +2148,7 @@ void Achievements::DrawAchievementsWindow()
 			}
 			else
 			{
-				text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {} of {} achievements, earning {} of {} possible points."),
+				text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
 					s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
 					s_game_summary.points_core);
 			}

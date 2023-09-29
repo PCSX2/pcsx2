@@ -106,7 +106,7 @@ static void HotkeyCycleSaveSlot(s32 delta)
 
 		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
 			fmt::format(
-				TRANSLATE_FS("Hotkeys", "Save slot {} selected (last save: {})."), s_current_save_slot, date_buf),
+				TRANSLATE_FS("Hotkeys", "Save slot {0} selected (last save: {1})."), s_current_save_slot, date_buf),
 			Host::OSD_QUICK_DURATION);
 	}
 	else

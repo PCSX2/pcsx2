@@ -667,8 +667,8 @@ void PadDualshock2::Set(u32 index, float value)
 				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
 				
 				Host::AddKeyedOSDMessage(fmt::format("PadAnalogButtonChange{}{}", port, slot),
-					this->analogLight ? fmt::format(TRANSLATE_FS("Pad", "Analog light is now on for port {} / slot {}"), port + 1, slot + 1) :
-										fmt::format(TRANSLATE_FS("Pad", "Analog light is now off for port {} / slot {}"), port + 1, slot + 1),
+					this->analogLight ? fmt::format(TRANSLATE_FS("Pad", "Analog light is now on for port {0} / slot {1}"), port + 1, slot + 1) :
+										fmt::format(TRANSLATE_FS("Pad", "Analog light is now off for port {0} / slot {1}"), port + 1, slot + 1),
 					Host::OSD_INFO_DURATION);
 			}
 		}

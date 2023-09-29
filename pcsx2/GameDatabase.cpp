@@ -1163,7 +1163,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (audio_iter != s_track_hash_to_entry_map.end())
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is not found in database.\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {0} with hash {1} is not found in database.\n"), track + 1,
 				tracks[track].toString());
 			tracks_matched[track] = false;
 			all_okay = false;
@@ -1174,7 +1174,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (audio_iter->second != data_iter->second)
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is for a different game ({}).\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {0} with hash {1} is for a different game ({2}).\n"), track + 1,
 				tracks[track].toString(), s_hash_database[audio_iter->second].name);
 			tracks_matched[track] = false;
 			all_okay = false;
@@ -1185,7 +1185,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[track]) != track)
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} does not match database track.\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {0} with hash {1} does not match database track.\n"), track + 1,
 				tracks[track].toString());
 			tracks_matched[track] = false;
 			all_okay = false;
