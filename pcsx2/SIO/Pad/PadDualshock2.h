@@ -97,6 +97,8 @@ private:
 	// Used to store the last vibration mapping request the PS2 made for the large motor.
 	u8 largeMotorLastConfig = 0xff;
 
+	void ConfigLog();
+
 	u8 Mystery(u8 commandByte);
 	u8 ButtonQuery(u8 commandByte);
 	u8 Poll(u8 commandByte);
