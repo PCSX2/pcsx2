@@ -319,7 +319,7 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		menu.addSeparator();
 	}
 
-	connect(menu.addAction("Create"), &QAction::triggered, this, &MemoryCardSettingsWidget::createCard);
+	connect(menu.addAction(tr("Create")), &QAction::triggered, this, &MemoryCardSettingsWidget::createCard);
 
 	menu.exec(m_ui.cardList->mapToGlobal(pos));
 }

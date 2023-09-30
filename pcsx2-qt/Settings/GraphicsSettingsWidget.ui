@@ -1533,7 +1533,7 @@
             <item>
              <widget class="QLabel" name="label_33">
               <property name="text">
-               <string>Saturation</string>
+               <string>Saturation:</string>
               </property>
              </widget>
             </item>
