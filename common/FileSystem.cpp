@@ -764,6 +764,15 @@ s64 FileSystem::GetPathFileSize(const char* Path)
 	return sd.Size;
 }
 
+std::optional<std::time_t> FileSystem::GetFileTimestamp(const char* path)
+{
+	FILESYSTEM_STAT_DATA sd;
+	if (!StatFile(path, &sd))
+		return std::nullopt;
+
+	return sd.ModificationTime;
+}
+
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 {
 	ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");

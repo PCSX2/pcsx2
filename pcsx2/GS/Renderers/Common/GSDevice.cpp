@@ -21,6 +21,8 @@
 #include "Host.h"
 
 #include "common/BitUtils.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -186,6 +188,11 @@ void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
 		*(idx_buffer++) = base + 2;
 		*(idx_buffer++) = base + 3;
 	}
+}
+
+std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
+{
+	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());
 }
 
 bool GSDevice::Create()
@@ -710,8 +717,8 @@ void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
 
 bool GSDevice::GetCASShaderSource(std::string* source)
 {
-	std::optional<std::string> ffx_a_source(Host::ReadResourceFileToString("shaders/common/ffx_a.h"));
-	std::optional<std::string> ffx_cas_source(Host::ReadResourceFileToString("shaders/common/ffx_cas.h"));
+	std::optional<std::string> ffx_a_source = ReadShaderSource("shaders/common/ffx_a.h");
+	std::optional<std::string> ffx_cas_source = ReadShaderSource("shaders/common/ffx_cas.h");
 	if (!ffx_a_source.has_value() || !ffx_cas_source.has_value())
 		return false;
 

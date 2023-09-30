@@ -2079,7 +2079,7 @@ bool GSDeviceVK::Create()
 	}
 
 	{
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/tfx.glsl");
+		std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/tfx.glsl");
 		if (!shader.has_value())
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/tfx.glsl.");
@@ -3827,7 +3827,7 @@ bool GSDeviceVK::CreateRenderPasses()
 
 bool GSDeviceVK::CompileConvertPipelines()
 {
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/convert.glsl");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/convert.glsl");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/convert.glsl.");
@@ -4015,7 +4015,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 	if (m_swap_chain_render_pass == VK_NULL_HANDLE)
 		return false;
 
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/present.glsl");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/present.glsl");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/present.glsl.");
@@ -4066,7 +4066,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 
 bool GSDeviceVK::CompileInterlacePipelines()
 {
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/interlace.glsl");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/interlace.glsl");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/interlace.glsl.");
@@ -4117,7 +4117,7 @@ bool GSDeviceVK::CompileInterlacePipelines()
 
 bool GSDeviceVK::CompileMergePipelines()
 {
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/merge.glsl");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/merge.glsl");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/merge.glsl.");
@@ -4187,14 +4187,14 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 	gpb.SetRenderPass(rp, 0);
 
 	{
-		std::optional<std::string> vshader = Host::ReadResourceFileToString("shaders/vulkan/convert.glsl");
+		const std::optional<std::string> vshader = ReadShaderSource("shaders/vulkan/convert.glsl");
 		if (!vshader)
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/convert.glsl.");
 			return false;
 		}
 
-		std::optional<std::string> pshader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
+		const std::optional<std::string> pshader = ReadShaderSource("shaders/common/fxaa.fx");
 		if (!pshader)
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/common/fxaa.fx.");
@@ -4222,7 +4222,7 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 	}
 
 	{
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/vulkan/shadeboost.glsl");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/shadeboost.glsl");
 		if (!shader)
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/shadeboost.glsl.");
@@ -4272,7 +4272,7 @@ bool GSDeviceVK::CompileCASPipelines()
 	Vulkan::SetObjectName(dev, m_cas_pipeline_layout, "CAS pipeline layout");
 
 	// we use specialization constants to avoid compiling it twice
-	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/vulkan/cas.glsl"));
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/vulkan/cas.glsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
@@ -4298,7 +4298,7 @@ bool GSDeviceVK::CompileCASPipelines()
 
 bool GSDeviceVK::CompileImGuiPipeline()
 {
-	const std::optional<std::string> glsl = Host::ReadResourceFileToString("shaders/vulkan/imgui.glsl");
+	const std::optional<std::string> glsl = ReadShaderSource("shaders/vulkan/imgui.glsl");
 	if (!glsl.has_value())
 	{
 		Console.Error("Failed to read imgui.glsl");

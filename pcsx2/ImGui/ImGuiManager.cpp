@@ -34,6 +34,7 @@
 #include "common/FileSystem.h"
 #include "common/Easing.h"
 #include "common/StringUtil.h"
+#include "common/Path.h"
 #include "common/Timer.h"
 
 #include "fmt/core.h"
@@ -390,9 +391,10 @@ bool ImGuiManager::LoadFontData()
 {
 	if (s_standard_font_data.empty())
 	{
-		std::optional<std::vector<u8>> font_data = s_font_path.empty() ?
-													   Host::ReadResourceFile("fonts/Roboto-Regular.ttf") :
-													   FileSystem::ReadBinaryFile(s_font_path.c_str());
+		std::optional<std::vector<u8>> font_data =
+			s_font_path.empty() ? FileSystem::ReadBinaryFile(
+									  Path::Combine(EmuFolders::Resources, "fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf").c_str()) :
+								  FileSystem::ReadBinaryFile(s_font_path.c_str());
 		if (!font_data.has_value())
 			return false;
 
@@ -401,7 +403,8 @@ bool ImGuiManager::LoadFontData()
 
 	if (s_fixed_font_data.empty())
 	{
-		std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/RobotoMono-Medium.ttf");
+		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(
+			Path::Combine(EmuFolders::Resources, "fonts" FS_OSPATH_SEPARATOR_STR "RobotoMono-Medium.ttf").c_str());
 		if (!font_data.has_value())
 			return false;
 
@@ -410,7 +413,8 @@ bool ImGuiManager::LoadFontData()
 
 	if (s_icon_font_data.empty())
 	{
-		std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf");
+		std::optional<std::vector<u8>> font_data =
+			FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, "fonts" FS_OSPATH_SEPARATOR_STR "fa-solid-900.ttf").c_str());
 		if (!font_data.has_value())
 			return false;
 

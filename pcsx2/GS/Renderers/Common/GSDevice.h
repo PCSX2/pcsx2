@@ -824,6 +824,9 @@ public:
 	/// Generates a fixed index buffer for expanding points and sprites. Buffer is assumed to be at least EXPAND_BUFFER_SIZE in size.
 	static void GenerateExpansionIndexBuffer(void* buffer);
 
+	/// Reads the specified shader source file.
+	static std::optional<std::string> ReadShaderSource(const char* filename);
+
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
 	__fi FeatureSupport Features() const { return m_features; }

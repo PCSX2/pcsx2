@@ -41,21 +41,6 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 {
 }
 
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
-{
-	return std::nullopt;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	return std::nullopt;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	return std::nullopt;
-}
-
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
 {
 }
