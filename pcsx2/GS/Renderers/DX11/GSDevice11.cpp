@@ -179,7 +179,7 @@ bool GSDevice11::Create()
 
 	SetFeatures(dxgi_adapter.get());
 
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/tfx.fx");
+	std::optional<std::string> shader = ReadShaderSource("shaders/dx11/tfx.fx");
 	if (!shader.has_value())
 		return false;
 	m_tfx_source = std::move(*shader);
@@ -193,7 +193,7 @@ bool GSDevice11::Create()
 		{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	std::optional<std::string> convert_hlsl = Host::ReadResourceFileToString("shaders/dx11/convert.fx");
+	const std::optional<std::string> convert_hlsl = ReadShaderSource("shaders/dx11/convert.fx");
 	if (!convert_hlsl.has_value())
 		return false;
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_convert.vs.put(), m_convert.il.put(),
@@ -209,7 +209,7 @@ bool GSDevice11::Create()
 			return false;
 	}
 
-	shader = Host::ReadResourceFileToString("shaders/dx11/present.fx");
+	shader = ReadShaderSource("shaders/dx11/present.fx");
 	if (!shader.has_value())
 		return false;
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_present.vs.put(), m_present.il.put(),
@@ -261,7 +261,7 @@ bool GSDevice11::Create()
 
 	m_dev->CreateBuffer(&bd, nullptr, m_merge.cb.put());
 
-	shader = Host::ReadResourceFileToString("shaders/dx11/merge.fx");
+	shader = ReadShaderSource("shaders/dx11/merge.fx");
 	if (!shader.has_value())
 		return false;
 
@@ -296,7 +296,7 @@ bool GSDevice11::Create()
 
 	m_dev->CreateBuffer(&bd, nullptr, m_interlace.cb.put());
 
-	shader = Host::ReadResourceFileToString("shaders/dx11/interlace.fx");
+	shader = ReadShaderSource("shaders/dx11/interlace.fx");
 	if (!shader.has_value())
 		return false;
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
@@ -316,7 +316,7 @@ bool GSDevice11::Create()
 
 	m_dev->CreateBuffer(&bd, nullptr, m_shadeboost.cb.put());
 
-	shader = Host::ReadResourceFileToString("shaders/dx11/shadeboost.fx");
+	shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
 	if (!shader.has_value())
 		return false;
 	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, "ps_main");
@@ -1565,7 +1565,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 	if (!m_fxaa_ps)
 	{
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/common/fxaa.fx");
 		if (!shader.has_value())
 		{
 			Console.Error("FXAA shader is missing");
@@ -1879,7 +1879,7 @@ bool GSDevice11::CreateCASShaders()
 	if (FAILED(hr))
 		return false;
 
-	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/dx11/cas.hlsl"));
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx11/cas.hlsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
@@ -1927,7 +1927,7 @@ bool GSDevice11::CreateImGuiResources()
 {
 	HRESULT hr;
 
-	const std::optional<std::string> hlsl = Host::ReadResourceFileToString("shaders/dx11/imgui.fx");
+	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
 	if (!hlsl.has_value())
 	{
 		Console.Error("Failed to read imgui.fx");

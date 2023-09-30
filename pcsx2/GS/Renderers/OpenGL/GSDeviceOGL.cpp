@@ -339,7 +339,7 @@ bool GSDeviceOGL::Create()
 	}
 
 	// these all share the same vertex shader
-	const auto convert_glsl = Host::ReadResourceFileToString("shaders/opengl/convert.glsl");
+	const std::optional<std::string> convert_glsl = ReadShaderSource("shaders/opengl/convert.glsl");
 	if (!convert_glsl.has_value())
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/convert.glsl.");
@@ -401,7 +401,7 @@ bool GSDeviceOGL::Create()
 		GL_PUSH("GSDeviceOGL::Present");
 
 		// these all share the same vertex shader
-		const auto shader = Host::ReadResourceFileToString("shaders/opengl/present.glsl");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/opengl/present.glsl");
 		if (!shader.has_value())
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/present.glsl.");
@@ -437,7 +437,7 @@ bool GSDeviceOGL::Create()
 	{
 		GL_PUSH("GSDeviceOGL::Merge");
 
-		const auto shader = Host::ReadResourceFileToString("shaders/opengl/merge.glsl");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/opengl/merge.glsl");
 		if (!shader.has_value())
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/merge.glsl.");
@@ -460,7 +460,7 @@ bool GSDeviceOGL::Create()
 	{
 		GL_PUSH("GSDeviceOGL::Interlace");
 
-		const auto shader = Host::ReadResourceFileToString("shaders/opengl/interlace.glsl");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/opengl/interlace.glsl");
 		if (!shader.has_value())
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/interlace.glsl.");
@@ -588,8 +588,8 @@ bool GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
 
-	auto vertex_shader = Host::ReadResourceFileToString("shaders/opengl/tfx_vgs.glsl");
-	auto fragment_shader = Host::ReadResourceFileToString("shaders/opengl/tfx_fs.glsl");
+	std::optional<std::string> vertex_shader = ReadShaderSource("shaders/opengl/tfx_vgs.glsl");
+	std::optional<std::string> fragment_shader = ReadShaderSource("shaders/opengl/tfx_fs.glsl");
 	if (!vertex_shader.has_value() || !fragment_shader.has_value())
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/tfx_{vgs,fs}.glsl.");
@@ -1796,7 +1796,7 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture
 bool GSDeviceOGL::CompileFXAAProgram()
 {
 	const std::string_view fxaa_macro = "#define FXAA_GLSL_130 1\n";
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/common/fxaa.fx");
 	if (!shader.has_value())
 	{
 		Console.Error("Failed to read fxaa.fs");
@@ -1834,7 +1834,7 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 bool GSDeviceOGL::CompileShadeBoostProgram()
 {
-	const auto shader = Host::ReadResourceFileToString("shaders/opengl/shadeboost.glsl");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/opengl/shadeboost.glsl");
 	if (!shader.has_value())
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/shadeboost.glsl.");
@@ -1974,7 +1974,7 @@ void GSDeviceOGL::ClearSamplerCache()
 
 bool GSDeviceOGL::CreateCASPrograms()
 {
-	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/opengl/cas.glsl"));
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/opengl/cas.glsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 	{
 		m_features.cas_sharpening = false;
@@ -2027,7 +2027,7 @@ bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 
 bool GSDeviceOGL::CreateImGuiProgram()
 {
-	std::optional<std::string> glsl = Host::ReadResourceFileToString("shaders/opengl/imgui.glsl");
+	const std::optional<std::string> glsl = ReadShaderSource("shaders/opengl/imgui.glsl");
 	if (!glsl.has_value())
 	{
 		Console.Error("Failed to read imgui.glsl");

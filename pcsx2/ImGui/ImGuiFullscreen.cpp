@@ -270,7 +270,7 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
 	if (Path::IsAbsolute(path))
 		data = FileSystem::ReadBinaryFile(path);
 	else
-		data = Host::ReadResourceFile(path);
+		data = FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, path).c_str());
 	if (data.has_value())
 	{
 		image = Common::RGBA8Image();

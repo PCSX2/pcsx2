@@ -1407,34 +1407,6 @@ QString QtHost::GetResourcesBasePath()
 	return QString::fromStdString(EmuFolders::Resources);
 }
 
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file '%s'", filename);
-	return ret;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file to string '%s'", filename);
-	return ret;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	FILESYSTEM_STAT_DATA sd;
-	if (!FileSystem::StatFile(filename, &sd))
-		return std::nullopt;
-
-	return sd.ModificationTime;
-}
-
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
 {
 	if (!title.empty() && !message.empty())

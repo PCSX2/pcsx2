@@ -87,6 +87,9 @@ namespace FileSystem
 	bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData);
 	s64 GetPathFileSize(const char* path);
 
+	/// Returns the last modified timestamp for a file.
+	std::optional<std::time_t> GetFileTimestamp(const char* path);
+
 	/// File exists?
 	bool FileExists(const char* path);
 

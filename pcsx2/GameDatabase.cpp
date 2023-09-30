@@ -912,7 +912,7 @@ void GameDatabase::initDatabase()
 		Console.Error(fmt::format("[GameDB YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 	});
 
-	auto buf = Host::ReadResourceFileToString(GAMEDB_YAML_FILE_NAME);
+	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME).c_str());
 	if (!buf.has_value())
 	{
 		Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
@@ -1073,7 +1073,7 @@ bool GameDatabase::loadHashDatabase()
 
 	Common::Timer load_timer;
 
-	auto buf = Host::ReadResourceFileToString(HASHDB_YAML_FILE_NAME);
+	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, HASHDB_YAML_FILE_NAME).c_str());
 	if (!buf.has_value())
 	{
 		Console.Error("[GameDB] Unable to open hash database file, file does not exist.");
