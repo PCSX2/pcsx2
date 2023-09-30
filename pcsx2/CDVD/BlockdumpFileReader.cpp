@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,6 +18,7 @@
 #include "IsoFileFormats.h"
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
+#include "common/Error.h"
 
 #include <errno.h>
 
@@ -27,11 +28,11 @@ enum isoFlags
 	ISOFLAGS_BLOCKDUMP_V3 = 0x0020
 };
 
-static const uint BlockDumpHeaderSize = 16;
+static constexpr u32 BlockDumpHeaderSize = 16;
 
 bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 {
-	uint oldbs = reader->GetBlockSize();
+	u32 oldbs = reader->GetBlockSize();
 
 	reader->SetBlockSize(1);
 
@@ -45,7 +46,7 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 	return isbd;
 }
 
-BlockdumpFileReader::BlockdumpFileReader(void)
+BlockdumpFileReader::BlockdumpFileReader()
 	: m_file(NULL)
 	, m_blocks(0)
 	, m_blockofs(0)
@@ -54,19 +55,22 @@ BlockdumpFileReader::BlockdumpFileReader(void)
 {
 }
 
-BlockdumpFileReader::~BlockdumpFileReader(void)
+BlockdumpFileReader::~BlockdumpFileReader()
 {
 	Close();
 }
 
-bool BlockdumpFileReader::Open(std::string fileName)
+bool BlockdumpFileReader::Open(std::string filename, Error* error)
 {
 	char signature[4];
 
-	m_filename = std::move(fileName);
-	m_file = FileSystem::OpenCFile(m_filename.c_str(), "rb");
-	if (!m_file || std::fread(signature, sizeof(signature), 1, m_file) != 1 || std::memcmp(signature, "BDV2", sizeof(signature)) != 0)
+	m_filename = std::move(filename);
+	if (!(m_file = FileSystem::OpenCFile(m_filename.c_str(), "rb", error)))
+		return false;
+
+	if (std::fread(signature, sizeof(signature), 1, m_file) != 1 || std::memcmp(signature, "BDV2", sizeof(signature)) != 0)
 	{
+		Error::SetString(error, "Block dump signature is invalid.");
 		return false;
 	}
 
@@ -75,6 +79,7 @@ bool BlockdumpFileReader::Open(std::string fileName)
 	 || std::fread(&m_blocks,    sizeof(m_blocks),    1, m_file) != 1
 	 || std::fread(&m_blockofs,  sizeof(m_blockofs),  1, m_file) != 1)
 	{
+		Error::SetString(error, "Failed to read block dump information.");
 		return false;
 	}
 
@@ -87,7 +92,10 @@ bool BlockdumpFileReader::Open(std::string fileName)
 	m_dtable = std::make_unique<u32[]>(m_dtablesize);
 
 	if (FileSystem::FSeek64(m_file, BlockDumpHeaderSize, SEEK_SET) != 0)
+	{
+		Error::SetString(error, "Failed to seek to block dump data.");
 		return false;
+	}
 
 	u32 bs = 1024 * 1024;
 	u32 off = 0;
@@ -112,7 +120,7 @@ bool BlockdumpFileReader::Open(std::string fileName)
 	return true;
 }
 
-int BlockdumpFileReader::ReadSync(void* pBuffer, uint lsn, uint count)
+int BlockdumpFileReader::ReadSync(void* pBuffer, u32 lsn, u32 count)
 {
 	u8* dst = (u8*)pBuffer;
 	//	Console.WriteLn("_isoReadBlockD %u, blocksize=%u, blockofs=%u\n", lsn, iso->blocksize, iso->blockofs);
@@ -159,17 +167,17 @@ int BlockdumpFileReader::ReadSync(void* pBuffer, uint lsn, uint count)
 	return 0;
 }
 
-void BlockdumpFileReader::BeginRead(void* pBuffer, uint sector, uint count)
+void BlockdumpFileReader::BeginRead(void* pBuffer, u32 sector, u32 count)
 {
 	m_lresult = ReadSync(pBuffer, sector, count);
 }
 
-int BlockdumpFileReader::FinishRead(void)
+int BlockdumpFileReader::FinishRead()
 {
 	return m_lresult;
 }
 
-void BlockdumpFileReader::CancelRead(void)
+void BlockdumpFileReader::CancelRead()
 {
 }
 
@@ -178,11 +186,11 @@ void BlockdumpFileReader::Close(void)
 	if (m_file)
 	{
 		std::fclose(m_file);
-		m_file = NULL;
+		m_file = nullptr;
 	}
 }
 
-uint BlockdumpFileReader::GetBlockCount(void) const
+u32 BlockdumpFileReader::GetBlockCount() const
 {
 	return m_blocks;
 }

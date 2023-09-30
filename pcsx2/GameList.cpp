@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -25,6 +25,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/Error.h"
 #include "common/HTTPDownloader.h"
 #include "common/HeterogeneousContainers.h"
 #include "common/Path.h"
@@ -171,10 +172,15 @@ void GameList::FillBootParametersForEntry(VMBootParameters* params, const Entry*
 
 bool GameList::GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::string* serial, u32* crc)
 {
+	Error error;
+
 	// This isn't great, we really want to make it all thread-local...
 	CDVD = &CDVDapi_Iso;
-	if (CDVD->open(path.c_str()) != 0)
+	if (!CDVD->open(path, &error))
+	{
+		Console.Error(fmt::format("(GameList::GetIsoSerialAndCRC) CDVD open of '{}' failed: {}", path, error.GetDescription()));
 		return false;
+	}
 
 	// TODO: we could include the version in the game list?
 	*disc_type = DoCDVDdetectDiskType();

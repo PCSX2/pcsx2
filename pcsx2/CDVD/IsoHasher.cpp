@@ -56,12 +56,9 @@ bool IsoHasher::Open(std::string iso_path, Error* error)
 	CDVDsys_SetFile(CDVD_SourceType::Iso, std::move(iso_path));
 	CDVDsys_ChangeSource(CDVD_SourceType::Iso);
 
-	m_is_open = DoCDVDopen();
+	m_is_open = DoCDVDopen(error);
 	if (!m_is_open)
-	{
-		Error::SetString(error, "Failed to open CDVD.");
 		return false;
-	}
 
 	const s32 type = DoCDVDdetectDiskType();
 	switch (type)

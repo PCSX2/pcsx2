@@ -176,27 +176,19 @@ static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePt
 	return chd;
 }
 
-bool ChdFileReader::Open2(std::string fileName)
+bool ChdFileReader::Open2(std::string filename, Error* error)
 {
 	Close2();
 
-	m_filename = std::move(fileName);
+	m_filename = std::move(filename);
 
-	auto fp = FileSystem::OpenManagedSharedCFile(m_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite);
+	auto fp = FileSystem::OpenManagedSharedCFile(m_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
 	if (!fp)
-	{
-		Console.Error(fmt::format("Failed to open CHD '{}': errno {}", m_filename, errno));
 		return false;
-	}
 
-	// TODO: Propagate error back to caller.
-	Error error;
-	ChdFile = OpenCHD(m_filename, std::move(fp), &error, 0);
+	ChdFile = OpenCHD(m_filename, std::move(fp), error, 0);
 	if (!ChdFile)
-	{
-		Console.Error(fmt::format("Failed to open CHD '{}': {}", m_filename, error.GetDescription()));
 		return false;
-	}
 
 	const chd_header* chd_header = chd_get_header(ChdFile);
 	hunk_size = chd_header->hunkbytes;
