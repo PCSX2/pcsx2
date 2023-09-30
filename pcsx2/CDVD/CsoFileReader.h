@@ -1,17 +1,17 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2014  PCSX2 Dev Team
-*
-*  PCSX2 is free software: you can redistribute it and/or modify it under the terms
-*  of the GNU Lesser General Public License as published by the Free Software Found-
-*  ation, either version 3 of the License, or (at your option) any later version.
-*
-*  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-*  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-*  PURPOSE.  See the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License along with PCSX2.
-*  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
@@ -31,56 +31,40 @@
 struct CsoHeader;
 typedef struct z_stream_s z_stream;
 
-static const uint CSO_CHUNKCACHE_SIZE_MB = 200;
-
-class CsoFileReader : public ThreadedFileReader
+class CsoFileReader final : public ThreadedFileReader
 {
 	DeclareNoncopyableObject(CsoFileReader);
 
 public:
-	CsoFileReader(void)
-		: m_frameSize(0)
-		, m_frameShift(0)
-		, m_indexShift(0)
-		, m_readBuffer(0)
-		, m_index(0)
-		, m_totalSize(0)
-		, m_src(0)
-		, m_z_stream(0)
-	{
-		m_blocksize = 2048;
-	};
-
-	~CsoFileReader(void) { Close(); };
+	CsoFileReader();
+	~CsoFileReader() override;
 
 	static bool CanHandle(const std::string& fileName, const std::string& displayName);
-	bool Open2(std::string fileName) override;
+	bool Open2(std::string filename, Error* error) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
-	int ReadChunk(void *dst, s64 chunkID) override;
+	int ReadChunk(void* dst, s64 chunkID) override;
 
-	void Close2(void) override;
+	void Close2() override;
 
-	uint GetBlockCount(void) const override
-	{
-		return (m_totalSize - m_dataoffset) / m_blocksize;
-	};
+	u32 GetBlockCount() const override;
 
 private:
-	static bool ValidateHeader(const CsoHeader& hdr);
-	bool ReadFileHeader();
-	bool InitializeBuffers();
+	static bool ValidateHeader(const CsoHeader& hdr, Error* error);
+	bool ReadFileHeader(Error* error);
+	bool InitializeBuffers(Error* error);
 	int ReadFromFrame(u8* dest, u64 pos, int maxBytes);
 	bool DecompressFrame(Bytef* dst, u32 frame, u32 readBufferSize);
 	bool DecompressFrame(u32 frame, u32 readBufferSize);
 
-	u32 m_frameSize;
-	u8 m_frameShift;
-	u8 m_indexShift;
-	u8* m_readBuffer;;
-	u32* m_index;
-	u64 m_totalSize;
+	u32 m_frameSize = 0;
+	u8 m_frameShift = 0;
+	u8 m_indexShift = 0;
+	std::unique_ptr<u8[]> m_readBuffer;
+
+	std::unique_ptr<u32[]> m_index;
+	u64 m_totalSize = 0;
 	// The actual source cso file handle.
-	FILE* m_src;
-	z_stream* m_z_stream;
+	std::FILE* m_src = nullptr;
+	std::unique_ptr<z_stream> m_z_stream;
 };

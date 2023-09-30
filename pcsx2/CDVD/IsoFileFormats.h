@@ -21,6 +21,8 @@
 #include <memory>
 #include <string>
 
+class Error;
+
 enum isoType
 {
 	ISOTYPE_ILLEGAL = 0,
@@ -35,7 +37,7 @@ static const int CD_FRAMESIZE_RAW = 2448;
 // --------------------------------------------------------------------------------------
 //  isoFile
 // --------------------------------------------------------------------------------------
-class InputIsoFile
+class InputIsoFile final
 {
 	DeclareNoncopyableObject(InputIsoFile);
 
@@ -67,7 +69,7 @@ protected:
 
 public:
 	InputIsoFile();
-	virtual ~InputIsoFile();
+	~InputIsoFile();
 
 	bool IsOpened() const;
 
@@ -81,7 +83,7 @@ public:
 	}
 
 	bool Test(std::string srcfile);
-	bool Open(std::string srcfile, bool testOnly = false);
+	bool Open(std::string srcfile, Error* error, bool testOnly);
 	void Close();
 	bool Detect(bool readType = true);
 
@@ -97,7 +99,7 @@ protected:
 	void FindParts();
 };
 
-class OutputIsoFile
+class OutputIsoFile final
 {
 	DeclareNoncopyableObject(OutputIsoFile);
 
@@ -120,7 +122,7 @@ protected:
 
 public:
 	OutputIsoFile();
-	virtual ~OutputIsoFile();
+	~OutputIsoFile();
 
 	bool IsOpened() const;
 	u32 GetBlockSize() const;

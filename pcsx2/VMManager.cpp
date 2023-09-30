@@ -1142,10 +1142,13 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 	}
 
+	Error error;
 	Console.WriteLn("Opening CDVD...");
-	if (!DoCDVDopen())
+	if (!DoCDVDopen(&error))
 	{
-		Host::ReportErrorAsync("Startup Error", "Failed to initialize CDVD.");
+		Host::ReportErrorAsync("Startup Error", fmt::format("Failed to open CDVD '{}': {}.",
+													Path::GetFileName(CDVDsys_GetFile(CDVDsys_GetSourceType())),
+													error.GetDescription()));
 		return false;
 	}
 	ScopedGuard close_cdvd(&DoCDVDclose);
@@ -1909,7 +1912,8 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	if (!path.empty())
 		CDVDsys_SetFile(source, std::move(path));
 
-	const bool result = DoCDVDopen();
+	Error error;
+	const bool result = DoCDVDopen(&error);
 	if (result)
 	{
 		if (source == CDVD_SourceType::NoDisc)
@@ -1927,18 +1931,20 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	{
 		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
 			fmt::format(
-				TRANSLATE_FS("VMManager", "Failed to open new disc image '{}'. Reverting to old image."), display_name),
+				TRANSLATE_FS("VMManager", "Failed to open new disc image '{}'. Reverting to old image.\nError was: {}"),
+				display_name, error.GetDescription()),
 			Host::OSD_ERROR_DURATION);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())
 			CDVDsys_SetFile(old_type, std::move(old_path));
-		if (!DoCDVDopen())
+		if (!DoCDVDopen(&error))
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				TRANSLATE_SV("VMManager", "Failed to switch back to old disc image. Removing disc."),
+					fmt::format(TRANSLATE_FS("VMManager", "Failed to switch back to old disc image. Removing disc.\nError was: {}"),
+					error.GetDescription()),
 				Host::OSD_CRITICAL_ERROR_DURATION);
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
-			DoCDVDopen();
+			DoCDVDopen(nullptr);
 		}
 	}
 	cdvd.Tray.cdvdActionSeconds = 1;

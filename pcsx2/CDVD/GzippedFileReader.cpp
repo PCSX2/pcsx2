@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2014  PCSX2 Dev Team
+*  Copyright (C) 2002-2023 PCSX2 Dev Team
 *
 *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
 *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -22,12 +22,12 @@
 #include "CDVD/zlib_indexed.h"
 
 #include "common/FileSystem.h"
+#include "common/Error.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "common/Timer.h"
 
-#include <fstream>
-
-#define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
+#include "fmt/format.h"
 
 #define GZIP_ID "PCSX2.index.gzip.v1|"
 #define GZIP_ID_LEN (sizeof(GZIP_ID) - 1) /* sizeof includes the \0 terminator */
@@ -39,40 +39,43 @@
 static Access* ReadIndexFromFile(const char* filename)
 {
 	auto fp = FileSystem::OpenManagedCFile(filename, "rb");
+	if (!fp)
+		return nullptr;
+
 	s64 size;
-	if (!fp || (size = FileSystem::FSize64(fp.get())) <= 0)
+	if ((size = FileSystem::FSize64(fp.get())) <= 0)
 	{
-		Console.Error("Error: Can't open index file: '%s'", filename);
-		return 0;
+		Console.Error(fmt::format("Invalid gzip index size: {}", size));
+		return nullptr;
 	}
 
 	char fileId[GZIP_ID_LEN + 1] = {0};
 	if (std::fread(fileId, GZIP_ID_LEN, 1, fp.get()) != 1 || std::memcmp(fileId, GZIP_ID, 4) != 0)
 	{
-		Console.Error("Error: Incompatible gzip index, please delete it manually: '%s'", filename);
-		return 0;
+		Console.Error(fmt::format("Incompatible gzip index, please delete it manually: '{}'", filename));
+		return nullptr;
 	}
 
-	Access* const index = (Access*)malloc(sizeof(Access));
+	Access* const index = static_cast<Access*>(std::malloc(sizeof(Access)));
 	const s64 datasize = size - GZIP_ID_LEN - sizeof(Access);
 	if (std::fread(index, sizeof(Access), 1, fp.get()) != 1 ||
 		datasize != static_cast<s64>(index->have) * static_cast<s64>(sizeof(Point)))
 	{
-		Console.Error("Error: Unexpected size of gzip index, please delete it manually: '%s'.", filename);
-		free(index);
+		Console.Error(fmt::format("Unexpected size of gzip index, please delete it manually: '{}'.", filename));
+		std::free(index);
 		return 0;
 	}
 
-	char* buffer = (char*)malloc(datasize);
+	char* buffer = static_cast<char*>(std::malloc(datasize));
 	if (std::fread(buffer, datasize, 1, fp.get()) != 1)
 	{
-		Console.Error("Error: failed read of gzip index, please delete it manually: '%s'.", filename);
-		free(buffer);
-		free(index);
+		Console.Error(fmt::format("Failed read of gzip index, please delete it manually: '{}'.", filename));
+		std::free(buffer);
+		std::free(index);
 		return 0;
 	}
 
-	index->list = (Point*)buffer; // adjust list pointer
+	index->list = reinterpret_cast<Point*>(buffer); // adjust list pointer
 	return index;
 }
 
@@ -120,20 +123,20 @@ static const char* INDEX_TEMPLATE_KEY = "$(f)";
 // No checks are performed if the result file name can be created.
 // If this proves useful, we can move it into Path:: . Right now there's no need.
 static std::string ApplyTemplate(const std::string& name, const std::string& base,
-							  const std::string& fileTemplate, const std::string& filename,
-							  bool canEndWithKey)
+	const std::string& fileTemplate, const std::string& filename,
+	bool canEndWithKey, Error* error)
 {
 	// both sides
 	std::string trimmedTemplate(StringUtil::StripWhitespace(fileTemplate));
 
 	std::string::size_type first = trimmedTemplate.find(INDEX_TEMPLATE_KEY);
-	if (first == std::string::npos    // not found
+	if (first == std::string::npos // not found
 		|| first != trimmedTemplate.rfind(INDEX_TEMPLATE_KEY) // more than one instance
 		|| (!canEndWithKey && first == trimmedTemplate.length() - std::strlen(INDEX_TEMPLATE_KEY)))
 	{
-		Console.Error("Invalid %s template '%s'.\n"
+		Error::SetString(error, fmt::format("Invalid {} template '{}'.\n"
 					  "Template must contain exactly one '%s' and must not end with it. Aborting.",
-					  name.c_str(), trimmedTemplate.c_str(), INDEX_TEMPLATE_KEY);
+			name, trimmedTemplate, INDEX_TEMPLATE_KEY));
 		return {};
 	}
 
@@ -148,23 +151,23 @@ static std::string ApplyTemplate(const std::string& name, const std::string& bas
 	return trimmedTemplate;
 }
 
-static std::string iso2indexname(const std::string& isoname)
+static std::string iso2indexname(const std::string& isoname, Error* error)
 {
 	const std::string& appRoot = EmuFolders::DataRoot;
-	return ApplyTemplate("gzip index", appRoot, Host::GetBaseStringSettingValue("EmuCore", "GzipIsoIndexTemplate", "$(f).pindex.tmp"), isoname, false);
+	return ApplyTemplate("gzip index", appRoot, Host::GetBaseStringSettingValue("EmuCore", "GzipIsoIndexTemplate", "$(f).pindex.tmp"), isoname, false, error);
 }
 
-
-GzippedFileReader::GzippedFileReader(void)
-	: mBytesRead(0)
-	, m_pIndex(0)
-	, m_zstates(0)
-	, m_src(0)
-	, m_cache(GZFILE_CACHE_SIZE_MB)
+GzippedFileReader::GzippedFileReader()
+	: m_cache(GZFILE_CACHE_SIZE_MB)
 {
 	m_blocksize = 2048;
 	AsyncPrefetchReset();
-};
+}
+
+GzippedFileReader::~GzippedFileReader()
+{
+	Close();
+}
 
 void GzippedFileReader::InitZstates()
 {
@@ -268,15 +271,18 @@ bool GzippedFileReader::CanHandle(const std::string& fileName, const std::string
 	return StringUtil::EndsWith(fileName, ".gz");
 }
 
-bool GzippedFileReader::OkIndex()
+bool GzippedFileReader::OkIndex(Error* error)
 {
 	if (m_pIndex)
 		return true;
 
 	// Try to read index from disk
-	const std::string indexfile(iso2indexname(m_filename));
+	const std::string indexfile(iso2indexname(m_filename, error));
 	if (indexfile.empty())
-		return false; // iso2indexname(...) will print errors if it can't apply the template
+	{
+		// iso2indexname(...) will set errors if it can't apply the template
+		return false; 
+	}
 
 	if (FileSystem::FileExists(indexfile.c_str()) && (m_pIndex = ReadIndexFromFile(indexfile.c_str())))
 	{
@@ -284,7 +290,7 @@ bool GzippedFileReader::OkIndex()
 		if (m_pIndex->span != GZFILE_SPAN_DEFAULT)
 		{
 			Console.Warning("Note: This index has %1.1f MB intervals, while the current default for new indexes is %1.1f MB.",
-							(float)m_pIndex->span / 1024 / 1024, (float)GZFILE_SPAN_DEFAULT / 1024 / 1024);
+				(float)m_pIndex->span / 1024 / 1024, (float)GZFILE_SPAN_DEFAULT / 1024 / 1024);
 			Console.Warning("It will work fine, but if you want to generate a new index with default intervals, delete this index file.");
 			Console.Warning("(smaller intervals mean bigger index file and quicker but more frequent decompressions)");
 		}
@@ -308,7 +314,7 @@ bool GzippedFileReader::OkIndex()
 	}
 	else
 	{
-		Console.Error("ERROR (%d): Index could not be generated for file '%s'", len, m_filename.c_str());
+		Error::SetString(error, fmt::format("ERROR ({}): Index could not be generated for file '{}'", len, m_filename));
 		free_index(index);
 		InitZstates();
 		return false;
@@ -318,15 +324,15 @@ bool GzippedFileReader::OkIndex()
 	return true;
 }
 
-bool GzippedFileReader::Open(std::string fileName)
+bool GzippedFileReader::Open(std::string filename, Error* error)
 {
 	Close();
-	m_filename = std::move(fileName);
-	if (!(m_src = FileSystem::OpenCFile(m_filename.c_str(), "rb")) || !OkIndex())
+	m_filename = std::move(filename);
+	if (!(m_src = FileSystem::OpenCFile(m_filename.c_str(), "rb", error)) || !OkIndex(error))
 	{
 		Close();
 		return false;
-	};
+	}
 
 	AsyncPrefetchOpen();
 	return true;
@@ -336,18 +342,18 @@ void GzippedFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 {
 	// No a-sync support yet, implement as sync
 	mBytesRead = ReadSync(pBuffer, sector, count);
-	return;
-};
+}
 
-int GzippedFileReader::FinishRead(void)
+int GzippedFileReader::FinishRead()
 {
 	int res = mBytesRead;
 	mBytesRead = -1;
 	return res;
-};
+}
 
-#define PTT clock_t
-#define NOW() (clock() / (CLOCKS_PER_SEC / 1000))
+void GzippedFileReader::CancelRead()
+{
+}
 
 int GzippedFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 {
@@ -378,7 +384,7 @@ s64 GzippedFileReader::GetOptimalExtractionStart(s64 offset)
 
 int GzippedFileReader::_ReadSync(void* pBuffer, s64 offset, uint bytesToRead)
 {
-	if (!OkIndex())
+	if (!OkIndex(nullptr))
 		return -1;
 
 	// Without all the caching, chunking and states, this would be enough:
@@ -407,7 +413,7 @@ int GzippedFileReader::_ReadSync(void* pBuffer, s64 offset, uint bytesToRead)
 
 	// Not available from cache. Decompress from optimal starting
 	// point in GZFILE_READ_CHUNK_SIZE chunks and cache each chunk.
-	PTT s = NOW();
+	Common::Timer start_time;
 	s64 extractOffset = GetOptimalExtractionStart(offset); // guaranteed in GZFILE_READ_CHUNK_SIZE boundaries
 	int size = offset + maxInChunk - extractOffset;
 	unsigned char* extracted = (unsigned char*)malloc(size);
@@ -446,7 +452,7 @@ int GzippedFileReader::_ReadSync(void* pBuffer, s64 offset, uint bytesToRead)
 	{ // split into cacheable chunks
 		for (int i = 0; i < size; i += GZFILE_READ_CHUNK_SIZE)
 		{
-			int available = CLAMP(res - i, 0, GZFILE_READ_CHUNK_SIZE);
+			int available = std::clamp(res - i, 0, GZFILE_READ_CHUNK_SIZE);
 			void* chunk = available ? malloc(available) : 0;
 			if (available)
 				memcpy(chunk, extracted + i, available);
@@ -455,13 +461,14 @@ int GzippedFileReader::_ReadSync(void* pBuffer, s64 offset, uint bytesToRead)
 		free(extracted);
 	}
 
-	int duration = NOW() - s;
-	if (duration > 10)
+	if (const double duration = start_time.GetTimeMilliseconds(); duration > 10)
+	{
 		Console.WriteLn(Color_Gray, "gunzip: chunk #%5d-%2d : %1.2f MB - %d ms",
-						(int)(offset / 4 / 1024 / 1024),
-						(int)(offset % (4 * 1024 * 1024) / GZFILE_READ_CHUNK_SIZE),
-						(float)size / 1024 / 1024,
-						duration);
+			(int)(offset / 4 / 1024 / 1024),
+			(int)(offset % (4 * 1024 * 1024) / GZFILE_READ_CHUNK_SIZE),
+			(float)size / 1024 / 1024,
+			duration);
+	}
 
 	return copied;
 }
@@ -481,8 +488,25 @@ void GzippedFileReader::Close()
 	if (m_src)
 	{
 		fclose(m_src);
-		m_src = 0;
+		m_src = nullptr;
 	}
 
 	AsyncPrefetchClose();
+}
+
+u32 GzippedFileReader::GetBlockCount() const
+{
+	// type and formula copied from FlatFileReader
+	// FIXME? : Shouldn't it be uint and (size - m_dataoffset) / m_blocksize ?
+	return (int)((m_pIndex ? m_pIndex->uncompressed_size : 0) / m_blocksize);
+}
+
+void GzippedFileReader::SetBlockSize(u32 bytes)
+{
+	m_blocksize = bytes;
+}
+
+void GzippedFileReader::SetDataOffset(u32 bytes)
+{
+	m_dataoffset = bytes;
 }

@@ -19,17 +19,17 @@
 
 typedef struct _chd_file chd_file;
 
-class ChdFileReader : public ThreadedFileReader
+class ChdFileReader final : public ThreadedFileReader
 {
 	DeclareNoncopyableObject(ChdFileReader);
 
 public:
 	ChdFileReader();
-	virtual ~ChdFileReader() override;
+	~ChdFileReader() override;
 
 	static bool CanHandle(const std::string& fileName, const std::string& displayName);
 
-	bool Open2(std::string fileName) override;
+	bool Open2(std::string filename, Error* error) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void* dst, s64 blockID) override;

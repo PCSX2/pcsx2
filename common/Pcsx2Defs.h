@@ -97,8 +97,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#define likely(x) (!!(x))
 	#define unlikely(x) (!!(x))
 
-	#define CALLBACK __stdcall
-
 #else
 
 // --------------------------------------------------------------------------------------
@@ -110,9 +108,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	// SysV ABI passes vector parameters through registers unconditionally.
 	#ifndef _WIN32
 		#define __vectorcall
-		#define CALLBACK
-	#else
-		#define CALLBACK __attribute__((stdcall))
 	#endif
 
 	// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
