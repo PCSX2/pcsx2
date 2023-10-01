@@ -2075,8 +2075,6 @@ SCCS-40022:
 SCCS-60001:
   name: "Sakura Taisen - Atsuki Chishio Ni"
   region: "NTSC-C"
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraTaisen"
 SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
@@ -10930,8 +10928,6 @@ SLAJ-35001:
 SLAJ-35003:
   name: "Sakura Taisen - Atsuki Chishio Ni"
   region: "NTSC-C"
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraTaisen"
 SLAJ-35007:
   name: "Zhen San Guo Wu Shuang 5 Special"
   region: "NTSC-C"
@@ -27920,8 +27916,6 @@ SLKA-35003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-K"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraTaisen"
 SLKA-35004:
   name: "Sakura Wars 5 So Long My Love"
   region: "NTSC-K"
@@ -40053,8 +40047,6 @@ SLPM-67003:
   name: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_SakuraTaisen"
 SLPM-67004:
   name: "Medal of Honor - Rising Sun"
   region: "NTSC-J"
