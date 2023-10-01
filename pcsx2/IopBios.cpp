@@ -892,6 +892,13 @@ namespace R3000A
 	{
 		int Kprintf_HLE()
 		{
+			// Using sprintf here is a bit nasty, but it has a large buffer..
+			// Don't feel like rewriting it.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 			// Emulate the expected Kprintf functionality:
 			iopMemWrite32(sp, a0);
 			iopMemWrite32(sp + 4, a1);
@@ -1000,6 +1007,10 @@ namespace R3000A
 			iopConLog(ShiftJIS_ConvertString(tmp, 1023));
 
 			return 1;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		}
 	} // namespace sysmem
 
