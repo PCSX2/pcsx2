@@ -36,6 +36,11 @@
 #include <mutex>
 #include <string>
 
+#ifdef __clang__
+// We're using deprecated fields because we're targeting multiple ffmpeg versions.
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavcodec/version.h"
@@ -49,8 +54,6 @@ extern "C" {
 #include "libswresample/swresample.h"
 #include "libswresample/version.h"
 }
-
-#include <mutex>
 
 // Compatibility with both ffmpeg 4.x and 5.x.
 #if (LIBAVFORMAT_VERSION_MAJOR < 59)
