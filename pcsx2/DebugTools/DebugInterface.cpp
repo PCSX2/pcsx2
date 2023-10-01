@@ -31,6 +31,11 @@
 
 #include "common/StringUtil.h"
 
+#ifdef __clang__
+// TODO: The sprintf() usage here needs to be rewritten...
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
@@ -67,7 +72,7 @@ public:
 		for (int i = 0; i < 32; i++)
 		{
 			char reg[8];
-			sprintf(reg, "r%d", i);
+			std::snprintf(reg, std::size(reg), "r%d", i);
 
 			if (strcasecmp(str, reg) == 0 || strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
 			{
