@@ -697,7 +697,7 @@ void P_COP2_Unknown( std::string& output )
 void label_decode( std::string& output, u32 addr )
 {
 	char buffer[32];
-	sprintf(buffer, "->$0x%08X", addr);
+	std::snprintf(buffer, std::size(buffer), "->$0x%08X", addr);
 	output += std::string(buffer);
 }
 
@@ -751,9 +751,9 @@ const char* signedImmediate(s32 imm, int len = 0)
 	static char buffer[32];
 
 	if (imm >= 0)
-		sprintf(buffer,"0x%*X",len,imm);
+		std::snprintf(buffer,std::size(buffer),"0x%*X",len,imm);
 	else
-		sprintf(buffer,"-0x%*X",len,-imm);
+		std::snprintf(buffer,std::size(buffer),"-0x%*X",len,-imm);
 
 	return buffer;
 }
@@ -762,12 +762,12 @@ const char* disDestSource(int dest, int source)
 {
 	static char buffer[64];
 #ifdef PRINT_REG_CONTENT
-	sprintf(buffer,"%s,%s(0x%8.8x)",GPR_REG[dest],GPR_REG[source], cpuRegs.GPR.r[source].UL[0]);
+	std::snprintf(buffer,std::size(buffer),"%s,%s(0x%8.8x)",GPR_REG[dest],GPR_REG[source], cpuRegs.GPR.r[source].UL[0]);
 #else
 	if (disSimplify && dest == source)
-		sprintf(buffer,"%s",GPR_REG[dest]);
+		std::snprintf(buffer,std::size(buffer),"%s",GPR_REG[dest]);
 	else
-		sprintf(buffer,"%s,%s",GPR_REG[dest],GPR_REG[source]);
+		std::snprintf(buffer,std::size(buffer),"%s,%s",GPR_REG[dest],GPR_REG[source]);
 
 #endif
 

@@ -131,7 +131,7 @@ namespace MIPSAnalyst
 	}
 
 	static const char *DefaultFunctionName(char buffer[256], u32 startAddr) {
-		sprintf(buffer, "z_un_%08x", startAddr);
+		std::snprintf(buffer, 256, "z_un_%08x", startAddr);
 		return buffer;
 	}
 
