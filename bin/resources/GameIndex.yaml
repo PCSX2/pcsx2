@@ -1761,7 +1761,7 @@ SCAJ-20179:
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
 SCAJ-20180:
@@ -1769,7 +1769,7 @@ SCAJ-20180:
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
 SCAJ-20181:
@@ -29756,7 +29756,7 @@ SLPM-61147:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
 SLPM-61148:
@@ -44983,7 +44983,7 @@ SLPS-25640:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
   memcardFilters: # Allows import of Xenosaga II save data.
@@ -44995,7 +44995,7 @@ SLPS-25641:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows (probably texture cache issue).
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
   memcardFilters:
@@ -54048,7 +54048,7 @@ SLUS-21389:
   compat: 5
   gsHWFixes:
     autoFlush: 2
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
   memcardFilters: # Allows import of Xenosaga II save data.
@@ -54200,7 +54200,7 @@ SLUS-21417:
   compat: 5
   gsHWFixes:
     autoFlush: 2
-    halfPixelOffset: 1 # Fixes lighting misalignment and reduces ground shadows.
+    halfPixelOffset: 2 # Fixes lighting misalignment and reduces ground shadows.
     roundSprite: 2 # Fixes font artifacts.
     textureInsideRT: 1 # Fixes bad crystal surfaces.
   memcardFilters:
