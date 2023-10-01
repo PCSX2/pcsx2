@@ -5435,10 +5435,25 @@ void GSTextureCache::Target::Update()
 
 	if (ndrects > 0)
 	{
+		ShaderConvert depth_shader = upscaled ? ShaderConvert::RGBA8_TO_FLOAT32_BILN : ShaderConvert::RGBA8_TO_FLOAT32;
+		if (m_type == DepthStencil && GSLocalMemory::m_psm[m_TEX0.PSM].trbpp != 32)
+		{
+			switch (GSLocalMemory::m_psm[m_TEX0.PSM].trbpp)
+			{
+				case 24:
+					depth_shader = upscaled ? ShaderConvert::RGBA8_TO_FLOAT24_BILN : ShaderConvert::RGBA8_TO_FLOAT24;
+					break;
+				case 16:
+					depth_shader = upscaled ? ShaderConvert::RGB5A1_TO_FLOAT16_BILN : ShaderConvert::RGB5A1_TO_FLOAT16;
+					break;
+				default:
+					break;
+			}
+		}
+
 		// No need to sort here, it's all the one texture.
-		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY :
-																(upscaled ? ShaderConvert::RGBA8_TO_FLOAT32_BILN :
-																			ShaderConvert::RGBA8_TO_FLOAT32);
+		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY : depth_shader;
+
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
