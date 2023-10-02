@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{522DAF2A-1F24-4742-B2C4-A956411F6AB2}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset Condition="!$(Configuration.Contains(Clang))">$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset Condition="$(Configuration.Contains(Clang))">ClangCL</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)3rdparty\DefaultProjectRootDir.props" />
+    <Import Project="$(SolutionDir)3rdparty\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libwebp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And '$(Platform)'=='x64'">%(AdditionalOptions) -msse4.1</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="libwebp\src\dec\alpha_dec.c" />
+    <ClCompile Include="libwebp\src\dec\buffer_dec.c" />
+    <ClCompile Include="libwebp\src\dec\frame_dec.c" />
+    <ClCompile Include="libwebp\src\dec\idec_dec.c" />
+    <ClCompile Include="libwebp\src\dec\io_dec.c" />
+    <ClCompile Include="libwebp\src\dec\quant_dec.c" />
+    <ClCompile Include="libwebp\src\dec\tree_dec.c" />
+    <ClCompile Include="libwebp\src\dec\vp8l_dec.c" />
+    <ClCompile Include="libwebp\src\dec\vp8_dec.c" />
+    <ClCompile Include="libwebp\src\dec\webp_dec.c" />
+    <ClCompile Include="libwebp\src\dsp\alpha_processing.c" />
+    <ClCompile Include="libwebp\src\dsp\alpha_processing_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\alpha_processing_sse41.c" />
+    <ClCompile Include="libwebp\src\dsp\cpu.c" />
+    <ClCompile Include="libwebp\src\dsp\dec.c" />
+    <ClCompile Include="libwebp\src\dsp\dec_clip_tables.c" />
+    <ClCompile Include="libwebp\src\dsp\dec_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\dec_sse41.c" />
+    <ClCompile Include="libwebp\src\dsp\filters.c" />
+    <ClCompile Include="libwebp\src\dsp\filters_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\lossless.c" />
+    <ClCompile Include="libwebp\src\dsp\lossless_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\lossless_sse41.c" />
+    <ClCompile Include="libwebp\src\dsp\rescaler.c" />
+    <ClCompile Include="libwebp\src\dsp\rescaler_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\upsampling.c" />
+    <ClCompile Include="libwebp\src\dsp\upsampling_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\upsampling_sse41.c" />
+    <ClCompile Include="libwebp\src\dsp\yuv.c" />
+    <ClCompile Include="libwebp\src\dsp\yuv_sse2.c" />
+    <ClCompile Include="libwebp\src\dsp\yuv_sse41.c" />
+    <ClCompile Include="libwebp\src\utils\bit_reader_utils.c" />
+    <ClCompile Include="libwebp\src\utils\color_cache_utils.c" />
+    <ClCompile Include="libwebp\src\utils\huffman_utils.c" />
+    <ClCompile Include="libwebp\src\utils\quant_levels_dec_utils.c" />
+    <ClCompile Include="libwebp\src\utils\random_utils.c" />
+    <ClCompile Include="libwebp\src\utils\rescaler_utils.c" />
+    <ClCompile Include="libwebp\src\utils\thread_utils.c" />
+    <ClCompile Include="libwebp\src\utils\utils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="libwebp\src\dec\alphai_dec.h" />
+    <ClInclude Include="libwebp\src\dec\common_dec.h" />
+    <ClInclude Include="libwebp\src\dec\vp8i_dec.h" />
+    <ClInclude Include="libwebp\src\dec\vp8li_dec.h" />
+    <ClInclude Include="libwebp\src\dec\vp8_dec.h" />
+    <ClInclude Include="libwebp\src\dec\webpi_dec.h" />
+    <ClInclude Include="libwebp\src\dsp\common_sse2.h" />
+    <ClInclude Include="libwebp\src\dsp\common_sse41.h" />
+    <ClInclude Include="libwebp\src\dsp\cpu.h" />
+    <ClInclude Include="libwebp\src\dsp\dsp.h" />
+    <ClInclude Include="libwebp\src\dsp\lossless.h" />
+    <ClInclude Include="libwebp\src\dsp\lossless_common.h" />
+    <ClInclude Include="libwebp\src\dsp\yuv.h" />
+    <ClInclude Include="libwebp\src\utils\bit_reader_utils.h" />
+    <ClInclude Include="libwebp\src\utils\color_cache_utils.h" />
+    <ClInclude Include="libwebp\src\utils\huffman_utils.h" />
+    <ClInclude Include="libwebp\src\utils\quant_levels_dec_utils.h" />
+    <ClInclude Include="libwebp\src\utils\random_utils.h" />
+    <ClInclude Include="libwebp\src\utils\rescaler_utils.h" />
+    <ClInclude Include="libwebp\src\utils\thread_utils.h" />
+    <ClInclude Include="libwebp\src\utils\utils.h" />
+    <ClInclude Include="libwebp\src\webp\decode.h" />
+    <ClInclude Include="libwebp\src\webp\demux.h" />
+    <ClInclude Include="libwebp\src\webp\encode.h" />
+    <ClInclude Include="libwebp\src\webp\format_constants.h" />
+    <ClInclude Include="libwebp\src\webp\mux.h" />
+    <ClInclude Include="libwebp\src\webp\mux_types.h" />
+    <ClInclude Include="libwebp\src\webp\types.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
