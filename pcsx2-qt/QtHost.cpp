@@ -1154,6 +1154,11 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 	emit g_emu_thread->onAchievementsHardcoreModeChanged(enabled);
 }
 
+void Host::OnCoverDownloaderOpenRequested()
+{
+	emit g_emu_thread->onCoverDownloaderOpenRequested();
+}
+
 void Host::VSyncOnCPUThread()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);

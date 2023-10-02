@@ -42,6 +42,7 @@
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GSPerfMon.h"
 #include "pcsx2/GSDumpReplayer.h"
+#include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
@@ -373,6 +374,11 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 }
 
 void Host::OnAchievementsRefreshed()
+{
+	// noop
+}
+
+void Host::OnCoverDownloaderOpenRequested()
 {
 	// noop
 }
