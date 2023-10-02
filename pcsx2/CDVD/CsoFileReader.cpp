@@ -24,8 +24,6 @@
 
 #include <zlib.h>
 
-static constexpr u32 CSO_CHUNKCACHE_SIZE_MB = 200;
-
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
 struct CsoHeader

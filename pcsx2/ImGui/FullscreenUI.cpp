@@ -3693,13 +3693,13 @@ void FullscreenUI::DrawCreateMemoryCardWindow()
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(FSUI_CSTR("Create Memory Card"), &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
-		ImGui::TextWrapped(
+		ImGui::TextWrapped("%s",
 			FSUI_CSTR("Enter the name of the memory card you wish to create, and choose a size. We recommend either using 8MB memory "
 					  "cards, or folder Memory Cards for best compatibility."));
 		ImGui::NewLine();
 
 		static char memcard_name[256] = {};
-		ImGui::Text(FSUI_CSTR("Card Name: "));
+		ImGui::TextUnformatted(FSUI_CSTR("Card Name: "));
 		ImGui::InputText("##name", memcard_name, sizeof(memcard_name));
 
 		ImGui::NewLine();
@@ -5654,7 +5654,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::TextWrapped("%s", SmallString::from_fmt(FSUI_FSTR("File: {}"), Path::GetFileName(selected_entry->path)).c_str());
 
 			// crc
-			ImGui::Text(TinyString::from_fmt(FSUI_FSTR("CRC: {:08X}"), selected_entry->crc));
+			ImGui::TextUnformatted(TinyString::from_fmt(FSUI_FSTR("CRC: {:08X}"), selected_entry->crc));
 
 			// region
 			{
@@ -6123,14 +6123,14 @@ void FullscreenUI::DrawAboutWindow()
 
 	if (ImGui::BeginPopupModal(FSUI_CSTR("About PCSX2"), &s_about_window_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
-		ImGui::TextWrapped(FSUI_CSTR(
+		ImGui::TextWrapped("%s", FSUI_CSTR(
 			"PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a "
 			"combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. "
 			"This allows you to play PS2 games on your PC, with many additional features and benefits."));
 
 		ImGui::NewLine();
 
-		ImGui::TextWrapped(
+		ImGui::TextWrapped("%s",
 			FSUI_CSTR("PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not "
 					  "affiliated in any way with Sony Interactive Entertainment."));
 

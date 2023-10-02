@@ -390,12 +390,6 @@ static s32 ISOgetBuffer(u8* buffer)
 	return iso.FinishRead3(buffer, pmode);
 }
 
-//static u8* ISOgetBuffer()
-//{
-//	iso.FinishRead();
-//	return pbuffer;
-//}
-
 static s32 ISOgetTrayStatus()
 {
 	return CDVD_TRAY_CLOSE;
@@ -406,11 +400,6 @@ static s32 ISOctrlTrayOpen()
 	return 0;
 }
 static s32 ISOctrlTrayClose()
-{
-	return 0;
-}
-
-static s32 ISOdummyS32()
 {
 	return 0;
 }
@@ -431,9 +420,9 @@ const CDVD_API CDVDapi_Iso =
 		ISOgetTD,
 		ISOgetTOC,
 		ISOgetDiskType,
-		ISOdummyS32, // trayStatus
-		ISOdummyS32, // trayOpen
-		ISOdummyS32, // trayClose
+		ISOgetTrayStatus,
+		ISOctrlTrayOpen,
+		ISOctrlTrayClose,
 		ISOnewDiskCB,
 
 		ISOreadSector,
