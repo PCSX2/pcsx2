@@ -14,8 +14,11 @@ add_library(png
 	pngwrite.c
 	pngwtran.c
 	pngwutil.c
+	intel/filter_sse2_intrinsics.c
+	intel/intel_init.c
 )
 
+target_compile_definitions(png PRIVATE "PNG_INTEL_SSE")
 target_link_libraries(png PRIVATE ZLIB::ZLIB)
 target_include_directories(png PUBLIC .)
 add_library(PNG::PNG ALIAS png)
