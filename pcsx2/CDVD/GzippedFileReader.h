@@ -38,13 +38,13 @@ public:
 
 	int ReadSync(void* pBuffer, u32 sector, u32 count) override;
 
-	void BeginRead(void* pBuffer, u32 sector, u32 count);
-	int FinishRead();
-	void CancelRead();
+	void BeginRead(void* pBuffer, u32 sector, u32 count) override;
+	int FinishRead() override;
+	void CancelRead() override;
 
 	void Close() override;
 
-	u32 GetBlockCount() const;
+	u32 GetBlockCount() const override;
 
 	void SetBlockSize(u32 bytes) override;
 	void SetDataOffset(u32 bytes) override;
