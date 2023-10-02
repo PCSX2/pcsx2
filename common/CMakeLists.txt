@@ -190,6 +190,7 @@ target_link_libraries(common PRIVATE
 	${LIBC_LIBRARIES}
 	PNG::PNG
 	jpgd
+	WebP::libwebp
 )
 
 target_link_libraries(common PUBLIC
