@@ -595,7 +595,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				sb->setSingleStep(si.IntegerStepValue());
 				if (si.format)
 				{
-					const auto [prefix, suffix] = getPrefixAndSuffixForIntFormat(QString::fromUtf8(si.format));
+					const auto [prefix, suffix] = getPrefixAndSuffixForIntFormat(qApp->translate(translation_ctx, si.format));
 					sb->setPrefix(prefix);
 					sb->setSuffix(suffix);
 				}
@@ -631,7 +631,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 
 				if (si.format)
 				{
-					const auto [prefix, suffix, decimals] = getPrefixAndSuffixForFloatFormat(QString::fromUtf8(si.format));
+					const auto [prefix, suffix, decimals] = getPrefixAndSuffixForFloatFormat(qApp->translate(translation_ctx, si.format));
 					sb->setPrefix(prefix);
 					if (decimals >= 0)
 						sb->setDecimals(decimals);
