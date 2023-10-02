@@ -2395,7 +2395,7 @@ void MainWindow::startGameListEntry(const GameList::Entry* entry, std::optional<
 void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 {
 	const QString filename = QDir::toNativeSeparators(
-		QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png)")));
+		QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)")));
 	if (filename.isEmpty())
 		return;
 
