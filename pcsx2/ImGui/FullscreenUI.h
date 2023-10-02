@@ -48,39 +48,4 @@ namespace FullscreenUI
 	void Render();
 	void InvalidateCoverCache();
 	TinyString TimeToPrintableString(time_t t);
-
-	class ProgressCallback final : public BaseProgressCallback
-	{
-	public:
-		ProgressCallback(std::string name);
-		~ProgressCallback() override;
-
-		__fi const std::string& GetName() const { return m_name; }
-
-		void PushState() override;
-		void PopState() override;
-
-		void SetCancellable(bool cancellable) override;
-		void SetTitle(const char* title) override;
-		void SetStatusText(const char* text) override;
-		void SetProgressRange(u32 range) override;
-		void SetProgressValue(u32 value) override;
-
-		void DisplayError(const char* message) override;
-		void DisplayWarning(const char* message) override;
-		void DisplayInformation(const char* message) override;
-		void DisplayDebugMessage(const char* message) override;
-
-		void ModalError(const char* message) override;
-		bool ModalConfirmation(const char* message) override;
-		void ModalInformation(const char* message) override;
-
-		void SetCancelled();
-
-	private:
-		void Redraw(bool force);
-
-		std::string m_name;
-		int m_last_progress_percent = -1;
-	};
 } // namespace FullscreenUI

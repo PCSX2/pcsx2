@@ -218,15 +218,6 @@ namespace FullscreenUI
 	};
 
 	//////////////////////////////////////////////////////////////////////////
-	// Utility
-	//////////////////////////////////////////////////////////////////////////
-	static void ReleaseTexture(std::unique_ptr<GSTexture>& tex);
-	static void StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name);
-	static void AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback, FullscreenUI::ProgressCallback* progress);
-	static void CancelAsyncOpWithName(const std::string_view& name);
-	static void CancelAsyncOps();
-
-	//////////////////////////////////////////////////////////////////////////
 	// Main
 	//////////////////////////////////////////////////////////////////////////
 	static void UpdateGameDetails(std::string path, std::string serial, std::string title, u32 disc_crc, u32 crc);
@@ -248,11 +239,6 @@ namespace FullscreenUI
 	static bool s_pause_menu_was_open = false;
 	static bool s_was_paused_on_quick_menu_open = false;
 	static bool s_about_window_open = false;
-
-	// async operations (e.g. cover downloads)
-	using AsyncOpEntry = std::pair<std::thread, std::unique_ptr<FullscreenUI::ProgressCallback>>;
-	static std::mutex s_async_op_mutex;
-	static std::deque<AsyncOpEntry> s_async_ops;
 
 	// local copies of the currently-running game
 	static std::string s_current_game_title;
@@ -310,7 +296,6 @@ namespace FullscreenUI
 	static void DrawSettingsWindow();
 	static void DrawSummarySettingsPage();
 	static void DrawInterfaceSettingsPage();
-	static void DrawCoverDownloaderWindow();
 	static void DrawBIOSSettingsPage();
 	static void DrawEmulationSettingsPage();
 	static void DrawGraphicsSettingsPage();
@@ -486,12 +471,6 @@ namespace FullscreenUI
 // Utility
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::ReleaseTexture(std::unique_ptr<GSTexture>& tex)
-{
-	if (tex)
-		g_gs_device->Recycle(tex.release());
-}
-
 TinyString FullscreenUI::TimeToPrintableString(time_t t)
 {
 	struct tm lt = {};
@@ -505,75 +484,6 @@ TinyString FullscreenUI::TimeToPrintableString(time_t t)
 	std::strftime(ret.data(), ret.buffer_size(), "%c", &lt);
 	ret.update_size();
 	return ret;
-}
-
-void FullscreenUI::StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name)
-{
-	CancelAsyncOpWithName(name);
-
-	std::unique_lock lock(s_async_op_mutex);
-	std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::make_unique<FullscreenUI::ProgressCallback>(std::move(name)));
-	std::thread thread(AsyncOpThreadEntryPoint, std::move(callback), progress.get());
-	s_async_ops.emplace_back(std::move(thread), std::move(progress));
-}
-
-void FullscreenUI::CancelAsyncOpWithName(const std::string_view& name)
-{
-	std::unique_lock lock(s_async_op_mutex);
-	for (auto iter = s_async_ops.begin(); iter != s_async_ops.end(); ++iter)
-	{
-		if (name != iter->second->GetName())
-			continue;
-
-		// move the thread out so it doesn't detach itself, then join
-		std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::move(iter->second));
-		std::thread thread(std::move(iter->first));
-		progress->SetCancelled();
-		s_async_ops.erase(iter);
-		lock.unlock();
-		if (thread.joinable())
-			thread.join();
-		lock.lock();
-		break;
-	}
-}
-
-void FullscreenUI::CancelAsyncOps()
-{
-	std::unique_lock lock(s_async_op_mutex);
-	while (!s_async_ops.empty())
-	{
-		auto iter = s_async_ops.begin();
-
-		// move the thread out so it doesn't detach itself, then join
-		std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::move(iter->second));
-		std::thread thread(std::move(iter->first));
-		progress->SetCancelled();
-		s_async_ops.erase(iter);
-		lock.unlock();
-		if (thread.joinable())
-			thread.join();
-		lock.lock();
-	}
-}
-
-void FullscreenUI::AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback, FullscreenUI::ProgressCallback* progress)
-{
-	Threading::SetNameOfCurrentThread(fmt::format("{} Async Op", progress->GetName()).c_str());
-
-	callback(progress);
-
-	// if we were removed from the list, it means we got cancelled, and the main thread is blocking
-	std::unique_lock lock(s_async_op_mutex);
-	for (auto iter = s_async_ops.begin(); iter != s_async_ops.end(); ++iter)
-	{
-		if (iter->second.get() == progress)
-		{
-			iter->first.detach();
-			s_async_ops.erase(iter);
-			break;
-		}
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -763,7 +673,6 @@ void FullscreenUI::Shutdown(bool clear_state)
 {
 	if (clear_state)
 	{
-		CancelAsyncOps();
 		CloseSaveStateSelector();
 		s_cover_image_map.clear();
 		s_game_list_sorted_entries = {};
@@ -4957,7 +4866,8 @@ bool FullscreenUI::InitializeSaveStateListEntry(
 										screenshot_pixels.data(), sizeof(u32) * screenshot_width))
 		{
 			Console.Error("Failed to upload save state image to GPU");
-			ReleaseTexture(li->preview_texture);
+			if (li->preview_texture)
+				g_gs_device->Recycle(li->preview_texture.release());
 		}
 	}
 
@@ -6101,7 +6011,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 		if (MenuButton(
 				FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Download Covers"), FSUI_CSTR("Downloads covers from a user-specified URL template.")))
 		{
-			ImGui::OpenPopup("Download Covers");
+			Host::OnCoverDownloaderOpenRequested();
 		}
 	}
 
@@ -6121,86 +6031,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
 	EndMenuButtons();
 
-	DrawCoverDownloaderWindow();
 	EndFullscreenWindow();
-}
-
-void FullscreenUI::DrawCoverDownloaderWindow()
-{
-	ImGui::SetNextWindowSize(LayoutScale(1000.0f, 0.0f));
-	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-	ImGui::PushFont(g_large_font);
-
-	bool is_open = true;
-	if (ImGui::BeginPopupModal(FSUI_CSTR("Download Covers"), &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-	{
-		ImGui::TextWrapped(FSUI_CSTR("PCSX2 can automatically download covers for games which do not currently have a cover set. We do not "
-									 "host any cover images, the user must provide their own source for images."));
-		ImGui::NewLine();
-		ImGui::TextWrapped(FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL per line. The "
-									 "following variables are available:"));
-		ImGui::NewLine();
-		ImGui::TextWrapped(FSUI_CSTR(
-			"${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game."));
-		ImGui::NewLine();
-		ImGui::TextWrapped(FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
-		ImGui::NewLine();
-
-		BeginMenuButtons();
-
-		static char template_urls[512];
-		ImGui::InputTextMultiline("##templates", template_urls, sizeof(template_urls),
-			ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), LayoutScale(175.0f)));
-
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(5.0f));
-
-		static bool use_serial_names;
-		ImGui::PushFont(g_medium_font);
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(2.0f, 2.0f));
-		ImGui::Checkbox(FSUI_CSTR("Use Serial File Names"), &use_serial_names);
-		ImGui::PopStyleVar(1);
-		ImGui::PopFont();
-
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-
-		const bool download_enabled = (std::strlen(template_urls) > 0);
-
-		if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Start Download"), false, download_enabled))
-		{
-			StartAsyncOp(
-				[urls = StringUtil::splitOnNewLine(template_urls), use_serial_names = use_serial_names](::ProgressCallback* progress) {
-					GameList::DownloadCovers(urls, use_serial_names, progress, [](const GameList::Entry* entry, std::string save_path) {
-						// cache the cover path on our side once it's saved
-						Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() {
-							MTGS::RunOnGSThread([path = std::move(path), save_path = std::move(save_path)]() {
-								s_cover_image_map[std::move(path)] = std::move(save_path);
-							});
-						});
-					});
-				},
-				"Download Covers");
-			std::memset(template_urls, 0, sizeof(template_urls));
-			use_serial_names = false;
-			ImGui::CloseCurrentPopup();
-		}
-
-		if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), false))
-		{
-			std::memset(template_urls, 0, sizeof(template_urls));
-			use_serial_names = false;
-			ImGui::CloseCurrentPopup();
-		}
-
-		EndMenuButtons();
-
-		ImGui::EndPopup();
-	}
-
-	ImGui::PopFont();
-	ImGui::PopStyleVar(2);
 }
 
 void FullscreenUI::SwitchToGameList()
@@ -6331,119 +6162,6 @@ void FullscreenUI::DrawAboutWindow()
 
 	ImGui::PopStyleVar(2);
 	ImGui::PopFont();
-}
-
-FullscreenUI::ProgressCallback::ProgressCallback(std::string name)
-	: BaseProgressCallback()
-	, m_name(std::move(name))
-{
-	ImGuiFullscreen::OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
-}
-
-FullscreenUI::ProgressCallback::~ProgressCallback()
-{
-	ImGuiFullscreen::CloseBackgroundProgressDialog(m_name.c_str());
-}
-
-void FullscreenUI::ProgressCallback::PushState()
-{
-	BaseProgressCallback::PushState();
-}
-
-void FullscreenUI::ProgressCallback::PopState()
-{
-	BaseProgressCallback::PopState();
-	Redraw(true);
-}
-
-void FullscreenUI::ProgressCallback::SetCancellable(bool cancellable)
-{
-	BaseProgressCallback::SetCancellable(cancellable);
-	Redraw(true);
-}
-
-void FullscreenUI::ProgressCallback::SetTitle(const char* title)
-{
-	// todo?
-}
-
-void FullscreenUI::ProgressCallback::SetStatusText(const char* text)
-{
-	BaseProgressCallback::SetStatusText(text);
-	Redraw(true);
-}
-
-void FullscreenUI::ProgressCallback::SetProgressRange(u32 range)
-{
-	u32 last_range = m_progress_range;
-
-	BaseProgressCallback::SetProgressRange(range);
-
-	if (m_progress_range != last_range)
-		Redraw(false);
-}
-
-void FullscreenUI::ProgressCallback::SetProgressValue(u32 value)
-{
-	u32 lastValue = m_progress_value;
-
-	BaseProgressCallback::SetProgressValue(value);
-
-	if (m_progress_value != lastValue)
-		Redraw(false);
-}
-
-void FullscreenUI::ProgressCallback::Redraw(bool force)
-{
-	const int percent = static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
-	if (percent == m_last_progress_percent && !force)
-		return;
-
-	m_last_progress_percent = percent;
-	ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name.c_str(), m_status_text.c_str(), 0, 100, percent);
-}
-
-void FullscreenUI::ProgressCallback::DisplayError(const char* message)
-{
-	Console.Error(message);
-	ShowToast(std::string(), message);
-}
-
-void FullscreenUI::ProgressCallback::DisplayWarning(const char* message)
-{
-	Console.Warning(message);
-}
-
-void FullscreenUI::ProgressCallback::DisplayInformation(const char* message)
-{
-	Console.WriteLn(message);
-}
-
-void FullscreenUI::ProgressCallback::DisplayDebugMessage(const char* message)
-{
-	DevCon.WriteLn(message);
-}
-
-void FullscreenUI::ProgressCallback::ModalError(const char* message)
-{
-	Console.Error(message);
-	Host::ReportErrorAsync("Error", message);
-}
-
-bool FullscreenUI::ProgressCallback::ModalConfirmation(const char* message)
-{
-	return false;
-}
-
-void FullscreenUI::ProgressCallback::ModalInformation(const char* message)
-{
-	Console.WriteLn(message);
-}
-
-void FullscreenUI::ProgressCallback::SetCancelled()
-{
-	if (m_cancellable)
-		m_cancelled = true;
 }
 
 bool FullscreenUI::OpenAchievementsWindow()
@@ -6665,7 +6383,6 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 // TRANSLATION-STRING-AREA-BEGIN
 TRANSLATE_NOOP("FullscreenUI", "Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
-TRANSLATE_NOOP("FullscreenUI", "{0}/{1}/{2}/{3}");
 TRANSLATE_NOOP("FullscreenUI", "Default");
 TRANSLATE_NOOP("FullscreenUI", "Automatic binding failed, no devices are available.");
 TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
@@ -7100,12 +6817,6 @@ TRANSLATE_NOOP("FullscreenUI", "Cover Settings");
 TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
 TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
-TRANSLATE_NOOP("FullscreenUI", "Download Covers");
-TRANSLATE_NOOP("FullscreenUI", "PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.");
-TRANSLATE_NOOP("FullscreenUI", "In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:");
-TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game.");
-TRANSLATE_NOOP("FullscreenUI", "Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg");
-TRANSLATE_NOOP("FullscreenUI", "Use Serial File Names");
 TRANSLATE_NOOP("FullscreenUI", "About PCSX2");
 TRANSLATE_NOOP("FullscreenUI", "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.");
 TRANSLATE_NOOP("FullscreenUI", "PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.");
@@ -7123,6 +6834,7 @@ TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
+TRANSLATE_NOOP("FullscreenUI", "{0}/{1}/{2}/{3}");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings for '{}'.");
@@ -7139,7 +6851,6 @@ TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to save input profile '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
-TRANSLATE_NOOP("FullscreenUI", "Trigger");
 TRANSLATE_NOOP("FullscreenUI", "Select Macro {} Binds");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Macro will toggle every {} frames.");
@@ -7485,9 +7196,9 @@ TRANSLATE_NOOP("FullscreenUI", "Remove From List");
 TRANSLATE_NOOP("FullscreenUI", "Default View");
 TRANSLATE_NOOP("FullscreenUI", "Sort By");
 TRANSLATE_NOOP("FullscreenUI", "Sort Reversed");
+TRANSLATE_NOOP("FullscreenUI", "Download Covers");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
 TRANSLATE_NOOP("FullscreenUI", "Rescan All Games");
-TRANSLATE_NOOP("FullscreenUI", "Start Download");
 TRANSLATE_NOOP("FullscreenUI", "Website");
 TRANSLATE_NOOP("FullscreenUI", "Support Forums");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");

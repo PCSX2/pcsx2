@@ -15,6 +15,7 @@
 
 #include "pcsx2/Achievements.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
@@ -208,6 +209,10 @@ void Host::OnAchievementsRefreshed()
 }
 
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+}
+
+void Host::OnCoverDownloaderOpenRequested()
 {
 }
 
