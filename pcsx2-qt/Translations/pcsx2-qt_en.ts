@@ -10305,7 +10305,6 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1536"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="630"/>
         <source>Saturation</source>
         <translation type="unfinished"></translation>
@@ -10387,6 +10386,11 @@ Percentage sign that will appear next to a number. Add a space or whatever is ne
         <location filename="../Settings/GraphicsSettingsWidget.ui" line="1309"/>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="605"/>
         <source>Asynchronous Texture Loading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.ui" line="1536"/>
+        <source>Saturation:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12040,6 +12044,96 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Left Analog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Right Analog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Cross</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Square</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Triangle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>L1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>R1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>L2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>R2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>D-Pad Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>D-Pad Right️</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>D-Pad Up️</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>D-Pad Left️</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>L3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>R3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="60"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="98"/>
         <source>Input Recording Files (*.p2m2)</source>
         <translation type="unfinished"></translation>
@@ -13253,11 +13347,6 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2398"/>
-        <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../MainWindow.cpp" line="2415"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
@@ -13294,6 +13383,11 @@ Are you sure you want to continue?</source>
         <location filename="../MainWindow.cpp" line="1899"/>
         <location filename="../MainWindow.cpp" line="2446"/>
         <source>Confirm Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MainWindow.cpp" line="2398"/>
+        <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13518,6 +13612,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.cpp" line="68"/>
+        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="304"/>
         <source>2x larger than a standard Memory Card. May have some compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13566,11 +13661,6 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../Settings/MemoryCardConvertDialog.cpp" line="237"/>
         <source>Cannot Convert Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardConvertDialog.cpp" line="304"/>
-        <source>2x larger as a standard Memory Card. May have some compatibility issues.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13755,6 +13845,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="145"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="322"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14260,6 +14351,16 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     <message>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="72"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="74"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="79"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="82"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="85"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="89"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="92"/>
+        <source>%.0f%%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15618,6 +15719,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="622"/>
+        <source>%.0f%%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="624"/>
         <source>Cursor Color</source>
         <translation type="unfinished"></translation>
@@ -15649,6 +15755,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="634"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="637"/>
+        <source>%.2f%%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="635"/>
         <source>Y Scale (Sensitivity)</source>
         <translation type="unfinished"></translation>
@@ -15661,6 +15773,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="639"/>
         <source>Sets the horizontal center position of the simulated screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="640"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="643"/>
+        <source>%.0fpx</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15681,6 +15799,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="645"/>
         <source>Sets the width of the simulated screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="645"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="648"/>
+        <source>%dpx</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15736,6 +15860,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../pcsx2/USB/usb-mic/usb-mic-singstar.cpp" line="884"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="395"/>
         <source>Specifies the latency to the host input device.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1008"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-headset.cpp" line="1011"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic-singstar.cpp" line="862"/>
+        <location filename="../../pcsx2/USB/usb-mic/usb-mic-singstar.cpp" line="885"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="396"/>
+        <source>%dms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15939,6 +16072,26 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="173"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="173"/>
+        <source>Low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="173"/>
+        <source>Medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="173"/>
+        <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="175"/>
         <source>Steering Smoothing</source>
         <translation type="unfinished"></translation>
@@ -15946,6 +16099,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="176"/>
         <source>Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="177"/>
+        <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="180"/>
+        <source>%d%%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
