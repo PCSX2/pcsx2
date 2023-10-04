@@ -53886,6 +53886,9 @@ SLUS-21366:
 SLUS-21367:
   name: "MVP '06 - NCAA Baseball"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken replay window graphics.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21368:
   name: "Rugby '06"
   region: "NTSC-U"
@@ -54918,6 +54921,9 @@ SLUS-21581:
 SLUS-21582:
   name: "MVP '07 - NCAA Baseball"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken replay window graphics.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21583:
   name: "Crash of the Titans"
   region: "NTSC-U"
