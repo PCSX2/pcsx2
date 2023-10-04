@@ -1495,7 +1495,7 @@ Unread messages: {2}</source>
     </message>
     <message>
         <location filename="../Settings/BIOSSettingsWidget.ui" line="90"/>
-        <source>Open in Explorer...</source>
+        <source>Open BIOS Folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15160,7 +15160,7 @@ Do you want to continue?</source>
     </message>
     <message>
         <location filename="../SetupWizardDialog.ui" line="301"/>
-        <source>Open in Explorer...</source>
+        <source>Open BIOS Folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
