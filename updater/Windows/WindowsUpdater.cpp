@@ -522,8 +522,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		return 1;
 	}
 
-	progress.ModalInformation("Update complete.");
-
 	progress.DisplayFormattedInformation("Launching '%s'...",
 		StringUtil::WideStringToUTF8String(program_to_launch).c_str());
 	ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
