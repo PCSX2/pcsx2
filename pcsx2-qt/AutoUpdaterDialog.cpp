@@ -346,6 +346,8 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 			QString changes_html = tr("<h2>Changes:</h2>");
 			changes_html += QStringLiteral("<ul>");
 
+			m_download_size = doc_object["size"].toInt();
+
 			const QJsonArray commits(doc_object["commits"].toArray());
 			bool update_will_break_save_states = false;
 			bool update_increases_settings_version = false;
@@ -390,7 +392,9 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 					tr("<h2>Settings Warning</h2><p>Installing this update will reset your program configuration. Please note "
 					   "that you will have to reconfigure your settings after this update.</p>"));
 			}
-
+			changes_html += tr("<h4>Installing this update will download %1 MB through your internet connection.</h4>")
+                    .arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2);
+				
 			m_ui.updateNotes->setText(changes_html);
 		}
 		else
