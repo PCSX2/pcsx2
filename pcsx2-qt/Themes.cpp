@@ -330,6 +330,7 @@ void QtHost::SetStyleFromSettings()
 		const QColor gray(150, 150, 150);
 		const QColor royalBlue(29, 41, 81);
 		const QColor darkishBlue(17, 30, 108);
+		const QColor lighterBlue(25, 32, 130);
 		const QColor highlight(36, 93, 218);
 		const QColor link(0, 202, 255);
 
@@ -341,13 +342,13 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
 		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
 		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, darkishBlue);
+		darkPalette.setColor(QPalette::Button, lighterBlue);
 		darkPalette.setColor(QPalette::ButtonText, Qt::white);
 		darkPalette.setColor(QPalette::Link, link);
 		darkPalette.setColor(QPalette::Highlight, highlight);
 		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, darkishBlue);
+		darkPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
 		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
 		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
 		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
@@ -355,7 +356,7 @@ void QtHost::SetStyleFromSettings()
 
 		qApp->setPalette(darkPalette);
 
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #000080; border: 1px solid white; }");
 	}
 	else if (theme == "VioletAngelPurple")
 	{
