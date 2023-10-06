@@ -243,10 +243,12 @@ void MemoryViewTable::InsertAtCurrentSelection(const QString& text) {
 }
 
 // We need both key and keychar because `key` is easy to use, but is case insensitive
-void MemoryViewTable::KeyPress(int key, QChar keychar)
+bool MemoryViewTable::KeyPress(int key, QChar keychar)
 {
 	if (!m_cpu->isValidAddress(selectedAddress))
-		return;
+		return false;
+
+	bool pressHandled = false;
 
 	const bool keyCharIsText = keychar.isLetterOrNumber() || keychar.isSpace();
 
@@ -258,6 +260,7 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 				cpu->write8(address, val);
 				QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress + 1); parent->update(); });
 			});
+			pressHandled = true;
 		}
 
 		switch (key)
@@ -268,12 +271,17 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 					cpu->write8(address, 0);
 					QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress - 1); parent->update(); });
 				});
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Right:
 				UpdateSelectedAddress(selectedAddress + 1);
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Left:
 				UpdateSelectedAddress(selectedAddress - 1);
+				pressHandled = true;
+				break;
+			default:
 				break;
 		}
 	}
@@ -283,10 +291,13 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 
 		if (keyCharIsText)
 		{
-			InsertIntoSelectedHexView(((u8)QString(QChar(key)).toInt(nullptr, 16)));
-			// Increment to the next nibble or byte
-			if ((selectedNibbleHI = !selectedNibbleHI))
-				UpdateSelectedAddress(selectedAddress + 1);
+			InsertIntoSelectedHexView(((u8)QString(QChar(key)).toInt(&pressHandled, 16)));
+			if (pressHandled)
+			{
+				// Increment to the next nibble or byte
+				if ((selectedNibbleHI = !selectedNibbleHI))
+					UpdateSelectedAddress(selectedAddress + 1);
+			}
 		}
 
 		switch (key)
@@ -297,14 +308,19 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 				// Move back a byte or nibble if it's backspace being pressed
 				if (!(selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress - 1);
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Right:
 				if ((selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress + 1);
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Left:
 				if (!(selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress - 1);
+				pressHandled = true;
+				break;
+			default:
 				break;
 		}
 	}
@@ -315,17 +331,25 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 	{
 		case Qt::Key::Key_Up:
 			UpdateSelectedAddress(selectedAddress - 0x10);
+			pressHandled = true;
 			break;
 		case Qt::Key::Key_PageUp:
 			UpdateSelectedAddress(selectedAddress - (0x10 * rowVisible), true);
+			pressHandled = true;
 			break;
 		case Qt::Key::Key_Down:
 			UpdateSelectedAddress(selectedAddress + 0x10);
+			pressHandled = true;
 			break;
 		case Qt::Key::Key_PageDown:
 			UpdateSelectedAddress(selectedAddress + (0x10 * rowVisible), true);
+			pressHandled = true;
+			break;
+		default:
 			break;
 	}
+
+	return pressHandled;
 }
 
 /*
@@ -501,26 +525,21 @@ void MemoryViewWidget::wheelEvent(QWheelEvent* event)
 
 void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 {
-	bool handledByWidget = true;
-	switch (event->key())
+	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0'))
 	{
-		case Qt::Key_G:
-			contextGoToAddress();
-			break;
-		case Qt::Key_C:
-			if (event->modifiers() & Qt::ControlModifier)
-				contextCopySegment();
-			else
-				handledByWidget = false;
-			break;
-		default:
-			handledByWidget = false;
-			break;
+		switch (event->key())
+		{
+			case Qt::Key_G:
+				contextGoToAddress();
+				break;
+			case Qt::Key_C:
+				if (event->modifiers() & Qt::ControlModifier)
+					contextCopySegment();
+				break;
+			default:
+				break;
+		}
 	}
-
-	if (!handledByWidget)
-		m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0');
-
 	this->repaint();
 	VMUpdate();
 }
