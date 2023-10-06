@@ -7567,12 +7567,14 @@ SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
   memcardFilters:
+    - "SCPS-15103"
     - "SCPS-15104"
 SCPS-15104:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-15103"
+    - "SCPS-15104"
 SCPS-15105:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "NTSC-J"
@@ -7601,6 +7603,7 @@ SCPS-15107:
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
+    - "SCPS-15107"
     - "SCPS-15108"
 SCPS-15108:
   name: "Gunparade Orchestra - Midori no Shou"
@@ -7609,6 +7612,7 @@ SCPS-15108:
     - "SCPS-15103"
     - "SCPS-15104"
     - "SCPS-15107"
+    - "SCPS-15108"
 SCPS-15109:
   name: "Gunparade Orchestra - Ao no Shou [Limited Edition]"
   region: "NTSC-J"
@@ -7617,6 +7621,7 @@ SCPS-15109:
     - "SCPS-15104"
     - "SCPS-15107"
     - "SCPS-15108"
+    - "SCPS-15109"
     - "SCPS-15110"
 SCPS-15110:
   name: "Gunparade Orchestra - Ao no Shou"
@@ -7627,6 +7632,7 @@ SCPS-15110:
     - "SCPS-15107"
     - "SCPS-15108"
     - "SCPS-15109"
+    - "SCPS-15110"
 SCPS-15111:
   name: "Brave Story - Wataru no Bouken"
   region: "NTSC-J"
@@ -31295,6 +31301,7 @@ SLPM-62470:
   region: "NTSC-J"
   memcardFilters:
     - "SLPM-62145"
+    - "SLPM-62470"
     - "SLPM-62518"
 SLPM-62471:
   name: "Uno [SuperLite 2000 Series]"
