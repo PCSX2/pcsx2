@@ -32520,6 +32520,8 @@ SLPM-65033:
   region: "NTSC-J"
   memcardFilters:
     - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
 SLPM-65034:
   name: "Sangokushi North Winds"
   region: "NTSC-J"
@@ -32831,6 +32833,8 @@ SLPM-65117:
   region: "NTSC-J"
   memcardFilters:
     - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
 SLPM-65118:
   name: "Tokimeki Memorial 2 - Video Clips"
   region: "NTSC-J"
@@ -32851,6 +32855,7 @@ SLPM-65122:
     - "SLPS-20075"
     - "SLPM-65033"
     - "SLPM-65117"
+    - "SLPM-65122"
     - "SLPM-65123"
 SLPM-65123:
   name: "Kikou Heidan J-Phoenix Burst Tactics"
@@ -32860,6 +32865,7 @@ SLPM-65123:
     - "SLPM-65033"
     - "SLPM-65117"
     - "SLPM-65122"
+    - "SLPM-65123"
 SLPM-65124:
   name: "Auto Modellista"
   region: "NTSC-J"
@@ -33092,6 +33098,7 @@ SLPM-65199:
     - "SLPM-65117"
     - "SLPM-65122"
     - "SLPM-65123"
+    - "SLPM-65199"
 SLPM-65200:
   name: "Shinobi"
   region: "NTSC-J"
@@ -33689,6 +33696,7 @@ SLPM-65343:
   region: "NTSC-J"
   memcardFilters:
     - "SLPM-62339"
+    - "SLPM-65343"
 SLPM-65344:
   name: "Project Minerva - Professional"
   region: "NTSC-J"
