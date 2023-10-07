@@ -7566,9 +7566,15 @@ SCPS-15102:
 SCPS-15103:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SCPS-15103"
+    - "SCPS-15104"
 SCPS-15104:
   name: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu"
   region: "NTSC-J"
+  memcardFilters:
+    - "SCPS-15103"
+    - "SCPS-15104"
 SCPS-15105:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "NTSC-J"
@@ -7594,15 +7600,39 @@ SCPS-15106:
 SCPS-15107:
   name: "Gunparade Orchestra - Midori no Shou [Limited Edition]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SCPS-15103"
+    - "SCPS-15104"
+    - "SCPS-15107"
+    - "SCPS-15108"
 SCPS-15108:
   name: "Gunparade Orchestra - Midori no Shou"
   region: "NTSC-J"
+  memcardFilters:
+    - "SCPS-15103"
+    - "SCPS-15104"
+    - "SCPS-15107"
+    - "SCPS-15108"
 SCPS-15109:
   name: "Gunparade Orchestra - Ao no Shou [Limited Edition]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SCPS-15103"
+    - "SCPS-15104"
+    - "SCPS-15107"
+    - "SCPS-15108"
+    - "SCPS-15109"
+    - "SCPS-15110"
 SCPS-15110:
   name: "Gunparade Orchestra - Ao no Shou"
   region: "NTSC-J"
+  memcardFilters:
+    - "SCPS-15103"
+    - "SCPS-15104"
+    - "SCPS-15107"
+    - "SCPS-15108"
+    - "SCPS-15109"
+    - "SCPS-15110"
 SCPS-15111:
   name: "Brave Story - Wataru no Bouken"
   region: "NTSC-J"
@@ -28110,13 +28140,18 @@ SLPM-55055:
   name: "Kanuchi - Shiroki Tsubasa no Shou"
   region: "NTSC-J"
 SLPM-55056:
-  name: "Wrestle Angels Survivor 2"
+  name: "Wrestle Angels Survivor 2 [Limited Edition]"
   region: "NTSC-J"
   speedHacks:
     eeCycleRate: -2 # Fixes FMV playback.
 SLPM-55057:
   name: "Hakushaku to Yousei - Yume to Kizuna ni Omoi o Hasete"
   region: "NTSC-J"
+SLPM-55058:
+  name: "Wrestle Angels Survivor 2"
+  region: "NTSC-J"
+  speedHacks:
+    eeCycleRate: -2 # Fixes FMV playback.
 SLPM-55059:
   name: "Kanuchi - Shiroki Tsubasa no Shou"
   region: "NTSC-J"
@@ -30246,6 +30281,9 @@ SLPM-62143:
 SLPM-62144:
   name: "Super Bust-A-Move"
   region: "NTSC-J"
+SLPM-62145:
+  name: "Teitoku no Ketsudan IV"
+  region: "NTSC-J"
 SLPM-62146:
   name: "Chou Kousoku Mahjong Plus"
   region: "NTSC-J"
@@ -30465,7 +30503,7 @@ SLPM-62220:
   name: "Pachi-Slot Kanzen Kouryaku - Gigazone - The Meteor Strike"
   region: "NTSC-J"
 SLPM-62221:
-  name: "Winning Post 5 - Max 2002"
+  name: "Winning Post 5 Maximum 2002"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1 # Improves ground textures to match sw renderer.
@@ -31258,6 +31296,13 @@ SLPM-62469:
   name: "Gunbird 1&2"
   region: "NTSC-J"
   compat: 5
+SLPM-62470:
+  name: "Teitoku no Ketsudan IV with Power Up Kit"
+  region: "NTSC-J"
+  memcardFilters:
+    - "SLPM-62145"
+    - "SLPM-62470"
+    - "SLPM-62518"
 SLPM-62471:
   name: "Uno [SuperLite 2000 Series]"
   region: "NTSC-J"
@@ -31431,7 +31476,7 @@ SLPM-62517:
   name: "Winning Post 5 [Koei The Best]"
   region: "NTSC-J"
 SLPM-62518:
-  name: "Teitoku no Ketsudan 4 [Koei the Best]"
+  name: "Teitoku no Ketsudan IV [Koei the Best]"
   region: "NTSC-J"
 SLPM-62519:
   name: "Sangokushi VIII [Koei The Best]"
@@ -33526,7 +33571,7 @@ SLPM-65297:
   name: "F - Fanatic"
   region: "NTSC-J"
 SLPM-65298:
-  name: "Winning Post 5 - Maximum 2003"
+  name: "Winning Post 5 Maximum 2003"
   region: "NTSC-J"
 SLPM-65299:
   name: "Konohana 3"
@@ -35660,7 +35705,7 @@ SLPM-65892:
   name: "Zill O'll Infinite"
   region: "NTSC-J"
 SLPM-65894:
-  name: "Winning Post 6 - 2005 Version"
+  name: "Winning Post 6 2005 Version"
   region: "NTSC-J"
 SLPM-65895:
   name: "Tsuki wa Kirisaku [Limited Edition]"
@@ -37078,7 +37123,7 @@ SLPM-66238:
   name: "Otometeki Koi Kakumei Rabu Rebo!!"
   region: "NTSC-J"
 SLPM-66239:
-  name: "Wrestle Angels - Survivor"
+  name: "Wrestle Angels Survivor"
   region: "NTSC-J"
 SLPM-66240:
   name: "Jissen Pachi-Slot Hisshouhou! Aladdin 2 Evolution"
@@ -38990,7 +39035,7 @@ SLPM-66701:
   name: "Sangokushi XI [with Power-Up Kit]"
   region: "NTSC-J"
 SLPM-66702:
-  name: "Winning Post 7 - Maximum 2007"
+  name: "Winning Post 7 Maximum 2007"
   region: "NTSC-J"
 SLPM-66703:
   name: "Racing Game - Chuui!!!! [Konami the Best]"
@@ -39732,10 +39777,10 @@ SLPM-66902:
   name: "Disney Princess - Enchanted Journey"
   region: "NTSC-J"
 SLPM-66903:
-  name: "GI Jockey 4 - 2007 [with Winning Post 7 - 2007 - Premium Pack]"
+  name: "GI Jockey 4 - 2007 [with Winning Post 7 Maximum 2007 - Premium Pack]"
   region: "NTSC-J"
 SLPM-66904:
-  name: "Winning Post 7 - 2007 [with GI Jockey 4 - 2007 - Premium Pack]"
+  name: "Winning Post 7 Maximum 2007 [with GI Jockey 4 - 2007 - Premium Pack]"
   region: "NTSC-J"
 SLPM-66905:
   name: "D.C. Da Capo The Origin"
@@ -39815,7 +39860,7 @@ SLPM-66926:
   region: "NTSC-J"
   compat: 5
 SLPM-66927:
-  name: "Wrestle Angels - Survivor [Good Price]"
+  name: "Wrestle Angels Survivor [Good Price]"
   region: "NTSC-J"
 SLPM-66928:
   name: "Your Memories Off Girls Style"
