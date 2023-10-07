@@ -30833,7 +30833,7 @@ SLPM-62338:
   name: "Ishikura Noboru no Igo Kouza"
   region: "NTSC-J"
 SLPM-62339:
-  name: "Kikou Heidan - J-Phoenix 2"
+  name: "Kikou Heidan J-Phoenix 2 - Joshou-hen"
   region: "NTSC-J"
 SLPM-62340:
   name: "Apprentice Magician"
@@ -32516,8 +32516,12 @@ SLPM-65032:
   region: "NTSC-J"
   compat: 5
 SLPM-65033:
-  name: "Kikou Heiden - J-Phoenix"
+  name: "Kikou Heidan J-Phoenix"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
 SLPM-65034:
   name: "Sangokushi North Winds"
   region: "NTSC-J"
@@ -32825,8 +32829,12 @@ SLPM-65116:
   name: "Lilie no Atelier Plus - Salburg no Renkinjutsushi 3"
   region: "NTSC-J"
 SLPM-65117:
-  name: "Kikou Heiden J-Phoenix [Takara The Best]"
+  name: "Kikou Heidan J-Phoenix [Takara The Best]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
 SLPM-65118:
   name: "Tokimeki Memorial 2 - Video Clips"
   region: "NTSC-J"
@@ -32841,11 +32849,23 @@ SLPM-65121:
   region: "NTSC-J"
   compat: 5
 SLPM-65122:
-  name: "J-Phoenix Burst Tactics [Limited Edition]"
+  name: "Kikou Heidan J-Phoenix Burst Tactics [Limited Edition]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
+    - "SLPM-65122"
+    - "SLPM-65123"
 SLPM-65123:
-  name: "J-Phoenix Burst Tactics"
+  name: "Kikou Heidan J-Phoenix Burst Tactics"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
+    - "SLPM-65122"
+    - "SLPM-65123"
 SLPM-65124:
   name: "Auto Modellista"
   region: "NTSC-J"
@@ -33070,8 +33090,15 @@ SLPM-65198:
   name: "Shaun Palmer's Pro Snowboarder"
   region: "NTSC-J"
 SLPM-65199:
-  name: "J-Phoenix - Cobalt Shoutaihen"
+  name: "Kikou Heidan J-Phoenix Cobalt Shoutai-hen"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-20075"
+    - "SLPM-65033"
+    - "SLPM-65117"
+    - "SLPM-65122"
+    - "SLPM-65123"
+    - "SLPM-65199"
 SLPM-65200:
   name: "Shinobi"
   region: "NTSC-J"
@@ -33665,8 +33692,11 @@ SLPM-65342:
   name: "Kyoufu Shinbun (Heisei) Kaiki! Shinrei File"
   region: "NTSC-J"
 SLPM-65343:
-  name: "Kikou Heidan - J-Phoenix 2"
+  name: "Kikou Heidan J-Phoenix 2"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPM-62339"
+    - "SLPM-65343"
 SLPM-65344:
   name: "Project Minerva - Professional"
   region: "NTSC-J"
