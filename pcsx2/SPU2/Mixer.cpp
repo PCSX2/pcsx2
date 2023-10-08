@@ -287,6 +287,11 @@ static __forceinline s32 ApplyVolume(s32 data, s32 volume)
 	return MulShr32(data << 1, volume);
 }
 
+static __forceinline s32 ApplyVolume16(s32 data, s32 volume)
+{
+	return (volume * data) >> 15;
+}
+
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeLR& volume)
 {
 	return StereoOut32(
@@ -323,13 +328,13 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	if (vc.ADSR.Phase == 0)
+	if (vc.ADSR.Phase == V_ADSR::PHASE_STOPPED)
 	{
 		vc.ADSR.Value = 0;
 		return;
 	}
 
-	if (!vc.ADSR.Calculate())
+	if (!vc.ADSR.Calculate(thiscore.Index | (voiceidx << 1)))
 	{
 		if (IsDevBuild)
 		{
@@ -465,7 +470,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	StereoOut32 voiceOut(0, 0);
 	s32 Value = 0;
 
-	if (vc.ADSR.Phase > 0)
+	if (vc.ADSR.Phase > V_ADSR::PHASE_STOPPED)
 	{
 		if (vc.Noise)
 			Value = GetNoiseValues(thiscore);
@@ -480,7 +485,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 		// use a full 64-bit multiply/result here.
 
 		CalculateADSR(thiscore, voiceidx);
-		Value = ApplyVolume(Value, vc.ADSR.Value);
+		Value = ApplyVolume16(Value, vc.ADSR.Value);
 		vc.OutX = Value;
 
 		if (IsDevBuild)
