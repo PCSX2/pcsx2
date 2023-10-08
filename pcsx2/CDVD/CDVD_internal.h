@@ -151,16 +151,13 @@ static const uint tbl_ContigiousSeekDelta[3] =
 		16, // dual-layer DVD-ROM [currently unused]
 };
 
-// Note: DVD read times are modified to be faster, because games seem to be a lot more
-// concerned with accurate(ish) seek delays and less concerned with actual block read speeds.
-// Translation: it's a minor speedhack :D
-
 static const uint PSX_CD_READSPEED = 153600;   // Bytes per second, rough values from outer CD (CAV).
 static const uint PSX_DVD_READSPEED = 1382400; // Bytes per second, rough values from outer DVD (CAV).
 
 static const uint CD_SECTORS_PERSECOND = 75;
 static const uint DVD_SECTORS_PERSECOND = 675;
 
+// Rotations per minute.
 static const uint CD_MIN_ROTATION_X1 = 214;
 static const uint CD_MAX_ROTATION_X1 = 497;
 

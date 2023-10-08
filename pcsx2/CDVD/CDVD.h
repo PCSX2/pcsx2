@@ -167,6 +167,7 @@ struct cdvdStruct
 	u32 SeekToSector; // Holds the destination sector during seek operations.
 	u32 MaxSector;    // Current disc max sector.
 	u32 ReadTime;     // Avg. time to read one block of data (in Iop cycles)
+	u32 RotSpeed;     // Rotational Speed
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 	cdvdTrayTimer Tray;
 	u8 nextSectorsBuffered;
