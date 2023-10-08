@@ -207,6 +207,7 @@ void V_Core::Init(int index)
 		Voices[v].Volume = V_VolumeSlideLR(0, 0); // V_VolumeSlideLR::Max;
 		Voices[v].SCurrent = 28;
 
+		Voices[v].ADSR.Counter = 0;
 		Voices[v].ADSR.Value = 0;
 		Voices[v].ADSR.Phase = 0;
 		Voices[v].Pitch = 0x3FFF;
@@ -236,7 +237,7 @@ void V_Voice::Start()
 void V_Voice::Stop()
 {
 	ADSR.Value = 0;
-	ADSR.Phase = 0;
+	ADSR.Phase = V_ADSR::PHASE_STOPPED;
 }
 
 uint TickInterval = 768;
@@ -255,9 +256,7 @@ __forceinline bool StartQueuedVoice(uint coreidx, uint voiceidx)
 		vc.StartA = (vc.StartA + 0xFFFF8) + 0x8;
 	}
 
-	vc.ADSR.Releasing = false;
-	vc.ADSR.Value = 1;
-	vc.ADSR.Phase = 1;
+	vc.ADSR.Attack();
 	vc.SCurrent = 28;
 	vc.LoopMode = 0;
 
@@ -554,16 +553,18 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
 			case 0x8: // ADSR1 (Envelope)
 				Voices[voice].ADSR.regADSR1 = value;
+				Voices[voice].ADSR.UpdateCache();
 				//ConLog("voice %x regADSR1 write: %x\n", voice, Voices[voice].ADSR.regADSR1);
 				break;
 
 			case 0xa: // ADSR2 (Envelope)
 				Voices[voice].ADSR.regADSR2 = value;
+				Voices[voice].ADSR.UpdateCache();
 				//ConLog("voice %x regADSR2 write: %x\n", voice, Voices[voice].ADSR.regADSR2);
 				break;
 			case 0xc: // Voice 0..23 ADSR Current Volume
 				// not commonly set by games
-				Voices[voice].ADSR.Value = value * 0x10001U;
+				Voices[voice].ADSR.Value = value;
 				if (SPU2::MsgToConsole())
 					SPU2::ConLog("voice %x ADSR.Value write: %x\n", voice, Voices[voice].ADSR.Value);
 				break;
@@ -879,7 +880,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				value = Voices[voice].ADSR.regADSR2;
 				break;
 			case 0xc:                                   // Voice 0..23 ADSR Current Volume
-				value = Voices[voice].ADSR.Value >> 16; // no clue
+				value = Voices[voice].ADSR.Value;
 				//if (value != 0) ConLog("voice %d read ADSR.Value result = %x\n", voice, value);
 				break;
 			case 0xe:
@@ -1035,22 +1036,20 @@ static void RegWrite_VoiceParams(u16 value)
 
 		case 3: // ADSR1 (Envelope)
 			thisvoice.ADSR.regADSR1 = value;
+			thisvoice.ADSR.UpdateCache();
 			break;
 
 		case 4: // ADSR2 (Envelope)
 			thisvoice.ADSR.regADSR2 = value;
+			thisvoice.ADSR.UpdateCache();
 			break;
 
-			// REG_VP_ENVX, REG_VP_VOLXL and REG_VP_VOLXR have been confirmed to not be allowed to be written to, so code has been commented out.
+			// REG_VP_ENVX, REG_VP_VOLXL and REG_VP_VOLXR are all writable, only ENVX has any effect when written to.
 			// Colin McRae Rally 2005 triggers case 5 (ADSR), but it doesn't produce issues enabled or disabled.
 
 		case 5:
-			// [Air] : Mysterious ADSR set code.  Too bad none of my games ever use it.
-			//      (as usual... )
-			//thisvoice.ADSR.Value = (value << 16) | value;
-			//ConLog("* SPU2: Mysterious ADSR Volume Set to 0x%x\n", value);
+			thisvoice.ADSR.Value = value;
 			break;
-
 		case 6:
 			//thisvoice.Volume.Left.RegSet(value);
 			break;
@@ -1863,7 +1862,7 @@ void StopVoices(int core, u32 value)
 			continue;
 		}
 
-		Cores[core].Voices[vc].ADSR.Releasing = true;
+		Cores[core].Voices[vc].ADSR.Release();
 		if (SPU2::MsgKeyOnOff())
 			SPU2::ConLog("* SPU2: KeyOff: Core %d; Voice %d.\n", core, vc);
 	}

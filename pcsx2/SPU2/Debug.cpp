@@ -176,25 +176,29 @@ void SPU2::DoFullDump()
 				Cores[c].Voices[v].Volume.DebugDump(dump, "");
 
 				fprintf(dump, "  - ADSR Envelope: %x & %x\n"
-							  "     - Ar: %x\n"
+							  "     - Ash: %x\n"
+							  "     - Ast: %x\n"
 							  "     - Am: %x\n"
-							  "     - Dr: %x\n"
+							  "     - Dsh: %x\n"
 							  "     - Sl: %x\n"
-							  "     - Sr: %x\n"
+							  "     - Ssh: %x\n"
+							  "     - Sst: %x\n"
 							  "     - Sm: %x\n"
-							  "     - Rr: %x\n"
+							  "     - Rsh: %x\n"
 							  "     - Rm: %x\n"
 							  "     - Phase: %x\n"
 							  "     - Value: %x\n",
 						Cores[c].Voices[v].ADSR.regADSR1,
 						Cores[c].Voices[v].ADSR.regADSR2,
-						Cores[c].Voices[v].ADSR.AttackRate,
+						Cores[c].Voices[v].ADSR.AttackShift,
+						Cores[c].Voices[v].ADSR.AttackStep,
 						Cores[c].Voices[v].ADSR.AttackMode,
-						Cores[c].Voices[v].ADSR.DecayRate,
+						Cores[c].Voices[v].ADSR.DecayShift,
 						Cores[c].Voices[v].ADSR.SustainLevel,
-						Cores[c].Voices[v].ADSR.SustainRate,
+						Cores[c].Voices[v].ADSR.SustainShift,
+						Cores[c].Voices[v].ADSR.SustainStep,
 						Cores[c].Voices[v].ADSR.SustainMode,
-						Cores[c].Voices[v].ADSR.ReleaseRate,
+						Cores[c].Voices[v].ADSR.ReleaseShift,
 						Cores[c].Voices[v].ADSR.ReleaseMode,
 						Cores[c].Voices[v].ADSR.Phase,
 						Cores[c].Voices[v].ADSR.Value);

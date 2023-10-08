@@ -19,6 +19,8 @@
 #include "SPU2/SndOut.h"
 #include "SPU2/Global.h"
 
+#include <array>
+
 // --------------------------------------------------------------------------------------
 //  SPU2 Register Table LUT
 // --------------------------------------------------------------------------------------
@@ -122,24 +124,49 @@ struct V_ADSR
 
 		struct
 		{
-			u32 SustainLevel : 4,
-				DecayRate : 4,
-				AttackRate : 7,
-				AttackMode : 1, // 0 for linear (+lin), 1 for pseudo exponential (+exp)
-
-				ReleaseRate : 5,
-				ReleaseMode : 1, // 0 for linear (-lin), 1 for exponential (-exp)
-				SustainRate : 7,
-				SustainMode : 3; // 0 = +lin, 1 = -lin, 2 = +exp, 3 = -exp
+			u32 SustainLevel : 4;
+			u32 DecayShift : 4;
+			u32 AttackStep : 2;
+			u32 AttackShift : 5;
+			u32 AttackMode : 1;
+			u32 ReleaseShift : 5;
+			u32 ReleaseMode : 1;
+			u32 SustainStep : 2;
+			u32 SustainShift : 5;
+			u32 : 1;
+			u32 SustainDir : 1;
+			u32 SustainMode : 1;
 		};
 	};
 
-	s32 Value;      // Ranges from 0 to 0x7fffffff (signed values are clamped to 0) [Reg_ENVX]
-	u8 Phase;       // monitors current phase of ADSR envelope
-	bool Releasing; // Ready To Release, triggered by Voice.Stop();
+	static constexpr int ADSR_PHASES = 5;
+
+	static constexpr int PHASE_STOPPED = 0;
+	static constexpr int PHASE_ATTACK = 1;
+	static constexpr int PHASE_DECAY = 2;
+	static constexpr int PHASE_SUSTAIN = 3;
+	static constexpr int PHASE_RELEASE = 4;
+
+	struct CachedADSR
+	{
+		bool Decr;
+		bool Exp;
+		u8 Shift;
+		s8 Step;
+		s32 Target;
+	};
+
+	std::array<CachedADSR, ADSR_PHASES> CachedPhases;
+
+	u32 Counter;
+	s32 Value; // Ranges from 0 to 0x7fff (signed values are clamped to 0) [Reg_ENVX]
+	u8 Phase; // monitors current phase of ADSR envelope
 
 public:
-	bool Calculate();
+	void UpdateCache();
+	bool Calculate(int voiceidx);
+	void Attack();
+	void Release();
 };
 
 
@@ -359,34 +386,34 @@ struct V_Core
 	V_CoreGates WetGate;
 
 	V_VolumeSlideLR MasterVol; // Master Volume
-	V_VolumeLR ExtVol;         // Volume for External Data Input
-	V_VolumeLR InpVol;         // Volume for Sound Data Input
-	V_VolumeLR FxVol;          // Volume for Output from Effects
+	V_VolumeLR ExtVol; // Volume for External Data Input
+	V_VolumeLR InpVol; // Volume for Sound Data Input
+	V_VolumeLR FxVol; // Volume for Output from Effects
 
 	V_Voice Voices[NumVoices];
 
 	u32 IRQA; // Interrupt Address
-	u32 TSA;  // DMA Transfer Start Address
+	u32 TSA; // DMA Transfer Start Address
 	u32 ActiveTSA; // Active DMA TSA - Required for NFL 2k5 which overwrites it mid transfer
 
 	bool IRQEnable; // Interrupt Enable
-	bool FxEnable;  // Effect Enable
-	bool Mute;      // Mute
+	bool FxEnable; // Effect Enable
+	bool Mute; // Mute
 	bool AdmaInProgress;
 
-	s8 DMABits;        // DMA related?
-	u8 NoiseClk;       // Noise Clock
-	u32 NoiseCnt;      // Noise Counter
-	u32 NoiseOut;      // Noise Output
-	u16 AutoDMACtrl;   // AutoDMA Status
-	s32 DMAICounter;   // DMA Interrupt Counter
-	u32 LastClock;     // DMA Interrupt Clock Cycle Counter
+	s8 DMABits; // DMA related?
+	u8 NoiseClk; // Noise Clock
+	u32 NoiseCnt; // Noise Counter
+	u32 NoiseOut; // Noise Output
+	u16 AutoDMACtrl; // AutoDMA Status
+	s32 DMAICounter; // DMA Interrupt Counter
+	u32 LastClock; // DMA Interrupt Clock Cycle Counter
 	u32 InputDataLeft; // Input Buffer
 	u32 InputDataTransferred; // Used for simulating MADR increase (GTA VC)
 	u32 InputPosWrite;
 	u32 InputDataProgress;
 
-	V_Reverb Revb;              // Reverb Registers
+	V_Reverb Revb; // Reverb Registers
 
 	s32 RevbDownBuf[2][64]; // Downsample buffer for reverb, one for each channel
 	s32 RevbUpBuf[2][64]; // Upsample buffer for reverb, one for each channel
