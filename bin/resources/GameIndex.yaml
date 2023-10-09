@@ -246,6 +246,8 @@ PAPX-90506:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 PAPX-90507:
   name: "Official Disc 2003"
   region: "NTSC-J"
@@ -1354,6 +1356,8 @@ SCAJ-20111:
 SCAJ-20112:
   name: "Tales of Rebirth"
   region: "NTSC-Unk"
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SCAJ-20113:
   name: "Dragon Quest & Final Fantasy in Itadaki Street"
   region: "NTSC-Unk"
@@ -4360,6 +4364,8 @@ SCES-51190:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCES-51224:
   name: "War of the Monsters"
   region: "PAL-E"
@@ -6113,6 +6119,8 @@ SCKA-20014:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCKA-20015:
   name: "Time Crisis 3"
   region: "NTSC-K"
@@ -7164,6 +7172,8 @@ SCPS-15033:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-15034:
   name: "This is Football 2003"
   region: "NTSC-J"
@@ -7865,6 +7875,8 @@ SCPS-19215:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19251:
   name: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -7953,6 +7965,8 @@ SCPS-19306:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19307:
   name: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -8442,6 +8456,8 @@ SCPS-55048:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-55049:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
@@ -9089,6 +9105,8 @@ SCUS-97213:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97214:
   name: "NCAA GameBreaker 2003"
   region: "NTSC-U"
@@ -9147,6 +9165,8 @@ SCUS-97229:
     eeClampMode: 3 # Fixes textbox.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
+    cpuSpriteRenderBW: 2 # Fixes lines in geometry.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -11454,6 +11474,7 @@ SLED-53731:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLED-53732:
@@ -20833,6 +20854,7 @@ SLES-53729:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53730:
@@ -20842,6 +20864,7 @@ SLES-53730:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLES-53734:
@@ -28070,6 +28093,7 @@ SLPM-55034:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-55035:
@@ -36961,6 +36985,7 @@ SLPM-66206:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66207:
@@ -38789,6 +38814,7 @@ SLPM-66651:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLPM-66652:
@@ -44354,6 +44380,8 @@ SLPS-25450:
   name: "Tales of Rebirth"
   region: "NTSC-J"
   compat: 5
+  speedHacks:
+    mvuFlag: 0 # Fixes graphical corruptions.
 SLPS-25451:
   name: "Hana to Taiyou to Ame to [Super Best Collection]"
   region: "NTSC-J"
@@ -51975,6 +52003,7 @@ SLUS-21026:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-21027:
@@ -57357,6 +57386,7 @@ SLUS-29117:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29118:
@@ -57484,6 +57514,7 @@ SLUS-29152:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29153:
@@ -57580,6 +57611,7 @@ SLUS-29172:
     minimumBlendingLevel: 4 # Fixes ground texture rendering.
     autoFlush: 1 # Post-processing.
     halfPixelOffset: 2 # Offset post-processing.
+    texturePreloading: 1 # Improves performance.
     getSkipCount: "GSC_Battlefield2" # Depth clear.
     beforeDraw: "OI_Battlefield2" # Framebuffer copy, fixes rendering for bottom part of screen.
 SLUS-29173:
