@@ -179,7 +179,7 @@
     <ProjectReference Include="..\3rdparty\jpgd\jpgd.vcxproj">
       <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
+    <ProjectReference Include="..\3rdparty\libpng\libpng.vcxproj">
       <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\libwebp\libwebp.vcxproj">
