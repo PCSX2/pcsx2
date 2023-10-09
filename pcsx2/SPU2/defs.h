@@ -477,8 +477,7 @@ struct V_Core
 		, DMAPtr(nullptr)
 	{
 	}
-	V_Core(int idx); // our badass constructor
-	~V_Core() throw();
+	V_Core(int idx) : Index(idx) {};
 
 	void Init(int index);
 	void UpdateEffectsBufferSize();
