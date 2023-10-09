@@ -28,24 +28,6 @@ static const s32 tbl_XA_Factor[16][2] =
 		{98, -55},
 		{122, -60}};
 
-// Performs a 64-bit multiplication between two values and returns the
-// high 32 bits as a result (discarding the fractional 32 bits).
-// The combined fractional bits of both inputs must be 32 bits for this
-// to work properly.
-//
-// This is meant to be a drop-in replacement for times when the 'div' part
-// of a MulDiv is a constant.  (example: 1<<8, or 4096, etc)
-//
-// [Air] Performance breakdown: This is over 10 times faster than MulDiv in
-//   a *worst case* scenario.  It's also more accurate since it forces the
-//   caller to  extend the inputs so that they make use of all 32 bits of
-//   precision.
-//
-static __forceinline s32 MulShr32(s32 srcval, s32 mulval)
-{
-	return static_cast<s64>(srcval) * mulval >> 32;
-}
-
 __forceinline s32 clamp_mix(s32 x)
 {
 	return std::clamp(x, -0x8000, 0x7fff);
@@ -278,16 +260,7 @@ static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-// Data is expected to be 16 bit signed (typical stuff!).
-// volume is expected to be 32 bit signed (31 bits with reverse phase)
-// Data is shifted up by 1 bit to give the output an effective 16 bit range.
 static __forceinline s32 ApplyVolume(s32 data, s32 volume)
-{
-	//return (volume * data) >> 15;
-	return MulShr32(data << 1, volume);
-}
-
-static __forceinline s32 ApplyVolume16(s32 data, s32 volume)
 {
 	return (volume * data) >> 15;
 }
@@ -302,8 +275,8 @@ static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_Vo
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeSlideLR& volume)
 {
 	return StereoOut32(
-		ApplyVolume16(data.Left, volume.Left.Value),
-		ApplyVolume16(data.Right, volume.Right.Value));
+		ApplyVolume(data.Left, volume.Left.Value),
+		ApplyVolume(data.Right, volume.Right.Value));
 }
 
 static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
@@ -485,7 +458,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 		// use a full 64-bit multiply/result here.
 
 		CalculateADSR(thiscore, voiceidx);
-		Value = ApplyVolume16(Value, vc.ADSR.Value);
+		Value = ApplyVolume(Value, vc.ADSR.Value);
 		vc.OutX = Value;
 
 		if (IsDevBuild)
@@ -684,8 +657,8 @@ __forceinline
 	}
 	else
 	{
-		Out.Left = ApplyVolume16(Out.Left, Cores[1].MasterVol.Left.Value);
-		Out.Right = ApplyVolume16(Out.Right, Cores[1].MasterVol.Right.Value);
+		Out.Left = ApplyVolume(Out.Left, Cores[1].MasterVol.Left.Value);
+		Out.Right = ApplyVolume(Out.Right, Cores[1].MasterVol.Right.Value);
 	}
 
 	// Final Clamp!
