@@ -147,7 +147,6 @@ namespace VMManager
 
 static constexpr u32 SETTINGS_VERSION = 1;
 
-static std::unique_ptr<SysMainMemory> s_vm_memory;
 static std::unique_ptr<SysCpuProviderPack> s_cpu_provider_pack;
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
@@ -349,14 +348,14 @@ bool VMManager::Internal::CPUThreadInitialize()
 	x86caps.SIMD_EstablishMXCSRmask();
 	SysLogMachineCaps();
 
-	pxAssert(!s_vm_memory && !s_cpu_provider_pack);
-	s_vm_memory = std::make_unique<SysMainMemory>();
-	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
-	if (!s_vm_memory->Allocate())
+	if (!SysMemory::Allocate())
 	{
 		Host::ReportErrorAsync("Error", "Failed to allocate VM memory.");
 		return false;
 	}
+
+	pxAssert(!s_cpu_provider_pack);
+	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
 
 	GSinit();
 	USBinit();
@@ -388,7 +387,6 @@ void VMManager::Internal::CPUThreadShutdown()
 	WaitForSaveStateFlush();
 
 	s_cpu_provider_pack.reset();
-	s_vm_memory.reset();
 
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 
@@ -397,14 +395,11 @@ void VMManager::Internal::CPUThreadShutdown()
 
 	MTGS::ShutdownThread();
 
+	SysMemory::Release();
+
 #ifdef _WIN32
 	CoUninitialize();
 #endif
-}
-
-SysMainMemory& GetVmMemory()
-{
-	return *s_vm_memory;
 }
 
 SysCpuProviderPack& GetCpuProviders()
@@ -1296,8 +1291,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
-
+	SysMemory::Reset();
 	cpuReset();
+	hwReset();
 
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
 	s_state.store(VMState::Paused, std::memory_order_release);
@@ -1438,7 +1434,9 @@ void VMManager::Reset()
 
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
+	SysMemory::Reset();
 	cpuReset();
+	hwReset();
 
 	if (g_InputRecording.isActive())
 	{

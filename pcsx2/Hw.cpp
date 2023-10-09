@@ -20,7 +20,6 @@
 #include "Hardware.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
-#include "x86/newVif.h"
 
 #include "common/WrappedMemCopy.h"
 
@@ -31,35 +30,8 @@ using namespace R5900;
 const int rdram_devices = 2;	// put 8 for TOOL and 2 for PS2 and PSX
 int rdram_sdevid = 0;
 
-static bool hwInitialized = false;
-
-void hwInit()
-{
-	// [TODO] / FIXME:  PCSX2 no longer works on an Init system.  It assumes that the
-	// static global vars for the process will be initialized when the process is created, and
-	// then issues *resets only* from then on. (reset code for various S2 components should do
-	// NULL checks and allocate memory and such if the pointers are NULL only).
-
-	if( hwInitialized ) return;
-
-	VifUnpackSSE_Init();
-
-	hwInitialized = true;
-}
-
-void hwShutdown()
-{
-	if (!hwInitialized) return;
-
-	VifUnpackSSE_Destroy();
-
-	hwInitialized = false;
-}
-
 void hwReset()
 {
-	hwInit();
-
 	std::memset(eeHw, 0, sizeof(eeHw));
 
 	psHu32(SBUS_F260) = 0x1D000060;

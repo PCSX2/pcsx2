@@ -26,15 +26,6 @@
 // Micro VU - Main Functions
 //------------------------------------------------------------------
 
-void mVUreserveCache(microVU& mVU)
-{
-	mVU.cache_reserve = new RecompiledCodeReserve(StringUtil::StdStringFromFormat("Micro VU%u Recompiler Cache", mVU.index));
-
-	const size_t alloc_offset = mVU.index ? HostMemoryMap::mVU0recOffset : HostMemoryMap::mVU1recOffset;
-	mVU.cache_reserve->Assign(GetVmMemory().CodeMemory(), alloc_offset, mVU.cacheSize * _1mb);
-	mVU.cache = mVU.cache_reserve->GetPtr();
-}
-
 // Only run this once per VU! ;)
 void mVUinit(microVU& mVU, uint vuIndex)
 {
@@ -46,12 +37,8 @@ void mVUinit(microVU& mVU, uint vuIndex)
 	mVU.microMemSize = (mVU.index ? 0x4000 : 0x1000);
 	mVU.progSize     = (mVU.index ? 0x4000 : 0x1000) / 4;
 	mVU.progMemMask  =  mVU.progSize-1;
-	mVU.cacheSize    =  mVUcacheReserve;
-	mVU.cache        = nullptr;
-	mVU.startFunct   = nullptr;
-	mVU.exitFunct    = nullptr;
-
-	mVUreserveCache(mVU);
+	mVU.cache        = vuIndex ? SysMemory::GetVU1Rec() : SysMemory::GetVU0Rec();
+	mVU.prog.x86end  = (vuIndex ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd()) - (mVUcacheSafeZone * _1mb);
 
 	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
@@ -59,7 +46,6 @@ void mVUinit(microVU& mVU, uint vuIndex)
 // Resets Rec Data
 void mVUreset(microVU& mVU, bool resetReserve)
 {
-
 	if (THREAD_VU1)
 	{
 		DevCon.Warning("mVU Reset");
@@ -70,9 +56,6 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		}
 		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 	}
-	// Restore reserve to uncommitted state
-	if (resetReserve)
-		mVU.cache_reserve->Reset();
 
 	xSetPtr(mVU.cache);
 	mVUdispatcherAB(mVU);
@@ -95,7 +78,6 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	// Setup Dynarec Cache Limits for Each Program
 	mVU.prog.x86start = xGetAlignedCallTarget();
 	mVU.prog.x86ptr   = mVU.prog.x86start;
-	mVU.prog.x86end   = mVU.cache + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
@@ -118,9 +100,6 @@ void mVUreset(microVU& mVU, bool resetReserve)
 // Free Allocated Resources
 void mVUclose(microVU& mVU)
 {
-
-	safe_delete(mVU.cache_reserve);
-
 	// Delete Programs and Block Managers
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{

@@ -27,7 +27,7 @@
 #include "IopBios.h"
 #include "IopHw.h"
 #include "Common.h"
-#include "VirtualMemory.h"
+#include "System.h"
 #include "VMManager.h"
 
 #include <time.h>
@@ -72,23 +72,22 @@ u32 psxhwLUT[0x10000];
 
 static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
-static RecompiledCodeReserve* recMem = NULL;
-
-static BASEBLOCK* recRAM = NULL; // and the ptr to the blocks here
-static BASEBLOCK* recROM = NULL; // and here
-static BASEBLOCK* recROM1 = NULL; // also here
-static BASEBLOCK* recROM2 = NULL; // also here
+static BASEBLOCK* recRAM = nullptr; // and the ptr to the blocks here
+static BASEBLOCK* recROM = nullptr; // and here
+static BASEBLOCK* recROM1 = nullptr; // also here
+static BASEBLOCK* recROM2 = nullptr; // also here
 static BaseBlocks recBlocks;
-static u8* recPtr = NULL;
+static u8* recPtr = nullptr;
+static u8* recPtrEnd = nullptr;
 u32 psxpc; // recompiler psxpc
 int psxbranch; // set for branch
 u32 g_iopCyclePenalty;
 
-static EEINST* s_pInstCache = NULL;
+static EEINST* s_pInstCache = nullptr;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
-static BASEBLOCKEX* s_pCurBlockEx = NULL;
+static BASEBLOCK* s_pCurBlock = nullptr;
+static BASEBLOCKEX* s_pCurBlockEx = nullptr;
 
 static u32 s_nEndBlock = 0; // what psxpc the current block ends
 static u32 s_branchTo;
@@ -96,7 +95,7 @@ static bool s_nBlockFF;
 
 static u32 s_saveConstRegs[32];
 static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
-static EEINST* s_psaveInstInfo = NULL;
+static EEINST* s_psaveInstInfo = nullptr;
 
 u32 s_psxBlockCycles = 0; // cycles of current block recompiling
 static u32 s_savenBlockCycles = 0;
@@ -879,15 +878,9 @@ static const uint m_recBlockAllocSize =
 
 static void recReserve()
 {
-	if (recMem)
-		return;
+	recPtr = SysMemory::GetIOPRec();
+	recPtrEnd = SysMemory::GetIOPRecEnd() - _64kb;
 
-	recMem = new RecompiledCodeReserve("R3000A Recompiler Cache");
-	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::IOPrecOffset, 32 * _1mb);
-}
-
-static void recAlloc()
-{
 	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
 	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
 	// always 4 bytes long).
@@ -910,23 +903,18 @@ static void recAlloc()
 	recROM2 = (BASEBLOCK*)curpos;
 	curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
 
-
+	pxAssertRel(!s_pInstCache, "InstCache not allocated");
+	s_nInstCacheSize = 128;
+	s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
 	if (!s_pInstCache)
-	{
-		s_nInstCacheSize = 128;
-		s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
-		if (!s_pInstCache)
-			pxFailRel("Failed to allocate R3000 InstCache array.");
-	}
+		pxFailRel("Failed to allocate R3000 InstCache array.");
 }
 
 void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
 
-	recAlloc();
-	recMem->Reset();
-	xSetPtr(*recMem);
+	xSetPtr(SysMemory::GetIOPRec());
 	_DynGen_Dispatchers();
 	recPtr = xGetPtr();
 
@@ -983,12 +971,13 @@ void recResetIOP()
 
 static void recShutdown()
 {
-	safe_delete(recMem);
-
 	safe_aligned_free(m_recBlockAlloc);
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
+
+	recPtr = nullptr;
+	recPtrEnd = nullptr;
 }
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
@@ -1561,7 +1550,7 @@ static void iopRecRecompile(const u32 startpc)
 	pxAssert(startpc);
 
 	// if recPtr reached the mem limit reset whole mem
-	if (recPtr >= (recMem->GetPtrEnd() - _64kb))
+	if (recPtr >= recPtrEnd)
 	{
 		recResetIOP();
 	}
@@ -1754,7 +1743,7 @@ StartRecomp:
 		}
 	}
 
-	pxAssert(xGetPtr() < recMem->GetPtrEnd());
+	pxAssert(xGetPtr() < recPtrEnd);
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;

@@ -17,7 +17,7 @@
 
 #include "MemoryTypes.h"
 #include "SingleRegisterTypes.h"
-#include "VirtualMemory.h"
+#include "System.h"
 
 static const uptr VTLB_AllocUpperBounds = _1gb * 2;
 
@@ -125,70 +125,6 @@ extern void vtlb_DynGenWrite(u32 sz, bool xmm, int addr_reg, int value_reg);
 extern void vtlb_DynGenWrite_Const(u32 bits, bool xmm, u32 addr_const, int value_reg);
 
 extern void vtlb_DynGenDispatchers();
-
-// --------------------------------------------------------------------------------------
-//  VtlbMemoryReserve
-// --------------------------------------------------------------------------------------
-class VtlbMemoryReserve : public VirtualMemoryReserve
-{
-public:
-	VtlbMemoryReserve(std::string name);
-
-	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
-
-	virtual void Reset();
-};
-
-// --------------------------------------------------------------------------------------
-//  eeMemoryReserve
-// --------------------------------------------------------------------------------------
-class eeMemoryReserve : public VtlbMemoryReserve
-{
-	typedef VtlbMemoryReserve _parent;
-
-public:
-	eeMemoryReserve();
-	~eeMemoryReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Release();
-
-	void Reset() override;
-};
-
-// --------------------------------------------------------------------------------------
-//  iopMemoryReserve
-// --------------------------------------------------------------------------------------
-class iopMemoryReserve : public VtlbMemoryReserve
-{
-	typedef VtlbMemoryReserve _parent;
-
-public:
-	iopMemoryReserve();
-	~iopMemoryReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Release();
-
-	void Reset() override;
-};
-
-// --------------------------------------------------------------------------------------
-//  vuMemoryReserve
-// --------------------------------------------------------------------------------------
-class vuMemoryReserve : public VtlbMemoryReserve
-{
-	typedef VtlbMemoryReserve _parent;
-
-public:
-	vuMemoryReserve();
-	~vuMemoryReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Release();
-
-	void Reset() override;
-};
 
 namespace vtlb_private
 {

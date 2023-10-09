@@ -17,7 +17,7 @@
 
 #include "GS/GSExtra.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
-#include "VirtualMemory.h"
+#include "System.h"
 #include "common/emitter/tools.h"
 
 template <class KEY, class VALUE>
@@ -147,25 +147,15 @@ public:
 // --------------------------------------------------------------------------------------
 // Stores code buffers for the GS software JIT.
 //
-class GSCodeReserve : public RecompiledCodeReserve
+namespace GSCodeReserve
 {
-public:
-	GSCodeReserve();
-	~GSCodeReserve();
+	void ResetMemory();
 
-	static GSCodeReserve& GetInstance();
+	size_t GetMemoryUsed();
 
-	size_t GetMemoryUsed() const { return m_memory_used; }
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Reset();
-
-	u8* Reserve(size_t size);
-	void Commit(size_t size);
-
-private:
-	size_t m_memory_used = 0;
-};
+	u8* ReserveMemory(size_t size);
+	void CommitMemory(size_t size);
+}
 
 template <class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
@@ -200,7 +190,7 @@ public:
 		}
 		else
 		{
-			u8* code_ptr = GSCodeReserve::GetInstance().Reserve(MAX_SIZE);
+			u8* code_ptr = GSCodeReserve::ReserveMemory(MAX_SIZE);
 			CG cg(key, code_ptr, MAX_SIZE);
 			ASSERT(cg.getSize() < MAX_SIZE);
 
@@ -210,7 +200,7 @@ public:
 			sel.Print();
 #endif
 
-			GSCodeReserve::GetInstance().Commit(cg.getSize());
+			GSCodeReserve::CommitMemory(cg.getSize());
 
 			ret = (VALUE)cg.getCode();
 

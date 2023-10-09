@@ -38,12 +38,12 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim")
 	, m_ds_map("GSDrawScanline")
 {
-	GSCodeReserve::GetInstance().Reset();
+	GSCodeReserve::ResetMemory();
 }
 
 GSDrawScanline::~GSDrawScanline()
 {
-	if (const size_t used = GSCodeReserve::GetInstance().GetMemoryUsed(); used > 0)
+	if (const size_t used = GSCodeReserve::GetMemoryUsed(); used > 0)
 		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
 }
 
@@ -82,7 +82,7 @@ void GSDrawScanline::ResetCodeCache()
 	Console.Warning("GS Software JIT cache overflow, resetting.");
 	m_sp_map.Clear();
 	m_ds_map.Clear();
-	GSCodeReserve::GetInstance().Reset();
+	GSCodeReserve::ResetMemory();
 }
 
 bool GSDrawScanline::SetupDraw(GSRasterizerData& data)

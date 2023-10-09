@@ -1265,9 +1265,6 @@
     <ClCompile Include="GSDumpReplayer.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
-    <ClCompile Include="VirtualMemory.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
@@ -2209,9 +2206,6 @@
     </ClInclude>
     <ClInclude Include="GS.h">
       <Filter>System\Ps2\GS\GIF</Filter>
-    </ClInclude>
-    <ClInclude Include="VirtualMemory.h">
-      <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>

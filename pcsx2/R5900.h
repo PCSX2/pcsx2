@@ -248,48 +248,19 @@ struct R5900cpu
 	// the virtual cpu provider.  Allocating additional heap memory from this method is
 	// NOT recommended.  Heap allocations should be performed by Reset only.  This
 	// maximizes the likeliness of reservations claiming addresses they prefer.
-	//
-	// Thread Affinity:
-	//   Called from the main/UI thread only.  Cpu execution status is guaranteed to
-	//   be inactive.  No locking is necessary.
-	//
-	// Exception Throws:
-	//   HardwareDeficiency - The host machine's hardware does not support this CPU provider.
-	//   OutOfMemory - Not enough memory, or the memory areas required were already
-	//                 reserved.
 	void (*Reserve)();
 
 	// Deallocates ram allocated by Allocate, Reserve, and/or by runtime code execution.
-	//
-	// Thread Affinity:
-	//   Called from the main/UI thread only.  Cpu execution status is guaranteed to
-	//   be inactive.  No locking is necessary.
-	//
-	// Exception Throws:  None.  This function is a destructor, and should not throw.
-	//
 	void (*Shutdown)();
 
 	// Initializes / Resets code execution states. Typically implementation is only
 	// needed for recompilers, as interpreters have no internal execution states and
 	// rely on the CPU/VM states almost entirely.
-	//
-	// Thread Affinity:
-	//   Can be called from any thread.  CPU execution status is indeterminate and may
-	//   already be in progress.  Implementations should be sure to queue and execute
-	//   resets at the earliest safe convenience (typically right before recompiling a
-	//   new block of code, or after a vsync event).
-	//
-	// Exception Throws:  Emulator-defined.  Common exception types to expect are
-	//   OutOfMemory, Stream Exceptions
-	//
 	void (*Reset)();
 
 	// Steps a single instruction.  Meant to be used by debuggers.  Is currently unused
 	// and unimplemented.  Future note: recompiler "step" should *always* fall back
 	// on interpreters.
-	//
-	// Exception Throws:  [TODO] (possible execution-related throws to be added)
-	//
 	void (*Step)();
 
 	// Executes code until a break is signaled.  Execution can be paused or suspended
@@ -297,11 +268,6 @@ struct R5900cpu
 	// Execution Breakages are handled the same way, where-by a signal causes the Execute
 	// call to return at the nearest state check (typically handled internally using
 	// either C++ exceptions or setjmp/longjmp).
-	//
-	// Exception Throws:
-	//   Throws BaseR5900Exception and all derivatives.
-	//   Throws FileNotFound or other Streaming errors (typically related to BIOS MEC/NVM)
-	//
 	void (*Execute)();
 
 	// Immediately exits execution of recompiled code if we are in a state to do so, or
@@ -319,13 +285,6 @@ struct R5900cpu
 	// Also: the calls from COP0's TLB remap code should be replaced with full recompiler
 	// resets, since TLB remaps affect more than just the code they contain (code that
 	// may reference the remapped blocks via memory loads/stores, for example).
-	//
-	// Thread Affinity Rule:
-	//   Can be called from any thread (namely for being called from debugging threads)
-	//
-	// Exception Throws: [TODO] Emulator defined?  (probably shouldn't throw, probably
-	//   doesn't matter if we're stripping it out soon. ;)
-	//
 	void (*Clear)(u32 Addr, u32 Size);
 };
 

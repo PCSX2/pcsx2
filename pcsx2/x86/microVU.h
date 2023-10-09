@@ -30,7 +30,7 @@ using namespace x86Emitter;
 #include "Gif_Unit.h"
 #include "iR5900.h"
 #include "R5900OpcodeTables.h"
-#include "VirtualMemory.h"
+#include "System.h"
 #include "common/emitter/x86emitter.h"
 #include "microVU_Misc.h"
 #include "microVU_IR.h"
@@ -91,9 +91,7 @@ struct microProgManager
 	microRegInfo       lpState;            // Pipeline state from where program left off (useful for continuing execution)
 };
 
-static const uint mVUdispCacheSize = __pagesize; // Dispatcher Cache Size (in bytes)
 static const uint mVUcacheSafeZone =  3; // Safe-Zone for program recompilation (in megabytes)
-static const uint mVUcacheReserve = 64; // mVU0, mVU1 Reserve Cache Size (in megabytes)
 
 struct microVU
 {
@@ -117,7 +115,6 @@ struct microVU
 	std::unique_ptr<microRegAlloc> regAlloc; // Reg Alloc Class
 	std::FILE*                     logFile;  // Log File Pointer
 
-	RecompiledCodeReserve* cache_reserve;
 	u8* cache;        // Dynarec Cache Start (where we will start writing the recompiled code to)
 	u8* startFunct;   // Function Ptr to the recompiler dispatcher (start)
 	u8* exitFunct;    // Function Ptr to the recompiler dispatcher (exit)

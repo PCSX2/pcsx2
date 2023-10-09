@@ -22,10 +22,10 @@
 #include "GS.h"
 #include "Memory.h"
 #include "Patch.h"
+#include "System.h"
 #include "R3000A.h"
 #include "R5900OpcodeTables.h"
 #include "VMManager.h"
-#include "VirtualMemory.h"
 #include "vtlb.h"
 #include "x86/BaseblockEx.h"
 #include "x86/iR5900.h"
@@ -83,23 +83,23 @@ eeProfiler EE::Profiler;
 
 #define X86
 
-static RecompiledCodeReserve* recMem = NULL;
-static u8* recRAMCopy = NULL;
-static u8* recLutReserve_RAM = NULL;
+static u8* recRAMCopy = nullptr;
+static u8* recLutReserve_RAM = nullptr;
 static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
 
-static BASEBLOCK* recRAM = NULL; // and the ptr to the blocks here
-static BASEBLOCK* recROM = NULL; // and here
-static BASEBLOCK* recROM1 = NULL; // also here
-static BASEBLOCK* recROM2 = NULL; // also here
+static BASEBLOCK* recRAM = nullptr; // and the ptr to the blocks here
+static BASEBLOCK* recROM = nullptr; // and here
+static BASEBLOCK* recROM1 = nullptr; // also here
+static BASEBLOCK* recROM2 = nullptr; // also here
 
 static BaseBlocks recBlocks;
-static u8* recPtr = NULL;
-EEINST* s_pInstCache = NULL;
+static u8* recPtr = nullptr;
+static u8* recPtrEnd = nullptr;
+EEINST* s_pInstCache = nullptr;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
-static BASEBLOCKEX* s_pCurBlockEx = NULL;
+static BASEBLOCK* s_pCurBlock = nullptr;
+static BASEBLOCKEX* s_pCurBlockEx = nullptr;
 u32 s_nEndBlock = 0; // what pc the current block ends
 u32 s_branchTo;
 static bool s_nBlockFF;
@@ -107,7 +107,7 @@ static bool s_nBlockFF;
 // save states for branches
 GPR_reg64 s_saveConstRegs[32];
 static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
-static EEINST* s_psaveInstInfo = NULL;
+static EEINST* s_psaveInstInfo = nullptr;
 
 static u32 s_savenBlockCycles = 0;
 
@@ -512,15 +512,9 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 
 static void recReserve()
 {
-	if (recMem)
-		return;
+	recPtr = SysMemory::GetEERec();
+	recPtrEnd = SysMemory::GetEERecEnd() - _64kb;
 
-	recMem = new RecompiledCodeReserve("R5900 Recompiler Cache");
-	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::EErecOffset, 64 * _1mb);
-}
-
-static void recAlloc()
-{
 	if (!recRAMCopy)
 	{
 		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
@@ -577,13 +571,11 @@ static void recAlloc()
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
 	}
 
-	if (s_pInstCache == NULL)
-	{
-		s_nInstCacheSize = 128;
-		s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
-		if (!s_pInstCache)
-			pxFailRel("Failed to allocate R5900 InstCache array");
-	}
+	pxAssertRel(!s_pInstCache, "InstCache not allocated");
+	s_nInstCacheSize = 128;
+	s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
+	if (!s_pInstCache)
+		pxFailRel("Failed to allocate R5900 InstCache array");
 }
 
 alignas(16) static u16 manual_page[Ps2MemSize::MainRam >> 12];
@@ -596,10 +588,7 @@ static void recResetRaw()
 
 	EE::Profiler.Reset();
 
-	recAlloc();
-
-	recMem->Reset();
-	xSetPtr(*recMem);
+	xSetPtr(SysMemory::GetEERec());
 	_DynGen_Dispatchers();
 	vtlb_DynGenDispatchers();
 	recPtr = xGetPtr();
@@ -620,9 +609,8 @@ static void recResetRaw()
 	g_resetEeScalingStats = true;
 }
 
-static void recShutdown()
+void recShutdown()
 {
-	safe_delete(recMem);
 	safe_aligned_free(recRAMCopy);
 	safe_aligned_free(recLutReserve_RAM);
 
@@ -632,6 +620,9 @@ static void recShutdown()
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
+
+	recPtr = nullptr;
+	recPtrEnd = nullptr;
 }
 
 void recStep()
@@ -909,7 +900,7 @@ void SetBranchImm(u32 imm)
 u8* recBeginThunk()
 {
 	// if recPtr reached the mem limit reset whole mem
-	if (recPtr >= (recMem->GetPtrEnd() - _64kb))
+	if (recPtr >= recPtrEnd)
 		eeRecNeedsReset = true;
 
 	xSetPtr(recPtr);
@@ -923,7 +914,7 @@ u8* recEndThunk()
 {
 	u8* block_end = x86Ptr;
 
-	pxAssert(block_end < recMem->GetPtrEnd());
+	pxAssert(block_end < recPtrEnd);
 	recPtr = block_end;
 	return block_end;
 }
@@ -2208,7 +2199,7 @@ static void recRecompile(const u32 startpc)
 	pxAssert(startpc);
 
 	// if recPtr reached the mem limit reset whole mem
-	if (recPtr >= (recMem->GetPtrEnd() - _64kb))
+	if (recPtr >= recPtrEnd)
 		eeRecNeedsReset = true;
 
 	if (HWADDR(startpc) == VMManager::Internal::GetCurrentELFEntryPoint())
@@ -2741,7 +2732,7 @@ StartRecomp:
 		}
 	}
 
-	pxAssert(xGetPtr() < recMem->GetPtrEnd());
+	pxAssert(xGetPtr() < recPtrEnd);
 
 	s_pCurBlockEx->x86size = static_cast<u32>(xGetPtr() - recPtr);
 
@@ -2757,8 +2748,8 @@ StartRecomp:
 
 	pxAssert((g_cpuHasConstReg & g_cpuFlushedConstReg) == g_cpuHasConstReg);
 
-	s_pCurBlock = NULL;
-	s_pCurBlockEx = NULL;
+	s_pCurBlock = nullptr;
+	s_pCurBlockEx = nullptr;
 }
 
 R5900cpu recCpu = {
