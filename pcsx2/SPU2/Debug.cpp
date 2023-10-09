@@ -82,10 +82,8 @@ void SPU2::ConLog(const char* fmt, ...)
 void V_VolumeSlide::DebugDump(FILE* dump, const char* title, const char* nameLR)
 {
 	fprintf(dump, "%s Volume for %s Channel:\t%x\n"
-				  "  - Value:     %x\n"
-				  "  - Mode:      %x\n"
-				  "  - Increment: %x\n",
-			title, nameLR, Reg_VOL, Value, Mode, Increment);
+				  "  - Value:     %x\n",
+			title, nameLR, Reg_VOL, Value);
 }
 
 void V_VolumeSlideLR::DebugDump(FILE* dump, const char* title)

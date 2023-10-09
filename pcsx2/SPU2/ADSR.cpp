@@ -19,33 +19,7 @@
 
 #include "common/Assertions.h"
 
-#include <array>
-
 static constexpr s32 ADSR_MAX_VOL = 0x7fff;
-
-static const int InvExpOffsets[] = {0, 4, 6, 8, 9, 10, 11, 12};
-
-using PSXRateTable = std::array<u32, 160>;
-
-static constexpr PSXRateTable ComputePSXRates()
-{
-	PSXRateTable rates = {};
-	for (int i = 0; i < (32 + 128); i++)
-	{
-		const int shift = (i - 32) >> 2;
-		s64 rate = (i & 3) + 4;
-		if (shift < 0)
-			rate >>= -shift;
-		else
-			rate <<= shift;
-
-		// Maximum rate is 0x4000.
-		rates[i] = (int)std::min(rate, (s64)0x40000000LL);
-	}
-	return rates;
-}
-
-static constexpr const PSXRateTable PsxRates = ComputePSXRates();
 
 void V_ADSR::UpdateCache()
 {
@@ -152,15 +126,44 @@ void V_VolumeSlide::RegSet(u16 src)
 	Reg_VOL = src;
 	if (!Enable)
 	{
-		// Shift and sign extend;
-		Value = (s16)(src << 1);
+		Value = SignExtend16(src << 1);
 	}
 }
 
 void V_VolumeSlide::Update()
 {
 	if (!Enable)
-	{
 		return;
+
+	s32 step_size = 7 - Step;
+
+	if (Decr)
+	{
+		step_size = ~step_size;
+	}
+
+	u32 counter_inc = 0x8000 >> std::max(0, Shift - 11);
+	s16 level_inc = (s16)(step_size << std::max(0, 11 - Shift));
+
+	if (Exp)
+	{
+		if (!Decr && Value > 0x6000)
+		{
+			counter_inc >>= 2;
+		}
+
+		if (Decr)
+		{
+			level_inc = (s16)((level_inc * Value) >> 15);
+		}
+	}
+
+	counter_inc = std::max<u32>(1, counter_inc);
+	Counter += counter_inc;
+
+	if (Counter >= 0x8000)
+	{
+		Counter = 0;
+		Value = std::clamp<s32>(Value + level_inc, 0, INT16_MAX);
 	}
 }

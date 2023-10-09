@@ -302,8 +302,8 @@ static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_Vo
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeSlideLR& volume)
 {
 	return StereoOut32(
-		ApplyVolume(data.Left, volume.Left.Value),
-		ApplyVolume(data.Right, volume.Right.Value));
+		ApplyVolume16(data.Left, volume.Left.Value),
+		ApplyVolume16(data.Right, volume.Right.Value));
 }
 
 static void __forceinline UpdatePitch(uint coreidx, uint voiceidx)
@@ -684,8 +684,8 @@ __forceinline
 	}
 	else
 	{
-		Out.Left = MulShr32(Out.Left, Cores[1].MasterVol.Left.Value);
-		Out.Right = MulShr32(Out.Right, Cores[1].MasterVol.Right.Value);
+		Out.Left = ApplyVolume16(Out.Left, Cores[1].MasterVol.Left.Value);
+		Out.Right = ApplyVolume16(Out.Right, Cores[1].MasterVol.Right.Value);
 	}
 
 	// Final Clamp!

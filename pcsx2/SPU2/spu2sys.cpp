@@ -104,7 +104,7 @@ __forceinline void spu2M_Write(u32 addr, u16 value)
 }
 
 V_VolumeLR V_VolumeLR::Max(0x7FFFFFFF);
-V_VolumeSlideLR V_VolumeSlideLR::Max(0x3FFF, 0x7FFFFFFF);
+V_VolumeSlideLR V_VolumeSlideLR::Max(0x3FFF, 0x7FFF);
 
 V_Core::V_Core(int coreidx)
 	: Index(coreidx)
@@ -485,11 +485,6 @@ static s32 GetVol32(u16 src)
 	return ((static_cast<s32>(src)) << 16) | ((src << 1) & 0xffff);
 }
 
-void V_VolumeSlide::RegSet(u16 src)
-{
-	Value = GetVol32(src);
-}
-
 static u32 map_spu1to2(u32 addr)
 {
 	return addr * 4 + (addr >= 0x200 ? 0xc0000 : 0);
@@ -519,26 +514,7 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			case 0x2: //VOLR (Volume R)
 			{
 				V_VolumeSlide& thisvol = vval == 0 ? Voices[voice].Volume.Left : Voices[voice].Volume.Right;
-				thisvol.Reg_VOL = value;
-
-				if (value & 0x8000) // +Lin/-Lin/+Exp/-Exp
-				{
-					thisvol.Mode = (value & 0xF000) >> 12;
-					thisvol.Increment = (value & 0x7F);
-					// We're not sure slides work 100%
-					if (SPU2::MsgToConsole())
-						SPU2::ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
-				}
-				else
-				{
-					// Constant Volume mode (no slides or envelopes)
-					// Volumes range from 0x3fff to 0x7fff, with 0x4000 serving as
-					// the "sign" bit, so a simple bitwise extension will do the trick:
-
-					thisvol.RegSet(value << 1);
-					thisvol.Mode = 0;
-					thisvol.Increment = 0;
-				}
+				thisvol.RegSet(value);
 				//ConLog("voice %x VOL%c write: %x\n", voice, vval == 0 ? 'L' : 'R', value);
 				break;
 			}
@@ -581,12 +557,10 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 		switch (reg)
 		{
 			case 0x1d80: //         Mainvolume left
-				MasterVol.Left.Mode = 0;
 				MasterVol.Left.RegSet(value);
 				break;
 
 			case 0x1d82: //         Mainvolume right
-				MasterVol.Right.Mode = 0;
 				MasterVol.Right.RegSet(value);
 				break;
 
@@ -895,10 +869,10 @@ u16 V_Core::ReadRegPS1(u32 mem)
 		switch (reg)
 		{
 			case 0x1d80:
-				value = MasterVol.Left.Value >> 16;
+				value = MasterVol.Left.Value;
 				break;
 			case 0x1d82:
-				value = MasterVol.Right.Value >> 16;
+				value = MasterVol.Right.Value;
 				break;
 			case 0x1d84:
 				value = FxVol.Left >> 16;
@@ -1007,26 +981,7 @@ static void RegWrite_VoiceParams(u16 value)
 		case 1: //VOLR (Volume R)
 		{
 			V_VolumeSlide& thisvol = (param == 0) ? thisvoice.Volume.Left : thisvoice.Volume.Right;
-			thisvol.Reg_VOL = value;
-
-			if (value & 0x8000) // +Lin/-Lin/+Exp/-Exp
-			{
-				thisvol.Mode = (value & 0xF000) >> 12;
-				thisvol.Increment = (value & 0x7F);
-				// We're not sure slides work 100%
-				if (SPU2::MsgToConsole())
-					SPU2::ConLog("* SPU2: Voice uses Slides in Mode = %x, Increment = %x\n", thisvol.Mode, thisvol.Increment);
-			}
-			else
-			{
-				// Constant Volume mode (no slides or envelopes)
-				// Volumes range from 0x3fff to 0x7fff, with 0x4000 serving as
-				// the "sign" bit, so a simple bitwise extension will do the trick:
-
-				thisvol.RegSet(value << 1);
-				thisvol.Mode = 0;
-				thisvol.Increment = 0;
-			}
+			thisvol.RegSet(value);
 		}
 		break;
 
@@ -1429,24 +1384,7 @@ static void RegWrite_CoreExt(u16 value)
 		case REG_P_MVOLR:
 		{
 			V_VolumeSlide& thisvol = (addr == REG_P_MVOLL) ? thiscore.MasterVol.Left : thiscore.MasterVol.Right;
-
-			if (value & 0x8000) // +Lin/-Lin/+Exp/-Exp
-			{
-				thisvol.Mode = (value & 0xF000) >> 12;
-				thisvol.Increment = (value & 0x7F);
-				//printf("slides Mode = %x, Increment = %x\n",thisvol.Mode,thisvol.Increment);
-			}
-			else
-			{
-				// Constant Volume mode (no slides or envelopes)
-				// Volumes range from 0x3fff to 0x7fff, with 0x4000 serving as
-				// the "sign" bit, so a simple bitwise extension will do the trick:
-
-				thisvol.Value = GetVol32(value << 1);
-				thisvol.Mode = 0;
-				thisvol.Increment = 0;
-			}
-			thisvol.Reg_VOL = value;
+			thisvol.RegSet(value);
 		}
 		break;
 
@@ -1835,7 +1773,7 @@ void StartVoices(int core, u32 value)
 					   (Cores[core].VoiceGates[vc].WetL) ? "+" : "-", (Cores[core].VoiceGates[vc].WetR) ? "+" : "-",
 					   *(u16*)GetMemPtr(thisvc.StartA),
 					   thisvc.Pitch,
-					   thisvc.Volume.Left.Value >> 16, thisvc.Volume.Right.Value >> 16,
+					   thisvc.Volume.Left.Value, thisvc.Volume.Right.Value,
 					   thisvc.ADSR.regADSR1, thisvc.ADSR.regADSR2);
 			}
 		}
