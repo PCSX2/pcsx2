@@ -290,7 +290,7 @@ void normBranchCompile(microVU& mVU, u32 branchPC)
 {
 	microBlock* pBlock;
 	blockCreate(branchPC / 8);
-	pBlock = mVUblocks[branchPC / 8]->search((microRegInfo*)&mVUregs);
+	pBlock = mVUblocks[branchPC / 8]->search(mVU, (microRegInfo*)&mVUregs);
 	if (pBlock)
 		xJMP(pBlock->x86ptrStart);
 	else
@@ -540,7 +540,7 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc)
 		microBlock* bBlock;
 		incPC2(1); // Check if Branch Non-Taken Side has already been recompiled
 		blockCreate(iPC / 2);
-		bBlock = mVUblocks[iPC / 2]->search((microRegInfo*)&mVUregs);
+		bBlock = mVUblocks[iPC / 2]->search(mVU, (microRegInfo*)&mVUregs);
 		incPC2(-1);
 		if (bBlock) // Branch non-taken has already been compiled
 		{

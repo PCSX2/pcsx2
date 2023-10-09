@@ -38,7 +38,6 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim")
 	, m_ds_map("GSDrawScanline")
 {
-	GSCodeReserve::GetInstance().AllowModification();
 	GSCodeReserve::GetInstance().Reset();
 }
 
@@ -46,8 +45,6 @@ GSDrawScanline::~GSDrawScanline()
 {
 	if (const size_t used = GSCodeReserve::GetInstance().GetMemoryUsed(); used > 0)
 		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
-
-	GSCodeReserve::GetInstance().ForbidModification();
 }
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)

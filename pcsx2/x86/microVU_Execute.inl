@@ -31,7 +31,7 @@ static bool mvuNeedsFPCRUpdate(mV)
 // Generates the code for entering/exit recompiled blocks
 void mVUdispatcherAB(mV)
 {
-	mVU.startFunct = x86Ptr;
+	mVU.startFunct = xGetAlignedCallTarget();
 
 	{
 		xScopedStackFrame frame(false, true);
@@ -92,9 +92,6 @@ void mVUdispatcherAB(mV)
 
 	xRET();
 
-	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
-		"microVU: Dispatcher generation exceeded reserved cache area!");
-
 	Perf::any.Register(mVU.startFunct, static_cast<u32>(xGetPtr() - mVU.startFunct),
 		mVU.index ? "VU1StartFunc" : "VU0StartFunc");
 }
@@ -102,7 +99,7 @@ void mVUdispatcherAB(mV)
 // Generates the code for resuming/exit xgkick
 void mVUdispatcherCD(mV)
 {
-	mVU.startFunctXG = x86Ptr;
+	mVU.startFunctXG = xGetAlignedCallTarget();
 
 	{
 		xScopedStackFrame frame(false, true);
@@ -135,17 +132,13 @@ void mVUdispatcherCD(mV)
 
 	xRET();
 
-	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
-		"microVU: Dispatcher generation exceeded reserved cache area!");
-
 	Perf::any.Register(mVU.startFunctXG, static_cast<u32>(xGetPtr() - mVU.startFunctXG),
 		mVU.index ? "VU1StartFuncXG" : "VU0StartFuncXG");
 }
 
-void mvuGenerateWaitMTVU(mV)
+static void mVUGenerateWaitMTVU(mV)
 {
-	xAlignCallTarget();
-	mVU.waitMTVU = x86Ptr;
+	mVU.waitMTVU = xGetAlignedCallTarget();
 
 	int num_xmms = 0, num_gprs = 0;
 
@@ -215,17 +208,13 @@ void mvuGenerateWaitMTVU(mV)
 
 	xRET();
 
-	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
-		"microVU: Dispatcher generation exceeded reserved cache area!");
-
 	Perf::any.Register(mVU.waitMTVU, static_cast<u32>(xGetPtr() - mVU.waitMTVU),
 		mVU.index ? "VU1WaitMTVU" : "VU0WaitMTVU");
 }
 
-void mvuGenerateCopyPipelineState(mV)
+static void mVUGenerateCopyPipelineState(mV)
 {
-	xAlignCallTarget();
-	mVU.copyPLState = x86Ptr;
+	mVU.copyPLState = xGetAlignedCallTarget();
 
 	if (x86caps.hasAVX2)
 	{
@@ -258,12 +247,75 @@ void mvuGenerateCopyPipelineState(mV)
 
 	xRET();
 
-	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
-		"microVU: Dispatcher generation exceeded reserved cache area!");
-
 	Perf::any.Register(mVU.copyPLState, static_cast<u32>(xGetPtr() - mVU.copyPLState),
 		mVU.index ? "VU1CopyPLState" : "VU0CopyPLState");
 }
+
+//------------------------------------------------------------------
+// Micro VU - Custom Quick Search
+//------------------------------------------------------------------
+
+// Generates a custom optimized block-search function
+// Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)
+static void mVUGenerateCompareState(mV)
+{
+	mVU.compareStateF = xGetAlignedCallTarget();
+
+	if (!x86caps.hasAVX2)
+	{
+		xMOVAPS  (xmm0, ptr32[arg1reg]);
+		xPCMP.EQD(xmm0, ptr32[arg2reg]);
+		xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
+		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x10]);
+		xPAND    (xmm0, xmm1);
+
+		xMOVMSKPS(eax, xmm0);
+		xXOR     (eax, 0xf);
+		xForwardJNZ8 exitPoint;
+
+		xMOVAPS  (xmm0, ptr32[arg1reg + 0x20]);
+		xPCMP.EQD(xmm0, ptr32[arg2reg + 0x20]);
+		xMOVAPS  (xmm1, ptr32[arg1reg + 0x30]);
+		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
+		xPAND    (xmm0, xmm1);
+
+		xMOVAPS  (xmm1, ptr32[arg1reg + 0x40]);
+		xPCMP.EQD(xmm1, ptr32[arg2reg + 0x40]);
+		xMOVAPS  (xmm2, ptr32[arg1reg + 0x50]);
+		xPCMP.EQD(xmm2, ptr32[arg2reg + 0x50]);
+		xPAND    (xmm1, xmm2);
+		xPAND    (xmm0, xmm1);
+
+		xMOVMSKPS(eax, xmm0);
+		xXOR(eax, 0xf);
+
+		exitPoint.SetTarget();
+	}
+	else
+	{
+		// We have to use unaligned loads here, because the blocks are only 16 byte aligned.
+		xVMOVUPS(ymm0, ptr[arg1reg]);
+		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg]);
+		xVPMOVMSKB(eax, ymm0);
+		xXOR(eax, 0xffffffff);
+		xForwardJNZ8 exitPoint;
+
+		xVMOVUPS(ymm0, ptr[arg1reg + 0x20]);
+		xVMOVUPS(ymm1, ptr[arg1reg + 0x40]);
+		xVPCMP.EQD(ymm0, ymm0, ptr[arg2reg + 0x20]);
+		xVPCMP.EQD(ymm1, ymm1, ptr[arg2reg + 0x40]);
+		xVPAND(ymm0, ymm0, ymm1);
+
+		xVPMOVMSKB(eax, ymm0);
+		xNOT(eax);
+
+		exitPoint.SetTarget();
+		xVZEROUPPER();
+	}
+
+	xRET();
+}
+
 
 //------------------------------------------------------------------
 // Execution Functions

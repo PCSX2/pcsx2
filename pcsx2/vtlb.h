@@ -124,6 +124,8 @@ extern int vtlb_DynGenReadQuad_Const(u32 bits, u32 addr_const, vtlb_ReadRegAlloc
 extern void vtlb_DynGenWrite(u32 sz, bool xmm, int addr_reg, int value_reg);
 extern void vtlb_DynGenWrite_Const(u32 bits, bool xmm, u32 addr_const, int value_reg);
 
+extern void vtlb_DynGenDispatchers();
+
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve
 // --------------------------------------------------------------------------------------

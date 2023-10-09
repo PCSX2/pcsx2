@@ -140,12 +140,6 @@ namespace HostSys
 
 	extern void MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode);
 
-	template <uint size>
-	void MemProtectStatic(u8 (&arr)[size], const PageProtectionMode& mode)
-	{
-		MemProtect(arr, size, mode);
-	}
-
 	extern std::string GetFileMappingName(const char* prefix);
 	extern void* CreateSharedMemory(const char* name, size_t size);
 	extern void DestroySharedMemory(void* ptr);
