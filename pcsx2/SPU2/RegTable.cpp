@@ -28,18 +28,17 @@
 	PCORE(c, Voices[v].p)
 
 #define PVC(c, v)                          \
-	PVCP(c, v, Volume.Left.Reg_VOL)        \
-	,                                      \
+		PVCP(c, v, Volume.Left.Reg_VOL),   \
 		PVCP(c, v, Volume.Right.Reg_VOL),  \
 		PVCP(c, v, Pitch),                 \
 		PVCP(c, v, ADSR.regADSR1),         \
 		PVCP(c, v, ADSR.regADSR2),         \
 		PVCP(c, v, ADSR.Value),            \
-		PVCP(c, v, Volume.Left.Value) + 1, \
-		PVCP(c, v, Volume.Right.Value) + 1
+		PVCP(c, v, Volume.Left.Value),     \
+		PVCP(c, v, Volume.Right.Value)
 
 #define PVCA(c, v)                  \
-	PVCP(c, v, StartA) + 1,         \
+		PVCP(c, v, StartA) + 1,     \
 		PVCP(c, v, StartA),         \
 		PVCP(c, v, LoopStartA) + 1, \
 		PVCP(c, v, LoopStartA),     \

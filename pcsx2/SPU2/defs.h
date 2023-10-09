@@ -38,6 +38,10 @@ extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
 
+static inline s16 SignExtend16(u16 v)
+{
+	return (s16)v;
+}
 
 struct V_VolumeLR
 {
@@ -61,23 +65,34 @@ struct V_VolumeSlide
 	// Holds the "original" value of the volume for this voice, prior to slides.
 	// (ie, the volume as written to the register)
 
-	s16 Reg_VOL;
+	union
+	{
+		u16 Reg_VOL;
+		struct
+		{
+			u16 Step : 2;
+			u16 Shift : 5;
+			u16 : 5;
+			u16 Phase : 1;
+			u16 Decr : 1;
+			u16 Exp : 1;
+			u16 Enable : 1;
+		};
+	};
+
+	u32 Counter;
 	s32 Value;
-	s8 Increment;
-	s8 Mode;
 
 public:
 	V_VolumeSlide() = default;
 	V_VolumeSlide(s16 regval, s32 fullvol)
 		: Reg_VOL(regval)
 		, Value(fullvol)
-		, Increment(0)
-		, Mode(0)
 	{
 	}
 
 	void Update();
-	void RegSet(u16 src); // used to set the volume from a register source (16 bit signed)
+	void RegSet(u16 src); // used to set the volume from a register source
 
 #ifdef PCSX2_DEVBUILD
 	void DebugDump(FILE* dump, const char* title, const char* nameLR);
