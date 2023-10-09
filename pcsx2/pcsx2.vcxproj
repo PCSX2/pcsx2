@@ -352,7 +352,6 @@
     <ClCompile Include="USB\usb-pad\usb-turntable.cpp" />
     <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
-    <ClCompile Include="VirtualMemory.cpp" />
     <ClCompile Include="VMManager.cpp" />
     <ClCompile Include="windows\Optimus.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
@@ -723,7 +722,6 @@
     <ClInclude Include="ps2\HwInternal.h" />
     <ClInclude Include="Cache.h" />
     <ClInclude Include="Memory.h" />
-    <ClInclude Include="VirtualMemory.h" />
     <ClInclude Include="VMManager.h" />
     <ClInclude Include="vtlb.h" />
     <ClInclude Include="MTVU.h" />

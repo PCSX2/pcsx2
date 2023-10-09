@@ -364,7 +364,6 @@ enum GSRegisterAddresses
 };
 
 extern void hwReset();
-extern void hwShutdown();
 
 extern const int rdram_devices;
 extern int rdram_sdevid;

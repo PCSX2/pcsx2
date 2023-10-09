@@ -20,6 +20,7 @@
 #include "SIO/Memcard/MemoryCardFolder.h"
 #include "SIO/Sio.h"
 
+#include "common/Assertions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"

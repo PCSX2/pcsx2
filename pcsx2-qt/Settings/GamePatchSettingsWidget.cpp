@@ -24,6 +24,8 @@
 #include "pcsx2/GameList.h"
 #include "pcsx2/Patch.h"
 
+#include "common/Assertions.h"
+
 #include <algorithm>
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,

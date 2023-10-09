@@ -24,9 +24,6 @@
 #define xMOV64(regX, loc)  xMOVUPS (regX, loc)
 #define xMOV128(regX, loc) xMOVUPS (regX, loc)
 
-//alignas(__pagesize) static u8 nVifUpkExec[__pagesize*4];
-static RecompiledCodeReserve* nVifUpkExec = NULL;
-
 // =====================================================================================================
 //  VifUnpackSSE_Base Section
 // =====================================================================================================
@@ -376,14 +373,9 @@ static void nVifGen(int usn, int mask, int curCycle)
 
 void VifUnpackSSE_Init()
 {
-	if (nVifUpkExec)
-		return;
-
 	DevCon.WriteLn("Generating SSE-optimized unpacking functions for VIF interpreters...");
 
-	nVifUpkExec = new RecompiledCodeReserve("VIF SSE-optimized Unpacking Functions");
-	nVifUpkExec->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::VIFUnpackRecOffset, _1mb);
-	xSetPtr(*nVifUpkExec);
+	xSetPtr(SysMemory::GetVIFUnpackRec());
 
 	for (int a = 0; a < 2; a++)
 		for (int b = 0; b < 2; b++)
@@ -392,17 +384,12 @@ void VifUnpackSSE_Init()
 
 	DevCon.WriteLn("Unpack function generation complete.  Generated function statistics:");
 	DevCon.Indent().WriteLn(
-		"Reserved buffer    : %u bytes @ 0x%016" PRIXPTR "\n"
-		"x86 code generated : %u bytes\n",
-		(uint)nVifUpkExec->GetSize(),
-		nVifUpkExec->GetPtr(),
-		(uint)(xGetPtr() - nVifUpkExec->GetPtr())
+		"Reserved buffer    : %zu bytes @ 0x%016" PRIXPTR "\n"
+		"x86 code generated : %zu bytes\n",
+		SysMemory::GetVIFUnpackRecEnd() - SysMemory::GetVIFUnpackRec(),
+		SysMemory::GetVIFUnpackRec(),
+		xGetPtr() - SysMemory::GetVIFUnpackRec()
 	);
 
-	Perf::any.Register(nVifUpkExec->GetPtr(), xGetPtr() - nVifUpkExec->GetPtr(), "VIF Unpack");
-}
-
-void VifUnpackSSE_Destroy()
-{
-	safe_delete(nVifUpkExec);
+	Perf::any.Register(SysMemory::GetVIFUnpackRec(), xGetPtr() - SysMemory::GetVIFUnpackRec(), "VIF Unpack");
 }

@@ -18,6 +18,7 @@
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Memcard/MemoryCardFolder.h"
 
+#include "common/Assertions.h"
 #include "common/Path.h"
 
 #include "System.h"
