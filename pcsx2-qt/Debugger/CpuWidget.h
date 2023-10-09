@@ -60,6 +60,7 @@ public slots:
 	void contextBPListDelete();
 	void contextBPListNew();
 	void contextBPListEdit();
+	void contextBPListPasteCSV();
 
 	void updateThreads();
 	void onThreadListDoubleClick(const QModelIndex& index);

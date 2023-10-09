@@ -20,6 +20,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
+#include <QtCore/QAbstractItemModel>
 #include <functional>
 #include <initializer_list>
 #include <string_view>
@@ -93,4 +94,7 @@ namespace QtUtils
 	{
 		return QString("%1").arg(QString::number(val, base), sizeof(val) * 2, '0').toUpper();
 	};
+
+	/// Converts an abstract item model to a CSV string.
+	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role = Qt::DisplayRole);
 } // namespace QtUtils
