@@ -69,6 +69,7 @@ enum MemCheckCondition
 	MEMCHECK_WRITE_ONCHANGE = 0x04,
 
 	MEMCHECK_READWRITE = 0x03,
+	MEMCHECK_INVALID = 0x08, // Invalid condition, used by the CSV parser to know if the line is for a memcheck
 };
 
 enum MemCheckResult
@@ -119,7 +120,7 @@ public:
 	static bool IsAddressBreakPoint(BreakPointCpu cpu, u32 addr);
 	static bool IsAddressBreakPoint(BreakPointCpu cpu, u32 addr, bool* enabled);
 	static bool IsTempBreakPoint(BreakPointCpu cpu, u32 addr);
-	static void AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp = false);
+	static void AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp = false, bool enabled = true);
 	static void RemoveBreakPoint(BreakPointCpu cpu, u32 addr);
 	static void ChangeBreakPoint(BreakPointCpu cpu, u32 addr, bool enable);
 	static void ClearAllBreakPoints();

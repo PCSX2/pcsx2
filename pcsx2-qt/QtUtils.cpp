@@ -95,8 +95,8 @@ namespace QtUtils
 		const int min_column_width = header->minimumSectionSize();
 		const int scrollbar_width = ((view->verticalScrollBar() && view->verticalScrollBar()->isVisible()) ||
 										view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
-                                        view->verticalScrollBar()->width() :
-                                        0;
+										view->verticalScrollBar()->width() :
+										0;
 		int num_flex_items = 0;
 		int total_width = 0;
 		int column_index = 0;
@@ -115,8 +115,8 @@ namespace QtUtils
 
 		const int flex_width =
 			(num_flex_items > 0) ?
-                std::max((view->contentsRect().width() - total_width - scrollbar_width) / num_flex_items, 1) :
-                0;
+				std::max((view->contentsRect().width() - total_width - scrollbar_width) / num_flex_items, 1) :
+				0;
 
 		column_index = 0;
 		for (const int spec_width : widths)
@@ -269,4 +269,40 @@ namespace QtUtils
 		return wi;
 	}
 
+	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role)
+	{
+		QString csv;
+		// Header
+		for (int col = 0; col < model->columnCount(); col++)
+		{
+			csv += model->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString();
+			if (col < model->columnCount() - 1)
+				csv += ",";
+		}
+
+		csv += "\n";
+
+		// Data
+		for (int row = 0; row < model->rowCount(); row++)
+		{
+			for (int col = 0; col < model->columnCount(); col++)
+			{
+				switch(model->data(model->index(row, col), role).metaType().id())
+				{
+					case QMetaType::Int:
+					case QMetaType::UInt:
+						csv += QString::number(model->data(model->index(row, col), role).toUInt(nullptr), 16);
+					break;
+					default:
+						csv += model->data(model->index(row, col), role).toString();
+					break;
+				}
+				
+				if (col < model->columnCount() - 1)
+					csv += ",";
+			}
+			csv += "\n";
+		}
+		return csv;
+	}
 } // namespace QtUtils

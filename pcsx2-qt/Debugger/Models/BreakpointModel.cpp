@@ -107,7 +107,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 			switch (index.column())
 			{
 				case BreakpointColumns::TYPE:
-					return 0;
+					return MEMCHECK_INVALID;
 				case BreakpointColumns::OFFSET:
 					return bp->addr;
 				case BreakpointColumns::SIZE_LABEL:
@@ -120,7 +120,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::HITS:
 					return 0;
 				case BreakpointColumns::ENABLED:
-					return bp->enabled;
+					return static_cast<int>(bp->enabled);
 			}
 		}
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
@@ -330,7 +330,7 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 		if (const auto* bp = std::get_if<BreakPoint>(&bp_mc))
 		{
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp = *bp] {
-				CBreakPoints::AddBreakPoint(cpu, bp.addr);
+				CBreakPoints::AddBreakPoint(cpu, bp.addr, false, bp.enabled);
 
 				if (bp.hasCond)
 				{
