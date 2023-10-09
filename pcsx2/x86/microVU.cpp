@@ -25,8 +25,6 @@
 //------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
-alignas(__pagesize) static u8 vu0_RecDispatchers[mVUdispCacheSize];
-alignas(__pagesize) static u8 vu1_RecDispatchers[mVUdispCacheSize];
 
 void mVUreserveCache(microVU& mVU)
 {
@@ -49,17 +47,11 @@ void mVUinit(microVU& mVU, uint vuIndex)
 	mVU.progSize     = (mVU.index ? 0x4000 : 0x1000) / 4;
 	mVU.progMemMask  =  mVU.progSize-1;
 	mVU.cacheSize    =  mVUcacheReserve;
-	mVU.cache        = NULL;
-	mVU.dispCache    = NULL;
-	mVU.startFunct   = NULL;
-	mVU.exitFunct    = NULL;
+	mVU.cache        = nullptr;
+	mVU.startFunct   = nullptr;
+	mVU.exitFunct    = nullptr;
 
 	mVUreserveCache(mVU);
-
-	if (vuIndex)
-		mVU.dispCache = vu1_RecDispatchers;
-	else
-		mVU.dispCache = vu0_RecDispatchers;
 
 	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
@@ -82,15 +74,12 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	if (resetReserve)
 		mVU.cache_reserve->Reset();
 
-	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ReadWrite());
-	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
-
-	x86SetPtr(mVU.dispCache);
+	xSetPtr(mVU.cache);
 	mVUdispatcherAB(mVU);
 	mVUdispatcherCD(mVU);
-	mvuGenerateWaitMTVU(mVU);
-	mvuGenerateCopyPipelineState(mVU);
-	mVUemitSearch();
+	mVUGenerateWaitMTVU(mVU);
+	mVUGenerateCopyPipelineState(mVU);
+	mVUGenerateCompareState(mVU);
 
 	mVU.regs().nextBlockCycles = 0;
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
@@ -104,10 +93,9 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVU.prog.curFrame =  0;
 
 	// Setup Dynarec Cache Limits for Each Program
-	u8* z = mVU.cache;
-	mVU.prog.x86start = z;
-	mVU.prog.x86ptr   = z;
-	mVU.prog.x86end   = z + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
+	mVU.prog.x86start = xGetAlignedCallTarget();
+	mVU.prog.x86ptr   = mVU.prog.x86start;
+	mVU.prog.x86end   = mVU.cache + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
@@ -125,8 +113,6 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		mVU.prog.quick[i].block = NULL;
 		mVU.prog.quick[i].prog = NULL;
 	}
-
-	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ExecOnly());
 }
 
 // Free Allocated Resources

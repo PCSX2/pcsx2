@@ -390,8 +390,6 @@ void VifUnpackSSE_Init()
 			for (int c = 0; c < 4; c++)
 				nVifGen(a, b, c);
 
-	nVifUpkExec->ForbidModification();
-
 	DevCon.WriteLn("Unpack function generation complete.  Generated function statistics:");
 	DevCon.Indent().WriteLn(
 		"Reserved buffer    : %u bytes @ 0x%016" PRIXPTR "\n"

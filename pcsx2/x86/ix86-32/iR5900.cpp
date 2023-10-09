@@ -360,19 +360,14 @@ static void recRecompile(const u32 startpc);
 static void dyna_block_discard(u32 start, u32 sz);
 static void dyna_page_reset(u32 start, u32 sz);
 
-// Recompiled code buffer for EE recompiler dispatchers!
-alignas(__pagesize) static u8 eeRecDispatchers[__pagesize];
-
-typedef void DynGenFunc();
-
-static DynGenFunc* DispatcherEvent = NULL;
-static DynGenFunc* DispatcherReg = NULL;
-static DynGenFunc* JITCompile = NULL;
-static DynGenFunc* JITCompileInBlock = NULL;
-static DynGenFunc* EnterRecompiledCode = NULL;
-static DynGenFunc* ExitRecompiledCode = NULL;
-static DynGenFunc* DispatchBlockDiscard = NULL;
-static DynGenFunc* DispatchPageReset = NULL;
+static const void* DispatcherEvent = nullptr;
+static const void* DispatcherReg = nullptr;
+static const void* JITCompile = nullptr;
+static const void* JITCompileInBlock = nullptr;
+static const void* EnterRecompiledCode = nullptr;
+static const void* ExitRecompiledCode = nullptr;
+static const void* DispatchBlockDiscard = nullptr;
+static const void* DispatchPageReset = nullptr;
 
 static void recEventTest()
 {
@@ -387,13 +382,13 @@ static void recEventTest()
 
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
-static DynGenFunc* _DynGen_JITCompile()
+static const void* _DynGen_JITCompile()
 {
 	pxAssertMsg(DispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks.");
 
 	u8* retval = xGetAlignedCallTarget();
 
-	xFastCall((void*)recRecompile, ptr32[&cpuRegs.pc]);
+	xFastCall((const void*)recRecompile, ptr32[&cpuRegs.pc]);
 
 	// C equivalent:
 	// u32 addr = cpuRegs.pc;
@@ -405,18 +400,18 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
-static DynGenFunc* _DynGen_JITCompileInBlock()
+static const void* _DynGen_JITCompileInBlock()
 {
 	u8* retval = xGetAlignedCallTarget();
-	xJMP((void*)JITCompile);
-	return (DynGenFunc*)retval;
+	xJMP(JITCompile);
+	return retval;
 }
 
 // called when jumping to variable pc address
-static DynGenFunc* _DynGen_DispatcherReg()
+static const void* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr(); // fallthrough target, can't align it!
 
@@ -430,19 +425,19 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, recLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
-static DynGenFunc* _DynGen_DispatcherEvent()
+static const void* _DynGen_DispatcherEvent()
 {
 	u8* retval = xGetPtr();
 
-	xFastCall((void*)recEventTest);
+	xFastCall((const void*)recEventTest);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
-static DynGenFunc* _DynGen_EnterRecompiledCode()
+static const void* _DynGen_EnterRecompiledCode()
 {
 	pxAssertDev(DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!");
 
@@ -461,39 +456,33 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 		xJMP((void*)DispatcherReg);
 
 		// Save an exit point
-		ExitRecompiledCode = (DynGenFunc*)xGetPtr();
+		ExitRecompiledCode = xGetPtr();
 	}
 
 	xRET();
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
-static DynGenFunc* _DynGen_DispatchBlockDiscard()
+static const void* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
-	xFastCall((void*)dyna_block_discard);
-	xJMP((void*)ExitRecompiledCode);
-	return (DynGenFunc*)retval;
+	xFastCall((const void*)dyna_block_discard);
+	xJMP((const void*)ExitRecompiledCode);
+	return retval;
 }
 
-static DynGenFunc* _DynGen_DispatchPageReset()
+static const void* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
-	xFastCall((void*)dyna_page_reset);
-	xJMP((void*)ExitRecompiledCode);
-	return (DynGenFunc*)retval;
+	xFastCall((const void*)dyna_page_reset);
+	xJMP((const void*)ExitRecompiledCode);
+	return retval;
 }
 
 static void _DynGen_Dispatchers()
 {
-	// In case init gets called multiple times:
-	HostSys::MemProtectStatic(eeRecDispatchers, PageAccess_ReadWrite());
-
-	// clear the buffer to 0xcc (easier debugging).
-	memset(eeRecDispatchers, 0xcc, __pagesize);
-
-	xSetPtr(eeRecDispatchers);
+	const u8* start = xGetAlignedCallTarget();
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
@@ -506,11 +495,9 @@ static void _DynGen_Dispatchers()
 	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
 	DispatchPageReset = _DynGen_DispatchPageReset();
 
-	HostSys::MemProtectStatic(eeRecDispatchers, PageAccess_ExecOnly());
-
 	recBlocks.SetJITCompile(JITCompile);
 
-	Perf::any.Register((void*)eeRecDispatchers, 4096, "EE Dispatcher");
+	Perf::any.Register(start, static_cast<u32>(xGetPtr() - start), "EE Dispatcher");
 }
 
 
@@ -597,10 +584,6 @@ static void recAlloc()
 		if (!s_pInstCache)
 			pxFailRel("Failed to allocate R5900 InstCache array");
 	}
-
-	// No errors.. Proceed with initialization:
-
-	_DynGen_Dispatchers();
 }
 
 alignas(16) static u16 manual_page[Ps2MemSize::MainRam >> 12];
@@ -616,6 +599,11 @@ static void recResetRaw()
 	recAlloc();
 
 	recMem->Reset();
+	xSetPtr(*recMem);
+	_DynGen_Dispatchers();
+	vtlb_DynGenDispatchers();
+	recPtr = xGetPtr();
+
 	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
 	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
 
@@ -627,10 +615,6 @@ static void recResetRaw()
 	recBlocks.Reset();
 	mmap_ResetBlockTracking();
 	vtlb_ClearLoadStoreInfo();
-
-	x86SetPtr(*recMem);
-
-	recPtr = *recMem;
 
 	g_branch = 0;
 	g_resetEeScalingStats = true;
@@ -644,7 +628,7 @@ static void recShutdown()
 
 	recBlocks.Reset();
 
-	recRAM = recROM = recROM1 = recROM2 = NULL;
+	recRAM = recROM = recROM1 = recROM2 = nullptr;
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
@@ -720,13 +704,7 @@ static void recExecute()
 	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
 		eeCpuExecuting = true;
-
-		// Important! Most of the console logging and such has cancel points in it.  This is great
-		// in Windows, where SEH lets us safely kill a thread from anywhere we want.  This is bad
-		// in Linux, which cannot have a C++ exception cross the recompiler.  Hence the changing
-		// of the cancelstate here!
-
-		EnterRecompiledCode();
+		((void(*)())EnterRecompiledCode)();
 
 		// Generally unreachable code here ...
 	}
@@ -1636,11 +1614,17 @@ void recMemcheck(u32 op, u32 bits, bool store)
 			// Preserve ecx (address) and edx (address+size) because we aren't breaking
 			// out of this loops iteration and dynarecMemLogcheck will clobber them
 			// Also keep 16 byte stack alignment
-			if(!(checks[i].result & MEMCHECK_BREAK))
+			if (!(checks[i].result & MEMCHECK_BREAK))
 			{
-				xPUSH(eax); xPUSH(ebx); xPUSH(ecx); xPUSH(edx);
+				xPUSH(eax);
+				xPUSH(ebx);
+				xPUSH(ecx);
+				xPUSH(edx);
 				xFastCall((void*)dynarecMemLogcheck, ecx, edx);
-				xPOP(edx); xPOP(ecx); xPOP(ebx); xPOP(eax);
+				xPOP(edx);
+				xPOP(ecx);
+				xPOP(ebx);
+				xPOP(eax);
 			}
 			else
 			{
@@ -1926,7 +1910,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 						std::string disasm = "";
 						disR5900Fasm(disasm, memRead32(i), i, false);
 						Console.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" :
-                                                                                        " ",
+																						" ",
 							memRead32(i), disasm.c_str());
 					}
 					break;
@@ -1952,7 +1936,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 							disasm = "";
 							disR5900Fasm(disasm, memRead32(i), i, false);
 							Console.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" :
-                                                                                            " ",
+																							" ",
 								memRead32(i), disasm.c_str());
 						}
 						break;

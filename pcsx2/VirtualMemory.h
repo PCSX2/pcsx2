@@ -161,9 +161,6 @@ public:
 	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
 	void Reset();
 
-	void ForbidModification();
-	void AllowModification();
-
 	operator u8*() { return m_baseptr; }
 	operator const u8*() const { return m_baseptr; }
 };

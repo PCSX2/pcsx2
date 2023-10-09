@@ -334,13 +334,3 @@ void RecompiledCodeReserve::Reset()
 		std::memset(m_baseptr, 0xCC, m_size);
 	}
 }
-
-void RecompiledCodeReserve::AllowModification()
-{
-	HostSys::MemProtect(m_baseptr, m_size, PageAccess_Any());
-}
-
-void RecompiledCodeReserve::ForbidModification()
-{
-	HostSys::MemProtect(m_baseptr, m_size, PageProtectionMode().Read().Execute());
-}

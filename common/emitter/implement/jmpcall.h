@@ -32,10 +32,10 @@ namespace x86Emitter
 
 		// Special form for calling functions.  This form automatically resolves the
 		// correct displacement based on the size of the instruction being generated.
-		void operator()(void* func) const
+		void operator()(const void* func) const
 		{
 			if (isJmp)
-				xJccKnownTarget(Jcc_Unconditional, (void*)(uptr)func, false); // double cast to/from (uptr) needed to appease GCC
+				xJccKnownTarget(Jcc_Unconditional, (const void*)(uptr)func, false); // double cast to/from (uptr) needed to appease GCC
 			else
 			{
 				// calls are relative to the instruction after this one, and length is
@@ -58,32 +58,32 @@ namespace x86Emitter
 		// FIXME: current 64 bits is mostly a copy/past potentially it would require to push/pop
 		// some registers. But I think it is enough to handle the first call.
 
-		void operator()(void* f, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg) const;
+		void operator()(const void* f, const xRegister32& a1 = xEmptyReg, const xRegister32& a2 = xEmptyReg) const;
 
-		void operator()(void* f, u32 a1, const xRegister32& a2) const;
-		void operator()(void* f, const xIndirect32& a1) const;
-		void operator()(void* f, u32 a1, u32 a2) const;
-		void operator()(void* f, void* a1) const;
+		void operator()(const void* f, u32 a1, const xRegister32& a2) const;
+		void operator()(const void* f, const xIndirect32& a1) const;
+		void operator()(const void* f, u32 a1, u32 a2) const;
+		void operator()(const void* f, void* a1) const;
 
-		void operator()(void* f, const xRegisterLong& a1, const xRegisterLong& a2 = xEmptyReg) const;
-		void operator()(void* f, u32 a1, const xRegisterLong& a2) const;
+		void operator()(const void* f, const xRegisterLong& a1, const xRegisterLong& a2 = xEmptyReg) const;
+		void operator()(const void* f, u32 a1, const xRegisterLong& a2) const;
 
 		template <typename T>
 		__fi void operator()(T* func, u32 a1, const xRegisterLong& a2 = xEmptyReg) const
 		{
-			(*this)((void*)func, a1, a2);
+			(*this)((const void*)func, a1, a2);
 		}
 
 		template <typename T>
 		__fi void operator()(T* func, const xIndirect32& a1) const
 		{
-			(*this)((void*)func, a1);
+			(*this)((const void*)func, a1);
 		}
 
 		template <typename T>
 		__fi void operator()(T* func, u32 a1, u32 a2) const
 		{
-			(*this)((void*)func, a1, a2);
+			(*this)((const void*)func, a1, a2);
 		}
 
 		void operator()(const xIndirectNative& f, const xRegisterLong& a1 = xEmptyReg, const xRegisterLong& a2 = xEmptyReg) const;

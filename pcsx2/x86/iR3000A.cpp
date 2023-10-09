@@ -171,19 +171,14 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 //  Dynamically Compiled Dispatchers - R3000A style
 // =====================================================================================================
 
-static void iopRecRecompile(const u32 startpc);
+static void iopRecRecompile(u32 startpc);
 
-// Recompiled code buffer for EE recompiler dispatchers!
-alignas(__pagesize) static u8 iopRecDispatchers[__pagesize];
-
-typedef void DynGenFunc();
-
-static DynGenFunc* iopDispatcherEvent = NULL;
-static DynGenFunc* iopDispatcherReg = NULL;
-static DynGenFunc* iopJITCompile = NULL;
-static DynGenFunc* iopJITCompileInBlock = NULL;
-static DynGenFunc* iopEnterRecompiledCode = NULL;
-static DynGenFunc* iopExitRecompiledCode = NULL;
+static const void* iopDispatcherEvent = nullptr;
+static const void* iopDispatcherReg = nullptr;
+static const void* iopJITCompile = nullptr;
+static const void* iopJITCompileInBlock = nullptr;
+static const void* iopEnterRecompiledCode = nullptr;
+static const void* iopExitRecompiledCode = nullptr;
 
 static void recEventTest()
 {
@@ -192,7 +187,7 @@ static void recEventTest()
 
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
-static DynGenFunc* _DynGen_JITCompile()
+static const void* _DynGen_JITCompile()
 {
 	pxAssertMsg(iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks.");
 
@@ -206,18 +201,18 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
-static DynGenFunc* _DynGen_JITCompileInBlock()
+static const void* _DynGen_JITCompileInBlock()
 {
 	u8* retval = xGetPtr();
 	xJMP((void*)iopJITCompile);
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
 // called when jumping to variable pc address
-static DynGenFunc* _DynGen_DispatcherReg()
+static const void* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
 
@@ -227,13 +222,13 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
 // --------------------------------------------------------------------------------------
 //  EnterRecompiledCode  - dynamic compilation stub!
 // --------------------------------------------------------------------------------------
-static DynGenFunc* _DynGen_EnterRecompiledCode()
+static const void* _DynGen_EnterRecompiledCode()
 {
 	// Optimization: The IOP never uses stack-based parameter invocation, so we can avoid
 	// allocating any room on the stack for it (which is important since the IOP's entry
@@ -251,27 +246,21 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 		xJMP((void*)iopDispatcherReg);
 
 		// Save an exit point
-		iopExitRecompiledCode = (DynGenFunc*)xGetPtr();
+		iopExitRecompiledCode = xGetPtr();
 	}
 
 	xRET();
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
 static void _DynGen_Dispatchers()
 {
-	// In case init gets called multiple times:
-	HostSys::MemProtectStatic(iopRecDispatchers, PageAccess_ReadWrite());
-
-	// clear the buffer to 0xcc (easier debugging).
-	memset(iopRecDispatchers, 0xcc, __pagesize);
-
-	xSetPtr(iopRecDispatchers);
+	const u8* start = xGetAlignedCallTarget();
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-	iopDispatcherEvent = (DynGenFunc*)xGetPtr();
+	iopDispatcherEvent = xGetPtr();
 	xFastCall((void*)recEventTest);
 	iopDispatcherReg = _DynGen_DispatcherReg();
 
@@ -279,11 +268,9 @@ static void _DynGen_Dispatchers()
 	iopJITCompileInBlock = _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
 
-	HostSys::MemProtectStatic(iopRecDispatchers, PageAccess_ExecOnly());
-
 	recBlocks.SetJITCompile(iopJITCompile);
 
-	Perf::any.Register((void*)iopRecDispatchers, 4096, "IOP Dispatcher");
+	Perf::any.Register(start, xGetPtr() - start, "IOP Dispatcher");
 }
 
 ////////////////////////////////////////////////////
@@ -931,8 +918,6 @@ static void recAlloc()
 		if (!s_pInstCache)
 			pxFailRel("Failed to allocate R3000 InstCache array.");
 	}
-
-	_DynGen_Dispatchers();
 }
 
 void recResetIOP()
@@ -941,6 +926,9 @@ void recResetIOP()
 
 	recAlloc();
 	recMem->Reset();
+	xSetPtr(*recMem);
+	_DynGen_Dispatchers();
+	recPtr = xGetPtr();
 
 	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
 		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
@@ -990,7 +978,6 @@ void recResetIOP()
 	recBlocks.Reset();
 	g_psxMaxRecMem = 0;
 
-	recPtr = *recMem;
 	psxbranch = 0;
 }
 
@@ -1036,7 +1023,7 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 	// 	mov         edx,dword ptr [iopCycleEE (832A84h)]
 	// 	lea         eax,[edx+ecx]
 
-	iopEnterRecompiledCode();
+	((void(*)())iopEnterRecompiledCode)();
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 }
@@ -1579,9 +1566,8 @@ static void iopRecRecompile(const u32 startpc)
 		recResetIOP();
 	}
 
-	x86SetPtr(recPtr);
-	x86Align(16);
-	recPtr = x86Ptr;
+	xSetPtr(recPtr);
+	recPtr = xGetAlignedCallTarget();
 
 	s_pCurBlock = PSX_GETBLOCK(startpc);
 
