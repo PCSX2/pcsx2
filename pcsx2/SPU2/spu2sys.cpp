@@ -106,25 +106,6 @@ __forceinline void spu2M_Write(u32 addr, u16 value)
 V_VolumeLR V_VolumeLR::Max(0x7FFF);
 V_VolumeSlideLR V_VolumeSlideLR::Max(0x3FFF, 0x7FFF);
 
-V_Core::V_Core(int coreidx)
-	: Index(coreidx)
-//LogFile_AutoDMA( nullptr )
-{
-	/*char fname[128];
-	sprintf( fname, "logs/adma%d.raw", GetDmaIndex() );
-	LogFile_AutoDMA = fopen( fname, "wb" );*/
-}
-
-V_Core::~V_Core() throw()
-{
-	// Can't use this yet because we dumb V_Core into savestates >_<
-	/*if( LogFile_AutoDMA != nullptr )
-	{
-		fclose( LogFile_AutoDMA );
-		LogFile_AutoDMA = nullptr;
-	}*/
-}
-
 void V_Core::Init(int index)
 {
 	if (SPU2::MsgToConsole())
