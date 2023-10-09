@@ -103,7 +103,7 @@ __forceinline void spu2M_Write(u32 addr, u16 value)
 	spu2M_Write(addr, (s16)value);
 }
 
-V_VolumeLR V_VolumeLR::Max(0x7FFFFFFF);
+V_VolumeLR V_VolumeLR::Max(0x7FFF);
 V_VolumeSlideLR V_VolumeSlideLR::Max(0x3FFF, 0x7FFF);
 
 V_Core::V_Core(int coreidx)
@@ -478,13 +478,6 @@ __forceinline void UpdateSpdifMode()
 	}
 }
 
-// Converts an SPU2 register volume write into a 32 bit SPU2 volume.  The value is extended
-// properly into the lower 16 bits of the value to provide a full spectrum of volumes.
-static s32 GetVol32(u16 src)
-{
-	return ((static_cast<s32>(src)) << 16) | ((src << 1) & 0xffff);
-}
-
 static u32 map_spu1to2(u32 addr)
 {
 	return addr * 4 + (addr >= 0x200 ? 0xc0000 : 0);
@@ -565,11 +558,11 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 				break;
 
 			case 0x1d84: //         Reverberation depth left
-				FxVol.Left = GetVol32(value);
+				FxVol.Left = SignExtend16(value);
 				break;
 
 			case 0x1d86: //         Reverberation depth right
-				FxVol.Right = GetVol32(value);
+				FxVol.Right = SignExtend16(value);
 				break;
 
 			case 0x1d88: //         Voice ON  (0-15)
@@ -875,10 +868,10 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				value = MasterVol.Right.Value;
 				break;
 			case 0x1d84:
-				value = FxVol.Left >> 16;
+				value = FxVol.Left;
 				break;
 			case 0x1d86:
-				value = FxVol.Right >> 16;
+				value = FxVol.Right;
 				break;
 
 			case 0x1d88:
@@ -1389,27 +1382,27 @@ static void RegWrite_CoreExt(u16 value)
 		break;
 
 		case REG_P_EVOLL:
-			thiscore.FxVol.Left = GetVol32(value);
+			thiscore.FxVol.Left = SignExtend16(value);
 			break;
 
 		case REG_P_EVOLR:
-			thiscore.FxVol.Right = GetVol32(value);
+			thiscore.FxVol.Right = SignExtend16(value);
 			break;
 
 		case REG_P_AVOLL:
-			thiscore.ExtVol.Left = GetVol32(value);
+			thiscore.ExtVol.Left = SignExtend16(value);
 			break;
 
 		case REG_P_AVOLR:
-			thiscore.ExtVol.Right = GetVol32(value);
+			thiscore.ExtVol.Right = SignExtend16(value);
 			break;
 
 		case REG_P_BVOLL:
-			thiscore.InpVol.Left = GetVol32(value);
+			thiscore.InpVol.Left = SignExtend16(value);
 			break;
 
 		case REG_P_BVOLR:
-			thiscore.InpVol.Right = GetVol32(value);
+			thiscore.InpVol.Right = SignExtend16(value);
 			break;
 
 			// MVOLX has been confirmed to not be allowed to be written to, so cases have been added as a no-op.
