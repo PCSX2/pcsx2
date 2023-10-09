@@ -68,7 +68,10 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
 
 	m_ui.threadList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	m_ui.threadList->setModel(&m_threadModel);
+	m_threadProxyModel.setSourceModel(&m_threadModel);
+	m_ui.threadList->setModel(&m_threadProxyModel);
+	m_ui.threadList->setSortingEnabled(true);
+	m_ui.threadList->sortByColumn(ThreadModel::ThreadColumns::ID, Qt::SortOrder::AscendingOrder);
 
 	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
 	connect(m_ui.stackList, &QTableView::doubleClicked, this, &CpuWidget::onStackListDoubleClick);

@@ -29,6 +29,7 @@
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
+#include <QtCore/QSortFilterProxyModel>
 
 #include <vector>
 
@@ -103,6 +104,7 @@ private:
 
 	BreakpointModel m_bpModel;
 	ThreadModel m_threadModel;
+	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
 
 	bool m_demangleFunctions = true;
