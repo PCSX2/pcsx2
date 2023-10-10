@@ -365,7 +365,6 @@ static const void* DispatcherReg = nullptr;
 static const void* JITCompile = nullptr;
 static const void* JITCompileInBlock = nullptr;
 static const void* EnterRecompiledCode = nullptr;
-static const void* ExitRecompiledCode = nullptr;
 static const void* DispatchBlockDiscard = nullptr;
 static const void* DispatchPageReset = nullptr;
 
@@ -443,23 +442,26 @@ static const void* _DynGen_EnterRecompiledCode()
 
 	u8* retval = xGetAlignedCallTarget();
 
-	{ // Properly scope the frame prologue/epilogue
 #ifdef ENABLE_VTUNE
-		xScopedStackFrame frame(true, true);
+	xScopedStackFrame frame(true, true);
 #else
-		xScopedStackFrame frame(false, true);
+#ifdef _WIN32
+	// Shadow space for Win32
+	static constexpr u32 stack_size = 32 + 8;
+#else
+	// Stack still needs to be aligned
+	static constexpr u32 stack_size = 8;
 #endif
 
-		if (CHECK_FASTMEM)
-			xMOV(RFASTMEMBASE, ptrNative[&vtlb_private::vtlbdata.fastmem_base]);
+	// We never return through this function, instead we fastjmp() out.
+	// So we don't need to worry about preserving callee-saved registers, but we do need to align the stack.
+	xSUB(rsp, stack_size);
+#endif
 
-		xJMP((void*)DispatcherReg);
+	if (CHECK_FASTMEM)
+		xMOV(RFASTMEMBASE, ptrNative[&vtlb_private::vtlbdata.fastmem_base]);
 
-		// Save an exit point
-		ExitRecompiledCode = xGetPtr();
-	}
-
-	xRET();
+	xJMP(DispatcherReg);
 
 	return retval;
 }
@@ -468,7 +470,7 @@ static const void* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = xGetPtr();
 	xFastCall((const void*)dyna_block_discard);
-	xJMP((const void*)ExitRecompiledCode);
+	xJMP(DispatcherReg);
 	return retval;
 }
 
@@ -476,7 +478,7 @@ static const void* _DynGen_DispatchPageReset()
 {
 	u8* retval = xGetPtr();
 	xFastCall((const void*)dyna_page_reset);
-	xJMP((const void*)ExitRecompiledCode);
+	xJMP(DispatcherReg);
 	return retval;
 }
 
