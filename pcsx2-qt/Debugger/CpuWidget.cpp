@@ -294,7 +294,7 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	connect(actionImport, &QAction::triggered, this, &CpuWidget::contextBPListPasteCSV);
 	contextMenu->addAction(actionImport);
 
-	contextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
+	contextMenu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::contextBPListCopy()
@@ -519,7 +519,7 @@ void CpuWidget::onThreadListContextMenu(QPoint pos)
 	});
 	contextMenu->addAction(actionExport);
 
-	contextMenu->popup(m_ui.threadList->mapToGlobal(pos));
+	contextMenu->popup(m_ui.threadList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onThreadListDoubleClick(const QModelIndex& index)
@@ -591,7 +591,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	m_funclistContextMenu->addAction(gotoMemory);
 
 
-	m_funclistContextMenu->popup(m_ui.listFunctions->mapToGlobal(pos));
+	m_funclistContextMenu->popup(m_ui.listFunctions->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onFuncListDoubleClick(QListWidgetItem* item)
@@ -630,7 +630,7 @@ void CpuWidget::onStackListContextMenu(QPoint pos)
 	});
 	contextMenu->addAction(actionExport);
 
-	contextMenu->popup(m_ui.stackList->mapToGlobal(pos));
+	contextMenu->popup(m_ui.stackList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onStackListDoubleClick(const QModelIndex& index)
