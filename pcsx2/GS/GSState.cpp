@@ -881,7 +881,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	if (wt)
 	{
-		GIFRegBITBLTBUF BITBLTBUF;
+		GIFRegBITBLTBUF BITBLTBUF = {};
 		GSVector4i r;
 
 		if (TEX0.CSM == 0)
@@ -4689,10 +4689,10 @@ void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
 		// Offset is not screen based, but relative to each other.
 		if (both_enabled)
 		{
-			GSVector2i offset;
-
-			offset.x = (PCRTCDisplays[1 - zeroDisplay.x].displayOffset.x - PCRTCDisplays[zeroDisplay.x].displayOffset.x) / (VideoModeDividers[videomode].x + 1);
-			offset.y = (PCRTCDisplays[1 - zeroDisplay.y].displayOffset.y - PCRTCDisplays[zeroDisplay.y].displayOffset.y) / (VideoModeDividers[videomode].y + 1);
+			GSVector2i offset = {
+				(PCRTCDisplays[1 - zeroDisplay.x].displayOffset.x - PCRTCDisplays[zeroDisplay.x].displayOffset.x) / (VideoModeDividers[videomode].x + 1),
+				(PCRTCDisplays[1 - zeroDisplay.y].displayOffset.y - PCRTCDisplays[zeroDisplay.y].displayOffset.y) / (VideoModeDividers[videomode].y + 1)
+			};
 
 			if (offset.x >= 4 || !GSConfig.PCRTCAntiBlur || scanmask)
 			{
@@ -4724,7 +4724,6 @@ void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
 	else // We're using screen offsets, so just calculate the entire offset.
 	{
 		const GSVector4i offsets = !GSConfig.PCRTCOverscan ? VideoModeOffsets[videomode] : VideoModeOffsetsOverscan[videomode];
-		GSVector2i offset = { 0, 0 };
 		GSVector2i zeroDisplay = NearestToZeroOffset();
 
 		if (both_enabled)
@@ -4742,8 +4741,10 @@ void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
 		for (int i = 0; i < 2; i++)
 		{
 			// Should this be MAGV/H in the DISPLAY register rather than the "default" magnification?
-			offset.x = (static_cast<int>(PCRTCDisplays[i].displayOffset.x) - offsets.z) / (VideoModeDividers[videomode].x + 1);
-			offset.y = (static_cast<int>(PCRTCDisplays[i].displayOffset.y) - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1);
+			const GSVector2i offset = {
+				(static_cast<int>(PCRTCDisplays[i].displayOffset.x) - offsets.z) / (VideoModeDividers[videomode].x + 1),
+				(static_cast<int>(PCRTCDisplays[i].displayOffset.y) - (offsets.w * (interlaced + 1))) / (VideoModeDividers[videomode].y + 1)
+			};
 
 			PCRTCDisplays[i].displayRect.x += offset.x;
 			PCRTCDisplays[i].displayRect.z += offset.x;
@@ -4753,10 +4754,10 @@ void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
 
 		if (both_enabled)
 		{
-			GSVector2i offset;
-
-			offset.x = (PCRTCDisplays[1 - zeroDisplay.x].displayRect.x - PCRTCDisplays[zeroDisplay.x].displayRect.x);
-			offset.y = (PCRTCDisplays[1 - zeroDisplay.y].displayRect.y - PCRTCDisplays[zeroDisplay.y].displayRect.y);
+			const GSVector2i offset = {
+				(PCRTCDisplays[1 - zeroDisplay.x].displayRect.x - PCRTCDisplays[zeroDisplay.x].displayRect.x),
+				(PCRTCDisplays[1 - zeroDisplay.y].displayRect.y - PCRTCDisplays[zeroDisplay.y].displayRect.y)
+			};
 
 			if (offset.x > 0 && offset.x < 4 && GSConfig.PCRTCAntiBlur)
 			{

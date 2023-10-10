@@ -40,6 +40,17 @@
 		}; \
 	};
 
+template<typename T> static T GetBufferT(u8* buffer, u32 offset) {
+	T value;
+	std::memcpy(&value, buffer + offset, sizeof(value));
+	return value;
+}
+
+static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
+static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
+static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
+static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }
+
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
 // --------------------------------------------------------------------------------------

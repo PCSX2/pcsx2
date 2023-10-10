@@ -875,7 +875,7 @@ void cdrWrite1(u8 rt)
 			if (cdr.Mode & MODE_CDDA)
 			{
 				StopCdda();
-				cdvd.Type = CDVD_TYPE_PSCDDA;
+				cdvd.DiscType = CDVD_TYPE_PSCDDA;
 			}
 
 			setPs1CDVDSpeed(cdvd.Speed);
