@@ -37,55 +37,10 @@ DisassemblyWidget::DisassemblyWidget(QWidget* parent)
 {
 	ui.setupUi(this);
 
-	CreateCustomContextMenu();
 	connect(this, &DisassemblyWidget::customContextMenuRequested, this, &DisassemblyWidget::customMenuRequested);
 }
 
 DisassemblyWidget::~DisassemblyWidget() = default;
-
-void DisassemblyWidget::CreateCustomContextMenu()
-{
-	if (m_contextMenu)
-		return; // ???
-	m_contextMenu = new QMenu(this);
-
-	QAction* action = 0;
-	m_contextMenu->addAction(action = new QAction(tr("Copy Address"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyAddress);
-	m_contextMenu->addAction(action = new QAction(tr("Copy Instruction Hex"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionHex);
-	m_contextMenu->addAction(action = new QAction(tr("Copy Instruction Text"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionText);
-	// TODO: Disassemble to file. Do people use that?
-	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction(tr("Assemble new Instruction(s)"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAssembleInstruction);
-	m_contextMenu->addAction(action = new QAction(tr("NOP Instruction(s)"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextNoopInstruction);
-	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction(tr("Run to Cursor"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRunToCursor);
-	m_contextMenu->addAction(action = new QAction(tr("Jump to Cursor"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextJumpToCursor);
-	m_contextMenu->addAction(action = new QAction(tr("Toggle Breakpoint"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextToggleBreakpoint);
-	m_contextMenu->addAction(action = new QAction(tr("Follow Branch"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextFollowBranch);
-	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction(tr("Go to Address"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextGoToAddress);
-	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
-	connect(action, &QAction::triggered, this, [this]() { gotoInMemory(m_selectedAddressStart); });
-	m_contextMenu->addSeparator();
-	m_contextMenu->addAction(action = new QAction(tr("Add Function"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAddFunction);
-	m_contextMenu->addAction(action = new QAction(tr("Rename Function"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRenameFunction);
-	m_contextMenu->addAction(action = new QAction(tr("Remove Function"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRemoveFunction);
-	m_contextMenu->addAction(action = new QAction(tr("Stub (NOP) Function"), this));
-	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextStubFunction);
-}
 
 void DisassemblyWidget::contextCopyAddress()
 {
@@ -133,6 +88,7 @@ void DisassemblyWidget::contextAssembleInstruction()
 		Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = m_cpu, val = encodedInstruction] {
 			for (u32 i = start; i <= end; i += 4)
 			{
+				this->m_nopedInstructions.insert({i, cpu->read32(i)});
 				cpu->write32(i, val);
 			}
 			QtHost::RunOnUIThread([this] { VMUpdate(); });
@@ -145,7 +101,23 @@ void DisassemblyWidget::contextNoopInstruction()
 	Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = m_cpu] {
 		for (u32 i = start; i <= end; i += 4)
 		{
+			this->m_nopedInstructions.insert({i, cpu->read32(i)});
 			cpu->write32(i, 0x00);
+		}
+		QtHost::RunOnUIThread([this] { VMUpdate(); });
+	});
+}
+
+void DisassemblyWidget::contextRestoreInstruction()
+{
+	Host::RunOnCPUThread([this, start = m_selectedAddressStart, end = m_selectedAddressEnd, cpu = m_cpu] {
+		for (u32 i = start; i <= end; i += 4)
+		{
+			if (this->m_nopedInstructions.find(i) != this->m_nopedInstructions.end())
+			{
+				cpu->write32(i, this->m_nopedInstructions[i]);
+				this->m_nopedInstructions.erase(i);
+			}
 		}
 		QtHost::RunOnUIThread([this] { VMUpdate(); });
 	});
@@ -317,6 +289,7 @@ void DisassemblyWidget::contextStubFunction()
 	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
 	{
 		Host::RunOnCPUThread([this, curFuncAddress, cpu = m_cpu] {
+			this->m_stubbedFunctions.insert({curFuncAddress, {cpu->read32(curFuncAddress), cpu->read32(curFuncAddress + 4)}});
 			cpu->write32(curFuncAddress, 0x03E00008); // jr $ra
 			cpu->write32(curFuncAddress + 4, 0x00000000); // nop
 			QtHost::RunOnUIThread([this] { VMUpdate(); });
@@ -328,6 +301,23 @@ void DisassemblyWidget::contextStubFunction()
 	}
 }
 
+void DisassemblyWidget::contextRestoreFunction()
+{
+	const u32 curFuncAddress = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
+	if (curFuncAddress != SymbolMap::INVALID_ADDRESS && m_stubbedFunctions.find(curFuncAddress) != m_stubbedFunctions.end())
+	{
+		Host::RunOnCPUThread([this, curFuncAddress, cpu = m_cpu] {
+			cpu->write32(curFuncAddress, std::get<0>(this->m_stubbedFunctions[curFuncAddress]));
+			cpu->write32(curFuncAddress + 4, std::get<1>(this->m_stubbedFunctions[curFuncAddress]));
+			this->m_stubbedFunctions.erase(curFuncAddress);
+			QtHost::RunOnUIThread([this] { VMUpdate(); });
+		});
+	}
+	else
+	{
+		QMessageBox::warning(this, tr("Restore Function Error"), tr("No function / symbol is currently selected."));
+	}
+}
 void DisassemblyWidget::SetCpu(DebugInterface* cpu)
 {
 	m_cpu = cpu;
@@ -639,7 +629,58 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	if (!m_cpu->isAlive())
 		return;
 
-	m_contextMenu->popup(this->mapToGlobal(pos));
+	QMenu* contextMenu = new QMenu(this);
+
+	QAction* action = 0;
+	contextMenu->addAction(action = new QAction(tr("Copy Address"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyAddress);
+	contextMenu->addAction(action = new QAction(tr("Copy Instruction Hex"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionHex);
+	contextMenu->addAction(action = new QAction(tr("Copy Instruction Text"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionText);
+	contextMenu->addSeparator();
+	if (AddressCanRestore(m_selectedAddressStart, m_selectedAddressEnd))
+	{
+		contextMenu->addAction(action = new QAction(tr("Restore Instruction(s)"), this));
+		connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRestoreInstruction);
+	}
+	contextMenu->addAction(action = new QAction(tr("Assemble new Instruction(s)"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAssembleInstruction);
+	contextMenu->addAction(action = new QAction(tr("NOP Instruction(s)"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextNoopInstruction);
+	contextMenu->addSeparator();
+	contextMenu->addAction(action = new QAction(tr("Run to Cursor"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRunToCursor);
+	contextMenu->addAction(action = new QAction(tr("Jump to Cursor"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextJumpToCursor);
+	contextMenu->addAction(action = new QAction(tr("Toggle Breakpoint"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextToggleBreakpoint);
+	contextMenu->addAction(action = new QAction(tr("Follow Branch"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextFollowBranch);
+	contextMenu->addSeparator();
+	contextMenu->addAction(action = new QAction(tr("Go to Address"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextGoToAddress);
+	contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
+	connect(action, &QAction::triggered, this, [this]() { gotoInMemory(m_selectedAddressStart); });
+	contextMenu->addSeparator();
+	contextMenu->addAction(action = new QAction(tr("Add Function"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextAddFunction);
+	contextMenu->addAction(action = new QAction(tr("Rename Function"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRenameFunction);
+	contextMenu->addAction(action = new QAction(tr("Remove Function"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRemoveFunction);
+	if (FunctionCanRestore(m_selectedAddressStart))
+	{
+		contextMenu->addAction(action = new QAction(tr("Restore Function"), this));
+		connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRestoreFunction);
+	}
+	else
+	{
+		contextMenu->addAction(action = new QAction(tr("Stub (NOP) Function"), this));
+		connect(action, &QAction::triggered, this, &DisassemblyWidget::contextStubFunction);
+	}
+	contextMenu->setAttribute(Qt::WA_DeleteOnClose);
+	contextMenu->popup(this->mapToGlobal(pos));
 }
 
 inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFont font, u32 pc)
@@ -755,4 +796,30 @@ void DisassemblyWidget::gotoAddress(u32 address)
 
 	this->repaint();
 	this->setFocus();
+}
+
+bool DisassemblyWidget::AddressCanRestore(u32 start, u32 end)
+{
+	for (u32 i = start; i <= end; i += 4)
+	{
+		if (this->m_nopedInstructions.find(i) != this->m_nopedInstructions.end())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool DisassemblyWidget::FunctionCanRestore(u32 address)
+{
+	u32 funcStartAddress = m_cpu->GetSymbolMap().GetFunctionStart(address);
+
+	if (funcStartAddress != SymbolMap::INVALID_ADDRESS)
+	{
+		if (m_stubbedFunctions.find(funcStartAddress) != this->m_stubbedFunctions.end())
+		{
+			return true;
+		}
+	}
+	return false;
 }

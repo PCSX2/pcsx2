@@ -56,6 +56,7 @@ public slots:
 	void contextCopyInstructionText();
 	void contextAssembleInstruction();
 	void contextNoopInstruction();
+	void contextRestoreInstruction();
 	void contextRunToCursor();
 	void contextJumpToCursor();
 	void contextToggleBreakpoint();
@@ -65,6 +66,7 @@ public slots:
 	void contextRenameFunction();
 	void contextRemoveFunction();
 	void contextStubFunction();
+	void contextRestoreFunction();
 
 	void gotoAddress(u32 address);
 
@@ -76,15 +78,15 @@ signals:
 private:
 	Ui::DisassemblyWidget ui;
 
-	QMenu* m_contextMenu = nullptr;
-	void CreateCustomContextMenu();
-
 	DebugInterface* m_cpu;
 	u32 m_visibleStart = 0x00336318; // The address of the first opcode shown(row 0)
 	u32 m_visibleRows;
 	u32 m_selectedAddressStart = 0;
 	u32 m_selectedAddressEnd = 0;
 	u32 m_rowHeight = 0;
+
+	std::map<u32, u32> m_nopedInstructions;
+	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
 
 	DisassemblyManager m_disassemblyManager;
 
@@ -97,4 +99,7 @@ private:
 		INSTRUCTIONTEXT,
 	};
 	QString FetchSelectionInfo(SelectionInfo selInfo);
+
+	bool AddressCanRestore(u32 start, u32 end);
+	bool FunctionCanRestore(u32 address);
 };
