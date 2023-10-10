@@ -63,6 +63,8 @@ static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
+	LoadSettings(si);
+
 	m_dinput_module.reset(LoadLibraryW(L"dinput8"));
 	if (!m_dinput_module)
 	{
@@ -103,7 +105,12 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
 void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	// noop
+	LoadSettings(si);
+}
+
+void DInputSource::LoadSettings(SettingsInterface& si)
+{
+	m_ignore_inversion = si.GetBoolValue("InputSources", "IgnoreDInputInversion", false);
 }
 
 static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
@@ -400,7 +407,7 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
 			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), key.invert ? "~" : "");
+			ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !m_ignore_inversion) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{
