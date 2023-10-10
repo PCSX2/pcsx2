@@ -73,6 +73,7 @@ public slots:
 	void updateFunctionList(bool whenEmpty = false);
 	void onFuncListContextMenu(QPoint pos);
 	void onFuncListDoubleClick(QListWidgetItem* item);
+	bool getDemangleFunctions() const { return m_demangleFunctions; }
 
 	void reloadCPUWidgets()
 	{
