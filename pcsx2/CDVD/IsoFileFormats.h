@@ -32,7 +32,7 @@ enum isoType
 	ISOTYPE_DVDDL
 };
 
-static const int CD_FRAMESIZE_RAW = 2448;
+static constexpr int CD_FRAMESIZE_RAW = 2448;
 
 // --------------------------------------------------------------------------------------
 //  isoFile
@@ -73,9 +73,9 @@ public:
 
 	bool IsOpened() const;
 
-	isoType GetType() const { return m_type; }
-	uint GetBlockCount() const { return m_blocks; }
-	int GetBlockOffset() const { return m_blockofs; }
+	isoType GetType() const noexcept { return m_type; }
+	uint GetBlockCount() const noexcept { return m_blocks; }
+	int GetBlockOffset() const  noexcept { return m_blockofs; }
 
 	const std::string& GetFilename() const
 	{
@@ -127,7 +127,7 @@ public:
 	bool IsOpened() const;
 	u32 GetBlockSize() const;
 
-	const std::string& GetFilename() const
+	const std::string& GetFilename() const noexcept
 	{
 		return m_filename;
 	}
