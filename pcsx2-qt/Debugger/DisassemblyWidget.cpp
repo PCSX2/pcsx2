@@ -83,6 +83,8 @@ void DisassemblyWidget::CreateCustomContextMenu()
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRenameFunction);
 	m_contextMenu->addAction(action = new QAction(tr("Remove Function"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextRemoveFunction);
+	m_contextMenu->addAction(action = new QAction(tr("Stub (NOP) Function"), this));
+	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextStubFunction);
 }
 
 void DisassemblyWidget::contextCopyAddress()
@@ -306,6 +308,23 @@ void DisassemblyWidget::contextRenameFunction()
 	else
 	{
 		QMessageBox::warning(this, tr("Rename Function Error"), tr("No function / symbol is currently selected."));
+	}
+}
+
+void DisassemblyWidget::contextStubFunction()
+{
+	const u32 curFuncAddress = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
+	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
+	{
+		Host::RunOnCPUThread([this, curFuncAddress, cpu = m_cpu] {
+			cpu->write32(curFuncAddress, 0x03E00008); // jr $ra
+			cpu->write32(curFuncAddress + 4, 0x00000000); // nop
+			QtHost::RunOnUIThread([this] { VMUpdate(); });
+		});
+	}
+	else
+	{
+		QMessageBox::warning(this, tr("Stub Function Error"), tr("No function / symbol is currently selected."));
 	}
 }
 
