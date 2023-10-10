@@ -283,6 +283,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 						m_latest_version = data_object["version"].toString();
 						m_latest_version_timestamp = QDateTime::fromString(data_object["publishedAt"].toString(), QStringLiteral("yyyy-MM-ddThh:mm:ss.zzzZ"));
 						m_download_url = best_asset["url"].toString();
+						m_download_size = best_asset["size"].toInt();
 						found_update_info = true;
 					}
 				}
@@ -346,8 +347,6 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 			QString changes_html = tr("<h2>Changes:</h2>");
 			changes_html += QStringLiteral("<ul>");
 
-			m_download_size = doc_object["size"].toInt();
-
 			const QJsonArray commits(doc_object["commits"].toArray());
 			bool update_will_break_save_states = false;
 			bool update_increases_settings_version = false;
@@ -393,7 +392,7 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 					   "that you will have to reconfigure your settings after this update.</p>"));
 			}
 			changes_html += tr("<h4>Installing this update will download %1 MB through your internet connection.</h4>")
-                    .arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2);
+                    .arg(static_cast<double>(m_download_size) / 1048576.0, 0, 'f', 2);
 				
 			m_ui.updateNotes->setText(changes_html);
 		}
