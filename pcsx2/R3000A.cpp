@@ -129,6 +129,14 @@ __fi int psxTestCycle( u32 startCycle, s32 delta )
 	return (int)(psxRegs.cycle - startCycle) >= delta;
 }
 
+__fi int psxRemainingCycles(IopEventId n)
+{
+	if (psxRegs.interrupt & (1 << n))
+		return ((psxRegs.cycle - psxRegs.sCycle[n]) + psxRegs.eCycle[n]);
+	else
+		return 0;
+}
+
 __fi void PSX_INT( IopEventId n, s32 ecycle )
 {
 	// 19 is CDVD read int, it's supposed to be high.
@@ -189,8 +197,8 @@ static __fi void _psxTestInterrupts()
 	IopTestEvent(IopEvt_SIF1,		sif1Interrupt);	// SIF1
 	IopTestEvent(IopEvt_SIF2,		sif2Interrupt);	// SIF2
 	Sio0TestEvent(IopEvt_SIO);
-	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 	IopTestEvent(IopEvt_CdvdSectorReady, cdvdSectorReady);
+	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 
 	// Profile-guided Optimization (sorta)
 	// The following ints are rarely called.  Encasing them in a conditional
