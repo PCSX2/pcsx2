@@ -373,7 +373,7 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 
 		// Row text
 		painter.setPen(GetAddressFunctionColor(rowAddress));
-		QString lineString = DisassemblyStringFromAddress(rowAddress, painter.font(), curPC);
+		QString lineString = DisassemblyStringFromAddress(rowAddress, painter.font(), curPC, rowAddress == m_selectedAddressStart);
 
 		painter.drawText(2, i * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, lineString);
 		alternate = !alternate;
@@ -683,7 +683,7 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	contextMenu->popup(this->mapToGlobal(pos));
 }
 
-inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFont font, u32 pc)
+inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected)
 {
 	DisassemblyLineInfo line;
 
@@ -708,7 +708,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	{
 		// We want this text elided
 		QFontMetrics metric(font);
-		lineString = lineString.arg(metric.elidedText(QString::fromStdString(addressSymbol), Qt::ElideRight, 8 * font.pointSize()));
+		lineString = lineString.arg(metric.elidedText(QString::fromStdString(addressSymbol), Qt::ElideRight, (selected ? 32 : 8) * font.pointSize()));
 	}
 
 	lineString = lineString.leftJustified(4, ' ') // Address / symbol
