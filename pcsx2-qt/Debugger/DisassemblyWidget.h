@@ -64,6 +64,8 @@ public slots:
 	void contextAddFunction();
 	void contextRenameFunction();
 	void contextRemoveFunction();
+	void contextStubFunction();
+
 	void gotoAddress(u32 address);
 
 signals:
@@ -74,7 +76,7 @@ signals:
 private:
 	Ui::DisassemblyWidget ui;
 
-	QMenu* m_contextMenu = 0x0;
+	QMenu* m_contextMenu = nullptr;
 	void CreateCustomContextMenu();
 
 	DebugInterface* m_cpu;
