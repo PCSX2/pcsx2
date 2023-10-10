@@ -661,15 +661,9 @@ __forceinline
 		Out.Right = ApplyVolume(Out.Right, Cores[1].MasterVol.Right.Value);
 	}
 
-	// Final Clamp!
-	// Like any good audio system, the PS2 pumps the volume and incurs some distortion in its
-	// output, giving us a nice thumpy sound at times.  So we add 1 above (2x volume pump) and
-	// then clamp it all here.
-
-	// Edit: I'm sorry Jake, but I know of no good audio system that arbitrary distorts and clips
-	// output by design.
-	// Good thing though that this code gets the volume exactly right, as per tests :)
 	Out = DCFilter(Out);
+
+	// Final clamp, take care not to exceed 16 bits from here on
 	Out = clamp_mix(Out);
 	SndBuffer::Write(StereoOut16(Out));
 
