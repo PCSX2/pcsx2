@@ -90,7 +90,7 @@ private:
 
 	DisassemblyManager m_disassemblyManager;
 
-	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc);
+	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected);
 	QColor GetAddressFunctionColor(u32 address);
 	enum class SelectionInfo
 	{
