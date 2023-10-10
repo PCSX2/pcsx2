@@ -70,6 +70,7 @@ public slots:
 
 	void gotoAddress(u32 address);
 
+	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
 signals:
 	void gotoInMemory(u32 address);
 	void breakpointsChanged();
@@ -87,6 +88,8 @@ private:
 
 	std::map<u32, u32> m_nopedInstructions;
 	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
+
+	bool m_demangleFunctions = true;
 
 	DisassemblyManager m_disassemblyManager;
 

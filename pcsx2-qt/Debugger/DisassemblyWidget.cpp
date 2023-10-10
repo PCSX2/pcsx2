@@ -21,6 +21,7 @@
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/MipsAssembler.h"
+#include "demangler/demangler.h"
 
 #include "QtUtils.h"
 #include "QtHost.h"
@@ -699,6 +700,8 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	const bool isBreakpoint = CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), address) && !CBreakPoints::IsTempBreakPoint(m_cpu->getCpuType(), address);
 	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelString(address);
 
+	const auto demangler = demangler::CDemangler::createGcc();
+
 	QString lineString("%1 %2  %3 %4  %5 %6");
 
 	lineString = lineString.arg(isBreakpoint ? "\u25A0" : " "); // Bp block ( ■ )
@@ -708,7 +711,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	{
 		// We want this text elided
 		QFontMetrics metric(font);
-		lineString = lineString.arg(metric.elidedText(QString::fromStdString(addressSymbol), Qt::ElideRight, (selected ? 32 : 8) * font.pointSize()));
+		lineString = lineString.arg(metric.elidedText(QString::fromStdString((m_demangleFunctions ? demangler->demangleToString(addressSymbol) : addressSymbol)), Qt::ElideRight, (selected ? 32 : 8) * font.pointSize()));
 	}
 
 	lineString = lineString.leftJustified(4, ' ') // Address / symbol

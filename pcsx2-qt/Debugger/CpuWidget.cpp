@@ -550,6 +550,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 	connect(demangleAction, &QAction::triggered, [this] {
 		m_demangleFunctions = !m_demangleFunctions;
+		m_ui.disassemblyWidget->setDemangle(m_demangleFunctions);
 		updateFunctionList();
 	});
 
