@@ -1864,8 +1864,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	}
 	else if (!is_frame && !GSConfig.UserHacks_DisableDepthSupport)
 	{
-
-		int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
+		const int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
 
 		// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
 		// some bad data.
@@ -1878,13 +1877,35 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb)
 				continue;
 
-			// Probably an old target, get rid of it.
-			if (possible_clear && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != GSLocalMemory::m_psm[TEX0.PSM].bpp)
+			const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
+			if (t_psm_s.bpp != psm_s.bpp)
 			{
-				InvalidateSourcesFromTarget(t);
-				i = rev_list.erase(i);
-				delete t;
-				continue;
+				bool remove_target = possible_clear;
+
+				// If we have a BW change, and it's not a multiple of 2 (for a shuffle), the game's going to get a jigsaw
+				// puzzle of pages and can't be expecting to have legitimate data. Tokimeki Memorial 3 reuses a BW 17
+				// buffer as BW 10, and if we don't discard the BW 17 buffer, the BW 10 buffer ends up twice the size.
+				const u32 shuffle_bw = (psm_s.bpp > t_psm_s.bpp) ? (TEX0.TBW / 2u) : (TEX0.TBW * 2u);
+				if (t->m_TEX0.TBW != TEX0.TBW && t->m_TEX0.TBW != shuffle_bw)
+				{
+					// But we'll make sure the whole existing target's actually being drawn over to be safe.
+					const u32 end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
+					if (end_block >= t->UnwrappedEndBlock())
+					{
+						GL_CACHE("Not converting %s at %x TBW %u with end block of %x when we're drawing through %x",
+							to_string(rev_type), t->m_TEX0.TBP0, t->m_TEX0.TBW, t->UnwrappedEndBlock(), end_block);
+						remove_target = true;
+					}
+				}
+
+				// Probably an old target, get rid of it.
+				if (remove_target)
+				{
+					InvalidateSourcesFromTarget(t);
+					i = rev_list.erase(i);
+					delete t;
+					continue;
+				}
 			}
 
 			if (t->m_age == 0)
