@@ -14065,6 +14065,8 @@ SLES-51055:
   region: "PAL-E"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
+    texturePreloading: 0 # fixes wrong shade.
+
 SLES-51056:
   name: "Fighting Fury"
   region: "PAL-E"
@@ -28876,6 +28878,7 @@ SLPM-60116:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
+    texturePreloading: 0 # fixes wrong shade.
 SLPM-60117:
   name: "Shin Sangoku Musou"
   region: "NTSC-J"
@@ -41153,6 +41156,7 @@ SLPS-20037:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
+    texturePreloading: 0 # fixes wrong shade.
 SLPS-20038:
   name: "Grappler Baki - Baki Saidai no Tournament"
   region: "NTSC-J"
@@ -41775,6 +41779,7 @@ SLPS-20243:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
+    texturePreloading: 0 # fixes wrong shade.
 SLPS-20244:
   name: "Magical Sports - 2000 Koushien [NewPrice]"
   region: "NTSC-J"
