@@ -32786,6 +32786,8 @@ SLPM-65080:
   name: "Tokimeki Memorial 3"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes character portraits.
 SLPM-65081:
   name: "Grandia II"
   region: "NTSC-J"
