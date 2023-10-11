@@ -1905,7 +1905,6 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: CD Read using Nominal switch from CAV to CLV, unhandled");
 
 			bool ParamError = false;
-			const int oldSpeed = cdvd.Speed;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
@@ -2036,7 +2035,6 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: CDDA Read using Nominal switch from CAV to CLV, unhandled");
 
 			bool ParamError = false;
-			const int oldSpeed = cdvd.Speed;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
@@ -2138,7 +2136,6 @@ static void cdvdWrite04(u8 rt)
 				DevCon.Warning("CDVD: DVD Read using Nominal switch from CAV to CLV, unhandled");
 
 			bool ParamError = false;
-			const int oldSpeed = cdvd.Speed;
 
 			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
 			{
