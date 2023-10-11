@@ -14066,7 +14066,6 @@ SLES-51055:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves brightness on terrain textures.
     texturePreloading: 0 # fixes wrong shade.
-
 SLES-51056:
   name: "Fighting Fury"
   region: "PAL-E"
