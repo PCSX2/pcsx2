@@ -4210,10 +4210,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	m_conf.ps.wms = (wms & 2 || target_region) ? wms : 0;
 	m_conf.ps.wmt = (wmt & 2 || target_region) ? wmt : 0;
 
-	// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
-	// So of course, GTA set the linear mode, but sampling is done at texel center so it is equivalent to nearest sampling
+	// Depth + bilinear filtering isn't done yet. But if the game has just set a Z24 swizzle on a colour texture, we can
+	// just pretend it's not a depth format, since in the texture cache, it's not.
 	// Other games worth testing: Area 51, Burnout
-	if (psm.depth && m_vt.IsLinear())
+	if (psm.depth && m_vt.IsLinear() && tex->GetTexture()->IsDepthStencil())
 		GL_INS("WARNING: Depth + bilinear filtering not supported");
 
 	// Performance note:
@@ -4293,18 +4293,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		}
 
 		// Depth format
-		if (tex->m_texture->GetType() == GSTexture::Type::DepthStencil)
+		if (tex->m_texture->IsDepthStencil())
 		{
 			// Require a float conversion if the texure is a depth format
 			m_conf.ps.depth_fmt = (psm.bpp == 16) ? 2 : 1;
-
-			// Don't force interpolation on depth format
-			bilinear &= m_vt.IsLinear();
-		}
-		else if (psm.depth)
-		{
-			// Use Integral scaling
-			m_conf.ps.depth_fmt = 3;
 
 			// Don't force interpolation on depth format
 			bilinear &= m_vt.IsLinear();
