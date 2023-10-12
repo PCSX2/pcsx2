@@ -60,7 +60,7 @@ bool V_ADSR::Calculate(int voiceidx)
 
 	// maybe not correct for the "infinite" settings
 	u32 counter_inc = 0x8000 >> std::max(0, p.Shift - 11);
-	s16 level_inc = (s16)(p.Step << std::max(0, 11 - p.Shift));
+	s32 level_inc = p.Step << std::max(0, 11 - p.Shift);
 
 	if (p.Exp)
 	{
@@ -143,7 +143,7 @@ void V_VolumeSlide::Update()
 	}
 
 	u32 counter_inc = 0x8000 >> std::max(0, Shift - 11);
-	s16 level_inc = (s16)(step_size << std::max(0, 11 - Shift));
+	s32 level_inc = step_size << std::max(0, 11 - Shift);
 
 	if (Exp)
 	{
@@ -161,9 +161,22 @@ void V_VolumeSlide::Update()
 	counter_inc = std::max<u32>(1, counter_inc);
 	Counter += counter_inc;
 
+	// If negative phase "increase" to -0x8000 or "decrease" towards 0
+	level_inc = Phase ? -level_inc : level_inc;
+
 	if (Counter >= 0x8000)
 	{
 		Counter = 0;
-		Value = std::clamp<s32>(Value + level_inc, 0, INT16_MAX);
+
+		if (!Decr)
+		{
+			Value = std::clamp<s32>(Value + level_inc, INT16_MIN, INT16_MAX);
+		}
+		else
+		{
+			s32 low = Phase ? INT16_MIN : 0;
+			s32 high = Phase ? 0 : INT16_MAX;
+			Value = std::clamp<s32>(Value + level_inc, low, high);
+		}
 	}
 }
