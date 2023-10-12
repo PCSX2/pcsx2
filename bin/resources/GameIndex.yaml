@@ -19450,6 +19450,10 @@ SLES-53297:
 SLES-53299:
   name: "Delta Force - Black Hawk Down"
   region: "PAL-M5"
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes bloom misalignment.
+    textureInsideRT: 1 # Fixes sky bloom.
 SLES-53300:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "PAL-Unk"
@@ -52520,6 +52524,10 @@ SLUS-21124:
   name: "Delta Force - Black Hawk Down"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes bloom misalignment.
+    halfPixelOffset: 2 # Fixes bloom misalignment.
+    textureInsideRT: 1 # Fixes sky bloom.
 SLUS-21125:
   name: "Airborne Troops - Countdown to D-Day"
   region: "NTSC-U"
