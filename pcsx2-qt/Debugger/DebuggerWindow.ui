@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>PCSX2 Debugger</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
@@ -46,6 +51,7 @@
    <addaction name="actionStepInto"/>
    <addaction name="actionStepOver"/>
    <addaction name="actionStepOut"/>
+   <addaction name="actionOnTop"/>
   </widget>
   <action name="actionRun">
    <property name="icon">
@@ -86,6 +92,17 @@
    </property>
    <property name="shortcut">
     <string>Shift+F11</string>
+   </property>
+  </action>
+  <action name="actionOnTop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Always On Top</string>
+   </property>
+   <property name="toolTip">
+    <string>Show this window on top</string>
    </property>
   </action>
  </widget>
