@@ -42,11 +42,17 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
 	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
 	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
+	connect(m_ui.actionOnTop, &QAction::triggered, [this] { this->setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint); this->show(); });
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DebuggerWindow::onVMStateChanged);
 	connect(g_emu_thread, &EmuThread::onVMResumed, this, &DebuggerWindow::onVMStateChanged);
 
 	onVMStateChanged(); // If we missed a state change while we weren't loaded
+	
+	// We can't do this in the designer, but we want to right align the actionOnTop action in the toolbar
+	QWidget* spacer = new QWidget(this);
+	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_ui.toolBar->insertWidget(m_ui.actionOnTop, spacer);
 
 	m_cpuWidget_r5900 = new CpuWidget(this, r5900Debug);
 	m_cpuWidget_r3000 = new CpuWidget(this, r3000Debug);

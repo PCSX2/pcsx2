@@ -118,6 +118,13 @@ MainWindow::~MainWindow()
 	// make sure the game list isn't refreshing, because it's on a separate thread
 	cancelGameListRefresh();
 
+	if (m_debugger_window)
+	{
+		m_debugger_window->close();
+		m_debugger_window->deleteLater();
+		m_debugger_window = nullptr;
+	}
+
 	// we compare here, since recreate destroys the window later
 	if (g_main_window == this)
 		g_main_window = nullptr;
@@ -2300,7 +2307,8 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
 DebuggerWindow* MainWindow::getDebuggerWindow()
 {
 	if (!m_debugger_window)
-		m_debugger_window = new DebuggerWindow(this);
+		// Don't pass us (this) as the parent, otherwise the window is always on top of the mainwindow (on windows at least)
+		m_debugger_window = new DebuggerWindow(nullptr);
 
 	return m_debugger_window;
 }
