@@ -95,7 +95,7 @@ endif(WIN32)
 find_package(Threads REQUIRED)
 
 # Also need SDL2.
-find_package(SDL2 2.28.2 REQUIRED)
+find_package(SDL2 2.28.4 REQUIRED)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -156,18 +156,10 @@ disable_compiler_warnings_for_target(cubeb)
 disable_compiler_warnings_for_target(speex)
 
 # Find the Qt components that we need.
-find_package(Qt6 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets Network LinguistTools REQUIRED)
+find_package(Qt6 6.5.3 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets Network LinguistTools REQUIRED)
 
 if(WIN32)
   add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
-endif()
-
-if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.15)
-	get_target_property(QT_FEATURES Qt6::Core QT_ENABLED_PUBLIC_FEATURES)
-	if (cxx17_filesystem IN_LIST QT_FEATURES)
-		message("Qt compiled with std::filesystem support, requires macOS 10.15")
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-	endif()
 endif()
 
 # Demangler for the debugger
