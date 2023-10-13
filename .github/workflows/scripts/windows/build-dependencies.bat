@@ -37,18 +37,16 @@ echo INSTALLDIR=%INSTALLDIR%
 
 cd "%BUILDDIR%"
 
-set QT=6.5.2
-set QTMINOR=6.5
-set SDL=SDL2-2.28.2
+set QT=6.6.0
+set QTMINOR=6.6
+set SDL=SDL2-2.28.4
 
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 22383a6b242bac072f949d2b3854cf04c6856cae7a87eaa78c60dd733b71e41e || goto error
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" f770a087e350d688441880d08ad2791465e5e3b9a0f8fc2cfbeb5dd305a11d50 || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 9757899b00eea4e6b65f81f922c0215c70969661567398d91da6639a50a788e7 || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 0546a6aa19f5e0188d1ba4a0e0a1423d22b7dc55ce8a614cc4aa65bfac506f74 || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 3148f4f263bf9930d89107eb44bc452481a5f8c6178459e26ecbf3c8dca3b5c7 || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 8b99046b54c40106d4e310be63b41331b717cfd8b42da4b4fc1c9169604be7fc || goto error
-
-call :downloadfile "4b119f48f5cb5e1499f91a0791150231c47430d4.diff" "https://github.com/qt/qtbase/commit/4b119f48f5cb5e1499f91a0791150231c47430d4.diff" d86bd2bd4ee2aff5f5e97da027aa926178dca250d163427eb21503bb357730a5 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" b53b9b42e731a33552d0a533316a88009b423c16a8a3a418df9ffe498c37da3d || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 0b9dafd9a42deeb55fd4b74a6caaa6871a03d0051ddb54ea4ea448f28cb90ecc || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" ae31eadd81da19e1bba0d72e16d29fdce0b98e991c4dcbf6351acf09967fd175 || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 88b4b1a8224465cb04feed2a37823e95e959164cf824e9969648335614a4c855 || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 051787f12e2457425f35f31e642163f0d481cdd687b4b164ca41ddb84d5ea3a6 || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 5d04b33336d3d49512eedfa85b378f0805dc4d8770365db318234b125deef9dc || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
@@ -80,7 +78,6 @@ echo Building Qt base...
 rmdir /S /Q "qtbase-everywhere-src-%QT%"
 %SEVENZIP% x "qtbase-everywhere-src-%QT%.zip" || goto error
 cd "qtbase-everywhere-src-%QT%" || goto error
-"C:\Program Files\Git\usr\bin\patch" -p1 < ../4b119f48f5cb5e1499f91a0791150231c47430d4.diff || goto error
 cmake -B build -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes %QTBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
