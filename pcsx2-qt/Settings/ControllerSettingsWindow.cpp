@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "QtHost.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerGlobalSettingsWidget.h"
 #include "Settings/ControllerBindingWidgets.h"
 #include "Settings/HotkeySettingsWidget.h"
@@ -36,8 +36,8 @@
 
 static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
 
-ControllerSettingsDialog::ControllerSettingsDialog(QWidget* parent /* = nullptr */)
-	: QDialog(parent)
+ControllerSettingsWindow::ControllerSettingsWindow()
+	: QWidget(nullptr)
 {
 	m_ui.setupUi(this);
 
@@ -47,27 +47,27 @@ ControllerSettingsDialog::ControllerSettingsDialog(QWidget* parent /* = nullptr 
 	createWidgets();
 
 	m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &ControllerSettingsDialog::onCategoryCurrentRowChanged);
-	connect(m_ui.currentProfile, &QComboBox::currentIndexChanged, this, &ControllerSettingsDialog::onCurrentProfileChanged);
-	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsDialog::close);
-	connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsDialog::onNewProfileClicked);
-	connect(m_ui.loadProfile, &QPushButton::clicked, this, &ControllerSettingsDialog::onLoadProfileClicked);
-	connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsDialog::onDeleteProfileClicked);
-	connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsDialog::onRestoreDefaultsClicked);
+	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &ControllerSettingsWindow::onCategoryCurrentRowChanged);
+	connect(m_ui.currentProfile, &QComboBox::currentIndexChanged, this, &ControllerSettingsWindow::onCurrentProfileChanged);
+	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsWindow::close);
+	connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
+	connect(m_ui.loadProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onLoadProfileClicked);
+	connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
+	connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
 
-	connect(g_emu_thread, &EmuThread::onInputDevicesEnumerated, this, &ControllerSettingsDialog::onInputDevicesEnumerated);
-	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &ControllerSettingsDialog::onInputDeviceConnected);
-	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &ControllerSettingsDialog::onInputDeviceDisconnected);
-	connect(g_emu_thread, &EmuThread::onVibrationMotorsEnumerated, this, &ControllerSettingsDialog::onVibrationMotorsEnumerated);
+	connect(g_emu_thread, &EmuThread::onInputDevicesEnumerated, this, &ControllerSettingsWindow::onInputDevicesEnumerated);
+	connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &ControllerSettingsWindow::onInputDeviceConnected);
+	connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &ControllerSettingsWindow::onInputDeviceDisconnected);
+	connect(g_emu_thread, &EmuThread::onVibrationMotorsEnumerated, this, &ControllerSettingsWindow::onVibrationMotorsEnumerated);
 
 	// trigger a device enumeration to populate the device list
 	g_emu_thread->enumerateInputDevices();
 	g_emu_thread->enumerateVibrationMotors();
 }
 
-ControllerSettingsDialog::~ControllerSettingsDialog() = default;
+ControllerSettingsWindow::~ControllerSettingsWindow() = default;
 
-void ControllerSettingsDialog::setCategory(Category category)
+void ControllerSettingsWindow::setCategory(Category category)
 {
 	switch (category)
 	{
@@ -89,17 +89,17 @@ void ControllerSettingsDialog::setCategory(Category category)
 	}
 }
 
-void ControllerSettingsDialog::onCategoryCurrentRowChanged(int row)
+void ControllerSettingsWindow::onCategoryCurrentRowChanged(int row)
 {
 	m_ui.settingsContainer->setCurrentIndex(row);
 }
 
-void ControllerSettingsDialog::onCurrentProfileChanged(int index)
+void ControllerSettingsWindow::onCurrentProfileChanged(int index)
 {
 	switchProfile((index == 0) ? 0 : m_ui.currentProfile->itemText(index));
 }
 
-void ControllerSettingsDialog::onNewProfileClicked()
+void ControllerSettingsWindow::onNewProfileClicked()
 {
 	const QString profile_name(QInputDialog::getText(this, tr("Create Input Profile"), 
 	tr("Custom input profiles are used to override the Shared input profile for specific games.\n"
@@ -154,7 +154,7 @@ void ControllerSettingsDialog::onNewProfileClicked()
 	switchProfile(profile_name);
 }
 
-void ControllerSettingsDialog::onLoadProfileClicked()
+void ControllerSettingsWindow::onLoadProfileClicked()
 {
 	if (QMessageBox::question(this, tr("Load Input Profile"),
 			tr("Are you sure you want to load the input profile named '%1'?\n\n"
@@ -178,7 +178,7 @@ void ControllerSettingsDialog::onLoadProfileClicked()
 	switchProfile({});
 }
 
-void ControllerSettingsDialog::onDeleteProfileClicked()
+void ControllerSettingsWindow::onDeleteProfileClicked()
 {
 	if (QMessageBox::question(this, tr("Delete Input Profile"),
 			tr("Are you sure you want to delete the input profile named '%1'?\n\n"
@@ -200,7 +200,7 @@ void ControllerSettingsDialog::onDeleteProfileClicked()
 	switchProfile({});
 }
 
-void ControllerSettingsDialog::onRestoreDefaultsClicked()
+void ControllerSettingsWindow::onRestoreDefaultsClicked()
 {
 	if (QMessageBox::question(this, tr("Restore Defaults"),
 			tr("Are you sure you want to restore the default controller configuration?\n\n"
@@ -223,21 +223,21 @@ void ControllerSettingsDialog::onRestoreDefaultsClicked()
 	switchProfile({});
 }
 
-void ControllerSettingsDialog::onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices)
+void ControllerSettingsWindow::onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices)
 {
 	m_device_list = devices;
 	for (const QPair<QString, QString>& device : devices)
 		m_global_settings->addDeviceToList(device.first, device.second);
 }
 
-void ControllerSettingsDialog::onInputDeviceConnected(const QString& identifier, const QString& device_name)
+void ControllerSettingsWindow::onInputDeviceConnected(const QString& identifier, const QString& device_name)
 {
 	m_device_list.emplace_back(identifier, device_name);
 	m_global_settings->addDeviceToList(identifier, device_name);
 	g_emu_thread->enumerateVibrationMotors();
 }
 
-void ControllerSettingsDialog::onInputDeviceDisconnected(const QString& identifier)
+void ControllerSettingsWindow::onInputDeviceDisconnected(const QString& identifier)
 {
 	for (auto iter = m_device_list.begin(); iter != m_device_list.end(); ++iter)
 	{
@@ -252,7 +252,7 @@ void ControllerSettingsDialog::onInputDeviceDisconnected(const QString& identifi
 	g_emu_thread->enumerateVibrationMotors();
 }
 
-void ControllerSettingsDialog::onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors)
+void ControllerSettingsWindow::onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors)
 {
 	m_vibration_motors.clear();
 	m_vibration_motors.reserve(motors.size());
@@ -265,7 +265,7 @@ void ControllerSettingsDialog::onVibrationMotorsEnumerated(const QList<InputBind
 	}
 }
 
-bool ControllerSettingsDialog::getBoolValue(const char* section, const char* key, bool default_value) const
+bool ControllerSettingsWindow::getBoolValue(const char* section, const char* key, bool default_value) const
 {
 	if (m_profile_interface)
 		return m_profile_interface->GetBoolValue(section, key, default_value);
@@ -273,7 +273,7 @@ bool ControllerSettingsDialog::getBoolValue(const char* section, const char* key
 		return Host::GetBaseBoolSettingValue(section, key, default_value);
 }
 
-s32 ControllerSettingsDialog::getIntValue(const char* section, const char* key, s32 default_value) const
+s32 ControllerSettingsWindow::getIntValue(const char* section, const char* key, s32 default_value) const
 {
 	if (m_profile_interface)
 		return m_profile_interface->GetIntValue(section, key, default_value);
@@ -281,7 +281,7 @@ s32 ControllerSettingsDialog::getIntValue(const char* section, const char* key, 
 		return Host::GetBaseIntSettingValue(section, key, default_value);
 }
 
-std::string ControllerSettingsDialog::getStringValue(const char* section, const char* key, const char* default_value) const
+std::string ControllerSettingsWindow::getStringValue(const char* section, const char* key, const char* default_value) const
 {
 	std::string value;
 	if (m_profile_interface)
@@ -291,7 +291,7 @@ std::string ControllerSettingsDialog::getStringValue(const char* section, const 
 	return value;
 }
 
-void ControllerSettingsDialog::setBoolValue(const char* section, const char* key, bool value)
+void ControllerSettingsWindow::setBoolValue(const char* section, const char* key, bool value)
 {
 	if (m_profile_interface)
 	{
@@ -307,7 +307,7 @@ void ControllerSettingsDialog::setBoolValue(const char* section, const char* key
 	}
 }
 
-void ControllerSettingsDialog::setIntValue(const char* section, const char* key, s32 value)
+void ControllerSettingsWindow::setIntValue(const char* section, const char* key, s32 value)
 {
 	if (m_profile_interface)
 	{
@@ -323,7 +323,7 @@ void ControllerSettingsDialog::setIntValue(const char* section, const char* key,
 	}
 }
 
-void ControllerSettingsDialog::setStringValue(const char* section, const char* key, const char* value)
+void ControllerSettingsWindow::setStringValue(const char* section, const char* key, const char* value)
 {
 	if (m_profile_interface)
 	{
@@ -339,7 +339,7 @@ void ControllerSettingsDialog::setStringValue(const char* section, const char* k
 	}
 }
 
-void ControllerSettingsDialog::clearSettingValue(const char* section, const char* key)
+void ControllerSettingsWindow::clearSettingValue(const char* section, const char* key)
 {
 	if (m_profile_interface)
 	{
@@ -355,7 +355,7 @@ void ControllerSettingsDialog::clearSettingValue(const char* section, const char
 	}
 }
 
-void ControllerSettingsDialog::createWidgets()
+void ControllerSettingsWindow::createWidgets()
 {
 	QSignalBlocker sb(m_ui.settingsContainer);
 	QSignalBlocker sb2(m_ui.settingsCategory);
@@ -381,7 +381,7 @@ void ControllerSettingsDialog::createWidgets()
 		m_ui.settingsCategory->setCurrentRow(0);
 		m_global_settings = new ControllerGlobalSettingsWidget(m_ui.settingsContainer, this);
 		m_ui.settingsContainer->addWidget(m_global_settings);
-		connect(m_global_settings, &ControllerGlobalSettingsWidget::bindingSetupChanged, this, &ControllerSettingsDialog::createWidgets);
+		connect(m_global_settings, &ControllerGlobalSettingsWidget::bindingSetupChanged, this, &ControllerSettingsWindow::createWidgets);
 		for (const QPair<QString, QString>& dev : m_device_list)
 			m_global_settings->addDeviceToList(dev.first, dev.second);
 	}
@@ -448,7 +448,7 @@ void ControllerSettingsDialog::createWidgets()
 	m_ui.restoreDefaults->setEnabled(isEditingGlobalSettings());
 }
 
-void ControllerSettingsDialog::updateListDescription(u32 global_slot, ControllerBindingWidget* widget)
+void ControllerSettingsWindow::updateListDescription(u32 global_slot, ControllerBindingWidget* widget)
 {
 	for (int i = 0; i < m_ui.settingsCategory->count(); i++)
 	{
@@ -472,7 +472,7 @@ void ControllerSettingsDialog::updateListDescription(u32 global_slot, Controller
 	}
 }
 
-void ControllerSettingsDialog::updateListDescription(u32 port, USBDeviceWidget* widget)
+void ControllerSettingsWindow::updateListDescription(u32 port, USBDeviceWidget* widget)
 {
 	for (int i = 0; i < m_ui.settingsCategory->count(); i++)
 	{
@@ -490,7 +490,7 @@ void ControllerSettingsDialog::updateListDescription(u32 port, USBDeviceWidget* 
 	}
 }
 
-void ControllerSettingsDialog::refreshProfileList()
+void ControllerSettingsWindow::refreshProfileList()
 {
 	const std::vector<std::string> names = Pad::GetInputProfileNames();
 
@@ -510,7 +510,7 @@ void ControllerSettingsDialog::refreshProfileList()
 	}
 }
 
-void ControllerSettingsDialog::switchProfile(const QString& name)
+void ControllerSettingsWindow::switchProfile(const QString& name)
 {
 	QSignalBlocker sb(m_ui.currentProfile);
 

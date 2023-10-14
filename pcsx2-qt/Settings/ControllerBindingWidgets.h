@@ -29,7 +29,7 @@
 #include "ui_USBDeviceWidget.h"
 
 class InputBindingWidget;
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 class ControllerCustomSettingsWidget;
 class ControllerMacroWidget;
 class ControllerMacroEditWidget;
@@ -42,12 +42,12 @@ class ControllerBindingWidget final : public QWidget
 	Q_OBJECT
 
 public:
-	ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port);
+	ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port);
 	~ControllerBindingWidget();
 
 	QIcon getIcon() const;
 
-	__fi ControllerSettingsDialog* getDialog() const { return m_dialog; }
+	__fi ControllerSettingsWindow* getDialog() const { return m_dialog; }
 	__fi const std::string& getConfigSection() const { return m_config_section; }
 	__fi Pad::ControllerType getControllerType() const { return m_controller_type; }
 	__fi u32 getPortNumber() const { return m_port_number; }
@@ -67,7 +67,7 @@ private:
 
 	Ui::ControllerBindingWidget m_ui;
 
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 
 	std::string m_config_section;
 	Pad::ControllerType m_controller_type;
@@ -97,7 +97,7 @@ private:
 	void createWidgets(ControllerBindingWidget* parent);
 
 	Ui::ControllerMacroWidget m_ui;
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 	std::array<ControllerMacroEditWidget*, NUM_MACROS> m_macros;
 };
 
@@ -142,7 +142,7 @@ class ControllerCustomSettingsWidget : public QWidget
 
 public:
 	ControllerCustomSettingsWidget(std::span<const SettingInfo> settings, std::string config_section, std::string config_prefix,
-		const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget);
+		const char* translation_ctx, ControllerSettingsWindow* dialog, QWidget* parent_widget);
 	~ControllerCustomSettingsWidget();
 
 private Q_SLOTS:
@@ -154,7 +154,7 @@ private:
 	std::span<const SettingInfo> m_settings;
 	std::string m_config_section;
 	std::string m_config_prefix;
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,7 +168,7 @@ public:
 	ControllerBindingWidget_Base(ControllerBindingWidget* parent);
 	virtual ~ControllerBindingWidget_Base();
 
-	__fi ControllerSettingsDialog* getDialog() const { return static_cast<ControllerBindingWidget*>(parent())->getDialog(); }
+	__fi ControllerSettingsWindow* getDialog() const { return static_cast<ControllerBindingWidget*>(parent())->getDialog(); }
 	__fi const std::string& getConfigSection() const { return static_cast<ControllerBindingWidget*>(parent())->getConfigSection(); }
 	__fi Pad::ControllerType getControllerType() const { return static_cast<ControllerBindingWidget*>(parent())->getControllerType(); }
 	__fi u32 getPortNumber() const { return static_cast<ControllerBindingWidget*>(parent())->getPortNumber(); }
@@ -218,12 +218,12 @@ class USBDeviceWidget final : public QWidget
 	Q_OBJECT
 
 public:
-	USBDeviceWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port);
+	USBDeviceWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port);
 	~USBDeviceWidget();
 
 	QIcon getIcon() const;
 
-	__fi ControllerSettingsDialog* getDialog() const { return m_dialog; }
+	__fi ControllerSettingsWindow* getDialog() const { return m_dialog; }
 	__fi const std::string& getConfigSection() const { return m_config_section; }
 	__fi const std::string& getDeviceType() const { return m_device_type; }
 	__fi u32 getPortNumber() const { return m_port_number; }
@@ -244,7 +244,7 @@ private:
 
 	Ui::USBDeviceWidget m_ui;
 
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 
 	std::string m_config_section;
 	std::string m_device_type;
@@ -263,7 +263,7 @@ public:
 	USBBindingWidget(USBDeviceWidget* parent);
 	~USBBindingWidget() override;
 
-	__fi ControllerSettingsDialog* getDialog() const { return static_cast<USBDeviceWidget*>(parent())->getDialog(); }
+	__fi ControllerSettingsWindow* getDialog() const { return static_cast<USBDeviceWidget*>(parent())->getDialog(); }
 	__fi const std::string& getConfigSection() const { return static_cast<USBDeviceWidget*>(parent())->getConfigSection(); }
 	__fi const std::string& getDeviceType() const { return static_cast<USBDeviceWidget*>(parent())->getDeviceType(); }
 	__fi u32 getPortNumber() const { return static_cast<USBDeviceWidget*>(parent())->getPortNumber(); }

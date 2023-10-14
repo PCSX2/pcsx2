@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ControllerSettingsDialog</class>
- <widget class="QDialog" name="ControllerSettingsDialog">
-  <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+ <class>ControllerSettingsWindow</class>
+ <widget class="QWidget" name="ControllerSettingsWindow">
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
   </property>
   <property name="geometry">
    <rect>

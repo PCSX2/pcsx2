@@ -35,7 +35,7 @@
 #include "Settings/HotkeySettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
 #include "Settings/MemoryCardSettingsWidget.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "pcsx2/Achievements.h"
 #include "pcsx2/GameList.h"
@@ -49,18 +49,18 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
-static QList<SettingsDialog*> s_open_game_properties_dialogs;
+static QList<SettingsWindow*> s_open_game_properties_dialogs;
 
-SettingsDialog::SettingsDialog(QWidget* parent)
-	: QDialog(parent)
+SettingsWindow::SettingsWindow()
+	: QWidget(nullptr)
 	, m_disc_crc(0)
 {
 	setupUi(nullptr);
 }
 
-SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<INISettingsInterface> sif, const GameList::Entry* game,
+SettingsWindow::SettingsWindow(std::unique_ptr<INISettingsInterface> sif, const GameList::Entry* game,
 	std::string serial, u32 disc_crc, QString filename)
-	: QDialog(parent)
+	: QWidget(nullptr)
 	, m_sif(std::move(sif))
 	, m_filename(std::move(filename))
 	, m_game_list_filename(game ? game->path : std::string())
@@ -72,12 +72,12 @@ SettingsDialog::SettingsDialog(QWidget* parent, std::unique_ptr<INISettingsInter
 	s_open_game_properties_dialogs.push_back(this);
 }
 
-SettingsInterface* SettingsDialog::getSettingsInterface() const
+SettingsInterface* SettingsWindow::getSettingsInterface() const
 {
 	return m_sif.get();
 }
 
-void SettingsDialog::setupUi(const GameList::Entry* game)
+void SettingsWindow::setupUi(const GameList::Entry* game)
 {
 	const bool show_advanced_settings = QtHost::ShouldShowAdvancedSettings();
 
@@ -225,35 +225,35 @@ void SettingsDialog::setupUi(const GameList::Entry* game)
 	m_ui.settingsCategory->setCurrentRow(0);
 	m_ui.settingsContainer->setCurrentIndex(0);
 	m_ui.helpText->setText(m_category_help_text[0]);
-	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsDialog::onCategoryCurrentRowChanged);
-	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsDialog::close);
+	connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsWindow::onCategoryCurrentRowChanged);
+	connect(m_ui.closeButton, &QPushButton::clicked, this, &SettingsWindow::close);
 	if (m_ui.restoreDefaultsButton)
-		connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
+		connect(m_ui.restoreDefaultsButton, &QPushButton::clicked, this, &SettingsWindow::onRestoreDefaultsClicked);
 	if (m_ui.copyGlobalSettingsButton)
-		connect(m_ui.copyGlobalSettingsButton, &QPushButton::clicked, this, &SettingsDialog::onCopyGlobalSettingsClicked);
+		connect(m_ui.copyGlobalSettingsButton, &QPushButton::clicked, this, &SettingsWindow::onCopyGlobalSettingsClicked);
 	if (m_ui.clearGameSettingsButton)
-		connect(m_ui.clearGameSettingsButton, &QPushButton::clicked, this, &SettingsDialog::onClearSettingsClicked);
+		connect(m_ui.clearGameSettingsButton, &QPushButton::clicked, this, &SettingsWindow::onClearSettingsClicked);
 }
 
-SettingsDialog::~SettingsDialog()
+SettingsWindow::~SettingsWindow()
 {
 	if (isPerGameSettings())
 		s_open_game_properties_dialogs.removeOne(this);
 }
 
-void SettingsDialog::closeEvent(QCloseEvent*)
+void SettingsWindow::closeEvent(QCloseEvent*)
 {
 	// we need to clean up ourselves, since we're not modal
 	if (isPerGameSettings())
 		deleteLater();
 }
 
-QString SettingsDialog::getCategory() const
+QString SettingsWindow::getCategory() const
 {
 	return m_ui.settingsCategory->item(m_ui.settingsCategory->currentRow())->text();
 }
 
-void SettingsDialog::setCategory(const char* category)
+void SettingsWindow::setCategory(const char* category)
 {
 	// the titles in the category list will be translated.
 	const QString translated_category(qApp->translate("SettingsDialog", category));
@@ -269,13 +269,13 @@ void SettingsDialog::setCategory(const char* category)
 	}
 }
 
-void SettingsDialog::onCategoryCurrentRowChanged(int row)
+void SettingsWindow::onCategoryCurrentRowChanged(int row)
 {
 	m_ui.settingsContainer->setCurrentIndex(row);
 	m_ui.helpText->setText(m_category_help_text[row]);
 }
 
-void SettingsDialog::onRestoreDefaultsClicked()
+void SettingsWindow::onRestoreDefaultsClicked()
 {
 	QMessageBox msgbox(this);
 	msgbox.setIcon(QMessageBox::Question);
@@ -293,7 +293,7 @@ void SettingsDialog::onRestoreDefaultsClicked()
 	g_main_window->resetSettings(ui_cb->isChecked());
 }
 
-void SettingsDialog::onCopyGlobalSettingsClicked()
+void SettingsWindow::onCopyGlobalSettingsClicked()
 {
 	if (!isPerGameSettings())
 		return;
@@ -316,7 +316,7 @@ void SettingsDialog::onCopyGlobalSettingsClicked()
 	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration copied from global settings."));
 }
 
-void SettingsDialog::onClearSettingsClicked()
+void SettingsWindow::onClearSettingsClicked()
 {
 	if (!isPerGameSettings())
 		return;
@@ -335,7 +335,7 @@ void SettingsDialog::onClearSettingsClicked()
 	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration cleared."));
 }
 
-SettingsDialog* SettingsDialog::reopen()
+SettingsWindow* SettingsWindow::reopen()
 {
 	// This doesn't work for global settings, because MainWindow maintains a pointer.
 	if (!m_sif)
@@ -350,15 +350,14 @@ SettingsDialog* SettingsDialog::reopen()
 	auto lock = GameList::GetLock();
 	const GameList::Entry* game = m_game_list_filename.empty() ? nullptr : GameList::GetEntryForPath(m_game_list_filename.c_str());
 
-	SettingsDialog* dlg = new SettingsDialog(g_main_window, std::move(new_sif), game, m_serial, m_disc_crc, m_filename);
-	dlg->QDialog::setWindowTitle(windowTitle());
-	dlg->setModal(false);
+	SettingsWindow* dlg = new SettingsWindow(std::move(new_sif), game, m_serial, m_disc_crc, m_filename);
+	dlg->QWidget::setWindowTitle(windowTitle());
 	dlg->show();
 
 	return dlg;
 }
 
-void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
+void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
 {
 	const int index = m_ui.settingsCategory->count();
 
@@ -372,7 +371,7 @@ void SettingsDialog::addWidget(QWidget* widget, QString title, QString icon, QSt
 	m_category_help_text[index] = std::move(help_text);
 }
 
-void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
+void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
 {
 	if (!object)
 		return;
@@ -392,7 +391,7 @@ void SettingsDialog::registerWidgetHelp(QObject* object, QString title, QString 
 	object->installEventFilter(this);
 }
 
-bool SettingsDialog::eventFilter(QObject* object, QEvent* event)
+bool SettingsWindow::eventFilter(QObject* object, QEvent* event)
 {
 	if (event->type() == QEvent::Enter)
 	{
@@ -412,22 +411,18 @@ bool SettingsDialog::eventFilter(QObject* object, QEvent* event)
 		}
 	}
 
-	return QDialog::eventFilter(object, event);
+	return QWidget::eventFilter(object, event);
 }
 
-void SettingsDialog::setWindowTitle(const QString& title)
+void SettingsWindow::setWindowTitle(const QString& title)
 {
 	if (m_filename.isEmpty())
-	{
-		QDialog::setWindowTitle(title);
-	}
+		QWidget::setWindowTitle(title);
 	else
-	{
-		QDialog::setWindowTitle(QStringLiteral("%1 [%2]").arg(title, m_filename));
-	}
+		QWidget::setWindowTitle(QStringLiteral("%1 [%2]").arg(title, m_filename));
 }
 
-bool SettingsDialog::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
+bool SettingsWindow::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
 {
 	bool value;
 	if (m_sif && m_sif->GetBoolValue(section, key, &value))
@@ -436,7 +431,7 @@ bool SettingsDialog::getEffectiveBoolValue(const char* section, const char* key,
 		return Host::GetBaseBoolSettingValue(section, key, default_value);
 }
 
-int SettingsDialog::getEffectiveIntValue(const char* section, const char* key, int default_value) const
+int SettingsWindow::getEffectiveIntValue(const char* section, const char* key, int default_value) const
 {
 	int value;
 	if (m_sif && m_sif->GetIntValue(section, key, &value))
@@ -445,7 +440,7 @@ int SettingsDialog::getEffectiveIntValue(const char* section, const char* key, i
 		return Host::GetBaseIntSettingValue(section, key, default_value);
 }
 
-float SettingsDialog::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
+float SettingsWindow::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
 {
 	float value;
 	if (m_sif && m_sif->GetFloatValue(section, key, &value))
@@ -454,7 +449,7 @@ float SettingsDialog::getEffectiveFloatValue(const char* section, const char* ke
 		return Host::GetBaseFloatSettingValue(section, key, default_value);
 }
 
-std::string SettingsDialog::getEffectiveStringValue(const char* section, const char* key, const char* default_value) const
+std::string SettingsWindow::getEffectiveStringValue(const char* section, const char* key, const char* default_value) const
 {
 	std::string value;
 	if (!m_sif || !m_sif->GetStringValue(section, key, &value))
@@ -462,7 +457,7 @@ std::string SettingsDialog::getEffectiveStringValue(const char* section, const c
 	return value;
 }
 
-std::optional<bool> SettingsDialog::getBoolValue(const char* section, const char* key, std::optional<bool> default_value) const
+std::optional<bool> SettingsWindow::getBoolValue(const char* section, const char* key, std::optional<bool> default_value) const
 {
 	std::optional<bool> value;
 	if (m_sif)
@@ -481,7 +476,7 @@ std::optional<bool> SettingsDialog::getBoolValue(const char* section, const char
 	return value;
 }
 
-std::optional<int> SettingsDialog::getIntValue(const char* section, const char* key, std::optional<int> default_value) const
+std::optional<int> SettingsWindow::getIntValue(const char* section, const char* key, std::optional<int> default_value) const
 {
 	std::optional<int> value;
 	if (m_sif)
@@ -500,7 +495,7 @@ std::optional<int> SettingsDialog::getIntValue(const char* section, const char* 
 	return value;
 }
 
-std::optional<float> SettingsDialog::getFloatValue(const char* section, const char* key, std::optional<float> default_value) const
+std::optional<float> SettingsWindow::getFloatValue(const char* section, const char* key, std::optional<float> default_value) const
 {
 	std::optional<float> value;
 	if (m_sif)
@@ -519,7 +514,7 @@ std::optional<float> SettingsDialog::getFloatValue(const char* section, const ch
 	return value;
 }
 
-std::optional<std::string> SettingsDialog::getStringValue(
+std::optional<std::string> SettingsWindow::getStringValue(
 	const char* section, const char* key, std::optional<const char*> default_value) const
 {
 	std::optional<std::string> value;
@@ -539,7 +534,7 @@ std::optional<std::string> SettingsDialog::getStringValue(
 	return value;
 }
 
-void SettingsDialog::setBoolSettingValue(const char* section, const char* key, std::optional<bool> value)
+void SettingsWindow::setBoolSettingValue(const char* section, const char* key, std::optional<bool> value)
 {
 	if (m_sif)
 	{
@@ -555,7 +550,7 @@ void SettingsDialog::setBoolSettingValue(const char* section, const char* key, s
 	}
 }
 
-void SettingsDialog::setIntSettingValue(const char* section, const char* key, std::optional<int> value)
+void SettingsWindow::setIntSettingValue(const char* section, const char* key, std::optional<int> value)
 {
 	if (m_sif)
 	{
@@ -571,7 +566,7 @@ void SettingsDialog::setIntSettingValue(const char* section, const char* key, st
 	}
 }
 
-void SettingsDialog::setFloatSettingValue(const char* section, const char* key, std::optional<float> value)
+void SettingsWindow::setFloatSettingValue(const char* section, const char* key, std::optional<float> value)
 {
 	if (m_sif)
 	{
@@ -587,7 +582,7 @@ void SettingsDialog::setFloatSettingValue(const char* section, const char* key, 
 	}
 }
 
-void SettingsDialog::setStringSettingValue(const char* section, const char* key, std::optional<const char*> value)
+void SettingsWindow::setStringSettingValue(const char* section, const char* key, std::optional<const char*> value)
 {
 	if (m_sif)
 	{
@@ -603,7 +598,7 @@ void SettingsDialog::setStringSettingValue(const char* section, const char* key,
 	}
 }
 
-bool SettingsDialog::containsSettingValue(const char* section, const char* key) const
+bool SettingsWindow::containsSettingValue(const char* section, const char* key) const
 {
 	if (m_sif)
 		return m_sif->ContainsValue(section, key);
@@ -611,7 +606,7 @@ bool SettingsDialog::containsSettingValue(const char* section, const char* key) 
 		return Host::ContainsBaseSettingValue(section, key);
 }
 
-void SettingsDialog::removeSettingValue(const char* section, const char* key)
+void SettingsWindow::removeSettingValue(const char* section, const char* key)
 {
 	if (m_sif)
 	{
@@ -627,10 +622,10 @@ void SettingsDialog::removeSettingValue(const char* section, const char* key)
 	}
 }
 
-void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
+void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
 {
 	// check for an existing dialog with this crc
-	for (SettingsDialog* dialog : s_open_game_properties_dialogs)
+	for (SettingsWindow* dialog : s_open_game_properties_dialogs)
 	{
 		if (dialog->m_disc_crc == disc_crc)
 		{
@@ -645,9 +640,8 @@ void SettingsDialog::openGamePropertiesDialog(const GameList::Entry* game, const
 	if (FileSystem::FileExists(sif->GetFileName().c_str()))
 		sif->Load();
 
-	SettingsDialog* dialog = new SettingsDialog(g_main_window, std::move(sif), game, std::move(serial), disc_crc, QtUtils::StringViewToQString(Path::GetFileName(filename)));
+	SettingsWindow* dialog = new SettingsWindow(std::move(sif), game, std::move(serial), disc_crc, QtUtils::StringViewToQString(Path::GetFileName(filename)));
 	dialog->setWindowTitle(QtUtils::StringViewToQString(title));
-	dialog->setModal(false);
 	dialog->show();
 }
 

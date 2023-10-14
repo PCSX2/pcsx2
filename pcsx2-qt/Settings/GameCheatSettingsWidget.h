@@ -32,14 +32,14 @@ namespace GameList
 	struct Entry;
 }
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GameCheatSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	GameCheatSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~GameCheatSettingsWidget();
 
 private Q_SLOTS:
@@ -57,7 +57,7 @@ private:
 	void reloadList();
 
 	Ui::GameCheatSettingsWidget m_ui;
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	UnorderedStringMap<QTreeWidgetItem*> m_parent_map;
 	std::vector<Patch::PatchInfo> m_patches;

@@ -22,9 +22,9 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
-AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {

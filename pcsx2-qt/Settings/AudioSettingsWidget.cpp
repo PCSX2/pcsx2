@@ -26,7 +26,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
 static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
@@ -39,7 +39,7 @@ static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
 static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
 
-AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {

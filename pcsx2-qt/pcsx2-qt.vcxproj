@@ -111,13 +111,13 @@
     <ClCompile Include="Settings\GameListSettingsWidget.cpp" />
     <ClCompile Include="Settings\GraphicsSettingsWidget.cpp" />
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp" />
-    <ClCompile Include="Settings\SettingsDialog.cpp" />
+    <ClCompile Include="Settings\SettingsWindow.cpp" />
     <ClCompile Include="Settings\AdvancedSettingsWidget.cpp" />
     <ClCompile Include="Settings\GameFixSettingsWidget.cpp" />
     <ClCompile Include="Settings\HotkeySettingsWidget.cpp" />
     <ClCompile Include="Settings\InputBindingDialog.cpp" />
     <ClCompile Include="Settings\InputBindingWidget.cpp" />
-    <ClCompile Include="Settings\ControllerSettingsDialog.cpp" />
+    <ClCompile Include="Settings\ControllerSettingsWindow.cpp" />
     <ClCompile Include="Settings\AudioSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardConvertDialog.cpp" />
     <ClCompile Include="Settings\MemoryCardSettingsWidget.cpp" />
@@ -151,13 +151,13 @@
     <QtMoc Include="Settings\BIOSSettingsWidget.h" />
     <QtMoc Include="Settings\EmulationSettingsWidget.h" />
     <QtMoc Include="Settings\GraphicsSettingsWidget.h" />
-    <QtMoc Include="Settings\SettingsDialog.h" />
+    <QtMoc Include="Settings\SettingsWindow.h" />
     <QtMoc Include="Settings\AdvancedSettingsWidget.h" />
     <QtMoc Include="Settings\GameFixSettingsWidget.h" />
     <QtMoc Include="Settings\HotkeySettingsWidget.h" />
     <QtMoc Include="Settings\InputBindingDialog.h" />
     <QtMoc Include="Settings\InputBindingWidget.h" />
-    <QtMoc Include="Settings\ControllerSettingsDialog.h" />
+    <QtMoc Include="Settings\ControllerSettingsWindow.h" />
     <QtMoc Include="Settings\AudioSettingsWidget.h" />
     <QtMoc Include="Settings\MemoryCardConvertDialog.h" />
     <QtMoc Include="Settings\MemoryCardSettingsWidget.h" />
@@ -212,13 +212,13 @@
     <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerBindingWidgets.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_ControllerGlobalSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsDialog.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsWindow.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_MemoryCardCreateDialog.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_EmulationSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameListSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GraphicsSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_InterfaceSettingsWidget.cpp" />
-    <ClCompile Include="$(IntDir)Settings\moc_SettingsDialog.cpp" />
+    <ClCompile Include="$(IntDir)Settings\moc_SettingsWindow.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameCheatSettingsWidget.cpp" />
     <ClCompile Include="$(IntDir)Settings\moc_GameFixSettingsWidget.cpp" />
@@ -274,7 +274,7 @@
     <QtUi Include="GameList\GameListWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Settings\SettingsDialog.ui">
+    <QtUi Include="Settings\SettingsWindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\GameListSettingsWidget.ui">
@@ -301,7 +301,7 @@
     <QtUi Include="Settings\InputBindingDialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="Settings\ControllerSettingsDialog.ui">
+    <QtUi Include="Settings\ControllerSettingsWindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">

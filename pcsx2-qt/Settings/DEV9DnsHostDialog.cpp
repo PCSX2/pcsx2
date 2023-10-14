@@ -25,7 +25,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 //Figure out lists
 //On export, we take list from settings (or are given it from the DEV9 panel)

@@ -31,7 +31,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 
-GameListSettingsWidget::GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);

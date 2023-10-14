@@ -24,8 +24,8 @@
 #include <optional>
 
 #include "Tools/InputRecording/InputRecordingViewer.h"
-#include "Settings/ControllerSettingsDialog.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
+#include "Settings/SettingsWindow.h"
 #include "Debugger/DebuggerWindow.h"
 #include "ui_MainWindow.h"
 
@@ -35,7 +35,7 @@ class AutoUpdaterDialog;
 class DisplayWidget;
 class DisplayContainer;
 class GameListWidget;
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 
 class EmuThread;
 
@@ -218,6 +218,7 @@ private:
 	void connectSignals();
 	void recreate();
 	void recreateSettings();
+	void destroySubWindows();
 
 	void registerForDeviceNotifications();
 	void unregisterForDeviceNotifications();
@@ -250,7 +251,7 @@ private:
 	void destroyDisplayWidget(bool show_game_list);
 	void updateDisplayWidgetCursor();
 
-	SettingsDialog* getSettingsDialog();
+	SettingsWindow* getSettingsWindow();
 	void doSettings(const char* category = nullptr);
 
 	InputRecordingViewer* getInputRecordingViewer();
@@ -258,8 +259,7 @@ private:
 
 	DebuggerWindow* getDebuggerWindow();
 
-	ControllerSettingsDialog* getControllerSettingsDialog();
-	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
+	void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
 	QString getDiscDevicePath(const QString& title);
 
@@ -282,9 +282,9 @@ private:
 	DisplayWidget* m_display_widget = nullptr;
 	DisplayContainer* m_display_container = nullptr;
 
-	SettingsDialog* m_settings_dialog = nullptr;
+	SettingsWindow* m_setings_window = nullptr;
+	ControllerSettingsWindow* m_controller_settings_window = nullptr;
 	InputRecordingViewer* m_input_recording_viewer = nullptr;
-	ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
 	DebuggerWindow* m_debugger_window = nullptr;

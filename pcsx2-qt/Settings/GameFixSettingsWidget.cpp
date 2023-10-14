@@ -22,9 +22,9 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
-GameFixSettingsWidget::GameFixSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GameFixSettingsWidget::GameFixSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();

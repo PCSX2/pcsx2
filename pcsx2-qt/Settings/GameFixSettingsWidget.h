@@ -19,14 +19,14 @@
 
 #include "ui_GameFixSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GameFixSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	GameFixSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	GameFixSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~GameFixSettingsWidget();
 
 private:

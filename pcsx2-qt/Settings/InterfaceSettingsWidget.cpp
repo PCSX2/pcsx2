@@ -19,7 +19,7 @@
 #include "AutoUpdaterDialog.h"
 #include "MainWindow.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include "QtHost.h"
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
@@ -69,7 +69,7 @@ const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"Custom",
 	nullptr};
 
-InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();

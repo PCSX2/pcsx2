@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Settings/ControllerGlobalSettingsWidget.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -24,7 +24,7 @@
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/Input/SDLInputSource.h"
 
-ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {
@@ -132,7 +132,7 @@ void ControllerGlobalSettingsWidget::mouseSettingsClicked()
 	dialog.exec();
 }
 
-ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QDialog(parent)
 	, m_dialog(dialog)
 {
@@ -159,7 +159,7 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
 	});
 }
 
-ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog)
+ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);

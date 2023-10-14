@@ -29,9 +29,9 @@
 #include "pcsx2/SIO/Pad/Pad.h"
 
 #include "Settings/ControllerBindingWidgets.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -40,7 +40,7 @@
 #include "ui_USBBindingWidget_GTForce.h"
 #include "ui_USBBindingWidget_GunCon2.h"
 
-ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
+ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_config_section(fmt::format("Pad{}", port + 1))
@@ -325,7 +325,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 {
 	m_ui.setupUi(this);
 
-	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
+	ControllerSettingsWindow* dialog = m_bwidget->getDialog();
 	const std::string& section = m_bwidget->getConfigSection();
 	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
@@ -445,7 +445,7 @@ void ControllerMacroEditWidget::updateFrequencyText()
 
 void ControllerMacroEditWidget::updateBinds()
 {
-	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
+	ControllerSettingsWindow* dialog = m_bwidget->getDialog();
 	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 		return;
@@ -495,7 +495,7 @@ void ControllerMacroEditWidget::updateBinds()
 //////////////////////////////////////////////////////////////////////////
 
 ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(std::span<const SettingInfo> settings, std::string config_section,
-	std::string config_prefix, const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget)
+	std::string config_prefix, const char* translation_ctx, ControllerSettingsWindow* dialog, QWidget* parent_widget)
 	: QWidget(parent_widget)
 	, m_settings(settings)
 	, m_config_section(std::move(config_section))
@@ -912,7 +912,7 @@ ControllerBindingWidget_Base* ControllerBindingWidget_Guitar::createInstance(Con
 
 //////////////////////////////////////////////////////////////////////////
 
-USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
+USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_config_section(fmt::format("USB{}", port + 1))
