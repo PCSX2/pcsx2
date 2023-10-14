@@ -23,7 +23,7 @@ alignas(16) VURegs vuRegs[2];
 
 void vuMemAllocate()
 {
-	u8* curpos = SysMemory::GetDataPtr(HostMemoryMap::VUmemOffset);
+	u8* curpos = SysMemory::GetVUMem();
 	VU0.Micro	= curpos; curpos += VU0_PROGSIZE;
 	VU0.Mem		= curpos; curpos += VU0_MEMSIZE;
 	VU1.Micro	= curpos; curpos += VU1_PROGSIZE;
