@@ -30,7 +30,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 
@@ -41,7 +41,7 @@ static std::string getSlotFilenameKey(u32 slot)
 	return StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1);
 }
 
-MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {
@@ -442,7 +442,7 @@ void MemoryCardListWidget::mouseMoveEvent(QMouseEvent* event)
 	drag->exec(Qt::CopyAction);
 }
 
-void MemoryCardListWidget::refresh(SettingsDialog* dialog)
+void MemoryCardListWidget::refresh(SettingsWindow* dialog)
 {
 	clear();
 

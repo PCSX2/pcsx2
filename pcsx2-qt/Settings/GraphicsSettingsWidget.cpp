@@ -18,7 +18,7 @@
 #include "GraphicsSettingsWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include <QtWidgets/QMessageBox>
 
 #include "pcsx2/Host.h"
@@ -67,7 +67,7 @@ static constexpr int DEFAULT_INTERLACE_MODE = 0;
 static constexpr int DEFAULT_TV_SHADER_MODE = 0;
 static constexpr int DEFAULT_CAS_SHARPNESS = 50;
 
-GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {

@@ -21,21 +21,21 @@
 
 enum class GSRendererType : s8;
 
-class SettingsDialog;
+class SettingsWindow;
 
 class DebugSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	DebugSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~DebugSettingsWidget();
 
 private Q_SLOTS:
 	void onDrawDumpingChanged();
 
 private:
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	Ui::DebugSettingsWidget m_ui;
 };

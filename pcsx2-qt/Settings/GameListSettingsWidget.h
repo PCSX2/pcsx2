@@ -19,14 +19,14 @@
 
 #include "ui_GameListSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GameListSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	GameListSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~GameListSettingsWidget();
 
 	bool addExcludedPath(const std::string& path);

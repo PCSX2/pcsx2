@@ -18,7 +18,7 @@
 #include "AchievementSettingsWidget.h"
 #include "AchievementLoginDialog.h"
 #include "MainWindow.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include "SettingWidgetBinder.h"
 #include "QtUtils.h"
 
@@ -30,7 +30,7 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 
-AchievementSettingsWidget::AchievementSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {

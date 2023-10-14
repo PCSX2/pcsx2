@@ -73,9 +73,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerMacroEditWidget.ui
 	Settings/ControllerMacroWidget.ui
 	Settings/ControllerMouseSettingsDialog.ui
-	Settings/ControllerSettingsDialog.cpp
-	Settings/ControllerSettingsDialog.h
-	Settings/ControllerSettingsDialog.ui
+	Settings/ControllerSettingsWindow.cpp
+	Settings/ControllerSettingsWindow.h
+	Settings/ControllerSettingsWindow.ui
 	Settings/ControllerSettingWidgetBinder.h
 	Settings/DebugSettingsWidget.cpp
 	Settings/DebugSettingsWidget.h
@@ -137,9 +137,9 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/HddCreateQt.cpp
 	Settings/HddCreateQt.h
 	Settings/PatchDetailsWidget.ui
-	Settings/SettingsDialog.cpp
-	Settings/SettingsDialog.h
-	Settings/SettingsDialog.ui
+	Settings/SettingsWindow.cpp
+	Settings/SettingsWindow.h
+	Settings/SettingsWindow.ui
 	Settings/USBBindingWidget_DrivingForce.ui
 	Settings/USBBindingWidget_GTForce.ui
 	Settings/USBBindingWidget_GunCon2.ui

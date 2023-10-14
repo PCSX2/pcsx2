@@ -24,7 +24,7 @@
 #include "DEV9DnsHostDialog.h"
 #include "DEV9/net.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class DEV9SettingsWidget : public QWidget
 {
@@ -54,7 +54,7 @@ private Q_SLOTS:
 	void onHddCreateClicked();
 
 public:
-	DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~DEV9SettingsWidget();
 
 protected:
@@ -73,7 +73,7 @@ private:
 	void UpdateHddSizeUIEnabled();
 	void UpdateHddSizeUIValues();
 
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	Ui::DEV9SettingsWidget m_ui;
 

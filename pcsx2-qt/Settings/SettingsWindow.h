@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,10 +14,10 @@
  */
 
 #pragma once
-#include "ui_SettingsDialog.h"
+#include "ui_SettingsWindow.h"
 #include <QtCore/QMap>
 #include <QtCore/QString>
-#include <QtWidgets/QDialog>
+#include <QtWidgets/QWidget>
 #include <array>
 #include <memory>
 
@@ -45,15 +45,15 @@ class AchievementSettingsWidget;
 class AdvancedSettingsWidget;
 class DebugSettingsWidget;
 
-class SettingsDialog final : public QDialog
+class SettingsWindow final : public QWidget
 {
 	Q_OBJECT
 
 public:
-	explicit SettingsDialog(QWidget* parent);
-	SettingsDialog(QWidget* parent, std::unique_ptr<INISettingsInterface> sif, const GameList::Entry* game, std::string serial,
+	explicit SettingsWindow();
+	SettingsWindow(std::unique_ptr<INISettingsInterface> sif, const GameList::Entry* game, std::string serial,
 		u32 disc_crc, QString filename = QString());
-	~SettingsDialog();
+	~SettingsWindow();
 
 	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc);
 
@@ -125,11 +125,11 @@ private:
 
 	void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
 
-	SettingsDialog* reopen();
+	SettingsWindow* reopen();
 
 	std::unique_ptr<INISettingsInterface> m_sif;
 
-	Ui::SettingsDialog m_ui;
+	Ui::SettingsWindow m_ui;
 
 	InterfaceSettingsWidget* m_interface_settings = nullptr;
 	GameListSettingsWidget* m_game_list_settings = nullptr;

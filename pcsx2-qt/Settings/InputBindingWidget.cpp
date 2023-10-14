@@ -29,7 +29,7 @@
 
 #include "QtHost.h"
 #include "QtUtils.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/InputBindingDialog.h"
 #include "Settings/InputBindingWidget.h"
 
@@ -416,7 +416,7 @@ InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent)
 }
 
 InputVibrationBindingWidget::InputVibrationBindingWidget(
-	QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+	QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name, std::string key_name)
 {
 	setMinimumWidth(225);
 	setMaximumWidth(225);
@@ -430,7 +430,7 @@ InputVibrationBindingWidget::~InputVibrationBindingWidget()
 {
 }
 
-void InputVibrationBindingWidget::setKey(ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+void InputVibrationBindingWidget::setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name)
 {
 	m_dialog = dialog;
 	m_section_name = std::move(section_name);

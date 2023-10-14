@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#include "ui_ControllerSettingsDialog.h"
+#include "ui_ControllerSettingsWindow.h"
 
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/USB/USB.h"
@@ -23,7 +23,7 @@
 #include <QtCore/QPair>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
-#include <QtWidgets/QDialog>
+#include <QtWidgets/QWidget>
 #include <array>
 #include <string>
 
@@ -34,7 +34,7 @@ class USBDeviceWidget;
 
 class SettingsInterface;
 
-class ControllerSettingsDialog final : public QDialog
+class ControllerSettingsWindow final : public QWidget
 {
 	Q_OBJECT
 
@@ -52,8 +52,8 @@ public:
 		MAX_PORTS = 8
 	};
 
-	ControllerSettingsDialog(QWidget* parent = nullptr);
-	~ControllerSettingsDialog();
+	ControllerSettingsWindow();
+	~ControllerSettingsWindow();
 
 	__fi HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
@@ -101,7 +101,7 @@ private:
 	void refreshProfileList();
 	void switchProfile(const QString& name);
 
-	Ui::ControllerSettingsDialog m_ui;
+	Ui::ControllerSettingsWindow m_ui;
 
 	ControllerGlobalSettingsWidget* m_global_settings = nullptr;
 	std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};

@@ -26,7 +26,7 @@
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "Settings/AchievementLoginDialog.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/GameListSettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
 #include "Tools/InputRecording/InputRecordingViewer.h"
@@ -117,13 +117,7 @@ MainWindow::~MainWindow()
 {
 	// make sure the game list isn't refreshing, because it's on a separate thread
 	cancelGameListRefresh();
-
-	if (m_debugger_window)
-	{
-		m_debugger_window->close();
-		m_debugger_window->deleteLater();
-		m_debugger_window = nullptr;
-	}
+	destroySubWindows();
 
 	// we compare here, since recreate destroys the window later
 	if (g_main_window == this)
@@ -320,7 +314,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionToolbarSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
 	connect(m_ui.actionToolbarSettings, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
 	connect(m_ui.actionToolbarControllerSettings, &QAction::triggered,
-		[this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
+		[this]() { doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings); });
 	connect(m_ui.actionToolbarScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);
 	connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
 	connect(m_ui.actionScreenshot, &QAction::triggered, this, &MainWindow::onScreenshotActionTriggered);
@@ -338,11 +332,11 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionFolderSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
 	connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
 	connect(m_ui.actionControllerSettings, &QAction::triggered,
-		[this]() { doControllerSettings(ControllerSettingsDialog::Category::GlobalSettings); });
+		[this]() { doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings); });
 	connect(m_ui.actionHotkeySettings, &QAction::triggered,
-		[this]() { doControllerSettings(ControllerSettingsDialog::Category::HotkeySettings); });
+		[this]() { doControllerSettings(ControllerSettingsWindow::Category::HotkeySettings); });
 	connect(m_ui.actionAddGameDirectory, &QAction::triggered,
-		[this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+		[this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 	connect(m_ui.actionScanForNewGames, &QAction::triggered, [this]() { refreshGameList(false); });
 	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true); });
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
@@ -415,7 +409,7 @@ void MainWindow::connectSignals()
 	connect(m_game_list_widget, &GameListWidget::entryContextMenuRequested, this, &MainWindow::onGameListEntryContextMenuRequested,
 		Qt::QueuedConnection);
 	connect(m_game_list_widget, &GameListWidget::addGameDirectoryRequested, this,
-		[this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+		[this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 }
 
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
@@ -485,14 +479,14 @@ void MainWindow::recreate()
 void MainWindow::recreateSettings()
 {
 	QString current_category;
-	if (m_settings_dialog)
+	if (m_setings_window)
 	{
-		const bool was_visible = m_settings_dialog->isVisible();
+		const bool was_visible = m_setings_window->isVisible();
 
-		current_category = m_settings_dialog->getCategory();
-		m_settings_dialog->hide();
-		m_settings_dialog->deleteLater();
-		m_settings_dialog = nullptr;
+		current_category = m_setings_window->getCategory();
+		m_setings_window->hide();
+		m_setings_window->deleteLater();
+		m_setings_window = nullptr;
 
 		if (!was_visible)
 			return;
@@ -518,7 +512,29 @@ void MainWindow::resetSettings(bool ui)
 	g_main_window->recreateSettings();
 }
 
+void MainWindow::destroySubWindows()
+{
+	if (m_debugger_window)
+	{
+		m_debugger_window->close();
+		m_debugger_window->deleteLater();
+		m_debugger_window = nullptr;
+	}
 
+	if (m_controller_settings_window)
+	{
+		m_controller_settings_window->close();
+		m_controller_settings_window->deleteLater();
+		m_controller_settings_window = nullptr;
+	}
+
+	if (m_setings_window)
+	{
+		m_setings_window->close();
+		m_setings_window->deleteLater();
+		m_setings_window = nullptr;
+	}
+}
 
 void MainWindow::onScreenshotActionTriggered()
 {
@@ -594,7 +610,7 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 	m_ui.menuDebug->menuAction()->setVisible(checked);
 
 	// just recreate the entire settings window, it's easier.
-	if (m_settings_dialog)
+	if (m_setings_window)
 		recreateSettings();
 }
 
@@ -1174,7 +1190,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		if (action->isEnabled())
 		{
 			connect(action, &QAction::triggered, [entry]() {
-				SettingsDialog::openGamePropertiesDialog(entry, entry->title,
+				SettingsWindow::openGamePropertiesDialog(entry, entry->title,
 					(entry->type != GameList::EntryType::ELF) ? entry->serial : std::string(),
 					entry->crc);
 			});
@@ -1191,7 +1207,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		connect(action, &QAction::triggered, [this, entry]() { setGameListEntryCoverImage(entry); });
 
 		connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
-			[this, entry]() { getSettingsDialog()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
+			[this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
 
 		connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, entry]() { clearGameListEntryPlayTime(entry); });
 
@@ -1239,7 +1255,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 	}
 
 	connect(menu.addAction(tr("Add Search Directory...")), &QAction::triggered,
-		[this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+		[this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
 	menu.exec(point);
 }
@@ -1387,7 +1403,7 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
 		if (entry)
 		{
-			SettingsDialog::openGamePropertiesDialog(
+			SettingsWindow::openGamePropertiesDialog(
 				entry, entry->title, m_current_elf_override.isEmpty() ? entry->serial : std::string(), entry->crc);
 			return;
 		}
@@ -1403,12 +1419,12 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 	// can't use serial for ELFs, because they might have a disc set
 	if (m_current_elf_override.isEmpty())
 	{
-		SettingsDialog::openGamePropertiesDialog(
+		SettingsWindow::openGamePropertiesDialog(
 			nullptr, m_current_title.toStdString(), m_current_disc_serial.toStdString(), m_current_disc_crc);
 	}
 	else
 	{
-		SettingsDialog::openGamePropertiesDialog(
+		SettingsWindow::openGamePropertiesDialog(
 			nullptr, m_current_title.toStdString(), std::string(), m_current_disc_crc);
 	}
 }
@@ -1812,6 +1828,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		saveStateToConfig();
 		if (m_display_widget)
 			g_emu_thread->stopFullscreenUI();
+		destroySubWindows();
 		QMainWindow::closeEvent(event);
 		return;
 	}
@@ -2267,13 +2284,13 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 	}
 }
 
-SettingsDialog* MainWindow::getSettingsDialog()
+SettingsWindow* MainWindow::getSettingsWindow()
 {
-	if (!m_settings_dialog)
+	if (!m_setings_window)
 	{
-		m_settings_dialog = new SettingsDialog(this);
-		connect(m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
-		connect(m_settings_dialog->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
+		m_setings_window = new SettingsWindow();
+		connect(m_setings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
+		connect(m_setings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
 			// reopen settings dialog after it applies
 			updateLanguage();
 			// If you doSettings now, on macOS, the window will somehow end up underneath the main window that was created above
@@ -2284,21 +2301,16 @@ SettingsDialog* MainWindow::getSettingsDialog()
 		});
 	}
 
-	return m_settings_dialog;
+	return m_setings_window;
 }
 
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
-	SettingsDialog* dlg = getSettingsDialog();
+	SettingsWindow* dlg = getSettingsWindow();
 	if (dlg->isVisible())
-	{
 		dlg->raise();
-	}
 	else
-	{
-		dlg->setModal(false);
 		dlg->show();
-	}
 
 	if (category)
 		dlg->setCategory(category);
@@ -2319,25 +2331,20 @@ void MainWindow::openDebugger()
 	dwnd->isVisible() ? dwnd->hide() : dwnd->show();
 }
 
-ControllerSettingsDialog* MainWindow::getControllerSettingsDialog()
+void MainWindow::doControllerSettings(ControllerSettingsWindow::Category category)
 {
-	if (!m_controller_settings_dialog)
-		m_controller_settings_dialog = new ControllerSettingsDialog(this);
-
-	return m_controller_settings_dialog;
-}
-
-void MainWindow::doControllerSettings(ControllerSettingsDialog::Category category)
-{
-	ControllerSettingsDialog* dlg = getControllerSettingsDialog();
-	if (!dlg->isVisible())
+	if (m_controller_settings_window)
 	{
-		dlg->setModal(false);
-		dlg->show();
+		m_controller_settings_window->raise();
+	}
+	else
+	{
+		m_controller_settings_window = new ControllerSettingsWindow();
+		m_controller_settings_window->show();
 	}
 
-	if (category != ControllerSettingsDialog::Category::Count)
-		dlg->setCategory(category);
+	if (category != ControllerSettingsWindow::Category::Count)
+		m_controller_settings_window->setCategory(category);
 }
 
 QString MainWindow::getDiscDevicePath(const QString& title)

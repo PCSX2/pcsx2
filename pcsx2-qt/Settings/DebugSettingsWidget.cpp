@@ -18,13 +18,13 @@
 #include "DebugSettingsWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "pcsx2/Host.h"
 
 #include <QtWidgets/QMessageBox>
 
-DebugSettingsWidget::DebugSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {

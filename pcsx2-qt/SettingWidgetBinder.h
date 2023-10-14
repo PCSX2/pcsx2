@@ -41,7 +41,7 @@
 
 #include "QtHost.h"
 #include "QtUtils.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsWindow.h"
 
 namespace SettingWidgetBinder
 {

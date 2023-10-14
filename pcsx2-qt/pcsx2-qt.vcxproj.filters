@@ -66,7 +66,7 @@
     <ClCompile Include="Settings\InterfaceSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
-    <ClCompile Include="Settings\SettingsDialog.cpp">
+    <ClCompile Include="Settings\SettingsWindow.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_BIOSSettingsWidget.cpp">
@@ -84,7 +84,7 @@
     <ClCompile Include="$(IntDir)Settings\moc_InterfaceSettingsWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_SettingsDialog.cpp">
+    <ClCompile Include="$(IntDir)Settings\moc_SettingsWindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Settings\moc_AdvancedSettingsWidget.cpp">
@@ -130,7 +130,7 @@
     <ClCompile Include="$(IntDir)moc_AboutDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsDialog.cpp">
+    <ClCompile Include="$(IntDir)Settings\moc_ControllerSettingsWindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)GameList\moc_GameListModel.cpp">
@@ -142,7 +142,7 @@
     <ClCompile Include="$(IntDir)GameList\moc_GameListWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="Settings\ControllerSettingsDialog.cpp">
+    <ClCompile Include="Settings\ControllerSettingsWindow.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="Settings\ControllerBindingWidgets.cpp">
@@ -374,7 +374,7 @@
     <QtMoc Include="Settings\InterfaceSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\SettingsDialog.h">
+    <QtMoc Include="Settings\SettingsWindow.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\AdvancedSettingsWidget.h">
@@ -402,7 +402,7 @@
     <QtMoc Include="GameList\GameListRefreshThread.h">
       <Filter>GameList</Filter>
     </QtMoc>
-    <QtMoc Include="Settings\ControllerSettingsDialog.h">
+    <QtMoc Include="Settings\ControllerSettingsWindow.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\ControllerBindingWidgets.h">
@@ -513,7 +513,7 @@
     <QtUi Include="Settings\InterfaceSettingsWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\SettingsDialog.ui">
+    <QtUi Include="Settings\SettingsWindow.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\AdvancedSettingsWidget.ui">
@@ -525,7 +525,7 @@
     <QtUi Include="Settings\InputBindingDialog.ui">
       <Filter>Settings</Filter>
     </QtUi>
-    <QtUi Include="Settings\ControllerSettingsDialog.ui">
+    <QtUi Include="Settings\ControllerSettingsWindow.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\ControllerBindingWidget_DualShock2.ui">

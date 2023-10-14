@@ -17,7 +17,7 @@
 
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtProgressCallback.h"
@@ -38,7 +38,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
+GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);

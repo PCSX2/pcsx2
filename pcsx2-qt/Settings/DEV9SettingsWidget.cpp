@@ -30,7 +30,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "HddCreateQt.h"
 
@@ -58,7 +58,7 @@ static const char* s_dns_name[] = {
 
 using PacketReader::IP::IP_Address;
 
-DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
+DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog{dialog}
 {
