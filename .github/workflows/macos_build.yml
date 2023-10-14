@@ -64,8 +64,6 @@ jobs:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
           HOMEBREW_NO_ANALYTICS: 1
         run: |
-          brew unlink libjpeg || true # Conflicts with our self-built dependencies
-          brew unlink libpng || true
           # Unlike other packages, brew's MoltenVK build uses MoltenVK's minimum macOS version of 10.13 so we can use it
           if ! brew install molten-vk ccache nasm; then
             brew update

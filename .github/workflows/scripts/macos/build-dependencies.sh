@@ -23,7 +23,6 @@ export CXXFLAGS="-I$INSTALLDIR/include -Os $CXXFLAGS"
 cat > SHASUMS <<EOF
 888b8c39f36ae2035d023d1b14ab0191eb1d26403c3cf4d4d5ede30e66a4942c  $SDL.tar.gz
 505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca  libpng-$PNG.tar.xz
-4077d6a6a75aeb01884f708919d25934c93305e49f7e3f36db9129320e6f4f3d  jpegsrc.v$JPG.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
 039d53312acb5897a9054bd38c9ccbdab72500b71fdccdb3f4f0844b0dd39e0e  qtbase-everywhere-src-$QT.tar.xz
 e1542cb50176e237809895c6549598c08587c63703d100be54ac2d806834e384  qtimageformats-everywhere-src-$QT.tar.xz
@@ -35,7 +34,6 @@ EOF
 curl -L \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$PNG/libpng-$PNG.tar.xz" \
-	-O "https://www.ijg.org/files/jpegsrc.v$JPG.tar.gz" \
 	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
@@ -74,14 +72,6 @@ cd ..
 echo "Installing libpng..."
 tar xf "libpng-$PNG.tar.xz"
 cd "libpng-$PNG"
-./configure --prefix "$INSTALLDIR" --disable-dependency-tracking
-make "-j$NPROCS"
-make install
-cd ..
-
-echo "Installing libjpeg..."
-tar xf "jpegsrc.v$JPG.tar.gz"
-cd "jpeg-$JPG"
 ./configure --prefix "$INSTALLDIR" --disable-dependency-tracking
 make "-j$NPROCS"
 make install
