@@ -38223,6 +38223,8 @@ SLPM-66489:
 SLPM-66491:
   name: "Ayakashi-bito - Gen'you Ibunroku"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes rendering.
 SLPM-66492:
   name: "Commandos Strike Force"
   region: "NTSC-J"
