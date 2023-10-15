@@ -532,7 +532,12 @@ struct PSMain
 
 	float4 fetch_c(ushort2 uv)
 	{
-		return PS_TEX_IS_DEPTH ? tex_depth.read(uv) : tex.read(uv);
+		if (PS_TEX_IS_FB)
+			return current_color;
+		else if (PS_TEX_IS_DEPTH)
+			return tex_depth.read(uv);
+		else
+			return tex.read(uv);
 	}
 
 	// MARK: Depth sampling
