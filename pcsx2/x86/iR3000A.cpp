@@ -1289,7 +1289,7 @@ static bool psxDynarecCheckBreakpoint()
 	if (!hit)
 		return false;
 
-	CBreakPoints::SetBreakpointTriggered(true);
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
 
 	// Exit the EE too.
@@ -1303,7 +1303,7 @@ static bool psxDynarecMemcheck()
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
 		return false;
 
-	CBreakPoints::SetBreakpointTriggered(true);
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
 
 	// Exit the EE too.

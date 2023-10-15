@@ -54,7 +54,7 @@ void intBreakpoint(bool memcheck)
 			return;
 	}
 
-	CBreakPoints::SetBreakpointTriggered(true);
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
 	VMManager::SetPaused(true);
 	Cpu->ExitExecution();
 }

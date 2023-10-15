@@ -44,4 +44,6 @@ private:
 
 	CpuWidget* m_cpuWidget_r5900;
 	CpuWidget* m_cpuWidget_r3000;
+
+	void setTabActiveStyle(BreakPointCpu toggledCPU);
 };

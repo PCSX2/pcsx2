@@ -153,8 +153,9 @@ public:
 
 	static void Update(BreakPointCpu cpu = BREAKPOINT_IOP_AND_EE, u32 addr = 0);
 
-	static void SetBreakpointTriggered(bool b) { breakpointTriggered_ = b; };
+	static void SetBreakpointTriggered(bool triggered, BreakPointCpu cpu = BreakPointCpu::BREAKPOINT_IOP_AND_EE) { breakpointTriggered_ = triggered; breakpointTriggeredCpu_ = cpu; };
 	static bool GetBreakpointTriggered() { return breakpointTriggered_; };
+	static BreakPointCpu GetBreakpointTriggeredCpu() { return breakpointTriggeredCpu_; };
 
 	static bool GetCorePaused() { return corePaused; };
 	static void SetCorePaused(bool b) { corePaused = b; };
@@ -175,6 +176,7 @@ private:
 	static u64 breakSkipFirstTicksIop_;
 
 	static bool breakpointTriggered_;
+	static BreakPointCpu breakpointTriggeredCpu_;
 	static bool corePaused;
 
 	static std::function<void()> cb_bpUpdated_;

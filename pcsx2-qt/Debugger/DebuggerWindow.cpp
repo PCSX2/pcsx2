@@ -48,7 +48,7 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 	connect(g_emu_thread, &EmuThread::onVMResumed, this, &DebuggerWindow::onVMStateChanged);
 
 	onVMStateChanged(); // If we missed a state change while we weren't loaded
-	
+
 	// We can't do this in the designer, but we want to right align the actionOnTop action in the toolbar
 	QWidget* spacer = new QWidget(this);
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -67,6 +67,14 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 DebuggerWindow::~DebuggerWindow() = default;
 
+// There is no straightforward way to set the tab text to bold in Qt
+// Sorry colour blind people, but this is the best we can do for now
+void DebuggerWindow::setTabActiveStyle(BreakPointCpu enabledCpu)
+{
+	m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r5900), (enabledCpu == BREAKPOINT_EE) ? Qt::red : this->palette().text().color());
+	m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r3000), (enabledCpu == BREAKPOINT_IOP) ? Qt::red : this->palette().text().color());
+}
+
 void DebuggerWindow::onVMStateChanged()
 {
 	if (!QtHost::IsVMPaused())
@@ -76,6 +84,7 @@ void DebuggerWindow::onVMStateChanged()
 		m_ui.actionStepInto->setEnabled(false);
 		m_ui.actionStepOver->setEnabled(false);
 		m_ui.actionStepOut->setEnabled(false);
+		setTabActiveStyle(BREAKPOINT_IOP_AND_EE);
 	}
 	else
 	{
@@ -84,17 +93,32 @@ void DebuggerWindow::onVMStateChanged()
 		m_ui.actionStepInto->setEnabled(true);
 		m_ui.actionStepOver->setEnabled(true);
 		m_ui.actionStepOut->setEnabled(true);
-		Host::RunOnCPUThread([] {
-			if (CBreakPoints::GetBreakpointTriggered())
+		// Switch to the CPU tab that triggered the breakpoint
+		// Also bold the tab text to indicate that a breakpoint was triggered
+		if (CBreakPoints::GetBreakpointTriggered())
+		{
+			const BreakPointCpu triggeredCpu = CBreakPoints::GetBreakpointTriggeredCpu();
+			setTabActiveStyle(triggeredCpu);
+			switch (triggeredCpu)
 			{
+				case BREAKPOINT_EE:
+					m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r5900);
+					break;
+				case BREAKPOINT_IOP:
+					m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r3000);
+					break;
+				default:
+					break;
+			}
+			Host::RunOnCPUThread([] {
 				CBreakPoints::ClearTemporaryBreakPoints();
-				CBreakPoints::SetBreakpointTriggered(false);
+				CBreakPoints::SetBreakpointTriggered(false, BREAKPOINT_IOP_AND_EE);
 				// Our current PC is on a breakpoint.
 				// When we run the core again, we want to skip this breakpoint and run
 				CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
 				CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
-			}
-		});
+			});
+		}
 	}
 	return;
 }

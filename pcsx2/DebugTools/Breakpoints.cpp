@@ -30,6 +30,7 @@ u64 CBreakPoints::breakSkipFirstTicksIop_ = 0;
 std::vector<MemCheck> CBreakPoints::memChecks_;
 std::vector<MemCheck*> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
+BreakPointCpu CBreakPoints::breakpointTriggeredCpu_;
 bool CBreakPoints::corePaused = false;
 std::function<void()> CBreakPoints::cb_bpUpdated_;
 
