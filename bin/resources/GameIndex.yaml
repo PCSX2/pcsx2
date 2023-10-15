@@ -14510,6 +14510,8 @@ SLES-51053:
   name: "Tom & Jerry's War of the Wiskers"
   region: "PAL-M6"
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
+    trilinearFiltering: 1
     disableDepthSupport: 1 # Fixes shadow flicker.
 SLES-51054:
   name: "Midnight Club 2"
@@ -32409,7 +32411,8 @@ SLPM-62449:
   name-en: "Tom & Jerry - War of the Whiskers"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1 # Cleans up texture detail.
+    mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
+    trilinearFiltering: 1
     disableDepthSupport: 1 # Fixes shadow flicker.
 SLPM-62450:
   name: カラオケレボリューション 〜アニメソングコレクション〜
@@ -56124,7 +56127,8 @@ SLUS-20355:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1 # Cleans up texture detail.
+    mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
+    trilinearFiltering: 1
     disableDepthSupport: 1 # Fixes shadow flicker.
 SLUS-20356:
   name: "Transworld SURF"
