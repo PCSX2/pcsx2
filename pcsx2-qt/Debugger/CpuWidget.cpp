@@ -246,7 +246,7 @@ void CpuWidget::onBPListDoubleClicked(const QModelIndex& index)
 	{
 		if (index.column() == BreakpointModel::OFFSET)
 		{
-			m_ui.disassemblyWidget->gotoAddress(m_bpModel.data(index, Qt::UserRole).toUInt());
+			m_ui.disassemblyWidget->gotoAddress(m_bpModel.data(index, BreakpointModel::DataRole).toUInt());
 		}
 	}
 }
@@ -285,8 +285,8 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	contextMenu->addSeparator();
 	QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.breakpointList);
 	connect(actionExport, &QAction::triggered, [this]() {
-		// It's important to use the User Role here to allow pasting to be translation agnostic
-		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), Qt::UserRole));
+		// It's important to use the Export Role here to allow pasting to be translation agnostic
+		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), BreakpointModel::ExportRole));
 	});
 	contextMenu->addAction(actionExport);
 
@@ -429,7 +429,7 @@ void CpuWidget::contextBPListPasteCSV()
 			}
 
 			// Size
-			mc.end = fields[2].toUInt(&ok, 16) + mc.start;
+			mc.end = fields[2].toUInt(&ok) + mc.start;
 			if (!ok)
 			{
 				Console.WriteLn("Debugger CSV Import: Failed to parse length '%s', skipping", fields[1].toUtf8().constData());
