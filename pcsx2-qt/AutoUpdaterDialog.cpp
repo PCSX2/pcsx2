@@ -391,9 +391,6 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 					tr("<h2>Settings Warning</h2><p>Installing this update will reset your program configuration. Please note "
 					   "that you will have to reconfigure your settings after this update.</p>"));
 			}
-			changes_html += tr("<h4>Installing this update will download %1 MB through your internet connection.</h4>")
-                    .arg(static_cast<double>(m_download_size) / 1048576.0, 0, 'f', 2);
-				
 			m_ui.updateNotes->setText(changes_html);
 		}
 		else
@@ -522,6 +519,7 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 
 	m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(getCurrentVersion()).arg(getCurrentVersionDate()));
 	m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_version).arg(m_latest_version_timestamp.toString()));
+	m_ui.downloadSize->setText(tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1048576.0, 0, 'f', 2));
 	m_ui.updateNotes->setText(tr("Loading..."));
 	queueGetChanges();
 	exec();
