@@ -20093,7 +20093,7 @@ SLES-53523:
   roundModes:
     vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes broken light and shadow rendering.
+    minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
     trilinearFiltering: 1
     textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
@@ -20601,7 +20601,7 @@ SLES-53647:
   roundModes:
     vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes broken light and shadow rendering.
+    minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
     trilinearFiltering: 1
     textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
@@ -52628,7 +52628,7 @@ SLUS-21139:
   roundModes:
     vu1RoundMode: 0 # Fixes textures and crashes.
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes broken light and shadow rendering.
+    minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
     trilinearFiltering: 1
     textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
