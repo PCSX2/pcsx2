@@ -824,7 +824,7 @@ SCAJ-10003:
   name: "Taiko no Tatsujin - Doki! Shinkyoku Darake no Haru Matsuri"
   region: "NTSC-Unk"
 SCAJ-10004:
-  name: "Time Crisis 2 [PlayStation 2 The Best]"
+  name: "Time Crisis 2 [PS2 The Best]"
   region: "NTSC-Unk"
 SCAJ-10006:
   name: "Taiko no Tatsujin - Appare Sandaime"
@@ -1311,7 +1311,7 @@ SCAJ-20093:
   name: "Tenchu Kurenai"
   region: "NTSC-Unk"
 SCAJ-20094:
-  name: "Minna no Golf 4 [PlayStation 2 The Best]"
+  name: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-Unk"
 SCAJ-20095:
   name: "Digital Devil Saga - Avatar Tuner"
@@ -1549,7 +1549,7 @@ SCAJ-20135:
     - "SLPS-73210"
     - "SLPS-73240"
 SCAJ-20136:
-  name: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
+  name: "Ace Combat 5 - The Unsung War [PS2 The Best]"
   region: "NTSC-Unk"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
@@ -1869,10 +1869,10 @@ SCAJ-20193:
   gameFixes:
     - FpuMulHack
 SCAJ-20194:
-  name: "Minna no Golf 4 [PlayStation 2 The Best]"
+  name: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-Unk"
 SCAJ-20195:
-  name: "Ape Escape 3 [PlayStation 2 The Best]"
+  name: "Ape Escape 3 [PS2 The Best]"
   region: "NTSC-C"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
@@ -1881,7 +1881,7 @@ SCAJ-20195:
     halfPixelOffset: 2 # Fixes misaligned blur.
     autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCAJ-20196:
-  name: "Wang Da Yu Ju Xiang [PlayStation 2 The Best]"
+  name: "Wang Da Yu Ju Xiang [PS2 The Best]"
   region: "NTSC-C"
   gsHWFixes:
     mipmap: 1
@@ -1906,10 +1906,10 @@ SCAJ-20197:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SCAJ-20198:
-  name: "Everybody's Tennis [PlayStation 2 The Best]"
+  name: "Everybody's Tennis [PS2 The Best]"
   region: "NTSC-Unk"
 SCAJ-20199:
-  name: "Tekken 5 [PlayStation 2 The Best]"
+  name: "Tekken 5 [PS2 The Best]"
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
@@ -1957,7 +1957,7 @@ SCAJ-25047:
   gsHWFixes:
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SCAJ-30001:
-  name: "Xenosaga - Episode I - Der Wille zur Macht [PlayStation 2 The Best]"
+  name: "Xenosaga - Episode I - Der Wille zur Macht [PS2 The Best]"
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
@@ -2020,7 +2020,7 @@ SCAJ-30007:
     halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCAJ-30008:
-  name: "Gran Turismo 4 [PlayStation 2 The Best]"
+  name: "Gran Turismo 4 [PS2 The Best]"
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
@@ -8112,23 +8112,23 @@ SCPS-17502:
   name: "Linux for PlayStation 2 - Release 1.0 (Disc 2) (Software Packages)"
   region: "NTSC-J"
 SCPS-19101:
-  name: 蚊 PlayStation 2 the Best
-  name-sort: か PlayStation 2 the Best
-  name-en: "Mosquito [PlayStation 2 The Best]"
+  name: 蚊 PS2 the Best
+  name-sort: か PS2 the Best
+  name-en: "Mosquito [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SCPS-19102:
-  name: ボクと魔王 PlayStation®2 the Best
-  name-sort: ぼくとまおう PlayStation®2 the Best
-  name-en: "Boku to Maou [PlayStation 2 The Best]"
+  name: ボクと魔王 PS2 the Best
+  name-sort: ぼくとまおう PS2 the Best
+  name-en: "Boku to Maou [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Depth of field blur is incorrect without it.
 SCPS-19103:
-  name: ICO PlayStation 2 the Best
-  name-sort: ICO PlayStation 2 the Best
-  name-en: "ICO [PlayStation 2 The Best]"
+  name: ICO PS2 the Best
+  name-sort: ICO PS2 the Best
+  name-en: "ICO [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -8139,19 +8139,19 @@ SCPS-19103:
     halfPixelOffset: 1 # Fixes effect misalignment.
     moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-19104:
-  name: ピポサル2001 PlayStation 2 the Best
-  name-sort: ぴぽさる2001 PlayStation 2 the Best
-  name-en: "Pipo Saru 2001 [PlayStation 2 The Best]"
+  name: ピポサル2001 PS2 the Best
+  name-sort: ぴぽさる2001 PS2 the Best
+  name-en: "Pipo Saru 2001 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19105:
-  name: ブラボーミュージック PlayStation®2 the Best
-  name-sort: ぶらぼーみゅーじっく PlayStation®2 the Best
-  name-en: "Bravo Music [PlayStation 2 The Best]"
+  name: ブラボーミュージック PS2 the Best
+  name-sort: ぶらぼーみゅーじっく PS2 the Best
+  name-en: "Bravo Music [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19151:
-  name: ICO PlayStation 2 the Best
-  name-sort: ICO PlayStation 2 the Best
-  name-en: "ICO [PlayStation 2 The Best]"
+  name: ICO PS2 the Best
+  name-sort: ICO PS2 the Best
+  name-en: "ICO [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
   clampModes:
@@ -8162,17 +8162,17 @@ SCPS-19151:
     halfPixelOffset: 1 # Fixes effect misalignment.
     moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCPS-19152:
-  name: "Saru Get You! 2 [PlayStation 2 The Best]"
+  name: "Saru Get You! 2 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19153:
-  name: ピポサル2001 PlayStation 2 the Best
-  name-sort: ぴぽさる2001 PlayStation 2 the Best
-  name-en: "Pipo Saru 2001 [PlayStation 2 The Best]"
+  name: ピポサル2001 PS2 the Best
+  name-sort: ぴぽさる2001 PS2 the Best
+  name-en: "Pipo Saru 2001 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19201:
-  name: パラッパラッパー2 PlayStation 2 the Best
-  name-sort: ぱらっぱらっぱー2 PlayStation 2 the Best
-  name-en: "PaRappa the Rapper 2 [PlayStation 2 The Best]"
+  name: パラッパラッパー2 PS2 the Best
+  name-sort: ぱらっぱらっぱー2 PS2 the Best
+  name-en: "PaRappa the Rapper 2 [PS2 The Best]"
   region: "NTSC-J"
   speedHacks:
     instantVU1: 0 # Fixes noodles.
@@ -8183,61 +8183,61 @@ SCPS-19201:
     wildArmsHack: 1 # Fixes misaligment depth of field effect.
     roundSprite: 2 # Fixes misaligment depth of field effect even more.
 SCPS-19202:
-  name: EXTERMINATION PlayStation 2 the Best
-  name-sort: EXTERMINATION PlayStation 2 the Best
-  name-en: "Extermination [PlayStation 2 The Best]"
+  name: EXTERMINATION PS2 the Best
+  name-sort: EXTERMINATION PS2 the Best
+  name-en: "Extermination [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Black FMV.
 SCPS-19203:
-  name: ダーククラウド PlayStation 2 the Best
-  name-sort: だーくくらうど PlayStation 2 the Best
-  name-en: "Dark Cloud [PlayStation 2 The Best]"
+  name: ダーククラウド PS2 the Best
+  name-sort: だーくくらうど PS2 the Best
+  name-en: "Dark Cloud [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes mipmapping.
     trilinearFiltering: 1 # Smoothes out mipmapping.
     halfPixelOffset: 2 # Distance is less blurry, game has reduced LOD so it will still look blurry.
 SCPS-19204:
-  name: レガイア デュエルサーガ PlayStation 2 the Best
-  name-sort: れがいあ でゅえるさーが PlayStation 2 the Best
-  name-en: "Legaia - Duel Saga [PlayStation 2 The Best]"
+  name: レガイア デュエルサーガ PS2 the Best
+  name-sort: れがいあ でゅえるさーが PS2 the Best
+  name-en: "Legaia - Duel Saga [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19205:
-  name: WILD ARMS Advanced 3rd PlayStation®2 the Best
-  name-sort: WILD ARMS Advanced 3rd PlayStation®2 the Best
-  name-en: "Wild ARMs - Advanced 3rd [PlayStation 2 The Best]"
+  name: WILD ARMS Advanced 3rd PS2 the Best
+  name-sort: WILD ARMS Advanced 3rd PS2 the Best
+  name-en: "Wild ARMs - Advanced 3rd [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-19206:
-  name: サルゲッチュ2 PlayStation 2 the Best
-  name-sort: さるげっちゅ2 PlayStation 2 the Best
-  name-en: "Ape Escape 2 [PlayStation 2 The Best]"
+  name: サルゲッチュ2 PS2 the Best
+  name-sort: さるげっちゅ2 PS2 the Best
+  name-en: "Ape Escape 2 [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19207:
-  name: ポポロクロイス〜はじまりの冒険〜 PlayStation 2 the Best
-  name-sort: ぽぽろくろいす〜はじまりのぼうけん〜 PlayStation 2 the Best
-  name-en: "Popolocrois Story - Hajime no Bouken [PlayStation 2 The Best]"
+  name: ポポロクロイス〜はじまりの冒険〜 PS2 the Best
+  name-sort: ぽぽろくろいす〜はじまりのぼうけん〜 PS2 the Best
+  name-en: "Popolocrois Story - Hajime no Bouken [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19208:
-  name: グランツーリスモ Concept2001 TOKYO PlayStation 2 the Best
-  name-sort: ぐらんつーりすも Concept2001 TOKYO PlayStation 2 the Best
-  name-en: "Gran Turismo - Concept 2001 Tokyo [PlayStation 2 The Best]"
+  name: グランツーリスモ Concept2001 TOKYO PS2 the Best
+  name-sort: ぐらんつーりすも Concept2001 TOKYO PS2 the Best
+  name-en: "Gran Turismo - Concept 2001 Tokyo [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19209:
   name: ぼくのなつやすみ2 海の冒険篇 PlayStation® 2 the Best
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん PlayStation® 2 the Best
-  name-en: "Boku no Summer Vacation [PlayStation 2 The Best]"
+  name-en: "Boku no Summer Vacation [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19210:
-  name: ジャック×ダクスター PlayStation®2 the Best
-  name-sort: じゃっく×だくすたー PlayStation®2 the Best
-  name-en: "Jak x Daxter - Kyuusekai no Isan [PlayStation 2 The Best]"
+  name: ジャック×ダクスター PS2 the Best
+  name-sort: じゃっく×だくすたー PS2 the Best
+  name-en: "Jak x Daxter - Kyuusekai no Isan [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Fixes broken textures.
@@ -8245,32 +8245,32 @@ SCPS-19210:
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19211:
-  name: ラチェット＆クランク PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく PlayStation®2 the Best
-  name-en: "Ratchet & Clank [PlayStation 2 The Best]"
+  name: ラチェット＆クランク PS2 the Best
+  name-sort: らちぇっと＆くらんく PS2 the Best
+  name-en: "Ratchet & Clank [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
 SCPS-19213:
-  name: OPERATOR’S SIDE マイク同梱版 PlayStation®2 the Best
-  name-sort: OPERATOR’S SIDE まいくどうこんばん PlayStation®2 the Best
-  name-en: "Operator's Side [PlayStation 2 The Best] [with Microphone]"
+  name: OPERATOR’S SIDE マイク同梱版 PS2 the Best
+  name-sort: OPERATOR’S SIDE まいくどうこんばん PS2 the Best
+  name-en: "Operator's Side [PS2 The Best] [with Microphone]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCPS-19214:
-  name: OPERATOR’S SIDE PlayStation®2 the Best
-  name-sort: OPERATOR’S SIDE PlayStation®2 the Best
-  name-en: "Operator's Side [PlayStation 2 The Best]"
+  name: OPERATOR’S SIDE PS2 the Best
+  name-sort: OPERATOR’S SIDE PS2 the Best
+  name-en: "Operator's Side [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCPS-19215:
-  name: ダーククロニクル PlayStation®2 the Best
-  name-sort: だーくくろにくる PlayStation®2 the Best
-  name-en: "Dark Chronicle [PlayStation 2 The Best]"
+  name: ダーククロニクル PS2 the Best
+  name-sort: だーくくろにくる PS2 the Best
+  name-en: "Dark Chronicle [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
@@ -8279,16 +8279,16 @@ SCPS-19215:
     cpuSpriteRenderBW: 2 # Fixes lines in geometry.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19251:
-  name: "WILD ARMS Alter code:F [PlayStation®2 the Best]"
-  name-sort: "WILD ARMS Alter code:F [PlayStation®2 the Best]"
-  name-en: "Wild ARMs - Alter Code F [PlayStation 2 The Best]"
+  name: "WILD ARMS Alter code:F [PS2 the Best]"
+  name-sort: "WILD ARMS Alter code:F [PS2 the Best]"
+  name-en: "Wild ARMs - Alter Code F [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
 SCPS-19252:
-  name: グランツーリスモ4 PlayStation 2 the Best
-  name-sort: ぐらんつーりすも4 PlayStation 2 the Best
-  name-en: "Gran Turismo 4 [PlayStation 2 The Best]"
+  name: グランツーリスモ4 PS2 the Best
+  name-sort: ぐらんつーりすも4 PS2 the Best
+  name-en: "Gran Turismo 4 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
@@ -8310,14 +8310,14 @@ SCPS-19252:
     - "SCPS-15009"
     - "SCPS-55007"
 SCPS-19253:
-  name: "WILD ARMS Alter code:F [PlayStation 2 the Best]"
-  name-sort: "WILD ARMS Alter code:F [PlayStation 2 the Best]"
-  name-en: "Wild ARMs - Alter Code F [PlayStation 2 The Best - Reprint]"
+  name: "WILD ARMS Alter code:F [PS2 the Best]"
+  name-sort: "WILD ARMS Alter code:F [PS2 the Best]"
+  name-en: "Wild ARMs - Alter Code F [PS2 The Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
 SCPS-19254:
-  name: "Rogue Galaxy [PlayStation 2 The Best]"
+  name: "Rogue Galaxy [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fix glow effects from lamps.
@@ -8325,28 +8325,28 @@ SCPS-19254:
     preloadFrameData: 1 # Fixes corrupt textures especially on water.
     disablePartialInvalidation: 1 # Prevents UI and subtitles from disappearing.
 SCPS-19301:
-  name: みんなのGOLF 4 PlayStation 2 the Best
-  name-sort: みんなのGOLF 4 PlayStation 2 the Best
-  name-en: "Minna no Golf 4 [PlayStation 2 The Best]"
+  name: みんなのGOLF 4 PS2 the Best
+  name-sort: みんなのGOLF 4 PS2 the Best
+  name-en: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19302:
-  name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく2 ががが！ぎんがのこまんどーっす PlayStation®2 the Best
-  name-en: "Ratchet & Clank 2 [PlayStation 2 The Best]"
+  name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす PS2 the Best
+  name-sort: らちぇっと＆くらんく2 ががが！ぎんがのこまんどーっす PS2 the Best
+  name-en: "Ratchet & Clank 2 [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
 SCPS-19303:
-  name: ぼくのなつやすみ2 海の冒険篇 PlayStation 2 the Best
-  name-sort: ぼくのなつやすみ2 うみのぼうけんへん PlayStation 2 the Best
-  name-en: "Boku no Natsuyasumi 2 [PlayStation 2 The Best]"
+  name: ぼくのなつやすみ2 海の冒険篇 PS2 the Best
+  name-sort: ぼくのなつやすみ2 うみのぼうけんへん PS2 the Best
+  name-en: "Boku no Natsuyasumi 2 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19304:
-  name: グランツーリスモ 4 “プロローグ版” PlayStation®2 the Best
-  name-sort: ぐらんつーりすも 4 “ぷろろーぐばん” PlayStation®2 the Best
-  name-en: "Gran Turismo 4 - Prologue [PlayStation 2 The Best]"
+  name: グランツーリスモ 4 “プロローグ版” PS2 the Best
+  name-sort: ぐらんつーりすも 4 “ぷろろーぐばん” PS2 the Best
+  name-en: "Gran Turismo 4 - Prologue [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
@@ -8367,18 +8367,18 @@ SCPS-19304:
   # vuClampMode = 2  Text in GT mode works.
   # eeClampMode = 3  Text in races works.
 SCPS-19305:
-  name: SIREN PlayStation 2 the Best
-  name-sort: SIREN PlayStation 2 the Best
-  name-en: "Siren [PlayStation 2 The Best]"
+  name: SIREN PS2 the Best
+  name-sort: SIREN PS2 the Best
+  name-en: "Siren [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes gaps between menu options.
     cpuSpriteRenderBW: 4 # Fixes sky rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19306:
-  name: ダーククロニクル PlayStation®2 the Best
-  name-sort: だーくくろにくる PlayStation®2 the Best
-  name-en: "Dark Chronicle [PlayStation 2 The Best]"
+  name: ダーククロニクル PS2 the Best
+  name-sort: だーくくろにくる PS2 the Best
+  name-en: "Dark Chronicle [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes textbox.
@@ -8387,19 +8387,19 @@ SCPS-19306:
     cpuSpriteRenderBW: 2 # Fixes lines in geometry.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19307:
-  name: ポポロクロイス〜はじまりの冒険〜 PlayStation®2 the Best
-  name-sort: ぽぽろくろいす〜はじまりのぼうけん〜 PlayStation®2 the Best
-  name-en: "Popolocrois - The First Adventure [PlayStation 2 The Best]"
+  name: ポポロクロイス〜はじまりの冒険〜 PS2 the Best
+  name-sort: ぽぽろくろいす〜はじまりのぼうけん〜 PS2 the Best
+  name-en: "Popolocrois - The First Adventure [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19308:
-  name: サルゲッチュ2 PlayStation 2 the Best
-  name-sort: さるげっちゅ2 PlayStation 2 the Best
-  name-en: "Saru Get You 2 [PlayStation 2 The Best]"
+  name: サルゲッチュ2 PS2 the Best
+  name-sort: さるげっちゅ2 PS2 the Best
+  name-en: "Saru Get You 2 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19309:
-  name: ラチェット＆クランク3 突撃！ガラクチック★レンジャーズ PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく3 とつげき！がらくちっく★れんじゃーず PlayStation®2 the Best
-  name-en: "Ratchet & Clank 3 - Up Your Arsenal [PlayStation 2 The Best]"
+  name: ラチェット＆クランク3 突撃！ガラクチック★レンジャーズ PS2 the Best
+  name-sort: らちぇっと＆くらんく3 とつげき！がらくちっく★れんじゃーず PS2 the Best
+  name-en: "Ratchet & Clank 3 - Up Your Arsenal [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
@@ -8409,18 +8409,18 @@ SCPS-19309:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19310:
-  name: ラチェット＆クランク PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく PlayStation®2 the Best
-  name-en: "Ratchet & Clank [PlayStation 2 The Best]"
+  name: ラチェット＆クランク PS2 the Best
+  name-sort: らちぇっと＆くらんく PS2 the Best
+  name-en: "Ratchet & Clank [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
 SCPS-19311:
-  name: サルゲッチュ3 PlayStation 2 the Best
-  name-sort: さるげっちゅ3 PlayStation 2 the Best
-  name-en: "Saru Get You 3 [PlayStation 2 The Best]"
+  name: サルゲッチュ3 PS2 the Best
+  name-sort: さるげっちゅ3 PS2 the Best
+  name-en: "Saru Get You 3 [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
@@ -8429,18 +8429,18 @@ SCPS-19311:
     halfPixelOffset: 2 # Fixes misaligned blur.
     autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCPS-19312:
-  name: SIREN PlayStation 2 the Best
-  name-sort: SIREN PlayStation 2 the Best
-  name-en: "Siren [PlayStation 2 The Best]"
+  name: SIREN PS2 the Best
+  name-sort: SIREN PS2 the Best
+  name-en: "Siren [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes gaps between menu options.
     cpuSpriteRenderBW: 4 # Fixes sky rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SCPS-19313:
-  name: WILD ARMS the 4th Detonator PlayStation®2 the Best
-  name-sort: WILD ARMS the 4th Detonator PlayStation®2 the Best
-  name-en: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best]"
+  name: WILD ARMS the 4th Detonator PS2 the Best
+  name-sort: WILD ARMS the 4th Detonator PS2 the Best
+  name-en: "Wild ARMs - The 4th Detonator [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
@@ -8459,21 +8459,21 @@ SCPS-19313:
     - "SCPS-19251"
     - "SCPS-19253"
 SCPS-19315:
-  name: "EyeToy - Play [PlayStation 2 The Best]"
+  name: "EyeToy - Play [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19316:
-  name: ラチェット＆クランク PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく PlayStation®2 the Best
-  name-en: "Ratchet & Clank [PlayStation 2 The Best]"
+  name: ラチェット＆クランク PS2 the Best
+  name-sort: らちぇっと＆くらんく PS2 the Best
+  name-en: "Ratchet & Clank [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
     mipmap: 1
 SCPS-19317:
-  name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく2 ががが！ぎんがのこまんどーっす PlayStation®2 the Best
-  name-en: "Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]"
+  name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす PS2 the Best
+  name-sort: らちぇっと＆くらんく2 ががが！ぎんがのこまんどーっす PS2 the Best
+  name-en: "Ratchet & Clank 2 - Going Commando [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
@@ -8487,19 +8487,19 @@ SCPS-19317:
     - "SCPS-19310"
     - "SCPS-19316"
 SCPS-19318:
-  name: GENJI PlayStation 2 the Best
-  name-sort: GENJI PlayStation 2 the Best
-  name-en: "Genji - Dawn of the Samurai [PlayStation 2 The Best]"
+  name: GENJI PS2 the Best
+  name-sort: GENJI PS2 the Best
+  name-en: "Genji - Dawn of the Samurai [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19319:
-  name: みんなのGOLF 4 PlayStation®2 the Best
-  name-sort: みんなのGOLF 4 PlayStation®2 the Best
-  name-en: "Minna no Golf 4 [PlayStation 2 The Best]"
+  name: みんなのGOLF 4 PS2 the Best
+  name-sort: みんなのGOLF 4 PS2 the Best
+  name-en: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19320:
-  name: ワンダと巨像 PlayStation®2 the Best
-  name-sort: わんだと巨像 PlayStation®2 the Best
-  name-en: "Wanda to Kyozou [PlayStation 2 The Best]"
+  name: ワンダと巨像 PS2 the Best
+  name-sort: わんだと巨像 PS2 the Best
+  name-en: "Wanda to Kyozou [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
@@ -8513,9 +8513,9 @@ SCPS-19320:
     - "SCPS-19151"
     - "SCPS-55001"
 SCPS-19321:
-  name: ラチェット＆クランク4th ギリギリ銀河のギガバトル PlayStation 2 the Best
-  name-sort: らちぇっと＆くらんく4th ぎりぎりぎんがのぎがばとる PlayStation 2 the Best
-  name-en: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 The Best]"
+  name: ラチェット＆クランク4th ギリギリ銀河のギガバトル PS2 the Best
+  name-sort: らちぇっと＆くらんく4th ぎりぎりぎんがのぎがばとる PS2 the Best
+  name-en: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
@@ -8525,9 +8525,9 @@ SCPS-19321:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19322:
-  name: WILD ARMS the 4th Detonator PlayStation 2 the Best
-  name-sort: WILD ARMS the 4th Detonator PlayStation 2 the Best
-  name-en: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
+  name: WILD ARMS the 4th Detonator PS2 the Best
+  name-sort: WILD ARMS the 4th Detonator PS2 the Best
+  name-en: "Wild ARMs - The 4th Detonator [PS2 The Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
@@ -8546,9 +8546,9 @@ SCPS-19322:
     - "SCPS-19251"
     - "SCPS-19253"
 SCPS-19323:
-  name: WILD ARMS Advanced 3rd PlayStation®2 the Best
-  name-sort: WILD ARMS Advanced 3rd PlayStation®2 the Best
-  name-en: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
+  name: WILD ARMS Advanced 3rd PS2 the Best
+  name-sort: WILD ARMS Advanced 3rd PS2 the Best
+  name-en: "Wild ARMs - The 4th Detonator [PS2 The Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
@@ -8567,23 +8567,23 @@ SCPS-19323:
     - "SCPS-19251"
     - "SCPS-19253"
 SCPS-19324:
-  name: ツーリスト・トロフィー PlayStation 2 the Best
-  name-sort: つーりすと・とろふぃー PlayStation 2 the Best
-  name-en: "Tourist Trophy - The Real Riding Simulator [PlayStation 2 The Best]"
+  name: ツーリスト・トロフィー PS2 the Best
+  name-sort: つーりすと・とろふぃー PS2 the Best
+  name-en: "Tourist Trophy - The Real Riding Simulator [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
   gsHWFixes:
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCPS-19325:
-  name: サルゲッチュ ミリオンモンキーズ PlayStation 2 the Best
-  name-sort: さるげっちゅ みりおんもんきーず PlayStation 2 the Best
-  name-en: "Ape Escape - Million Monkeys [PlayStation 2 The Best]"
+  name: サルゲッチュ ミリオンモンキーズ PS2 the Best
+  name-sort: さるげっちゅ みりおんもんきーず PS2 the Best
+  name-en: "Ape Escape - Million Monkeys [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19326:
-  name: SIREN2 PlayStation 2 the Best
-  name-sort: SIREN2 PlayStation 2 the Best
-  name-en: "Siren 2 [PlayStation 2 The Best]"
+  name: SIREN2 PS2 the Best
+  name-sort: SIREN2 PS2 the Best
+  name-en: "Siren 2 [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
@@ -8591,18 +8591,18 @@ SCPS-19326:
     mergeSprite: 1 # Fixes vertical lines in-game.
     preloadFrameData: 1 # Fixes some missing effects.
 SCPS-19327:
-  name: サルゲッチュ3 PlayStation 2 the Best
-  name-sort: さるげっちゅ3 PlayStation 2 the Best
-  name-en: "Ape Escape 3 [PlayStation 2 the Best - Reprint]"
+  name: サルゲッチュ3 PS2 the Best
+  name-sort: さるげっちゅ3 PS2 the Best
+  name-en: "Ape Escape 3 [PS2 the Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19328:
-  name: ラチェット＆クランク4th ギリギリ銀河のギガバトル PlayStation®2 the Best
-  name-sort: らちぇっと＆くらんく4th ぎりぎりぎんがのぎがばとる PlayStation®2 the Best
-  name-en: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 the Best - Reprint]"
+  name: ラチェット＆クランク4th ギリギリ銀河のギガバトル PS2 the Best
+  name-sort: らちぇっと＆くらんく4th ぎりぎりぎんがのぎがばとる PS2 the Best
+  name-en: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PS2 the Best - Reprint]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
@@ -8612,28 +8612,28 @@ SCPS-19328:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
 SCPS-19329:
-  name: BLEACH 〜ブレイド・バトラーズ〜 PlayStation®2 the Best
-  name-sort: BLEACH 〜ぶれいど・ばとらーず〜 PlayStation®2 the Best
-  name-en: "Bleach - Blade Battlers [PlayStation 2 The Best]"
+  name: BLEACH 〜ブレイド・バトラーズ〜 PS2 the Best
+  name-sort: BLEACH 〜ぶれいど・ばとらーず〜 PS2 the Best
+  name-en: "Bleach - Blade Battlers [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - OPHFlagHack # Special moves "Bankai" hang otherwise.
   gsHWFixes:
     preloadFrameData: 1 # Fixes removed bloom.
 SCPS-19330:
-  name: BLEACH 〜放たれし野望〜 PlayStation®2 the Best
-  name-sort: BLEACH 〜はなたれしやぼう〜 PlayStation®2 the Best
-  name-en: "Bleach - Hanatareshi Yabou [PlayStation 2 The Best]"
+  name: BLEACH 〜放たれし野望〜 PS2 the Best
+  name-sort: BLEACH 〜はなたれしやぼう〜 PS2 the Best
+  name-en: "Bleach - Hanatareshi Yabou [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19331:
-  name: BLEACH 〜選ばれし魂〜 PlayStation®2 the Best
-  name-sort: BLEACH 〜えらばれしたましい〜 PlayStation®2 the Best
-  name-en: "Bleach - Selected Soul [PlayStation 2 The Best]"
+  name: BLEACH 〜選ばれし魂〜 PS2 the Best
+  name-sort: BLEACH 〜えらばれしたましい〜 PS2 the Best
+  name-en: "Bleach - Selected Soul [PS2 The Best]"
   region: "NTSC-J"
 SCPS-19332:
-  name: みんなのテニスPlayStation®2 the Best
-  name-sort: みんなのてにすPlayStation®2 the Best
-  name-en: "Minna no Tennis [PlayStation 2 The Best]"
+  name: みんなのテニスPS2 the Best
+  name-sort: みんなのてにすPS2 the Best
+  name-en: "Minna no Tennis [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     vu1RoundMode: 1 # Fixes the display of scores and text ingame.
@@ -8641,7 +8641,7 @@ SCPS-19333:
   name: "Wild Arms - The Vth Vanguard"
   region: "NTSC-J"
 SCPS-19335:
-  name: "Wanda to Kyozou [PlayStation 2 The Best Reprint]"
+  name: "Wanda to Kyozou [PS2 The Best Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
@@ -8844,7 +8844,7 @@ SCPS-55029:
     - "SLPS-73232"
     - "SLPS-73233"
 SCPS-55030:
-  name: "First Step Victorious Boxers [PlayStation 2 The Best]"
+  name: "First Step Victorious Boxers [PS2 The Best]"
   region: "NTSC-J"
 SCPS-55031:
   name: "Ghost Vibration"
@@ -11389,10 +11389,10 @@ SLAJ-25091:
     halfPixelOffset: 2 # Fixes blurriness.
     roundSprite: 2 # Fixes blurriness.
 SLAJ-25092:
-  name: "Shin Sangoku Musou 4 [PlayStation 2 The Best]"
+  name: "Shin Sangoku Musou 4 [PS2 The Best]"
   region: "NTSC-Unk"
 SLAJ-25093:
-  name: "Sangoku Musou [PlayStation 2 The Best]"
+  name: "Sangoku Musou [PS2 The Best]"
   region: "NTSC-Unk"
 SLAJ-25094:
   name: "Burnout Dominator"
@@ -35389,9 +35389,9 @@ SLPM-65236:
   name-en: "Anubis - Zone of the Enders"
   region: "NTSC-J"
 SLPM-65237:
-  name: ZONE OF THE ENDERS PlayStation 2 the Best
-  name-sort: ZONE OF THE ENDERS PlayStation 2 the Best
-  name-en: "Z.O.E. - Zone of the Enders [PlayStation 2 The Best]"
+  name: ZONE OF THE ENDERS PS2 the Best
+  name-sort: ZONE OF THE ENDERS PS2 the Best
+  name-en: "Z.O.E. - Zone of the Enders [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
@@ -35796,7 +35796,7 @@ SLPM-65308:
     wildArmsHack: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-65309:
-  name: "Splashdown [PlayStation 2 The Best]"
+  name: "Splashdown [PS2 The Best]"
   region: "NTSC-J"
 SLPM-65310:
   name: The Mark of KRI(マーク オブ クリィ)
@@ -44027,12 +44027,12 @@ SLPM-66770:
 SLPM-66771:
   name: 電車でGO!山陽新幹線編 [エターナルヒッツ]
   name-sort: でんしゃでGO!さんようしんかんせんへん [えたーなるひっつ]
-  name-en: "Densha de Go! Shinkansen [PlayStation 2 The Best]"
+  name-en: "Densha de Go! Shinkansen [PS2 The Best]"
   region: "NTSC-J"
 SLPM-66772:
   name: 電車でGO!FINAL [エターナルヒッツ]
   name-sort: でんしゃでGO!FINAL [えたーなるひっつ]
-  name-en: "Densha de Go! Final [PlayStation 2 The Best]"
+  name-en: "Densha de Go! Final [PS2 The Best]"
   region: "NTSC-J"
 SLPM-66773:
   name: ジェットでGO!2 [エターナルヒッツ]
@@ -45641,81 +45641,81 @@ SLPM-69006:
   name: "PictureParadise Club Vol. 2"
   region: "NTSC-J"
 SLPM-74001:
-  name: ガングリフォンブレイズ PlayStation 2 the Best
-  name-sort: がんぐりふぉんぶれいず PlayStation 2 the Best
-  name-en: "Gungriffon Blaze [PlayStation 2 The Best]"
+  name: ガングリフォンブレイズ PS2 the Best
+  name-sort: がんぐりふぉんぶれいず PS2 the Best
+  name-en: "Gungriffon Blaze [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74002:
-  name: 真・三國無双 PlayStation 2 the Best
-  name-sort: しん・さんごくむそう PlayStation 2 the Best
-  name-en: "Shin Sangoku Musou [PlayStation 2 The Best]"
+  name: 真・三國無双 PS2 the Best
+  name-sort: しん・さんごくむそう PS2 the Best
+  name-en: "Shin Sangoku Musou [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74003:
-  name: クラッシュ・バンディクー4 さくれつ!魔神パワー PlayStation 2 the Best
-  name-sort: くらっしゅ・ばんでぃくー4 さくれつ!まじんぱわー PlayStation 2 the Best
-  name-en: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
+  name: クラッシュ・バンディクー4 さくれつ!魔神パワー PS2 the Best
+  name-sort: くらっしゅ・ばんでぃくー4 さくれつ!まじんぱわー PS2 the Best
+  name-en: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     nativePaletteDraw: 1
     autoFlush: 2 # Fixes refraction effect.
 SLPM-74004:
-  name: マキシモ PlayStation 2 the Best
-  name-sort: まきしも PlayStation 2 the Best
-  name-en: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
+  name: マキシモ PS2 the Best
+  name-sort: まきしも PS2 the Best
+  name-en: "Maximo - Ghosts to Glory [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74005:
-  name: "Romance of the Three Kingdoms VII [PlayStation 2 The Best]"
+  name: "Romance of the Three Kingdoms VII [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74006:
-  name: Rez PlayStation®2 the Best
-  name-sort: Rez PlayStation®2 the Best
-  name-en: "Rez [PlayStation 2 The Best]"
+  name: Rez PS2 the Best
+  name-sort: Rez PS2 the Best
+  name-en: "Rez [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74007:
-  name: BUSIN〜Wizardry Alternative〜 PlayStation®2 the Best
-  name-sort: BUSIN〜Wizardry Alternative〜 PlayStation®2 the Best
-  name-en: "Busin - Wizardry Alternative [PlayStation 2 The Best]"
+  name: BUSIN〜Wizardry Alternative〜 PS2 the Best
+  name-sort: BUSIN〜Wizardry Alternative〜 PS2 the Best
+  name-en: "Busin - Wizardry Alternative [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74044:
-  name: "Space Channel 5 - Part 2 [PlayStation 2 The Best]"
+  name: "Space Channel 5 - Part 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74101:
-  name: ボンバーマンランド2 PlayStation®2 the Best
-  name-sort: ぼんばーまんらんど2 PlayStation®2 the Best
-  name-en: "Bomberman Land 2 [PlayStation 2 The Best]"
+  name: ボンバーマンランド2 PS2 the Best
+  name-sort: ぼんばーまんらんど2 PS2 the Best
+  name-en: "Bomberman Land 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74102:
-  name: 桃太郎電鉄12 西日本編もありまっせー! PlayStation®2 the Best
-  name-sort: ももたろうでんてつ12 にしにほんへんもありまっせー! PlayStation®2 the Best
-  name-en: "Momotaro Densetsu 12 [PlayStation 2 The Best]"
+  name: 桃太郎電鉄12 西日本編もありまっせー! PS2 the Best
+  name-sort: ももたろうでんてつ12 にしにほんへんもありまっせー! PS2 the Best
+  name-en: "Momotaro Densetsu 12 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74103:
-  name: 桃太郎電鉄USA PlayStation 2 the Best
-  name-sort: ももたろうでんてつUSA PlayStation 2 the Best
-  name-en: "Momotaro Dentetsu USA [PlayStation 2 The Best]"
+  name: 桃太郎電鉄USA PS2 the Best
+  name-sort: ももたろうでんてつUSA PS2 the Best
+  name-en: "Momotaro Dentetsu USA [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74104:
-  name: 桃太郎電鉄15 PlayStation®2 the Best
-  name-sort: ももたろうでんてつ15 PlayStation®2 the Best
-  name-en: "Momotarou Densetsu 15 [PlayStation 2 The Best]"
+  name: 桃太郎電鉄15 PS2 the Best
+  name-sort: ももたろうでんてつ15 PS2 the Best
+  name-en: "Momotarou Densetsu 15 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74105:
   name: "Momotarou Dentetsu 16 - Hokkaido Daiidou no Maki!"
   region: "NTSC-J"
 SLPM-74201:
-  name: バイオハザード アウトブレイク PlayStation®2 the Best
-  name-sort: ばいおはざーど あうとぶれいく PlayStation®2 the Best
-  name-en: "BioHazard Outbreak [PlayStation 2 The Best]"
+  name: バイオハザード アウトブレイク PS2 the Best
+  name-sort: ばいおはざーど あうとぶれいく PS2 the Best
+  name-en: "BioHazard Outbreak [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74202:
-  name: 風雲 新撰組 PlayStation®2 the Best
-  name-sort: ふううん しんせんぐみ PlayStation®2 the Best
-  name-en: "Fuuun Shinsengumi [PlayStation 2 The Best]"
+  name: 風雲 新撰組 PS2 the Best
+  name-sort: ふううん しんせんぐみ PS2 the Best
+  name-en: "Fuuun Shinsengumi [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74204:
-  name: 首都高バトル 01 PlayStation®2 the Best
-  name-sort: しゅとこうばとる 01 PlayStation®2 the Best
-  name-en: "Shutokou Battle 01 [PlayStation 2 The Best]"
+  name: 首都高バトル 01 PS2 the Best
+  name-sort: しゅとこうばとる 01 PS2 the Best
+  name-en: "Shutokou Battle 01 [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
@@ -45723,44 +45723,44 @@ SLPM-74204:
     wildArmsHack: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-74205:
-  name: 真・女神転生 III - NOCTURNE PlayStation®2 the Best
-  name-sort: しん・めがみてんせい III - NOCTURNE PlayStation®2 the Best
-  name-en: "Shin Megami Tensei III - Nocturne [PlayStation 2 The Best]"
+  name: 真・女神転生 III - NOCTURNE PS2 the Best
+  name-sort: しん・めがみてんせい III - NOCTURNE PS2 the Best
+  name-en: "Shin Megami Tensei III - Nocturne [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
 SLPM-74206:
-  name: 鬼武者 PlayStation®2 the Best
-  name-sort: おにむしゃ PlayStation®2 the Best
-  name-en: "Onimusha [PlayStation 2 The Best]"
+  name: 鬼武者 PS2 the Best
+  name-sort: おにむしゃ PS2 the Best
+  name-en: "Onimusha [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     texturePreloading: 1 # Performs much better with partial preload.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
 SLPM-74208:
-  name: 天外魔境II MANJI MARU PlayStation®2 the Best
-  name-sort: てんがいまきょうII MANJI MARU PlayStation®2 the Best
-  name-en: "Tengai Makyou 2 - Manjimaru [PlayStation 2 The Best]"
+  name: 天外魔境II MANJI MARU PS2 the Best
+  name-sort: てんがいまきょうII MANJI MARU PS2 the Best
+  name-en: "Tengai Makyou 2 - Manjimaru [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74209:
-  name: 侍道2 決闘版 PlayStation®2 the Best
-  name-sort: さむらいどう2 けっとうばん PlayStation®2 the Best
-  name-en: "Samurai Michi 2 [PlayStation 2 The Best]"
+  name: 侍道2 決闘版 PS2 the Best
+  name-sort: さむらいどう2 けっとうばん PS2 the Best
+  name-en: "Samurai Michi 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74210:
-  name: ぷよぷよフィーバー お買い得版 PlayStation®2 the Best
-  name-sort: ぷよぷよふぃーばー おかいどくばん PlayStation®2 the Best
-  name-en: "Puyo Puyo Fever [PlayStation 2 The Best]"
+  name: ぷよぷよフィーバー お買い得版 PS2 the Best
+  name-sort: ぷよぷよふぃーばー おかいどくばん PS2 the Best
+  name-en: "Puyo Puyo Fever [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74211:
-  name: 首都高バトル 0 PlayStation®2 The Best
-  name-sort: しゅとこうばとる 0 PlayStation®2 The Best
-  name-en: "Shutokou Battle 0 [PlayStation 2 The Best]"
+  name: 首都高バトル 0 PS2 The Best
+  name-sort: しゅとこうばとる 0 PS2 The Best
+  name-en: "Shutokou Battle 0 [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPM-74212:
-  name: "Sengoku Musou [PlayStation 2 The Best]"
+  name: "Sengoku Musou [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74213:
   name: "Gensou Suikoden IV"
@@ -45769,37 +45769,37 @@ SLPM-74214:
   name: "Densha de Go! Final"
   region: "NTSC-J"
 SLPM-74215:
-  name: 真・三國無双3 Playstation 2 the Best
-  name-sort: しん・さんごくむそう3 Playstation 2 the Best
-  name-en: "Shin Sangoku Musou 3 [PlayStation 2 The Best]"
+  name: 真・三國無双3 PS2 the Best
+  name-sort: しん・さんごくむそう3 PS2 the Best
+  name-en: "Shin Sangoku Musou 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74217:
   name: "Shin Sangoku Musou 3"
   region: "NTSC-J"
 SLPM-74218:
-  name: シャイニング・ティアーズ PlayStation®2 the Best
-  name-sort: しゃいにんぐ・てぃあーず PlayStation®2 the Best
-  name-en: "Shining Tears [PlayStation 2 The Best]"
+  name: シャイニング・ティアーズ PS2 the Best
+  name-sort: しゃいにんぐ・てぃあーず PS2 the Best
+  name-en: "Shining Tears [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74219:
-  name: 真・三國無双3Empires PlayStation®2 the best
-  name-sort: しん・さんごくむそう3Empires PlayStation®2 the best
-  name-en: "Shin Sangoku Musou 3 - Empires [PlayStation 2 The Best]"
+  name: 真・三國無双3Empires PS2 the best
+  name-sort: しん・さんごくむそう3Empires PS2 the best
+  name-en: "Shin Sangoku Musou 3 - Empires [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74220:
-  name: 剣豪3 PlayStation®2 the Best
-  name-sort: けんごう3 PlayStation®2 the Best
-  name-en: "Kengo 3 [PlayStation 2 The Best]"
+  name: 剣豪3 PS2 the Best
+  name-sort: けんごう3 PS2 the Best
+  name-en: "Kengo 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74221:
-  name: 喧嘩番長 PlayStation®2 the Best
-  name-sort: けんかばんちょう PlayStation®2 the Best
-  name-en: "Kenka Banchou [PlayStation 2 The Best]"
+  name: 喧嘩番長 PS2 the Best
+  name-sort: けんかばんちょう PS2 the Best
+  name-en: "Kenka Banchou [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74222:
-  name: 侍〜完全版〜 PlayStation®2 the Best
-  name-sort: さむらい〜かんぜんばん〜 PlayStation®2 the Best
-  name-en: "Samurai Kanzenban [PlayStation 2 The Best]"
+  name: 侍〜完全版〜 PS2 the Best
+  name-sort: さむらい〜かんぜんばん〜 PS2 the Best
+  name-en: "Samurai Kanzenban [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Stops crash after intro movie.
@@ -45807,24 +45807,24 @@ SLPM-74223:
   name: "Kessen III"
   region: "NTSC-J"
 SLPM-74224:
-  name: "Sengoku Musou Mushoden [PlayStation 2 The Best]"
+  name: "Sengoku Musou Mushoden [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74225:
-  name: 信長の野望・天下創世 PlayStation®2 the Best
-  name-sort: のぶながのやぼう・てんかそうせい PlayStation®2 the Best
-  name-en: "Nobunaga no Yabou - Tenka Sousei [PlayStation 2 The Best]"
+  name: 信長の野望・天下創世 PS2 the Best
+  name-sort: のぶながのやぼう・てんかそうせい PS2 the Best
+  name-en: "Nobunaga no Yabou - Tenka Sousei [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74226:
-  name: METAL SAGA 〜砂塵の鎖〜 PlayStation®2 the Best
-  name-sort: METAL SAGA 〜さじんのくさり〜 PlayStation®2 the Best
-  name-en: "Metal Saga - Sajin no Kusari [PlayStation 2 The Best]"
+  name: METAL SAGA 〜砂塵の鎖〜 PS2 the Best
+  name-sort: METAL SAGA 〜さじんのくさり〜 PS2 the Best
+  name-en: "Metal Saga - Sajin no Kusari [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack # Intro FMV.
 SLPM-74227:
-  name: 戦神-いくさがみ- PlayStation 2 the Best
-  name-sort: いくさがみ PlayStation 2 the Best
-  name-en: "Ikusa Gami [PlayStation 2 The Best]"
+  name: 戦神-いくさがみ- PS2 the Best
+  name-sort: いくさがみ PS2 the Best
+  name-en: "Ikusa Gami [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - VIF1StallHack # Fixes black screen on boot.
@@ -45832,33 +45832,33 @@ SLPM-74227:
     autoFlush: 2 # Fixes missing bloom effects.
     halfPixelOffset: 2 # Fixes misaligned lighting and bloom.
 SLPM-74228:
-  name: 風雲幕末伝 PlayStation 2 the Best
-  name-sort: ふううんばくまつでん PlayStation 2 the Best
-  name-en: "Fuuun Bakumatsu-den [PlayStation 2 The Best]"
+  name: 風雲幕末伝 PS2 the Best
+  name-sort: ふううんばくまつでん PS2 the Best
+  name-en: "Fuuun Bakumatsu-den [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74229:
-  name: "BioHazard 4 [PlayStation 2 The Best]"
+  name: "BioHazard 4 [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-74230:
-  name: Devil May Cry PlayStation 2 the Best
-  name-sort: Devil May Cry PlayStation 2 the Best
-  name-en: "Devil May Cry [PlayStation 2 The Best]"
+  name: Devil May Cry PS2 the Best
+  name-sort: Devil May Cry PS2 the Best
+  name-en: "Devil May Cry [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
 SLPM-74231:
-  name: 決戦III PlayStation 2 the Best
-  name-sort: けっせんIII PlayStation 2 the Best
-  name-en: "Kessen III [PlayStation 2 The Best]"
+  name: 決戦III PS2 the Best
+  name-sort: けっせんIII PS2 the Best
+  name-en: "Kessen III [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74232:
-  name: 新鬼武者 DAWN OF DREAMS PlayStation 2 the Best
-  name-sort: しんおにむしゃ DAWN OF DREAMS PlayStation 2 the Best
-  name-en: "Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best]"
+  name: 新鬼武者 DAWN OF DREAMS PS2 the Best
+  name-sort: しんおにむしゃ DAWN OF DREAMS PS2 the Best
+  name-en: "Shin Onimusha - Dawn of Dreams [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Wrong white textures in FMV.
@@ -45867,61 +45867,61 @@ SLPM-74232:
   memcardFilters:
     - "SLPM-66275"
 SLPM-74233:
-  name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best][Disc 2]"
+  name: "Shin Onimusha - Dawn of Dreams [PS2 The Best][Disc 2]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
     - "SLPM-74232"
 SLPM-74234:
-  name: 龍が如く PlayStation 2 the Best
-  name-sort: りゅうがごとく PlayStation 2 the Best
-  name-en: "Ryu Ga Gotoku [PlayStation 2 The Best]"
+  name: 龍が如く PS2 the Best
+  name-sort: りゅうがごとく PS2 the Best
+  name-en: "Ryu Ga Gotoku [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74235:
-  name: 戦国無双 PlayStation 2 the Best
-  name-sort: せんごくむそう PlayStation 2 the Best
-  name-en: "Sengoku Musou [PlayStation 2 The Best]"
+  name: 戦国無双 PS2 the Best
+  name-sort: せんごくむそう PS2 the Best
+  name-en: "Sengoku Musou [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74236:
-  name: 真・三國無双4 PlayStation 2 the Best
-  name-sort: しん・さんごくむそう4 PlayStation 2 the Best
-  name-en: "Shin Sangoku Musou 4 [PlayStation 2 The Best]"
+  name: 真・三國無双4 PS2 the Best
+  name-sort: しん・さんごくむそう4 PS2 the Best
+  name-en: "Shin Sangoku Musou 4 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74237:
-  name: NEW人生ゲーム PlayStation®2 the Best
-  name-sort: NEWじんせいげーむ PlayStation®2 the Best
-  name-en: "New Jinsei Game [PlayStation 2 The Best]"
+  name: NEW人生ゲーム PS2 the Best
+  name-sort: NEWじんせいげーむ PS2 the Best
+  name-en: "New Jinsei Game [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74238:
-  name: 幻想水滸伝V PlayStation 2 the Best
-  name-sort: げんそうすいこでんV PlayStation 2 the Best
-  name-en: "Genso Suikoden V [PlayStation 2 The Best]"
+  name: 幻想水滸伝V PS2 the Best
+  name-sort: げんそうすいこでんV PS2 the Best
+  name-en: "Genso Suikoden V [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74239:
-  name: 大神 PlayStation 2 the Best
-  name-sort: おおがみ PlayStation 2 the Best
-  name-en: "Okami [PlayStation 2 The Best]"
+  name: 大神 PS2 the Best
+  name-sort: おおがみ PS2 the Best
+  name-en: "Okami [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Reduces misalignment issues but the game is just bad for upscaling.
 SLPM-74240:
-  name: 天外魔境III NAMIDA PlayStation®2 the Best
-  name-sort: てんがいまきょうIII NAMIDA PlayStation®2 the Best
+  name: 天外魔境III NAMIDA PS2 the Best
+  name-sort: てんがいまきょうIII NAMIDA PS2 the Best
   name-en: "Tengai Makyou III - Namida [Best Version]"
   region: "NTSC-J"
 SLPM-74241:
-  name: GOD HAND PlayStation®2 the Best
-  name-sort: GOD HAND PlayStation®2 the Best
-  name-en: "God Hand [PlayStation 2 The Best]"
+  name: GOD HAND PS2 the Best
+  name-sort: GOD HAND PS2 the Best
+  name-en: "God Hand [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLPM-74242:
-  name: Devil May Cry 3 Special Edition PlayStation®2 the Best
-  name-sort: Devil May Cry 3 Special Edition PlayStation®2 the Best
-  name-en: "Devil May Cry 3 [Special Edition] [PlayStation 2 The Best]"
+  name: Devil May Cry 3 Special Edition PS2 the Best
+  name-sort: Devil May Cry 3 Special Edition PS2 the Best
+  name-en: "Devil May Cry 3 [Special Edition] [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes inability to enter door in Mission 18.
@@ -45929,9 +45929,9 @@ SLPM-74242:
     halfPixelOffset: 2 # Reduces ghosting but still an issue compared to native.
     roundSprite: 2 # Clears up much of the blurring that HPO Special does not.
 SLPM-74243:
-  name: トゥルー・クライム〜ニューヨークシティ〜 PlayStation 2 the Best
-  name-sort: とぅるー・くらいむ〜にゅーよーくしてぃ〜 PlayStation 2 the Best
-  name-en: "True Crime - New York City [PlayStation 2 The Best]"
+  name: トゥルー・クライム〜ニューヨークシティ〜 PS2 the Best
+  name-sort: とぅるー・くらいむ〜にゅーよーくしてぃ〜 PS2 the Best
+  name-en: "True Crime - New York City [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes SPS on highway.
@@ -45945,30 +45945,30 @@ SLPM-74243:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLPM-74244:
-  name: ファンタシー スター ユニバース PlayStation 2 the Best
-  name-sort: ふぁんたしー すたー ゆにばーす PlayStation 2 the Best
-  name-en: "Phantasy Star Universe [PlayStation 2 The Best]"
+  name: ファンタシー スター ユニバース PS2 the Best
+  name-sort: ふぁんたしー すたー ゆにばーす PS2 the Best
+  name-en: "Phantasy Star Universe [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes enemies not moving (especially Chapter 7 boss).
 SLPM-74245:
-  name: モンスターハンター2（dos） PlayStation®2 the Best
-  name-sort: もんすたーはんたー2（dos） PlayStation®2 the Best
-  name-en: "Monster Hunter 2 [PlayStation 2 The Best]"
+  name: モンスターハンター2（dos） PS2 the Best
+  name-sort: もんすたーはんたー2（dos） PS2 the Best
+  name-en: "Monster Hunter 2 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
   gsHWFixes:
     maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLPM-74246:
-  name: CAPCOM VS.SNK 2 MILLIONAIRE FIGHTING 2001 PlayStation 2 the Best
-  name-sort: CAPCOM VS.SNK 2 MILLIONAIRE FIGHTING 2001 PlayStation 2 the Best
-  name-en: "Capcom vs. SNK 2 - Millionaire Fighting 2001 [PlayStation 2 the Best - Reprint]"
+  name: CAPCOM VS.SNK 2 MILLIONAIRE FIGHTING 2001 PS2 the Best
+  name-sort: CAPCOM VS.SNK 2 MILLIONAIRE FIGHTING 2001 PS2 the Best
+  name-en: "Capcom vs. SNK 2 - Millionaire Fighting 2001 [PS2 the Best - Reprint]"
   region: "NTSC-J"
 SLPM-74247:
-  name: 戦国無双2 PlayStation 2 the Best
-  name-sort: せんごくむそう2 PlayStation 2 the Best
-  name-en: "Sengoku Musou 2 [PlayStation 2 The Best]"
+  name: 戦国無双2 PS2 the Best
+  name-sort: せんごくむそう2 PS2 the Best
+  name-en: "Sengoku Musou 2 [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 2 # Helps to alleviate misaligned text.
@@ -45985,61 +45985,61 @@ SLPM-74247:
     - "SLPM-74224"
     - "SLPM-74249"
 SLPM-74248:
-  name: モンスターハンターG PlayStation®2 the Best
-  name-sort: もんすたーはんたーG PlayStation®2 the Best
-  name-en: "Monster Hunter G [PlayStation 2 The Best]"
+  name: モンスターハンターG PS2 the Best
+  name-sort: もんすたーはんたーG PS2 the Best
+  name-en: "Monster Hunter G [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
   gsHWFixes:
     maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
 SLPM-74249:
-  name: 戦国無双 猛将伝 PlayStation®2 the Best
-  name-sort: せんごくむそう もうしょうでん PlayStation®2 the Best
-  name-en: "Sengoku Musou Mushoden [PlayStation 2 The Best]"
+  name: 戦国無双 猛将伝 PS2 the Best
+  name-sort: せんごくむそう もうしょうでん PS2 the Best
+  name-en: "Sengoku Musou Mushoden [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74250:
-  name: 真・三國無双4 猛将伝 PlayStation®2 the Best
-  name-sort: しん・さんごくむそう4 もうしょうでん PlayStation®2 the Best
-  name-en: "Shin Sangoku Musou 4 Mushoden [PlayStation 2 The Best]"
+  name: 真・三國無双4 猛将伝 PS2 the Best
+  name-sort: しん・さんごくむそう4 もうしょうでん PS2 the Best
+  name-en: "Shin Sangoku Musou 4 Mushoden [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes sun luminosity.
 SLPM-74251:
-  name: 新鬼武者 PlayStation®2 the Best
-  name-sort: しんおにむしゃ PlayStation®2 the Best
-  name-en: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]"
+  name: 新鬼武者 PS2 the Best
+  name-sort: しんおにむしゃ PS2 the Best
+  name-en: "Shin Onimusha - Dawn of Dreams [PS2 the Best - Reprint Disc 1]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
     - "SLPM-66275"
 SLPM-74252:
-  name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 2]"
+  name: "Shin Onimusha - Dawn of Dreams [PS2 the Best - Reprint Disc 2]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misalignment and upscaling lines.
   memcardFilters:
     - "SLPM-74251"
 SLPM-74253:
-  name: 龍が如く PlayStation 2 the Best
-  name-sort: りゅうがごとく PlayStation 2 the Best
-  name-en: "Ryu ga Gotoku [PlayStation 2 the Best - Reprint]"
+  name: 龍が如く PS2 the Best
+  name-sort: りゅうがごとく PS2 the Best
+  name-en: "Ryu ga Gotoku [PS2 the Best - Reprint]"
   region: "NTSC-J"
 SLPM-74254:
-  name: EX人生ゲームII PlayStation®2 the Best
-  name-sort: EXじんせいげーむII PlayStation®2 the Best
-  name-en: "EX Jinsei Game II [PlayStation 2 the Best - Reprint]"
+  name: EX人生ゲームII PS2 the Best
+  name-sort: EXじんせいげーむII PS2 the Best
+  name-en: "EX Jinsei Game II [PS2 the Best - Reprint]"
   region: "NTSC-J"
 SLPM-74255:
-  name: "Metal Gear Solid 2 - Sons of Liberty [PlayStation 2 The Best] [Disc 1 of 2]"
+  name: "Metal Gear Solid 2 - Sons of Liberty [PS2 The Best] [Disc 1 of 2]"
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes broken skin colour on Vlad and others.
 SLPM-74256:
-  name: "Metal Gear Solid 2 - Sons of Liberty [PlayStation 2 The Best] [Disc 2 of 2]"
+  name: "Metal Gear Solid 2 - Sons of Liberty [PS2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
   gameFixes:
     - InstantDMAHack # Fixes broken half-bottom artifacts.
@@ -46052,15 +46052,15 @@ SLPM-74258:
   name: "Metal Gear & Metal Gear 2 - Solid Snake"
   region: "NTSC-J"
 SLPM-74259:
-  name: オーディンスフィア PlayStation®2 the Best
-  name-sort: おーでぃんすふぃあ PlayStation®2 the Best
-  name-en: "Odin Sphere [PlayStation 2 The Best]"
+  name: オーディンスフィア PS2 the Best
+  name-sort: おーでぃんすふぃあ PS2 the Best
+  name-en: "Odin Sphere [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74260:
   name: "Shining Force EXA"
   region: "NTSC-J"
 SLPM-74261:
-  name: "Shining Wind [PlayStation 2 The Best]"
+  name: "Shining Wind [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - DMABusyHack
@@ -46074,9 +46074,9 @@ SLPM-74264:
   name: "Sengoku Basara 2 - Heroes"
   region: "NTSC-J"
 SLPM-74265:
-  name: 信長の野望・革新 PlayStation®2 the Best
-  name-sort: のぶながのやぼう・かくしん PlayStation®2 the Best
-  name-en: "Nobunaga no Yabou - Kakushin [PlayStation 2 The Best]"
+  name: 信長の野望・革新 PS2 the Best
+  name-sort: のぶながのやぼう・かくしん PS2 the Best
+  name-en: "Nobunaga no Yabou - Kakushin [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74266:
   name: "Sengoku Musou 2 - Empires"
@@ -46103,22 +46103,22 @@ SLPM-74275:
   name: "Sengoku Basara 2 - Heroes"
   region: "NTSC-J"
 SLPM-74276:
-  name: ガンダム無双2 PlayStation®2 the Best
-  name-sort: がんだむむそう2 PlayStation®2 the Best
-  name-en: "Sangoku Musou 2 [PlayStation 2 The Best]"
+  name: ガンダム無双2 PS2 the Best
+  name-sort: がんだむむそう2 PS2 the Best
+  name-en: "Sangoku Musou 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74277:
-  name: ペルソナ3フェス PlayStation®2 the Best
-  name-sort: ぺるそな3ふぇす PlayStation®2 the Best
-  name-en: "Persona 3 FES [PlayStation 2 The Best]"
+  name: ペルソナ3フェス PS2 the Best
+  name-sort: ぺるそな3ふぇす PS2 the Best
+  name-en: "Persona 3 FES [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
     mipmap: 2 # Fixes flashing windows.
 SLPM-74278:
-  name: ペルソナ4 PlayStation®2 the Best
-  name-sort: ぺるそな4 PlayStation®2 the Best
-  name-en: "Persona 4 [PlayStation 2 The Best]"
+  name: ペルソナ4 PS2 the Best
+  name-sort: ぺるそな4 PS2 the Best
+  name-en: "Persona 4 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74279:
   name: "Shin Sangoku Musou 4 - Moushouden"
@@ -46136,9 +46136,9 @@ SLPM-74284:
   name: "Sengoku Musou 2 - Empires"
   region: "NTSC-J"
 SLPM-74286:
-  name: 真・三國無双5 Special PlayStation®2 the Best
-  name-sort: しん・さんごくむそう5 Special PlayStation®2 the Best
-  name-en: "Shin Sangoku Musou 5 Special [PlayStation 2 The Best]"
+  name: 真・三國無双5 Special PS2 the Best
+  name-sort: しん・さんごくむそう5 Special PS2 the Best
+  name-en: "Shin Sangoku Musou 5 Special [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74287:
   name: "Shin Sangoku Musou 5 Special (Disc 2)"
@@ -46151,9 +46151,9 @@ SLPM-74288:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLPM-74301:
-  name: 龍が如く2 PlayStation 2 the Best
-  name-sort: りゅうがごとく2 PlayStation 2 the Best
-  name-en: "Ryu ga Gotoku 2 [PlayStation 2 The Best]"
+  name: 龍が如く2 PS2 the Best
+  name-sort: りゅうがごとく2 PS2 the Best
+  name-en: "Ryu ga Gotoku 2 [PS2 The Best]"
   region: "NTSC-J"
   memcardFilters:
     - "SLPM-66602"
@@ -46165,80 +46165,80 @@ SLPM-74401:
   name: "Kessen"
   region: "NTSC-J"
 SLPM-74402:
-  name: CAPCOM VS. SNK2 MILLIONAIRE FIGHTING 2001 PlayStation®2 the Best
-  name-sort: CAPCOM VS. SNK2 MILLIONAIRE FIGHTING 2001 PlayStation®2 the Best
-  name-en: "Capcom vs. SNK 2 [PlayStation 2 The Best]"
+  name: CAPCOM VS. SNK2 MILLIONAIRE FIGHTING 2001 PS2 the Best
+  name-sort: CAPCOM VS. SNK2 MILLIONAIRE FIGHTING 2001 PS2 the Best
+  name-en: "Capcom vs. SNK 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74403:
-  name: "Densha de Go! Shinkansen [PlayStation 2 The Best]"
+  name: "Densha de Go! Shinkansen [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74404:
-  name: スペースチャンネル5 Part2 PlayStation 2 the Best
-  name-sort: すぺーすちゃんねる5 Part2 PlayStation 2 the Best
-  name-en: "Space Channel 5 - Part 2 [PlayStation 2 The Best]"
+  name: スペースチャンネル5 Part2 PS2 the Best
+  name-sort: すぺーすちゃんねる5 Part2 PS2 the Best
+  name-en: "Space Channel 5 - Part 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74405:
-  name: 侍〜完全版〜 PlayStation 2 the Best
-  name-sort: さむらい〜かんぜんばん〜 PlayStation 2 the Best
-  name-en: "Samurai Complete Edition [PlayStation 2 The Best]"
+  name: 侍〜完全版〜 PS2 the Best
+  name-sort: さむらい〜かんぜんばん〜 PS2 the Best
+  name-en: "Samurai Complete Edition [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Stops crash after intro movie.
 SLPM-74406:
-  name: WRC〜ワールド・ラリー・チャンピオンシップ〜 PlayStation 2 the Best
-  name-sort: WRC〜わーるど・らりー・ちゃんぴおんしっぷ〜 PlayStation 2 the Best
-  name-en: "World Rally Championship [PlayStation 2 The Best]"
+  name: WRC〜ワールド・ラリー・チャンピオンシップ〜 PS2 the Best
+  name-sort: WRC〜わーるど・らりー・ちゃんぴおんしっぷ〜 PS2 the Best
+  name-en: "World Rally Championship [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes crash when using the Subaru.
   gameFixes:
     - XGKickHack # Fixes SPS while ingame.
 SLPM-74407:
-  name: "Jet de Go! 2 [PlayStation 2 The Best]"
+  name: "Jet de Go! 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74408:
-  name: "Rakugaki Kingdom [PlayStation 2 The Best]"
+  name: "Rakugaki Kingdom [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74409:
-  name: ガンサバイバー2 バイオハザード コード:ベロニカ PlayStation 2 the Best
-  name-sort: がんさばいばー2 ばいおはざーど こーど:べろにか PlayStation 2 the Best
-  name-en: "Gun Survivor 2 - BioHazard Code - Veronica [PlayStation 2 The Best]"
+  name: ガンサバイバー2 バイオハザード コード:ベロニカ PS2 the Best
+  name-sort: がんさばいばー2 ばいおはざーど こーど:べろにか PS2 the Best
+  name-en: "Gun Survivor 2 - BioHazard Code - Veronica [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74410:
-  name: ブレス オブ ファイアV ドラゴン クォーター PlayStation®2 the Best
-  name-sort: ぶれす おぶ ふぁいあV どらごん くぉーたー PlayStation®2 the Best
-  name-en: "Breath of Fire V - Dragon Quarter [PlayStation 2 The Best]"
+  name: ブレス オブ ファイアV ドラゴン クォーター PS2 the Best
+  name-sort: ぶれす おぶ ふぁいあV どらごん くぉーたー PS2 the Best
+  name-en: "Breath of Fire V - Dragon Quarter [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74411:
-  name: カルドセプト セカンド エキスパンション PlayStation®2 the Best
-  name-sort: かるどせぷと せかんど えきすぱんしょん PlayStation®2 the Best
-  name-en: "Culdcept II - Expansion [PlayStation 2 The Best]"
+  name: カルドセプト セカンド エキスパンション PS2 the Best
+  name-sort: かるどせぷと せかんど えきすぱんしょん PS2 the Best
+  name-en: "Culdcept II - Expansion [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74412:
-  name: 剣豪2 PlayStation®2 the Best
-  name-sort: けんごう2 PlayStation®2 the Best
-  name-en: "Kengo 2 [PlayStation 2 The Best]"
+  name: 剣豪2 PS2 the Best
+  name-sort: けんごう2 PS2 the Best
+  name-en: "Kengo 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74414:
   name: "Energy Airforce"
   region: "NTSC-J"
 SLPM-74415:
-  name: Shinobi PlayStation 2 the Best
-  name-sort: Shinobi PlayStation 2 the Best
-  name-en: "Shinobi [PlayStation 2 The Best]"
+  name: Shinobi PS2 the Best
+  name-sort: Shinobi PS2 the Best
+  name-en: "Shinobi [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74416:
   name: "Clock Tower 3"
   region: "NTSC-J"
 SLPM-74420:
-  name: 頭文字D Special Stage PlayStation2 the Best
-  name-sort: かしらもじD Special Stage PlayStation2 the Best
-  name-en: "Initial D - Special Stage [PlayStation 2 The Best]"
+  name: 頭文字D Special Stage PS2 the Best
+  name-sort: かしらもじD Special Stage PS2 the Best
+  name-en: "Initial D - Special Stage [PS2 The Best]"
   region: "NTSC-J"
 SLPM-74421:
-  name: 電脳戦機バーチャロン マーズ PlayStation®2 the Best
-  name-sort: でんのうせんきばーちゃろん まーず PlayStation®2 the Best
-  name-en: "Dennou Senki - Virtual-On Marz [PlayStation 2 The Best]"
+  name: 電脳戦機バーチャロン マーズ PS2 the Best
+  name-sort: でんのうせんきばーちゃろん まーず PS2 the Best
+  name-en: "Dennou Senki - Virtual-On Marz [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     cpuCLUTRender: 2 # Fixes CLUT colours.
@@ -48502,8 +48502,8 @@ SLPS-25006:
   name-en: "Koushien Baseball"
   region: "NTSC-J"
 SLPS-25007:
-  name: ARMORED CORE 2
-  name-sort: ARMORED CORE 2
+  name: アーマード・コア 2
+  name-sort: あーまーど・こあ 2
   name-en: "Armored Core 2"
   region: "NTSC-J"
   clampModes:
@@ -48702,8 +48702,8 @@ SLPS-25039:
   name-en: "Missing Blue [First Limited Edition]"
   region: "NTSC-J"
 SLPS-25040:
-  name: ARMORED CORE2 ANOTHER AGE
-  name-sort: ARMORED CORE2 ANOTHER AGE
+  name: アーマード・コア 2　アナザーエイジ
+  name-sort: あーまーど・こあ 2　あなざーえいじ
   name-en: "Armored Core 2 - Another Age"
   region: "NTSC-J"
   compat: 5
@@ -49088,8 +49088,8 @@ SLPS-25111:
   name-en: "Higanbana"
   region: "NTSC-J"
 SLPS-25112:
-  name: ARMORED CORE 3
-  name-sort: ARMORED CORE 3
+  name: アーマード・コア 3
+  name-sort: あーまーど・こあ 3
   name-en: "Armored Core 3"
   region: "NTSC-J"
   compat: 5
@@ -49401,8 +49401,8 @@ SLPS-25168:
   name: "NBA Live 2003"
   region: "NTSC-J"
 SLPS-25169:
-  name: ARMORED CORE 3 SILENT LINE
-  name-sort: ARMORED CORE 3 SILENT LINE
+  name: アーマード・コア 3　サイレントライン
+  name-sort: あーまーど・こあ 3　サイレントライン
   name-en: "Armored Core 3 - Silent Line"
   region: "NTSC-J"
   gsHWFixes:
@@ -50271,8 +50271,8 @@ SLPS-25337:
   name-en: "Bass Landing 3 [Sammy Best]"
   region: "NTSC-J"
 SLPS-25338:
-  name: ARMORED CORE NEXUS [ディスク1/2]
-  name-sort: ARMORED CORE NEXUS [でぃすく1/2]
+  name: アーマード・コア ネクサス [DISC 1]
+  name-sort: あーまーど・こあ ねくさす [DISC 1]
   name-en: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-J"
   gsHWFixes:
@@ -50286,8 +50286,8 @@ SLPS-25338:
     - "SLPS-73202"
     - "SLPS-73203"
 SLPS-25339:
-  name: ARMORED CORE NEXUS [ディスク2/2]
-  name-sort: ARMORED CORE NEXUS [でぃすく2/2]
+  name: アーマード・コア ネクサス [DISC 2]
+  name-sort: あーまーど・こあ ねくさす [DISC 2]
   name-en: "Armored Core - Nexus [Disc 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -50722,8 +50722,8 @@ SLPS-25407:
   name-en: "King of Fighters 2003, The"
   region: "NTSC-J"
 SLPS-25408:
-  name: ARMORED CORE NINE BREAKER
-  name-sort: ARMORED CORE NINE BREAKER
+  name: アーマード・コア ナインブレイカー
+  name-sort: あーまーど・こあ ないんぶれいかー
   name-en: "Armored Core - Nine Breaker"
   region: "NTSC-J"
   gsHWFixes:
@@ -52567,8 +52567,8 @@ SLPS-25729:
   name-en: "Kujibiki Unbalance"
   region: "NTSC-J"
 SLPS-25730:
-  name: ARMORED CORE -MACHINE SIDE BOX-
-  name-sort: ARMORED CORE -MACHINE SIDE BOX-
+  name: アーマード・コア ラストレイヴン -MACHINE SIDE BOX-
+  name-sort: あーまーど・こあ らすとれいゔん -MACHINE SIDE BOX-
   name-en: "Armored Core - Last Raven [Machine Side Box]"
   region: "NTSC-J"
   gsHWFixes:
@@ -52577,10 +52577,14 @@ SLPS-25730:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPS-25731:
-  name: "Armored Core 2 [Machine Side Box]"
+  name: アーマード・コア 2 -MACHINE SIDE BOX-
+  name-sort: アーマード・コア 2 -MACHINE SIDE BOX-
+  name-en: "Armored Core 2 [Machine Side Box]"
   region: "NTSC-J"
 SLPS-25732:
-  name: "Armored Core 3 [Machine Side Box]"
+  name: アーマード・コア 3 -MACHINE SIDE BOX-
+  name-sort: アーマード・コア 3 -MACHINE SIDE BOX-
+  name-en: "Armored Core 3 [Machine Side Box]"
   region: "NTSC-J"
 SLPS-25733:
   name: スーパーロボット大戦OG ORIGINAL GENERATIONS
@@ -53431,12 +53435,12 @@ SLPS-25892:
   name-en: "Nogizaka Haruka no Himitsu - Cosplay Hajimemashita"
   region: "NTSC-J"
 SLPS-25893:
-  name: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Fantasy [PlayStation 2 The Best]"
+  name: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Fantasy [PS2 The Best]"
   region: "NTSC-J"
 SLPS-25894:
   name: ああっ女神さまっ Best Collection
   name-sort: ああっめがみさまっ Best Collection
-  name-en: "Aa Megami-sama [PlayStation 2 The Best]"
+  name-en: "Aa Megami-sama [PS2 The Best]"
   region: "NTSC-J"
 SLPS-25897:
   name: ゼロの使い魔 迷子の終止符と幾千の交響曲 限定版
@@ -53834,96 +53838,96 @@ SLPS-73001:
   name: "Pilot ni Narou! 2"
   region: "NTSC-J"
 SLPS-73003:
-  name: 牧場物語3 ハートに火をつけて PlayStation 2 the Best
-  name-sort: ぼくじょうものがたり3 はーとにひをつけて PlayStation 2 the Best
-  name-en: "Farms Story 3 [PlayStation 2 The Best]"
+  name: 牧場物語3 ハートに火をつけて PS2 the Best
+  name-sort: ぼくじょうものがたり3 はーとにひをつけて PS2 the Best
+  name-en: "Farms Story 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73004:
   name: "Gambler Densetsu Tetsuya"
   region: "NTSC-J"
 SLPS-73005:
-  name: ギルティギアゼクスプラス PlayStation 2 the Best
-  name-sort: ぎるてぃぎあぜくすぷらす PlayStation 2 the Best
-  name-en: "Guilty Gear X - Plus [PlayStation 2 The Best]"
+  name: ギルティギアゼクスプラス PS2 the Best
+  name-sort: ぎるてぃぎあぜくすぷらす PS2 the Best
+  name-en: "Guilty Gear X - Plus [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73006:
-  name: タイムクライシス2 PlayStation 2 the Best
-  name-sort: たいむくらいしす2 PlayStation 2 the Best
-  name-en: "Time Crisis II [PlayStation 2 The Best]"
+  name: タイムクライシス2 PS2 the Best
+  name-sort: たいむくらいしす2 PS2 the Best
+  name-en: "Time Crisis II [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73007:
   name: "Kamaitachi no Yoru 2 - Kangoku-jima no Warabe-uta - Special Eizou"
   region: "NTSC-J"
 SLPS-73101:
-  name: ことばのパズル もじぴったん PlayStation 2 the Best
-  name-sort: ことばのぱずる もじぴったん PlayStation 2 the Best
-  name-en: "Kotoba no Puzzle - Mojipittan [PlayStation 2 The Best]"
+  name: ことばのパズル もじぴったん PS2 the Best
+  name-sort: ことばのぱずる もじぴったん PS2 the Best
+  name-en: "Kotoba no Puzzle - Mojipittan [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73102:
-  name: 牧場物語3 ～ハートに火をつけて PlayStation®2 the Best
-  name-sort: ぼくじょうものがたり3 ～はーとにひをつけて PlayStation®2 the Best
-  name-en: "Bokujou Monogatari 3 - Heart ni Hi o Tsukete [PlayStation 2 The Best]"
+  name: 牧場物語3 ～ハートに火をつけて PS2 the Best
+  name-sort: ぼくじょうものがたり3 ～はーとにひをつけて PS2 the Best
+  name-en: "Bokujou Monogatari 3 - Heart ni Hi o Tsukete [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73103:
-  name: 魔界戦記ディスガイア PlayStation®2 the Best
-  name-sort: まかいせんきでぃすがいあ PlayStation®2 the Best
-  name-en: "Makai Senki Disgaea [PlayStation 2 The Best]"
+  name: 魔界戦記ディスガイア PS2 the Best
+  name-sort: まかいせんきでぃすがいあ PS2 the Best
+  name-en: "Makai Senki Disgaea [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPS-73104:
-  name: 鉄拳タッグトーナメント PlayStation®2 the Best
-  name-sort: てっけんたっぐとーなめんと PlayStation®2 the Best
-  name-en: "Tekken Tag Tournament [PlayStation 2 The Best]"
+  name: 鉄拳タッグトーナメント PS2 the Best
+  name-sort: てっけんたっぐとーなめんと PS2 the Best
+  name-en: "Tekken Tag Tournament [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73105:
-  name: キン肉マン ジェネレーションズ PlayStation®2 the Best
-  name-sort: きんにくまん じぇねれーしょんず PlayStation®2 the Best
-  name-en: "Kinnikuman Generations [PlayStation 2 The Best]"
+  name: キン肉マン ジェネレーションズ PS2 the Best
+  name-sort: きんにくまん じぇねれーしょんず PS2 the Best
+  name-en: "Kinnikuman Generations [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73106:
-  name: パイロットになろう!2 PlayStation®2 the Best
-  name-sort: ぱいろっとになろう!2 PlayStation®2 the Best
-  name-en: "Pilot Nina Rou! 2 [PlayStation 2 The Best]"
+  name: パイロットになろう!2 PS2 the Best
+  name-sort: ぱいろっとになろう!2 PS2 the Best
+  name-en: "Pilot Nina Rou! 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73107:
-  name: 太鼓の達人 ゴー!ゴー!五代目 PlayStation 2 the Best
-  name-sort: たいこのたつじん ごー!ごー!ごだいめ PlayStation 2 the Best
-  name-en: "Taiko no Tatsujin - Go! Go! Godaime [PlayStation 2 The Best]"
+  name: 太鼓の達人 ゴー!ゴー!五代目 PS2 the Best
+  name-sort: たいこのたつじん ごー!ごー!ごだいめ PS2 the Best
+  name-en: "Taiko no Tatsujin - Go! Go! Godaime [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73108:
-  name: ファントム・ブレイブ 2周目はじめました。 PlayStation 2 the Best
-  name-sort: ふぁんとむ・ぶれいぶ 2しゅうめはじめました。 PlayStation 2 the Best
-  name-en: "Phantom Brave [PlayStation 2 The Best]"
+  name: ファントム・ブレイブ 2周目はじめました。 PS2 the Best
+  name-sort: ふぁんとむ・ぶれいぶ 2しゅうめはじめました。 PS2 the Best
+  name-en: "Phantom Brave [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPS-73109:
-  name: 牧場物語3〜 ハートに火をつけて PlayStation®2 the Best
-  name-sort: ぼくじょうものがたり3〜 はーとにひをつけて PlayStation®2 the Best
-  name-en: "Bokujou Monogatari 3 - Heart ni Hi o Tsukete [PlayStation 2 The Best]"
+  name: 牧場物語3〜 ハートに火をつけて PS2 the Best
+  name-sort: ぼくじょうものがたり3〜 はーとにひをつけて PS2 the Best
+  name-en: "Bokujou Monogatari 3 - Heart ni Hi o Tsukete [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73110:
-  name: 太鼓の達人 あっぱれ三代目 PlayStation®2 the Best
-  name-sort: たいこのたつじん あっぱれさんだいめ PlayStation®2 the Best
-  name-en: "Taiko no Tatsujin - Appare Sandaime [PlayStation 2 The Best]"
+  name: 太鼓の達人 あっぱれ三代目 PS2 the Best
+  name-sort: たいこのたつじん あっぱれさんだいめ PS2 the Best
+  name-en: "Taiko no Tatsujin - Appare Sandaime [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73111:
-  name: 太鼓の達人 わくわくアニメ祭り PlayStation®2 the Best
-  name-sort: たいこのたつじん わくわくあにめまつり PlayStation®2 the Best
-  name-en: "Taiko no Tatsujin - Waku Waku Anime Matsuri [PlayStation 2 The Best]"
+  name: 太鼓の達人 わくわくアニメ祭り PS2 the Best
+  name-sort: たいこのたつじん わくわくあにめまつり PS2 the Best
+  name-en: "Taiko no Tatsujin - Waku Waku Anime Matsuri [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73201:
-  name: 零～紅い蝶～ PlayStation®2 the Best
-  name-sort: れい～あかいちょう～ PlayStation®2 the Best
-  name-en: "Fatal Frame II - Crimson Butterfly [PlayStation 2 The Best]"
+  name: 零～紅い蝶～ PS2 the Best
+  name-sort: れい～あかいちょう～ PS2 the Best
+  name-en: "Fatal Frame II - Crimson Butterfly [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73202:
-  name: ARMORED CORE NEXUS PlayStation®2 the Best [ディスク1/2]
-  name-sort: ARMORED CORE NEXUS PlayStation®2 the Best [でぃすく1/2]
-  name-en: "Armored Core - Nexus [Disc 1] [PlayStation 2 The Best]"
+  name: アーマード・コア ネクサス [DISC 1] PS2 the Best
+  name-sort: あーまーど・こあ ねくさす [DISC 1] PS2 the Best
+  name-en: "Armored Core - Nexus [Disc 1] [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
@@ -53936,9 +53940,9 @@ SLPS-73202:
     - "SLPS-73202"
     - "SLPS-73203"
 SLPS-73203:
-  name: ARMORED CORE NEXUS PlayStation®2 the Best [ディスク2/2]
-  name-sort: ARMORED CORE NEXUS PlayStation®2 the Best [でぃすく2/2]
-  name-en: "Armored Core - Nexus [Disc 2] [PlayStation 2 The Best]"
+  name: アーマード・コア ネクサス [DISC 2] PS2 the Best
+  name-sort: あーまーど・こあ ねくさす [DISC 2] PS2 the Best
+  name-en: "Armored Core - Nexus [Disc 2] [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
@@ -53951,16 +53955,16 @@ SLPS-73203:
     - "SLPS-73202"
     - "SLPS-73203"
 SLPS-73204:
-  name: 絶体絶命都市 PlayStation®2 the Best
-  name-sort: ぜったいぜつめいとし PlayStation®2 the Best
-  name-en: "Zettai Zetsumei Toshi [PlayStation 2 The Best]"
+  name: 絶体絶命都市 PS2 the Best
+  name-sort: ぜったいぜつめいとし PS2 the Best
+  name-en: "Zettai Zetsumei Toshi [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes incorrect blur effect.
 SLPS-73205:
-  name: エースコンバット04 シャッタードスカイ PlayStation®2 the Best
-  name-sort: えーすこんばっと04 しゃったーどすかい PlayStation®2 the Best
-  name-en: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
+  name: エースコンバット04 シャッタードスカイ PS2 the Best
+  name-sort: えーすこんばっと04 しゃったーどすかい PS2 the Best
+  name-en: "Ace Combat 04 - Shattered Skies [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
@@ -53972,33 +53976,33 @@ SLPS-73205:
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
 SLPS-73206:
-  name: 第2次スーパーロボット大戦α PlayStation®2 the Best
-  name-sort: だい2じすーぱーろぼっとたいせんあるふぁ PlayStation®2 the Best
-  name-en: "Super Robot Taisen Alpha 2nd [PlayStation 2 The Best]"
+  name: 第2次スーパーロボット大戦α PS2 the Best
+  name-sort: だい2じすーぱーろぼっとたいせんあるふぁ PS2 the Best
+  name-en: "Super Robot Taisen Alpha 2nd [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73207:
-  name: ドラゴンボールZ PlayStation®2 the Best
-  name-sort: どらごんぼーるZ PlayStation®2 the Best
-  name-en: "Dragon Ball Z [PlayStation 2 The Best]"
+  name: ドラゴンボールZ PS2 the Best
+  name-sort: どらごんぼーるZ PS2 the Best
+  name-en: "Dragon Ball Z [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines when powering up.
 SLPS-73208:
-  name: ドラゴンボールZ2 PlayStation®2 the Best
-  name-sort: どらごんぼーるZ2 PlayStation®2 the Best
-  name-en: "Dragon Ball Z 2 [PlayStation 2 The Best]"
+  name: ドラゴンボールZ2 PS2 the Best
+  name-sort: どらごんぼーるZ2 PS2 the Best
+  name-en: "Dragon Ball Z 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73209:
-  name: 鉄拳4 PlayStation®2 the Best
-  name-sort: てっけん4 PlayStation®2 the Best
-  name-en: "Tekken 4 [PlayStation 2 The Best]"
+  name: 鉄拳4 PS2 the Best
+  name-sort: てっけん4 PS2 the Best
+  name-en: "Tekken 4 [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73210:
-  name: 塊魂 PlayStation®2 the Best
-  name-sort: かたまりたましい PlayStation®2 the Best
-  name-en: "Katamari Damacy [PlayStation 2 The Best]"
+  name: 塊魂 PS2 the Best
+  name-sort: かたまりたましい PS2 the Best
+  name-en: "Katamari Damacy [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     vu1RoundMode: 0 # Fixes SPS.
@@ -54007,19 +54011,19 @@ SLPS-73210:
   speedHacks:
     mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73211:
-  name: サモンナイト3 PlayStation®2 the Best
-  name-sort: さもんないと3 PlayStation®2 the Best
-  name-en: "Summon Night 3 [PlayStation 2 The Best]"
+  name: サモンナイト3 PS2 the Best
+  name-sort: さもんないと3 PS2 the Best
+  name-en: "Summon Night 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73212:
-  name: NARUTO -ナルト-ナルティメットヒーロー PlayStation®2 the Best
-  name-sort: NARUTO -なると-なるてぃめっとひーろー PlayStation®2 the Best
-  name-en: "Naruto Narutimett Hero [PlayStation 2 The Best]"
+  name: NARUTO -ナルト-ナルティメットヒーロー PS2 the Best
+  name-sort: NARUTO -なると-なるてぃめっとひーろー PS2 the Best
+  name-en: "Naruto Narutimett Hero [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73214:
-  name: シャドウ ハーツ II ディレクターズカット PlayStation®2 the Best [ディスク1/2]
-  name-sort: しゃどう はーつ II でぃれくたーずかっと PlayStation®2 the Best [でぃすく1/2]
-  name-en: "Shadow Hearts 2 [Director's Cut] [PlayStation 2 The Best] [Disc 1 of 2]"
+  name: シャドウ ハーツ II ディレクターズカット PS2 the Best [ディスク1/2]
+  name-sort: しゃどう はーつ II でぃれくたーずかっと PS2 the Best [でぃすく1/2]
+  name-en: "Shadow Hearts 2 [Director's Cut] [PS2 The Best] [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
@@ -54027,9 +54031,9 @@ SLPS-73214:
     roundSprite: 2 # Fixes the position of monster sprites and reduces garbage in the UI.
     autoFlush: 2 # Makes the shadow monsters appear.
 SLPS-73215:
-  name: シャドウ ハーツ II ディレクターズカット PlayStation®2 the Best [ディスク2/2]
-  name-sort: しゃどう はーつ II でぃれくたーずかっと PlayStation®2 the Best [でぃすく2/2]
-  name-en: "Shadow Hearts 2 [Director's Cut] [PlayStation 2 The Best] [Disc 2 of 2]"
+  name: シャドウ ハーツ II ディレクターズカット PS2 the Best [ディスク2/2]
+  name-sort: しゃどう はーつ II でぃれくたーずかっと PS2 the Best [でぃすく2/2]
+  name-en: "Shadow Hearts 2 [Director's Cut] [PS2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurrines, preload frame for FMV breaks visuals with this setting.
@@ -54039,22 +54043,22 @@ SLPS-73215:
   memcardFilters:
     - "SLPS-73214"
 SLPS-73216:
-  name: マグナカルタ PlayStation®2 the Best
-  name-sort: まぐなかるた PlayStation®2 the Best
-  name-en: "Magna Carta [PlayStation 2 The Best]"
+  name: マグナカルタ PS2 the Best
+  name-sort: まぐなかるた PS2 the Best
+  name-en: "Magna Carta [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73217:
-  name: テイルズ オブ シンフォニア PlayStation®2 the Best
-  name-sort: ているず おぶ しんふぉにあ PlayStation®2 the Best
-  name-en: "Tales of Symphonia [PlayStation 2 The Best]"
+  name: テイルズ オブ シンフォニア PS2 the Best
+  name-sort: ているず おぶ しんふぉにあ PS2 the Best
+  name-en: "Tales of Symphonia [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     getSkipCount: "GSC_TalesofSymphonia"
 SLPS-73218:
-  name: エースコンバット5 ジ・アンサング・ウォー PlayStation®2 the Best
-  name-sort: えーすこんばっと5 じ・あんさんぐ・うぉー PlayStation®2 the Best
-  name-en: "Ace Combat 5 - The Unsung War [PlayStation 2 The Best]"
+  name: エースコンバット5 ジ・アンサング・ウォー PS2 the Best
+  name-sort: えーすこんばっと5 じ・あんさんぐ・うぉー PS2 the Best
+  name-en: "Ace Combat 5 - The Unsung War [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
@@ -54067,32 +54071,32 @@ SLPS-73218:
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
 SLPS-73219:
-  name: テイルズ・オブ・ディスティニー2 PlayStation®2 the Best
-  name-sort: ているず・おぶ・でぃすてぃにー2 PlayStation®2 the Best
-  name-en: "Tales of Destiny 2 [PlayStation 2 The Best]"
+  name: テイルズ・オブ・ディスティニー2 PS2 the Best
+  name-sort: ているず・おぶ・でぃすてぃにー2 PS2 the Best
+  name-en: "Tales of Destiny 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73220:
-  name: ウルトラマン PlayStation®2 the Best
-  name-sort: うるとらまん PlayStation®2 the Best
-  name-en: "Ultraman [PlayStation 2 The Best]"
+  name: ウルトラマン PS2 the Best
+  name-sort: うるとらまん PS2 the Best
+  name-en: "Ultraman [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73221:
-  name: NARUTO -ナルト-ナルティメットヒーロー2 PlayStation®2 the Best
-  name-sort: NARUTO -なると-なるてぃめっとひーろー2 PlayStation®2 the Best
-  name-en: "Naruto Narutimett Hero 2 [PlayStation 2 The Best]"
+  name: NARUTO -ナルト-ナルティメットヒーロー2 PS2 the Best
+  name-sort: NARUTO -なると-なるてぃめっとひーろー2 PS2 the Best
+  name-en: "Naruto Narutimett Hero 2 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     vu0ClampMode: 0 # Fixes glow effects.
     vu1ClampMode: 3 # Fixes rare SPS.
 SLPS-73222:
-  name: 牧場物語 Oh!ワンダフルライフ PlayStation®2 the Best
-  name-sort: ぼくじょうものがたり Oh!わんだふるらいふ PlayStation®2 the Best
-  name-en: "Harvest Moon - A Wonderful Life [PlayStation 2 The Best]"
+  name: 牧場物語 Oh!ワンダフルライフ PS2 the Best
+  name-sort: ぼくじょうものがたり Oh!わんだふるらいふ PS2 the Best
+  name-en: "Harvest Moon - A Wonderful Life [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73223:
-  name: 鉄拳5 PlayStation®2 the Best
-  name-sort: てっけん5 PlayStation®2 the Best
-  name-en: "Tekken 5 [PlayStation 2 The Best]"
+  name: 鉄拳5 PS2 the Best
+  name-sort: てっけん5 PS2 the Best
+  name-en: "Tekken 5 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes camera and stops constant coin noises on Pirates Cove.
@@ -54100,9 +54104,9 @@ SLPS-73223:
     alignSprite: 1 # Fixes vertical lines.
     getSkipCount: "GSC_Tekken5"
 SLPS-73224:
-  name: ゼノサーガ エピソードII［善悪の彼岸］ PlayStation®2 the Best [ディスク1/2]
-  name-sort: ぜのさーが えぴそーどII［ぜんあくのひがん］ PlayStation®2 the Best [でぃすく1/2]
-  name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc 1 of 2]"
+  name: ゼノサーガ エピソードII［善悪の彼岸］ PS2 the Best [ディスク1/2]
+  name-sort: ぜのさーが えぴそーどII［ぜんあくのひがん］ PS2 the Best [でぃすく1/2]
+  name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [PS2 The Best] [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -54116,9 +54120,9 @@ SLPS-73224:
     - "SLPS-25353"
     - "SLPS-73224"
 SLPS-73225:
-  name: ゼノサーガ エピソードII［善悪の彼岸］ PlayStation®2 the Best [ディスク2/2]
-  name-sort: ぜのさーが えぴそーどII［ぜんあくのひがん］ PlayStation®2 the Best [でぃすく2/2]
-  name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc 2 of 2]"
+  name: ゼノサーガ エピソードII［善悪の彼岸］ PS2 the Best [ディスク2/2]
+  name-sort: ぜのさーが えぴそーどII［ぜんあくのひがん］ PS2 the Best [でぃすく2/2]
+  name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [PS2 The Best] [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -54132,27 +54136,27 @@ SLPS-73225:
     - "SLPS-25353"
     - "SLPS-73224"
 SLPS-73226:
-  name: 天誅 紅 PlayStation®2 the Best
-  name-sort: てんちゅう くれない PlayStation®2 the Best
-  name-en: "Tenchu Kurenai [PlayStation 2 The Best]"
+  name: 天誅 紅 PS2 the Best
+  name-sort: てんちゅう くれない PS2 the Best
+  name-en: "Tenchu Kurenai [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73227:
-  name: Another Century’s Episode PlayStation®2 the Best
-  name-sort: Another Century’s Episode PlayStation®2 the Best
-  name-en: "Another Century's Episode [PlayStation 2 The Best]"
+  name: Another Century’s Episode PS2 the Best
+  name-sort: Another Century’s Episode PS2 the Best
+  name-en: "Another Century's Episode [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73228:
-  name: "Fuuun Bakumatsuden [PlayStation 2 The Best]"
+  name: "Fuuun Bakumatsuden [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73229:
-  name: ベルウィックサーガ PlayStation®2 the Best
-  name-sort: べるうぃっくさーが PlayStation®2 the Best
-  name-en: "TearRing Saga Series - Berwick Saga [PlayStation 2 The Best]"
+  name: ベルウィックサーガ PS2 the Best
+  name-sort: べるうぃっくさーが PS2 the Best
+  name-en: "TearRing Saga Series - Berwick Saga [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73230:
-  name: .hack// Vol.1×Vol.2 PlayStation 2 the Best
-  name-sort: .hack// Vol.1×Vol.2 PlayStation 2 the Best
-  name-en: "dot hack - Vol.1 & Vol.2 [PlayStation 2 The Best] [Vol.1 Disc]"
+  name: .hack// Vol.1×Vol.2 PS2 the Best
+  name-sort: .hack// Vol.1×Vol.2 PS2 the Best
+  name-en: "dot hack - Vol.1 & Vol.2 [PS2 The Best] [Vol.1 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -54168,7 +54172,7 @@ SLPS-73230:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73231:
-  name: "dot hack - Vol.1 & Vol.2 [PlayStation 2 The Best] [Vol.2 Disc]"
+  name: "dot hack - Vol.1 & Vol.2 [PS2 The Best] [Vol.2 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -54184,9 +54188,9 @@ SLPS-73231:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73232:
-  name: .hack// Vol.3×Vol.4 PlayStation 2 the Best
-  name-sort: .hack// Vol.3×Vol.4 PlayStation 2 the Best
-  name-en: "dot hack - Vol.3 & Vol.4 [PlayStation 2 The Best] [Vol.3 Disc]"
+  name: .hack// Vol.3×Vol.4 PS2 the Best
+  name-sort: .hack// Vol.3×Vol.4 PS2 the Best
+  name-en: "dot hack - Vol.3 & Vol.4 [PS2 The Best] [Vol.3 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -54202,7 +54206,7 @@ SLPS-73232:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73233:
-  name: "dot hack - Vol.3 & Vol.4 [PlayStation 2 The Best] [Vol.4 Disc]"
+  name: "dot hack - Vol.3 & Vol.4 [PS2 The Best] [Vol.4 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -54218,39 +54222,39 @@ SLPS-73233:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73234:
-  name: 機動戦士Zガンダム エゥーゴVS.ティターンズ PlayStation®2 the Best
-  name-sort: きどうせんしZがんだむ えぅーごVS.てぃたーんず PlayStation®2 the Best
-  name-en: "Kidou Senshi Z-Gundam - AEUG vs. Titans [PlayStation 2 The Best]"
+  name: 機動戦士Zガンダム エゥーゴVS.ティターンズ PS2 the Best
+  name-sort: きどうせんしZがんだむ えぅーごVS.てぃたーんず PS2 the Best
+  name-en: "Kidou Senshi Z-Gundam - AEUG vs. Titans [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73235:
-  name: ドラゴンボールZ3 PlayStation®2 the Best
-  name-sort: どらごんぼーるZ3 PlayStation®2 the Best
-  name-en: "Dragon Ball Z 3 [PlayStation 2 The Best]"
+  name: ドラゴンボールZ3 PS2 the Best
+  name-sort: どらごんぼーるZ3 PS2 the Best
+  name-en: "Dragon Ball Z 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73236:
-  name: ヴィーナスアンドブレイブス〜魔女と女神と滅びの予言〜 PlayStation®2 the Best
-  name-sort: ゔぃーなすあんどぶれいぶす〜まじょとめがみとほろびのよげん〜 PlayStation®2 the Best
-  name-en: "Venus & Braves [PlayStation 2 The Best]"
+  name: ヴィーナスアンドブレイブス〜魔女と女神と滅びの予言〜 PS2 the Best
+  name-sort: ゔぃーなすあんどぶれいぶす〜まじょとめがみとほろびのよげん〜 PS2 the Best
+  name-en: "Venus & Braves [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73237:
-  name: 天誅 参 PlayStation®2 the Best
-  name-sort: てんちゅう さん PlayStation®2 the Best
-  name-en: "Tenchu San [PlayStation 2 The Best]"
+  name: 天誅 参 PS2 the Best
+  name-sort: てんちゅう さん PS2 the Best
+  name-en: "Tenchu San [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73238:
-  name: 第3次スーパーロボット大戦α -終焉の銀河へー PlayStation 2 the Best
-  name-sort: だい3じすーぱーろぼっとたいせんあるふぁ -しゅうえんのぎんがへー PlayStation 2 the Best
-  name-en: "Super Robot Wars - Alpha 3 [PlayStation 2 The Best]"
+  name: 第3次スーパーロボット大戦α -終焉の銀河へー PS2 the Best
+  name-sort: だい3じすーぱーろぼっとたいせんあるふぁ -しゅうえんのぎんがへー PS2 the Best
+  name-en: "Super Robot Wars - Alpha 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73239:
-  name: 幽★遊★白書 FOREVER PlayStation 2 the Best
-  name-sort: ゆう★ゆう★はくしょ FOREVER PlayStation 2 the Best
-  name-en: "Yu Yu Hakusho Forever [PlayStation 2 The Best]"
+  name: 幽★遊★白書 FOREVER PS2 the Best
+  name-sort: ゆう★ゆう★はくしょ FOREVER PS2 the Best
+  name-en: "Yu Yu Hakusho Forever [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73240:
-  name: 塊魂 PlayStation 2 the Best
-  name-sort: かたまりたましい PlayStation 2 the Best
-  name-en: "Katamari Damacy [PlayStation 2 The Best]"
+  name: 塊魂 PS2 the Best
+  name-sort: かたまりたましい PS2 the Best
+  name-en: "Katamari Damacy [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     vu1RoundMode: 0 # Fixes SPS.
@@ -54259,9 +54263,9 @@ SLPS-73240:
   speedHacks:
     mvuFlag: 0 # Fixes performance and falling through floor and other gameplay.
 SLPS-73241:
-  name: みんな大好き塊魂 PlayStation 2 the Best
-  name-sort: みんなだいすきかたまりたましい PlayStation 2 the Best
-  name-en: "Minna Daisuki Katamari Damacy [PlayStation 2 The Best]"
+  name: みんな大好き塊魂 PS2 the Best
+  name-sort: みんなだいすきかたまりたましい PS2 the Best
+  name-en: "Minna Daisuki Katamari Damacy [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     vu1RoundMode: 0 # Fixes SPS.
@@ -54278,37 +54282,37 @@ SLPS-73241:
     - "SLPS-73210"
     - "SLPS-73240"
 SLPS-73242:
-  name: テイルズ オブ レジェンディア PlayStation 2 the Best
-  name-sort: ているず おぶ れじぇんでぃあ PlayStation 2 the Best
-  name-en: "Tales of Legendia [PlayStation 2 The Best]"
+  name: テイルズ オブ レジェンディア PS2 the Best
+  name-sort: ているず おぶ れじぇんでぃあ PS2 the Best
+  name-en: "Tales of Legendia [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     getSkipCount: "GSC_TalesOfLegendia"
 SLPS-73243:
-  name: ナムコ クロス カプコン PlayStation 2 the Best
-  name-sort: なむこ くろす かぷこん PlayStation 2 the Best
-  name-en: "Namco X Capcom [PlayStation 2 The Best]"
+  name: ナムコ クロス カプコン PS2 the Best
+  name-sort: なむこ くろす かぷこん PS2 the Best
+  name-en: "Namco X Capcom [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73244:
-  name: R・TYPE FINAL PlayStation®2 the Best
-  name-sort: R・TYPE FINAL PlayStation®2 the Best
-  name-en: "R-Type Final [PlayStation 2 The Best]"
+  name: R・TYPE FINAL PS2 the Best
+  name-sort: R・TYPE FINAL PS2 the Best
+  name-en: "R-Type Final [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPS-73245:
-  name: 零 〜刺青の聲〜 PlayStation 2 the Best
-  name-sort: ぜろ 〜しせいのこえ〜 PlayStation 2 the Best
-  name-en: "Fatal Frame - Zero [PlayStation 2 The Best]"
+  name: 零 〜刺青の聲〜 PS2 the Best
+  name-sort: ぜろ 〜しせいのこえ〜 PS2 the Best
+  name-en: "Fatal Frame - Zero [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73246:
-  name: ガンダム トゥルーオデッセイ 〜失われしGの伝説〜 PlayStation 2 the Best
-  name-sort: がんだむ とぅるーおでっせい 〜うしなわれしGのでんせつ〜 PlayStation 2 the Best
-  name-en: "Gundam True Odyssey [PlayStation 2 The Best]"
+  name: ガンダム トゥルーオデッセイ 〜失われしGの伝説〜 PS2 the Best
+  name-sort: がんだむ とぅるーおでっせい 〜うしなわれしGのでんせつ〜 PS2 the Best
+  name-en: "Gundam True Odyssey [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73247:
-  name: ARMORED CORE -LAST RAVEN- PlayStation 2 the Best
-  name-sort: ARMORED CORE -LAST RAVEN- PlayStation 2 the Best
-  name-en: "Armored Core - Last Raven [PlayStation 2 The Best]"
+  name: アーマード・コア ラストレイヴン PS2 the Best
+  name-sort: あーまーど・こあ らすとれいゔん PS2 the Best
+  name-en: "Armored Core - Last Raven [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
@@ -54324,21 +54328,21 @@ SLPS-73247:
     - "SLPS-25462"
     - "SLPS-73247"
 SLPS-73248:
-  name: 影牢II -Dark illusion- PlayStation®2 the Best
-  name-sort: かげろうII -Dark illusion- PlayStation®2 the Best
-  name-en: "Kagero 2 - Dark Illusion [PlayStation 2 The Best]"
+  name: 影牢II -Dark illusion- PS2 the Best
+  name-sort: かげろうII -Dark illusion- PS2 the Best
+  name-en: "Kagero 2 - Dark Illusion [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73249:
-  name: アルトネリコ 世界の終わりで詩い続ける少女 PlayStation 2 the Best
-  name-sort: あるとねりこ せかいのおわりでしいつづけるしょうじょ PlayStation 2 the Best
-  name-en: "Ar tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo [PlayStation 2 The Best]"
+  name: アルトネリコ 世界の終わりで詩い続ける少女 PS2 the Best
+  name-sort: あるとねりこ せかいのおわりでしいつづけるしょうじょ PS2 the Best
+  name-en: "Ar tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLPS-73250:
-  name: エースコンバット・ゼロ・ザ・ベルカン・ウォー PlayStation 2 the Best
-  name-sort: えーすこんばっと・ぜろ・ざ・べるかん・うぉー PlayStation 2 the Best
-  name-en: "Ace Combat Zero - The Belkan War [PlayStation 2 The Best]"
+  name: エースコンバット・ゼロ・ザ・ベルカン・ウォー PS2 the Best
+  name-sort: えーすこんばっと・ぜろ・ざ・べるかん・うぉー PS2 the Best
+  name-en: "Ace Combat Zero - The Belkan War [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
@@ -54361,66 +54365,66 @@ SLPS-73250:
     - "SLPS-25418"
     - "SLPS-73218"
 SLPS-73251:
-  name: NARUTO-ナルト-ナルティメットヒーロー3 PlayStation®2 the Best
-  name-sort: NARUTO-なると-なるてぃめっとひーろー3 PlayStation®2 the Best
-  name-en: "Naruto - Narutimett Hero 3 [PlayStation 2 The Best]"
+  name: NARUTO-ナルト-ナルティメットヒーロー3 PS2 the Best
+  name-sort: NARUTO-なると-なるてぃめっとひーろー3 PS2 the Best
+  name-en: "Naruto - Narutimett Hero 3 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes invisible QTE button prompts and overbright in some scenes.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes vertical lines in FMVs.
 SLPS-73252:
-  name: テイルズ オブ ジ アビス PlayStation 2 the Best
-  name-sort: ているず おぶ じ あびす PlayStation 2 the Best
-  name-en: "Tales of the Abyss [PlayStation 2 The Best]"
+  name: テイルズ オブ ジ アビス PS2 the Best
+  name-sort: ているず おぶ じ あびす PS2 the Best
+  name-en: "Tales of the Abyss [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
     autoFlush: 2 # Fixes post lighting.
 SLPS-73253:
-  name: るろうに剣心-明治剣客浪漫譚- 炎上!京都輪廻 PlayStation2 the Best
-  name-sort: るろうにけんしん-めいじけんかくろまんたん- えんじょう!きょうとりんね PlayStation2 the Best
-  name-en: "Rurouni Kenshin - Enjou! Kyoto Rinne [PlayStation 2 The Best]"
+  name: るろうに剣心-明治剣客浪漫譚- 炎上!京都輪廻 PS2 the Best
+  name-sort: るろうにけんしん-めいじけんかくろまんたん- えんじょう!きょうとりんね PS2 the Best
+  name-en: "Rurouni Kenshin - Enjou! Kyoto Rinne [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73254:
-  name: 魔界戦記ディスガイア2 PlayStation 2 the Best
-  name-sort: まかいせんきでぃすがいあ2 PlayStation 2 the Best
-  name-en: "Makai Senki Disgaea [PlayStation 2 The Best]"
+  name: 魔界戦記ディスガイア2 PS2 the Best
+  name-sort: まかいせんきでぃすがいあ2 PS2 the Best
+  name-en: "Makai Senki Disgaea [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes flickering FMV's.
 SLPS-73255:
-  name: 零〜zero〜 PlayStation 2 the Best
-  name-sort: ぜろ〜zero〜 PlayStation 2 the Best
-  name-en: "Fatal Frame [PlayStation 2 the Best - Reprint]"
+  name: 零〜zero〜 PS2 the Best
+  name-sort: ぜろ〜zero〜 PS2 the Best
+  name-en: "Fatal Frame [PS2 the Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SLPS-73256:
-  name: 零〜紅い蝶〜 PlayStation 2 the Best
-  name-sort: ぜろ〜あかいちょう〜 PlayStation 2 the Best
-  name-en: "Fatal Frame II - Crimson Butterfly [PlayStation 2 the Best - Reprint]"
+  name: 零〜紅い蝶〜 PS2 the Best
+  name-sort: ぜろ〜あかいちょう〜 PS2 the Best
+  name-en: "Fatal Frame II - Crimson Butterfly [PS2 the Best - Reprint]"
   region: "NTSC-J"
 SLPS-73257:
-  name: 零〜刺青の聲〜 PlayStation 2 the Best
-  name-sort: ぜろ〜しせいのこえ〜 PlayStation 2 the Best
-  name-en: "Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]"
+  name: 零〜刺青の聲〜 PS2 the Best
+  name-sort: ぜろ〜しせいのこえ〜 PS2 the Best
+  name-en: "Fatal Frame III - The Tormented [PS2 the Best - Reprint]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Reduces blurriness.
 SLPS-73258:
-  name: 喧嘩番長2 〜フルスロットル〜 PlayStation®2 the Best
-  name-sort: けんかばんちょう2 〜ふるすろっとる〜 PlayStation®2 the Best
-  name-en: "Kenka Banchou 2 - Full Throttle [PlayStation 2 The Best]"
+  name: 喧嘩番長2 〜フルスロットル〜 PS2 the Best
+  name-sort: けんかばんちょう2 〜ふるすろっとる〜 PS2 the Best
+  name-en: "Kenka Banchou 2 - Full Throttle [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73259:
   name: "Dot Hack G.U. Vol. 1 - Saitan"
   region: "NTSC-J"
 SLPS-73263:
-  name: アルトネリコ2 世界に響く少女たちの創造詩 PlayStation 2 the Best
-  name-sort: あるとねりこ2 せかいにひびくしょうじょたちのそうぞうし PlayStation 2 the Best
-  name-en: "Ar tonelico II - Sekai ni Hibiku Shoujo-Tachi no Metafalica [PlayStation 2 The Best]"
+  name: アルトネリコ2 世界に響く少女たちの創造詩 PS2 the Best
+  name-sort: あるとねりこ2 せかいにひびくしょうじょたちのそうぞうし PS2 the Best
+  name-en: "Ar tonelico II - Sekai ni Hibiku Shoujo-Tachi no Metafalica [PS2 The Best]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes "Fall through floor" bug when approaching chests.
@@ -54440,8 +54444,8 @@ SLPS-73267:
   name: "Dot Hack G.U. Vol. 3 - Aruku You na Hayasa de"
   region: "NTSC-J"
 SLPS-73269:
-  name: 機動戦士ガンダムSEED DESTINY 連合VS. Z.A.F.T. II PLUS PlayStation®2 the Best
-  name-sort: きどうせんしがんだむSEED DESTINY れんごうVS. Z.A.F.T. II PLUS PlayStation®2 the Best
+  name: 機動戦士ガンダムSEED DESTINY 連合VS. Z.A.F.T. II PLUS PS2 the Best
+  name-sort: きどうせんしがんだむSEED DESTINY れんごうVS. Z.A.F.T. II PLUS PS2 the Best
   name-en: "Kidou Senshi Gundam SEED - Rengou vs. Z.A.F.T."
   region: "NTSC-K"
   roundModes:
@@ -54449,32 +54453,32 @@ SLPS-73269:
   gameFixes:
     - FpuNegDivHack # Fixes target loss issue.
 SLPS-73270:
-  name: "Super Robot Taisen Z [PlayStation 2 The Best]"
+  name: "Super Robot Taisen Z [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73401:
-  name: はじめの一歩 VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PlayStation 2 the Best
-  name-sort: はじめのいちほ VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PlayStation 2 the Best
-  name-en: "Victorious Boxers - Championship Edition [PlayStation 2 The Best]"
+  name: はじめの一歩 VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
+  name-sort: はじめのいちほ VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
+  name-en: "Victorious Boxers - Championship Edition [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73402:
-  name: 首都高バトル0 PlayStation 2 the Best
-  name-sort: しゅとこうばとる0 PlayStation 2 the Best
-  name-en: "Shutokou Battle 0 [PlayStation 2 The Best]"
+  name: 首都高バトル0 PS2 the Best
+  name-sort: しゅとこうばとる0 PS2 the Best
+  name-en: "Shutokou Battle 0 [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPS-73403:
-  name: ARMORED CORE2 PlayStation 2 the Best
-  name-sort: ARMORED CORE2 PlayStation 2 the Best
-  name-en: "Armored Core 2 [PlayStation 2 The Best]"
+  name: アーマード・コア 2 PS2 the Best
+  name-sort: あーまーど・こあ 2 PS2 the Best
+  name-en: "Armored Core 2 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
   gsHWFixes:
     textureInsideRT: 1 # Fixes texture corruption.
 SLPS-73404:
-  name: 風のクロノア2〜世界が望んだ忘れもの〜PlayStation 2 the Best
-  name-sort: かぜのくろのあ2〜せかいがのぞんだわすれもの〜PlayStation 2 the Best
-  name-en: "Klonoa 2 [PlayStation 2 The Best]"
+  name: 風のクロノア2〜世界が望んだ忘れもの〜PS2 the Best
+  name-sort: かぜのくろのあ2〜せかいがのぞんだわすれもの〜PS2 the Best
+  name-en: "Klonoa 2 [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Objects appear in wrong places without it.
@@ -54484,34 +54488,34 @@ SLPS-73404:
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes shadows, object and enemy colours, platform transitions.
 SLPS-73405:
-  name: 零〜zero〜 PlayStation 2 the Best
-  name-sort: ぜろ〜zero〜 PlayStation 2 the Best
-  name-en: "Zero [PlayStation 2 The Best]"
+  name: 零〜zero〜 PS2 the Best
+  name-sort: ぜろ〜zero〜 PS2 the Best
+  name-en: "Zero [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blurriness.
     alignSprite: 1 # Fixes vertical lines on hidden ghosts.
 SLPS-73406:
-  name: DOA2 HARD・CORE PlayStation 2 the Best
-  name-sort: DOA2 HARD・CORE PlayStation 2 the Best
-  name-en: "DOA 2 - Hardcore [PlayStation 2 The Best]"
+  name: DOA2 HARD・CORE PS2 the Best
+  name-sort: DOA2 HARD・CORE PS2 the Best
+  name-en: "DOA 2 - Hardcore [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
 SLPS-73407:
-  name: サイドワインダーMAX PlayStation 2 the Best
-  name-sort: さいどわいんだーMAX PlayStation 2 the Best
-  name-en: "Sidewinder MAX [PlayStation 2 The Best]"
+  name: サイドワインダーMAX PS2 the Best
+  name-sort: さいどわいんだーMAX PS2 the Best
+  name-en: "Sidewinder MAX [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73408:
-  name: "7 (Seven) - Molmorth no Kiheitai [PlayStation 2 the Best]"
+  name: "7 (Seven) - Molmorth no Kiheitai [PS2 the Best]"
   region: "NTSC-J"
 SLPS-73409:
   name: "Exciting Pro Wres 3"
   region: "NTSC-J"
 SLPS-73410:
-  name: エースコンバット04 シャッタードスカイ PlayStation 2 the Best
-  name-sort: えーすこんばっと04 しゃったーどすかい PlayStation 2 the Best
-  name-en: "Ace Combat 04 - Shattered Skies [PlayStation 2 The Best]"
+  name: エースコンバット04 シャッタードスカイ PS2 the Best
+  name-sort: えーすこんばっと04 しゃったーどすかい PS2 the Best
+  name-en: "Ace Combat 04 - Shattered Skies [PS2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
@@ -54523,7 +54527,7 @@ SLPS-73410:
     mergeSprite: 1 # Fixes vertical lines.
     gpuTargetCLUT: 1 # Fixes broken sun.
 SLPS-73411:
-  name: "Armored Core 2 - Another Age [PlayStation 2 The Best]"
+  name: "Armored Core 2 - Another Age [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2 # Fixes Abnormal AI behavior.
@@ -54534,29 +54538,29 @@ SLPS-73411:
     - "SLPS-73403"
     - "SLPS-73411"
 SLPS-73412:
-  name: ヴァンパイアナイト PlayStation 2 the Best
-  name-sort: ゔぁんぱいあないと PlayStation 2 the Best
-  name-en: "Vampire Night [PlayStation 2 The Best]"
+  name: ヴァンパイアナイト PS2 the Best
+  name-sort: ゔぁんぱいあないと PS2 the Best
+  name-en: "Vampire Night [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73413:
   name: "Kamaitachi no Yoru 2 - Kangoku-jima no Warabe-uta"
   region: "NTSC-J"
 SLPS-73415:
-  name: Gallop Racer 6 -Revolution- PlayStation®2 the Best
-  name-sort: Gallop Racer 6 -Revolution- PlayStation®2 the Best
-  name-en: "Gallop Racer 6 - Revolution [PlayStation 2 The Best]"
+  name: Gallop Racer 6 -Revolution- PS2 the Best
+  name-sort: Gallop Racer 6 -Revolution- PS2 the Best
+  name-en: "Gallop Racer 6 - Revolution [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73416:
-  name: スーパーロボット大戦IMPACT PlayStation®2 the Best
-  name-sort: すーぱーろぼっとたいせんIMPACT PlayStation®2 the Best
-  name-en: "Super Robot Wars - Impact [PlayStation 2 The Best]"
+  name: スーパーロボット大戦IMPACT PS2 the Best
+  name-sort: すーぱーろぼっとたいせんIMPACT PS2 the Best
+  name-en: "Super Robot Wars - Impact [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     estimateTextureRegion: 1 # Reduces hash cache size.
 SLPS-73417:
-  name: ARMORED CORE 3 PlayStation 2 the Best
-  name-sort: ARMORED CORE 3 PlayStation 2 the Best
-  name-en: "Armored Core 3 [PlayStation 2 The Best]"
+  name: アーマード・コア 3 PS2 the Best
+  name-sort: あーまーど・こあ 3 PS2 the Best
+  name-en: "Armored Core 3 [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
@@ -54564,19 +54568,19 @@ SLPS-73417:
 SLPS-73418:
   name: シャドウハーツ PlayStation® 2 the Best
   name-sort: しゃどうはーつ PlayStation® 2 the Best
-  name-en: "Shadow Hearts [PlayStation 2 The Best]"
+  name-en: "Shadow Hearts [PS2 The Best]"
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes invisible characters in various scenes.
 SLPS-73419:
-  name: ルパン三世 魔術王の遺産 PlayStation 2 the Best
-  name-sort: るぱんさんせい まじゅつおうのいさん PlayStation 2 the Best
-  name-en: "Lupin III - Majutsu-Ou no Isan [PlayStation 2 The Best]"
+  name: ルパン三世 魔術王の遺産 PS2 the Best
+  name-sort: るぱんさんせい まじゅつおうのいさん PS2 the Best
+  name-en: "Lupin III - Majutsu-Ou no Isan [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73420:
-  name: ARMORED CORE 3 SILENT LINE PlayStation 2 the Best
-  name-sort: ARMORED CORE 3 SILENT LINE PlayStation 2 the Best
-  name-en: "Armored Core 3 - Silent Line [PlayStation 2 The Best]"
+  name: アーマード・コア 3　サイレントライン PS2 the Best
+  name-sort: あーまーど・こあ 3　さいれんとらいん PS2 the Best
+  name-en: "Armored Core 3 - Silent Line [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects positioning of reflections on suit's surfaces.
@@ -54588,32 +54592,32 @@ SLPS-73420:
     - "SLPS-73417"
     - "SLPS-73420"
 SLPS-73421:
-  name: 天誅 参 PlayStation 2 the Best
-  name-sort: てんちゅう さん PlayStation 2 the Best
-  name-en: "Tenchu 3 [PlayStation 2 The Best]"
+  name: 天誅 参 PS2 the Best
+  name-sort: てんちゅう さん PS2 the Best
+  name-en: "Tenchu 3 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73422:
-  name: ウルトラマン ファイティングエボリューション2 PlayStation 2 the Best
-  name-sort: うるとらまん ふぁいてぃんぐえぼりゅーしょん2 PlayStation 2 the Best
-  name-en: "Ultraman Fighting Evolution 2 [PlayStation 2 The Best]"
+  name: ウルトラマン ファイティングエボリューション2 PS2 the Best
+  name-sort: うるとらまん ふぁいてぃんぐえぼりゅーしょん2 PS2 the Best
+  name-en: "Ultraman Fighting Evolution 2 [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73423:
-  name: モンスターファーム4 PlayStation 2 the Best
-  name-sort: もんすたーふぁーむ4 PlayStation 2 the Best
-  name-en: "Monster Farm 4 [PlayStation 2 The Best]"
+  name: モンスターファーム4 PS2 the Best
+  name-sort: もんすたーふぁーむ4 PS2 the Best
+  name-en: "Monster Farm 4 [PS2 The Best]"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Corrects shadow misalignment.
 SLPS-73424:
-  name: GUILTY GEAR XX PlayStation 2 the Best
-  name-sort: GUILTY GEAR XX PlayStation 2 the Best
-  name-en: "Guilty Gear XX [PlayStation 2 The Best]"
+  name: GUILTY GEAR XX PS2 the Best
+  name-sort: GUILTY GEAR XX PS2 the Best
+  name-en: "Guilty Gear XX [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73901:
-  name: ゼノサーガ エピソードI 力への意志 PlayStation 2 the Best
-  name-sort: ぜのさーが えぴそーどI ちからへのいし PlayStation 2 the Best
-  name-en: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 The Best]"
+  name: ゼノサーガ エピソードI 力への意志 PS2 the Best
+  name-sort: ぜのさーが えぴそーどI ちからへのいし PS2 the Best
+  name-en: "Xenosaga Episode 1 - Der Wille zur Macht [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -65470,8 +65474,8 @@ TCES-53286:
     cpuSpriteRenderLevel: 2 # Needed for above.
     textureInsideRT: 1 # Fixes broken character models.
 TCPS-10058:
-  name: 電車でGO!新幹線 山陽新幹線編 運転士セット PlayStation 2 the Best
-  name-sort: でんしゃでGO!しんかんせん さんようしんかんせんへん うんてんしせっと PlayStation 2 the Best
+  name: 電車でGO!新幹線 山陽新幹線編 運転士セット PS2 the Best
+  name-sort: でんしゃでGO!しんかんせん さんようしんかんせんへん うんてんしせっと PS2 the Best
   name-en: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"
 TCPS-10068:
