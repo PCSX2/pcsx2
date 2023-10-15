@@ -479,14 +479,14 @@ void MainWindow::recreate()
 void MainWindow::recreateSettings()
 {
 	QString current_category;
-	if (m_setings_window)
+	if (m_settings_window)
 	{
-		const bool was_visible = m_setings_window->isVisible();
+		const bool was_visible = m_settings_window->isVisible();
 
-		current_category = m_setings_window->getCategory();
-		m_setings_window->hide();
-		m_setings_window->deleteLater();
-		m_setings_window = nullptr;
+		current_category = m_settings_window->getCategory();
+		m_settings_window->hide();
+		m_settings_window->deleteLater();
+		m_settings_window = nullptr;
 
 		if (!was_visible)
 			return;
@@ -528,11 +528,11 @@ void MainWindow::destroySubWindows()
 		m_controller_settings_window = nullptr;
 	}
 
-	if (m_setings_window)
+	if (m_settings_window)
 	{
-		m_setings_window->close();
-		m_setings_window->deleteLater();
-		m_setings_window = nullptr;
+		m_settings_window->close();
+		m_settings_window->deleteLater();
+		m_settings_window = nullptr;
 	}
 }
 
@@ -610,7 +610,7 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 	m_ui.menuDebug->menuAction()->setVisible(checked);
 
 	// just recreate the entire settings window, it's easier.
-	if (m_setings_window)
+	if (m_settings_window)
 		recreateSettings();
 }
 
@@ -2286,11 +2286,11 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 
 SettingsWindow* MainWindow::getSettingsWindow()
 {
-	if (!m_setings_window)
+	if (!m_settings_window)
 	{
-		m_setings_window = new SettingsWindow();
-		connect(m_setings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
-		connect(m_setings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
+		m_settings_window = new SettingsWindow();
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
 			// reopen settings dialog after it applies
 			updateLanguage();
 			// If you doSettings now, on macOS, the window will somehow end up underneath the main window that was created above
@@ -2299,12 +2299,12 @@ SettingsWindow* MainWindow::getSettingsWindow()
 				g_main_window->doSettings("Interface");
 			});
 		});
-		connect(m_setings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, []{
+		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, []{
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});
 	}
 
-	return m_setings_window;
+	return m_settings_window;
 }
 
 void MainWindow::doSettings(const char* category /* = nullptr */)
