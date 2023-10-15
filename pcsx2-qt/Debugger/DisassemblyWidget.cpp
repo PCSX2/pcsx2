@@ -380,9 +380,9 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 
 		// Breakpoint marker
 		bool enabled;
-		if(CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), rowAddress, &enabled) && !CBreakPoints::IsTempBreakPoint(m_cpu->getCpuType(), rowAddress))
+		if (CBreakPoints::IsAddressBreakPoint(m_cpu->getCpuType(), rowAddress, &enabled) && !CBreakPoints::IsTempBreakPoint(m_cpu->getCpuType(), rowAddress))
 		{
-			if(enabled)
+			if (enabled)
 			{
 				painter.setPen(Qt::green);
 				painter.drawText(2, i * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, "\u25A0");
@@ -725,7 +725,21 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	{
 		// We want this text elided
 		QFontMetrics metric(font);
-		lineString = lineString.arg(metric.elidedText(QString::fromStdString((m_demangleFunctions ? demangler->demangleToString(addressSymbol) : addressSymbol)), Qt::ElideRight, (selected ? 32 : 8) * font.pointSize()));
+		QString symbolString;
+		if (m_demangleFunctions)
+		{
+			symbolString = QString::fromStdString(demangler->demangleToString(addressSymbol));
+			if (symbolString.isEmpty())
+			{
+				symbolString = QString::fromStdString(addressSymbol);
+			}
+		}
+		else
+		{
+			symbolString = QString::fromStdString(addressSymbol);
+		}
+
+		lineString = lineString.arg(metric.elidedText(symbolString, Qt::ElideRight, (selected ? 32 : 8) * font.pointSize()));
 	}
 
 	lineString = lineString.leftJustified(4, ' ') // Address / symbol
