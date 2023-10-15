@@ -16,6 +16,8 @@
 #pragma once
 
 #include <QtCore/QAbstractTableModel>
+#include <QtWidgets/QHeaderView>
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
 
@@ -42,6 +44,17 @@ public:
 	{
 		DataRole = Qt::UserRole,
 		ExportRole = Qt::UserRole + 1,
+	};
+
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[BreakpointColumns::COLUMN_COUNT] =
+	{
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::Stretch,
+		QHeaderView::ResizeMode::Stretch,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
 	};
 
 	explicit BreakpointModel(DebugInterface& cpu, QObject* parent = nullptr);

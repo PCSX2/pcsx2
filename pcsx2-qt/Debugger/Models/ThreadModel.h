@@ -16,6 +16,7 @@
 #pragma once
 
 #include <QtCore/QAbstractTableModel>
+#include <QtWidgets/QHeaderView>
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/BiosDebugData.h"
@@ -36,6 +37,16 @@ public:
 		STATE,
 		WAIT_TYPE,
 		COLUMN_COUNT
+	};
+
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[ThreadColumns::COLUMN_COUNT] =
+	{
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::Stretch,
+		QHeaderView::ResizeMode::Stretch,
 	};
 
 	explicit ThreadModel(DebugInterface& cpu, QObject* parent = nullptr);
