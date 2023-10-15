@@ -661,6 +661,11 @@ __forceinline
 		Out.Right = ApplyVolume(Out.Right, Cores[1].MasterVol.Right.Value);
 	}
 
+	// For a long time PCSX2 has had its output volume halved by
+	// an incorrect function for applying the master volume above.
+	//
+	// Adjust volume here so it matches what people have come to expect.
+	Out = ApplyVolume(Out, {0x4fff, 0x4fff});
 	Out = DCFilter(Out);
 
 	// Final clamp, take care not to exceed 16 bits from here on
