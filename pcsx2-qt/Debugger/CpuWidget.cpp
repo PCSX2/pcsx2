@@ -61,23 +61,35 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &CpuWidget::onBPListDoubleClicked);
 
-	m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui.breakpointList->setModel(&m_bpModel);
+	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
+	{
+		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 
 	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
 	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
 
-	m_ui.threadList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_threadProxyModel.setSourceModel(&m_threadModel);
 	m_ui.threadList->setModel(&m_threadProxyModel);
 	m_ui.threadList->setSortingEnabled(true);
 	m_ui.threadList->sortByColumn(ThreadModel::ThreadColumns::ID, Qt::SortOrder::AscendingOrder);
+	for (std::size_t i = 0; auto mode : ThreadModel::HeaderResizeModes)
+	{
+		m_ui.threadList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 
 	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
 	connect(m_ui.stackList, &QTableView::doubleClicked, this, &CpuWidget::onStackListDoubleClick);
 
-	m_ui.stackList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui.stackList->setModel(&m_stackModel);
+	for (std::size_t i = 0; auto mode : StackModel::HeaderResizeModes)
+	{
+		m_ui.stackList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 
 	connect(m_ui.tabWidgetRegFunc, &QTabWidget::currentChanged, [this](int i) {if(i == 1){updateFunctionList(true);} });
 	connect(m_ui.listFunctions, &QListWidget::customContextMenuRequested, this, &CpuWidget::onFuncListContextMenu);
