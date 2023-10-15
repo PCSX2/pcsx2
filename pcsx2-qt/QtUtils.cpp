@@ -287,17 +287,8 @@ namespace QtUtils
 		{
 			for (int col = 0; col < model->columnCount(); col++)
 			{
-				switch(model->data(model->index(row, col), role).metaType().id())
-				{
-					case QMetaType::Int:
-					case QMetaType::UInt:
-						csv += QString::number(model->data(model->index(row, col), role).toUInt(nullptr), 16);
-					break;
-					default:
-						csv += model->data(model->index(row, col), role).toString();
-					break;
-				}
-				
+				csv += model->data(model->index(row, col), role).toString();
+
 				if (col < model->columnCount() - 1)
 					csv += ",";
 			}

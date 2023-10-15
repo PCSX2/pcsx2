@@ -38,6 +38,12 @@ public:
 		COLUMN_COUNT
 	};
 
+	enum BreakpointRoles : int
+	{
+		DataRole = Qt::UserRole,
+		ExportRole = Qt::UserRole + 1,
+	};
+
 	explicit BreakpointModel(DebugInterface& cpu, QObject* parent = nullptr);
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
