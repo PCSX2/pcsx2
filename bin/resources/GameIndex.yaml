@@ -28720,10 +28720,14 @@ SLPM-55021:
   name: "Kingdom Hearts - Re -Chain of Memories"
   region: "NTSC-J"
 SLPM-55022:
-  name: "Final Fantasy XII [Ultimate Hits]"
+  name: ファイナルファンタジーXII [アルティメットヒッツ]
+  name-sort: ふぁいなるふぁんたじーXII [あるてぃめっとひっつ]
+  name-en: "Final Fantasy XII [Ultimate Hits]"
   region: "NTSC-J"
 SLPM-55023:
-  name: "Dragon Quest & Final Fantasy in Itadaki Street Special"
+  name: ドラゴンクエスト＆ファイナルファンタジー in いただきストリートSpecial
+  name-sort: どらごんくえすと＆ふぁいなるふぁんたじー in いただきすとりーとSpecial
+  name-en: "Dragon Quest & Final Fantasy in Itadaki Street Special"
   region: "NTSC-J"
 SLPM-55024:
   name: 実況パワフルプロ野球１５
@@ -29315,7 +29319,9 @@ SLPM-55209:
   name: "World Soccer Winning Eleven 2010"
   region: "NTSC-J"
 SLPM-55210:
-  name: "Final Fantasy XII International Zodiac Job System [Ultimate Hits]"
+  name: ファイナルファンタジーXII インターナショナル ゾディアックジョブシステム [アルティメットヒッツ]
+  name-sort: ふぁいなるふぁんたじーXII いんたーなしょなる ぞでぃあっくじょぶしすてむ [あるてぃめっとひっつ]
+  name-en: "Final Fantasy XII International Zodiac Job System [Ultimate Hits]"
   region: "NTSC-J"
 SLPM-55211:
   name: "Pachislot Higurashi no Naku Koro ni Matsuri"
@@ -29372,7 +29378,9 @@ SLPM-55228:
   name: "Slotter Up Mania 11 - 2027 vs. 2027 II"
   region: "NTSC-J"
 SLPM-55229:
-  name: "Final Fantasy XI - Vana'diel Collection 2"
+  name: ファイナルファンタジーXI ヴァナ・ディール コレクション2
+  name-sort: ふぁいなるふぁんたじーXI ゔぁな・でぃーる これくしょん2
+  name-en: "Final Fantasy XI - Vana'diel Collection 2"
   region: "NTSC-J"
 SLPM-55231:
   name: "Silent Hill - Shattered Memories"
@@ -29564,7 +29572,9 @@ SLPM-55294:
   name: "World Soccer Winning Eleven 2012"
   region: "NTSC-J"
 SLPM-55298:
-  name: "Final Fantasy XI - Adoulin no Makyou"
+  name: ファイナルファンタジーXI アドゥリンの魔境
+  name-sort: ふぁいなるふぁんたじーXI あどぅりんのまきょう
+  name-en: "Final Fantasy XI - Adoulin no Makyou"
   region: "NTSC-J"
 SLPM-60101:
   name: "0 Story [Taikenban]"
@@ -31197,10 +31207,14 @@ SLPM-62133:
   name-en: "Bloody Roar 3 [Konami The Best]"
   region: "NTSC-J"
 SLPM-62134:
-  name: "Final Fantasy XI [Beta Edition]"
+  name: ファイナルファンタジーXI β Version
+  name-sort: ふぁいなるふぁんたじーXI β Version
+  name-en: "Final Fantasy XI [Beta Edition]"
   region: "NTSC-J"
 SLPM-62135:
-  name: "Final Fantasy XI - Online"
+  name: ファイナルファンタジーXI β Version
+  name-sort: ふぁいなるふぁんたじーXI β Version
+  name-en: "Final Fantasy XI - Online"
   region: "NTSC-J"
 SLPM-62136:
   name: "NetFront for Delta"
@@ -34933,7 +34947,9 @@ SLPM-65113:
   name-en: "Splashdown"
   region: "NTSC-J"
 SLPM-65115:
-  name: "Final Fantasy X International"
+  name: ファイナルファンタジーX インターナショナル
+  name-sort: ふぁいなるふぁんたじーX いんたーなしょなる
+  name-en: "Final Fantasy X International"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
@@ -35858,13 +35874,13 @@ SLPM-65287:
   name-en: "Final Fantasy XI - Girade no Genei"
   region: "NTSC-J"
 SLPM-65288:
-  name: プレイオンライン/ファイナルファンタジーXI ジラートの幻影 オールインワンパック2003
-  name-sort: ぷれいおんらいん/ふぁいなるふぁんたじーXI じらーとのげんえい おーるいんわんぱっく2003
+  name: ファイナルファンタジーXI ジラートの幻影 オールインワンパック2003 [プレイオンライン]
+  name-sort: ふぁいなるふぁんたじーXI じらーとのげんえい おーるいんわんぱっく2003 [ぷれいおんらいん]
   name-en: "Final Fantasy XI - Girade no Genei [All-in-One Pack]"
   region: "NTSC-J"
 SLPM-65289:
-  name: プレイオンライン/ファイナルファンタジーXI エントリーディスク
-  name-sort: ぷれいおんらいん/ふぁいなるふぁんたじーXI えんとりーでぃすく
+  name: ファイナルファンタジーXI エントリーディスク [プレイオンライン]
+  name-sort: ふぁいなるふぁんたじーXI えんとりーでぃすく [ぷれいおんらいん]
   name-en: "Final Fantasy XI [Entry Disc]"
   region: "NTSC-J"
 SLPM-65290:
@@ -38041,8 +38057,8 @@ SLPM-65705:
   name-en: "Final Fantasy XI - Chains of Promathia [Expansion Disc]"
   region: "NTSC-J"
 SLPM-65706:
-  name: プレイオンライン/ファイナルファンタジーXI オールインワンパック2004
-  name-sort: ぷれいおんらいん/ふぁいなるふぁんたじーXI おーるいんわんぱっく2004
+  name: ファイナルファンタジーXI オールインワンパック2004 [プレイオンライン]
+  name-sort: ふぁいなるふぁんたじーXI おーるいんわんぱっく2004 [ぷれいおんらいん]
   name-en: "Final Fantasy XI - Chains of Promathia [All-in-One Pack]"
   region: "NTSC-J"
 SLPM-65708:
@@ -39386,8 +39402,8 @@ SLPM-65952:
   name-en: "Tengai Makyou III - Namida"
   region: "NTSC-J"
 SLPM-65953:
-  name: プレイオンライン / ファイナルファンタジーXI エントリーディスク2005
-  name-sort: ぷれいおんらいん / ふぁいなるふぁんたじーXI えんとりーでぃすく2005
+  name: ファイナルファンタジーXI エントリーディスク2005 [プレイオンライン]
+  name-sort: ふぁいなるふぁんたじーXI えんとりーでぃすく2005 [ぷれいおんらいん]
   name-en: "Final Fantasy XI [Entry Disc 2005]"
   region: "NTSC-J"
 SLPM-65954:
@@ -40368,18 +40384,18 @@ SLPM-66121:
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
 SLPM-66122:
-  name: キングダム ハーツ [アルティメット ヒッツ]
-  name-sort: きんぐだむ はーつ [あるてぃめっと ひっつ]
+  name: キングダム ハーツ [アルティメットヒッツ]
+  name-sort: きんぐだむ はーつ [あるてぃめっとひっつ]
   name-en: "Kingdom Hearts [Ultimate Hits]"
   region: "NTSC-J"
 SLPM-66123:
-  name: キングダム ハーツ -ファイナル   ミックス- [アルティメット ヒッツ]
-  name-sort: きんぐだむ はーつ -ふぁいなる   みっくす- [あるてぃめっと ひっつ]
+  name: キングダム ハーツ -ファイナル   ミックス- [アルティメットヒッツ]
+  name-sort: きんぐだむ はーつ -ふぁいなる   みっくす- [あるてぃめっとひっつ]
   name-en: "Kingdom Hearts - Final Mix [Ultimate Hits]"
   region: "NTSC-J"
 SLPM-66124:
-  name: ファイナルファンタジー X [アルティメット ヒッツ]
-  name-sort: ふぁいなるふぁんたじー X [あるてぃめっと ひっつ]
+  name: ファイナルファンタジーX [アルティメットヒッツ]
+  name-sort: ふぁいなるふぁんたじーX [あるてぃめっとひっつ]
   name-en: "Final Fantasy X [Ultimate Hits]"
   region: "NTSC-J"
   roundModes:
@@ -40387,8 +40403,8 @@ SLPM-66124:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66125:
-  name: ファイナルファンタジー X-2 [アルティメット ヒッツ]
-  name-sort: ふぁいなるふぁんたじー X-2 [あるてぃめっと ひっつ]
+  name: ファイナルファンタジーX-2 [アルティメットヒッツ]
+  name-sort: ふぁいなるふぁんたじーX-2 [あるてぃめっとひっつ]
   name-en: "Final Fantasy X-2 [Ultimate Hits]"
   region: "NTSC-J"
   gameFixes:
@@ -41269,8 +41285,8 @@ SLPM-66270:
   name-en: "Blazing Souls"
   region: "NTSC-J"
 SLPM-66271:
-  name: ダージュ オブ ケルベロス -ファイナルファンタジーVII-
-  name-sort: だーじゅ おぶ けるべろす -ふぁいなるふぁんたじーVII-
+  name: ダージュ・オブ・ケルベロス -ファイナルファンタジーVII-
+  name-sort: だーじゅ・おぶ・けるべろす -ふぁいなるふぁんたじーVII-
   name-en: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-J"
   compat: 5
@@ -41954,9 +41970,9 @@ SLPM-66391:
     autoFlush: 2 # Reduces post-processing misalignment.
     halfPixelOffset: 1 # Reduces post-processing misalignment.
 SLPM-66393:
-  name: プレイオンライン / ファイナルファンタジーXI オールインワンパック2006
-  name-sort: ぷれいおんらいん / ふぁいなるふぁんたじーXI おーるいんわんぱっく2006
-  name-en: "Final Fantasy XI - Aht Urhgan no Hihou [All-in-One Pack]"
+  name: ファイナルファンタジーXI オールインワンパック2006 [プレイオンライン]
+  name-sort: ふぁいなるふぁんたじーXI おーるいんわんぱっく2006 [ぷれいおんらいん]
+  name-en: "Final Fantasy XI - All-in-One Pack 2006"
   region: "NTSC-J"
 SLPM-66394:
   name: ファイナルファンタジーXI アトルガンの秘宝 拡張データディスク
@@ -42116,16 +42132,16 @@ SLPM-66419:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLPM-66420:
-  name: フロントミッション4 [アルティメット ヒッツ]
-  name-sort: ふろんとみっしょん4 [あるてぃめっと ひっつ]
+  name: フロントミッション4 [アルティメットヒッツ]
+  name-sort: ふろんとみっしょん4 [あるてぃめっとひっつ]
   name-en: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
     preloadFrameData: 1 # Fixes mech shadows.
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66421:
-  name: フロントミッション5 〜Scars of the War〜 [アルティメット ヒッツ]
-  name-sort: ふろんとみっしょん5 〜Scars of the War〜 [あるてぃめっと ひっつ]
+  name: フロントミッション5 〜Scars of the War〜 [アルティメットヒッツ]
+  name-sort: ふろんとみっしょん5 〜Scars of the War〜 [あるてぃめっとひっつ]
   name-en: "Front Mission 5 - Scars of the War [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
@@ -42484,8 +42500,8 @@ SLPM-66477:
   name-en: "Kamiwaza"
   region: "NTSC-J"
 SLPM-66478:
-  name: スターオーシャン Till the End of Time ディレクターズカット [ディスク1/2] [アルティメット ヒッツ]
-  name-sort: すたーおーしゃん Till the End of Time でぃれくたーずかっと [でぃすく1/2] [あるてぃめっと ひっつ]
+  name: スターオーシャン Till the End of Time ディレクターズカット [ディスク1/2] [アルティメットヒッツ]
+  name-sort: すたーおーしゃん Till the End of Time でぃれくたーずかっと [でぃすく1/2] [あるてぃめっとひっつ]
   name-en: "Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 5
@@ -42496,8 +42512,8 @@ SLPM-66478:
     roundSprite: 1 # Fixes door transition vertical lines and mini-map artifacts.
     textureInsideRT: 1 # Fixes missing battle effects.
 SLPM-66479:
-  name: スターオーシャン Till the End of Time ディレクターズカット [ディスク2/2] [アルティメット ヒッツ]
-  name-sort: すたーおーしゃん Till the End of Time でぃれくたーずかっと [でぃすく2/2] [あるてぃめっと ひっつ]
+  name: スターオーシャン Till the End of Time ディレクターズカット [ディスク2/2] [アルティメットヒッツ]
+  name-sort: すたーおーしゃん Till the End of Time でぃれくたーずかっと [でぃすく2/2] [あるてぃめっとひっつ]
   name-en: "Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc 2 of 2]"
   region: "NTSC-J"
   compat: 5
@@ -42510,14 +42526,14 @@ SLPM-66479:
   memcardFilters:
     - "SLPM-66478"
 SLPM-66480:
-  name: ドラゴンクエスト V 天空の花嫁 [アルティメット ヒッツ]
-  name-sort: どらごんくえすと V てんくうのはなよめ [あるてぃめっと ひっつ]
+  name: ドラゴンクエスト V 天空の花嫁 [アルティメットヒッツ]
+  name-sort: どらごんくえすと V てんくうのはなよめ [あるてぃめっとひっつ]
   name-en: "Dragon Quest V - Bride of the Sky [Ultimate Hits]"
   region: "NTSC-J"
   compat: 5
 SLPM-66481:
-  name: ドラゴンクエスト VIII 空と海と大地と呪われし姫君 [アルティメット ヒッツ]
-  name-sort: どらごんくえすと VIII そらとうみとだいちとのろわれしひめぎみ [あるてぃめっと ひっつ]
+  name: ドラゴンクエスト VIII 空と海と大地と呪われし姫君 [アルティメットヒッツ]
+  name-sort: どらごんくえすと VIII そらとうみとだいちとのろわれしひめぎみ [あるてぃめっとひっつ]
   name-en: "Dragon Quest VIII [Ultimate Hits]"
   region: "NTSC-J"
   gsHWFixes:
@@ -43349,8 +43365,8 @@ SLPM-66628:
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
 SLPM-66629:
-  name: DIRGE of CERBERUS -FINAL FANTASY VII- INTERNATIONAL [Ultimate Hits]
-  name-sort: DIRGE of CERBERUS -FINAL FANTASY VII- INTERNATIONAL [Ultimate Hits]
+  name: ダージュ・オブ・ケルベロス -ファイナルファンタジーVII- インターナショナル [アルティメットヒッツ]
+  name-sort: だーじゅ・おぶ・けるべろす -ふぁいなるふぁんたじーVII- いんたーなしょなる [あるてぃめっとひっつ]
   name-en: "Dirge of Cerberus - Final Fantasy VII International"
   region: "NTSC-J"
   gsHWFixes:
@@ -43645,8 +43661,8 @@ SLPM-66676:
     - "SLPM-66675"
     - "SLPM-66676"
 SLPM-66677:
-  name: ファイナルファンタジーX インターナショナル [アルティメット ヒッツ]
-  name-sort: ふぁいなるふぁんたじーX いんたーなしょなる [あるてぃめっと ひっつ]
+  name: ファイナルファンタジーX インターナショナル [アルティメットヒッツ]
+  name-sort: ふぁいなるふぁんたじーX いんたーなしょなる [あるてぃめっとひっつ]
   name-en: "Final Fantasy X - International [Ultimate Hits]"
   region: "NTSC-J"
   roundModes:
@@ -43654,8 +43670,8 @@ SLPM-66677:
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66678:
-  name: ファイナルファンタジーX-2 インターナショナル+ラストミッション [アルティメット ヒッツ]
-  name-sort: ふぁいなるふぁんたじーX-2 いんたーなしょなる+らすとみっしょん [あるてぃめっと ひっつ]
+  name: ファイナルファンタジーX-2 インターナショナル+ラストミッション [アルティメットヒッツ]
+  name-sort: ふぁいなるふぁんたじーX-2 いんたーなしょなる+らすとみっしょん [あるてぃめっとひっつ]
   name-en: "Final Fantasy X-2 - International + Last Mission [Ultimate Hits]"
   region: "NTSC-J"
   gameFixes:
@@ -44088,7 +44104,8 @@ SLPM-66749:
   name-en: "Wizardry X 2 - Mugen no Gakuto [Wonder Price]"
   region: "NTSC-J"
 SLPM-66750:
-  name: FINAL FANTASY XII INTERNATIONAL Zodiac Job System
+  name: ファイナルファンタジーXII インターナショナル ゾディアックジョブシステム
+  name-sort: ふぁいなるふぁんたじーXII いんたーなしょなる ぞでぃあっくじょぶしすてむ
   name-en: "Final Fantasy XII International - Zodiac Job System [with Bonus DVD]"
   region: "NTSC-J"
   compat: 5
@@ -44860,13 +44877,13 @@ SLPM-66892:
   name-en: "Myself, Yourself"
   region: "NTSC-J"
 SLPM-66893:
-  name: PlayOnline/FINAL FANTASY XI ヴァナ・ディール コレクション
-  name-sort: PlayOnline/FINAL FANTASY XI ゔぁな・でぃーる これくしょん
+  name: ファイナルファンタジーXI ヴァナ・ディール コレクション [プレイオンライン]
+  name-sort: ふぁいなるふぁんたじーXI ゔぁな・でぃーる これくしょん [ぷれいおんらいん]
   name-en: "Final Fantasy XI - Vana'diel Collection"
   region: "NTSC-J"
 SLPM-66894:
-  name: FINAL FANTASY XI アルタナの神兵 拡張データディスク
-  name-sort: FINAL FANTASY XI あるたなのかみへい かくちょうでーたでぃすく
+  name: ファイナルファンタジーXI アルタナの神兵 拡張データディスク
+  name-sort: ふぁいなるふぁんたじーXI あるたなのかみへい かくちょうでーたでぃすく
   name-en: "Final Fantasy XI - Wings of the Goddess"
   region: "NTSC-J"
 SLPM-66895:
@@ -45713,7 +45730,9 @@ SLPM-68014:
   name: "Newtype Gundam Game Special Disc"
   region: "NTSC-J"
 SLPM-68016:
-  name: "Dirge of Cerberus - Final Fantasy VII"
+  name: ダージュ・オブ・ケルベロス -ファイナルファンタジーVII-
+  name-sort: だーじゅ・おぶ・けるべろす -ふぁいなるふぁんたじーVII-
+  name-en: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-J"
 SLPM-68017:
   name: "Shin Onimusha - Dawn of Dreams [Saikyou Save Data]"
@@ -47295,7 +47314,9 @@ SLPS-20199:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes black void when upscaling.
 SLPS-20200:
-  name: "Final Fantasy XI [Disc 2 of 2]"
+  name: ファイナルファンタジーXI [ディスク2/2]
+  name-sort: ふぁいなるふぁんたじーXI [でぃすく2/2]
+  name-en: "Final Fantasy XI [Disc 2 of 2]"
   region: "NTSC-J"
 SLPS-20202:
   name: コロボール2002
@@ -49542,8 +49563,8 @@ SLPS-25159:
   name-en: "Technic Beat"
   region: "NTSC-J"
 SLPS-25160:
-  name: FINAL FANTASY XI 2002 SPECIAL ART BOX
-  name-sort: FINAL FANTASY XI 2002 SPECIAL ART BOX
+  name: ファイナルファンタジーXI 2002 SPECIAL ART BOX
+  name-sort: ふぁいなるふぁんたじーXI 2002 SPECIAL ART BOX
   name-en: "Final Fantasy XI 2002 [Special Art Box]"
   region: "NTSC-J"
 SLPS-25161:
@@ -50003,8 +50024,8 @@ SLPS-25249:
   name: "Sanyo Pachinko Paradise 9 - Shin Umi Okawari!"
   region: "NTSC-J"
 SLPS-25250:
-  name: FINAL FANTASY X-2
-  name-sort: FINAL FANTASY X-2
+  name: ファイナルファンタジーX-2
+  name-sort: ふぁいなるふぁんたじーX-2
   name-en: "Final Fantasy X-2"
   region: "NTSC-J"
   gameFixes:
