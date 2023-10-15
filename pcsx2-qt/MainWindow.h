@@ -282,7 +282,7 @@ private:
 	DisplayWidget* m_display_widget = nullptr;
 	DisplayContainer* m_display_container = nullptr;
 
-	SettingsWindow* m_setings_window = nullptr;
+	SettingsWindow* m_settings_window = nullptr;
 	ControllerSettingsWindow* m_controller_settings_window = nullptr;
 	InputRecordingViewer* m_input_recording_viewer = nullptr;
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
