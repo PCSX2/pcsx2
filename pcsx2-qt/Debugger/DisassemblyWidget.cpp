@@ -609,6 +609,7 @@ void DisassemblyWidget::keyPressEvent(QKeyEvent* event)
 			contextCopyInstructionText();
 			break;
 		case Qt::Key_B:
+		case Qt::Key_Space:
 			contextToggleBreakpoint();
 			break;
 		case Qt::Key_M:
