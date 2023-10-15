@@ -1564,7 +1564,8 @@ void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
 	pxAssertRel(pipeline, fmt::format("No pipeline for {}", shaderName(shader)).c_str());
 
-	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, LoadAction::DontCareIfFull, nullptr, 0);
+	bool fully_writes_pixels = shader != ShaderConvert::FLOAT32_TO_RGB8;
+	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, fully_writes_pixels ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
 }}
 
 void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
