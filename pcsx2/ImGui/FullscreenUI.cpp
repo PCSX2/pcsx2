@@ -515,7 +515,7 @@ bool FullscreenUI::Initialize()
 
 	if (VMManager::HasValidVM())
 	{
-		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(), VMManager::GetDiscCRC(),
+		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(true), VMManager::GetDiscCRC(),
 			VMManager::GetCurrentCRC());
 	}
 	else

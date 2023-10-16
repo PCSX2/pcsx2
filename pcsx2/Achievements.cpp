@@ -2992,7 +2992,7 @@ void Achievements::RAIntegration::RACallbackRebuildMenu()
 
 void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
 {
-	std::string title(fmt::format("{0} ({1}) [{2:08X}]", VMManager::GetTitle(), VMManager::GetDiscSerial(), VMManager::GetDiscCRC()));
+	std::string title(fmt::format("{0} ({1}) [{2:08X}]", VMManager::GetTitle(false), VMManager::GetDiscSerial(), VMManager::GetDiscCRC()));
 	StringUtil::Strlcpy(buf, title, 256);
 }
 
