@@ -438,7 +438,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				const std::string gameName = VMManager::GetTitle();
+				const std::string gameName = VMManager::GetTitle(false);
 				const u32 size = gameName.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;

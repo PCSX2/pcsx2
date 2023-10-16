@@ -163,6 +163,8 @@ static std::string s_disc_serial;
 static std::string s_disc_elf;
 static std::string s_disc_version;
 static std::string s_title;
+static std::string s_title_en_search;
+static std::string s_title_en_replace;
 static u32 s_disc_crc;
 static u32 s_current_crc;
 static u32 s_elf_entry_point = 0xFFFFFFFFu;
@@ -302,10 +304,17 @@ std::string VMManager::GetDiscELF()
 	return s_disc_elf;
 }
 
-std::string VMManager::GetTitle()
+std::string VMManager::GetTitle(bool prefer_en)
 {
 	std::unique_lock lock(s_info_mutex);
-	return s_title;
+	std::string out = s_title;
+	if (!s_title_en_search.empty())
+	{
+		size_t pos = out.find(s_title_en_search);
+		if (pos != out.npos)
+			out.replace(pos, s_title_en_search.size(), s_title_en_replace);
+	}
+	return out;
 }
 
 u32 VMManager::GetDiscCRC()
@@ -850,11 +859,19 @@ void VMManager::UpdateDiscDetails(bool booting)
 
 		SaveSessionTime(old_serial);
 
+		s_title_en_search.clear();
+		s_title_en_replace.clear();
 		std::string custom_title = GameList::GetCustomTitleForPath(CDVDsys_GetFile(CDVDsys_GetSourceType()));
 		if (serial_is_valid)
 		{
 			if (const GameDatabaseSchema::GameEntry* game = GameDatabase::findGame(s_disc_serial))
 			{
+				if (!game->name_en.empty())
+				{
+					s_title_en_search = game->name;
+					s_title_en_replace = game->name_en;
+				}
+
 				std::string game_title = custom_title.empty() ? game->name : std::move(custom_title);
 
 				// Append the ELF override if we're using it with a disc.
@@ -985,7 +1002,7 @@ void VMManager::ReportGameChangeToHost()
 {
 	const std::string& disc_path = CDVDsys_GetFile(CDVDsys_GetSourceType());
 	const u32 crc_to_report = HasBootedELF() ? s_current_crc : 0;
-	FullscreenUI::GameChanged(disc_path, s_disc_serial, s_title, s_disc_crc, crc_to_report);
+	FullscreenUI::GameChanged(disc_path, s_disc_serial, GetTitle(true), s_disc_crc, crc_to_report);
 	Host::OnGameChanged(s_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
 }
 

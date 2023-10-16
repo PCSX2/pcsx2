@@ -810,7 +810,7 @@ static std::string GSGetBaseFilename()
 	std::string filename;
 
 	// append the game serial and title
-	if (std::string name(VMManager::GetTitle()); !name.empty())
+	if (std::string name(VMManager::GetTitle(true)); !name.empty())
 	{
 		Path::SanitizeFileName(&name);
 		if (name.length() > 219)

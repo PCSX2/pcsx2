@@ -79,7 +79,7 @@ namespace VMManager
 	std::string GetDiscELF();
 
 	/// Returns the name of the disc/executable currently running.
-	std::string GetTitle();
+	std::string GetTitle(bool prefer_en);
 
 	/// Returns the CRC for the main ELF of the disc currently running.
 	u32 GetDiscCRC();
