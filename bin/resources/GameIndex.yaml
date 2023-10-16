@@ -23565,6 +23565,8 @@ SLES-54544:
 SLES-54545:
   name: "Maxxed Out Racing Nitro"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes car colours.
 SLES-54546:
   name: "Horsez"
   region: "PAL-M5"
@@ -32798,6 +32800,8 @@ SLPM-62486:
   name-sort: ちょうさいそく!ぞくしゃきんぐBU～ふつはじぎりでんせつ2～
   name-en: "Chou Saisoku! Zokusha King B.U. [Simple Series DX]"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes car colours.
   clampModes:
     eeClampMode: 3 # Fixes white shadows.
 SLPM-62487:
@@ -48353,6 +48357,8 @@ SLPS-20452:
   name-sort: SIMPLE 2000しりーず Ultimate Vol.30 こうりん!ぞくしゃごっど〜ふっちぎり★あいらぶゆう〜
   name-en: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes car colours.
 SLPS-20453:
   name: SIMPLE 2000シリーズ Ultimate Vol.29 K-1 PREMIUM 2005 Dynamite!!
   name-sort: SIMPLE 2000しりーず Ultimate Vol.29 K-1 PREMIUM 2005 Dynamite!!
