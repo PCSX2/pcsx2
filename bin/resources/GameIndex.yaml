@@ -4474,6 +4474,8 @@ SCES-51592:
   name: "Formula One 2003"
   region: "PAL-M6"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes bad polys.
   gameFixes:
     - XGKickHack # Fixes SPS.
 SCES-51593:
