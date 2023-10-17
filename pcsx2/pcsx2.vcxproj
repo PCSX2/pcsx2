@@ -264,6 +264,7 @@
     <ClCompile Include="SPU2\Mixer.cpp" />
     <ClCompile Include="SPU2\ReadInput.cpp" />
     <ClCompile Include="SPU2\Reverb.cpp" />
+    <ClCompile Include="SPU2\ReverbResample.cpp" />
     <ClCompile Include="SPU2\spu2.cpp" />
     <ClCompile Include="IPU\IPUdma.cpp" />
     <ClCompile Include="IPU\IPUdither.cpp" />
