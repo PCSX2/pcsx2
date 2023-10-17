@@ -280,6 +280,10 @@ set(pcsx2SPU2Sources
 	SPU2/Wavedump_wav.cpp
 )
 
+set(pcsx2SPU2SourcesUnshared
+	SPU2/ReverbResample.cpp
+)
+
 # SPU2 headers
 set(pcsx2SPU2Headers
 	SPU2/Debug.h
@@ -762,7 +766,7 @@ if(DISABLE_ADVANCE_SIMD)
 	# Note: ld64 (macOS's linker) does not act the same way when presented with .a files, unless linked with `-force_load` (cmake WHOLE_ARCHIVE).
 	set(is_first_isa "1")
 	foreach(isa "sse4" "avx" "avx2")
-		add_library(GS-${isa} STATIC ${pcsx2GSSourcesUnshared} ${pcsx2IPUSourcesUnshared})
+		add_library(GS-${isa} STATIC ${pcsx2GSSourcesUnshared} ${pcsx2IPUSourcesUnshared} ${pcsx2SPU2SourcesUnshared})
 		target_link_libraries(GS-${isa} PRIVATE PCSX2_FLAGS)
 		target_compile_definitions(GS-${isa} PRIVATE MULTI_ISA_UNSHARED_COMPILATION=isa_${isa} MULTI_ISA_IS_FIRST=${is_first_isa} ${pcsx2_defs_${isa}})
 		target_compile_options(GS-${isa} PRIVATE ${compile_options_${isa}})
@@ -778,6 +782,7 @@ if(DISABLE_ADVANCE_SIMD)
 else()
 	list(APPEND pcsx2GSSources ${pcsx2GSSourcesUnshared})
 	list(APPEND pcsx2IPUSources ${pcsx2IPUSourcesUnshared})
+	list(APPEND pcsx2SPU2Sources ${pcsx2SPU2SourcesUnshared})
 endif()
 
 # DebugTools sources
