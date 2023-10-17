@@ -846,6 +846,11 @@ public:
 		return GSVector4i(_mm_adds_epi16(m, v.m));
 	}
 
+	__forceinline GSVector4i hadds16(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_hadds_epi16(m, v.m));
+	}
+
 	__forceinline GSVector4i addus8(const GSVector4i& v) const
 	{
 		return GSVector4i(_mm_adds_epu8(m, v.m));
