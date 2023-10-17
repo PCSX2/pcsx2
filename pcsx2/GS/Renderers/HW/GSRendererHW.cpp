@@ -5497,7 +5497,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 				bool is_dirty = false;
 				for (const GSDirtyRect& rc : tgt->m_dirty)
 				{
-					if (!rc.GetDirtyRect(m_cached_ctx.TEX0).rintersect(r).rempty())
+					if (!rc.GetDirtyRect(m_cached_ctx.TEX0, false).rintersect(r).rempty())
 					{
 						is_dirty = true;
 						break;
@@ -5597,7 +5597,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 				const GSVector4i tr(GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false).coverage);
 				for (GSDirtyRect& rc : src_target->m_dirty)
 				{
-					if (!rc.GetDirtyRect(m_cached_ctx.TEX0).rintersect(tr).rempty())
+					if (!rc.GetDirtyRect(m_cached_ctx.TEX0, false).rintersect(tr).rempty())
 						return true;
 				}
 			}
