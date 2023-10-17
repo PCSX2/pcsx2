@@ -99,16 +99,13 @@ static constexpr std::array<s32, NUM_TAPS> filter_coefs = {
 
 s32 __forceinline V_Core::ReverbDownsample(bool right)
 {
+	int index = (RevbSampleBufPos - NUM_TAPS) & 63;
 	s32 out = 0;
 
-	// Skipping the 0 coefs.
-	for (u32 i = 0; i < NUM_TAPS; i += 2)
+	for (int i = 0; i < NUM_TAPS; i++)
 	{
-		out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
+		out += RevbDownBuf[right][index + i] * filter_coefs[i];
 	}
-
-	// We also skipped the middle so add that in.
-	out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + 19) & 63] * filter_coefs[19];
 
 	out >>= 15;
 	out = std::clamp<s32>(out, INT16_MIN, INT16_MAX);
@@ -116,30 +113,20 @@ s32 __forceinline V_Core::ReverbDownsample(bool right)
 	return out;
 }
 
-StereoOut32 __forceinline V_Core::ReverbUpsample(bool phase)
+StereoOut32 __forceinline V_Core::ReverbUpsample()
 {
+	int index = (RevbSampleBufPos - NUM_TAPS) & 63;
 	s32 ls = 0, rs = 0;
 
-	if (phase)
+	for (int i = 0; i < NUM_TAPS; i++)
 	{
-		ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + 9) & 63] * filter_coefs[19];
-		rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + 9) & 63] * filter_coefs[19];
-	}
-	else
-	{
-		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
-		{
-			ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
-		}
-		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
-		{
-			rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
-		}
+		ls += RevbUpBuf[0][index + i] * (filter_coefs[i] * 2);
+		rs += RevbUpBuf[1][index + i] * (filter_coefs[i] * 2);
 	}
 
-	ls >>= 14;
+	ls >>= 15;
 	ls = std::clamp<s32>(ls, INT16_MIN, INT16_MAX);
-	rs >>= 14;
+	rs >>= 15;
 	rs = std::clamp<s32>(rs, INT16_MIN, INT16_MAX);
 
 	return {ls, rs};
@@ -164,8 +151,10 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 		return StereoOut32::Empty;
 	}
 
-	RevbDownBuf[0][RevbSampleBufPos & 63] = Input.Left;
-	RevbDownBuf[1][RevbSampleBufPos & 63] = Input.Right;
+	RevbDownBuf[0][RevbSampleBufPos] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos] = Input.Right;
+	RevbDownBuf[0][RevbSampleBufPos + 64] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos + 64] = Input.Right;
 
 	bool R = Cycles & 1;
 
@@ -245,9 +234,13 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 		_spu2mem[apf2_dst] = clamp_mix(apf2);
 	}
 
-	RevbUpBuf[R][(RevbSampleBufPos >> 1) & 63] = clamp_mix(out);
+	RevbUpBuf[R][RevbSampleBufPos] = clamp_mix(out);
+	RevbUpBuf[!R][RevbSampleBufPos] = 0;
 
-	RevbSampleBufPos++;
+	RevbUpBuf[R][RevbSampleBufPos + 64] = clamp_mix(out);
+	RevbUpBuf[!R][RevbSampleBufPos + 64] = 0;
 
-	return ReverbUpsample(RevbSampleBufPos & 1);
+	RevbSampleBufPos = (RevbSampleBufPos + 1) & 63;
+
+	return ReverbUpsample();
 }
