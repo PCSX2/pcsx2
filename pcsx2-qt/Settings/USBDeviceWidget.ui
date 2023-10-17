@@ -114,7 +114,7 @@
            <string>Clear Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="file-reduce-line">
+           <iconset theme="trash-fill">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">

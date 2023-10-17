@@ -2,11 +2,6 @@
 <ui version="4.0">
  <class>ControllerSettingsWindow</class>
  <widget class="QWidget" name="ControllerSettingsWindow">
-  <property name="windowIcon">
-   <iconset>
-    <normalon>:/icons/AppIcon64.png</normalon>
-   </iconset>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,6 +18,11 @@
   </property>
   <property name="windowTitle">
    <string>PCSX2 Controller Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -96,7 +96,7 @@
           <string>New Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="file-add-line">
+          <iconset theme="plus-line">
            <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
@@ -118,7 +118,7 @@
           <string>Delete Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="file-reduce-line">
+          <iconset theme="minus-line">
            <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
