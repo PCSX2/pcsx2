@@ -422,8 +422,8 @@ struct V_Core
 
 	V_Reverb Revb; // Reverb Registers
 
-	s32 RevbDownBuf[2][64]; // Downsample buffer for reverb, one for each channel
-	s32 RevbUpBuf[2][64]; // Upsample buffer for reverb, one for each channel
+	s32 RevbDownBuf[2][64 * 2]; // Downsample buffer for reverb, one for each channel
+	s32 RevbUpBuf[2][64 * 2]; // Upsample buffer for reverb, one for each channel
 	u32 RevbSampleBufPos;
 	u32 EffectsStartA;
 	u32 EffectsEndA;
@@ -487,7 +487,7 @@ struct V_Core
 	s32 RevbGetIndexer(s32 offset);
 
 	s32 ReverbDownsample(bool right);
-	StereoOut32 ReverbUpsample(bool phase);
+	StereoOut32 ReverbUpsample();
 
 	StereoOut32 ReadInput();
 	StereoOut32 ReadInput_HiFi();
