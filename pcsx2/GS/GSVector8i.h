@@ -765,6 +765,11 @@ public:
 		return GSVector8i(_mm256_adds_epi16(m, v.m));
 	}
 
+	__forceinline GSVector8i hadds16(const GSVector8i& v) const
+	{
+		return GSVector8i(_mm256_hadds_epi16(m, v.m));
+	}
+
 	__forceinline GSVector8i addus8(const GSVector8i& v) const
 	{
 		return GSVector8i(_mm256_adds_epu8(m, v.m));
