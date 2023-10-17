@@ -595,33 +595,37 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
-	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	const bool skip = adc || r->XYZF2.Skip();
+
+	if (!skip || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
 		CheckFlushes();
 
-	GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
-	GSVector4i zf = GSVector4i::loadl(&r->U64[1]);
+	GSVector4i xy = GSVector4i::loadnt(r);
+	GSVector4i zf = xy.zwzw();
 
 	xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
 	zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZF2.Skip());
+	VertexKick<prim, auto_flush, index_swap>(skip);
 }
 
 template <u32 prim, u32 adc, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
-	if (!adc || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
+	const bool skip = adc || r->XYZ2.Skip();
+
+	if (!skip || GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
 		CheckFlushes();
 
-	const GSVector4i xy = GSVector4i::loadl(&r->U64[0]);
-	const GSVector4i z = GSVector4i::loadl(&r->U64[1]);
+	const GSVector4i xy = GSVector4i::loadnt(r);
+	const GSVector4i z = xy.zzzz();
 	const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim, auto_flush, index_swap>(adc ? 1 : r->XYZ2.Skip());
+	VertexKick<prim, auto_flush, index_swap>(skip);
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -643,13 +647,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 {
 	ASSERT(size > 0 && size % 3 == 0);
 
-	bool flushes_checked = false;
-
-	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
-	{
-		flushes_checked = true;
-		CheckFlushes();
-	}
+	CheckFlushes();
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
@@ -670,13 +668,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
-		const bool skip = r[2].XYZF2.Skip();
-		if (!flushes_checked && !skip)
-		{
-			flushes_checked = true;
-			CheckFlushes();
-		}
-		VertexKick<prim, auto_flush, index_swap>(skip);
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZF2.Skip());
 
 		r += 3;
 	}
@@ -690,11 +682,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 	ASSERT(size > 0 && size % 3 == 0);
 	bool flushes_checked = false;
 
-	if (GSUtil::GetPrimClass(m_prev_env.PRIM.PRIM) != GSUtil::GetPrimClass(m_env.PRIM.PRIM) || (m_dirty_gs_regs & (1 << DIRTY_REG_XYOFFSET)))
-	{
-		flushes_checked = true;
-		CheckFlushes();
-	}
+	CheckFlushes();
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
@@ -714,13 +702,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
-		const bool skip = r[2].XYZF2.Skip();
-		if (!flushes_checked && !skip)
-		{
-			flushes_checked = true;
-			CheckFlushes();
-		}
-		VertexKick<prim, auto_flush, index_swap>(skip);
+		VertexKick<prim, auto_flush, index_swap>(r[2].XYZ2.Skip());
 
 		r += 3;
 	}
