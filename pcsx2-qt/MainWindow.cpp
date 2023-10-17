@@ -2299,7 +2299,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 				g_main_window->doSettings("Interface");
 			});
 		});
-		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, []{
+		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});
 	}
@@ -2338,7 +2338,10 @@ void MainWindow::doControllerSettings(ControllerSettingsWindow::Category categor
 {
 	if (m_controller_settings_window)
 	{
-		m_controller_settings_window->raise();
+		if (m_controller_settings_window->isVisible())
+			m_controller_settings_window->raise();
+		else
+			m_controller_settings_window->show();
 	}
 	else
 	{
