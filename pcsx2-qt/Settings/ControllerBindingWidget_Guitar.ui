@@ -45,10 +45,10 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="../resources/resources.qrc">:/images/guitar.png</pixmap>
+       <pixmap resource="../resources/resources.qrc">:/images/Guitar.svg</pixmap>
       </property>
       <property name="scaledContents">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
     </item>
