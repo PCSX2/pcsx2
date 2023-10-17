@@ -35,7 +35,7 @@ GSDirtyRect::GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba, bool req
 {
 }
 
-GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0 TEX0) const
+GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0 TEX0, bool align) const
 {
 	GSVector4i _r;
 
@@ -48,14 +48,13 @@ GSVector4i GSDirtyRect::GetDirtyRect(GIFRegTEX0 TEX0) const
 		_r.top = (r.top * dst.y) / src.y;
 		_r.right = (r.right * dst.x) / src.x;
 		_r.bottom = (r.bottom * dst.y) / src.y;
-		_r = _r.ralign<Align_Outside>(src);
 	}
 	else
 	{
-		_r = r.ralign<Align_Outside>(src);
+		_r = r;
 	}
 
-	return _r;
+	return align ? _r.ralign<Align_Outside>(src) : _r;
 }
 
 GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size) const
@@ -66,7 +65,7 @@ GSVector4i GSDirtyRectList::GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size
 
 		for (auto& dirty_rect : *this)
 		{
-			r = r.runion(dirty_rect.GetDirtyRect(TEX0));
+			r = r.runion(dirty_rect.GetDirtyRect(TEX0, true));
 		}
 
 		const GSVector2i& bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
@@ -92,12 +91,13 @@ u32 GSDirtyRectList::GetDirtyChannels()
 	return channels;
 }
 
-GSVector4i GSDirtyRectList::GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp) const
+GSVector4i GSDirtyRectList::GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp, bool align) const
 {
-	const GSVector4i r = (*this)[index].GetDirtyRect(TEX0);
+	GSVector4i r = (*this)[index].GetDirtyRect(TEX0, align);
+	const GSVector2i& bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
+	if (align)
+		r = r.ralign<Align_Outside>(bs);
 
-	GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
-
-	return r.ralign<Align_Outside>(bs).rintersect(clamp);
+	return r.rintersect(clamp);
 }
 

@@ -40,7 +40,7 @@ public:
 
 	GSDirtyRect();
 	GSDirtyRect(GSVector4i& r, u32 psm, u32 bw, RGBAMask rgba, bool req_linear);
-	GSVector4i GetDirtyRect(GIFRegTEX0 TEX0) const;
+	GSVector4i GetDirtyRect(GIFRegTEX0 TEX0, bool align) const;
 };
 
 class GSDirtyRectList : public std::vector<GSDirtyRect>
@@ -49,5 +49,5 @@ public:
 	GSDirtyRectList() {}
 	GSVector4i GetTotalRect(GIFRegTEX0 TEX0, const GSVector2i& size) const;
 	u32 GetDirtyChannels();
-	GSVector4i GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp) const;
+	GSVector4i GetDirtyRect(size_t index, GIFRegTEX0 TEX0, const GSVector4i& clamp, bool align) const;
 };

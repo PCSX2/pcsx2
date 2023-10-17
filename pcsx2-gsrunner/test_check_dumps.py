@@ -60,7 +60,7 @@ def compare_frames(path1, path2):
 def extract_stats(file):
     stats = {}
     try:
-        with open(file, "r") as f:
+        with open(file, "r", errors="ignore") as f:
             for line in f.readlines():
                 m = re.match(".*@HWSTAT@ ([^:]+): (.*) \(avg ([^)]+)\)$", line)
                 if m is None:
