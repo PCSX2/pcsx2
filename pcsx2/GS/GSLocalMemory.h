@@ -445,6 +445,13 @@ public:
 	typedef void (*readTexture)(GSLocalMemory& mem, const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 	typedef void (*readTextureBlock)(const GSLocalMemory& mem, u32 bp, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
+	enum PSM_FMT
+	{
+		PSM_FMT_32,
+		PSM_FMT_24,
+		PSM_FMT_16
+	};
+
 	struct alignas(128) psm_t
 	{
 		GSSwizzleInfo info;

@@ -205,10 +205,10 @@ GSLocalMemory::GSLocalMemory()
 
 	for (psm_t& psm : m_psm)
 		psm.fmt = 3;
-	m_psm[PSMCT32].fmt = m_psm[PSMZ32].fmt = 0;
-	m_psm[PSMCT24].fmt = m_psm[PSMZ24].fmt = 1;
-	m_psm[PSMCT16].fmt = m_psm[PSMZ16].fmt = 2;
-	m_psm[PSMCT16S].fmt = m_psm[PSMZ16S].fmt = 2;
+	m_psm[PSMCT32].fmt = m_psm[PSMZ32].fmt = PSM_FMT_32;
+	m_psm[PSMCT24].fmt = m_psm[PSMZ24].fmt = PSM_FMT_24;
+	m_psm[PSMCT16].fmt = m_psm[PSMZ16].fmt = PSM_FMT_16;
+	m_psm[PSMCT16S].fmt = m_psm[PSMZ16S].fmt = PSM_FMT_16;
 
 
 	m_psm[PSGPU24].bs = GSVector2i(16, 8);
