@@ -54,9 +54,16 @@
 using namespace x86Emitter;
 using namespace R5900;
 
-static bool eeRecNeedsReset = false;
-static bool eeCpuExecuting = false;
+// For debuggers
+extern "C" {
+#ifdef _WIN32
+_declspec(dllexport) bool eeRecNeedsReset = false;
+#else
+__attribute__((visibility("default"), used)) bool eeRecNeedsReset = false;
+#endif
+}
 static bool eeRecExitRequested = false;
+static bool eeCpuExecuting = false;
 static bool g_resetEeScalingStats = false;
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
@@ -372,7 +379,7 @@ static void recEventTest()
 {
 	_cpuEventTest_Shared();
 
-	if (eeRecExitRequested)
+	if (eeRecExitRequested || eeRecNeedsReset)
 	{
 		eeRecExitRequested = false;
 		recExitExecution();
