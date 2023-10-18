@@ -633,7 +633,7 @@ __forceinline
 		Ext = StereoOut32::Empty;
 	else
 	{
-		Ext = clamp_mix(ApplyVolume(Ext, Cores[0].MasterVol));
+		Ext = ApplyVolume(clamp_mix(Ext), Cores[0].MasterVol);
 	}
 
 	// Commit Core 0 output to ram before mixing Core 1:
@@ -657,8 +657,7 @@ __forceinline
 	}
 	else
 	{
-		Out.Left = ApplyVolume(Out.Left, Cores[1].MasterVol.Left.Value);
-		Out.Right = ApplyVolume(Out.Right, Cores[1].MasterVol.Right.Value);
+		Out = ApplyVolume(clamp_mix(Out), Cores[1].MasterVol);
 	}
 
 	// For a long time PCSX2 has had its output volume halved by
