@@ -2414,7 +2414,7 @@ Not Configured/Buttons configured</extracomment>
 <context>
     <name>ControllerSettingsWindow</name>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.ui" line="25"/>
+        <location filename="../Settings/ControllerSettingsWindow.ui" line="20"/>
         <source>PCSX2 Controller Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8812,7 +8812,7 @@ graphical quality, but this will increase system requirements.</source>
     <message>
         <location filename="../Settings/GameListSettingsWidget.ui" line="83"/>
         <location filename="../Settings/GameListSettingsWidget.ui" line="181"/>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="191"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="194"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8873,34 +8873,34 @@ graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="193"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="196"/>
         <source>Open Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="202"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="205"/>
         <source>Select Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="208"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="211"/>
         <source>Scan Recursively?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="209"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="212"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="239"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="242"/>
         <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameListSettingsWidget.cpp" line="249"/>
+        <location filename="../Settings/GameListSettingsWidget.cpp" line="252"/>
         <source>Select Directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12653,7 +12653,7 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="55"/>
-        <location filename="../MainWindow.cpp" line="2491"/>
+        <location filename="../MainWindow.cpp" line="2494"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13260,8 +13260,8 @@ Are you sure you want to continue?</source>
         <location filename="../MainWindow.cpp" line="1546"/>
         <location filename="../MainWindow.cpp" line="1939"/>
         <location filename="../MainWindow.cpp" line="2048"/>
-        <location filename="../MainWindow.cpp" line="2403"/>
-        <location filename="../MainWindow.cpp" line="2510"/>
+        <location filename="../MainWindow.cpp" line="2406"/>
+        <location filename="../MainWindow.cpp" line="2513"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13433,88 +13433,88 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2361"/>
+        <location filename="../MainWindow.cpp" line="2364"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2379"/>
+        <location filename="../MainWindow.cpp" line="2382"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2403"/>
+        <location filename="../MainWindow.cpp" line="2406"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2416"/>
+        <location filename="../MainWindow.cpp" line="2419"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2433"/>
+        <location filename="../MainWindow.cpp" line="2436"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2434"/>
+        <location filename="../MainWindow.cpp" line="2437"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2429"/>
-        <location filename="../MainWindow.cpp" line="2443"/>
-        <location filename="../MainWindow.cpp" line="2449"/>
-        <location filename="../MainWindow.cpp" line="2455"/>
+        <location filename="../MainWindow.cpp" line="2432"/>
+        <location filename="../MainWindow.cpp" line="2446"/>
+        <location filename="../MainWindow.cpp" line="2452"/>
+        <location filename="../MainWindow.cpp" line="2458"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2443"/>
+        <location filename="../MainWindow.cpp" line="2446"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2449"/>
+        <location filename="../MainWindow.cpp" line="2452"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2455"/>
+        <location filename="../MainWindow.cpp" line="2458"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="1923"/>
-        <location filename="../MainWindow.cpp" line="2464"/>
+        <location filename="../MainWindow.cpp" line="2467"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2416"/>
+        <location filename="../MainWindow.cpp" line="2419"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2429"/>
+        <location filename="../MainWindow.cpp" line="2432"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2465"/>
+        <location filename="../MainWindow.cpp" line="2468"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2486"/>
+        <location filename="../MainWindow.cpp" line="2489"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2488"/>
+        <location filename="../MainWindow.cpp" line="2491"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -13523,112 +13523,112 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2492"/>
+        <location filename="../MainWindow.cpp" line="2495"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2493"/>
+        <location filename="../MainWindow.cpp" line="2496"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2510"/>
+        <location filename="../MainWindow.cpp" line="2513"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2568"/>
+        <location filename="../MainWindow.cpp" line="2571"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2568"/>
+        <location filename="../MainWindow.cpp" line="2571"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2570"/>
-        <location filename="../MainWindow.cpp" line="2640"/>
+        <location filename="../MainWindow.cpp" line="2573"/>
+        <location filename="../MainWindow.cpp" line="2643"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2570"/>
-        <location filename="../MainWindow.cpp" line="2640"/>
+        <location filename="../MainWindow.cpp" line="2573"/>
+        <location filename="../MainWindow.cpp" line="2643"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2577"/>
+        <location filename="../MainWindow.cpp" line="2580"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2582"/>
+        <location filename="../MainWindow.cpp" line="2585"/>
         <source>Undo Load State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2596"/>
+        <location filename="../MainWindow.cpp" line="2599"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2612"/>
+        <location filename="../MainWindow.cpp" line="2615"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2621"/>
-        <location filename="../MainWindow.cpp" line="2629"/>
+        <location filename="../MainWindow.cpp" line="2624"/>
+        <location filename="../MainWindow.cpp" line="2632"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2622"/>
+        <location filename="../MainWindow.cpp" line="2625"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2629"/>
+        <location filename="../MainWindow.cpp" line="2632"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2639"/>
+        <location filename="../MainWindow.cpp" line="2642"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2658"/>
+        <location filename="../MainWindow.cpp" line="2661"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2660"/>
+        <location filename="../MainWindow.cpp" line="2663"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2711"/>
+        <location filename="../MainWindow.cpp" line="2714"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2712"/>
+        <location filename="../MainWindow.cpp" line="2715"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2713"/>
+        <location filename="../MainWindow.cpp" line="2716"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2714"/>
+        <location filename="../MainWindow.cpp" line="2717"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
