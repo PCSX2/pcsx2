@@ -350,28 +350,20 @@ struct V_CoreRegs
 
 struct V_VoiceGates
 {
-	s16 DryL; // 'AND Gate' for Direct Output to Left Channel
-	s16 DryR; // 'AND Gate' for Direct Output for Right Channel
-	s16 WetL; // 'AND Gate' for Effect Output for Left Channel
-	s16 WetR; // 'AND Gate' for Effect Output for Right Channel
+	s32 DryL; // 'AND Gate' for Direct Output to Left Channel
+	s32 DryR; // 'AND Gate' for Direct Output for Right Channel
+	s32 WetL; // 'AND Gate' for Effect Output for Left Channel
+	s32 WetR; // 'AND Gate' for Effect Output for Right Channel
 };
 
 struct V_CoreGates
 {
-	union
-	{
-		u128 v128;
-
-		struct
-		{
-			s16 InpL; // Sound Data Input to Direct Output (Left)
-			s16 InpR; // Sound Data Input to Direct Output (Right)
-			s16 SndL; // Voice Data to Direct Output (Left)
-			s16 SndR; // Voice Data to Direct Output (Right)
-			s16 ExtL; // External Input to Direct Output (Left)
-			s16 ExtR; // External Input to Direct Output (Right)
-		};
-	};
+	s32 InpL; // Sound Data Input to Direct Output (Left)
+	s32 InpR; // Sound Data Input to Direct Output (Right)
+	s32 SndL; // Voice Data to Direct Output (Left)
+	s32 SndR; // Voice Data to Direct Output (Right)
+	s32 ExtL; // External Input to Direct Output (Left)
+	s32 ExtR; // External Input to Direct Output (Right)
 };
 
 struct VoiceMixSet
