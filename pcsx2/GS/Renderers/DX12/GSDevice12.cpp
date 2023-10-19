@@ -2819,7 +2819,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 	sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 	sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
-	sm.AddMacro("PS_DFMT", sel.dfmt);
+	sm.AddMacro("PS_DST_FMT", sel.dst_fmt);
 	sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 	sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
 	sm.AddMacro("PS_HDR", sel.hdr);

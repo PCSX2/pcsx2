@@ -4658,7 +4658,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_ADJT", sel.adjt);
 	AddMacro(ss, "PS_AEM_FMT", sel.aem_fmt);
 	AddMacro(ss, "PS_PAL_FMT", sel.pal_fmt);
-	AddMacro(ss, "PS_DFMT", sel.dfmt);
+	AddMacro(ss, "PS_DST_FMT", sel.dst_fmt);
 	AddMacro(ss, "PS_DEPTH_FMT", sel.depth_fmt);
 	AddMacro(ss, "PS_CHANNEL_FETCH", sel.channel);
 	AddMacro(ss, "PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);

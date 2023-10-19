@@ -289,7 +289,7 @@ struct alignas(16) GSHWDrawConfig
 				// Format
 				u32 aem_fmt   : 2;
 				u32 pal_fmt   : 2;
-				u32 dfmt      : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
+				u32 dst_fmt   : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
 				u32 depth_fmt : 2; // 0 → None, 1 → 32-bit, 2 → 16-bit, 3 → RGBA
 				// Alpha extension/Correction
 				u32 aem : 1;

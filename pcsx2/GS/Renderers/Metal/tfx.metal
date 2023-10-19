@@ -26,7 +26,7 @@ constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_PO
 constant uint VS_EXPAND_TYPE_RAW    [[function_constant(GSMTLConstantIndex_VS_EXPAND_TYPE)]];
 constant uint PS_AEM_FMT            [[function_constant(GSMTLConstantIndex_PS_AEM_FMT)]];
 constant uint PS_PAL_FMT            [[function_constant(GSMTLConstantIndex_PS_PAL_FMT)]];
-constant uint PS_DFMT               [[function_constant(GSMTLConstantIndex_PS_DFMT)]];
+constant uint PS_DST_FMT            [[function_constant(GSMTLConstantIndex_PS_DST_FMT)]];
 constant uint PS_DEPTH_FMT          [[function_constant(GSMTLConstantIndex_PS_DEPTH_FMT)]];
 constant bool PS_AEM                [[function_constant(GSMTLConstantIndex_PS_AEM)]];
 constant bool PS_FBA                [[function_constant(GSMTLConstantIndex_PS_FBA)]];
@@ -855,7 +855,7 @@ struct PSMain
 		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
 			return;
 
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
 			C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
 		// Correct the Color value based on the output format
@@ -868,7 +868,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP || PS_HDR)
@@ -1062,12 +1062,12 @@ struct PSMain
 
 		float4 alpha_blend = SW_AD_TO_HW ? float4(trunc(current_color.a * 255.5f) / 128.f) : float4(C.a / 128.f);
 
-		if (PS_DFMT == FMT_16)
+		if (PS_DST_FMT == FMT_16)
 		{
 			float A_one = 128.f;
 			C.a = (PS_FBA) ? A_one : step(128.f, C.a) * A_one;
 		}
-		else if (PS_DFMT == FMT_32 && PS_FBA)
+		else if (PS_DST_FMT == FMT_32 && PS_FBA)
 		{
 			if (C.a < 128.f)
 				C.a += 128.f;

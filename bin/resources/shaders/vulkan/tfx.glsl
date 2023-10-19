@@ -281,7 +281,7 @@ void main()
 #define PS_READ_BA 0
 #define PS_WRITE_RG 0
 #define PS_READ16_SRC 0
-#define PS_DFMT 0
+#define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
@@ -988,7 +988,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
 	C += 7.0f; // Need to round up, not down since the shader will invert
 #endif
 
@@ -1004,7 +1004,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 	// GS: Color = 1, Alpha = 255 => output 1
 	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 	C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 || PS_HDR == 1
@@ -1245,10 +1245,10 @@ void main()
 #endif
 
   // Correct the ALPHA value based on the output format
-#if (PS_DFMT == FMT_16)
+#if (PS_DST_FMT == FMT_16)
 	float A_one = 128.0f; // alpha output will be 0x80
 	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
-#elif (PS_DFMT == FMT_32) && (PS_FBA != 0)
+#elif (PS_DST_FMT == FMT_32) && (PS_FBA != 0)
 	if(C.a < 128.0f) C.a += 128.0f;
 #endif
 
