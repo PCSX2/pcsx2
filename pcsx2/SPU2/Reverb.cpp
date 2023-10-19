@@ -66,19 +66,19 @@ __forceinline s32 V_Core::RevbGetIndexer(s32 offset)
 	return x & 0xf'ffff;
 }
 
-StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
+StereoOut32 V_Core::DoReverb(StereoOut32 Input)
 {
 	if (EffectsStartA >= EffectsEndA)
 	{
 		return StereoOut32::Empty;
 	}
 
-	auto input = clamp_mix(Input);
+	Input = clamp_mix(Input);
 
-	RevbDownBuf[0][RevbSampleBufPos] = input.Left;
-	RevbDownBuf[1][RevbSampleBufPos] = input.Right;
-	RevbDownBuf[0][RevbSampleBufPos | 64] = input.Left;
-	RevbDownBuf[1][RevbSampleBufPos | 64] = input.Right;
+	RevbDownBuf[0][RevbSampleBufPos] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos] = Input.Right;
+	RevbDownBuf[0][RevbSampleBufPos | 64] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos | 64] = Input.Right;
 
 	bool R = Cycles & 1;
 
