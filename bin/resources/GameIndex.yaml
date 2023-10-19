@@ -38293,6 +38293,11 @@ SLPM-65746:
   name-sort: FIFAとーたるふっとぼーる2
   name-en: "FIFA Total Football 2"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes broken rendering.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65747:
   name: "Hagane no Renkinjutsushi 2 - Akaki Elixir no Akuma"
   region: "NTSC-J"
