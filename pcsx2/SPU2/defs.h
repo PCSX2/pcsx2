@@ -40,9 +40,19 @@ extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
 
-static inline s16 SignExtend16(u16 v)
+static __forceinline s16 SignExtend16(u16 v)
 {
 	return (s16)v;
+}
+
+static __forceinline s32 clamp_mix(s32 x)
+{
+	return std::clamp(x, -0x8000, 0x7fff);
+}
+
+static __forceinline StereoOut32 clamp_mix(StereoOut32 sample)
+{
+	return StereoOut32(clamp_mix(sample.Left), clamp_mix(sample.Right));
 }
 
 struct V_VolumeLR

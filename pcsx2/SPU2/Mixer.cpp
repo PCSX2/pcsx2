@@ -28,16 +28,6 @@ static const s32 tbl_XA_Factor[16][2] =
 		{98, -55},
 		{122, -60}};
 
-__forceinline s32 clamp_mix(s32 x)
-{
-	return std::clamp(x, -0x8000, 0x7fff);
-}
-
-__forceinline StereoOut32 clamp_mix(StereoOut32 sample)
-{
-	return StereoOut32(clamp_mix(sample.Left), clamp_mix(sample.Right));
-}
-
 static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
 	const s32 header = *block;
