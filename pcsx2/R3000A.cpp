@@ -46,6 +46,15 @@ static constexpr uint iopWaitCycles = 384; // Keep inline with EE wait cycle max
 
 bool iopEventTestIsActive = false;
 
+// External method to reset the IOP Recompiler for external applications that modify IOP instruction memory
+extern "C" {
+#ifdef _WIN32
+_declspec(dllexport) bool iopRecNeedsReset = false;
+#else
+__attribute__((visibility("default"), used)) bool iopRecNeedsReset = false;
+#endif
+}
+
 alignas(16) psxRegisters psxRegs;
 
 void psxReset()
@@ -219,6 +228,13 @@ static __fi void _psxTestInterrupts()
 
 __ri void iopEventTest()
 {
+	if (iopRecNeedsReset)
+	{
+		iopRecNeedsReset = false;
+		psxRec.Reset();
+		return;
+	}
+
 	psxRegs.iopNextEventCycle = psxRegs.cycle + iopWaitCycles;
 
 	if (psxTestCycle(psxNextsCounter, psxNextCounter))
