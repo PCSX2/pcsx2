@@ -55,7 +55,7 @@
 #define PS_SHUFFLE_SAME 0
 #define PS_READ_BA 0
 #define PS_READ16_SRC 0
-#define PS_DFMT 0
+#define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
@@ -797,7 +797,7 @@ void ps_color_clamp_wrap(inout float3 C)
 	// so we need to limit the color depth on dithered items
 	if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
 			C += 7.0f; // Need to round up, not down since the shader will invert
 
 		// Standard Clamp
@@ -805,7 +805,7 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
 			C = (float3)((int3)C & (int3)0xF8);
 		else if (PS_COLCLIP == 1 || PS_HDR == 1)
 			C = (float3)((int3)C & (int3)0xFF);
@@ -999,12 +999,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	// Alpha correction
-	if (PS_DFMT == FMT_16)
+	if (PS_DST_FMT == FMT_16)
 	{
 		float A_one = 128.0f; // alpha output will be 0x80
 		C.a = PS_FBA ? A_one : step(A_one, C.a) * A_one;
 	}
-	else if ((PS_DFMT == FMT_32) && PS_FBA)
+	else if ((PS_DST_FMT == FMT_32) && PS_FBA)
 	{
 		float A_one = 128.0f;
 		if (C.a < A_one) C.a += A_one;

@@ -167,7 +167,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_VS_EXPAND_TYPE,
 	GSMTLConstantIndex_PS_AEM_FMT,
 	GSMTLConstantIndex_PS_PAL_FMT,
-	GSMTLConstantIndex_PS_DFMT,
+	GSMTLConstantIndex_PS_DST_FMT,
 	GSMTLConstantIndex_PS_DEPTH_FMT,
 	GSMTLConstantIndex_PS_AEM,
 	GSMTLConstantIndex_PS_FBA,
