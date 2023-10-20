@@ -249,7 +249,8 @@ __forceinline bool StartQueuedVoice(uint coreidx, uint voiceidx)
 
 	// When SP >= 0 the next sample will be grabbed, we don't want this to happen
 	// instantly because in the case of pitch being 0 we want to delay getting
-	// the next block header.
+	// the next block header. This is a hack to work around the fact that unlike
+	// the HW we don't update the block header on every cycle.
 	vc.SP = -1;
 
 	vc.LoopFlags = 0;
@@ -1054,14 +1055,13 @@ static void RegWrite_VoiceAddr(u16 value)
 			}
 			break;
 
-			// Note that there's no proof that I know of that writing to NextA is
-			// even allowed or handled by the SPU2 (it might be disabled or ignored,
-			// for example).  Tests should be done to find games that write to this
-			// reg, and see if they're buggy or not. --air
 
-			// FlatOut & Soul Reaver 2 trigger these cases, but don't produce issues enabled or disabled.
-			// Wallace And Gromit: Curse Of The Were-Rabbit triggers case 4 and 5 to produce proper sound,
-			// without it some sound effects get cut off so we need the two NextA cases enabled.
+			// NAX is confirmed to be writable on hardware (decoder will start decoding at new location).
+			//
+			// Example games:
+			// FlatOut
+			// Soul Reaver 2
+			// Wallace And Gromit: Curse Of The Were-Rabbit.
 
 		case 4:
 			thisvoice.NextA = ((u32)(value & 0x0F) << 16) | (thisvoice.NextA & 0xFFF8) | 1;
@@ -1409,21 +1409,6 @@ static void RegWrite_CoreExt(u16 value)
 }
 
 
-template <int core, int addr>
-static void RegWrite_Reverb(u16 value)
-{
-	// Signal to the Reverb code that the effects buffers need to be re-aligned.
-	// This is both simple, efficient, and safe, since we only want to re-align
-	// buffers after both hi and lo words have been written.
-
-	// Update: This may have been written when it wasn't yet known that games
-	// have to disable the Reverb Engine to change settings.
-	// As such we only need to update buffers and parameters when we see
-	// the FxEnable bit go down, then high again. (rama)
-	*(regtable[addr >> 1]) = value;
-	//Cores[core].RevBuffers.NeedsUpdated = true; // See update above
-}
-
 template <int addr>
 static void RegWrite_SPDIF(u16 value)
 {
@@ -1463,12 +1448,8 @@ static void RegWrite_Null(u16 value)
 		RegWrite_VoiceAddr<core, voice, 2>, RegWrite_VoiceAddr<core, voice, 3>, \
 		RegWrite_VoiceAddr<core, voice, 4>, RegWrite_VoiceAddr<core, voice, 5>
 
-
 #define CoreParamsPair(core, omem) \
 	RegWrite_Core<core, omem>, RegWrite_Core<core, ((omem) + 2)>
-
-#define ReverbPair(core, mem) \
-	RegWrite_Reverb<core, mem>, RegWrite_Core<core, ((mem) + 2)>
 
 #define REGRAW(addr) RegWrite_Raw<addr>
 
@@ -1512,28 +1493,28 @@ static RegWriteHandler* const tbl_reg_writes[0x401] =
 
 		CoreParamsPair(0, REG_A_ESA),
 
-		ReverbPair(0, R_APF1_SIZE),   //       0x02E4		// Feedback Source A
-		ReverbPair(0, R_APF2_SIZE),   //       0x02E8		// Feedback Source B
-		ReverbPair(0, R_SAME_L_DST),  //    0x02EC
-		ReverbPair(0, R_SAME_R_DST),  //    0x02F0
-		ReverbPair(0, R_COMB1_L_SRC), //     0x02F4
-		ReverbPair(0, R_COMB1_R_SRC), //     0x02F8
-		ReverbPair(0, R_COMB2_L_SRC), //     0x02FC
-		ReverbPair(0, R_COMB2_R_SRC), //     0x0300
-		ReverbPair(0, R_SAME_L_SRC),  //     0x0304
-		ReverbPair(0, R_SAME_R_SRC),  //     0x0308
-		ReverbPair(0, R_DIFF_L_DST),  //    0x030C
-		ReverbPair(0, R_DIFF_R_DST),  //    0x0310
-		ReverbPair(0, R_COMB3_L_SRC), //     0x0314
-		ReverbPair(0, R_COMB3_R_SRC), //     0x0318
-		ReverbPair(0, R_COMB4_L_SRC), //     0x031C
-		ReverbPair(0, R_COMB4_R_SRC), //     0x0320
-		ReverbPair(0, R_DIFF_L_SRC),  //     0x0324
-		ReverbPair(0, R_DIFF_R_SRC),  //     0x0328
-		ReverbPair(0, R_APF1_L_DST),  //    0x032C
-		ReverbPair(0, R_APF1_R_DST),  //    0x0330
-		ReverbPair(0, R_APF2_L_DST),  //    0x0334
-		ReverbPair(0, R_APF2_R_DST),  //    0x0338
+		CoreParamsPair(0, R_APF1_SIZE),   //       0x02E4		// Feedback Source A
+		CoreParamsPair(0, R_APF2_SIZE),   //       0x02E8		// Feedback Source B
+		CoreParamsPair(0, R_SAME_L_DST),  //    0x02EC
+		CoreParamsPair(0, R_SAME_R_DST),  //    0x02F0
+		CoreParamsPair(0, R_COMB1_L_SRC), //     0x02F4
+		CoreParamsPair(0, R_COMB1_R_SRC), //     0x02F8
+		CoreParamsPair(0, R_COMB2_L_SRC), //     0x02FC
+		CoreParamsPair(0, R_COMB2_R_SRC), //     0x0300
+		CoreParamsPair(0, R_SAME_L_SRC),  //     0x0304
+		CoreParamsPair(0, R_SAME_R_SRC),  //     0x0308
+		CoreParamsPair(0, R_DIFF_L_DST),  //    0x030C
+		CoreParamsPair(0, R_DIFF_R_DST),  //    0x0310
+		CoreParamsPair(0, R_COMB3_L_SRC), //     0x0314
+		CoreParamsPair(0, R_COMB3_R_SRC), //     0x0318
+		CoreParamsPair(0, R_COMB4_L_SRC), //     0x031C
+		CoreParamsPair(0, R_COMB4_R_SRC), //     0x0320
+		CoreParamsPair(0, R_DIFF_L_SRC),  //     0x0324
+		CoreParamsPair(0, R_DIFF_R_SRC),  //     0x0328
+		CoreParamsPair(0, R_APF1_L_DST),  //    0x032C
+		CoreParamsPair(0, R_APF1_R_DST),  //    0x0330
+		CoreParamsPair(0, R_APF2_L_DST),  //    0x0334
+		CoreParamsPair(0, R_APF2_R_DST),  //    0x0338
 
 		RegWrite_Core<0, REG_A_EEA>, RegWrite_Null,
 
@@ -1602,28 +1583,28 @@ static RegWriteHandler* const tbl_reg_writes[0x401] =
 
 		CoreParamsPair(1, REG_A_ESA),
 
-		ReverbPair(1, R_APF1_SIZE),   //       0x02E4		// Feedback Source A
-		ReverbPair(1, R_APF2_SIZE),   //       0x02E8		// Feedback Source B
-		ReverbPair(1, R_SAME_L_DST),  //    0x02EC
-		ReverbPair(1, R_SAME_R_DST),  //    0x02F0
-		ReverbPair(1, R_COMB1_L_SRC), //     0x02F4
-		ReverbPair(1, R_COMB1_R_SRC), //     0x02F8
-		ReverbPair(1, R_COMB2_L_SRC), //     0x02FC
-		ReverbPair(1, R_COMB2_R_SRC), //     0x0300
-		ReverbPair(1, R_SAME_L_SRC),  //     0x0304
-		ReverbPair(1, R_SAME_R_SRC),  //     0x0308
-		ReverbPair(1, R_DIFF_L_DST),  //    0x030C
-		ReverbPair(1, R_DIFF_R_DST),  //    0x0310
-		ReverbPair(1, R_COMB3_L_SRC), //     0x0314
-		ReverbPair(1, R_COMB3_R_SRC), //     0x0318
-		ReverbPair(1, R_COMB4_L_SRC), //     0x031C
-		ReverbPair(1, R_COMB4_R_SRC), //     0x0320
-		ReverbPair(1, R_DIFF_R_SRC),  //     0x0324
-		ReverbPair(1, R_DIFF_L_SRC),  //     0x0328
-		ReverbPair(1, R_APF1_L_DST),  //    0x032C
-		ReverbPair(1, R_APF1_R_DST),  //    0x0330
-		ReverbPair(1, R_APF2_L_DST),  //    0x0334
-		ReverbPair(1, R_APF2_R_DST),  //    0x0338
+		CoreParamsPair(1, R_APF1_SIZE),   //       0x02E4		// Feedback Source A
+		CoreParamsPair(1, R_APF2_SIZE),   //       0x02E8		// Feedback Source B
+		CoreParamsPair(1, R_SAME_L_DST),  //    0x02EC
+		CoreParamsPair(1, R_SAME_R_DST),  //    0x02F0
+		CoreParamsPair(1, R_COMB1_L_SRC), //     0x02F4
+		CoreParamsPair(1, R_COMB1_R_SRC), //     0x02F8
+		CoreParamsPair(1, R_COMB2_L_SRC), //     0x02FC
+		CoreParamsPair(1, R_COMB2_R_SRC), //     0x0300
+		CoreParamsPair(1, R_SAME_L_SRC),  //     0x0304
+		CoreParamsPair(1, R_SAME_R_SRC),  //     0x0308
+		CoreParamsPair(1, R_DIFF_L_DST),  //    0x030C
+		CoreParamsPair(1, R_DIFF_R_DST),  //    0x0310
+		CoreParamsPair(1, R_COMB3_L_SRC), //     0x0314
+		CoreParamsPair(1, R_COMB3_R_SRC), //     0x0318
+		CoreParamsPair(1, R_COMB4_L_SRC), //     0x031C
+		CoreParamsPair(1, R_COMB4_R_SRC), //     0x0320
+		CoreParamsPair(1, R_DIFF_R_SRC),  //     0x0324
+		CoreParamsPair(1, R_DIFF_L_SRC),  //     0x0328
+		CoreParamsPair(1, R_APF1_L_DST),  //    0x032C
+		CoreParamsPair(1, R_APF1_R_DST),  //    0x0330
+		CoreParamsPair(1, R_APF2_L_DST),  //    0x0334
+		CoreParamsPair(1, R_APF2_R_DST),  //    0x0338
 
 		RegWrite_Core<1, REG_A_EEA>, RegWrite_Null,
 
