@@ -313,10 +313,10 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 __forceinline static s32 GaussianInterpolate(s32 pv4, s32 pv3, s32 pv2, s32 pv1, s32 i)
 {
 	s32 out = 0;
-	out =  (interpTable[0x0FF - i] * pv4) >> 15;
-	out += (interpTable[0x1FF - i] * pv3) >> 15;
-	out += (interpTable[0x100 + i] * pv2) >> 15;
-	out += (interpTable[0x000 + i] * pv1) >> 15;
+	out =  (interpTable[i][0] * pv4) >> 15;
+	out += (interpTable[i][1] * pv3) >> 15;
+	out += (interpTable[i][2] * pv2) >> 15;
+	out += (interpTable[i][3] * pv1) >> 15;
 
 	return out;
 }
