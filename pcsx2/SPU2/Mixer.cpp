@@ -441,11 +441,6 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 			Value = GetVoiceValues(thiscore, voiceidx);
 
 		// Update and Apply ADSR  (applies to normal and noise sources)
-		//
-		// Note!  It's very important that ADSR stay as accurate as possible.  By the way
-		// it is used, various sound effects can end prematurely if we truncate more than
-		// one or two bits.  Best result comes from no truncation at all, which is why we
-		// use a full 64-bit multiply/result here.
 
 		CalculateADSR(thiscore, voiceidx);
 		Value = ApplyVolume(Value, vc.ADSR.Value);
@@ -494,7 +489,6 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 {
 	MasterVol.Update();
 	UpdateNoise(*this);
-
 
 	// Saturate final result to standard 16 bit range.
 	const VoiceMixSet Voices(clamp_mix(inVoices.Dry), clamp_mix(inVoices.Wet));
