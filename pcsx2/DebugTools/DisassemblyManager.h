@@ -58,7 +58,7 @@ public:
 	virtual int getLineNum(u32 address, bool findStart) = 0;
 	virtual u32 getLineAddress(int line) = 0;
 	virtual u32 getTotalSize() = 0;
-	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols) = 0;
+	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify = false) = 0;
 	virtual void getBranchLines(u32 start, u32 size, std::vector<BranchLine>& dest) { };
 };
 
@@ -71,7 +71,7 @@ public:
 	virtual int getLineNum(u32 address, bool findStart);
 	virtual u32 getLineAddress(int line);
 	virtual u32 getTotalSize() { return size; };
-	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
+	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify = false);
 	virtual void getBranchLines(u32 start, u32 size, std::vector<BranchLine>& dest);
 private:
 	void generateBranchLines();
@@ -98,7 +98,7 @@ public:
 	virtual int getLineNum(u32 address, bool findStart) { return (address-this->address)/4; };
 	virtual u32 getLineAddress(int line) { return address+line*4; };
 	virtual u32 getTotalSize() { return num*4; };
-	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
+	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify = false);
 	virtual void getBranchLines(u32 start, u32 size, std::vector<BranchLine>& dest);
 private:
 	DebugInterface* cpu;
@@ -122,7 +122,7 @@ public:
 	virtual int getLineNum(u32 address, bool findStart) { return 0; };
 	virtual u32 getLineAddress(int line) { return address; };
 	virtual u32 getTotalSize() { return numOpcodes*4; };
-	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols) ;
+	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify = false);
 private:
 	enum MacroType { MACRO_LI, MACRO_MEMORYIMM };
 
@@ -148,7 +148,7 @@ public:
 	virtual int getLineNum(u32 address, bool findStart);
 	virtual u32 getLineAddress(int line) { return lineAddresses[line]; };
 	virtual u32 getTotalSize() { return size; };
-	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
+	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify = false);
 private:
 	void createLines();
 
@@ -179,7 +179,7 @@ public:
 	virtual int getLineNum(u32 address, bool findStart) { return 0; };
 	virtual u32 getLineAddress(int line) { return address; };
 	virtual u32 getTotalSize() { return size; };
-	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
+	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify = false);
 private:
 	[[maybe_unused]]DebugInterface* cpu;
 	u32 address;

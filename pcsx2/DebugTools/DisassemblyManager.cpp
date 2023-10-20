@@ -408,13 +408,13 @@ u32 DisassemblyFunction::getLineAddress(int line)
 	return lineAddresses[line];
 }
 
-bool DisassemblyFunction::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols)
+bool DisassemblyFunction::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify)
 {
 	auto it = findDisassemblyEntry(entries,address,false);
 	if (it == entries.end())
 		return false;
 
-	return it->second->disassemble(address,dest,insertSymbols);
+	return it->second->disassemble(address,dest,simplify, simplify);
 }
 
 void DisassemblyFunction::getBranchLines(u32 start, u32 size, std::vector<BranchLine>& dest)
@@ -695,11 +695,11 @@ void DisassemblyFunction::clear()
 	hash = 0;
 }
 
-bool DisassemblyOpcode::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols)
+bool DisassemblyOpcode::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify)
 {
 	char opcode[64],arguments[256];
 
-	std::string dis = cpu->disasm(address,insertSymbols);
+	std::string dis = cpu->disasm(address,simplify);
 	parseDisasm(cpu->GetSymbolMap(),dis.c_str(),opcode,arguments,std::size(arguments),insertSymbols);
 	dest.type = DISTYPE_OPCODE;
 	dest.name = opcode;
@@ -765,7 +765,7 @@ void DisassemblyMacro::setMacroMemory(const std::string& _name, u32 _immediate, 
 	numOpcodes = 2;
 }
 
-bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols)
+bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify)
 {
 	char buffer[64];
 	dest.type = DISTYPE_MACRO;
@@ -836,7 +836,7 @@ void DisassemblyData::recheck()
 	}
 }
 
-bool DisassemblyData::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols)
+bool DisassemblyData::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify)
 {
 	dest.type = DISTYPE_DATA;
 
@@ -1034,7 +1034,7 @@ DisassemblyComment::DisassemblyComment(DebugInterface* _cpu, u32 _address, u32 _
 
 }
 
-bool DisassemblyComment::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols)
+bool DisassemblyComment::disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols, bool simplify)
 {
 	dest.type = DISTYPE_OTHER;
 	dest.name = name;
