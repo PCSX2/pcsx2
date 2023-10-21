@@ -2847,6 +2847,13 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 					}
 				}
 			}
+			// This is a situation where it is uploading in to the alpha channel but that is not part of the mask for the target format.
+			// So we need to make sure the alpha is not marked as valid. (Juiced does a shuffle on the Z24 depth, making the alpha valid data).
+			else if (GSUtil::GetChannelMask(psm) == 0x8 && GSUtil::GetChannelMask(t->m_TEX0.PSM) == 0x7 && t->Overlaps(bp, bw, psm, r))
+			{
+				t->m_valid_alpha_high &= !(psm == PSMT8H || psm == PSMT4HH);
+				t->m_valid_alpha_low &= !(psm == PSMT8H || psm == PSMT4HL);
+			}
 		}
 	}
 }
