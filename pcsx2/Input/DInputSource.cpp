@@ -210,12 +210,6 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 		return false;
 	}
 
-	if (caps.dwButtons == 0)
-	{
-		Console.Error("Ignoring device '%s' because it has no buttons (%u axes, %u POVs).", name.c_str(), caps.dwAxes, caps.dwPOVs);
-		return false;
-	}
-
 	static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE2, lX), offsetof(DIJOYSTATE2, lY), offsetof(DIJOYSTATE2, lZ),
 		offsetof(DIJOYSTATE2, lRz), offsetof(DIJOYSTATE2, lRx), offsetof(DIJOYSTATE2, lRy), offsetof(DIJOYSTATE2, rglSlider[0]),
 		offsetof(DIJOYSTATE2, rglSlider[1])};
@@ -246,8 +240,8 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 	if (hr != DI_OK)
 		Console.Warning("GetDeviceState() for '%s' failed: %08X", name.c_str(), hr);
 
-	cd.num_buttons = caps.dwButtons;
-	cd.num_hats = caps.dwPOVs;
+	cd.num_buttons = std::min<u32>(caps.dwButtons, std::size(cd.last_state.rgbButtons));
+	cd.num_hats = std::min<u32>(caps.dwPOVs, std::size(cd.last_state.rgdwPOV));
 
 	Console.WriteLn(
 		"%s has %u buttons, %u axes, %u hats", name.c_str(), cd.num_buttons, static_cast<u32>(cd.axis_offsets.size()), cd.num_hats);
