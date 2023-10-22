@@ -58,6 +58,7 @@ extern u8 FRAME_BUFFER_COPY[];
 extern int FRAME_BUFFER_COPY_ACTIVE;
 
 int g_pine_slot = 0;
+int g_disable_rendering = 0;
 
 void SetPad(int port, int slot, u8* buf);
 uptr vtlb_getTblPtr(u32 addr);
@@ -619,20 +620,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				case DynamicSettingDisableRendering:
 				{
 					const u8 value = FromSpan<u8>(buf, buf_cnt + 1);
-
-					if (!VMManager::HasValidVM())
-						goto error;
-
-					// switch if rendering has changed
-					if (g_gs_renderer && ((GSConfig.Renderer == GSRendererType::Null && !value) || (GSConfig.Renderer != GSRendererType::Null && value)))
-					{
-						Console.WriteLn("DynamicSettingDisableRendering changed to %d", value);
-
-						auto renderer = value ? GSRendererType::Null : GSRendererType::Auto;
-						MTGS::RunOnGSThread([renderer]() {
-							GSSwitchRenderer(renderer);
-						});
-					}
+					g_disable_rendering = value != 0;
 
 					buf_cnt += 1;
 					break;

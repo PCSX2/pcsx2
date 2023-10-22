@@ -748,7 +748,6 @@ __fi void rcntUpdate_vSync()
 	}
 	else	// VSYNC end / VRENDER begin
 	{
-		g_FrameStep.HandlePausing();
 
 		// copy to backbuffer
 		//int bufIdx = (g_FrameCount + 1) % 2;
@@ -759,6 +758,7 @@ __fi void rcntUpdate_vSync()
 
 		g_FrameStep.CheckPauseStatus();
 		g_FrameCount++;
+		g_FrameStep.HandlePausing();
 
 		VSyncStart(vsyncCounter.sCycle);
 

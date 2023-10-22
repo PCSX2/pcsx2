@@ -1299,8 +1299,11 @@ static u32 scaleblockcycles_calculation()
 	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
 		scale_cycles = DEFAULT_SCALED_BLOCKS();
 
-	else if (cyclerate > 1)
+	else if (cyclerate > 2)
 		scale_cycles = s_nBlockCycles >> (2 + cyclerate);
+
+	else if (cyclerate == 2)
+		scale_cycles = DEFAULT_SCALED_BLOCKS() / 1.5f; // Adds a 50% increase in clockspeed for value 2.
 
 	else if (cyclerate == 1)
 		scale_cycles = DEFAULT_SCALED_BLOCKS() / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
