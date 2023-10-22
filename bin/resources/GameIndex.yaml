@@ -12664,6 +12664,12 @@ SLES-50212:
 SLES-50213:
   name: "NFL Quarterback Club 2002"
   region: "PAL-E"
+  patches:
+    F64D1146:
+      content: |-
+        // Fix freezes caused by sceipusync.
+        patch=1,EE,0026918c,word,00000000
+        patch=1,EE,002690d4,word,00000000
 SLES-50214:
   name: "18 Wheeler - American Pro Trucker"
   region: "PAL-M4"
@@ -55460,6 +55466,12 @@ SLUS-20153:
 SLUS-20154:
   name: "NFL Quarterback Club 2002"
   region: "NTSC-U"
+  patches:
+    F3773B92:
+      content: |-
+        // Fix freezes caused by sceipusync.
+        patch=1,EE,0026918c,word,00000000
+        patch=1,EE,002690d4,word,00000000
 SLUS-20158:
   name: "Heroes of Might and Magic"
   region: "NTSC-U"
