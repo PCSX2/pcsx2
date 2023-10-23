@@ -932,13 +932,23 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 		return;
 	}
 
+	const bool has_achievements = rc_client_has_achievements(client);
+	const bool has_leaderboards = rc_client_has_leaderboards(client);
+
+	// If the game has a RetroAchievements entry but no achievements or leaderboards,
+	// enforcing hardcore mode is pointless.
+	if (!has_achievements && !has_leaderboards)
+	{
+		DisableHardcoreMode();
+	}
+
 	// We should have matched hardcore mode state.
 	pxAssertRel(s_hardcore_mode == (rc_client_get_hardcore_enabled(client) != 0), "Hardcore status mismatch");
 
 	s_game_id = info->id;
 	s_game_title = info->title;
-	s_has_achievements = rc_client_has_achievements(client);
-	s_has_leaderboards = rc_client_has_leaderboards(client);
+	s_has_achievements = has_achievements;
+	s_has_leaderboards = has_leaderboards;
 	s_has_rich_presence = rc_client_has_rich_presence(client);
 	s_game_icon = {};
 
