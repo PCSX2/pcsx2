@@ -68,6 +68,16 @@ namespace MipsStackWalk
 		return false;
 	}
 
+	bool IsJRInstr(const R5900::OPCODE& op)
+	{
+		if ((op.flags & IS_BRANCH) && (op.flags & BRANCHTYPE_REGISTER))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	bool IsAddImmInstr(const R5900::OPCODE& op)
 	{
 		if (op.flags & IS_ALU)
@@ -114,21 +124,12 @@ namespace MipsStackWalk
 		int ra_offset = -1;
 		const u32 start = frame.pc;
 		u32 stop = entry;
+
 		if (entry == INVALIDTARGET)
 		{
-			/*			if (start >= PSP_GetUserMemoryBase()) {
-				stop = PSP_GetUserMemoryBase();
-			} else if (start >= PSP_GetKernelMemoryBase()) {
-				stop = PSP_GetKernelMemoryBase();
-			} else if (start >= PSP_GetScratchpadMemoryBase()) {
-				stop = PSP_GetScratchpadMemoryBase();
-			}*/
-			stop = 0x80000;
+			stop = std::max<s64>(0, (s64)start - LONGEST_FUNCTION);
 		}
-		if (stop < start - LONGEST_FUNCTION)
-		{
-			stop = start - LONGEST_FUNCTION;
-		}
+
 		for (u32 pc = start; cpu->isValidAddress(pc) && pc >= stop; pc -= 4)
 		{
 			u32 rawOp = cpu->read32(pc);
