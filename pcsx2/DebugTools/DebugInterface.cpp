@@ -1003,14 +1003,22 @@ std::string R3000DebugInterface::disasm(u32 address, bool simplify)
 
 bool R3000DebugInterface::isValidAddress(u32 addr)
 {
-	if (addr >= 0x10000000 && addr < 0x10010000)
+	if (addr >= 0x1D000000 && addr < 0x1E000000)
+	{
 		return true;
-	if (addr >= 0x12000000 && addr < 0x12001100)
-		return true;
-	if (addr >= 0x70000000 && addr < 0x70004000)
-		return true;
+	}
 
-	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
+	if (addr >= 0x1F400000 && addr < 0x1FA00000)
+	{
+		return true;
+	}
+
+	if (addr < 0x200000)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 u32 R3000DebugInterface::getCycles()
