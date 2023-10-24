@@ -135,12 +135,27 @@ namespace MipsStackWalk
 			u32 rawOp = cpu->read32(pc);
 			const R5900::OPCODE& op = R5900::GetInstruction(rawOp);
 
-			// Here's where they store the ra address.
+			// Look for RA write to ram
 			if (IsSWInstr(op) && _RT == MIPS_REG_RA && _RS == MIPS_REG_SP)
 			{
 				ra_offset = _IMM16;
 			}
 
+			// Look for previous function end
+			if (IsJRInstr(op) && _RS == MIPS_REG_RA)
+			{
+				// Found previous function end
+				// Since no stack setup was found assume this is a leaf
+				// with no stack usage
+				pc = pc + 8;
+
+				frame.entry = pc;
+				frame.stackSize = 0;
+
+				return true;
+			}
+
+			// Look for the frame allocation stack pointer subtraction
 			if (IsAddImmInstr(op) && _RT == MIPS_REG_SP && _RS == MIPS_REG_SP)
 			{
 				// A positive imm either means alloca() or we went too far.
