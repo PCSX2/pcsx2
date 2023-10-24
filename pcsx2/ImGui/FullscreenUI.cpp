@@ -6299,14 +6299,19 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	// Check for challenge mode just being enabled.
 	if (check_challenge_state && enabled && bsi->GetBoolValue("Achievements", "ChallengeMode", false) && VMManager::HasValidVM())
 	{
-		ImGuiFullscreen::OpenConfirmMessageDialog(FSUI_STR("Reset System"),
-			FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"), [](bool reset) {
-				if (!VMManager::HasValidVM())
-					return;
+		// don't bother prompting if the game doesn't have achievements
+		auto lock = Achievements::GetLock();
+		if (Achievements::HasActiveGame() && Achievements::HasAchievementsOrLeaderboards())
+		{
+			ImGuiFullscreen::OpenConfirmMessageDialog(FSUI_STR("Reset System"),
+				FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"), [](bool reset) {
+					if (!VMManager::HasValidVM())
+						return;
 
-				if (reset)
-					DoReset();
-			});
+					if (reset)
+						DoReset();
+				});
+		}
 	}
 
 	if (!IsEditingGameSettings(bsi))

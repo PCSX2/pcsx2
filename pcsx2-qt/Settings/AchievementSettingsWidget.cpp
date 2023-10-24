@@ -127,7 +127,7 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
 
 	// don't bother prompting if the game doesn't have achievements
 	auto lock = Achievements::GetLock();
-	if (!Achievements::HasActiveGame())
+	if (!Achievements::HasActiveGame() || !Achievements::HasAchievementsOrLeaderboards())
 		return;
 
 	if (QMessageBox::question(
