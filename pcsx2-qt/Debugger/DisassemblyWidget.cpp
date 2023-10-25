@@ -219,7 +219,6 @@ void DisassemblyWidget::contextAddFunction()
 			newSize = prevSize - newSize;
 			m_cpu->GetSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), curAddress, newSize);
 			m_cpu->GetSymbolMap().SortSymbols();
-			m_cpu->GetSymbolMap().UpdateActiveSymbols();
 		}
 	}
 	else
@@ -232,7 +231,6 @@ void DisassemblyWidget::contextAddFunction()
 
 		m_cpu->GetSymbolMap().AddFunction(funcName.toLocal8Bit().constData(), m_selectedAddressStart, m_selectedAddressEnd + 4 - m_selectedAddressStart);
 		m_cpu->GetSymbolMap().SortSymbols();
-		m_cpu->GetSymbolMap().UpdateActiveSymbols();
 	}
 }
 
@@ -250,9 +248,8 @@ void DisassemblyWidget::contextRemoveFunction()
 			m_cpu->GetSymbolMap().SetFunctionSize(previousFuncAddr, expandedSize);
 		}
 
-		m_cpu->GetSymbolMap().RemoveFunction(curFuncAddr, true);
+		m_cpu->GetSymbolMap().RemoveFunction(curFuncAddr);
 		m_cpu->GetSymbolMap().SortSymbols();
-		m_cpu->GetSymbolMap().UpdateActiveSymbols();
 	}
 }
 
@@ -262,7 +259,7 @@ void DisassemblyWidget::contextRenameFunction()
 	if (curFuncAddress != SymbolMap::INVALID_ADDRESS)
 	{
 		bool ok;
-		QString funcName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, m_cpu->GetSymbolMap().GetLabelString(curFuncAddress).c_str(), &ok);
+		QString funcName = QInputDialog::getText(this, tr("Rename Function"), tr("Function name"), QLineEdit::Normal, m_cpu->GetSymbolMap().GetLabelName(curFuncAddress).c_str(), &ok);
 		if (!ok)
 			return;
 
@@ -274,7 +271,6 @@ void DisassemblyWidget::contextRenameFunction()
 		{
 			m_cpu->GetSymbolMap().SetLabelName(funcName.toLocal8Bit().constData(), curFuncAddress);
 			m_cpu->GetSymbolMap().SortSymbols();
-			m_cpu->GetSymbolMap().UpdateActiveSymbols();
 			this->repaint();
 		}
 	}
@@ -713,7 +709,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	const bool isConditionalMet = line.info.conditionMet;
 	const bool isCurrentPC = m_cpu->getPC() == address;
 
-	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelString(address);
+	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelName(address);
 
 	const auto demangler = demangler::CDemangler::createGcc();
 

@@ -574,7 +574,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 		// Resolve the function name by fetching the symbolmap and filtering the address
 
 		const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
-		const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelString(selectedItem->data(256).toUInt()).c_str());
+		const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelName(selectedItem->data(256).toUInt()).c_str());
 		QApplication::clipboard()->setText(functionName);
 	});
 	m_funclistContextMenu->addAction(copyName);

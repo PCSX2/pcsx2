@@ -962,8 +962,6 @@ void VMManager::HandleELFChange(bool verbose_patches_if_changed)
 
 	MIPSAnalyst::ScanForFunctions(
 		R5900SymbolMap, s_elf_text_range.first, s_elf_text_range.first + s_elf_text_range.second, true);
-	R5900SymbolMap.UpdateActiveSymbols();
-	R3000SymbolMap.UpdateActiveSymbols();
 }
 
 void VMManager::UpdateELFInfo(std::string elf_path)

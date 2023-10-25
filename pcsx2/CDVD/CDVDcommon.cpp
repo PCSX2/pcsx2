@@ -305,7 +305,7 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 			symName = m_SourceFilename[enum_cast(srctype)].substr(0, n) + ".sym";
 
 		R5900SymbolMap.LoadNocashSym(symName.c_str());
-		R5900SymbolMap.UpdateActiveSymbols();
+		R5900SymbolMap.SortSymbols();
 	}
 }
 
