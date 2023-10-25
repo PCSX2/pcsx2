@@ -6,8 +6,8 @@ source "$SCRIPTDIR/functions.sh"
 set -e
 
 ARCH=x86_64
-KDE_BRANCH=6.5
-BRANCH=22.08
+KDE_BRANCH=6.6
+BRANCH=23.08
 FLAT_MANAGER_CLIENT_DIR="$HOME/.local/bin"
 
 # Build packages. Mostly needed for flat-manager-client.
@@ -30,7 +30,7 @@ declare -a FLATPAK_PACKAGES=(
   "org.kde.Platform/${ARCH}/${KDE_BRANCH}"
   "org.kde.Sdk/${ARCH}/${KDE_BRANCH}"
   "org.freedesktop.Platform.ffmpeg-full/${ARCH}/${BRANCH}"
-  "org.freedesktop.Sdk.Extension.llvm16/${ARCH}/${BRANCH}"
+  "org.freedesktop.Sdk.Extension.llvm17/${ARCH}/${BRANCH}"
   "org.freedesktop.appstream-glib/${ARCH}/stable"
 )
 
