@@ -20,10 +20,10 @@
     "--share=network",
     "--share=ipc",
     "--socket=fallback-x11",
-    "--socket=wayland",
     "--socket=pulseaudio",
     "--filesystem=host:ro",
-    "--talk-name=org.freedesktop.ScreenSaver"
+    "--talk-name=org.freedesktop.ScreenSaver",
+    "--env=QT_QPA_PLATFORM=xcb"
   ],
   "modules": [
     "modules/10-libpcap.json",
