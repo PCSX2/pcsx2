@@ -58,7 +58,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(bp->addr, 16);
 				case BreakpointColumns::SIZE_LABEL:
-					return m_cpu.GetSymbolMap().GetLabelString(bp->addr).c_str();
+					return m_cpu.GetSymbolMap().GetLabelName(bp->addr).c_str();
 				case BreakpointColumns::OPCODE:
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
 					return m_cpu.disasm(bp->addr, true).c_str();
@@ -111,7 +111,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return bp->addr;
 				case BreakpointColumns::SIZE_LABEL:
-					return m_cpu.GetSymbolMap().GetLabelString(bp->addr).c_str();
+					return m_cpu.GetSymbolMap().GetLabelName(bp->addr).c_str();
 				case BreakpointColumns::OPCODE:
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
 					return m_cpu.disasm(bp->addr, true).c_str();
@@ -157,7 +157,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::OFFSET:
 					return QtUtils::FilledQStringFromValue(bp->addr, 16);
 				case BreakpointColumns::SIZE_LABEL:
-					return m_cpu.GetSymbolMap().GetLabelString(bp->addr).c_str();
+					return m_cpu.GetSymbolMap().GetLabelName(bp->addr).c_str();
 				case BreakpointColumns::OPCODE:
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
 					return m_cpu.disasm(bp->addr, true).c_str();

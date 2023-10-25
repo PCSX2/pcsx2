@@ -77,7 +77,7 @@ static void parseDisasm(SymbolMap& map, const char* disasm, char* opcode, char* 
 			u32 branchTarget;
 			sscanf(disasm+3,"0x%08x",&branchTarget);
 
-			const std::string addressSymbol = map.GetLabelString(branchTarget);
+			const std::string addressSymbol = map.GetLabelName(branchTarget);
 			if (!addressSymbol.empty() && insertSymbols)
 			{
 				arguments += std::snprintf(arguments, arguments_size, "%s",addressSymbol.c_str());
@@ -777,7 +777,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 	case MACRO_LI:
 		dest.name = name;
 
-		addressSymbol = cpu->GetSymbolMap().GetLabelString(immediate);
+		addressSymbol = cpu->GetSymbolMap().GetLabelName(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
 			std::snprintf(buffer,std::size(buffer),"%s,%s",cpu->getRegisterName(0,rt),addressSymbol.c_str());
@@ -793,7 +793,7 @@ bool DisassemblyMacro::disassemble(u32 address, DisassemblyLineInfo& dest, bool 
 	case MACRO_MEMORYIMM:
 		dest.name = name;
 
-		addressSymbol = cpu->GetSymbolMap().GetLabelString(immediate);
+		addressSymbol = cpu->GetSymbolMap().GetLabelName(immediate);
 		if (!addressSymbol.empty() && insertSymbols)
 		{
 			std::snprintf(buffer,std::size(buffer),"%s,%s",cpu->getRegisterName(0,rt),addressSymbol.c_str());
@@ -988,7 +988,7 @@ void DisassemblyData::createLines()
 			case DATATYPE_WORD:
 				{
 					value = memRead32(pos);
-					const std::string label = cpu->GetSymbolMap().GetLabelString(value);
+					const std::string label = cpu->GetSymbolMap().GetLabelName(value);
 					if (!label.empty())
 						std::snprintf(buffer,std::size(buffer),"%s",label.c_str());
 					else
