@@ -42,16 +42,6 @@ BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
 STRIP=strip
 
-declare -a MANUAL_QT_LIBS=(
-	"libQt6WaylandEglClientHwIntegration.so.6"
-)
-
-declare -a MANUAL_QT_PLUGINS=(
-	"wayland-decoration-client"
-	"wayland-graphics-integration-client"
-	"wayland-shell-integration"
-)
-
 set -e
 
 LINUXDEPLOY=./linuxdeploy-x86_64.AppImage
@@ -99,8 +89,7 @@ cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2
 cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
-EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
-EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
+EXTRA_QT_PLUGINS="core;gui;network;svg;widgets;xcbqpa" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" \
@@ -108,34 +97,6 @@ $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
-
-# LinuxDeploy's Qt plugin doesn't include Wayland support. So manually copy in the additional Wayland libraries.
-echo "Copying Qt Wayland libraries..."
-for lib in "${MANUAL_QT_LIBS[@]}"; do
-	srcpath="$DEPSDIR/lib/$lib"
-	dstpath="$OUTDIR/usr/lib/$lib"
-	echo "  $srcpath -> $dstpath"
-	cp "$srcpath" "$dstpath"
-	$PATCHELF --set-rpath '$ORIGIN' "$dstpath"
-done
-
-# .. and plugins.
-echo "Copying Qt Wayland plugins..."
-for GROUP in "${MANUAL_QT_PLUGINS[@]}"; do
-	srcpath="$DEPSDIR/plugins/$GROUP"
-	dstpath="$OUTDIR/usr/plugins/$GROUP"
-	echo "  $srcpath -> $dstpath"
-	mkdir -p "$dstpath"
-
-	for srcsopath in $(find "$DEPSDIR/plugins/$GROUP" -iname '*.so'); do
-		# This is ../../ because it's usually plugins/group/name.so
-		soname=$(basename "$srcsopath")
-		dstsopath="$dstpath/$soname"
-		echo "    $srcsopath -> $dstsopath"
-		cp "$srcsopath" "$dstsopath"
-		$PATCHELF --set-rpath '$ORIGIN/../../lib:$ORIGIN' "$dstsopath"
-	done
-done
 
 # Restore unstripped deps (for cache).
 rm -fr "$DEPSDIR"
