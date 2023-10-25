@@ -41,6 +41,7 @@ declare -a PCSX2_PACKAGES=(
 	"libasound2-dev"
 	"libbz2-dev"
 	"libcurl4-openssl-dev"
+	"libdbus-1-dev"
 	"libegl1-mesa-dev"
 	"libgl1-mesa-dev"
 	"libgtk-3-dev"
