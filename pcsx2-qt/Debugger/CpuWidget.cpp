@@ -72,6 +72,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
 
 	m_threadProxyModel.setSourceModel(&m_threadModel);
+	m_threadProxyModel.setSortRole(Qt::UserRole);
 	m_ui.threadList->setModel(&m_threadProxyModel);
 	m_ui.threadList->setSortingEnabled(true);
 	m_ui.threadList->sortByColumn(ThreadModel::ThreadColumns::ID, Qt::SortOrder::AscendingOrder);
