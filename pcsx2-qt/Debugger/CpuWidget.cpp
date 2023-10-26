@@ -612,43 +612,45 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	else
 		m_funclistContextMenu->clear();
 
-	QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.listFunctions);
-	connect(copyName, &QAction::triggered, [this] {
-		// We only store the address in the widget item
-		// Resolve the function name by fetching the symbolmap and filtering the address
+	if (m_ui.listFunctions->selectedItems().count() && m_ui.listFunctions->selectedItems().first()->data(256).isValid())
+	{
+		QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.listFunctions);
+		connect(copyName, &QAction::triggered, [this] {
+			// We only store the address in the widget item
+			// Resolve the function name by fetching the symbolmap and filtering the address
 
-		const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
-		const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelName(selectedItem->data(256).toUInt()).c_str());
-		QApplication::clipboard()->setText(functionName);
-	});
-	m_funclistContextMenu->addAction(copyName);
+			const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
+			const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelName(selectedItem->data(256).toUInt()).c_str());
+			QApplication::clipboard()->setText(functionName);
+		});
+		m_funclistContextMenu->addAction(copyName);
 
-	QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.listFunctions);
-	connect(copyAddress, &QAction::triggered, [this] {
-		const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(256).toUInt(), 16);
-		QApplication::clipboard()->setText(addressString);
-	});
+		QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.listFunctions);
+		connect(copyAddress, &QAction::triggered, [this] {
+			const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(256).toUInt(), 16);
+			QApplication::clipboard()->setText(addressString);
+		});
 
-	m_funclistContextMenu->addAction(copyAddress);
+		m_funclistContextMenu->addAction(copyAddress);
 
-	m_funclistContextMenu->addSeparator();
+		m_funclistContextMenu->addSeparator();
 
-	QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.listFunctions);
-	connect(gotoDisasm, &QAction::triggered, [this] {
-		m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
-	});
+		QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.listFunctions);
+		connect(gotoDisasm, &QAction::triggered, [this] {
+			m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
+		});
 
-	m_funclistContextMenu->addAction(gotoDisasm);
+		m_funclistContextMenu->addAction(gotoDisasm);
 
-	QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
-	connect(gotoMemory, &QAction::triggered, [this] {
-		m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
-	});
+		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
+		connect(gotoMemory, &QAction::triggered, [this] {
+			m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
+		});
 
-	m_funclistContextMenu->addSeparator();
+		m_funclistContextMenu->addAction(gotoMemory);
 
-	m_funclistContextMenu->addAction(gotoMemory);
-
+		m_funclistContextMenu->addSeparator();
+	}
 	//: "Demangling" is the opposite of "Name mangling", which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++
 	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.listFunctions);
 	demangleAction->setCheckable(true);
