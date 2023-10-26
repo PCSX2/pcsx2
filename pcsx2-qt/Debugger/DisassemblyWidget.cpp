@@ -292,9 +292,14 @@ void DisassemblyWidget::contextStubFunction()
 			QtHost::RunOnUIThread([this] { VMUpdate(); });
 		});
 	}
-	else
+	else // Stub the current opcode instead
 	{
-		QMessageBox::warning(this, tr("Stub Function Error"), tr("No function / symbol is currently selected."));
+		Host::RunOnCPUThread([this, cpu = m_cpu] {
+			this->m_stubbedFunctions.insert({m_selectedAddressStart, {cpu->read32(m_selectedAddressStart), cpu->read32(m_selectedAddressStart + 4)}});
+			cpu->write32(m_selectedAddressStart, 0x03E00008); // jr $ra
+			cpu->write32(m_selectedAddressStart + 4, 0x00000000); // nop
+			QtHost::RunOnUIThread([this] { VMUpdate(); });
+		});
 	}
 }
 
@@ -310,9 +315,18 @@ void DisassemblyWidget::contextRestoreFunction()
 			QtHost::RunOnUIThread([this] { VMUpdate(); });
 		});
 	}
+	else if (m_stubbedFunctions.find(m_selectedAddressStart) != m_stubbedFunctions.end())
+	{
+		Host::RunOnCPUThread([this, cpu = m_cpu] {
+			cpu->write32(m_selectedAddressStart, std::get<0>(this->m_stubbedFunctions[m_selectedAddressStart]));
+			cpu->write32(m_selectedAddressStart + 4, std::get<1>(this->m_stubbedFunctions[m_selectedAddressStart]));
+			this->m_stubbedFunctions.erase(m_selectedAddressStart);
+			QtHost::RunOnUIThread([this] { VMUpdate(); });
+		});
+	}
 	else
 	{
-		QMessageBox::warning(this, tr("Restore Function Error"), tr("No function / symbol is currently selected."));
+		QMessageBox::warning(this, tr("Restore Function Error"), tr("Unable to stub selected address."));
 	}
 }
 void DisassemblyWidget::SetCpu(DebugInterface* cpu)
@@ -844,6 +858,13 @@ bool DisassemblyWidget::FunctionCanRestore(u32 address)
 	if (funcStartAddress != SymbolMap::INVALID_ADDRESS)
 	{
 		if (m_stubbedFunctions.find(funcStartAddress) != this->m_stubbedFunctions.end())
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (m_stubbedFunctions.find(address) != this->m_stubbedFunctions.end())
 		{
 			return true;
 		}
