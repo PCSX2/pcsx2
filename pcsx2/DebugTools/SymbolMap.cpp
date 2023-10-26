@@ -40,6 +40,7 @@ void SymbolMap::Clear()
 	functions.clear();
 	labels.clear();
 	data.clear();
+	modules.clear();
 }
 
 
@@ -222,7 +223,7 @@ std::string SymbolMap::GetDescription(unsigned int address) const
 	return descriptionTemp;
 }
 
-std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask)
+std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) const
 {
 	std::vector<SymbolEntry> result;
 
@@ -273,6 +274,7 @@ void SymbolMap::AddFunction(const std::string& name, u32 address, u32 size)
 		func.start = address;
 		func.size = size;
 		func.index = (int)functions.size();
+		func.name = name;
 		functions[address] = func;
 
 		functions.insert(std::make_pair(address, func));
@@ -508,4 +510,92 @@ DataType SymbolMap::GetDataType(u32 startAddress) const
 	if (it == data.end())
 		return DATATYPE_NONE;
 	return it->second.type;
+}
+
+bool SymbolMap::AddModule(const std::string& name, ModuleVersion version)
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	auto it = modules.find(name);
+	if (it != modules.end())
+	{
+		for (auto [itr, end] = modules.equal_range(name); itr != end; ++itr)
+		{
+			// Different major versions, we treat this one as a different module
+			if (itr->second.version.major != version.major)
+				continue;
+
+			// RegisterLibraryEntries will fail if the new minor ver is <= the old minor ver
+			// and the major version is the same
+			if (itr->second.version.minor >= version.minor)
+				return false;
+
+			// Remove the old module and its export table
+			RemoveModule(name, itr->second.version);
+			break;
+		}
+	}
+
+	modules.insert(std::make_pair(name, ModuleEntry{name, version, {}}));
+	return true;
+}
+
+void SymbolMap::AddModuleExport(const std::string& module, ModuleVersion version, const std::string& name, u32 address, u32 size)
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	for (auto [itr, end] = modules.equal_range(module); itr != end; ++itr)
+	{
+		if (itr->second.version != version)
+			continue;
+
+		AddFunction(name, address, size);
+		AddLabel(name, address);
+		itr->second.exports.push_back({address, size, 0, name});
+	}
+}
+
+std::vector<ModuleInfo> SymbolMap::GetModules() const
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	std::vector<ModuleInfo> result;
+	for (auto& module : modules)
+	{
+		std::vector<SymbolEntry> exports;
+		for (auto& fun : module.second.exports)
+		{
+			exports.push_back({fun.name, fun.start, fun.size});
+		}
+		result.push_back({module.second.name, module.second.version, exports});
+	}
+	return result;
+}
+
+void SymbolMap::RemoveModule(const std::string& name, ModuleVersion version)
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	for (auto [itr, end] = modules.equal_range(name); itr != end; ++itr)
+	{
+		if (itr->second.version != version)
+			continue;
+
+		for (auto& exportEntry : itr->second.exports)
+		{
+			RemoveFunction(exportEntry.start);
+		}
+
+		modules.erase(itr);
+		break;
+	}
+}
+
+void SymbolMap::ClearModules()
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	for (auto& module : modules)
+	{
+		for (auto& exportEntry : module.second.exports)
+		{
+			RemoveFunction(exportEntry.start);
+		}
+	}
+	modules.clear();
 }

@@ -116,6 +116,40 @@
             <number>0</number>
            </property>
            <item>
+            <widget class="QTreeWidget" name="treeModules">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::CustomContextMenu</enum>
+             </property>
+             <property name="indentation">
+              <number>8</number>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <property name="columnCount">
+              <number>3</number>
+             </property>
+             <column>
+              <property name="text">
+               <string>Module</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Version</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Count</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item>
             <widget class="QListWidget" name="listFunctions">
              <property name="contextMenuPolicy">
               <enum>Qt::CustomContextMenu</enum>
@@ -324,7 +358,7 @@
         </size>
        </property>
        <property name="tabPosition">
-        <enum>QTabWidget::South</enum>
+        <enum>QTabWidget::North</enum>
        </property>
        <property name="currentIndex">
         <number>0</number>

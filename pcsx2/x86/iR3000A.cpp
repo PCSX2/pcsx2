@@ -1537,6 +1537,15 @@ static void iopRecRecompile(const u32 startpc)
 	u32 i;
 	u32 willbranch3 = 0;
 
+	// When upgrading the IOP, there are two resets, the second of which is a 'fake' reset
+	// This second 'reset' involves UDNL calling SYSMEM and LOADCORE directly, resetting LOADCORE's modules
+	// This detects when SYSMEM is called and clears the modules then
+	if(startpc == 0x890)
+	{
+		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
+		R3000SymbolMap.ClearModules();
+	}
+
 	// Inject IRX hack
 	if (startpc == 0x1630 && EmuConfig.CurrentIRX.length() > 3)
 	{

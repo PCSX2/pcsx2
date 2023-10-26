@@ -45,12 +45,19 @@ struct SymbolEntry
 	u32 size;
 };
 
-struct LoadedModuleInfo
+struct ModuleVersion
+{
+	u8 major;
+	u8 minor;
+
+	friend auto operator<=>(const ModuleVersion&, const ModuleVersion&) = default;
+};
+
+struct ModuleInfo
 {
 	std::string name;
-	u32 address;
-	u32 size;
-	bool active;
+	ModuleVersion version;
+	std::vector<SymbolEntry> exports;
 };
 
 enum DataType
@@ -75,7 +82,7 @@ public:
 	bool GetSymbolInfo(SymbolInfo* info, u32 address, SymbolType symmask = ST_FUNCTION) const;
 	u32 GetNextSymbolAddress(u32 address, SymbolType symmask);
 	std::string GetDescription(unsigned int address) const;
-	std::vector<SymbolEntry> GetAllSymbols(SymbolType symmask);
+	std::vector<SymbolEntry> GetAllSymbols(SymbolType symmask) const;
 
 	void AddFunction(const std::string& name, u32 address, u32 size);
 	u32 GetFunctionStart(u32 address) const;
@@ -94,6 +101,17 @@ public:
 	u32 GetDataSize(u32 startAddress) const;
 	DataType GetDataType(u32 startAddress) const;
 
+	// Module functions for IOP symbols
+
+	bool AddModule(const std::string& name, ModuleVersion version);
+	void AddModuleExport(const std::string& module, ModuleVersion version, const std::string& name, u32 address, u32 size);
+	std::vector<ModuleInfo> GetModules() const;
+	void RemoveModule(const std::string& name, ModuleVersion version);
+	// Clears any modules and their associated exports
+	// Prefer this over Clear() so we don't clear user defined functions
+	// In the future we should mark functions as user defined
+	void ClearModules();
+
 	static const u32 INVALID_ADDRESS = (u32)-1;
 
 	bool IsEmpty() const { return functions.empty() && labels.empty() && data.empty(); };
@@ -106,6 +124,7 @@ private:
 		u32 start;
 		u32 size;
 		int index;
+		std::string name;
 	};
 
 	struct LabelEntry
@@ -121,9 +140,20 @@ private:
 		u32 size;
 	};
 
+	struct ModuleEntry
+	{
+		std::string name;
+		ModuleVersion version;
+		// This is duplicated data from the function map
+		// The issue is that multiple exports can point to the same address
+		// The address we use as a key... We should use a multimap in the future
+		std::vector<FunctionEntry> exports;
+	};
+
 	std::map<u32, FunctionEntry> functions;
 	std::map<u32, LabelEntry> labels;
 	std::map<u32, DataEntry> data;
+	std::multimap<std::string, ModuleEntry> modules;
 
 	mutable std::recursive_mutex m_lock;
 };
