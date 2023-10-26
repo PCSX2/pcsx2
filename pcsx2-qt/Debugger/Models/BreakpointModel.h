@@ -30,13 +30,13 @@ class BreakpointModel : public QAbstractTableModel
 public:
 	enum BreakpointColumns : int
 	{
-		TYPE = 0,
+		ENABLED = 0,
+		TYPE,
 		OFFSET,
 		SIZE_LABEL,
 		OPCODE,
 		CONDITION,
 		HITS,
-		ENABLED,
 		COLUMN_COUNT
 	};
 
