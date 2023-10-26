@@ -63,7 +63,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 					// Note: Fix up the disassemblymanager so we can use it here, instead of calling a function through the disassemblyview (yuck)
 					return m_cpu.disasm(bp->addr, true).c_str();
 				case BreakpointColumns::CONDITION:
-					return bp->hasCond ? QString::fromLocal8Bit(bp->cond.expressionString) : tr("No Condition");
+					return bp->hasCond ? QString::fromLocal8Bit(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
 					return tr("--");
 				case BreakpointColumns::ENABLED:
@@ -235,7 +235,7 @@ QVariant BreakpointModel::headerData(int section, Qt::Orientation orientation, i
 				return tr("HITS");
 			case BreakpointColumns::ENABLED:
 				//: Warning: limited space available. Abbreviate if needed.
-				return tr("ENABLED");
+				return tr("X");
 			default:
 				return QVariant();
 		}
