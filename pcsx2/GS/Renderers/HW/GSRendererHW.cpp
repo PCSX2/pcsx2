@@ -3484,8 +3484,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass)
 {
 	{
-		// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
-		// it requires coverage sample so it's safer to turn it off instead.
+		// AA1: Blending needs to be enabled on draw.
 		const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
 		// PABE: Check condition early as an optimization.
 		const bool PABE = PRIM->ABE && m_draw_env->PABE.PABE && (GetAlphaMinMax().max < 128);
@@ -3498,6 +3497,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			m_conf.blend = {};
 			m_conf.ps.no_color1 = true;
+
 			return;
 		}
 	}
@@ -3921,6 +3921,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 
 		// Output is Cd, set rgb write to 0.
 		m_conf.colormask.wrgba &= 0x8;
+
+		return;
 	}
 	else if (sw_blending)
 	{
