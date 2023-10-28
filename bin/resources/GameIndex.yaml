@@ -6897,6 +6897,13 @@ SCKA-90016:
 SCPM-85101:
   name: "McDonald's Original Happy Disc"
   region: "NTSC-J"
+  speedHacks:
+    instantVU1: 0 # Fixes noodles.
+    mtvu: 0
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes metal textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPM-85301:
   name: "Gran Turismo Concept - Copen Special Edition [Demo]"
   region: "NTSC-J"
