@@ -19,7 +19,7 @@
     "--device=all",
     "--share=network",
     "--share=ipc",
-    "--socket=fallback-x11",
+    "--socket=x11",
     "--socket=pulseaudio",
     "--talk-name=org.freedesktop.ScreenSaver",
     "--env=QT_QPA_PLATFORM=xcb"
