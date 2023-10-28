@@ -46,6 +46,9 @@ sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub
 echo "Will install the following packages for building - ${FLATPAK_PACKAGES[*]}"
 retry_command sudo flatpak -y install "${FLATPAK_PACKAGES[@]}"
 
+echo "Installing Flatpak Builder"
+retry_command sudo flatpak -y install flathub org.flatpak.builder
+
 echo "Downloading flat-manager-client"
 mkdir -p "$FLAT_MANAGER_CLIENT_DIR"
 pushd "$FLAT_MANAGER_CLIENT_DIR"

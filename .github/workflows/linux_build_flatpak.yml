@@ -85,6 +85,10 @@ jobs:
           cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
           flatpak run org.freedesktop.appstream-glib validate .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
 
+      - name: Validate manifest
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
+
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6.3
         with:
@@ -102,6 +106,14 @@ jobs:
       - name: Commit screenshots to OSTree
         run: |
           ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 flatpak_app/screenshots
+
+      - name: Validate build directory
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir flatpak_app
+
+      - name: Validate repo
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
