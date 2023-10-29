@@ -168,10 +168,8 @@ bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)
 	return m_write.dirty;
 }
 
-bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
+bool GSClut::CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP)
 {
-	// Check if PSM is an indexed format BEFORE the load condition, updating CBP0/1 on an invalid format is not allowed
-	// and can break games. Corvette (NTSC) is a good example of this.
 	if ((TEX0.PSM & 0x7) < 3)
 		return false;
 
@@ -182,20 +180,24 @@ bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 		case 1:
 			break;
 		case 2:
-			m_CBP[0] = TEX0.CBP;
+			if (update_CBP)
+				m_CBP[0] = TEX0.CBP;
 			break;
 		case 3:
-			m_CBP[1] = TEX0.CBP;
+			if (update_CBP)
+				m_CBP[1] = TEX0.CBP;
 			break;
 		case 4:
 			if (m_CBP[0] == TEX0.CBP)
 				return false;
-			m_CBP[0] = TEX0.CBP;
+			if(update_CBP)
+				m_CBP[0] = TEX0.CBP;
 			break;
 		case 5:
 			if (m_CBP[1] == TEX0.CBP)
 				return false;
-			m_CBP[1] = TEX0.CBP;
+			if (update_CBP)
+				m_CBP[1] = TEX0.CBP;
 			break;
 		case 6:
 			return false; // ffx2 menu.
@@ -204,6 +206,19 @@ bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 		default:
 			__assume(0);
 	}
+
+	return true;
+}
+
+bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
+{
+	// Check if PSM is an indexed format BEFORE the load condition, updating CBP0/1 on an invalid format is not allowed
+	// and can break games. Corvette (NTSC) is a good example of this.
+	if ((TEX0.PSM & 0x7) < 3)
+		return false;
+
+	if (!CanLoadCLUT(TEX0, true))
+		return false;
 
 	// CLUT only reloads if PSM is a valid index type, avoid unnecessary flushes.
 	return m_write.IsDirty(TEX0, TEXCLUT);
