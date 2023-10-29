@@ -23834,6 +23834,11 @@ SLES-54644:
     roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
+  patches:
+    04CCB600:
+      content: |-
+        // Modifies the wait loop on FMV's to make sure 304 hsyncs pass instead of 288.
+        patch=1,EE,002B9A44,word,24110130
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
