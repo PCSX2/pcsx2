@@ -75,7 +75,6 @@ public:
 	void QueueSnapshot(const std::string& path, u32 gsdump_frames);
 	void StopGSDump();
 	void PresentCurrentFrame();
-
 	bool BeginCapture(std::string filename, const GSVector2i& size = GSVector2i(0, 0));
 	void EndCapture();
 };
