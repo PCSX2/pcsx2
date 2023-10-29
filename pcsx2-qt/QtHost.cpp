@@ -652,7 +652,7 @@ void EmuThread::switchRenderer(GSRendererType renderer)
 	if (!VMManager::HasValidVM())
 		return;
 
-	MTGS::SwitchRenderer(renderer);
+	MTGS::SwitchRenderer(renderer, EmuConfig.GS.InterlaceMode);
 }
 
 void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)

@@ -780,7 +780,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	}
 }
 
-void GSSwitchRenderer(GSRendererType new_renderer)
+void GSSwitchRenderer(GSRendererType new_renderer, GSInterlaceMode new_interlace)
 {
 	if (new_renderer == GSRendererType::Auto)
 		new_renderer = GSUtil::GetPreferredRenderer();
@@ -791,6 +791,8 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
 	const Pcsx2Config::GSOptions old_config(GSConfig);
 	GSConfig.Renderer = new_renderer;
+	GSConfig.InterlaceMode = new_interlace;
+
 	if (!GSreopen(!is_software_switch, true, old_config))
 		pxFailRel("Failed to reopen GS for renderer switch.");
 }

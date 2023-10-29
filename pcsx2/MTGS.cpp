@@ -990,7 +990,7 @@ void MTGS::UpdateVSyncMode()
 	SetVSyncMode(Host::GetEffectiveVSyncMode());
 }
 
-void MTGS::SwitchRenderer(GSRendererType renderer, bool display_message /* = true */)
+void MTGS::SwitchRenderer(GSRendererType renderer, GSInterlaceMode interlace, bool display_message /* = true */)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
@@ -1000,8 +1000,8 @@ void MTGS::SwitchRenderer(GSRendererType renderer, bool display_message /* = tru
 			Pcsx2Config::GSOptions::GetRendererName(renderer)), Host::OSD_INFO_DURATION);
 	}
 
-	RunOnGSThread([renderer]() {
-		GSSwitchRenderer(renderer);
+	RunOnGSThread([renderer, interlace]() {
+		GSSwitchRenderer(renderer, interlace);
 	});
 
 	// See note in ApplySettings() for reasoning here.
@@ -1018,7 +1018,7 @@ void MTGS::SetSoftwareRendering(bool software, bool display_message /* = true */
 	else
 		new_renderer = GSRendererType::SW;
 
-	SwitchRenderer(new_renderer, display_message);
+	SwitchRenderer(new_renderer, EmuConfig.GS.InterlaceMode, display_message);
 }
 
 void MTGS::ToggleSoftwareRendering()
