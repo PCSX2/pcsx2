@@ -830,7 +830,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	GL_REG("Apply TEX0_%d = 0x%x_%x", i, TEX0.U32[1], TEX0.U32[0]);
 
-	if ((TEX0.PSM & 0x7) >= 3 && TEX0.CLD)
+	if ((TEX0.PSM & 0x7) >= 3 && m_mem.m_clut.CanLoadCLUT(TEX0))
 	{
 		m_mem.m_clut.ClearDrawInvalidity();
 		m_mem.m_clut.SetNextCLUTTEX0(TEX0.U64);
