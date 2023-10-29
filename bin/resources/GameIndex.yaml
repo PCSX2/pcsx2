@@ -2304,6 +2304,8 @@ SCED-50642:
   region: "PAL-E"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCED-50660:
@@ -2426,6 +2428,8 @@ SCED-50907:
   region: "PAL-Unk"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCED-50916:
@@ -4088,6 +4092,8 @@ SCES-50490:
   compat: 5
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCES-50491:
@@ -4095,6 +4101,8 @@ SCES-50491:
   region: "PAL-F"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCES-50492:
@@ -4103,6 +4111,8 @@ SCES-50492:
   compat: 5
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCES-50493:
@@ -4110,6 +4120,8 @@ SCES-50493:
   region: "PAL-I"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCES-50494:
@@ -4117,6 +4129,8 @@ SCES-50494:
   region: "PAL-S"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SCES-50499:
@@ -27765,6 +27779,8 @@ SLKA-25214:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLKA-25215:
@@ -35067,6 +35083,8 @@ SLPM-65115:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-65116:
@@ -40524,6 +40542,8 @@ SLPM-66124:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66125:
@@ -43798,6 +43818,8 @@ SLPM-66677:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66678:
@@ -45706,6 +45728,8 @@ SLPM-67513:
   region: "NTSC-K"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67514:
@@ -49318,6 +49342,8 @@ SLPS-25088:
   compat: 5
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPS-25089:
@@ -54161,6 +54187,8 @@ SLPS-72501:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPS-72502:
@@ -56263,6 +56291,8 @@ SLUS-20312:
   compat: 5
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLUS-20313:
