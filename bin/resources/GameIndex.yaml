@@ -268,6 +268,11 @@ PAPX-90236:
 PAPX-90330:
   name: "Saru! Get You! 2 - Ukki Ukki Disc"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 PAPX-90501:
   name: "Dark Cloud"
   region: "NTSC-J"
@@ -782,6 +787,14 @@ PCPX-96656:
 PCPX-96657:
   name: "Saru! Get You! 3"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes black background in the pause menu.
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 PCPX-96660:
   name: "Tourist Trophy [Demo]"
   region: "NTSC-J"
@@ -1571,6 +1584,8 @@ SCAJ-20137:
 SCAJ-20138:
   name: "Ape Escape 3"
   region: "NTSC-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -1876,6 +1891,8 @@ SCAJ-20194:
 SCAJ-20195:
   name: "Ape Escape 3 [PS2 The Best]"
   region: "NTSC-C"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -2061,6 +2078,8 @@ SCAJ-30011:
 SCCS-40001:
   name: "Ape Escape 2"
   region: "NTSC-C"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -2536,6 +2555,8 @@ SCED-51359:
 SCED-51366:
   name: "Ape Escape 2 [Demo]"
   region: "PAL-M5"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -4229,6 +4250,8 @@ SCES-50878:
 SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -4347,24 +4370,32 @@ SCES-51041:
 SCES-51102:
   name: "Ape Escape 2"
   region: "PAL-F"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51103:
   name: "Ape Escape 2"
   region: "PAL-I"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51104:
   name: "Ape Escape 2"
   region: "PAL-G"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51105:
   name: "Ape Escape 2"
   region: "PAL-S"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -5208,6 +5239,8 @@ SCES-53642:
   name: "Ape Escape 3"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -6489,6 +6522,8 @@ SCKA-20061:
 SCKA-20062:
   name: "Ape Escape 3"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -6694,6 +6729,8 @@ SCKA-20098:
 SCKA-20099:
   name: "Persona 3"
   region: "NTSC-K"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 1
 SCKA-20100:
@@ -7316,6 +7353,11 @@ SCPS-15025:
   name-en: "Saru Get You 2"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-15026:
   name: ぼくのなつやすみ2 海の冒険篇
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん
@@ -7833,6 +7875,8 @@ SCPS-15096:
   name-en: "Saru Get You! 3"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -8182,6 +8226,11 @@ SCPS-19151:
 SCPS-19152:
   name: "Saru Get You! 2 [PS2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19153:
   name: ピポサル2001 PS2 the Best
   name-sort: ぴぽさる2001 PS2 the Best
@@ -8233,6 +8282,8 @@ SCPS-19206:
   name-sort: さるげっちゅ2 PS2 the Best
   name-en: "Ape Escape 2 [PS2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -8413,6 +8464,11 @@ SCPS-19308:
   name-sort: さるげっちゅ2 PS2 the Best
   name-en: "Saru Get You 2 [PS2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
+  gsHWFixes:
+    mipmap: 2 # Fixes miptrick texture effects.
+    trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19309:
   name: ラチェット＆クランク3 突撃！ガラクチック★レンジャーズ PS2 the Best
   name-sort: らちぇっと＆くらんく3 とつげき！がらくちっく★れんじゃーず PS2 the Best
@@ -8439,6 +8495,8 @@ SCPS-19311:
   name-sort: さるげっちゅ3 PS2 the Best
   name-en: "Saru Get You 3 [PS2 The Best]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -8612,10 +8670,14 @@ SCPS-19327:
   name-sort: さるげっちゅ3 PS2 the Best
   name-en: "Ape Escape 3 [PS2 the Best - Reprint]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+    halfPixelOffset: 2 # Fixes misaligned blur.
+    autoFlush: 2 # Fixes corruption in cutscenes and brightens the image.
 SCPS-19328:
   name: ラチェット＆クランク4th ギリギリ銀河のギガバトル PS2 the Best
   name-sort: らちぇっと＆くらんく4th ぎりぎりぎんがのぎがばとる PS2 the Best
@@ -8872,6 +8934,8 @@ SCPS-55032:
 SCPS-55035:
   name: "Ape Escape 2"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -10649,6 +10713,8 @@ SCUS-97501:
   name: "Ape Escape 3"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -10841,6 +10907,8 @@ SCUS-97545:
 SCUS-97548:
   name: "Ape Escape 3 [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -24972,6 +25040,8 @@ SLES-55018:
   name: "Shin Megami Tensei - Persona 3"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 1
 SLES-55019:
@@ -42343,6 +42413,8 @@ SLPM-66445:
   name-en: "Persona 3"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 1
 SLPM-66446:
@@ -58078,6 +58150,8 @@ SLUS-20685:
   name: "Ape Escape 2"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
@@ -61410,6 +61484,7 @@ SLUS-21284:
 SLUS-21285:
   name: "Ultimate Spider-Man [Limited Edition]"
   region: "NTSC-U"
+  compat: 5
   clampModes:
     vu1ClampMode: 0 # Fixes Spider-Man's eyes texture.
   gsHWFixes:
@@ -62919,6 +62994,8 @@ SLUS-21569:
   name: "Shin Megami Tensei - Persona 3"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 1
 SLUS-21570:
@@ -64982,6 +65059,8 @@ SLUS-28065:
 SLUS-28067:
   name: "Shin Megami Tensei - Persona 3 [Trade Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
     mipmap: 1
 SLUS-28068:
