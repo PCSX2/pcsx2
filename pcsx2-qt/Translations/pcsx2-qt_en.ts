@@ -8265,7 +8265,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="991"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="993"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11597,135 +11597,135 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1014"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1022"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1042"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1049"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1058"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1064"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1070"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1076"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1081"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1117"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1145"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1157"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1171"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1016"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1024"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1060"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1066"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1072"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1078"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1083"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1096"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1159"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1015"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1017"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1022"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1024"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1042"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1049"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1059"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1065"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1067"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1071"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1076"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1078"/>
         <source>Toggle On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1081"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1083"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1090"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1092"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1094"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1096"/>
         <source>Cycle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1106"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
         <source>Hardware mipmapping set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1117"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1141"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1145"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1151"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1154"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1158"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1165"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1167"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1168"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1172"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1184"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
