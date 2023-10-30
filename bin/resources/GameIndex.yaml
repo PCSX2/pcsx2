@@ -1177,6 +1177,8 @@ SCAJ-20067:
 SCAJ-20068:
   name: "Final Fantasy X-2 International"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -1947,6 +1949,8 @@ SCAJ-25008:
 SCAJ-25012:
   name: "Final Fantasy X-2"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -11214,6 +11218,8 @@ SLAJ-25011:
 SLAJ-25012:
   name: "Final Fantasy X-2"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -11723,8 +11729,14 @@ SLED-51902:
     gpuTargetCLUT: 1 # Fixes sun penetrating buildings.
     autoFlush: 1 # Fixes sun occlusion.
 SLED-51921:
-  name: "Final Fantasy X-2"
+  name: "Final Fantasy X-2 [Demo]"
   region: "PAL-Unk"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLED-51961:
   name: "Prince of Persia - The Sands of Time [Demo]"
   region: "PAL-E"
@@ -16348,6 +16360,8 @@ SLES-51815:
   name: "Final Fantasy X-2"
   region: "PAL-E"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -16355,6 +16369,8 @@ SLES-51815:
 SLES-51816:
   name: "Final Fantasy X-2"
   region: "PAL-F"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -16363,6 +16379,8 @@ SLES-51817:
   name: "Final Fantasy X-2"
   region: "PAL-G"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -16370,6 +16388,8 @@ SLES-51817:
 SLES-51818:
   name: "Final Fantasy X-2"
   region: "PAL-I"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -16378,6 +16398,8 @@ SLES-51819:
   name: "Final Fantasy X-2"
   region: "PAL-S"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -27502,6 +27524,8 @@ SLKA-25144:
   name: "Final Fantasy X-2"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -37004,6 +37028,8 @@ SLPM-65478:
   name-sort: ふぁいなるふぁんたじーX-2 いんたーなしょなる+らすとみっしょん
   name-en: "Final Fantasy X-2 International"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
@@ -40551,6 +40577,8 @@ SLPM-66125:
   name-sort: ふぁいなるふぁんたじーX-2 [あるてぃめっとひっつ]
   name-en: "Final Fantasy X-2 [Ultimate Hits]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -43827,6 +43855,8 @@ SLPM-66678:
   name-sort: ふぁいなるふぁんたじーX-2 いんたーなしょなる+らすとみっしょん [あるてぃめっとひっつ]
   name-en: "Final Fantasy X-2 - International + Last Mission [Ultimate Hits]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -50189,6 +50219,8 @@ SLPS-25250:
   name-sort: ふぁいなるふぁんたじーX-2
   name-en: "Final Fantasy X-2"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
@@ -58115,6 +58147,8 @@ SLUS-20672:
   name: "Final Fantasy X-2"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and overlapping subtitles.
   gsHWFixes:
