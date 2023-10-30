@@ -31,6 +31,10 @@
 
 static s32 s_current_save_slot = 1;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
+s32 VMManager::GetCurrentActiveSaveStateSlot()
+{
+	return s_current_save_slot;
+}
 
 void VMManager::Internal::ResetVMHotkeyState()
 {
