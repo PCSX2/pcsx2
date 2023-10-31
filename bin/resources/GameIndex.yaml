@@ -22724,6 +22724,7 @@ SLES-54182:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLES-54183:
   name: "Scarface - The World is Yours"
   region: "PAL-G"
@@ -22732,6 +22733,7 @@ SLES-54183:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLES-54184:
   name: "Scarface - The World is Yours"
   region: "PAL-R"
@@ -22740,6 +22742,7 @@ SLES-54184:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
@@ -22978,6 +22981,7 @@ SLES-54271:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLES-54305:
   name: "Demon Chaos"
   region: "PAL-M5"
@@ -23663,6 +23667,7 @@ SLES-54534:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLES-54536:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "PAL-I"
@@ -60523,6 +60528,7 @@ SLUS-21111:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLUS-21112:
   name: "L.A. Rush"
   region: "NTSC-U"
@@ -62845,6 +62851,7 @@ SLUS-21492:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
+    wildArmsHack: 1 # Fixes chromatic fringing.
 SLUS-21493:
   name: "Need for Speed - Carbon"
   region: "NTSC-U"
