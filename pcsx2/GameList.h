@@ -161,7 +161,6 @@ namespace GameList
 	std::string FormatTimespan(std::time_t timespan, bool long_format = false);
 
 	std::string GetCoverImagePathForEntry(const Entry* entry);
-	std::string GetCoverImagePath(const std::string& path, const std::string& code, const std::string& title);
 	std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial = false);
 
 	/// Downloads covers using the specified URL templates. By default, covers are saved by title, but this can be changed with

@@ -1158,11 +1158,6 @@ std::string GameList::FormatTimespan(std::time_t timespan, bool long_format)
 
 std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 {
-	return GetCoverImagePath(entry->path, entry->serial, entry->title);
-}
-
-std::string GameList::GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title)
-{
 	static const char* extensions[] = {".jpg", ".jpeg", ".png", ".webp"};
 
 	// TODO(Stenzek): Port to filesystem...
@@ -1172,17 +1167,17 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 	{
 
 		// Prioritize lookup by serial (Most specific)
-		if (!serial.empty())
+		if (!entry->serial.empty())
 		{
-			const std::string cover_filename(serial + extension);
+			const std::string cover_filename(entry->serial + extension);
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
 
 		// Try file title (for modded games or specific like above)
-		const std::string_view file_title(Path::GetFileTitle(path));
-		if (!file_title.empty() && title != file_title)
+		const std::string_view file_title(Path::GetFileTitle(entry->path));
+		if (!file_title.empty() && entry->title != file_title)
 		{
 			std::string cover_filename(file_title);
 			cover_filename += extension;
@@ -1193,9 +1188,18 @@ std::string GameList::GetCoverImagePath(const std::string& path, const std::stri
 		}
 
 		// Last resort, check the game title
-		if (!title.empty())
+		if (!entry->title.empty())
 		{
-			std::string cover_filename(title + extension);
+			std::string cover_filename(entry->title + extension);
+			Path::SanitizeFileName(&cover_filename);
+			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
+			if (FileSystem::FileExists(cover_path.c_str()))
+				return cover_path;
+		}
+		// EN title too
+		if (!entry->title_en.empty())
+		{
+			std::string cover_filename(entry->title_en + extension);
 			Path::SanitizeFileName(&cover_filename);
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
