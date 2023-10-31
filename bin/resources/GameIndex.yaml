@@ -4657,8 +4657,8 @@ SCES-51904:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCES-51910:
   name: "Arc - Twilight of the Spirits"
   region: "PAL-M5"
@@ -4754,8 +4754,8 @@ SCES-52306:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCES-52327:
   name: "Forbidden Siren"
   region: "PAL-F"
@@ -6270,8 +6270,8 @@ SCKA-20020:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCKA-20022:
   name: "Gran Turismo 4 Prologue"
   region: "NTSC-K"
@@ -6482,8 +6482,8 @@ SCKA-20053:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCKA-20054:
   name: "Tales of Destiny 2 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -7680,8 +7680,8 @@ SCPS-15065:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCPS-15066:
   name: プリンス・オブ・ペルシャ 〜時間の砂〜
   name-sort: ぷりんす・おぶ・ぺるしゃ 〜じかんのすな〜
@@ -9921,8 +9921,8 @@ SCUS-97275:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCUS-97276:
   name: "NFL GameDay 2004"
   region: "NTSC-U"
@@ -10128,8 +10128,8 @@ SCUS-97366:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCUS-97367:
   name: "Neopets - The Darkest Faerie"
   region: "NTSC-U"
@@ -10141,8 +10141,8 @@ SCUS-97368:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCUS-97369:
   name: "ATV Offroad Fury 2"
   region: "NTSC-U"
@@ -10783,8 +10783,8 @@ SCUS-97511:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 SCUS-97512:
   name: "Gran Turismo 3 - A-Spec [Greatest Hits]"
   region: "NTSC-U"
@@ -65896,8 +65896,8 @@ TCES-51904:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - InstantDMAHack # Fixes texture corruption.
 TCES-52004:
   name: "Killzone Beta Trial Code"
   region: "PAL-E"
