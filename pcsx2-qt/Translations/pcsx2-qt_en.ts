@@ -12616,7 +12616,7 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Translations.cpp" line="253"/>
+        <location filename="../Translations.cpp" line="257"/>
         <source>System Language [Default]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14678,6 +14678,22 @@ Leaving the original controller type connected, but this may cause issues.</sour
     <message>
         <location filename="../../pcsx2/Patch.cpp" line="631"/>
         <source>No cheats or patches (widescreen, compatibility or others) are found / enabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PermissionsDialogCamera</name>
+    <message>
+        <location filename="../Translations.cpp" line="54"/>
+        <source>PCSX2 uses your camera to emulate an EyeToy camera plugged into the virtual PS2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PermissionsDialogMicrophone</name>
+    <message>
+        <location filename="../Translations.cpp" line="53"/>
+        <source>PCSX2 uses your microphone to emulate a USB microphone plugged into the virtual PS2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

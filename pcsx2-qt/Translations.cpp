@@ -48,6 +48,10 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Show All")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Preferences...")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
+
+// Strings that will be parsed out by our build system and sent to fun places
+QT_TRANSLATE_NOOP("PermissionsDialogMicrophone", "PCSX2 uses your microphone to emulate a USB microphone plugged into the virtual PS2")
+QT_TRANSLATE_NOOP("PermissionsDialogCamera", "PCSX2 uses your camera to emulate an EyeToy camera plugged into the virtual PS2")
 #endif
 
 namespace QtHost
