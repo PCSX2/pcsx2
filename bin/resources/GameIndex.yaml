@@ -23712,6 +23712,10 @@ SLES-54549:
   compat: 5
   gameFixes:
     - FpuNegDivHack # Fixes black fade effects and some overlays texts in the menus.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
+    deinterlace: 9 # Fixes disorderly interlacing lines.
 SLES-54550:
   name: "White Van Racer"
   region: "PAL-E"
@@ -49786,8 +49790,10 @@ SLPS-25165:
 SLPS-25166:
   name: 金鉱脈探査シミュレーション インゴット79
   name-sort: きんこうみゃくたんさしみゅれーしょん いんごっと79
-  name-en: "Ingot 79"
+  name-en: "Kinkoumyaku Tansa Simulation - Ingot 79"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 3 # Fixes character heads being translucent.
 SLPS-25167:
   name: "Triple Play 2002"
   region: "NTSC-J"
@@ -63441,6 +63447,10 @@ SLUS-21634:
   compat: 5
   gameFixes:
     - FpuNegDivHack # Fixes black fade effects and some overlays texts in the menus.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
+    deinterlace: 9 # Fixes disorderly interlacing lines.
 SLUS-21635:
   name: "Monster Jam"
   region: "NTSC-U"
