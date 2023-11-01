@@ -2814,6 +2814,8 @@ SCED-51683:
 SCED-51692:
   name: "SOCOM - U.S. Navy SEALs"
   region: "PAL-M5"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCED-51700:
@@ -4302,6 +4304,8 @@ SCES-50917:
 SCES-50928:
   name: "SOCOM - U.S. Navy SEALs [Beta & Full Release]"
   region: "PAL-M6"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCES-50934:
@@ -4585,6 +4589,8 @@ SCES-51614:
 SCES-51618:
   name: "SOCOM - U.S. Navy SEALs"
   region: "PAL-M5"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCES-51635:
@@ -5132,6 +5138,8 @@ SCES-53286:
 SCES-53300:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "PAL-M5"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -5549,6 +5557,8 @@ SCES-54477:
   name: "SOCOM - US Navy Seals - Combined Assault"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -6188,6 +6198,8 @@ SCKA-20006:
 SCKA-20007:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-K"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCKA-20008:
@@ -6561,6 +6573,8 @@ SCKA-20063:
 SCKA-20064:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "NTSC-K"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -6883,6 +6897,8 @@ SCKA-24007:
 SCKA-24008:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-K"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCKA-24012:
@@ -7492,6 +7508,8 @@ SCPS-15044:
   name: "SOCOM: U.S. NAVY SEALs"
   name-en: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCPS-15045:
@@ -9373,6 +9391,8 @@ SCUS-97134:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCUS-97136:
@@ -9632,6 +9652,8 @@ SCUS-97204:
 SCUS-97205:
   name: "SOCOM - U.S. Navy SEALs [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCUS-97206:
@@ -9739,6 +9761,8 @@ SCUS-97229:
 SCUS-97230:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 2 # Fixes bad shadows.
 SCUS-97231:
@@ -10563,6 +10587,8 @@ SCUS-97474:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -10578,6 +10604,8 @@ SCUS-97474:
 SCUS-97475:
   name: "SOCOM 3 - U.S. Navy SEALs [Regular Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -10684,6 +10712,8 @@ SCUS-97488:
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -10912,6 +10942,8 @@ SCUS-97545:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -10964,6 +10996,8 @@ SCUS-97558:
 SCUS-97560:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
@@ -11188,6 +11222,10 @@ SCUS-97660:
 SCUS-97859:
   name: "SOCOM - U.S. Navy SEALs"
   region: "NTSC-U"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
+  clampModes:
+    vuClampMode: 2 # Fixes bad shadows.
 SCUS-97869:
   name: "Amplitude P.O.D. [Demo]"
   region: "NTSC-U"
@@ -20128,6 +20166,8 @@ SLES-53299:
 SLES-53300:
   name: "SOCOM 3 - U.S. Navy SEALs"
   region: "PAL-Unk"
+  gameFixes:
+    - InstantDMAHack # Fixes texture corruption.
   clampModes:
     vuClampMode: 3 # Fixes SPS ingame and prevents flickering or invisible characters.
   gsHWFixes:
