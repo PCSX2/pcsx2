@@ -55,7 +55,7 @@ void COP2_Unknown()
 
 //****************************************************************************
 
-__fi void _vu0run(bool breakOnMbit, bool addCycles) {
+__fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
 
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
@@ -67,12 +67,22 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles) {
 	}
 
 	u32 startcycle = cpuRegs.cycle;
-	u32 runCycles  = 0x7fffffff;
+	s32 runCycles  = 0x7fffffff;
+
+	if (sync_only)
+	{
+		cpuRegs.cycle += intGetCycles() >> 3;
+		intSetCycles(intGetCycles() & (1 << 3) - 1);
+		runCycles  = (s32)(cpuRegs.cycle - VU0.cycle);
+
+		if (runCycles < 0)
+			return;
+	}
 
 	do { // Run VU until it finishes or M-Bit
 		CpuVU0->Execute(runCycles);
 	} while ((VU0.VI[REG_VPU_STAT].UL & 1)						// E-bit Termination
-	  &&	(!breakOnMbit || !(VU0.flags & VUFLAG_MFLAGSET) || (s32)(cpuRegs.cycle - VU0.cycle) > 0));	// M-bit Break
+	  &&	!sync_only && (!breakOnMbit || (!(VU0.flags & VUFLAG_MFLAGSET) && (s32)(cpuRegs.cycle - VU0.cycle) > 0)));	// M-bit Break
 
 	// Add cycles if called from EE's COP2
 	if (addCycles)
@@ -85,15 +95,17 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles) {
 	}
 }
 
-void _vu0WaitMicro()   { _vu0run(1, 1); } // Runs VU0 Micro Until E-bit or M-Bit End
-void _vu0FinishMicro() { _vu0run(0, 1); } // Runs VU0 Micro Until E-Bit End
-void vu0Finish()	   { _vu0run(0, 0); } // Runs VU0 Micro Until E-Bit End (doesn't stall EE)
+void _vu0WaitMicro()   { _vu0run(1, 1, 0); } // Runs VU0 Micro Until E-bit or M-Bit End
+void _vu0FinishMicro() { _vu0run(0, 1, 0); } // Runs VU0 Micro Until E-Bit End
+void vu0Finish()	   { _vu0run(0, 0, 0); } // Runs VU0 Micro Until E-Bit End (doesn't stall EE)
+void vu0Sync()		   { _vu0run(0, 0, 1); } // Runs VU0 until it catches up
 
 namespace R5900 {
 namespace Interpreter{
 namespace OpcodeImpl
 {
 	void LQC2() {
+		vu0Sync();
 		u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + (s16)cpuRegs.code;
 		if (_Ft_) {
 			memRead128(addr, VU0.VF[_Ft_].UQ);
@@ -107,6 +119,7 @@ namespace OpcodeImpl
 	//TODO: check this
 	// HUH why ? doesn't make any sense ...
 	void SQC2() {
+		vu0Sync();
 		u32 addr = _Imm_ + cpuRegs.GPR.r[_Rs_].UL[0];
 		memWrite128(addr, VU0.VF[_Ft_].UQ);
 	}
@@ -117,6 +130,8 @@ void QMFC2() {
 	if (cpuRegs.code & 1) {
 		_vu0FinishMicro();
 	}
+	else
+		vu0Sync();
 	if (_Rt_ == 0) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] = VU0.VF[_Fs_].UD[0];
 	cpuRegs.GPR.r[_Rt_].UD[1] = VU0.VF[_Fs_].UD[1];
@@ -126,6 +141,8 @@ void QMTC2() {
 	if (cpuRegs.code & 1) {
 		_vu0WaitMicro();
 	}
+	else
+		vu0Sync();
 	if (_Fs_ == 0) return;
 	VU0.VF[_Fs_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
 	VU0.VF[_Fs_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
@@ -135,6 +152,8 @@ void CFC2() {
 	if (cpuRegs.code & 1) {
 		_vu0FinishMicro();
 	}
+	else
+		vu0Sync();
 	if (_Rt_ == 0) return;
 
 	if (_Fs_ == REG_R)
@@ -155,6 +174,8 @@ void CTC2() {
 	if (cpuRegs.code & 1) {
 		_vu0WaitMicro();
 	}
+	else
+		vu0Sync();
 	if (_Fs_ == 0) return;
 
 	switch(_Fs_) {
