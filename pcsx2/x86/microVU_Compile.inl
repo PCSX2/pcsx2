@@ -464,6 +464,32 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 {
 	iPC = mVUstartPC;
 
+	if (isVU0 && EmuConfig.Speedhacks.EECycleRate != 0)
+	{
+		switch (std::min(static_cast<int>(EmuConfig.Speedhacks.EECycleRate), static_cast<int>(mVUcycles)))
+		{
+			case -3: // 50%
+				mVUcycles *= 2.0f;
+				break;
+			case -2: // 60%
+				mVUcycles *= 1.6666667f;
+				break;
+			case -1: // 75%
+				mVUcycles *= 1.3333333f;
+				break;
+			case 1: // 130%
+				mVUcycles /= 1.3f;
+				break;
+			case 2: // 180%
+				mVUcycles /= 1.8f;
+				break;
+			case 3: // 300%
+				mVUcycles /= 3.0f;
+				break;
+			default:
+				break;
+		}
+	}
 	xMOV(eax, ptr32[&mVU.cycles]);
 	if (EmuConfig.Gamefixes.VUSyncHack)
 		xSUB(eax, mVUcycles); // Running behind, make sure we have time to run the block
