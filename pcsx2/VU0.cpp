@@ -66,13 +66,14 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
 		return;
 	}
 
+	if(!EmuConfig.Cpu.Recompiler.EnableEE)
+		intUpdateCPUCycles();
+
 	u32 startcycle = cpuRegs.cycle;
 	s32 runCycles  = 0x7fffffff;
 
 	if (sync_only)
 	{
-		cpuRegs.cycle += intGetCycles() >> 3;
-		intSetCycles(intGetCycles() & (1 << 3) - 1);
 		runCycles  = (s32)(cpuRegs.cycle - VU0.cycle);
 
 		if (runCycles < 0)
@@ -127,33 +128,36 @@ namespace OpcodeImpl
 
 
 void QMFC2() {
+	vu0Sync();
+
 	if (cpuRegs.code & 1) {
 		_vu0FinishMicro();
 	}
-	else
-		vu0Sync();
+
 	if (_Rt_ == 0) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] = VU0.VF[_Fs_].UD[0];
 	cpuRegs.GPR.r[_Rt_].UD[1] = VU0.VF[_Fs_].UD[1];
 }
 
 void QMTC2() {
+	vu0Sync();
+
 	if (cpuRegs.code & 1) {
 		_vu0WaitMicro();
 	}
-	else
-		vu0Sync();
+
 	if (_Fs_ == 0) return;
 	VU0.VF[_Fs_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
 	VU0.VF[_Fs_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
 }
 
 void CFC2() {
+	vu0Sync();
+
 	if (cpuRegs.code & 1) {
 		_vu0FinishMicro();
 	}
-	else
-		vu0Sync();
+
 	if (_Rt_ == 0) return;
 
 	if (_Fs_ == REG_R)
@@ -171,11 +175,12 @@ void CFC2() {
 }
 
 void CTC2() {
+	vu0Sync();
+
 	if (cpuRegs.code & 1) {
 		_vu0WaitMicro();
 	}
-	else
-		vu0Sync();
+
 	if (_Fs_ == 0) return;
 
 	switch(_Fs_) {

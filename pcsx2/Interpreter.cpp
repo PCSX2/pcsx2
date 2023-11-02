@@ -39,14 +39,32 @@ static fastjmp_buf intJmpBuf;
 
 static void intEventTest();
 
-u32 intGetCycles()
+void intUpdateCPUCycles()
 {
-	return cpuBlockCycles;
-}
+	const bool lowcycles = (cpuBlockCycles <= 40);
+	const s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	u32 scale_cycles = 0;
 
-void intSetCycles(u32 cycles)
-{
-	cpuBlockCycles = cycles;
+	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
+		scale_cycles = cpuBlockCycles >> 3;
+
+	else if (cyclerate > 1)
+		scale_cycles = cpuBlockCycles >> (2 + cyclerate);
+
+	else if (cyclerate == 1)
+		scale_cycles = (cpuBlockCycles >> 3) / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
+
+	else if (cyclerate == -1) // the mildest value which is also used by the "balanced" preset.
+		// These values were manually tuned to yield mild speedup with high compatibility
+		scale_cycles = (cpuBlockCycles <= 80 || cpuBlockCycles > 168 ? 5 : 7) * cpuBlockCycles / 32;
+
+	else
+		scale_cycles = ((5 + (-2 * (cyclerate + 1))) * cpuBlockCycles) >> 5;
+
+	// Ensure block cycle count is never less than 1.
+	cpuRegs.cycle += (scale_cycles < 1) ? 1 : scale_cycles;
+
+	cpuBlockCycles &= (1 << 3) - 1;
 }
 
 // These macros are used to assemble the repassembler functions
@@ -211,8 +229,7 @@ static __fi void _doBranch_shared(u32 tar)
 static void doBranch( u32 target )
 {
 	_doBranch_shared( target );
-	cpuRegs.cycle += cpuBlockCycles >> 3;
-	cpuBlockCycles &= (1<<3)-1;
+	intUpdateCPUCycles();
 	intEventTest();
 }
 
@@ -223,8 +240,7 @@ void intDoBranch(u32 target)
 
 	if( Cpu == &intCpu )
 	{
-		cpuRegs.cycle += cpuBlockCycles >> 3;
-		cpuBlockCycles &= (1<<3)-1;
+		intUpdateCPUCycles();
 		intEventTest();
 	}
 }
