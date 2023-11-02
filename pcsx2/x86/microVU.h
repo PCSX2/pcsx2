@@ -135,7 +135,7 @@ struct microVU
 	u32 p;            // Holds current P instance index
 	u32 q;            // Holds current Q instance index
 	u32 totalCycles;  // Total Cycles that mVU is expected to run for
-	u32 cycles;       // Cycles Counter
+	s32 cycles;       // Cycles Counter
 
 	VURegs& regs() const { return ::vuRegs[index]; }
 
