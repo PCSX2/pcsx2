@@ -36,6 +36,7 @@ static u32 cpuBlockCycles = 0;		// 3 bit fixed point version of cycle count
 static std::string disOut;
 static bool intExitExecution = false;
 static fastjmp_buf intJmpBuf;
+static u32 intLastBranchTo;
 
 static void intEventTest();
 
@@ -64,7 +65,14 @@ void intUpdateCPUCycles()
 	// Ensure block cycle count is never less than 1.
 	cpuRegs.cycle += (scale_cycles < 1) ? 1 : scale_cycles;
 
-	cpuBlockCycles &= (1 << 3) - 1;
+	if (cyclerate > 1)
+	{
+		cpuBlockCycles &= (0x1 << (cyclerate + 2)) - 1;
+	}
+	else
+	{
+		cpuBlockCycles &= 0x7;
+	}
 }
 
 // These macros are used to assemble the repassembler functions
@@ -221,6 +229,39 @@ static __fi void _doBranch_shared(u32 tar)
 
 	if( cpuRegs.branch != 0 )
 	{
+		if (Cpu == &intCpu)
+		{
+			if (intLastBranchTo == tar && EmuConfig.Speedhacks.WaitLoop)
+			{
+				intUpdateCPUCycles();
+				bool can_skip = true;
+				if (tar != 0x81fc0)
+				{
+					if ((cpuRegs.pc - tar) < (4 * 10))
+					{
+						for (int i = tar; i < cpuRegs.pc; i += 4)
+						{
+							if (PSM(i) != 0)
+							{
+								can_skip = false;
+								break;
+							}
+						}
+					}
+					else
+						can_skip = false;
+				}
+
+				if (can_skip)
+				{
+					if (static_cast<s32>(cpuRegs.nextEventCycle - cpuRegs.cycle) > 0)
+						cpuRegs.cycle = cpuRegs.nextEventCycle;
+					else
+						cpuRegs.nextEventCycle = cpuRegs.cycle;
+				}
+			}
+		}
+		intLastBranchTo = tar;
 		cpuRegs.pc = tar;
 		cpuRegs.branch = 0;
 	}
