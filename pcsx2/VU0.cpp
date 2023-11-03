@@ -42,7 +42,7 @@
 using namespace R5900;
 
 void COP2_BC2() { Int_COP2BC2PrintTable[_Rt_]();}
-void COP2_SPECIAL() { Int_COP2SPECIAL1PrintTable[_Funct_]();}
+void COP2_SPECIAL() { _vu0FinishMicro(); Int_COP2SPECIAL1PrintTable[_Funct_]();}
 
 void COP2_SPECIAL2() {
 	Int_COP2SPECIAL2PrintTable[(cpuRegs.code & 0x3) | ((cpuRegs.code >> 4) & 0x7c)]();
