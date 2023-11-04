@@ -264,7 +264,7 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	else
 	{
 		// Make sure nothing is left over.
-		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, true, true);
 		g_gs_renderer->PurgePool();
 	}
 
@@ -759,7 +759,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	{
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			g_gs_renderer->ReadbackTextureCache();
-		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, true, true);
 		g_gs_renderer->PurgePool();
 	}
 
@@ -776,7 +776,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (GSConfig.LoadTextureReplacements != old_config.LoadTextureReplacements ||
 		GSConfig.DumpReplaceableTextures != old_config.DumpReplaceableTextures)
 	{
-		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, false, true);
 	}
 
 	if (GSConfig.OsdShowGPU != old_config.OsdShowGPU)
@@ -1118,7 +1118,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 
 			MTGS::RunOnGSThread([new_level]() {
 				GSConfig.HWMipmap = new_level;
-				g_gs_renderer->PurgeTextureCache();
+				g_gs_renderer->PurgeTextureCache(true, false, true);
 				g_gs_renderer->PurgePool();
 			});
 		}},
@@ -1190,7 +1190,13 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				{
 					Host::AddKeyedOSDMessage("ReloadTextureReplacements",
 						TRANSLATE_STR("Hotkeys", "Reloading texture replacements..."), Host::OSD_INFO_DURATION);
-					MTGS::RunOnGSThread([]() { GSTextureReplacements::ReloadReplacementMap(); });
+					MTGS::RunOnGSThread([]() {
+						if (!g_gs_renderer)
+							return;
+
+						GSTextureReplacements::ReloadReplacementMap();
+						g_gs_renderer->PurgeTextureCache(true, false, true);
+					});
 				}
 			}
 		}},
