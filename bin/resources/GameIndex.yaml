@@ -30300,6 +30300,8 @@ SLPM-60278:
 SLPM-60279:
   name: "Kamen Rider Kabuto"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes garbage corruptions on the bottom of the screen.
 SLPM-60280:
   name: "Dengeki PS2 - PlayStation 2 Save Data Collection 2007"
   region: "NTSC-J"
@@ -48761,6 +48763,8 @@ SLPS-20483:
   name-sort: かめんらいだーかぶと
   name-en: "Kamen Rider Kabuto"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes garbage corruptions on the bottom of the screen.
 SLPS-20484:
   name: SIMPLE2000シリーズ UltimateVol.34 魁!!男塾
   name-sort: SIMPLE2000しりーず UltimateVol.34 さきがけ!!おとこじゅく
