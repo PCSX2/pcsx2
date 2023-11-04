@@ -131,6 +131,7 @@ GameListModel::GameListModel(float cover_scale, bool show_cover_titles, QObject*
 	: QAbstractTableModel(parent)
 	, m_show_titles_for_covers(show_cover_titles)
 {
+	loadSettings();
 	loadCommonImages();
 	setCoverScale(cover_scale);
 	setColumnDisplayNames();
@@ -424,8 +425,8 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
 
 void GameListModel::refresh()
 {
-	m_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
 	beginResetModel();
+	loadSettings();
 	endResetModel();
 }
 
@@ -545,6 +546,11 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 		default:
 			return false;
 	}
+}
+
+void GameListModel::loadSettings()
+{
+	m_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
 }
 
 QIcon GameListModel::getIconForType(GameList::EntryType type)
