@@ -460,7 +460,7 @@ public:
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
-	void RemoveAll();
+	void RemoveAll(bool sources, bool targets, bool hash_cache);
 	void ReadbackAll();
 	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear = false);
 	void ResizeTarget(Target* t, GSVector4i rect, u32 tbp, u32 psm, u32 tbw);

@@ -57,13 +57,13 @@ GSRendererHW::~GSRendererHW()
 
 void GSRendererHW::Destroy()
 {
-	g_texture_cache->RemoveAll();
+	g_texture_cache->RemoveAll(true, true, true);
 	GSRenderer::Destroy();
 }
 
-void GSRendererHW::PurgeTextureCache()
+void GSRendererHW::PurgeTextureCache(bool sources, bool targets, bool hash_cache)
 {
-	g_texture_cache->RemoveAll();
+	g_texture_cache->RemoveAll(sources, targets, hash_cache);
 }
 
 void GSRendererHW::ReadbackTextureCache()
@@ -92,7 +92,7 @@ void GSRendererHW::Reset(bool hardware_reset)
 	if (!hardware_reset)
 		g_texture_cache->ReadbackAll();
 
-	g_texture_cache->RemoveAll();
+	g_texture_cache->RemoveAll(true, true, true);
 
 	GSRenderer::Reset(hardware_reset);
 }
@@ -144,7 +144,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 			fmt::format(TRANSLATE_FS("GS", "Hash cache has used {:.2f} MB of VRAM, disabling."),
 				static_cast<float>(g_texture_cache->GetHashCacheMemoryUsage()) / 1048576.0f),
 			Host::OSD_ERROR_DURATION);
-		g_texture_cache->RemoveAll();
+		g_texture_cache->RemoveAll(true, false, true);
 		g_gs_device->PurgePool();
 		GSConfig.TexturePreloading = TexturePreloadingLevel::Partial;
 	}

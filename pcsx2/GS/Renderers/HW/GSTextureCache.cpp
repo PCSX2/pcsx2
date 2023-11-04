@@ -51,7 +51,7 @@ GSTextureCache::GSTextureCache()
 
 GSTextureCache::~GSTextureCache()
 {
-	RemoveAll();
+	RemoveAll(true, true, true);
 
 	s_hash_cache_purge_list = {};
 	_aligned_free(s_unswizzle_buffer);
@@ -66,32 +66,39 @@ void GSTextureCache::ReadbackAll()
 	}
 }
 
-void GSTextureCache::RemoveAll()
+void GSTextureCache::RemoveAll(bool sources, bool targets, bool hash_cache)
 {
-	m_src.RemoveAll();
-
-	for (int type = 0; type < 2; type++)
+	if (sources || targets)
 	{
-		for (auto t : m_dst[type])
-			delete t;
-
-		m_dst[type].clear();
+		m_src.RemoveAll();
+		m_palette_map.Clear();
+		m_source_memory_usage = 0;
 	}
 
-	for (auto it : m_hash_cache)
-		g_gs_device->Recycle(it.second.texture);
+	if (targets)
+	{
+		for (int type = 0; type < 2; type++)
+		{
+			for (auto t : m_dst[type])
+				delete t;
 
-	m_hash_cache.clear();
-	m_hash_cache_memory_usage = 0;
-	m_hash_cache_replacement_memory_usage = 0;
+			m_dst[type].clear();
+		}
 
-	m_palette_map.Clear();
-	m_target_heights.clear();
+		m_target_heights.clear();
+		m_surface_offset_cache.clear();
+		m_target_memory_usage = 0;
+	}
 
-	m_source_memory_usage = 0;
-	m_target_memory_usage = 0;
+	if (hash_cache)
+	{
+		for (auto it : m_hash_cache)
+			g_gs_device->Recycle(it.second.texture);
 
-	m_surface_offset_cache.clear();
+		m_hash_cache.clear();
+		m_hash_cache_memory_usage = 0;
+		m_hash_cache_replacement_memory_usage = 0;
+	}
 }
 
 bool GSTextureCache::FullRectDirty(Target* target, u32 rgba_mask)
