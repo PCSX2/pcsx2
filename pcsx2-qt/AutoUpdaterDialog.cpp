@@ -789,7 +789,9 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDi
 		progress.setValue(progress.maximum());
 		if (untar.exitCode() != EXIT_SUCCESS)
 		{
-			reportError("Failed to unpack update (tar exited with %u)", untar.exitCode());
+			QByteArray msg = untar.readAllStandardError();
+			const char* join = msg.isEmpty() ? "" : ": ";
+			reportError("Failed to unpack update (tar exited with %u%s%s)", untar.exitCode(), join, msg.toStdString().c_str());
 			return false;
 		}
 
