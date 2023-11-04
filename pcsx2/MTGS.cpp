@@ -324,7 +324,7 @@ void MTGS::MainLoop()
 
 	while (true)
 	{
-		if (s_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
+		if (s_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running && GSHasDisplayWindow())
 		{
 			if (!s_sem_event.CheckForWork())
 			{
