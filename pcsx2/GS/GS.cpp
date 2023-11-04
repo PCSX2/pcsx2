@@ -508,6 +508,12 @@ void GSGameChanged()
 		GSTextureReplacements::GameChanged();
 }
 
+bool GSHasDisplayWindow()
+{
+	pxAssert(g_gs_device);
+	return (g_gs_device->GetWindowInfo().type != WindowInfo::Type::Surfaceless);
+}
+
 void GSResizeDisplayWindow(int width, int height, float scale)
 {
 	g_gs_device->ResizeWindow(width, height, scale);

@@ -537,10 +537,6 @@ void EmuThread::setSurfaceless(bool surfaceless)
 	if (!MTGS::IsOpen() || m_is_surfaceless == surfaceless)
 		return;
 
-	// If we went surfaceless and were running the fullscreen UI, stop MTGS running idle.
-	// Otherwise, we'll keep trying to present to nothing.
-	MTGS::SetRunIdle(!surfaceless && m_run_fullscreen_ui);
-
 	// This will call back to us on the MTGS thread.
 	m_is_surfaceless = surfaceless;
 	MTGS::UpdateDisplayWindow();
