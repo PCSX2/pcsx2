@@ -87,6 +87,7 @@ Q_SIGNALS:
 	void coverScaleChanged();
 
 private:
+	void loadSettings();
 	void loadCommonImages();
 	void loadThemeSpecificImages();
 	void setColumnDisplayNames();
