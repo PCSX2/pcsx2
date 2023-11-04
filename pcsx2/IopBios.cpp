@@ -1103,7 +1103,7 @@ namespace R3000A
 			R3000SymbolMap.RemoveModule(modname, version);
 		}
 
-		void RegisterLibraryEntries_DEBUG()
+		int RegisterLibraryEntries_HLE()
 		{
 			LoadFuncs(a0);
 
@@ -1115,11 +1115,13 @@ namespace R3000A
 			}
 
 			CurrentBiosInformation.iopModListAddr = GetModList(a0);
+			return 0;
 		}
 
-		void ReleaseLibraryEntries_DEBUG()
+		int ReleaseLibraryEntries_HLE()
 		{
 			ReleaseFuncs(a0);
+			return 0;
 		}
 	} // namespace loadcore
 
@@ -1240,6 +1242,10 @@ namespace R3000A
 	{
 		// debugging output
 		// clang-format off
+		MODULE(loadcore)
+			EXPORT_H(  6, RegisterLibraryEntries)
+			EXPORT_H(  7, ReleaseLibraryEntries);
+		END_MODULE
 		MODULE(sysmem)
 			EXPORT_H( 14, Kprintf)
 		END_MODULE
@@ -1281,10 +1287,6 @@ namespace R3000A
 	irxDEBUG irxImportDebug(const std::string& libname, u16 index)
 	{
 		// clang-format off
-		MODULE(loadcore)
-			EXPORT_D(  6, RegisterLibraryEntries)
-			EXPORT_D(  7, ReleaseLibraryEntries);
-		END_MODULE
 		MODULE(intrman)
 			EXPORT_D(  4, RegisterIntrHandler)
 		END_MODULE
