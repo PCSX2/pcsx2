@@ -225,7 +225,7 @@ bool SPU2::IsRunningPSXMode()
 	return s_psxmode;
 }
 
-void SPU2async(u32 cycles)
+void SPU2async()
 {
 	TimeUpdate(psxRegs.cycle);
 }

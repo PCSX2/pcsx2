@@ -44,7 +44,7 @@ static void psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 
 	// Update the spu2 to the current cycle before initiating the DMA
 
-	SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
+	SPU2async();
 	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
 
 	psxCounters[6].sCycleT = psxRegs.cycle;
