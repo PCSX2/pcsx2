@@ -181,11 +181,11 @@ void WriteFIFO_IPUin(const mem128_t* value)
 	//committing every 16 bytes
 	if( ipu_fifo.in.write(value->_u32, 1) > 0 )
 	{
-		if (ipuRegs.ctrl.BUSY && IPUCoreStatus.WaitingOnIPUTo)
+		if (ipuRegs.ctrl.BUSY /*&& IPUCoreStatus.WaitingOnIPUTo*/)
 		{
 			IPUCoreStatus.WaitingOnIPUFrom = false;
 			IPUCoreStatus.WaitingOnIPUTo = false;
-			CPU_INT(IPU_PROCESS, 2 * BIAS);
+			IPU_INT_PROCESS(2 * BIAS);
 		}
 	}
 }
