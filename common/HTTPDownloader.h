@@ -30,7 +30,10 @@ namespace Common
 	public:
 		enum : s32
 		{
-			HTTP_OK = 200
+			HTTP_STATUS_CANCELLED = -3,
+			HTTP_STATUS_TIMEOUT = -2,
+			HTTP_STATUS_ERROR = -1,
+			HTTP_STATUS_OK = 200
 		};
 
 		struct Request
