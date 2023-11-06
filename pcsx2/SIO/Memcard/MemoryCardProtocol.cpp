@@ -88,7 +88,18 @@ void MemoryCardProtocol::Probe()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	The2bTerminator(4);
+
+	if (!mcd->IsPresent())
+	{
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+	}
+	else
+	{
+		The2bTerminator(4);
+	}
 }
 
 void MemoryCardProtocol::UnknownWriteDeleteEnd()
@@ -253,6 +264,12 @@ void MemoryCardProtocol::ReadData()
 u8 MemoryCardProtocol::PS1Read(u8 data)
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
+
+	if (!mcd->IsPresent())
+	{
+		return 0xff;
+	}
+
 	bool sendAck = true;
 	u8 ret = 0;
 
@@ -489,7 +506,18 @@ void MemoryCardProtocol::AuthF3()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	The2bTerminator(5);
+
+	if (!mcd->IsPresent())
+	{
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+	}
+	else
+	{
+		The2bTerminator(5);
+	}
 }
 
 void MemoryCardProtocol::AuthF7()
