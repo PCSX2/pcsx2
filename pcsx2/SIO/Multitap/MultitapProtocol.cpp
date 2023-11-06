@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
+#include "StateWrapper.h"
 
 #include "SIO/Multitap/MultitapProtocol.h"
 
@@ -25,8 +26,7 @@
 #define MT_LOG_ENABLE 0
 #define MT_LOG if (MT_LOG_ENABLE) DevCon
 
-MultitapProtocol g_MultitapPort0;
-MultitapProtocol g_MultitapPort1;
+std::array<MultitapProtocol, SIO::PORTS> g_MultitapArr;
 
 void MultitapProtocol::SupportCheck()
 {
@@ -112,6 +112,16 @@ void MultitapProtocol::FullReset()
 
 	this->currentPadSlot = 0;
 	this->currentMemcardSlot = 0;
+}
+
+bool MultitapProtocol::DoState(StateWrapper& sw)
+{
+	if (!sw.DoMarker("Multitap"))
+		return false;
+
+	sw.Do(&currentPadSlot);
+	sw.Do(&currentMemcardSlot);
+	return true;
 }
 
 u8 MultitapProtocol::GetPadSlot()

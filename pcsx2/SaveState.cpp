@@ -33,6 +33,7 @@
 #include "R3000A.h"
 #include "SIO/Sio0.h"
 #include "SIO/Sio2.h"
+#include "SIO/Multitap/MultitapProtocol.h"
 #include "SPU2/spu2.h"
 #include "SaveState.h"
 #include "StateWrapper.h"
@@ -259,6 +260,9 @@ bool SaveStateBase::FreezeInternals()
 
 		okay = okay && g_Sio0.DoState(sw);
 		okay = okay && g_Sio2.DoState(sw);
+		okay = okay && g_MultitapArr.at(0).DoState(sw);
+		okay = okay && g_MultitapArr.at(1).DoState(sw);
+
 		if (!okay || !sw.IsGood())
 			return false;
 

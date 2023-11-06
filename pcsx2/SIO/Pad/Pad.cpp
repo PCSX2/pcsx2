@@ -49,8 +49,7 @@ namespace Pad
 
 	static const char* GetControllerTypeName(Pad::ControllerType type);
 
-	static std::unique_ptr<PadBase> CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType);
-	static PadBase* ChangePadType(u8 unifiedSlot, Pad::ControllerType controllerType);
+	static PadBase* CreatePad(u8 unifiedSlot, Pad::ControllerType controllerType, size_t ejectTicks = 0);
 
 	static void LoadMacroButtonConfig(
 		const SettingsInterface& si, u32 pad, const ControllerInfo* ci, const std::string& section);
@@ -91,7 +90,6 @@ void Pad::LoadConfig(const SettingsInterface& si)
 {
 	s_macro_buttons = {};
 
-	// This is where we would load controller types, if onepad supported them.
 	for (u32 i = 0; i < Pad::NUM_CONTROLLER_PORTS; i++)
 	{
 		const std::string section = GetConfigSection(i);
@@ -99,11 +97,12 @@ void Pad::LoadConfig(const SettingsInterface& si)
 		pxAssert(ci);
 
 		// If a pad is not yet constructed, at minimum place a NotConnected pad in the slot.
-		// Do not abort the for loop - If there pad settings, we want those to be applied to the slot.
+		// Do not abort the for loop - If there are pad settings, we want those to be applied to the slot.
 		PadBase* pad = Pad::GetPad(i);
+
 		if (!pad || pad->GetType() != ci->type)
 		{
-			pad = Pad::ChangePadType(i, ci->type);
+			pad = Pad::CreatePad(i, ci->type);
 			pxAssert(pad);
 		}
 
@@ -471,22 +470,22 @@ std::string Pad::GetConfigSection(u32 pad_index)
 	return fmt::format("Pad{}", pad_index + 1);
 }
 
-std::unique_ptr<PadBase> Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType)
+// Create a new pad instance, update the smart pointer for this pad slot, and return a dumb pointer to the new pad.
+PadBase* Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType, size_t ejectTicks)
 {
 	switch (controllerType)
 	{
 		case ControllerType::DualShock2:
-			return std::make_unique<PadDualshock2>(unifiedSlot);
+			s_controllers[unifiedSlot] = std::make_unique<PadDualshock2>(unifiedSlot, ejectTicks);
+			break;
 		case ControllerType::Guitar:
-			return std::make_unique<PadGuitar>(unifiedSlot);
+			s_controllers[unifiedSlot] = std::make_unique<PadGuitar>(unifiedSlot, ejectTicks);
+			break;
 		default:
-			return std::make_unique<PadNotConnected>(unifiedSlot);
+			s_controllers[unifiedSlot] = std::make_unique<PadNotConnected>(unifiedSlot, ejectTicks);
+			break;
 	}
-}
 
-PadBase* Pad::ChangePadType(u8 unifiedSlot, ControllerType controllerType)
-{
-	s_controllers[unifiedSlot] = CreatePad(unifiedSlot, controllerType);
 	return s_controllers[unifiedSlot].get();
 }
 
@@ -532,7 +531,7 @@ bool Pad::Freeze(StateWrapper& sw)
 			if (sw.HasError())
 				return false;
 
-			std::unique_ptr<PadBase> tempPad;
+			PadBase* tempPad;
 			PadBase* pad = GetPad(unifiedSlot);
 			if (!pad || pad->GetType() != type)
 			{
@@ -551,7 +550,7 @@ bool Pad::Freeze(StateWrapper& sw)
 
 				// But we still need to pull the data from the state..
 				tempPad = CreatePad(unifiedSlot, type);
-				pad = tempPad.get();
+				pad = tempPad;
 			}
 
 			if (!pad->Freeze(sw))
