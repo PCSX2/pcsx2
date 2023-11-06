@@ -143,8 +143,8 @@ namespace Achievements
 	static void UpdateGameSummary();
 	static void DownloadImage(std::string url, std::string cache_filename);
 
-	static bool CreateClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http);
-	static void DestroyClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http);
+	static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
+	static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 	static void ClientMessageCallback(const char* message, const rc_client_t* client);
 	static uint32_t ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
 	static void ClientServerCall(
@@ -203,7 +203,7 @@ namespace Achievements
 	static std::recursive_mutex s_achievements_mutex;
 	static rc_client_t* s_client;
 	static std::string s_image_directory;
-	static std::unique_ptr<Common::HTTPDownloader> s_http_downloader;
+	static std::unique_ptr<HTTPDownloader> s_http_downloader;
 
 	static u32 s_game_disc_crc;
 	static std::string s_game_hash;
@@ -352,8 +352,8 @@ std::string Achievements::GetGameHash()
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-	auto callback = [cache_filename](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
-		if (status_code != Common::HTTPDownloader::HTTP_STATUS_OK)
+	auto callback = [cache_filename](s32 status_code, std::string content_type, HTTPDownloader::Request::Data data) {
+		if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			return;
 
 		if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
@@ -472,9 +472,9 @@ bool Achievements::Initialize()
 	return true;
 }
 
-bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http)
+bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-	*http = Common::HTTPDownloader::Create(GetUserAgent().c_str());
+	*http = HTTPDownloader::Create(GetUserAgent().c_str());
 	if (!*http)
 	{
 		Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
@@ -501,7 +501,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<Common::HT
 	return true;
 }
 
-void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http)
+void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
 	(*http)->WaitForAllRequests();
 
@@ -649,10 +649,10 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
-	Common::HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
-																Common::HTTPDownloader::Request::Data data) {
+	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
+																HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
-		rr.http_status_code = (status_code <= 0) ? (status_code == Common::HTTPDownloader::HTTP_STATUS_CANCELLED ?
+		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
 														   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
 														   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
 												   status_code;
@@ -662,7 +662,7 @@ void Achievements::ClientServerCall(
 		callback(&rr, callback_data);
 	};
 
-	Common::HTTPDownloader* http = static_cast<Common::HTTPDownloader*>(rc_client_get_userdata(client));
+	HTTPDownloader* http = static_cast<HTTPDownloader*>(rc_client_get_userdata(client));
 
 	// TODO: Content-type for post
 	if (request->post_data)
@@ -1645,9 +1645,9 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
 
 	// We need to use a temporary client if achievements aren't currently active.
 	rc_client_t* client = s_client;
-	Common::HTTPDownloader* http = s_http_downloader.get();
+	HTTPDownloader* http = s_http_downloader.get();
 	const bool is_temporary_client = (client == nullptr);
-	std::unique_ptr<Common::HTTPDownloader> temporary_downloader;
+	std::unique_ptr<HTTPDownloader> temporary_downloader;
 	ScopedGuard temporary_client_guard = [&client, is_temporary_client, &temporary_downloader]() {
 		if (is_temporary_client)
 			DestroyClient(&client, &temporary_downloader);
