@@ -144,9 +144,7 @@ void Sio2::SetRecv1(u32 value)
 
 void Sio2::Pad()
 {
-	MultitapProtocol& mtap = (port ? g_MultitapPort1 : g_MultitapPort0);
-
-	// Send PAD our current port, and get back whatever it says the first response byte should be.
+	MultitapProtocol& mtap = g_MultitapArr.at(port);
 	PadBase* pad = Pad::GetPad(port, mtap.GetPadSlot());
 
 	// Update the third nibble with which ports have been accessed
@@ -177,10 +175,9 @@ void Sio2::Pad()
 	}
 
 	g_Sio2FifoOut.push_back(0xff);
-
-	// Then for every byte in g_Sio2FifoIn, pass to PAD and see what it kicks back to us.
 	pad->SoftReset();
 
+	// Then for every byte in g_Sio2FifoIn, pass to PAD and see what it kicks back to us.
 	while (!g_Sio2FifoIn.empty())
 	{
 		const u8 commandByte = g_Sio2FifoIn.front();
@@ -208,8 +205,8 @@ void Sio2::Multitap()
 	// This bit is always set, whether the pad is present or missing
 	this->recv1 |= Recv1::NO_DEVICES_MISSING;
 
-	// If the currently accessed pad is missing, also tick those bits.
-	// MTAPMAN is special - at least, the variant found in Gauntlet: Dark Legacy.
+	// If the currently accessed multitap is missing, also tick those bits.
+	// MTAPMAN is special though.
 	// 
 	// For PADMAN and pads, the bits represented by PORT_1_MISSING and PORT_2_MISSING
 	// are always faithful - suppose your game only opened port 2 for some reason,
@@ -223,18 +220,7 @@ void Sio2::Multitap()
 		this->recv1 |= Recv1::PORT_1_MISSING;
 	}
 
-	switch (this->port)
-	{
-		case 0:
-			g_MultitapPort0.SendToMultitap();
-			break;
-		case 1:
-			g_MultitapPort1.SendToMultitap();
-			break;
-		default:
-			Console.Warning("%s() Port value from SEND3 out of bounds! (%d)", __FUNCTION__, this->port);
-			break;
-	}
+	g_MultitapArr.at(this->port).SendToMultitap();
 }
 
 void Sio2::Infrared()
@@ -252,7 +238,7 @@ void Sio2::Infrared()
 
 void Sio2::Memcard()
 {
-	MultitapProtocol& mtap = (port ? g_MultitapPort1 : g_MultitapPort0);
+	MultitapProtocol& mtap = g_MultitapArr.at(this->port);
 
 	mcd = &mcds[port][mtap.GetMemcardSlot()];
 
@@ -511,7 +497,6 @@ bool Sio2::DoState(StateWrapper& sw)
 	sw.Do(&unknown2);
 	sw.Do(&iStat);
 	sw.Do(&port);
-	sw.Do(&slot);
 	sw.Do(&send3Read);
 	sw.Do(&send3Position);
 	sw.Do(&commandLength);
