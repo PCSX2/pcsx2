@@ -2306,6 +2306,8 @@ SCED-50633:
 SCED-50642:
   name: "Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -2430,6 +2432,8 @@ SCED-50844:
 SCED-50907:
   name: "Final Fantasy X [Bonus Disc - Beyond Final Fantasy]"
   region: "PAL-Unk"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -4096,6 +4100,8 @@ SCES-50490:
   name: "Final Fantasy X"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -4105,6 +4111,8 @@ SCES-50490:
 SCES-50491:
   name: "Final Fantasy X"
   region: "PAL-F"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -4115,6 +4123,8 @@ SCES-50492:
   name: "Final Fantasy X"
   region: "PAL-G"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -4124,6 +4134,8 @@ SCES-50492:
 SCES-50493:
   name: "Final Fantasy X"
   region: "PAL-I"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -4133,6 +4145,8 @@ SCES-50493:
 SCES-50494:
   name: "Final Fantasy X"
   region: "PAL-S"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -11933,6 +11947,8 @@ SLED-52890:
   region: "PAL-M7"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLED-52891:
   name: "Rocky Legends"
   region: "PAL-Unk"
@@ -18143,26 +18159,36 @@ SLES-52559:
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLES-52560:
   name: "FIFA 2005"
   region: "PAL-G"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLES-52561:
   name: "FIFA 2005"
   region: "PAL-P-S"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLES-52562:
   name: "FIFA 2005"
   region: "PAL-I"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLES-52563:
   name: "FIFA Football 2005"
   region: "PAL-M6"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
@@ -27825,6 +27851,8 @@ SLKA-25209:
   region: "NTSC-K"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
   gsHWFixes:
     mipmap: 1
 SLKA-25210:
@@ -40617,6 +40645,8 @@ SLPM-66124:
   name-sort: ふぁいなるふぁんたじーX [あるてぃめっとひっつ]
   name-en: "Final Fantasy X [Ultimate Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -49213,8 +49243,12 @@ SLPS-25050:
   name-en: "Final Fantasy X"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
+  clampModes:
+    eeClampMode: 3 # Fixes animations.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPS-25051:
@@ -54272,6 +54306,8 @@ SLPS-72501:
   name-sort: ふぁいなるふぁんたじーX MEGA HITS!
   name-en: "Final Fantasy X [Mega Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -56376,6 +56412,8 @@ SLUS-20312:
   name: "Final Fantasy X"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes interlacing.
   roundModes:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
@@ -60282,6 +60320,8 @@ SLUS-21051:
   compat: 5
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
+  speedHacks:
+    eeCycleRate: 3 # Fixes player uniforms.
 SLUS-21052:
   name: "Disney's Monsters Inc."
   region: "NTSC-U"
