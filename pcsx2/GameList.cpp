@@ -1263,14 +1263,14 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 			{
 				std::string url(url_template);
 				if (has_title)
-					StringUtil::ReplaceAll(&url, "${title}", Common::HTTPDownloader::URLEncode(entry.title));
+					StringUtil::ReplaceAll(&url, "${title}", HTTPDownloader::URLEncode(entry.title));
 				if (has_file_title)
 				{
 					std::string display_name(FileSystem::GetDisplayNameFromPath(entry.path));
-					StringUtil::ReplaceAll(&url, "${filetitle}", Common::HTTPDownloader::URLEncode(Path::GetFileTitle(display_name)));
+					StringUtil::ReplaceAll(&url, "${filetitle}", HTTPDownloader::URLEncode(Path::GetFileTitle(display_name)));
 				}
 				if (has_serial)
-					StringUtil::ReplaceAll(&url, "${serial}", Common::HTTPDownloader::URLEncode(entry.serial));
+					StringUtil::ReplaceAll(&url, "${serial}", HTTPDownloader::URLEncode(entry.serial));
 
 				download_urls.emplace_back(entry.path, std::move(url));
 			}
@@ -1282,7 +1282,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 		return false;
 	}
 
-	std::unique_ptr<Common::HTTPDownloader> downloader(Common::HTTPDownloader::Create());
+	std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create());
 	if (!downloader)
 	{
 		progress->DisplayError("Failed to create HTTP downloader.");
@@ -1311,11 +1311,11 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 		}
 
 		// we could actually do a few in parallel here...
-		std::string filename(Common::HTTPDownloader::URLDecode(url));
+		std::string filename(HTTPDownloader::URLDecode(url));
 		downloader->CreateRequest(
 			std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
-								s32 status_code, const std::string& content_type, Common::HTTPDownloader::Request::Data data) {
-				if (status_code != Common::HTTPDownloader::HTTP_STATUS_OK || data.empty())
+								s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
+				if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
 					return;
 
 				std::unique_lock lock(s_mutex);
@@ -1326,7 +1326,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 				// prefer the content type from the response for the extension
 				// otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
 				std::string template_filename;
-				std::string content_type_extension(Common::HTTPDownloader::GetExtensionForContentType(content_type));
+				std::string content_type_extension(HTTPDownloader::GetExtensionForContentType(content_type));
 
 				// don't treat the domain name as an extension..
 				const std::string::size_type last_slash = filename.find('/');
