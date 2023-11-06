@@ -82,6 +82,12 @@ namespace Achievements
 	static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 	static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
 
+	// Some API calls are really slow. Set a longer timeout.
+	static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
+
+	// Chrome uses 10 server calls per domain, seems reasonable.
+	static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
+
 	static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
 	static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 	static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
@@ -481,6 +487,9 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
 		return false;
 	}
 
+	(*http)->SetTimeout(SERVER_CALL_TIMEOUT);
+	(*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
+
 	rc_client_t* new_client = rc_client_create(ClientReadMemory, ClientServerCall);
 	if (!new_client)
 	{
@@ -650,7 +659,7 @@ void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
 	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
-																HTTPDownloader::Request::Data data) {
+														HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
 		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
 														   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
