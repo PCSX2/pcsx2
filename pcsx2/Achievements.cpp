@@ -139,12 +139,12 @@ namespace Achievements
 	static void BeginLoadingScreen(const char* text, bool* was_running_idle);
 	static void EndLoadingScreen(bool was_running_idle);
 	static std::string_view GetELFNameForHash(const std::string& elf_path);
-	static std::string GetGameHash();
+	static std::string GetGameHash(const std::string& elf_path);
 	static void SetHardcoreMode(bool enabled, bool force_display_message);
 	static bool IsLoggedInOrLoggingIn();
 	static bool IsUnknownGame();
 	static void ShowLoginSuccess(const rc_client_t* client);
-	static void IdentifyGame(u32 disc_crc);
+	static void IdentifyGame(u32 disc_crc, u32 crc);
 	static void BeginLoadGame();
 	static void UpdateGameSummary();
 	static void DownloadImage(std::string url, std::string cache_filename);
@@ -211,10 +211,10 @@ namespace Achievements
 	static std::string s_image_directory;
 	static std::unique_ptr<HTTPDownloader> s_http_downloader;
 
-	static u32 s_game_disc_crc;
 	static std::string s_game_hash;
 	static std::string s_game_title;
 	static std::string s_game_icon;
+	static u32 s_game_crc;
 	static rc_client_user_game_summary_t s_game_summary;
 	static u32 s_game_id = 0;
 
@@ -314,12 +314,8 @@ std::string_view Achievements::GetELFNameForHash(const std::string& elf_path)
 	return std::string_view(elf_path).substr(start, end - start);
 }
 
-std::string Achievements::GetGameHash()
+std::string Achievements::GetGameHash(const std::string& elf_path)
 {
-	const std::string elf_path = VMManager::GetDiscELF();
-	if (elf_path.empty())
-		return {};
-
 	// this.. really shouldn't be invalid
 	const std::string_view name_for_hash = GetELFNameForHash(elf_path);
 	if (name_for_hash.empty())
@@ -460,7 +456,7 @@ bool Achievements::Initialize()
 
 	// Begin disc identification early, before the login finishes.
 	if (VMManager::HasValidVM())
-		IdentifyGame(VMManager::GetDiscCRC());
+		IdentifyGame(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 	const std::string username = Host::GetBaseStringSettingValue("Achievements", "Username");
 	const std::string api_token = Host::GetBaseStringSettingValue("Achievements", "Token");
@@ -845,21 +841,26 @@ void Achievements::GameChanged(u32 disc_crc, u32 crc)
 	if (!IsActive())
 		return;
 
-	IdentifyGame(disc_crc);
+	IdentifyGame(disc_crc, crc);
 }
 
-void Achievements::IdentifyGame(u32 disc_crc)
+void Achievements::IdentifyGame(u32 disc_crc, u32 crc)
 {
-	// avoid reading+hashing the executable if the crc hasn't changed
-	if (s_game_disc_crc == disc_crc)
+	// If we're currently loading the ELF, assume that we're going to load the default ELF.
+	// That way we can download achievement data while the PS2 logo runs. Pretty safe assumption.
+	const bool booted_elf = VMManager::Internal::HasBootedELF();
+	const u32 crc_to_use = booted_elf ? crc : disc_crc;
+
+	// Avoid reading+hashing the executable if the crc hasn't changed.
+	if (s_game_crc == crc_to_use)
 		return;
 
-	std::string game_hash = GetGameHash();
+	const std::string game_hash = GetGameHash(booted_elf ? VMManager::GetCurrentELF() : VMManager::GetDiscELF());
 	if (s_game_hash == game_hash)
 		return;
 
 	ClearGameHash();
-	s_game_disc_crc = disc_crc;
+	s_game_crc = crc_to_use;
 	s_game_hash = std::move(game_hash);
 
 #ifdef ENABLE_RAINTEGRATION
@@ -898,7 +899,7 @@ void Achievements::BeginLoadGame()
 	if (s_game_hash.empty())
 	{
 		// when we're booting the bios, or shutting down, this will fail
-		if (s_game_disc_crc != 0)
+		if (s_game_crc != 0)
 		{
 			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed",
 				TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
@@ -1019,7 +1020,7 @@ void Achievements::ClearGameInfo()
 
 void Achievements::ClearGameHash()
 {
-	s_game_disc_crc = 0;
+	s_game_crc = 0;
 	std::string().swap(s_game_hash);
 }
 
@@ -1492,8 +1493,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 		return;
 
 	// this assumes that the CRC and ELF name has been loaded prior to the cheevos state (it should be).
-	if (VMManager::GetDiscCRC() != s_game_disc_crc)
-		GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
+	GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())

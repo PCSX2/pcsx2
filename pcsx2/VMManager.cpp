@@ -331,8 +331,12 @@ std::string VMManager::GetDiscVersion()
 
 u32 VMManager::GetCurrentCRC()
 {
-	std::unique_lock lock(s_info_mutex);
 	return s_current_crc;
+}
+
+const std::string& VMManager::GetCurrentELF()
+{
+	return s_elf_path;
 }
 
 bool VMManager::Internal::CPUThreadInitialize()
