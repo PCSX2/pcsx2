@@ -33,7 +33,6 @@ target_sources(common PRIVATE
 	StringUtil.cpp
 	TextureDecompress.cpp
 	Timer.cpp
-	ThreadPool.cpp
 	WAVWriter.cpp
 	WindowInfo.cpp
 	emitter/avx.cpp
@@ -99,7 +98,6 @@ target_sources(common PRIVATE
 	Timer.h
 	TextureDecompress.h
 	Threading.h
-	ThreadPool.h
 	TraceLog.h
 	WAVWriter.h
 	WindowInfo.h
