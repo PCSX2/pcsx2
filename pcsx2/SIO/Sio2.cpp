@@ -65,7 +65,6 @@ bool Sio2::Initialize()
 	iStat = 0;
 
 	port = 0;
-	slot = 0;
 
 	while (!g_Sio2FifoOut.empty())
 	{
@@ -108,6 +107,9 @@ void Sio2::SoftReset()
 	{
 		g_Sio2FifoIn.pop_front();
 	}
+
+	// RECV1 should always be reassembled based on the devices being probed by the packet.
+	recv1 = 0;
 }
 
 void Sio2::Interrupt()
@@ -142,12 +144,38 @@ void Sio2::SetRecv1(u32 value)
 
 void Sio2::Pad()
 {
-	// Send PAD our current port, and get back whatever it says the first response byte should be.
-	PadBase* pad = Pad::GetPad(port, slot);
+	MultitapProtocol& mtap = (port ? g_MultitapPort1 : g_MultitapPort0);
 
-	// RECV1 is set once per DMA; if any device is present at all, it should be set to connected.
-	// For now, we will always report connected for pads.
-	SetRecv1(Recv1::CONNECTED);
+	// Send PAD our current port, and get back whatever it says the first response byte should be.
+	PadBase* pad = Pad::GetPad(port, mtap.GetPadSlot());
+
+	// Update the third nibble with which ports have been accessed
+	if (this->recv1 & Recv1::ONE_PORT_OPEN)
+	{
+		this->recv1 &= ~(Recv1::ONE_PORT_OPEN);
+		this->recv1 |= Recv1::TWO_PORTS_OPEN;
+	}
+	else
+	{
+		this->recv1 |= Recv1::ONE_PORT_OPEN;
+	}
+
+	// This bit is always set, whether the pad is present or missing
+	this->recv1 |= Recv1::NO_DEVICES_MISSING;
+
+	// If the currently accessed pad is missing, also tick those bits
+	if (pad->GetType() == Pad::ControllerType::NotConnected)
+	{
+		if (!port)
+		{
+			this->recv1 |= Recv1::PORT_1_MISSING;
+		}
+		else
+		{
+			this->recv1 |= Recv1::PORT_2_MISSING;
+		}
+	}
+
 	g_Sio2FifoOut.push_back(0xff);
 
 	// Then for every byte in g_Sio2FifoIn, pass to PAD and see what it kicks back to us.
@@ -164,21 +192,48 @@ void Sio2::Pad()
 
 void Sio2::Multitap()
 {
-	g_Sio2FifoOut.push_back(0x00);
-
-	const bool multitapEnabled = EmuConfig.Pad.IsMultitapPortEnabled(port);
-	SetRecv1(multitapEnabled ? Recv1::CONNECTED : Recv1::DISCONNECTED);
-
-	if (multitapEnabled)
+	const bool multitapEnabled = EmuConfig.Pad.IsMultitapPortEnabled(this->port);
+	
+	// Update the third nibble with which ports have been accessed
+	if (this->recv1 & Recv1::ONE_PORT_OPEN)
 	{
-		g_MultitapProtocol.SendToMultitap();
+		this->recv1 &= ~(Recv1::ONE_PORT_OPEN);
+		this->recv1 |= Recv1::TWO_PORTS_OPEN;
 	}
 	else
 	{
-		while (g_Sio2FifoOut.size() < commandLength)
-		{
-			g_Sio2FifoOut.push_back(0x00);
-		}
+		this->recv1 |= Recv1::ONE_PORT_OPEN;
+	}
+
+	// This bit is always set, whether the pad is present or missing
+	this->recv1 |= Recv1::NO_DEVICES_MISSING;
+
+	// If the currently accessed pad is missing, also tick those bits.
+	// MTAPMAN is special - at least, the variant found in Gauntlet: Dark Legacy.
+	// 
+	// For PADMAN and pads, the bits represented by PORT_1_MISSING and PORT_2_MISSING
+	// are always faithful - suppose your game only opened port 2 for some reason,
+	// then a disconnect value would look like 0x0002D100.
+	//
+	// MTAPMAN however does not check the bit set by 0x00020000. It only checks the bit
+	// set by 0x00010000. So even if port 2 is being addressed, RECV1 should be 0x0001D100
+	// (or 0x0001D200 if there are both ports being accessed in that packet).
+	if (!multitapEnabled)
+	{
+		this->recv1 |= Recv1::PORT_1_MISSING;
+	}
+
+	switch (this->port)
+	{
+		case 0:
+			g_MultitapPort0.SendToMultitap();
+			break;
+		case 1:
+			g_MultitapPort1.SendToMultitap();
+			break;
+		default:
+			Console.Warning("%s() Port value from SEND3 out of bounds! (%d)", __FUNCTION__, this->port);
+			break;
 	}
 }
 
@@ -197,7 +252,9 @@ void Sio2::Infrared()
 
 void Sio2::Memcard()
 {
-	mcd = &mcds[port][slot];
+	MultitapProtocol& mtap = (port ? g_MultitapPort1 : g_MultitapPort0);
+
+	mcd = &mcds[port][mtap.GetMemcardSlot()];
 
 	// Check if auto ejection is active. If so, set RECV1 to DISCONNECTED,
 	// and zero out the fifo to simulate dead air over the wire.
@@ -221,10 +278,7 @@ void Sio2::Memcard()
 	g_Sio2FifoIn.pop_front();
 	const u8 responseByte = mcd->IsPresent() ? 0x00 : 0xff;
 	g_Sio2FifoOut.push_back(responseByte);
-	// Technically, the FLAG byte is only for PS1 memcards. However,
-	// since this response byte is still a dud on PS2 memcards, we can
-	// basically just cheat and always make this our second response byte for memcards.
-	g_Sio2FifoOut.push_back(mcd->FLAG);
+	g_Sio2FifoOut.push_back(responseByte);
 	u8 ps1Input = 0;
 	u8 ps1Output = 0;
 
@@ -398,7 +452,7 @@ void Sio2::Write(u8 data)
 				break;
 			default:
 				Console.Error("%s(%02X) Unhandled SIO mode %02X", __FUNCTION__, data, sioMode);
-				g_Sio2FifoOut.push_back(0x00);
+				g_Sio2FifoOut.push_back(0xff);
 				SetRecv1(Recv1::DISCONNECTED);
 				break;
 		}
@@ -423,7 +477,7 @@ void Sio2::Write(u8 data)
 
 u8 Sio2::Read()
 {
-	u8 ret = 0x00;
+	u8 ret = 0xff;
 
 	if (!g_Sio2FifoOut.empty())
 	{
@@ -432,7 +486,7 @@ u8 Sio2::Read()
 	}
 	else
 	{
-		Console.Warning("%s() g_Sio2FifoOut underflow! Returning 0x00.", __FUNCTION__);
+		Console.Warning("%s() g_Sio2FifoOut underflow! Returning 0xff.", __FUNCTION__);
 	}
 
 	Sio2Log.WriteLn("%s() SIO2 DATA Read (%02X)", __FUNCTION__, ret);

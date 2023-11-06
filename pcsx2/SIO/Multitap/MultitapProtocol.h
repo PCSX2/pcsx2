@@ -27,8 +27,11 @@ enum class MultitapMode
 class MultitapProtocol
 {
 private:
+	u8 currentPadSlot = 0;
+	u8 currentMemcardSlot = 0;
+
 	void SupportCheck();
-	void Select();
+	void Select(MultitapMode mode);
 
 public:
 	MultitapProtocol();
@@ -37,7 +40,12 @@ public:
 	void SoftReset();
 	void FullReset();
 
+	u8 GetPadSlot();
+	u8 GetMemcardSlot();
+
 	void SendToMultitap();
 };
 
-extern MultitapProtocol g_MultitapProtocol;
+extern MultitapProtocol g_MultitapPort0;
+extern MultitapProtocol g_MultitapPort1;
+

@@ -117,5 +117,5 @@ u8 PadNotConnected::GetPressure(u32 index) const
 
 u8 PadNotConnected::SendCommandByte(u8 commandByte)
 {
-	return 0x00;
+	return 0xff;
 }

@@ -130,10 +130,21 @@ namespace Sio2Ctrl
 	static constexpr u32 SIO2MAN_RESET = 0x000003bc;
 } // namespace Sio2Ctrl
 
+// TODO: Remove deprecated options once memcards are no longer using them.
 namespace Recv1
 {
+	// Deprecated
 	static constexpr u32 DISCONNECTED = 0x1d100;
+	// Deprecated
 	static constexpr u32 CONNECTED = 0x1100;
+
+	static constexpr u32 NO_DEVICES_MISSING = 0x1000;
+	static constexpr u32 PORT_1_MISSING = 0x1D000;
+	static constexpr u32 PORT_2_MISSING = 0x2D000;
+	static constexpr u32 BOTH_PORTS_MISSING = 0x3D000;
+	static constexpr u32 ONE_PORT_OPEN = 0x100;
+	static constexpr u32 TWO_PORTS_OPEN = 0x200;
+
 } // namespace Recv1
 
 namespace Recv2
