@@ -93,6 +93,9 @@ namespace VMManager
 	/// Returns the crc of the executable currently running.
 	u32 GetCurrentCRC();
 
+	/// Returns the path to the ELF which is currently running. Only safe to read on the EE thread.
+	const std::string& GetCurrentELF();
+
 	/// Initializes all system components.
 	bool Initialize(VMBootParameters boot_params);
 
