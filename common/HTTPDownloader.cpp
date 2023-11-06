@@ -20,6 +20,7 @@
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+#include "common/Threading.h"
 
 static constexpr float DEFAULT_TIMEOUT_IN_SECONDS = 30;
 static constexpr u32 DEFAULT_MAX_ACTIVE_REQUESTS = 4;
@@ -180,7 +181,11 @@ void HTTPDownloader::WaitForAllRequests()
 {
 	std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
 	while (!m_pending_http_requests.empty())
+	{
+		// Don't burn too much CPU.
+		Threading::Sleep(1);
 		LockedPollRequests(lock);
+	}
 }
 
 void HTTPDownloader::LockedAddRequest(Request* request)
