@@ -600,13 +600,13 @@ __fi void rcntUpdate_hScanline()
 	//iopEventAction = 1;
 	if (hsyncCounter.Mode == MODE_HBLANK)
 	{ //HBLANK Start
-		rcntStartGate(false, hsyncCounter.sCycle);
-		psxCheckStartGate16(0);
-
 		// Setup the hRender's start and end cycle information:
 		hsyncCounter.sCycle += vSyncInfo.hBlank; // start  (absolute cycle value)
 		hsyncCounter.CycleT = vSyncInfo.hRender; // endpoint (delta from start value)
 		hsyncCounter.Mode = MODE_HRENDER;
+
+		rcntStartGate(false, hsyncCounter.sCycle);
+		psxCheckStartGate16(0);
 	}
 	else
 	{ //HBLANK END / HRENDER Begin
@@ -616,15 +616,16 @@ __fi void rcntUpdate_hScanline()
 			if (!GSIMR.HSMSK)
 				gsIrq();
 		}
-		if (gates)
-			rcntEndGate(false, hsyncCounter.sCycle);
-		if (psxhblankgate)
-			psxCheckEndGate16(0);
 
 		// set up the hblank's start and end cycle information:
 		hsyncCounter.sCycle += vSyncInfo.hRender; // start (absolute cycle value)
 		hsyncCounter.CycleT = vSyncInfo.hBlank;   // endpoint (delta from start value)
 		hsyncCounter.Mode = MODE_HBLANK;
+
+		if (gates)
+			rcntEndGate(false, hsyncCounter.sCycle);
+		if (psxhblankgate)
+			psxCheckEndGate16(0);
 
 #ifdef VSYNC_DEBUG
 		hsc++;
@@ -639,11 +640,11 @@ __fi void rcntUpdate_vSync()
 
 	if (vsyncCounter.Mode == MODE_VSYNC)
 	{
-		VSyncEnd(vsyncCounter.sCycle);
-
 		vsyncCounter.sCycle += vSyncInfo.Blank;
 		vsyncCounter.CycleT = vSyncInfo.Render;
 		vsyncCounter.Mode = MODE_VRENDER;
+
+		VSyncEnd(vsyncCounter.sCycle);
 	}
 	else if (vsyncCounter.Mode == MODE_GSBLANK) // GS CSR Swap and interrupt
 	{
@@ -655,14 +656,14 @@ __fi void rcntUpdate_vSync()
 	}
 	else // VSYNC end / VRENDER begin
 	{
-		VSyncStart(vsyncCounter.sCycle);
-
 		vsyncCounter.sCycle += vSyncInfo.Render;
 		vsyncCounter.CycleT = vSyncInfo.GSBlank;
 		vsyncCounter.Mode = MODE_GSBLANK;
 
 		// Accumulate hsync rounding errors:
 		hsyncCounter.sCycle += vSyncInfo.hSyncError;
+
+		VSyncStart(vsyncCounter.sCycle);
 
 #ifdef VSYNC_DEBUG
 		vblankinc++;
