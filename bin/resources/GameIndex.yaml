@@ -29362,10 +29362,14 @@ SLPM-55145:
   name: "Akudaikan 3"
   region: "NTSC-J"
 SLPM-55146:
-  name: "Jikkyou Powerful Pro Yakyuu 2009"
+  name: 実況パワフルプロ野球2009
+  name-sort: じっきょうぱわふるぷろやきゅう2009
+  name-en: "Jikkyou Powerful Pro Yakyuu 2009"
   region: "NTSC-J"
 SLPM-55147:
-  name: "Suggoi! Arcana Heart 2"
+  name: すっごい! アルカナハート2
+  name-sort: すっごい! あるかなはーと2
+  name-en: "Suggoi! Arcana Heart 2"
   region: "NTSC-J"
 SLPM-55148:
   name: 007 / 慰めの報酬
@@ -29653,7 +29657,9 @@ SLPM-55244:
     halfPixelOffset: 2 # Fixes blurriness.
     getSkipCount: "GSC_NFSUndercover"
 SLPM-55245:
-  name: "Himawari - Pebble in the Sky"
+  name: ひまわり - Pebble in the Sky -
+  name-sort: ひまわり - Pebble in the Sky -
+  name-en: "Himawari - Pebble in the Sky"
   region: "NTSC-J"
 SLPM-55246:
   name: "Wand of Fortune - Mirai e no Prologue"
@@ -33557,6 +33563,11 @@ SLPM-62589:
   name-sort: SIMPLE2000しりーず Vol.72 THE にんきょう
   name-en: "Simple 2000 Series Vol. 72 - Ninhaza"
   region: "NTSC-J"
+SLPM-62590:
+  name: ジーワンジョッキー3 2005年度版 プレミアムパック
+  name-sort: ジーワンジョッキー 3 2005ねんどばん ぷれみあむぱっく
+  name-en: "G1 Jockey 3 - 2005 [Premium Pack]"
+  region: "NTSC-J"
 SLPM-62591:
   name: ジーワンジョッキー3 2005年度版
   name-sort: じーわんじょっきー3 2005ねんどばん
@@ -35940,8 +35951,12 @@ SLPM-65257:
     - "SLPM-65341"
     - "SLPM-65631"
 SLPM-65259:
-  name: "Shin Megami Tensei III - Nocturne"
+  name: 真・女神転生 III-NOCTURNE TSUTAYAオリジナルバージョン
+  name-sort: しん・めがみてんせい III-NOCTURNE TSUTAYAおりじなるばーじょん
+  name-en: "Shin Megami Tensei III - Nocturne TSUTAYA Original Version"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Ladder glitch in "Assembly of Nihilo B11" level.
 SLPM-65260:
   name: 凱歌の号砲
   name-sort: がいかのごうほう
@@ -37334,7 +37349,9 @@ SLPM-65521:
   name-en: "Tentama 2 Wins"
   region: "NTSC-J"
 SLPM-65522:
-  name: "Bakushou!! Jinsei Kaidou - Nova Usagi ga Miteru zo!!"
+  name: 爆笑!! 人生回道 NOVAうさぎが見てるぞ!!
+  name-sort: ばくしょう!! じんせいかいどう NOVAうさぎがみているぞ!!
+  name-en: "Bakushou!! Jinsei Kaidou - Nova Usagi ga Miteru zo!!"
   region: "NTSC-J"
 SLPM-65523:
   name: ふらせら Hurrah!Sailor 通常版
@@ -37810,7 +37827,9 @@ SLPM-65617:
   name-en: "Bouken Jidai Katsugeki Goemon [Konami Collection]"
   region: "NTSC-J"
 SLPM-65618:
-  name: "Vampire Panic"
+  name: ベルセルク 体験版
+  name-sort: べるせるく たいけんばん
+  name: "Berserk [Trial]"
   region: "NTSC-J"
 SLPM-65619:
   name: トム・クランシーシリーズ ゴーストリコン ジャングルストーム
@@ -39325,6 +39344,11 @@ SLPM-65892:
   name: Zill O’ll 〜infinite〜
   name-sort: Zill O’ll 〜infinite〜
   name-en: "Zill O'll Infinite"
+  region: "NTSC-J"
+SLPM-65893:
+  name: Winning Post 6 Maximum 2005 プレミアムパック
+  name-sort: Winning Post 6 Maximum 2005 ぷれみあむぱっく
+  name-en: "Winning Post 6 Maximum 2005 [Premium Pack]"
   region: "NTSC-J"
 SLPM-65894:
   name: WinningPost6 2005年度版
@@ -43953,7 +43977,9 @@ SLPM-66679:
     - "SLPM-66246"
     - "SLPM-66634"
 SLPM-66681:
-  name: "Shin Megami Tensei - Nocturne Maniax"
+  name: 真・女神転生III-NOCTURNE マニアクス クロニクルエディション
+  name-sort:しん・めがみてんせいIII-NOCTURNE まにあくす くろにくるえでぃしょん
+  name-en: "Shin Megami Tensei III - Nocturne Maniax Chronicle Edition"
   region: "NTSC-J"
   compat: 5
   roundModes:
@@ -47264,6 +47290,11 @@ SLPS-20108:
   region: "NTSC-J"
   gsHWFixes:
     mipmap: 1
+SLPS-20109:
+  name: スターウォーズ　スターファイター
+  name-sort: すたーうぉーず すたーふぁいたー
+  name-en: "Starwars Star Fighter"
+  region: "NTSC-J"
 SLPS-20110:
   name: "Mezase! Meimon Yakyuubu 2"
   region: "NTSC-J"
@@ -47728,6 +47759,11 @@ SLPS-20239:
   region: "NTSC-J"
 SLPS-20240:
   name: "Jissen Pachi-Slot Hisshouhou! Moujuuou S"
+  region: "NTSC-J"
+SLPS-20241:
+  name: 上海 三国牌闘儀
+  name-sort: しゃんはい さんごく はいとうぎ
+  name-en: "Shanghai Sangoku Hai Tougi"
   region: "NTSC-J"
 SLPS-20242:
   name: "Tomak - Save the Earth - Love Story"
@@ -49003,7 +49039,7 @@ SLPS-25011:
   region: "NTSC-J"
 SLPS-25012:
   name: はじめの一歩 VICTORIOUS BOXERS
-  name-sort: はじめのいちほ VICTORIOUS BOXERS
+  name-sort: はじめのいちぽ VICTORIOUS BOXERS
   name-en: "Victorious Boxers"
   region: "NTSC-J"
 SLPS-25013:
@@ -49542,7 +49578,9 @@ SLPS-25105:
   name-en: "Kingdom Hearts"
   region: "NTSC-J"
 SLPS-25106:
-  name: "America Oudan Ultra Quiz"
+  name: アメリカ横断ウルトラクイズ
+  name-sort: あめりかおうだんうるとらくいず
+  name-en: "America Oudan Ultra Quiz"
   region: "NTSC-J"
 SLPS-25107:
   name: 剣豪2
@@ -49673,7 +49711,9 @@ SLPS-25128:
   name: "Victorious Boxer - Championship Version"
   region: "NTSC-J"
 SLPS-25129:
-  name: "Victorious Boxer - Championship Version"
+  name: はじめの一歩 VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
+  name-sort: はじめのいっぽ VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
+  name-en: "Victorious Boxers - Championship Edition [PS2 The Best]"
   region: "NTSC-J"
 SLPS-25130:
   name: ルームメイト・麻美-おくさまは女子高生-
@@ -50471,7 +50511,7 @@ SLPS-25283:
   region: "NTSC-J"
 SLPS-25287:
   name: はじめの一歩2 VICTORIOUS ROAD
-  name-sort: はじめのいちほ2 VICTORIOUS ROAD
+  name-sort: はじめのいちぽ2 VICTORIOUS ROAD
   name-en: "Victorious Boxers 2 - Ippo's Road to Glory"
   region: "NTSC-J"
 SLPS-25288:
@@ -50685,7 +50725,9 @@ SLPS-25326:
   name-en: "WWE Smackdown! Here Comes the Pain - Exciting Pro Wrestling 5 [Limited Edition]"
   region: "NTSC-J"
 SLPS-25327:
-  name: "Exciting Pro Wres 5"
+  name: エキサイティングプロレス5
+  name-sort: えきさいてぃんぐぷろれす5
+  name-en: "WWE Smackdown! Here Comes the Pain - Exciting Pro Wrestling 5"
   region: "NTSC-J"
 SLPS-25329:
   name: 九怨 -kuon-
@@ -51398,7 +51440,7 @@ SLPS-25438:
   region: "NTSC-J"
 SLPS-25439:
   name: はじめの一歩 ALL☆STARS(オール☆スターズ)
-  name-sort: はじめのいちほ おーる☆すたーず
+  name-sort: はじめのいちぽ おーる☆すたーず
   name-en: "Hajime no Ippo - All-Stars"
   region: "NTSC-J"
 SLPS-25440:
@@ -51467,7 +51509,7 @@ SLPS-25453:
 SLPS-25454:
   name: 義経英雄伝
   name-sort: よしつねえいゆうでん
-  name-en: "Daisenryaku VII Exceed"
+  name-en: "Yoshitsune Eiyuuden"
   region: "NTSC-J"
 SLPS-25455:
   name: 三洋パチンコパラダイス11〜新海とさらば銀玉の狼〜
@@ -52902,6 +52944,11 @@ SLPS-25704:
   name-sort: さもんないと4
   name-en: "Summon Night 4"
   region: "NTSC-J"
+SLPS-25705:
+  name: エウレカセブン New Wave Graduation
+  name-sort: えうれかせぶん New Wave Graduation
+  name-en: "Eureka Seven - New Wave Graduation"
+  region: "NTSC-J"
 SLPS-25706:
   name: "Eureka Seven - New Vision"
   region: "NTSC-J"
@@ -53921,6 +53968,11 @@ SLPS-25894:
   name: ああっ女神さまっ Best Collection
   name-sort: ああっめがみさまっ Best Collection
   name-en: "Aa Megami-sama [PS2 The Best]"
+  region: "NTSC-J"
+SLPS-25896:
+  name: 萌え萌え2次大戦（略）☆デラックス
+  name-sort: もえもえにじたいせん（りゃく）☆でらっくす
+  name-en: "Moe Moe 2ji Taisen(Ryaku) Deluxe"
   region: "NTSC-J"
 SLPS-25897:
   name: ゼロの使い魔 迷子の終止符と幾千の交響曲 限定版
@@ -54942,7 +54994,7 @@ SLPS-73270:
   region: "NTSC-J"
 SLPS-73401:
   name: はじめの一歩 VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
-  name-sort: はじめのいちほ VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
+  name-sort: はじめのいちぽ VICTORIOUS BOXERS 〜CHAMPIONSHIP VERSION〜 PS2 the Best
   name-en: "Victorious Boxers - Championship Edition [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73402:
