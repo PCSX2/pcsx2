@@ -283,7 +283,6 @@ extern bool gsIsInterlaced;
 extern void gsReset();
 extern void gsSetVideoMode(GS_VideoMode mode);
 extern void gsPostVsyncStart();
-extern void gsUpdateFrequency(Pcsx2Config& config);
 
 extern void gsWrite8(u32 mem, u8 value);
 extern void gsWrite16(u32 mem, u16 value);

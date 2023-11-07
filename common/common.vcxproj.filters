@@ -145,6 +145,9 @@
     <ClCompile Include="TextureDecompress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SmallString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlignedMalloc.h">
@@ -352,6 +355,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextureDecompress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SmallString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

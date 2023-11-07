@@ -20,9 +20,9 @@
 
 #include "FolderSettingsWidget.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
-FolderSettingsWidget::FolderSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();

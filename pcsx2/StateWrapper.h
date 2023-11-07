@@ -38,6 +38,7 @@ public:
 	class IStream
 	{
 	public:
+		virtual ~IStream();
 		virtual u32 Read(void* buf, u32 count) = 0;
 		virtual u32 Write(const void* buf, u32 count) = 0;
 		virtual u32 GetPosition() = 0;
@@ -153,7 +154,7 @@ public:
 	}
 
 	/// Overload for POD types, such as structs.
-	template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
+	template <typename T, std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> = 0>
 	void DoPOD(T* value_ptr)
 	{
 		if (m_mode == Mode::Read)

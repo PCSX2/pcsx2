@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1100</width>
-    <height>500</height>
+    <width>1232</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,9 +21,6 @@
     <width>1100</width>
     <height>500</height>
    </size>
-  </property>
-  <property name="windowTitle">
-   <string notr="true">Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_35">
    <property name="leftMargin">
@@ -1069,7 +1066,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../resources/resources.qrc">:/images/dualshock-2.png</pixmap>
+        <pixmap resource="../resources/resources.qrc">:/images/DualShock_2.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>

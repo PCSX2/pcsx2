@@ -15,167 +15,92 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "GS/GSVector.h"
+
 #include <array>
+
+void V_Core::AnalyzeReverbPreset()
+{
+	Console.WriteLn("Reverb Parameter Update for Core %d:", Index);
+	Console.WriteLn("----------------------------------------------------------");
+
+	Console.WriteLn("    IN_COEF_L, IN_COEF_R       0x%08x, 0x%08x", Revb.IN_COEF_L, Revb.IN_COEF_R);
+	Console.WriteLn("    APF1_SIZE, APF2_SIZE       0x%08x, 0x%08x", Revb.APF1_SIZE, Revb.APF2_SIZE);
+	Console.WriteLn("    APF1_VOL, APF2_VOL         0x%08x, 0x%08x", Revb.APF1_VOL, Revb.APF2_VOL);
+
+	Console.WriteLn("    COMB1_VOL                  0x%08x", Revb.COMB1_VOL);
+	Console.WriteLn("    COMB2_VOL                  0x%08x", Revb.COMB2_VOL);
+	Console.WriteLn("    COMB3_VOL                  0x%08x", Revb.COMB3_VOL);
+	Console.WriteLn("    COMB4_VOL                  0x%08x", Revb.COMB4_VOL);
+
+	Console.WriteLn("    COMB1_L_SRC, COMB1_R_SRC   0x%08x, 0x%08x", Revb.COMB1_L_SRC, Revb.COMB1_R_SRC);
+	Console.WriteLn("    COMB2_L_SRC, COMB2_R_SRC   0x%08x, 0x%08x", Revb.COMB2_L_SRC, Revb.COMB2_R_SRC);
+	Console.WriteLn("    COMB3_L_SRC, COMB3_R_SRC   0x%08x, 0x%08x", Revb.COMB3_L_SRC, Revb.COMB3_R_SRC);
+	Console.WriteLn("    COMB4_L_SRC, COMB4_R_SRC   0x%08x, 0x%08x", Revb.COMB4_L_SRC, Revb.COMB4_R_SRC);
+
+	Console.WriteLn("    SAME_L_SRC, SAME_R_SRC     0x%08x, 0x%08x", Revb.SAME_L_SRC, Revb.SAME_R_SRC);
+	Console.WriteLn("    DIFF_L_SRC, DIFF_R_SRC     0x%08x, 0x%08x", Revb.DIFF_L_SRC, Revb.DIFF_R_SRC);
+	Console.WriteLn("    SAME_L_DST, SAME_R_DST     0x%08x, 0x%08x", Revb.SAME_L_DST, Revb.SAME_R_DST);
+	Console.WriteLn("    DIFF_L_DST, DIFF_R_DST     0x%08x, 0x%08x", Revb.DIFF_L_DST, Revb.DIFF_R_DST);
+	Console.WriteLn("    IIR_VOL, WALL_VOL          0x%08x, 0x%08x", Revb.IIR_VOL, Revb.WALL_VOL);
+
+	Console.WriteLn("    APF1_L_DST                 0x%08x", Revb.APF1_L_DST);
+	Console.WriteLn("    APF1_R_DST                 0x%08x", Revb.APF1_R_DST);
+	Console.WriteLn("    APF2_L_DST                 0x%08x", Revb.APF2_L_DST);
+	Console.WriteLn("    APF2_R_DST                 0x%08x", Revb.APF2_R_DST);
+
+	Console.WriteLn("    EffectStartA               0x%x", EffectsStartA & 0x3f'ffff);
+	Console.WriteLn("    EffectsEndA                0x%x", EffectsEndA & 0x3f'ffff);
+	Console.WriteLn("----------------------------------------------------------");
+}
 
 __forceinline s32 V_Core::RevbGetIndexer(s32 offset)
 {
-	u32 pos = ReverbX + offset;
+	u32 start = EffectsStartA & 0x3f'ffff;
+	u32 end = (EffectsEndA & 0x3f'ffff) | 0xffff;
 
-	// Fast and simple single step wrapping, made possible by the preparation of the
-	// effects buffer addresses.
+	u32 x = ((Cycles >> 1) + offset) % ((end - start) + 1);
 
-	if (pos > EffectsEndA)
-	{
-		pos -= EffectsEndA + 1;
-		pos += EffectsStartA;
-	}
+	x += start;
 
-	assert(pos >= EffectsStartA && pos <= EffectsEndA);
-	return pos;
+	return x & 0xf'ffff;
 }
 
-void V_Core::Reverb_AdvanceBuffer()
+StereoOut32 V_Core::DoReverb(StereoOut32 Input)
 {
-	if (RevBuffers.NeedsUpdated)
-		UpdateEffectsBufferSize();
-
-	if ((Cycles & 1) && (EffectsBufferSize > 0))
-	{
-		ReverbX += 1;
-		if (ReverbX >= (u32)EffectsBufferSize)
-			ReverbX = 0;
-	}
-}
-
-
-
-static constexpr u32 NUM_TAPS = 39;
-// 39 tap filter, the 0's could be optimized out
-static constexpr std::array<s32, NUM_TAPS> filter_coefs = {
-	-1,
-	0,
-	2,
-	0,
-	-10,
-	0,
-	35,
-	0,
-	-103,
-	0,
-	266,
-	0,
-	-616,
-	0,
-	1332,
-	0,
-	-2960,
-	0,
-	10246,
-	16384,
-	10246,
-	0,
-	-2960,
-	0,
-	1332,
-	0,
-	-616,
-	0,
-	266,
-	0,
-	-103,
-	0,
-	35,
-	0,
-	-10,
-	0,
-	2,
-	0,
-	-1,
-};
-
-s32 __forceinline V_Core::ReverbDownsample(bool right)
-{
-	s32 out = 0;
-
-	// Skipping the 0 coefs.
-	for (u32 i = 0; i < NUM_TAPS; i += 2)
-	{
-		out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
-	}
-
-	// We also skipped the middle so add that in.
-	out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + 19) & 63] * filter_coefs[19];
-
-	out >>= 15;
-	out = std::clamp<s32>(out, INT16_MIN, INT16_MAX);
-
-	return out;
-}
-
-
-StereoOut32 __forceinline V_Core::ReverbUpsample(bool phase)
-{
-	s32 ls = 0, rs = 0;
-
-	if (phase)
-	{
-		ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + 9) & 63] * filter_coefs[19];
-		rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + 9) & 63] * filter_coefs[19];
-	}
-	else
-	{
-
-		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
-		{
-			ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
-		}
-		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
-		{
-			rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
-		}
-	}
-
-	ls >>= 14;
-	ls = std::clamp<s32>(ls, INT16_MIN, INT16_MAX);
-	rs >>= 14;
-	rs = std::clamp<s32>(rs, INT16_MIN, INT16_MAX);
-
-	return StereoOut32(ls, rs);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
-{
-	if (EffectsBufferSize <= 0)
+	if (EffectsStartA >= EffectsEndA)
 	{
 		return StereoOut32::Empty;
 	}
 
-	RevbDownBuf[0][RevbSampleBufPos & 63] = Input.Left;
-	RevbDownBuf[1][RevbSampleBufPos & 63] = Input.Right;
+	Input = clamp_mix(Input);
+
+	RevbDownBuf[0][RevbSampleBufPos] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos] = Input.Right;
+	RevbDownBuf[0][RevbSampleBufPos | 64] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos | 64] = Input.Right;
 
 	bool R = Cycles & 1;
 
 	// Calculate the read/write addresses we'll be needing for this session of reverb.
 
-	const u32 same_src = RevbGetIndexer(R ? RevBuffers.SAME_R_SRC : RevBuffers.SAME_L_SRC);
-	const u32 same_dst = RevbGetIndexer(R ? RevBuffers.SAME_R_DST : RevBuffers.SAME_L_DST);
-	const u32 same_prv = RevbGetIndexer(R ? RevBuffers.SAME_R_PRV : RevBuffers.SAME_L_PRV);
+	const u32 same_src = RevbGetIndexer(R ? Revb.SAME_R_SRC : Revb.SAME_L_SRC);
+	const u32 same_dst = RevbGetIndexer(R ? Revb.SAME_R_DST : Revb.SAME_L_DST);
+	const u32 same_prv = RevbGetIndexer(R ? Revb.SAME_R_DST - 1 : Revb.SAME_L_DST - 1);
 
-	const u32 diff_src = RevbGetIndexer(R ? RevBuffers.DIFF_L_SRC : RevBuffers.DIFF_R_SRC);
-	const u32 diff_dst = RevbGetIndexer(R ? RevBuffers.DIFF_R_DST : RevBuffers.DIFF_L_DST);
-	const u32 diff_prv = RevbGetIndexer(R ? RevBuffers.DIFF_R_PRV : RevBuffers.DIFF_L_PRV);
+	const u32 diff_src = RevbGetIndexer(R ? Revb.DIFF_L_SRC : Revb.DIFF_R_SRC);
+	const u32 diff_dst = RevbGetIndexer(R ? Revb.DIFF_R_DST : Revb.DIFF_L_DST);
+	const u32 diff_prv = RevbGetIndexer(R ? Revb.DIFF_R_DST - 1 : Revb.DIFF_L_DST - 1);
 
-	const u32 comb1_src = RevbGetIndexer(R ? RevBuffers.COMB1_R_SRC : RevBuffers.COMB1_L_SRC);
-	const u32 comb2_src = RevbGetIndexer(R ? RevBuffers.COMB2_R_SRC : RevBuffers.COMB2_L_SRC);
-	const u32 comb3_src = RevbGetIndexer(R ? RevBuffers.COMB3_R_SRC : RevBuffers.COMB3_L_SRC);
-	const u32 comb4_src = RevbGetIndexer(R ? RevBuffers.COMB4_R_SRC : RevBuffers.COMB4_L_SRC);
+	const u32 comb1_src = RevbGetIndexer(R ? Revb.COMB1_R_SRC : Revb.COMB1_L_SRC);
+	const u32 comb2_src = RevbGetIndexer(R ? Revb.COMB2_R_SRC : Revb.COMB2_L_SRC);
+	const u32 comb3_src = RevbGetIndexer(R ? Revb.COMB3_R_SRC : Revb.COMB3_L_SRC);
+	const u32 comb4_src = RevbGetIndexer(R ? Revb.COMB4_R_SRC : Revb.COMB4_L_SRC);
 
-	const u32 apf1_src = RevbGetIndexer(R ? RevBuffers.APF1_R_SRC : RevBuffers.APF1_L_SRC);
-	const u32 apf1_dst = RevbGetIndexer(R ? RevBuffers.APF1_R_DST : RevBuffers.APF1_L_DST);
-	const u32 apf2_src = RevbGetIndexer(R ? RevBuffers.APF2_R_SRC : RevBuffers.APF2_L_SRC);
-	const u32 apf2_dst = RevbGetIndexer(R ? RevBuffers.APF2_R_DST : RevBuffers.APF2_L_DST);
+	const u32 apf1_src = RevbGetIndexer(R ? (Revb.APF1_R_DST - Revb.APF1_SIZE) : (Revb.APF1_L_DST - Revb.APF1_SIZE));
+	const u32 apf1_dst = RevbGetIndexer(R ? Revb.APF1_R_DST : Revb.APF1_L_DST);
+	const u32 apf2_src = RevbGetIndexer(R ? (Revb.APF2_R_DST - Revb.APF2_SIZE) : (Revb.APF2_L_DST - Revb.APF2_SIZE));
+	const u32 apf2_dst = RevbGetIndexer(R ? Revb.APF2_R_DST : Revb.APF2_L_DST);
 
 	// -----------------------------------------
 	//          Optimized IRQ Testing !
@@ -212,7 +137,7 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 	s32 in, same, diff, apf1, apf2, out;
 
 #define MUL(x, y) ((x) * (y) >> 15)
-	in = MUL(R ? Revb.IN_COEF_R : Revb.IN_COEF_L, ReverbDownsample(R));
+	in = MUL(R ? Revb.IN_COEF_R : Revb.IN_COEF_L, ReverbDownsample(*this, R));
 
 	same = MUL(Revb.IIR_VOL, in + MUL(Revb.WALL_VOL, _spu2mem[same_src]) - _spu2mem[same_prv]) + _spu2mem[same_prv];
 	diff = MUL(Revb.IIR_VOL, in + MUL(Revb.WALL_VOL, _spu2mem[diff_src]) - _spu2mem[diff_prv]) + _spu2mem[diff_prv];
@@ -233,9 +158,15 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 		_spu2mem[apf2_dst] = clamp_mix(apf2);
 	}
 
-	RevbUpBuf[R][(RevbSampleBufPos >> 1) & 63] = clamp_mix(out);
+	out = clamp_mix(out);
 
-	RevbSampleBufPos++;
+	RevbUpBuf[R][RevbSampleBufPos] = out;
+	RevbUpBuf[!R][RevbSampleBufPos] = 0;
 
-	return ReverbUpsample(RevbSampleBufPos & 1);
+	RevbUpBuf[R][RevbSampleBufPos | 64] = out;
+	RevbUpBuf[!R][RevbSampleBufPos | 64] = 0;
+
+	RevbSampleBufPos = (RevbSampleBufPos + 1) & 63;
+
+	return ReverbUpsample(*this);
 }

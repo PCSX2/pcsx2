@@ -164,11 +164,8 @@ enum ChannelFetch
 	ChannelFetch_GXBY  = 6,
 };
 
-#pragma pack(push, 1)
-
-class DisplayConstantBuffer
+struct alignas(16) DisplayConstantBuffer
 {
-public:
 	GSVector4 SourceRect; // +0,xyzw
 	GSVector4 TargetRect; // +16,xyzw
 	GSVector2 SourceSize; // +32,xy
@@ -200,24 +197,23 @@ public:
 		TimeAndPad = GSVector4(time);
 	}
 };
+static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
 
-class MergeConstantBuffer
+struct alignas(16) MergeConstantBuffer
 {
-public:
 	GSVector4 BGColor;
 	u32 EMODA;
 	u32 EMODC;
 	u32 DOFFSET;
 	float ScaleFactor;
 };
+static_assert(sizeof(MergeConstantBuffer) == 32, "MergeConstantBuffer is correct size");
 
-class InterlaceConstantBuffer
+struct alignas(16) InterlaceConstantBuffer
 {
-public:
 	GSVector4 ZrH; // data passed to the shader
 };
-
-#pragma pack(pop)
+static_assert(sizeof(InterlaceConstantBuffer) == 16, "InterlaceConstantBuffer is correct size");
 
 enum HWBlendFlags
 {
@@ -293,7 +289,7 @@ struct alignas(16) GSHWDrawConfig
 				// Format
 				u32 aem_fmt   : 2;
 				u32 pal_fmt   : 2;
-				u32 dfmt      : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
+				u32 dst_fmt   : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
 				u32 depth_fmt : 2; // 0 → None, 1 → 32-bit, 2 → 16-bit, 3 → RGBA
 				// Alpha extension/Correction
 				u32 aem : 1;
@@ -316,6 +312,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 ltf : 1;
 				// Shuffle and fbmask effect
 				u32 shuffle  : 1;
+				u32 shuffle_same : 1;
 				u32 real16src: 1;
 				u32 read_ba  : 1;
 				u32 write_rg : 1;
@@ -826,6 +823,9 @@ public:
 
 	/// Generates a fixed index buffer for expanding points and sprites. Buffer is assumed to be at least EXPAND_BUFFER_SIZE in size.
 	static void GenerateExpansionIndexBuffer(void* buffer);
+
+	/// Reads the specified shader source file.
+	static std::optional<std::string> ReadShaderSource(const char* filename);
 
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 

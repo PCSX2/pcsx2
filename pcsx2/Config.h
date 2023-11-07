@@ -27,6 +27,11 @@ class SettingsWrapper;
 
 enum class CDVD_SourceType : uint8_t;
 
+namespace Pad
+{
+enum class ControllerType : u8;
+}
+
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
 {
@@ -653,7 +658,6 @@ struct Pcsx2Config
 					PCRTCOffsets : 1,
 					PCRTCOverscan : 1,
 					IntegerScaling : 1,
-					SyncToHostRefreshRate : 1,
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
@@ -692,7 +696,6 @@ struct Pcsx2Config
 					UserHacks_MergePPSprite : 1,
 					UserHacks_WildHack : 1,
 					UserHacks_NativePaletteDraw : 1,
-					UserHacks_TargetPartialInvalidation : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
@@ -722,11 +725,9 @@ struct Pcsx2Config
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style. Useful for debugging potential bugs in the MTGS pipeline.
 		bool SynchronousMTGS = false;
-		bool FrameLimitEnable = true;
 
 		VsyncMode VsyncEnable = VsyncMode::Off;
 
-		float LimitScalar = 1.0f;
 		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
 		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
@@ -760,7 +761,6 @@ struct Pcsx2Config
 		int SkipDrawEnd = 0;
 
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
-		s8 UserHacks_HalfBottomOverride = -1;
 		s8 UserHacks_HalfPixelOffset = 0;
 		s8 UserHacks_RoundSprite = 0;
 		s32 UserHacks_TCOffsetX = 0;
@@ -980,12 +980,6 @@ struct Pcsx2Config
 		bool HddEnable{false};
 		std::string HddFile;
 
-		/* The PS2's HDD max size is 2TB
-		 * which is 2^32 * 512 byte sectors
-		 * Note that we don't yet support
-		 * 48bit LBA, so our limit is lower */
-		uint HddSizeSectors{40 * (1024 * 1024 * 1024 / 512)};
-
 		DEV9Options();
 
 		void LoadSave(SettingsWrapper& wrap);
@@ -1011,8 +1005,7 @@ struct Pcsx2Config
 				   OpEqu(EthHosts) &&
 
 				   OpEqu(HddEnable) &&
-				   OpEqu(HddFile) &&
-				   OpEqu(HddSizeSectors);
+				   OpEqu(HddFile);
 		}
 
 		bool operator!=(const DEV9Options& right) const
@@ -1134,24 +1127,24 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
-	struct FramerateOptions
+	struct EmulationSpeedOptions
 	{
+		BITFIELD32()
+		bool FrameLimitEnable : 1;
+		bool SyncToHostRefreshRate : 1;
+		BITFIELD_END
+
 		float NominalScalar{1.0f};
 		float TurboScalar{2.0f};
 		float SlomoScalar{0.5f};
 
+		EmulationSpeedOptions();
+
 		void LoadSave(SettingsWrapper& wrap);
 		void SanityCheck();
 
-		bool operator==(const FramerateOptions& right) const
-		{
-			return OpEqu(NominalScalar) && OpEqu(TurboScalar) && OpEqu(SlomoScalar);
-		}
-
-		bool operator!=(const FramerateOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const EmulationSpeedOptions& right) const;
+		bool operator!=(const EmulationSpeedOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1197,6 +1190,39 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
+	struct PadOptions
+	{
+		static constexpr u32 NUM_PORTS = 8;
+
+		struct Port
+		{
+			Pad::ControllerType Type;
+
+			bool operator==(const PadOptions::Port& right) const;
+			bool operator!=(const PadOptions::Port& right) const;
+		};
+
+		std::array<Port, NUM_PORTS> Ports;
+
+		BITFIELD32()
+		bool
+			MultitapPort0_Enabled : 1,
+			MultitapPort1_Enabled;
+		BITFIELD_END
+
+		PadOptions();
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool IsMultitapPortEnabled(u32 port) const
+		{
+			return (port == 0) ? MultitapPort0_Enabled : MultitapPort1_Enabled;
+		}
+
+		bool operator==(const PadOptions& right) const;
+		bool operator!=(const PadOptions& right) const;
+	};
+
+	// ------------------------------------------------------------------------
 	// Options struct for each memory card.
 	//
 	struct McdOptions
@@ -1208,36 +1234,35 @@ struct Pcsx2Config
 
 	// ------------------------------------------------------------------------
 
-#ifdef ENABLE_ACHIEVEMENTS
 	struct AchievementsOptions
 	{
+		static constexpr u32 MINIMUM_NOTIFICATION_DURATION = 3;
+		static constexpr u32 MAXIMUM_NOTIFICATION_DURATION = 30;
+		static constexpr u32 DEFAULT_NOTIFICATION_DURATION = 5;
+		static constexpr u32 DEFAULT_LEADERBOARD_DURATION = 10;
+
 		BITFIELD32()
 		bool
 			Enabled : 1,
-			TestMode : 1,
+			HardcoreMode : 1,
+			EncoreMode : 1,
+			SpectatorMode : 1,
 			UnofficialTestMode : 1,
-			RichPresence : 1,
-			ChallengeMode : 1,
-			Leaderboards : 1,
 			Notifications : 1,
+			LeaderboardNotifications : 1,
 			SoundEffects : 1,
-			PrimedIndicators : 1;
+			Overlays : 1;
 		BITFIELD_END
+
+		u32 NotificationsDuration = DEFAULT_NOTIFICATION_DURATION;
+		u32 LeaderboardsDuration = DEFAULT_LEADERBOARD_DURATION;
 
 		AchievementsOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const AchievementsOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
-
-		bool operator!=(const AchievementsOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const AchievementsOptions& right) const;
+		bool operator!=(const AchievementsOptions& right) const;
 	};
-#endif
 
 	// ------------------------------------------------------------------------
 
@@ -1266,10 +1291,6 @@ struct Pcsx2Config
 		McdEnableEjection : 1,
 		McdFolderAutoManage : 1,
 
-		MultitapPort0_Enabled : 1,
-		MultitapPort1_Enabled : 1,
-
-		ConsoleToStdio : 1,
 		HostFs : 1,
 
 		WarnAboutUnsafeSettings : 1;
@@ -1286,18 +1307,17 @@ struct Pcsx2Config
 	GamefixOptions Gamefixes;
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
-	FramerateOptions Framerate;
+	EmulationSpeedOptions EmulationSpeed;
 	SPU2Options SPU2;
 	DEV9Options DEV9;
 	USBOptions USB;
+	PadOptions Pad;
 
 	TraceLogFilters Trace;
 
 	FilenameOptions BaseFilenames;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	AchievementsOptions Achievements;
-#endif
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
@@ -1311,10 +1331,10 @@ struct Pcsx2Config
 	std::string CurrentIRX;
 	std::string CurrentGameArgs;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
-	LimiterModeType LimiterMode = LimiterModeType::Nominal;
 
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);
+	void LoadSaveCore(SettingsWrapper& wrap);
 	void LoadSaveMemcards(SettingsWrapper& wrap);
 
 	/// Reloads options affected by patches.
@@ -1323,16 +1343,17 @@ struct Pcsx2Config
 	std::string FullpathToBios() const;
 	std::string FullpathToMcd(uint slot) const;
 
-	bool MultitapEnabled(uint port) const;
-
-	bool operator==(const Pcsx2Config& right) const;
-	bool operator!=(const Pcsx2Config& right) const
-	{
-		return !this->operator==(right);
-	}
+	bool operator==(const Pcsx2Config& right) const = delete;
+	bool operator!=(const Pcsx2Config& right) const = delete;
 
 	/// Copies runtime configuration settings (e.g. frame limiter state).
 	void CopyRuntimeConfig(Pcsx2Config& cfg);
+
+	/// Copies configuration from one file to another. Does not copy controller settings.
+	static void CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si);
+
+	/// Clears all core keys from the specified interface.
+	static void ClearConfiguration(SettingsInterface* dest_si);
 };
 
 extern Pcsx2Config EmuConfig;

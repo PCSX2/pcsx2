@@ -19,14 +19,14 @@
 
 #include "ui_AdvancedSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class AdvancedSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	AdvancedSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~AdvancedSettingsWidget();
 
 private:
@@ -34,7 +34,7 @@ private:
 	int getClampingModeIndex(int vunum) const;
 	void setClampingMode(int vunum, int index);
 
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	Ui::AdvancedSystemSettingsWidget m_ui;
 };

@@ -23,7 +23,7 @@
 
 #include "DEV9UiCommon.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class DEV9DnsHostDialog : public QDialog
 {

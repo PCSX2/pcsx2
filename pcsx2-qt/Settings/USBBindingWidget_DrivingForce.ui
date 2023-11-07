@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1102</width>
-    <height>476</height>
+    <height>611</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -15,9 +15,6 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
-  </property>
-  <property name="windowTitle">
-   <string notr="true">Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_6">
    <property name="leftMargin">
@@ -539,7 +536,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../resources/resources.qrc">:/images/DrivingForce.png</pixmap>
+          <pixmap resource="../resources/resources.qrc">:/images/Driving_Force.svg</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>

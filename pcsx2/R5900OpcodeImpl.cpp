@@ -206,7 +206,7 @@ static int __Deci2Call(int call, u32 *addr)
 		{
 			char reqaddr[128];
 			if( addr != NULL )
-				sprintf( reqaddr, "%x %x %x %x", addr[3], addr[2], addr[1], addr[0] );
+				std::snprintf(reqaddr, std::size(reqaddr), "%x %x %x %x", addr[3], addr[2], addr[1], addr[0]);
 
 			if (!deci2addr) return 1;
 

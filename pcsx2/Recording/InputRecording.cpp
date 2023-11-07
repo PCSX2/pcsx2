@@ -82,7 +82,7 @@ bool InputRecording::create(const std::string& fileName, const bool fromSaveStat
 
 	m_file.setEmulatorVersion();
 	m_file.setAuthor(authorName);
-	m_file.setGameName(VMManager::GetTitle());
+	m_file.setGameName(VMManager::GetTitle(false));
 	m_file.writeHeader();
 	initializeState();
 	InputRec::log("Started new input recording");
@@ -133,9 +133,9 @@ bool InputRecording::play(const std::string& filename)
 	initializeState();
 	InputRec::log("Replaying input recording");
 	m_file.logRecordingMetadata();
-	if (VMManager::GetTitle() != m_file.getGameName())
+	if (VMManager::GetTitle(false) != m_file.getGameName())
 	{
-		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), VMManager::GetTitle()));
+		InputRec::consoleLog(fmt::format("Input recording was possibly constructed for a different game. Expected: {}, Actual: {}", m_file.getGameName(), VMManager::GetTitle(false)));
 	}
 	return true;
 }

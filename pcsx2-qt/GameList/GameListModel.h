@@ -55,7 +55,7 @@ public:
 	static QIcon getIconForType(GameList::EntryType type);
 	static QIcon getIconForRegion(GameList::Region region);
 
-	GameListModel(QObject* parent = nullptr);
+	GameListModel(float cover_scale, bool show_cover_titles, QObject* parent = nullptr);
 	~GameListModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -66,7 +66,7 @@ public:
 	__fi const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
 
 	void refresh();
-	void refreshImages();
+	void reloadThemeSpecificImages();
 
 	bool titlesLessThan(int left_row, int right_row) const;
 
@@ -83,8 +83,13 @@ public:
 	void refreshCovers();
 	void updateCacheSize(int width, int height);
 
+Q_SIGNALS:
+	void coverScaleChanged();
+
 private:
+	void loadSettings();
 	void loadCommonImages();
+	void loadThemeSpecificImages();
 	void setColumnDisplayNames();
 	void loadOrGenerateCover(const GameList::Entry* ge);
 	void invalidateCoverForPath(const std::string& path);
@@ -92,6 +97,7 @@ private:
 	float m_cover_scale = 0.0f;
 	std::atomic<u32> m_cover_scale_counter{0};
 	bool m_show_titles_for_covers = false;
+	bool m_prefer_english_titles = false;
 
 	std::array<QString, Column_Count> m_column_display_names;
 	std::array<QPixmap, static_cast<u32>(GameList::EntryType::Count)> m_type_pixmaps;

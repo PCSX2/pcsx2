@@ -24,7 +24,7 @@
 
 #include "ui_BIOSSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 class QThread;
 
 // TODO: Move to core.
@@ -43,7 +43,7 @@ class BIOSSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~BIOSSettingsWidget();
 
 	class RefreshThread final : public QThread
@@ -71,7 +71,7 @@ private Q_SLOTS:
 
 private:
 	Ui::BIOSSettingsWidget m_ui;
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	RefreshThread* m_refresh_thread = nullptr;
 };

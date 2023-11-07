@@ -1,10 +1,10 @@
 {
   "app-id": "net.pcsx2.PCSX2",
   "runtime": "org.kde.Platform",
-  "runtime-version": "6.5",
+  "runtime-version": "6.6",
   "sdk": "org.kde.Sdk",
   "sdk-extensions": [
-    "org.freedesktop.Sdk.Extension.llvm16"
+    "org.freedesktop.Sdk.Extension.llvm17"
   ],
   "add-extensions": {
     "org.freedesktop.Platform.ffmpeg-full": {
@@ -19,11 +19,10 @@
     "--device=all",
     "--share=network",
     "--share=ipc",
-    "--socket=fallback-x11",
-    "--socket=wayland",
+    "--socket=x11",
     "--socket=pulseaudio",
-    "--filesystem=host:ro",
-    "--talk-name=org.freedesktop.ScreenSaver"
+    "--talk-name=org.freedesktop.ScreenSaver",
+    "--env=QT_QPA_PLATFORM=xcb"
   ],
   "modules": [
     "modules/10-libpcap.json",
@@ -39,8 +38,8 @@
         "env": {
           "DEPS_PREFIX": "/app",
           "COMPILER": "clang",
-          "CLANG_PATH": "/usr/lib/sdk/llvm16/bin/clang",
-          "CLANGXX_PATH": "/usr/lib/sdk/llvm16/bin/clang++",
+          "CLANG_PATH": "/usr/lib/sdk/llvm17/bin/clang",
+          "CLANGXX_PATH": "/usr/lib/sdk/llvm17/bin/clang++",
           "ADDITIONAL_CMAKE_ARGS": "-DUSE_LINKED_FFMPEG=ON"
         }
       },
@@ -60,7 +59,8 @@
         "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png",
         "install -Dm644 .github/workflows/scripts/linux/pcsx2-qt.desktop ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
         "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
-        "install -Dm644 .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml ${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml"
+        "install -Dm644 .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml ${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml",
+        "mkdir -p ${FLATPAK_DEST}/lib/ffmpeg"
       ]
     }
   ]

@@ -124,7 +124,6 @@ void DisplayWidget::updateRelativeMode(bool enabled)
 		QCursor::setPos(m_relative_mouse_start_pos);
 		releaseMouse();
 	}
-
 }
 
 void DisplayWidget::updateCursor(bool hidden)
@@ -161,6 +160,20 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 
 	// Cancel the event from closing the window.
 	event->ignore();
+}
+
+void DisplayWidget::destroy()
+{
+	m_destroying = true;
+
+#ifdef __APPLE__
+	// See Qt documentation, entire application is in full screen state, and the main
+	// window will get reopened fullscreen instead of windowed if we don't close the
+	// fullscreen window first.
+	if (isFullScreen())
+		close();
+#endif
+	deleteLater();
 }
 
 void DisplayWidget::updateCenterPos()
@@ -206,7 +219,7 @@ bool DisplayWidget::event(QEvent* event)
 		case QEvent::KeyRelease:
 		{
 			const QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
-			
+
 			// Forward text input to imgui.
 			if (ImGuiManager::WantsTextInput() && key_event->type() == QEvent::KeyPress)
 			{
@@ -369,6 +382,9 @@ bool DisplayWidget::event(QEvent* event)
 
 		case QEvent::Close:
 		{
+			if (m_destroying)
+				return QWidget::event(event);
+
 			handleCloseEvent(static_cast<QCloseEvent*>(event));
 			return true;
 		}

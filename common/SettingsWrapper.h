@@ -96,6 +96,27 @@ protected:
 	void _EnumEntry(const char* section, const char* var, int& value, const char* const* enumArray, int defvalue) override;
 };
 
+class SettingsClearWrapper final : public SettingsWrapper
+{
+public:
+	SettingsClearWrapper(SettingsInterface& si);
+
+	bool IsLoading() const override;
+	bool IsSaving() const override;
+
+	void Entry(const char* section, const char* var, int& value, const int defvalue = 0) override;
+	void Entry(const char* section, const char* var, uint& value, const uint defvalue = 0) override;
+	void Entry(const char* section, const char* var, bool& value, const bool defvalue = false) override;
+	void Entry(const char* section, const char* var, float& value, const float defvalue = 0.0) override;
+
+	void Entry(const char* section, const char* var, std::string& value, const std::string& default_value = std::string()) override;
+	bool EntryBitBool(const char* section, const char* var, bool value, const bool defvalue = false) override;
+	int EntryBitfield(const char* section, const char* var, int value, const int defvalue = 0) override;
+
+protected:
+	void _EnumEntry(const char* section, const char* var, int& value, const char* const* enumArray, int defvalue) override;
+};
+
 #define SettingsWrapSection(section) const char* CURRENT_SETTINGS_SECTION = section;
 #define SettingsWrapEntry(var) wrap.Entry(CURRENT_SETTINGS_SECTION, #var, var, var)
 #define SettingsWrapEntryEx(var, name) wrap.Entry(CURRENT_SETTINGS_SECTION, name, var, var)

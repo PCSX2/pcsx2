@@ -20,7 +20,6 @@
 #include "GS/Renderers/OpenGL/GLState.h"
 #include "GS/GSExtra.h"
 #include "GS/GSPerfMon.h"
-#include "GS/GSPng.h"
 #include "GS/GSGL.h"
 #include "common/BitUtils.h"
 #include "common/AlignedMalloc.h"
@@ -327,65 +326,6 @@ void GSTextureOGL::GenerateMipmap()
 	ASSERT(m_mipmap_levels > 1);
 	GSDeviceOGL::GetInstance()->CommitClear(this, true);
 	glGenerateTextureMipmap(m_texture_id);
-}
-
-bool GSTextureOGL::Save(const std::string& fn)
-{
-	GSDeviceOGL::GetInstance()->CommitClear(this, true);
-
-	// Collect the texture data
-	u32 pitch = 4 * m_size.x;
-	u32 buf_size = pitch * m_size.y * 2; // Note *2 for security (depth/stencil)
-	std::unique_ptr<u8[]> image(new u8[buf_size]);
-#ifdef PCSX2_DEVBUILD
-	GSPng::Format fmt = GSPng::RGB_A_PNG;
-#else
-	GSPng::Format fmt = GSPng::RGB_PNG;
-#endif
-
-	if (IsDepthStencil())
-	{
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
-
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
-		glReadPixels(0, 0, m_size.x, m_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image.get());
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
-		fmt = GSPng::RGB_A_PNG;
-	}
-	else if (m_format == Format::PrimID)
-	{
-		// Note: 4.5 function used for accurate DATE
-		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image.get());
-
-		fmt = GSPng::R32I_PNG;
-	}
-	else
-	{
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, GSDeviceOGL::GetInstance()->GetFBORead());
-
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
-
-		if (m_format == Format::Color)
-		{
-			glReadPixels(0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
-		}
-		else if (m_format == Format::UInt16)
-		{
-			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
-			fmt = GSPng::R16I_PNG;
-		}
-		else if (m_format == Format::UNorm8)
-		{
-			fmt = GSPng::R8I_PNG;
-			glReadPixels(0, 0, m_size.x, m_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());
-		}
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	}
-
-	return GSPng::Save(fmt, fn, image.get(), m_size.x, m_size.y, pitch, GSConfig.PNGCompressionLevel);
 }
 
 void GSTextureOGL::Swap(GSTexture* tex)

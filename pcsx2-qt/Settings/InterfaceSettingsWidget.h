@@ -19,14 +19,14 @@
 
 #include "ui_InterfaceSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class InterfaceSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	InterfaceSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~InterfaceSettingsWidget();
 
 Q_SIGNALS:

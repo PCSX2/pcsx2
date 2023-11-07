@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -19,17 +19,17 @@
 
 typedef struct _chd_file chd_file;
 
-class ChdFileReader : public ThreadedFileReader
+class ChdFileReader final : public ThreadedFileReader
 {
 	DeclareNoncopyableObject(ChdFileReader);
 
 public:
 	ChdFileReader();
-	virtual ~ChdFileReader() override;
+	~ChdFileReader() override;
 
 	static bool CanHandle(const std::string& fileName, const std::string& displayName);
 
-	bool Open2(std::string fileName) override;
+	bool Open2(std::string filename, Error* error) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void* dst, s64 blockID) override;
@@ -43,5 +43,4 @@ private:
 	chd_file* ChdFile;
 	u64 file_size;
 	u32 hunk_size;
-	std::vector<std::FILE*> m_files;
 };

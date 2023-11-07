@@ -26,7 +26,7 @@ constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_PO
 constant uint VS_EXPAND_TYPE_RAW    [[function_constant(GSMTLConstantIndex_VS_EXPAND_TYPE)]];
 constant uint PS_AEM_FMT            [[function_constant(GSMTLConstantIndex_PS_AEM_FMT)]];
 constant uint PS_PAL_FMT            [[function_constant(GSMTLConstantIndex_PS_PAL_FMT)]];
-constant uint PS_DFMT               [[function_constant(GSMTLConstantIndex_PS_DFMT)]];
+constant uint PS_DST_FMT            [[function_constant(GSMTLConstantIndex_PS_DST_FMT)]];
 constant uint PS_DEPTH_FMT          [[function_constant(GSMTLConstantIndex_PS_DEPTH_FMT)]];
 constant bool PS_AEM                [[function_constant(GSMTLConstantIndex_PS_AEM)]];
 constant bool PS_FBA                [[function_constant(GSMTLConstantIndex_PS_FBA)]];
@@ -41,6 +41,7 @@ constant bool PS_ADJS               [[function_constant(GSMTLConstantIndex_PS_AD
 constant bool PS_ADJT               [[function_constant(GSMTLConstantIndex_PS_ADJT)]];
 constant bool PS_LTF                [[function_constant(GSMTLConstantIndex_PS_LTF)]];
 constant bool PS_SHUFFLE            [[function_constant(GSMTLConstantIndex_PS_SHUFFLE)]];
+constant bool PS_SHUFFLE_SAME       [[function_constant(GSMTLConstantIndex_PS_SHUFFLE_SAME)]];
 constant bool PS_READ_BA            [[function_constant(GSMTLConstantIndex_PS_READ_BA)]];
 constant bool PS_READ16_SRC         [[function_constant(GSMTLConstantIndex_PS_READ16_SRC)]];
 constant bool PS_WRITE_RG           [[function_constant(GSMTLConstantIndex_PS_WRITE_RG)]];
@@ -854,7 +855,7 @@ struct PSMain
 		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
 			return;
 
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
 			C.rgb += 7.f; // Need to round up, not down since the shader will invert
 
 		// Correct the Color value based on the output format
@@ -867,7 +868,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP || PS_HDR)
@@ -1021,7 +1022,16 @@ struct PSMain
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(cb.ta * 255.5f);
 
-			if (PS_READ16_SRC)
+			// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+			if (PS_SHUFFLE_SAME)
+			{
+				if (PS_READ_BA)
+					C = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80);
+				else
+					C.ga = C.rg;
+			}
+			// Copy of a 16bit source in to this target
+			else if (PS_READ16_SRC)
 			{
 				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
 				if (denorm_c.a & 0x80)
@@ -1029,13 +1039,16 @@ struct PSMain
 				else
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
 			}
+			// Write RB part. Mask will take care of the correct destination
+			else if (PS_READ_BA)
+			{
+				C.rb = C.bb;	
+				C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+			}
 			else
 			{
-				C.rb = PS_READ_BA ? C.bb : C.rr;
-				if (PS_READ_BA)
-					C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
-				else
-					C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				C.rb = C.rr;
+				C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
 			}
 		}
 
@@ -1049,12 +1062,12 @@ struct PSMain
 
 		float4 alpha_blend = SW_AD_TO_HW ? float4(trunc(current_color.a * 255.5f) / 128.f) : float4(C.a / 128.f);
 
-		if (PS_DFMT == FMT_16)
+		if (PS_DST_FMT == FMT_16)
 		{
 			float A_one = 128.f;
 			C.a = (PS_FBA) ? A_one : step(128.f, C.a) * A_one;
 		}
-		else if (PS_DFMT == FMT_32 && PS_FBA)
+		else if (PS_DST_FMT == FMT_32 && PS_FBA)
 		{
 			if (C.a < 128.f)
 				C.a += 128.f;

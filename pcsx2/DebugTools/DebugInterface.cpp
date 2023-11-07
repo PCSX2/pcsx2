@@ -31,6 +31,11 @@
 
 #include "common/StringUtil.h"
 
+#ifdef __clang__
+// TODO: The sprintf() usage here needs to be rewritten...
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
@@ -67,7 +72,7 @@ public:
 		for (int i = 0; i < 32; i++)
 		{
 			char reg[8];
-			sprintf(reg, "r%d", i);
+			std::snprintf(reg, std::size(reg), "r%d", i);
 
 			if (strcasecmp(str, reg) == 0 || strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
 			{
@@ -998,14 +1003,22 @@ std::string R3000DebugInterface::disasm(u32 address, bool simplify)
 
 bool R3000DebugInterface::isValidAddress(u32 addr)
 {
-	if (addr >= 0x10000000 && addr < 0x10010000)
+	if (addr >= 0x1D000000 && addr < 0x1E000000)
+	{
 		return true;
-	if (addr >= 0x12000000 && addr < 0x12001100)
-		return true;
-	if (addr >= 0x70000000 && addr < 0x70004000)
-		return true;
+	}
 
-	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
+	if (addr >= 0x1F400000 && addr < 0x1FA00000)
+	{
+		return true;
+	}
+
+	if (addr < 0x200000)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 u32 R3000DebugInterface::getCycles()

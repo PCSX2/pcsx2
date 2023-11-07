@@ -44,6 +44,7 @@
     <ClCompile Include="rcheevos\src\rcheevos\lboard.c" />
     <ClCompile Include="rcheevos\src\rcheevos\memref.c" />
     <ClCompile Include="rcheevos\src\rcheevos\operand.c" />
+    <ClCompile Include="rcheevos\src\rcheevos\rc_client.c" />
     <ClCompile Include="rcheevos\src\rcheevos\rc_validate.c" />
     <ClCompile Include="rcheevos\src\rcheevos\richpresence.c" />
     <ClCompile Include="rcheevos\src\rcheevos\runtime.c" />
@@ -61,6 +62,7 @@
     <ClInclude Include="rcheevos\include\rc_api_request.h" />
     <ClInclude Include="rcheevos\include\rc_api_runtime.h" />
     <ClInclude Include="rcheevos\include\rc_api_user.h" />
+    <ClInclude Include="rcheevos\include\rc_client.h" />
     <ClInclude Include="rcheevos\include\rc_consoles.h" />
     <ClInclude Include="rcheevos\include\rc_error.h" />
     <ClInclude Include="rcheevos\include\rc_hash.h" />
@@ -68,6 +70,7 @@
     <ClInclude Include="rcheevos\include\rc_runtime_types.h" />
     <ClInclude Include="rcheevos\include\rc_url.h" />
     <ClInclude Include="rcheevos\src\rapi\rc_api_common.h" />
+    <ClInclude Include="rcheevos\src\rcheevos\rc_client_internal.h" />
     <ClInclude Include="rcheevos\src\rcheevos\rc_compat.h" />
     <ClInclude Include="rcheevos\src\rcheevos\rc_internal.h" />
     <ClInclude Include="rcheevos\src\rcheevos\rc_validate.h" />

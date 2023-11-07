@@ -34,62 +34,104 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="title">
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLineEdit" name="title">
+       <property name="placeholderText">
+        <string>Clear the line to restore the original title...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="restoreTitle">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Restore</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label_titleSort">
      <property name="text">
-      <string>Path:</string>
+      <string extracomment='Name for use in sorting (e.g. "XXX, The" for a game called "The XXX")'>Sorting Title:</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="path">
+    <widget class="QLineEdit" name="titleSort">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_titleEN">
      <property name="text">
-      <string>Serial:</string>
+      <string>English Title:</string>
      </property>
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLineEdit" name="serial">
+    <widget class="QLineEdit" name="titleEN">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label_36">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>CRC:</string>
+      <string>Path:</string>
      </property>
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLineEdit" name="crc">
+    <widget class="QLineEdit" name="path">
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item row="4" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Serial:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="serial">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_36">
+     <property name="text">
+      <string>CRC:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QLineEdit" name="crc">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
     <widget class="QLabel" name="label_5">
      <property name="text">
       <string>Type:</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="6" column="1">
     <widget class="QComboBox" name="type">
      <property name="enabled">
       <bool>false</bool>
@@ -132,187 +174,195 @@
      </item>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Region:</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QComboBox" name="region">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="editable">
-      <bool>true</bool>
-     </property>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-B (Brazil)</string>
-      </property>
+   <item row="7" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+        <widget class="QComboBox" name="region">
+        <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+          </sizepolicy>
+        </property>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-B (Brazil)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-C (China)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-HK (Hong Kong)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-J (Japan)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-K (Korea)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-T (Taiwan)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">NTSC-U (US)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string>Other</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-A (Australia)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-AF (South Africa)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-AU (Austria)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-BE (Belgium)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-E (Europe/Australia)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-F (France)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-FI (Finland)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-G (Germany)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-GR (Greece)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-I (Italy)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-IN (India)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-M (Europe/Australia)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-NL (Netherlands)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-NO (Norway)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-P (Portugal)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-PL (Poland)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-S (Spain)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-SC (Scandinavia)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-SW (Sweden)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-SWI (Switzerland)</string>
+          </property>
+        </item>
+        <item>
+          <property name="text">
+          <string extracomment="Leave the code as-is, translate the country's name.">PAL-UK (United Kingdom)</string>
+          </property>
+        </item>
+        </widget>
+      </item>
+      <item>
+      <widget class="QPushButton" name="restoreRegion">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Restore</string>
+       </property>
+      </widget>
      </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-C (China)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-HK (Hong Kong)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-J (Japan)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-K (Korea)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-T (Taiwan)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">NTSC-U (US)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Other</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-A (Australia)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-AF (South Africa)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-AU (Austria)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-BE (Belgium)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-E (Europe/Australia)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-F (France)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-FI (Finland)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-G (Germany)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-GR (Greece)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-I (Italy)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-IN (India)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-M (Europe/Australia)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-NL (Netherlands)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-NO (Norway)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-P (Portugal)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-PL (Poland)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-S (Spain)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-SC (Scandinavia)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-SW (Sweden)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-SWI (Switzerland)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string extracomment="Leave the code as-is, translate the country's name.">PAL-UK (United Kingdom)</string>
-      </property>
-     </item>
-    </widget>
+    </layout>
    </item>
-   <item row="6" column="0">
+   <item row="8" column="0">
     <widget class="QLabel" name="label_7">
      <property name="text">
       <string>Compatibility:</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="8" column="1">
     <widget class="QComboBox" name="compatibility">
      <property name="enabled">
       <bool>false</bool>
@@ -363,14 +413,14 @@
      </item>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="9" column="0">
     <widget class="QLabel" name="label_6">
      <property name="text">
       <string>Input Profile:</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
+   <item row="9" column="1">
     <widget class="QComboBox" name="inputProfile">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -385,14 +435,14 @@
      </item>
     </widget>
    </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_8">
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_discPath">
      <property name="text">
       <string>Disc Path:</string>
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="10" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLineEdit" name="discPath"/>
@@ -413,7 +463,7 @@
      </item>
     </layout>
    </item>
-   <item row="10" column="0" colspan="2">
+   <item row="11" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -426,7 +476,7 @@
      </property>
     </spacer>
    </item>
-   <item row="9" column="0" colspan="2">
+   <item row="12" column="0" colspan="2">
     <layout class="QVBoxLayout" name="verifyLayout">
      <item>
       <widget class="QTableWidget" name="tracks">
@@ -488,21 +538,21 @@
            <height>60</height>
           </size>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
          <property name="visible">
           <bool>false</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
        <item row="1" column="2">
         <widget class="QPushButton" name="searchHash">
-         <property name="text">
-          <string>Search on Redump.org...</string>
-         </property>
          <property name="visible">
           <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Search on Redump.org...</string>
          </property>
         </widget>
        </item>

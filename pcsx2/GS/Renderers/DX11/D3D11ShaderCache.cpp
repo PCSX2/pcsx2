@@ -217,12 +217,6 @@ std::string D3D11ShaderCache::GetCacheBaseFileName(D3D_FEATURE_LEVEL feature_lev
 
 	switch (feature_level)
 	{
-		case D3D_FEATURE_LEVEL_10_0:
-			base_filename += "sm40";
-			break;
-		case D3D_FEATURE_LEVEL_10_1:
-			base_filename += "sm41";
-			break;
 		case D3D_FEATURE_LEVEL_11_0:
 			base_filename += "sm50";
 			break;

@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Settings/HotkeySettingsWidget.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "InputBindingWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -29,7 +29,7 @@
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QVBoxLayout>
 
-HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog)
+HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {

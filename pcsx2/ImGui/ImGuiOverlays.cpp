@@ -118,9 +118,9 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 	{ \
 		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
 		dl->AddText(font, font->FontSize, \
-			ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
+			ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
 			IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color, (text)); \
+		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
 
@@ -156,11 +156,11 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 		{
 			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
-			// We read the main config here, since MTGS doesn't get updated with speed toggles.
-			if (EmuConfig.GS.LimitScalar == 0.0f)
+			const float target_speed = VMManager::GetTargetSpeed();
+			if (target_speed == 0.0f)
 				text += " (Max)";
 			else
-				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", EmuConfig.GS.LimitScalar * 100.0f);
+				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", target_speed * 100.0f);
 		}
 		if (!text.empty())
 		{
@@ -249,10 +249,11 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 
 		if (GSConfig.OsdShowIndicators)
 		{
-			const bool is_normal_speed = (EmuConfig.GS.LimitScalar == EmuConfig.Framerate.NominalScalar);
+			const float target_speed = VMManager::GetTargetSpeed();
+			const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar);
 			if (!is_normal_speed)
 			{
-				const bool is_slowmo = (EmuConfig.GS.LimitScalar < EmuConfig.Framerate.NominalScalar);
+				const bool is_slowmo = (target_speed < EmuConfig.EmulationSpeed.NominalScalar);
 				DRAW_LINE(standard_font, is_slowmo ? ICON_FA_FORWARD : ICON_FA_FAST_FORWARD, IM_COL32(255, 255, 255, 255));
 			}
 		}
@@ -261,7 +262,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 		{
 			const ImVec2 history_size(200.0f * scale, 50.0f * scale);
 			ImGui::SetNextWindowSize(ImVec2(history_size.x, history_size.y));
-			ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - margin - history_size.x, position_y));
+			ImGui::SetNextWindowPos(ImVec2(GetWindowWidth() - margin - history_size.x, position_y));
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.25f));
 			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 			ImGui::PushStyleColor(ImGuiCol_PlotLines, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -390,8 +391,6 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("AF={} ", EmuConfig.GS.MaxAnisotropy);
 		if (GSConfig.Dithering != 2)
 			APPEND("DI={} ", GSConfig.Dithering);
-		if (GSConfig.UserHacks_HalfBottomOverride >= 0)
-			APPEND("HBO={} ", GSConfig.UserHacks_HalfBottomOverride);
 		if (GSConfig.UserHacks_HalfPixelOffset > 0)
 			APPEND("HPO={} ", GSConfig.UserHacks_HalfPixelOffset);
 		if (GSConfig.UserHacks_RoundSprite > 0)
@@ -428,8 +427,6 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("DDE ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
 			APPEND("DPIV ");
-		if (GSConfig.UserHacks_TargetPartialInvalidation)
-			APPEND("TPI ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
 			APPEND("DSF ");
 		if (GSConfig.UserHacks_DisableRenderFixes)
@@ -451,15 +448,15 @@ void ImGuiManager::DrawSettingsOverlay()
 	const float shadow_offset = 1.0f * scale;
 	const float margin = 10.0f * scale;
 	ImFont* font = ImGuiManager::GetFixedFont();
-	const float position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
+	const float position_y = GetWindowHeight() - margin - font->FontSize;
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	ImVec2 text_size =
 		font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, text.c_str(), text.c_str() + text.length(), nullptr);
 	dl->AddText(font, font->FontSize,
-		ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100),
+		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), IM_COL32(0, 0, 0, 100),
 		text.c_str(), text.c_str() + text.length());
-	dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), IM_COL32(255, 255, 255, 255),
+	dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), IM_COL32(255, 255, 255, 255),
 		text.c_str(), text.c_str() + text.length());
 }
 
@@ -631,9 +628,9 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 	{ \
 		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
 		dl->AddText(font, font->FontSize, \
-			ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
+			ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
 			IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y), color, (text)); \
+		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
 	// TODO - icon list that would be nice to add

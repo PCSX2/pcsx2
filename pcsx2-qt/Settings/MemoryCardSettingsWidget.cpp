@@ -30,7 +30,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 #include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 
@@ -41,7 +41,7 @@ static std::string getSlotFilenameKey(u32 slot)
 	return StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1);
 }
 
-MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {
@@ -319,7 +319,7 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		menu.addSeparator();
 	}
 
-	connect(menu.addAction("Create"), &QAction::triggered, this, &MemoryCardSettingsWidget::createCard);
+	connect(menu.addAction(tr("Create")), &QAction::triggered, this, &MemoryCardSettingsWidget::createCard);
 
 	menu.exec(m_ui.cardList->mapToGlobal(pos));
 }
@@ -442,7 +442,7 @@ void MemoryCardListWidget::mouseMoveEvent(QMouseEvent* event)
 	drag->exec(Qt::CopyAction);
 }
 
-void MemoryCardListWidget::refresh(SettingsDialog* dialog)
+void MemoryCardListWidget::refresh(SettingsWindow* dialog)
 {
 	clear();
 
@@ -481,6 +481,8 @@ MemoryCardSlotWidget::MemoryCardSlotWidget(QWidget* parent)
 {
 	setAcceptDrops(true);
 	setSelectionMode(NoSelection);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 MemoryCardSlotWidget::~MemoryCardSlotWidget() = default;
@@ -537,4 +539,6 @@ void MemoryCardSlotWidget::setCard(const std::optional<std::string>& name, bool 
 		item->setFont(font);
 		item->setForeground(palette().brush(QPalette::Disabled, QPalette::Text));
 	}
+
+	item->setToolTip(item->text());
 }

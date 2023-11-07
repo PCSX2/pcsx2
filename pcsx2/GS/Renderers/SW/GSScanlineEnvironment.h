@@ -104,7 +104,7 @@ union GSScanlineSelector
 	std::string to_string() const
 	{
 		char str[1024];
-		sprintf(str,
+		std::snprintf(str, std::size(str),
 			"fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
 			"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
 			"fba:%d cclamp:%d date:%d datm:%d "

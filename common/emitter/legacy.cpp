@@ -144,13 +144,6 @@ emitterT void x86SetJ32A(u32* j32)
 	x86SetJ32(j32);
 }
 
-////////////////////////////////////////////////////
-emitterT void x86Align(int bytes)
-{
-	// forward align
-	x86Ptr = (u8*)(((uptr)x86Ptr + bytes - 1) & ~(bytes - 1));
-}
-
 /********************/
 /* IX86 instructions */
 /********************/

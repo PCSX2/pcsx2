@@ -174,7 +174,8 @@ void SPU2::SetDeviceSampleRateMultiplier(double multiplier)
 		return;
 
 	s_device_sample_rate_multiplier = multiplier;
-	UpdateSampleRate();
+	if (SndBuffer::IsOpen())
+		UpdateSampleRate();
 }
 
 bool SPU2::Open()
@@ -224,7 +225,7 @@ bool SPU2::IsRunningPSXMode()
 	return s_psxmode;
 }
 
-void SPU2async(u32 cycles)
+void SPU2async()
 {
 	TimeUpdate(psxRegs.cycle);
 }

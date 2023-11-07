@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+
 #include "common/FileSystem.h"
 
 #include <unistd.h>
@@ -29,31 +30,31 @@ FlatFileReader::FlatFileReader(bool shareWrite)
 	m_aio_context = 0;
 }
 
-FlatFileReader::~FlatFileReader(void)
+FlatFileReader::~FlatFileReader()
 {
 	Close();
 }
 
-bool FlatFileReader::Open(std::string fileName)
+bool FlatFileReader::Open(std::string filename, Error* error)
 {
-	m_filename = std::move(fileName);
+	m_filename = std::move(filename);
 
 	int err = io_setup(64, &m_aio_context);
 	if (err)
 		return false;
 
-	m_fd = FileSystem::OpenFDFile(m_filename.c_str(), O_RDONLY, 0);
+	m_fd = FileSystem::OpenFDFile(m_filename.c_str(), O_RDONLY, 0, error);
 
 	return (m_fd != -1);
 }
 
-int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
+int FlatFileReader::ReadSync(void* pBuffer, u32 sector, u32 count)
 {
 	BeginRead(pBuffer, sector, count);
 	return FinishRead();
 }
 
-void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
+void FlatFileReader::BeginRead(void* pBuffer, u32 sector, u32 count)
 {
 	u64 offset;
 	offset = sector * (s64)m_blocksize + m_dataoffset;
@@ -67,7 +68,7 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 	io_submit(m_aio_context, 1, &iocbs);
 }
 
-int FlatFileReader::FinishRead(void)
+int FlatFileReader::FinishRead()
 {
 	struct io_event event;
 
@@ -78,7 +79,7 @@ int FlatFileReader::FinishRead(void)
 	return event.res;
 }
 
-void FlatFileReader::CancelRead(void)
+void FlatFileReader::CancelRead()
 {
 	// Will be done when m_aio_context context is destroyed
 	// Note: io_cancel exists but need the iocb structure as parameter
@@ -86,9 +87,8 @@ void FlatFileReader::CancelRead(void)
 	//                struct io_event *result);
 }
 
-void FlatFileReader::Close(void)
+void FlatFileReader::Close()
 {
-
 	if (m_fd != -1)
 		close(m_fd);
 
@@ -98,17 +98,11 @@ void FlatFileReader::Close(void)
 	m_aio_context = 0;
 }
 
-uint FlatFileReader::GetBlockCount(void) const
+u32 FlatFileReader::GetBlockCount() const
 {
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
 	struct stat sysStatData;
 	if (fstat(m_fd, &sysStatData) < 0)
 		return 0;
-#else
-	struct stat64 sysStatData;
-	if (fstat64(m_fd, &sysStatData) < 0)
-		return 0;
-#endif
 
-	return (int)(sysStatData.st_size / m_blocksize);
+	return static_cast<u32>(sysStatData.st_size / m_blocksize);
 }

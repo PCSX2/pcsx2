@@ -29,14 +29,6 @@ on:
         required: false
         type: string
         default: ""
-      qt_binary_url:
-        required: false
-        type: string
-        default: https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/2023-04-25/qt-6.5.0-x64.7z
-      qt_dir:
-        required: false
-        type: string
-        default: 3rdparty\qt\6.5.0\msvc2022_64
       patchesUrl:
         required: false
         type: string
@@ -51,13 +43,13 @@ jobs:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -84,19 +76,24 @@ jobs:
         if: inputs.configuration != 'CMake'
         uses: microsoft/setup-msbuild@v1
 
-      - name: Download Qt build files
-        shell: cmd
-        run: |
-          cd 3rdparty\qt
-          aria2c ${{ inputs.qt_binary_url }}
-          7z x qt-*-x64.7z
-          del qt-*-x64.7z
-
       - name: Download patches
         shell: cmd
         run: |
           cd bin/resources
           aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat') }}
+
+      - name: Build Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        env:
+          DEBUG: 0
+        run: .github/workflows/scripts/windows/build-dependencies.bat
 
       - name: Generate CMake
         if: inputs.configuration == 'CMake'
@@ -104,7 +101,7 @@ jobs:
         shell: cmd
         run: |
           call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cmake . -B build ${{ inputs.cmakeFlags }} "-DCMAKE_PREFIX_PATH=%cd%\${{ inputs.qt_dir }}" -DQT_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DDISABLE_ADVANCE_SIMD=ON -G Ninja
+          cmake . -B build ${{ inputs.cmakeFlags }} "-DCMAKE_PREFIX_PATH=%cd%\deps" -DQT_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DDISABLE_ADVANCE_SIMD=ON -G Ninja
 
       - name: Build PCSX2
         shell: cmd

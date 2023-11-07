@@ -42,7 +42,7 @@ jobs:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -51,8 +51,16 @@ jobs:
       CCACHE_MAXSIZE: 100M
 
     steps:
+      # Work around https://github.com/actions/runner-images/issues/8659
+      - name: Remove GCC 13 from runner image
+        shell: bash
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
+          sudo apt-get update
+          sudo apt-get install -y --allow-downgrades libc6=2.35-0ubuntu3.4 libc6-dev=2.35-0ubuntu3.4 libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
+
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -110,8 +118,8 @@ jobs:
         env:
           COMPILER: ${{ inputs.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
-          CLANG_PATH: /usr/bin/clang-16
-          CLANGXX_PATH: /usr/bin/clang++-16
+          CLANG_PATH: /usr/bin/clang-17
+          CLANGXX_PATH: /usr/bin/clang++-17
         run: |
           DEPS_PREFIX="$HOME/deps" .github/workflows/scripts/linux/generate-cmake-qt.sh
 

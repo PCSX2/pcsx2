@@ -421,20 +421,6 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 	const char* target;
 	switch (feature_level)
 	{
-		case D3D_FEATURE_LEVEL_10_0:
-		{
-			static constexpr std::array<const char*, 4> targets = {{"vs_4_0", "ps_4_0", "cs_4_0"}};
-			target = targets[static_cast<int>(type)];
-		}
-		break;
-
-		case D3D_FEATURE_LEVEL_10_1:
-		{
-			static constexpr std::array<const char*, 4> targets = {{"vs_4_1", "ps_4_1", "cs_4_1"}};
-			target = targets[static_cast<int>(type)];
-		}
-		break;
-
 		case D3D_FEATURE_LEVEL_11_0:
 		{
 			static constexpr std::array<const char*, 4> targets = {{"vs_5_0", "ps_5_0", "cs_5_0"}};
@@ -477,6 +463,12 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 			ofs << code;
 			ofs << "\n\nCompile as " << target << " failed: " << hr << "\n";
 			ofs.write(error_string.c_str(), error_string.size());
+			ofs << "\n";
+			if (macros)
+			{
+				for (const D3D_SHADER_MACRO* macro = macros; macro->Name != nullptr; macro++)
+					ofs << "#define " << macro->Name << " " << macro->Definition << "\n";
+			}
 			ofs.close();
 		}
 

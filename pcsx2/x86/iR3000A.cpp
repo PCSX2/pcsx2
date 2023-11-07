@@ -27,7 +27,7 @@
 #include "IopBios.h"
 #include "IopHw.h"
 #include "Common.h"
-#include "VirtualMemory.h"
+#include "System.h"
 #include "VMManager.h"
 
 #include <time.h>
@@ -72,23 +72,22 @@ u32 psxhwLUT[0x10000];
 
 static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
-static RecompiledCodeReserve* recMem = NULL;
-
-static BASEBLOCK* recRAM = NULL; // and the ptr to the blocks here
-static BASEBLOCK* recROM = NULL; // and here
-static BASEBLOCK* recROM1 = NULL; // also here
-static BASEBLOCK* recROM2 = NULL; // also here
+static BASEBLOCK* recRAM = nullptr; // and the ptr to the blocks here
+static BASEBLOCK* recROM = nullptr; // and here
+static BASEBLOCK* recROM1 = nullptr; // also here
+static BASEBLOCK* recROM2 = nullptr; // also here
 static BaseBlocks recBlocks;
-static u8* recPtr = NULL;
+static u8* recPtr = nullptr;
+static u8* recPtrEnd = nullptr;
 u32 psxpc; // recompiler psxpc
 int psxbranch; // set for branch
 u32 g_iopCyclePenalty;
 
-static EEINST* s_pInstCache = NULL;
+static EEINST* s_pInstCache = nullptr;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
-static BASEBLOCKEX* s_pCurBlockEx = NULL;
+static BASEBLOCK* s_pCurBlock = nullptr;
+static BASEBLOCKEX* s_pCurBlockEx = nullptr;
 
 static u32 s_nEndBlock = 0; // what psxpc the current block ends
 static u32 s_branchTo;
@@ -96,7 +95,7 @@ static bool s_nBlockFF;
 
 static u32 s_saveConstRegs[32];
 static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
-static EEINST* s_psaveInstInfo = NULL;
+static EEINST* s_psaveInstInfo = nullptr;
 
 u32 s_psxBlockCycles = 0; // cycles of current block recompiling
 static u32 s_savenBlockCycles = 0;
@@ -171,19 +170,14 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 //  Dynamically Compiled Dispatchers - R3000A style
 // =====================================================================================================
 
-static void iopRecRecompile(const u32 startpc);
+static void iopRecRecompile(u32 startpc);
 
-// Recompiled code buffer for EE recompiler dispatchers!
-alignas(__pagesize) static u8 iopRecDispatchers[__pagesize];
-
-typedef void DynGenFunc();
-
-static DynGenFunc* iopDispatcherEvent = NULL;
-static DynGenFunc* iopDispatcherReg = NULL;
-static DynGenFunc* iopJITCompile = NULL;
-static DynGenFunc* iopJITCompileInBlock = NULL;
-static DynGenFunc* iopEnterRecompiledCode = NULL;
-static DynGenFunc* iopExitRecompiledCode = NULL;
+static const void* iopDispatcherEvent = nullptr;
+static const void* iopDispatcherReg = nullptr;
+static const void* iopJITCompile = nullptr;
+static const void* iopJITCompileInBlock = nullptr;
+static const void* iopEnterRecompiledCode = nullptr;
+static const void* iopExitRecompiledCode = nullptr;
 
 static void recEventTest()
 {
@@ -192,7 +186,7 @@ static void recEventTest()
 
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
-static DynGenFunc* _DynGen_JITCompile()
+static const void* _DynGen_JITCompile()
 {
 	pxAssertMsg(iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks.");
 
@@ -206,18 +200,18 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
-static DynGenFunc* _DynGen_JITCompileInBlock()
+static const void* _DynGen_JITCompileInBlock()
 {
 	u8* retval = xGetPtr();
 	xJMP((void*)iopJITCompile);
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
 // called when jumping to variable pc address
-static DynGenFunc* _DynGen_DispatcherReg()
+static const void* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
 
@@ -227,13 +221,13 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	xMOV(rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax * wordsize)]);
 	xJMP(ptrNative[rbx * (wordsize / 4) + rcx]);
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
 // --------------------------------------------------------------------------------------
 //  EnterRecompiledCode  - dynamic compilation stub!
 // --------------------------------------------------------------------------------------
-static DynGenFunc* _DynGen_EnterRecompiledCode()
+static const void* _DynGen_EnterRecompiledCode()
 {
 	// Optimization: The IOP never uses stack-based parameter invocation, so we can avoid
 	// allocating any room on the stack for it (which is important since the IOP's entry
@@ -251,27 +245,21 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 		xJMP((void*)iopDispatcherReg);
 
 		// Save an exit point
-		iopExitRecompiledCode = (DynGenFunc*)xGetPtr();
+		iopExitRecompiledCode = xGetPtr();
 	}
 
 	xRET();
 
-	return (DynGenFunc*)retval;
+	return retval;
 }
 
 static void _DynGen_Dispatchers()
 {
-	// In case init gets called multiple times:
-	HostSys::MemProtectStatic(iopRecDispatchers, PageAccess_ReadWrite());
-
-	// clear the buffer to 0xcc (easier debugging).
-	memset(iopRecDispatchers, 0xcc, __pagesize);
-
-	xSetPtr(iopRecDispatchers);
+	const u8* start = xGetAlignedCallTarget();
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-	iopDispatcherEvent = (DynGenFunc*)xGetPtr();
+	iopDispatcherEvent = xGetPtr();
 	xFastCall((void*)recEventTest);
 	iopDispatcherReg = _DynGen_DispatcherReg();
 
@@ -279,11 +267,9 @@ static void _DynGen_Dispatchers()
 	iopJITCompileInBlock = _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
 
-	HostSys::MemProtectStatic(iopRecDispatchers, PageAccess_ExecOnly());
-
 	recBlocks.SetJITCompile(iopJITCompile);
 
-	Perf::any.Register((void*)iopRecDispatchers, 4096, "IOP Dispatcher");
+	Perf::any.Register(start, xGetPtr() - start, "IOP Dispatcher");
 }
 
 ////////////////////////////////////////////////////
@@ -892,15 +878,9 @@ static const uint m_recBlockAllocSize =
 
 static void recReserve()
 {
-	if (recMem)
-		return;
+	recPtr = SysMemory::GetIOPRec();
+	recPtrEnd = SysMemory::GetIOPRecEnd() - _64kb;
 
-	recMem = new RecompiledCodeReserve("R3000A Recompiler Cache");
-	recMem->Assign(GetVmMemory().CodeMemory(), HostMemoryMap::IOPrecOffset, 32 * _1mb);
-}
-
-static void recAlloc()
-{
 	// Goal: Allocate BASEBLOCKs for every possible branch target in IOP memory.
 	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
 	// always 4 bytes long).
@@ -923,24 +903,20 @@ static void recAlloc()
 	recROM2 = (BASEBLOCK*)curpos;
 	curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
 
-
+	pxAssertRel(!s_pInstCache, "InstCache not allocated");
+	s_nInstCacheSize = 128;
+	s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
 	if (!s_pInstCache)
-	{
-		s_nInstCacheSize = 128;
-		s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
-		if (!s_pInstCache)
-			pxFailRel("Failed to allocate R3000 InstCache array.");
-	}
-
-	_DynGen_Dispatchers();
+		pxFailRel("Failed to allocate R3000 InstCache array.");
 }
 
 void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
 
-	recAlloc();
-	recMem->Reset();
+	xSetPtr(SysMemory::GetIOPRec());
+	_DynGen_Dispatchers();
+	recPtr = xGetPtr();
 
 	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
 		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
@@ -990,18 +966,18 @@ void recResetIOP()
 	recBlocks.Reset();
 	g_psxMaxRecMem = 0;
 
-	recPtr = *recMem;
 	psxbranch = 0;
 }
 
 static void recShutdown()
 {
-	safe_delete(recMem);
-
 	safe_aligned_free(m_recBlockAlloc);
 
 	safe_free(s_pInstCache);
 	s_nInstCacheSize = 0;
+
+	recPtr = nullptr;
+	recPtrEnd = nullptr;
 }
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
@@ -1036,7 +1012,7 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 	// 	mov         edx,dword ptr [iopCycleEE (832A84h)]
 	// 	lea         eax,[edx+ecx]
 
-	iopEnterRecompiledCode();
+	((void(*)())iopEnterRecompiledCode)();
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 }
@@ -1313,7 +1289,7 @@ static bool psxDynarecCheckBreakpoint()
 	if (!hit)
 		return false;
 
-	CBreakPoints::SetBreakpointTriggered(true);
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
 
 	// Exit the EE too.
@@ -1327,7 +1303,7 @@ static bool psxDynarecMemcheck()
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
 		return false;
 
-	CBreakPoints::SetBreakpointTriggered(true);
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
 
 	// Exit the EE too.
@@ -1561,6 +1537,15 @@ static void iopRecRecompile(const u32 startpc)
 	u32 i;
 	u32 willbranch3 = 0;
 
+	// When upgrading the IOP, there are two resets, the second of which is a 'fake' reset
+	// This second 'reset' involves UDNL calling SYSMEM and LOADCORE directly, resetting LOADCORE's modules
+	// This detects when SYSMEM is called and clears the modules then
+	if(startpc == 0x890)
+	{
+		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
+		R3000SymbolMap.ClearModules();
+	}
+
 	// Inject IRX hack
 	if (startpc == 0x1630 && EmuConfig.CurrentIRX.length() > 3)
 	{
@@ -1574,14 +1559,13 @@ static void iopRecRecompile(const u32 startpc)
 	pxAssert(startpc);
 
 	// if recPtr reached the mem limit reset whole mem
-	if (recPtr >= (recMem->GetPtrEnd() - _64kb))
+	if (recPtr >= recPtrEnd)
 	{
 		recResetIOP();
 	}
 
-	x86SetPtr(recPtr);
-	x86Align(16);
-	recPtr = x86Ptr;
+	xSetPtr(recPtr);
+	recPtr = xGetAlignedCallTarget();
 
 	s_pCurBlock = PSX_GETBLOCK(startpc);
 
@@ -1768,7 +1752,7 @@ StartRecomp:
 		}
 	}
 
-	pxAssert(xGetPtr() < recMem->GetPtrEnd());
+	pxAssert(xGetPtr() < recPtrEnd);
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;

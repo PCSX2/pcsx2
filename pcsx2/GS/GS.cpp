@@ -202,6 +202,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 
 	g_gs_renderer->SetRegsMem(basemem);
 	g_gs_renderer->ResetPCRTC();
+	g_gs_renderer->UpdateRenderFixes();
 	g_perfmon.Reset();
 	return true;
 }
@@ -239,7 +240,6 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	}
 
 	u8* basemem = g_gs_renderer->GetRegsMem();
-	const u32 gamecrc = g_gs_renderer->GetGameCRC();
 
 	freezeData fd = {};
 	std::unique_ptr<u8[]> fd_data;
@@ -264,7 +264,7 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 	else
 	{
 		// Make sure nothing is left over.
-		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, true, true);
 		g_gs_renderer->PurgePool();
 	}
 
@@ -309,8 +309,6 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::G
 			Console.Error("(GSreopen) Failed to defrost");
 			return false;
 		}
-
-		g_gs_renderer->SetGameCRC(gamecrc);
 	}
 
 	if (!capture_filename.empty())
@@ -504,9 +502,16 @@ void GSThrottlePresentation()
 	Threading::SleepUntil(s_next_manual_present_time);
 }
 
-void GSSetGameCRC(u32 crc)
+void GSGameChanged()
 {
-	g_gs_renderer->SetGameCRC(crc);
+	if (GSConfig.UseHardwareRenderer())
+		GSTextureReplacements::GameChanged();
+}
+
+bool GSHasDisplayWindow()
+{
+	pxAssert(g_gs_device);
+	return (g_gs_device->GetWindowInfo().type != WindowInfo::Type::Surfaceless);
 }
 
 void GSResizeDisplayWindow(int width, int height, float scale)
@@ -731,7 +736,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.BeforeDrawFunctionId != old_config.BeforeDrawFunctionId ||
 		GSConfig.MoveHandlerFunctionId != old_config.MoveHandlerFunctionId)
 	{
-		g_gs_renderer->UpdateCRCHacks();
+		g_gs_renderer->UpdateRenderFixes();
 	}
 
 	// renderer-specific options (e.g. auto flush, TC offset)
@@ -754,7 +759,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	{
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			g_gs_renderer->ReadbackTextureCache();
-		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, true, true);
 		g_gs_renderer->PurgePool();
 	}
 
@@ -771,7 +776,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (GSConfig.LoadTextureReplacements != old_config.LoadTextureReplacements ||
 		GSConfig.DumpReplaceableTextures != old_config.DumpReplaceableTextures)
 	{
-		g_gs_renderer->PurgeTextureCache();
+		g_gs_renderer->PurgeTextureCache(true, false, true);
 	}
 
 	if (GSConfig.OsdShowGPU != old_config.OsdShowGPU)
@@ -781,7 +786,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	}
 }
 
-void GSSwitchRenderer(GSRendererType new_renderer)
+void GSSwitchRenderer(GSRendererType new_renderer, GSInterlaceMode new_interlace)
 {
 	if (new_renderer == GSRendererType::Auto)
 		new_renderer = GSUtil::GetPreferredRenderer();
@@ -792,6 +797,8 @@ void GSSwitchRenderer(GSRendererType new_renderer)
 	const bool is_software_switch = (new_renderer == GSRendererType::SW || GSConfig.Renderer == GSRendererType::SW);
 	const Pcsx2Config::GSOptions old_config(GSConfig);
 	GSConfig.Renderer = new_renderer;
+	GSConfig.InterlaceMode = new_interlace;
+
 	if (!GSreopen(!is_software_switch, true, old_config))
 		pxFailRel("Failed to reopen GS for renderer switch.");
 }
@@ -997,6 +1004,21 @@ static void HotkeyAdjustUpscaleMultiplier(s32 delta)
 	MTGS::ApplySettings();
 }
 
+static void HotkeyToggleOSD()
+{
+	GSConfig.OsdShowMessages ^= EmuConfig.GS.OsdShowMessages;
+	GSConfig.OsdShowSpeed ^= EmuConfig.GS.OsdShowSpeed;
+	GSConfig.OsdShowFPS ^= EmuConfig.GS.OsdShowFPS;
+	GSConfig.OsdShowCPU ^= EmuConfig.GS.OsdShowCPU;
+	GSConfig.OsdShowGPU ^= EmuConfig.GS.OsdShowGPU;
+	GSConfig.OsdShowResolution ^= EmuConfig.GS.OsdShowResolution;
+	GSConfig.OsdShowGSStats ^= EmuConfig.GS.OsdShowGSStats;
+	GSConfig.OsdShowIndicators ^= EmuConfig.GS.OsdShowIndicators;
+	GSConfig.OsdShowSettings ^= EmuConfig.GS.OsdShowSettings;
+	GSConfig.OsdShowInputs ^= EmuConfig.GS.OsdShowInputs;
+	GSConfig.OsdShowFrameTimes ^= EmuConfig.GS.OsdShowFrameTimes;
+}
+
 BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 	TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
 	[](s32 pressed) {
@@ -1059,6 +1081,11 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			if (!pressed)
 				HotkeyAdjustUpscaleMultiplier(-1);
 		}},
+	{"ToggleOSD", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle On-Screen Display"),
+		[](s32 pressed) {
+			if (!pressed)
+				HotkeyToggleOSD();
+		}},
 	{"CycleAspectRatio", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Aspect Ratio"),
 		[](s32 pressed) {
 			if (pressed)
@@ -1091,7 +1118,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 
 			MTGS::RunOnGSThread([new_level]() {
 				GSConfig.HWMipmap = new_level;
-				g_gs_renderer->PurgeTextureCache();
+				g_gs_renderer->PurgeTextureCache(true, false, true);
 				g_gs_renderer->PurgePool();
 			});
 		}},
@@ -1163,7 +1190,13 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 				{
 					Host::AddKeyedOSDMessage("ReloadTextureReplacements",
 						TRANSLATE_STR("Hotkeys", "Reloading texture replacements..."), Host::OSD_INFO_DURATION);
-					MTGS::RunOnGSThread([]() { GSTextureReplacements::ReloadReplacementMap(); });
+					MTGS::RunOnGSThread([]() {
+						if (!g_gs_renderer)
+							return;
+
+						GSTextureReplacements::ReloadReplacementMap();
+						g_gs_renderer->PurgeTextureCache(true, false, true);
+					});
 				}
 			}
 		}},

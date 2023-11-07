@@ -326,6 +326,7 @@ enum IopEventId
 };
 
 extern void PSX_INT( IopEventId n, s32 ecycle);
+extern int psxRemainingCycles(IopEventId n);
 
 extern void psxSetNextBranch( u32 startCycle, s32 delta );
 extern void psxSetNextBranchDelta( s32 delta );

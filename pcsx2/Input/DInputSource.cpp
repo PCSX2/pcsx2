@@ -63,6 +63,8 @@ static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
+	LoadSettings(si);
+
 	m_dinput_module.reset(LoadLibraryW(L"dinput8"));
 	if (!m_dinput_module)
 	{
@@ -103,7 +105,12 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
 void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	// noop
+	LoadSettings(si);
+}
+
+void DInputSource::LoadSettings(SettingsInterface& si)
+{
+	m_ignore_inversion = si.GetBoolValue("InputSources", "IgnoreDInputInversion", false);
 }
 
 static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
@@ -203,8 +210,6 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 		return false;
 	}
 
-	cd.num_buttons = caps.dwButtons;
-
 	static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE2, lX), offsetof(DIJOYSTATE2, lY), offsetof(DIJOYSTATE2, lZ),
 		offsetof(DIJOYSTATE2, lRz), offsetof(DIJOYSTATE2, lRx), offsetof(DIJOYSTATE2, lRy), offsetof(DIJOYSTATE2, rglSlider[0]),
 		offsetof(DIJOYSTATE2, rglSlider[1])};
@@ -225,8 +230,6 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 			cd.axis_offsets.push_back(offset);
 	}
 
-	cd.num_hats = caps.dwPOVs;
-
 	hr = cd.device->Poll();
 	if (hr == DI_NOEFFECT)
 		cd.needs_poll = false;
@@ -236,6 +239,9 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 	hr = cd.device->GetDeviceState(sizeof(cd.last_state), &cd.last_state);
 	if (hr != DI_OK)
 		Console.Warning("GetDeviceState() for '%s' failed: %08X", name.c_str(), hr);
+
+	cd.num_buttons = std::min<u32>(caps.dwButtons, std::size(cd.last_state.rgbButtons));
+	cd.num_hats = std::min<u32>(caps.dwPOVs, std::size(cd.last_state.rgdwPOV));
 
 	Console.WriteLn(
 		"%s has %u buttons, %u axes, %u hats", name.c_str(), cd.num_buttons, static_cast<u32>(cd.axis_offsets.size()), cd.num_hats);
@@ -400,7 +406,7 @@ std::string DInputSource::ConvertKeyToString(InputBindingKey key)
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
 			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), key.invert ? "~" : "");
+			ret = fmt::format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !m_ignore_inversion) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{

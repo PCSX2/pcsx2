@@ -27,10 +27,12 @@ permissions:
 jobs:
   cut-release:
     if: github.repository == 'PCSX2/pcsx2'
-    runs-on: ubuntu-latest
     name: "Create Tag and Release"
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Docs - https://github.com/mathieudutour/github-tag-action
       - name: Bump Version and Push Tag
@@ -131,6 +133,7 @@ jobs:
   upload_artifacts:
     if: github.repository == 'PCSX2/pcsx2'
     needs:
+      - cut-release
       - build_linux_flatpak
       - build_linux_qt
       - build_windows_qt
@@ -138,11 +141,7 @@ jobs:
     name: "Upload Artifacts"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      # actions/checkout elides tags, fetch them primarily for releases
-      - name: Fetch Tags
-        run: git fetch --tags --no-recurse-submodules
+      - uses: actions/checkout@v4
 
       - name: Prepare Artifact Folder
         run: mkdir ./ci-artifacts/
@@ -169,7 +168,7 @@ jobs:
           SCAN_DIR: ${{ github.WORKSPACE }}/ci-artifacts
           OUT_DIR: ${{ github.WORKSPACE }}/ci-artifacts/out
         run: |
-          TAG_VAL=$(git tag --points-at HEAD)
+          TAG_VAL=${{needs.cut-release.outputs.new_tag}}
           echo "TAG_VAL=${TAG_VAL}"
           gh release list --repo PCSX2/pcsx2
           mkdir -p ${{ github.WORKSPACE }}/ci-artifacts/out
@@ -181,6 +180,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          TAG_VAL=$(git tag --points-at HEAD)
+          TAG_VAL=${{needs.cut-release.outputs.new_tag}}
           echo "TAG_VAL=${TAG_VAL}"
           gh release edit ${TAG_VAL} --draft=false --repo PCSX2/pcsx2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Announce Release
+        env:
+          OWNER: PCSX2
+          REPO: pcsx2
+          DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          TAG_VAL=${{needs.cut-release.outputs.new_tag}}
+          cd ./.github/workflows/scripts/releases/announce-release
+          npm ci
+          TAG_VAL=${TAG_VAL} node index.js

@@ -277,9 +277,11 @@ void main()
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
+#define PS_SHUFFLE_SAME 0
 #define PS_READ_BA 0
+#define PS_WRITE_RG 0
 #define PS_READ16_SRC 0
-#define PS_DFMT 0
+#define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
@@ -300,10 +302,10 @@ void main()
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
-#define SW_BLEND_NEEDS_RT (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1)
+#define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
 
 #define NEEDS_TEX (PS_TFX != 4)
 
@@ -352,16 +354,16 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
 	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
-		layout(set = 2, binding = 0) uniform texture2D RtSampler;
+		layout(set = 1, binding = 2) uniform texture2D RtSampler;
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
 	#else
-		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
+		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
 		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
 	#endif
 #endif
 
 #if PS_DATE > 0
-layout(set = 2, binding = 1) uniform texture2D PrimMinTexture;
+layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
 #if NEEDS_TEX
@@ -986,7 +988,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
 	C += 7.0f; // Need to round up, not down since the shader will invert
 #endif
 
@@ -1002,7 +1004,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 	// GS: Color = 1, Alpha = 255 => output 1
 	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 	C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 || PS_HDR == 1
@@ -1197,33 +1199,36 @@ void main()
 	#if PS_SHUFFLE
 		uvec4 denorm_c = uvec4(C);
 		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-		#if PS_READ16_SRC
+		
+		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+		#if PS_SHUFFLE_SAME
+			#if (PS_READ_BA)
+				C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+			#else
+				C.ga = C.rg;
+			#endif
+		// Copy of a 16bit source in to this target
+		#elif PS_READ16_SRC
 			C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 			if ((denorm_c.a & 0x80u) != 0u)
 				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
 			else
 				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+		// Write RB part. Mask will take care of the correct destination
+		#elif PS_READ_BA
+			C.rb = C.bb;
+			if ((denorm_c.a & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
 		#else
-			// Mask will take care of the correct destination
-			#if PS_READ_BA
-				C.rb = C.bb;
-			#else
-				C.rb = C.rr;
-			#endif
-
-			#if PS_READ_BA
-				if ((denorm_c.a & 0x80u) != 0u)
-					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			#else
-				if ((denorm_c.g & 0x80u) != 0u)
-					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			#endif
-		#endif
-	#endif
+			C.rb = C.rr;
+			if ((denorm_c.g & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+		#endif // PS_SHUFFLE_SAME
+	#endif // PS_SHUFFLE
 
 	// Must be done before alpha correction
 
@@ -1240,10 +1245,10 @@ void main()
 #endif
 
   // Correct the ALPHA value based on the output format
-#if (PS_DFMT == FMT_16)
+#if (PS_DST_FMT == FMT_16)
 	float A_one = 128.0f; // alpha output will be 0x80
 	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
-#elif (PS_DFMT == FMT_32) && (PS_FBA != 0)
+#elif (PS_DST_FMT == FMT_32) && (PS_FBA != 0)
 	if(C.a < 128.0f) C.a += 128.0f;
 #endif
 

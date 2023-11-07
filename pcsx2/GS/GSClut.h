@@ -114,6 +114,7 @@ public:
 	u32 GetCLUTCBP();
 	u32 GetCLUTCPSM();
 	void SetNextCLUTTEX0(u64 CBP);
+	bool CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP = false);
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	//void Read(const GIFRegTEX0& TEX0);

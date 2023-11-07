@@ -68,22 +68,18 @@ namespace
 
 static NullOutModule s_NullOut;
 static SndOutModule* NullOut = &s_NullOut;
+extern SndOutModule* CubebOut;
 
 #ifdef _WIN32
 extern SndOutModule* XAudio2Out;
-#endif
-#if defined(SPU2X_CUBEB)
-extern SndOutModule* CubebOut;
 #endif
 
 static SndOutModule* mods[] =
 	{
 		NullOut,
+		CubebOut,
 #ifdef _WIN32
 		XAudio2Out,
-#endif
-#if defined(SPU2X_CUBEB)
-		CubebOut,
 #endif
 };
 
@@ -447,6 +443,11 @@ bool SndBuffer::Init(const char* modname)
 	}
 
 	return true;
+}
+
+bool SndBuffer::IsOpen()
+{
+	return (s_output_module != nullptr);
 }
 
 void SndBuffer::Cleanup()

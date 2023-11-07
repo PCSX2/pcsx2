@@ -93,6 +93,15 @@ void GSRenderer::Destroy()
 	GSCapture::EndCapture();
 }
 
+void GSRenderer::PurgePool()
+{
+	g_gs_device->PurgePool();
+}
+
+void GSRenderer::UpdateRenderFixes()
+{
+}
+
 bool GSRenderer::Merge(int field)
 {
 	GSVector2i fs(0, 0);
@@ -665,6 +674,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 		if (!m_dump && m_dump_frames > 0)
 		{
+			if (GSConfig.UserHacks_ReadTCOnClose)
+				ReadbackTextureCache();
+
 			freezeData fd = {0, nullptr};
 			Freeze(&fd, true);
 			fd.data = new u8[fd.size];
@@ -679,26 +691,23 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			std::string_view compression_str;
 			if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::Uncompressed)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(), m_crc,
-					screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
-					fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(),
+					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
+					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
 				compression_str = "with no compression";
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), m_crc,
-					screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
-					fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(
+					new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
+						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
 				compression_str = "with LZMA compression";
 			}
 			else
 			{
-				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), m_crc,
-					screenshot_width, screenshot_height,
-					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(),
-					fd, m_regs));
+				m_dump = std::unique_ptr<GSDumpBase>(
+					new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
+						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
 				compression_str = "with Zstandard compression";
 			}
 
@@ -860,7 +869,7 @@ static std::string GSGetBaseFilename()
 	std::string filename;
 
 	// append the game serial and title
-	if (std::string name(VMManager::GetTitle()); !name.empty())
+	if (std::string name(VMManager::GetTitle(true)); !name.empty())
 	{
 		Path::SanitizeFileName(&name);
 		if (name.length() > 219)

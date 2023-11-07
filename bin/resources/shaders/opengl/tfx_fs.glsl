@@ -740,7 +740,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
 	C += 7.0f; // Need to round up, not down since the shader will invert
 #endif
 
@@ -756,7 +756,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 	// GS: Color = 1, Alpha = 255 => output 1
 	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 	C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 || PS_HDR == 1
@@ -779,17 +779,19 @@ float As = As_rgba.a;
 		return;
 #endif
 
-	vec3 Cs = Color.rgb;
-
 #if SW_BLEND_NEEDS_RT
 	vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
+#else
+	// Not used, but we define it to make the selection below simpler.
+	vec4 RT = vec4(0.0f);
+#endif
 	// FIXME FMT_16 case
 	// FIXME Ad or Ad * 2?
 	float Ad = RT.a / 128.0f;
 
 	// Let the compiler do its jobs !
 	vec3 Cd = RT.rgb;
-#endif
+	vec3 Cs = Color.rgb;
 
 #if PS_BLEND_A == 0
 	vec3 A = Cs;
@@ -950,26 +952,30 @@ void ps_main()
 #if PS_SHUFFLE
 	uvec4 denorm_c = uvec4(C);
 	uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-#if PS_READ16_SRC
+
+// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+#if PS_SHUFFLE_SAME
+#if (PS_READ_BA)
+	C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+#else
+	C.ga = C.rg;
+#endif
+// Copy of a 16bit source in to this target
+#elif PS_READ16_SRC
 	C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 	if (bool(denorm_c.a & 0x80u))
 		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
 	else
 		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
-#else
-	// Write RB part. Mask will take care of the correct destination
-#if PS_READ_BA
+// Write RB part. Mask will take care of the correct destination
+#elif PS_READ_BA
 	C.rb = C.bb;
-#else
-	C.rb = C.rr;
-#endif
-
 	// FIXME precompute my_TA & 0x80
 
 	// Write GA part. Mask will take care of the correct destination
 	// Note: GLSL 4.50/GL_EXT_shader_integer_mix support a mix instruction to select a component\n"
 	// However Nvidia emulate it with an if (at least on kepler arch) ...\n"
-#if PS_READ_BA
+
 	// bit field operation requires GL4 HW. Could be nice to merge it with step/mix below
 	// uint my_ta = (bool(bitfieldExtract(denorm_c.a, 7, 1))) ? denorm_TA.y : denorm_TA.x;
 	// denorm_c.a = bitfieldInsert(denorm_c.a, bitfieldExtract(my_ta, 7, 1), 7, 1);
@@ -981,6 +987,7 @@ void ps_main()
 		C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
 
 #else
+	C.rb = C.rr;
 	if (bool(denorm_c.g & 0x80u))
 		C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
 	else
@@ -992,9 +999,8 @@ void ps_main()
 	// float sel = step(128.0f, c.g);
 	// vec2 c_shuffle = vec2((denorm_c.gg & 0x7Fu) | (denorm_TA & 0x80u));
 	// c.ga = mix(c_shuffle.xx, c_shuffle.yy, sel);
-#endif // PS_READ_BA
 
-#endif // READ16_SRC
+#endif // PS_SHUFFLE_SAME
 #endif // PS_SHUFFLE
 
 	// Must be done before alpha correction
@@ -1012,10 +1018,10 @@ void ps_main()
 #endif
 
 	// Correct the ALPHA value based on the output format
-#if (PS_DFMT == FMT_16)
+#if (PS_DST_FMT == FMT_16)
 	float A_one = 128.0f; // alpha output will be 0x80
 	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
-#elif (PS_DFMT == FMT_32) && (PS_FBA != 0)
+#elif (PS_DST_FMT == FMT_32) && (PS_FBA != 0)
 	if(C.a < 128.0f) C.a += 128.0f;
 #endif
 

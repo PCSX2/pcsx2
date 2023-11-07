@@ -29,7 +29,7 @@
 
 #include "QtHost.h"
 #include "QtUtils.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/InputBindingDialog.h"
 #include "Settings/InputBindingWidget.h"
 
@@ -56,9 +56,9 @@ InputBindingWidget::~InputBindingWidget()
 	Q_ASSERT(!isListeningForInput());
 }
 
-bool InputBindingWidget::isMouseMappingEnabled()
+bool InputBindingWidget::isMouseMappingEnabled(SettingsInterface* sif)
 {
-	return Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
+	return sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) : Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
 }
 
 void InputBindingWidget::initialize(
@@ -305,7 +305,7 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
 	m_value_ranges.clear();
 	m_new_bindings.clear();
-	m_mouse_mapping_enabled = isMouseMappingEnabled();
+	m_mouse_mapping_enabled = isMouseMappingEnabled(m_sif);
 	m_input_listen_start_position = QCursor::pos();
 	m_input_listen_timer = new QTimer(this);
 	m_input_listen_timer->setSingleShot(false);
@@ -416,7 +416,7 @@ InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent)
 }
 
 InputVibrationBindingWidget::InputVibrationBindingWidget(
-	QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+	QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name, std::string key_name)
 {
 	setMinimumWidth(225);
 	setMaximumWidth(225);
@@ -430,7 +430,7 @@ InputVibrationBindingWidget::~InputVibrationBindingWidget()
 {
 }
 
-void InputVibrationBindingWidget::setKey(ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+void InputVibrationBindingWidget::setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name)
 {
 	m_dialog = dialog;
 	m_section_name = std::move(section_name);

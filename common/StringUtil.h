@@ -283,6 +283,10 @@ namespace StringUtil
 	size_t DecodeUTF8(const std::string_view& str, size_t offset, char32_t* ch);
 	size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch);
 
+	// Replaces the end of a string with ellipsis if it exceeds the specified length.
+	std::string Ellipsise(const std::string_view& str, u32 max_length, const char* ellipsis = "...");
+	void EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis = "...");
+
 	/// Strided memcpy/memcmp.
 	static inline void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
 		std::size_t copy_size, std::size_t count)

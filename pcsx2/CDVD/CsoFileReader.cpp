@@ -1,25 +1,25 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2023  PCSX2 Dev Team
-*
-*  PCSX2 is free software: you can redistribute it and/or modify it under the terms
-*  of the GNU Lesser General Public License as published by the Free Software Found-
-*  ation, either version 3 of the License, or (at your option) any later version.
-*
-*  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-*  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-*  PURPOSE.  See the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License along with PCSX2.
-*  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "PrecompiledHeader.h"
 
 #include "AsyncFileReader.h"
 #include "CsoFileReader.h"
 
-#include "common/Pcsx2Types.h"
 #include "common/FileSystem.h"
+#include "common/Error.h"
 #include "common/StringUtil.h"
 
 #include <zlib.h>
@@ -39,6 +39,16 @@ struct CsoHeader
 
 static const u32 CSO_READ_BUFFER_SIZE = 256 * 1024;
 
+CsoFileReader::CsoFileReader()
+{
+	m_blocksize = 2048;
+}
+
+CsoFileReader::~CsoFileReader()
+{
+	Close();
+}
+
 bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
 {
 	bool supported = false;
@@ -50,7 +60,7 @@ bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& di
 		{
 			if (fread(&hdr, 1, sizeof(hdr), fp) == sizeof(hdr))
 			{
-				supported = ValidateHeader(hdr);
+				supported = ValidateHeader(hdr, nullptr);
 			}
 			fclose(fp);
 		}
@@ -58,26 +68,27 @@ bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& di
 	return supported;
 }
 
-bool CsoFileReader::ValidateHeader(const CsoHeader& hdr)
+bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
 {
 	if (hdr.magic[0] != 'C' || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')
 	{
 		// Invalid magic, definitely a bad file.
+		Error::SetString(error, "File is not a CHD.");
 		return false;
 	}
 	if (hdr.ver > 1)
 	{
-		Console.Error("Only CSOv1 files are supported.");
+		Error::SetString(error, "Only CSOv1 files are supported.");
 		return false;
 	}
 	if ((hdr.frame_size & (hdr.frame_size - 1)) != 0)
 	{
-		Console.Error("CSO frame size must be a power of two.");
+		Error::SetString(error, "CSO frame size must be a power of two.");
 		return false;
 	}
 	if (hdr.frame_size < 2048)
 	{
-		Console.Error("CSO frame size must be at least one sector.");
+		Error::SetString(error, "CSO frame size must be at least one sector.");
 		return false;
 	}
 
@@ -85,14 +96,14 @@ bool CsoFileReader::ValidateHeader(const CsoHeader& hdr)
 	return true;
 }
 
-bool CsoFileReader::Open2(std::string fileName)
+bool CsoFileReader::Open2(std::string filename, Error* error)
 {
 	Close2();
-	m_filename = std::move(fileName);
-	m_src = FileSystem::OpenCFile(m_filename.c_str(), "rb");
+	m_filename = std::move(filename);
+	m_src = FileSystem::OpenCFile(m_filename.c_str(), "rb", error);
 
 	bool success = false;
-	if (m_src && ReadFileHeader() && InitializeBuffers())
+	if (m_src && ReadFileHeader(error) && InitializeBuffers(error))
 	{
 		success = true;
 	}
@@ -105,21 +116,18 @@ bool CsoFileReader::Open2(std::string fileName)
 	return true;
 }
 
-bool CsoFileReader::ReadFileHeader()
+bool CsoFileReader::ReadFileHeader(Error* error)
 {
-	CsoHeader hdr = {};
+	CsoHeader hdr;
 
 	if (FileSystem::FSeek64(m_src, m_dataoffset, SEEK_SET) != 0 || std::fread(&hdr, 1, sizeof(hdr), m_src) != sizeof(hdr))
 	{
-		Console.Error("Failed to read CSO file header.");
+		Error::SetString(error, "Failed to read CSO file header.");
 		return false;
 	}
 
-	if (!ValidateHeader(hdr))
-	{
-		Console.Error("CSO has invalid header.");
+	if (!ValidateHeader(hdr, error))
 		return false;
-	}
 
 	m_frameSize = hdr.frame_size;
 	// Determine the translation from bytes to frame.
@@ -136,7 +144,7 @@ bool CsoFileReader::ReadFileHeader()
 	return true;
 }
 
-bool CsoFileReader::InitializeBuffers()
+bool CsoFileReader::InitializeBuffers(Error* error)
 {
 	// Round up, since part of a frame requires a full frame.
 	u32 numFrames = (u32)((m_totalSize + m_frameSize - 1) / m_frameSize);
@@ -144,28 +152,28 @@ bool CsoFileReader::InitializeBuffers()
 	// We might read a bit of alignment too, so be prepared.
 	if (m_frameSize + (1 << m_indexShift) < CSO_READ_BUFFER_SIZE)
 	{
-		m_readBuffer = new u8[CSO_READ_BUFFER_SIZE];
+		m_readBuffer = std::make_unique<u8[]>(CSO_READ_BUFFER_SIZE);
 	}
 	else
 	{
-		m_readBuffer = new u8[m_frameSize + (1 << m_indexShift)];
+		m_readBuffer = std::make_unique<u8[]>(m_frameSize + (1 << m_indexShift));
 	}
 
 	const u32 indexSize = numFrames + 1;
-	m_index = new u32[indexSize];
-	if (fread(m_index, sizeof(u32), indexSize, m_src) != indexSize)
+	m_index = std::make_unique<u32[]>(indexSize);
+	if (fread(m_index.get(), sizeof(u32), indexSize, m_src) != indexSize)
 	{
-		Console.Error("Unable to read index data from CSO.");
+		Error::SetString(error, "Unable to read index data from CSO.");
 		return false;
 	}
 
-	m_z_stream = new z_stream;
+	m_z_stream = std::make_unique<z_stream>();
 	m_z_stream->zalloc = Z_NULL;
 	m_z_stream->zfree = Z_NULL;
 	m_z_stream->opaque = Z_NULL;
-	if (inflateInit2(m_z_stream, -15) != Z_OK)
+	if (inflateInit2(m_z_stream.get(), -15) != Z_OK)
 	{
-		Console.Error("Unable to initialize zlib for CSO decompression.");
+		Error::SetString(error, "Unable to initialize zlib for CSO decompression.");
 		return false;
 	}
 
@@ -179,24 +187,21 @@ void CsoFileReader::Close2()
 	if (m_src)
 	{
 		fclose(m_src);
-		m_src = NULL;
+		m_src = nullptr;
 	}
 	if (m_z_stream)
 	{
-		inflateEnd(m_z_stream);
-		m_z_stream = NULL;
+		inflateEnd(m_z_stream.get());
+		m_z_stream.reset();
 	}
 
-	if (m_readBuffer)
-	{
-		delete[] m_readBuffer;
-		m_readBuffer = NULL;
-	}
-	if (m_index)
-	{
-		delete[] m_index;
-		m_index = NULL;
-	}
+	m_readBuffer.reset();
+	m_index.reset();
+}
+
+u32 CsoFileReader::GetBlockCount() const
+{
+	return static_cast<u32>((m_totalSize - m_dataoffset) / m_blocksize);
 }
 
 ThreadedFileReader::Chunk CsoFileReader::ChunkForOffset(u64 offset)
@@ -215,7 +220,7 @@ ThreadedFileReader::Chunk CsoFileReader::ChunkForOffset(u64 offset)
 	return chunk;
 }
 
-int CsoFileReader::ReadChunk(void *dst, s64 chunkID)
+int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 {
 	if (chunkID < 0)
 		return -1;
@@ -250,19 +255,19 @@ int CsoFileReader::ReadChunk(void *dst, s64 chunkID)
 		}
 		// This might be less bytes than frameRawSize in case of padding on the last frame.
 		// This is because the index positions must be aligned.
-		const u32 readRawBytes = fread(m_readBuffer, 1, frameRawSize, m_src);
+		const u32 readRawBytes = fread(m_readBuffer.get(), 1, frameRawSize, m_src);
 
-		m_z_stream->next_in = m_readBuffer;
+		m_z_stream->next_in = m_readBuffer.get();
 		m_z_stream->avail_in = readRawBytes;
 		m_z_stream->next_out = static_cast<Bytef*>(dst);
 		m_z_stream->avail_out = m_frameSize;
 
-		int status = inflate(m_z_stream, Z_FINISH);
+		int status = inflate(m_z_stream.get(), Z_FINISH);
 		bool success = status == Z_STREAM_END && m_z_stream->total_out == m_frameSize;
 
 		if (!success)
 			Console.Error("Unable to decompress CSO frame using zlib.");
-		inflateReset(m_z_stream);
+		inflateReset(m_z_stream.get());
 
 		return success ? m_frameSize : 0;
 	}

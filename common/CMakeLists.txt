@@ -29,6 +29,7 @@ target_sources(common PRIVATE
 	ReadbackSpinManager.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
+	SmallString.cpp
 	StringUtil.cpp
 	TextureDecompress.cpp
 	Timer.cpp
@@ -93,6 +94,7 @@ target_sources(common PRIVATE
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
+	SmallString.h
 	StringUtil.h
 	Timer.h
 	TextureDecompress.h
@@ -161,17 +163,13 @@ if(APPLE)
 	)
 endif()
 
-if(DBUS_API)
-	target_compile_definitions(common PRIVATE DBUS_API)
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(DBUS REQUIRED dbus-1)
+if(UNIX AND NOT APPLE)
 	target_include_directories(common PRIVATE ${DBUS_INCLUDE_DIRS})
-	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES})
-endif()
-
-if(X11_API AND TARGET PkgConfig::XRANDR)
-	target_link_libraries(common PRIVATE PkgConfig::XRANDR)
-	target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
+	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES} X11::X11 X11::Xrandr)
+  if(TARGET libbacktrace::libbacktrace)
+		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
+		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
+  endif()
 endif()
 
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
@@ -179,7 +177,7 @@ if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
-if(NOT WIN32 AND (QT_BUILD OR NOGUI_BUILD))
+if(NOT WIN32)
 	# libcurl-based HTTPDownloader
 	target_sources(common PRIVATE
 		HTTPDownloaderCurl.cpp
@@ -188,15 +186,11 @@ if(NOT WIN32 AND (QT_BUILD OR NOGUI_BUILD))
 	target_link_libraries(common PRIVATE CURL::libcurl)
 endif()
 
-if(UNIX AND NOT APPLE AND TARGET libbacktrace::libbacktrace)
-	target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
-	target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
-endif()
-
 target_link_libraries(common PRIVATE
 	${LIBC_LIBRARIES}
 	PNG::PNG
 	jpgd
+	WebP::libwebp
 )
 
 target_link_libraries(common PUBLIC

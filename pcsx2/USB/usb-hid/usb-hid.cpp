@@ -858,7 +858,7 @@ namespace usb_hid
 		{
 			InputEvent evt;
 			evt.type = INPUT_EVENT_KIND_BTN;
-			evt.u.btn.button = (delta > 0.0f) ? INPUT_BUTTON_WHEEL_DOWN : INPUT_BUTTON_WHEEL_UP;
+			evt.u.btn.button = (delta > 0.0f) ? INPUT_BUTTON_WHEEL_UP : INPUT_BUTTON_WHEEL_DOWN;
 			evt.u.btn.down = true;
 			hid.ptr.eh_entry(&hid, &evt);
 			hid.ptr.eh_sync(&hid);
@@ -1125,7 +1125,7 @@ namespace usb_hid
 
 	const char* BeatManiaDevice::Name() const
 	{
-		return TRANSLATE_NOOP("USB", "BeatMania Da Da Da!! Keyboard");
+		return TRANSLATE_NOOP("USB", "Konami Keyboard");
 	}
 
 	const char* BeatManiaDevice::TypeName() const

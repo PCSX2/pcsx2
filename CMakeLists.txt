@@ -50,14 +50,11 @@ add_subdirectory(common)
 
 # make pcsx2
 add_subdirectory(pcsx2)
+add_subdirectory(pcsx2-qt)
 
-if (QT_BUILD)
-	add_subdirectory(pcsx2-qt)
-
-	# Updater is Windows only for now.
-	if (WIN32)
-		add_subdirectory(updater)
-	endif()
+# Updater is Windows only for now.
+if (WIN32)
+	add_subdirectory(updater)
 endif()
 
 # tests

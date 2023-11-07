@@ -61,24 +61,42 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &CpuWidget::onBPListDoubleClicked);
 
-	m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui.breakpointList->setModel(&m_bpModel);
+	for (std::size_t i = 0; auto mode : BreakpointModel::HeaderResizeModes)
+	{
+		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 
 	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
 	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
 
-	m_ui.threadList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	m_ui.threadList->setModel(&m_threadModel);
+	m_threadProxyModel.setSourceModel(&m_threadModel);
+	m_threadProxyModel.setSortRole(Qt::UserRole);
+	m_ui.threadList->setModel(&m_threadProxyModel);
+	m_ui.threadList->setSortingEnabled(true);
+	m_ui.threadList->sortByColumn(ThreadModel::ThreadColumns::ID, Qt::SortOrder::AscendingOrder);
+	for (std::size_t i = 0; auto mode : ThreadModel::HeaderResizeModes)
+	{
+		m_ui.threadList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 
 	connect(m_ui.stackList, &QTableView::customContextMenuRequested, this, &CpuWidget::onStackListContextMenu);
 	connect(m_ui.stackList, &QTableView::doubleClicked, this, &CpuWidget::onStackListDoubleClick);
 
-	m_ui.stackList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui.stackList->setModel(&m_stackModel);
+	for (std::size_t i = 0; auto mode : StackModel::HeaderResizeModes)
+	{
+		m_ui.stackList->horizontalHeader()->setSectionResizeMode(i, mode);
+		i++;
+	}
 
 	connect(m_ui.tabWidgetRegFunc, &QTabWidget::currentChanged, [this](int i) {if(i == 1){updateFunctionList(true);} });
 	connect(m_ui.listFunctions, &QListWidget::customContextMenuRequested, this, &CpuWidget::onFuncListContextMenu);
 	connect(m_ui.listFunctions, &QListWidget::itemDoubleClicked, this, &CpuWidget::onFuncListDoubleClick);
+	connect(m_ui.treeModules, &QTreeWidget::customContextMenuRequested, this, &CpuWidget::onModuleTreeContextMenu);
+	connect(m_ui.treeModules, &QTreeWidget::itemDoubleClicked, this, &CpuWidget::onModuleTreeDoubleClick);
 	connect(m_ui.btnRefreshFunctions, &QPushButton::clicked, [this] { updateFunctionList(); });
 	connect(m_ui.txtFuncSearch, &QLineEdit::textChanged, [this] { updateFunctionList(); });
 
@@ -94,6 +112,15 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	m_ui.registerWidget->SetCpu(&cpu);
 	m_ui.memoryviewWidget->SetCpu(&cpu);
 
+	if (cpu.getCpuType() == BREAKPOINT_EE)
+	{
+		m_ui.treeModules->setVisible(false);
+	}
+	else
+	{
+		m_ui.treeModules->header()->setSectionResizeMode(0, QHeaderView::ResizeMode::ResizeToContents);
+		m_ui.listFunctions->setVisible(false);
+	}
 	this->repaint();
 }
 
@@ -243,7 +270,7 @@ void CpuWidget::onBPListDoubleClicked(const QModelIndex& index)
 	{
 		if (index.column() == BreakpointModel::OFFSET)
 		{
-			m_ui.disassemblyWidget->gotoAddress(m_bpModel.data(index, Qt::UserRole).toUInt());
+			m_ui.disassemblyWidget->gotoAddress(m_bpModel.data(index, BreakpointModel::DataRole).toUInt());
 		}
 	}
 }
@@ -279,7 +306,19 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 		contextMenu->addAction(deleteAction);
 	}
 
-	contextMenu->popup(m_ui.breakpointList->mapToGlobal(pos));
+	contextMenu->addSeparator();
+	QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.breakpointList);
+	connect(actionExport, &QAction::triggered, [this]() {
+		// It's important to use the Export Role here to allow pasting to be translation agnostic
+		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), BreakpointModel::ExportRole));
+	});
+	contextMenu->addAction(actionExport);
+
+	QAction* actionImport = new QAction(tr("Paste from CSV"), m_ui.breakpointList);
+	connect(actionImport, &QAction::triggered, this, &CpuWidget::contextBPListPasteCSV);
+	contextMenu->addAction(actionImport);
+
+	contextMenu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::contextBPListCopy()
@@ -332,41 +371,190 @@ void CpuWidget::contextBPListEdit()
 	bpDialog->show();
 }
 
+void CpuWidget::contextBPListPasteCSV()
+{
+	QString csv = QGuiApplication::clipboard()->text();
+	// Skip header
+	csv = csv.mid(csv.indexOf('\n') + 1);
+
+	for (const QString& line : csv.split('\n'))
+	{
+		const QStringList fields = line.split(',');
+		if (fields.size() != BreakpointModel::BreakpointColumns::COLUMN_COUNT)
+		{
+			Console.WriteLn("Debugger CSV Import: Invalid number of columns, skipping");
+			continue;
+		}
+
+		bool ok;
+		int type = fields[0].toUInt(&ok);
+		if (!ok)
+		{
+			Console.WriteLn("Debugger CSV Import: Failed to parse type '%s', skipping", fields[0].toUtf8().constData());
+			continue;
+		}
+
+		// This is how we differentiate between breakpoints and memchecks
+		if (type == MEMCHECK_INVALID)
+		{
+			BreakPoint bp;
+
+			// Address
+			bp.addr = fields[1].toUInt(&ok, 16);
+			if (!ok)
+			{
+				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[1].toUtf8().constData());
+				continue;
+			}
+
+			// Condition
+			if (!fields[4].isEmpty())
+			{
+				PostfixExpression expr;
+				bp.hasCond = true;
+				bp.cond.debug = &m_cpu;
+
+				if (!m_cpu.initExpression(fields[4].toUtf8().constData(), expr))
+				{
+					Console.WriteLn("Debugger CSV Import: Failed to parse cond '%s', skipping", fields[4].toUtf8().constData());
+					continue;
+				}
+				bp.cond.expression = expr;
+				strncpy(&bp.cond.expressionString[0], fields[4].toUtf8().constData(), sizeof(bp.cond.expressionString));
+			}
+
+			// Enabled
+			bp.enabled = fields[6].toUInt(&ok);
+			if (!ok)
+			{
+				Console.WriteLn("Debugger CSV Import: Failed to parse enable flag '%s', skipping", fields[1].toUtf8().constData());
+				continue;
+			}
+
+			m_bpModel.insertBreakpointRows(0, 1, {bp});
+		}
+		else
+		{
+			MemCheck mc;
+			// Mode
+			if (type >= MEMCHECK_INVALID)
+			{
+				Console.WriteLn("Debugger CSV Import: Failed to parse cond type '%s', skipping", fields[0].toUtf8().constData());
+				continue;
+			}
+			mc.cond = static_cast<MemCheckCondition>(type);
+
+			// Address
+			mc.start = fields[1].toUInt(&ok, 16);
+			if (!ok)
+			{
+				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[1].toUtf8().constData());
+				continue;
+			}
+
+			// Size
+			mc.end = fields[2].toUInt(&ok) + mc.start;
+			if (!ok)
+			{
+				Console.WriteLn("Debugger CSV Import: Failed to parse length '%s', skipping", fields[1].toUtf8().constData());
+				continue;
+			}
+
+			// Result
+			int result = fields[6].toUInt(&ok);
+			if (!ok)
+			{
+				Console.WriteLn("Debugger CSV Import: Failed to parse result flag '%s', skipping", fields[1].toUtf8().constData());
+				continue;
+			}
+			mc.result = static_cast<MemCheckResult>(result);
+
+			m_bpModel.insertBreakpointRows(0, 1, {mc});
+		}
+	}
+}
+
 void CpuWidget::updateFunctionList(bool whenEmpty)
 {
 	if (!m_cpu.isAlive())
 		return;
 
-	if (whenEmpty && m_ui.listFunctions->count())
-		return;
-
-	m_ui.listFunctions->clear();
-
-	const auto demangler = demangler::CDemangler::createGcc();
-	const QString filter = m_ui.txtFuncSearch->text().toLower();
-	for (const auto& symbol : m_cpu.GetSymbolMap().GetAllSymbols(SymbolType::ST_FUNCTION))
+	if (m_cpu.getCpuType() == BREAKPOINT_EE || !m_moduleView)
 	{
-		QString symbolName = symbol.name.c_str();
-		if (m_demangleFunctions)
+		if (whenEmpty && m_ui.listFunctions->count())
+			return;
+
+		m_ui.listFunctions->clear();
+
+		const auto demangler = demangler::CDemangler::createGcc();
+		const QString filter = m_ui.txtFuncSearch->text().toLower();
+		for (const auto& symbol : m_cpu.GetSymbolMap().GetAllSymbols(SymbolType::ST_FUNCTION))
 		{
-			symbolName = QString(demangler->demangleToString(symbol.name).c_str());
+			QString symbolName = symbol.name.c_str();
+			if (m_demangleFunctions)
+			{
+				symbolName = QString(demangler->demangleToString(symbol.name).c_str());
 
-			// If the name isn't mangled, or it doesn't understand, it'll return an empty string
-			// Fall back to the original name if this is the case
-			if (symbolName.isEmpty())
-				symbolName = symbol.name.c_str();
+				// If the name isn't mangled, or it doesn't understand, it'll return an empty string
+				// Fall back to the original name if this is the case
+				if (symbolName.isEmpty())
+					symbolName = symbol.name.c_str();
+			}
+
+			if (filter.size() && !symbolName.toLower().contains(filter))
+				continue;
+
+			QListWidgetItem* item = new QListWidgetItem();
+
+			item->setText(QString("%0 %1").arg(FilledQStringFromValue(symbol.address, 16)).arg(symbolName));
+
+			item->setData(256, symbol.address);
+
+			m_ui.listFunctions->addItem(item);
 		}
+	}
+	else
+	{
+		const auto demangler = demangler::CDemangler::createGcc();
+		const QString filter = m_ui.txtFuncSearch->text().toLower();
 
-		if (filter.size() && !symbolName.toLower().contains(filter))
-			continue;
+		m_ui.treeModules->clear();
+		for (const auto& module : m_cpu.GetSymbolMap().GetModules())
+		{
+			QTreeWidgetItem* moduleItem = new QTreeWidgetItem(m_ui.treeModules, QStringList({QString(module.name.c_str()), QString("%0.%1").arg(module.version.major).arg(module.version.minor), QString::number(module.exports.size())}));
+			QList<QTreeWidgetItem*> functions;
+			for (const auto& sym : module.exports)
+			{
+				if (!QString(sym.name.c_str()).toLower().contains(filter))
+					continue;
 
-		QListWidgetItem* item = new QListWidgetItem();
+				QString symbolName = QString(sym.name.c_str());
+				if (m_demangleFunctions)
+				{
+					QString demangledName = QString(demangler->demangleToString(sym.name).c_str());
+					if (!demangledName.isEmpty())
+						symbolName = demangledName;
+				}
+				QTreeWidgetItem* functionItem = new QTreeWidgetItem(moduleItem, QStringList(QString("%0 %1").arg(FilledQStringFromValue(sym.address, 16)).arg(symbolName)));
+				functionItem->setData(0, 256, sym.address);
+				functions.append(functionItem);
+			}
+			moduleItem->addChildren(functions);
 
-		item->setText(QString("%0 %1").arg(FilledQStringFromValue(symbol.address, 16)).arg(symbolName));
-
-		item->setData(256, symbol.address);
-
-		m_ui.listFunctions->addItem(item);
+			if (!filter.isEmpty() && functions.size())
+			{
+				moduleItem->setExpanded(true);
+				m_ui.treeModules->insertTopLevelItem(0, moduleItem);
+			}
+			else if (filter.isEmpty())
+			{
+				m_ui.treeModules->insertTopLevelItem(0, moduleItem);
+			}
+			else
+			{
+				delete moduleItem;
+			}
+		}
 	}
 }
 
@@ -393,7 +581,15 @@ void CpuWidget::onThreadListContextMenu(QPoint pos)
 	});
 	contextMenu->addAction(actionCopy);
 
-	contextMenu->popup(m_ui.threadList->mapToGlobal(pos));
+	contextMenu->addSeparator();
+
+	QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.threadList);
+	connect(actionExport, &QAction::triggered, [this]() {
+		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.threadList->model()));
+	});
+	contextMenu->addAction(actionExport);
+
+	contextMenu->popup(m_ui.threadList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onThreadListDoubleClick(const QModelIndex& index)
@@ -417,6 +613,45 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	else
 		m_funclistContextMenu->clear();
 
+	if (m_ui.listFunctions->selectedItems().count() && m_ui.listFunctions->selectedItems().first()->data(256).isValid())
+	{
+		QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.listFunctions);
+		connect(copyName, &QAction::triggered, [this] {
+			// We only store the address in the widget item
+			// Resolve the function name by fetching the symbolmap and filtering the address
+
+			const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
+			const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelName(selectedItem->data(256).toUInt()).c_str());
+			QApplication::clipboard()->setText(functionName);
+		});
+		m_funclistContextMenu->addAction(copyName);
+
+		QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.listFunctions);
+		connect(copyAddress, &QAction::triggered, [this] {
+			const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(256).toUInt(), 16);
+			QApplication::clipboard()->setText(addressString);
+		});
+
+		m_funclistContextMenu->addAction(copyAddress);
+
+		m_funclistContextMenu->addSeparator();
+
+		QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.listFunctions);
+		connect(gotoDisasm, &QAction::triggered, [this] {
+			m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
+		});
+
+		m_funclistContextMenu->addAction(gotoDisasm);
+
+		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
+		connect(gotoMemory, &QAction::triggered, [this] {
+			m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
+		});
+
+		m_funclistContextMenu->addAction(gotoMemory);
+
+		m_funclistContextMenu->addSeparator();
+	}
 	//: "Demangling" is the opposite of "Name mangling", which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++
 	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.listFunctions);
 	demangleAction->setCheckable(true);
@@ -424,48 +659,28 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 	connect(demangleAction, &QAction::triggered, [this] {
 		m_demangleFunctions = !m_demangleFunctions;
+		m_ui.disassemblyWidget->setDemangle(m_demangleFunctions);
 		updateFunctionList();
 	});
 
 	m_funclistContextMenu->addAction(demangleAction);
 
-	QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.listFunctions);
-	connect(copyName, &QAction::triggered, [this] {
-		// We only store the address in the widget item
-		// Resolve the function name by fetching the symbolmap and filtering the address
+	if (m_cpu.getCpuType() == BREAKPOINT_IOP)
+	{
+		QAction* moduleViewAction = new QAction(tr("Module Tree"), m_ui.listFunctions);
+		moduleViewAction->setCheckable(true);
+		moduleViewAction->setChecked(m_moduleView);
 
-		const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
-		const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelString(selectedItem->data(256).toUInt()).c_str());
-		QApplication::clipboard()->setText(functionName);
-	});
-	m_funclistContextMenu->addAction(copyName);
+		connect(moduleViewAction, &QAction::triggered, [this] {
+			m_moduleView = !m_moduleView;
+			m_ui.treeModules->setVisible(m_moduleView);
+			m_ui.listFunctions->setVisible(!m_moduleView);
+			updateFunctionList();
+		});
 
-	QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.listFunctions);
-	connect(copyAddress, &QAction::triggered, [this] {
-		const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(256).toUInt(), 16);
-		QApplication::clipboard()->setText(addressString);
-	});
-
-	m_funclistContextMenu->addAction(copyAddress);
-
-	m_funclistContextMenu->addSeparator();
-
-	QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.listFunctions);
-	connect(gotoDisasm, &QAction::triggered, [this] {
-		m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
-	});
-
-	m_funclistContextMenu->addAction(gotoDisasm);
-
-	QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
-	connect(gotoMemory, &QAction::triggered, [this] {
-		m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
-	});
-
-	m_funclistContextMenu->addAction(gotoMemory);
-
-
-	m_funclistContextMenu->popup(m_ui.listFunctions->mapToGlobal(pos));
+		m_funclistContextMenu->addAction(moduleViewAction);
+	}
+	m_funclistContextMenu->popup(m_ui.listFunctions->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onFuncListDoubleClick(QListWidgetItem* item)
@@ -473,6 +688,81 @@ void CpuWidget::onFuncListDoubleClick(QListWidgetItem* item)
 	m_ui.disassemblyWidget->gotoAddress(item->data(256).toUInt());
 }
 
+void CpuWidget::onModuleTreeContextMenu(QPoint pos)
+{
+	if (!m_moduleTreeContextMenu)
+		m_moduleTreeContextMenu = new QMenu(m_ui.treeModules);
+	else
+		m_moduleTreeContextMenu->clear();
+
+	if (m_ui.treeModules->selectedItems().count() && m_ui.treeModules->selectedItems().first()->data(0, 256).isValid())
+	{
+		QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.treeModules);
+		connect(copyName, &QAction::triggered, [this] {
+			QApplication::clipboard()->setText(m_cpu.GetSymbolMap().GetLabelName(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt()).c_str());
+		});
+		m_moduleTreeContextMenu->addAction(copyName);
+
+		QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.treeModules);
+		connect(copyAddress, &QAction::triggered, [this] {
+			const QString addressString = FilledQStringFromValue(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt(), 16);
+			QApplication::clipboard()->setText(addressString);
+		});
+		m_moduleTreeContextMenu->addAction(copyAddress);
+
+		m_moduleTreeContextMenu->addSeparator();
+
+		QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.treeModules);
+		connect(gotoDisasm, &QAction::triggered, [this] {
+			m_ui.disassemblyWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt());
+		});
+		m_moduleTreeContextMenu->addAction(gotoDisasm);
+
+		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.treeModules);
+		connect(gotoMemory, &QAction::triggered, [this] {
+			m_ui.memoryviewWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt());
+		});
+		m_moduleTreeContextMenu->addAction(gotoMemory);
+	}
+
+	//: "Demangling" is the opposite of "Name mangling", which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++
+	QAction* demangleAction = new QAction(tr("Demangle Symbols"), m_ui.treeModules);
+	demangleAction->setCheckable(true);
+	demangleAction->setChecked(m_demangleFunctions);
+
+	connect(demangleAction, &QAction::triggered, [this] {
+		m_demangleFunctions = !m_demangleFunctions;
+		m_ui.disassemblyWidget->setDemangle(m_demangleFunctions);
+		updateFunctionList();
+	});
+
+	m_moduleTreeContextMenu->addSeparator();
+
+	m_moduleTreeContextMenu->addAction(demangleAction);
+
+	QAction* moduleViewAction = new QAction(tr("Module Tree"), m_ui.treeModules);
+	moduleViewAction->setCheckable(true);
+	moduleViewAction->setChecked(m_moduleView);
+
+	connect(moduleViewAction, &QAction::triggered, [this] {
+		m_moduleView = !m_moduleView;
+		m_ui.treeModules->setVisible(m_moduleView);
+		m_ui.listFunctions->setVisible(!m_moduleView);
+		updateFunctionList();
+	});
+
+	m_moduleTreeContextMenu->addAction(moduleViewAction);
+
+	m_moduleTreeContextMenu->popup(m_ui.treeModules->viewport()->mapToGlobal(pos));
+}
+
+void CpuWidget::onModuleTreeDoubleClick(QTreeWidgetItem* item)
+{
+	if (item->data(0, 256).isValid())
+	{
+		m_ui.disassemblyWidget->gotoAddress(item->data(0, 256).toUInt());
+	}
+}
 void CpuWidget::updateStackFrames()
 {
 	m_stackModel.refreshData();
@@ -496,7 +786,15 @@ void CpuWidget::onStackListContextMenu(QPoint pos)
 	});
 	contextMenu->addAction(actionCopy);
 
-	contextMenu->popup(m_ui.stackList->mapToGlobal(pos));
+	contextMenu->addSeparator();
+
+	QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.stackList);
+	connect(actionExport, &QAction::triggered, [this]() {
+		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.stackList->model()));
+	});
+	contextMenu->addAction(actionExport);
+
+	contextMenu->popup(m_ui.stackList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onStackListDoubleClick(const QModelIndex& index)

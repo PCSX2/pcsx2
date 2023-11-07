@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,6 +21,7 @@
 #include "Host.h"
 
 #include "common/Assertions.h"
+#include "common/Error.h"
 
 #include "fmt/format.h"
 
@@ -198,10 +199,10 @@ void InputIsoFile::_init()
 bool InputIsoFile::Test(std::string srcfile)
 {
 	Close();
-	return Open(std::move(srcfile), true);
+	return Open(std::move(srcfile), nullptr, true);
 }
 
-bool InputIsoFile::Open(std::string srcfile, bool testOnly)
+bool InputIsoFile::Open(std::string srcfile, Error* error, bool testOnly)
 {
 	Close();
 	m_filename = std::move(srcfile);
@@ -222,7 +223,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 		m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
 	}
 
-	if (!m_reader->Open(m_filename))
+	if (!m_reader->Open(m_filename, error))
 		return false;
 
 	// It might actually be a blockdump file.
@@ -233,7 +234,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 		delete m_reader;
 
 		BlockdumpFileReader* bdr = new BlockdumpFileReader();
-		bdr->Open(m_filename);
+		bdr->Open(m_filename, error);
 
 		m_blockofs = bdr->GetBlockOffset();
 		m_blocksize = bdr->GetBlockSize();
@@ -253,7 +254,7 @@ bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 
 	if (!detected)
 	{
-		Console.Error(fmt::format("Unable to identify the ISO image type for '{}'", m_filename));
+		Error::SetString(error, fmt::format("Unable to identify the ISO image type for '{}'", m_filename));
 		Close();
 		return false;
 	}

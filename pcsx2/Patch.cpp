@@ -17,6 +17,7 @@
 
 #define _PC_ // disables MIPS opcode macros.
 
+#include "common/Assertions.h"
 #include "common/ByteSwap.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -354,7 +355,7 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 {
 	// Prefer files on disk over the zip.
 	std::vector<std::string> disk_patch_files;
-	if (for_ui || !Achievements::ChallengeModeActive())
+	if (for_ui || !Achievements::IsHardcoreModeActive())
 		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats, for_ui);
 
 	if (!disk_patch_files.empty())
@@ -471,9 +472,14 @@ Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc
 	return ret;
 }
 
+std::string Patch::GetPnachFilename(const std::string_view& serial, u32 crc, bool cheats)
+{
+	return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetPnachTemplate(serial, crc, true, false, false));
+}
+
 void Patch::ReloadEnabledLists()
 {
-	if (EmuConfig.EnableCheats && !Achievements::ChallengeModeActive())
+	if (EmuConfig.EnableCheats && !Achievements::IsHardcoreModeActive())
 		s_enabled_cheats = Host::GetStringListSetting(CHEATS_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
 	else
 		s_enabled_cheats = {};

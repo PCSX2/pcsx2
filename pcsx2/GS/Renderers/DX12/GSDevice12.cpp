@@ -36,6 +36,13 @@
 #include <sstream>
 #include <limits>
 
+#ifdef ENABLE_OGL_DEBUG
+#define USE_PIX
+#include "WinPixEventRuntime/pix3.h"
+
+static u32 s_debug_scope_depth = 0;
+#endif
+
 static bool IsDATMConvertShader(ShaderConvert i)
 {
 	return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1);
@@ -66,21 +73,8 @@ static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* 
 	// clang-format on
 }
 
-GSDevice12::ShaderMacro::ShaderMacro(D3D_FEATURE_LEVEL fl)
+GSDevice12::ShaderMacro::ShaderMacro()
 {
-	switch (fl)
-	{
-		case D3D_FEATURE_LEVEL_10_0:
-			mlist.emplace_back("SHADER_MODEL", "0x400");
-			break;
-		case D3D_FEATURE_LEVEL_10_1:
-			mlist.emplace_back("SHADER_MODEL", "0x401");
-			break;
-		case D3D_FEATURE_LEVEL_11_0:
-		default:
-			mlist.emplace_back("SHADER_MODEL", "0x500");
-			break;
-	}
 	mlist.emplace_back("DX12", "1");
 }
 
@@ -713,7 +707,7 @@ bool GSDevice12::Create()
 		return false;
 
 	{
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/tfx.fx");
+		std::optional<std::string> shader = ReadShaderSource("shaders/dx11/tfx.fx");
 		if (!shader.has_value())
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/tfx.fxf.");
@@ -999,8 +993,6 @@ std::string GSDevice12::GetDriverInfo() const
 	std::string ret = "Unknown Feature Level";
 
 	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
-		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
-		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_1"},
 		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
 		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
 	}};
@@ -1123,16 +1115,79 @@ void GSDevice12::EndPresent()
 	InvalidateCachedState();
 }
 
+#ifdef ENABLE_OGL_DEBUG
+static UINT Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
+	const std::array<float, 3>& c, const std::array<float, 3>& d)
+{
+	std::array<float, 3> result;
+	result[0] = a[0] + b[0] * std::cos(6.28318f * (c[0] * phase + d[0]));
+	result[1] = a[1] + b[1] * std::cos(6.28318f * (c[1] * phase + d[1]));
+	result[2] = a[2] + b[2] * std::cos(6.28318f * (c[2] * phase + d[2]));
+	return PIX_COLOR(static_cast<BYTE>(result[0] * 255.0f),
+		static_cast<BYTE>(result[1] * 255.0f),
+		static_cast<BYTE>(result[2] * 255.0f));
+}
+#endif
+
 void GSDevice12::PushDebugGroup(const char* fmt, ...)
 {
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	const UINT color = Palette(
+		++s_debug_scope_depth, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
+
+	PIXBeginEvent(GetCommandList(), color, "%s", buf.c_str());
+#endif
 }
 
 void GSDevice12::PopDebugGroup()
 {
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	s_debug_scope_depth = (s_debug_scope_depth == 0) ? 0 : (s_debug_scope_depth - 1u);
+
+	PIXEndEvent(GetCommandList());
+#endif
 }
 
 void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
 {
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	if (buf.empty())
+		return;
+
+	static constexpr float colors[][3] = {
+		{0.1f, 0.1f, 0.0f}, // Cache
+		{0.1f, 0.1f, 0.0f}, // Reg
+		{0.5f, 0.0f, 0.5f}, // Debug
+		{0.0f, 0.5f, 0.5f}, // Message
+		{0.0f, 0.2f, 0.0f} // Performance
+	};
+
+	const float* fcolor = colors[static_cast<int>(category)];
+	const UINT color = PIX_COLOR(static_cast<BYTE>(fcolor[0] * 255.0f),
+		static_cast<BYTE>(fcolor[1] * 255.0f),
+		static_cast<BYTE>(fcolor[2] * 255.0f));
+
+	PIXSetMarker(GetCommandList(), color, "%s", buf.c_str());
+#endif
 }
 
 bool GSDevice12::CheckFeatures()
@@ -1151,6 +1206,7 @@ bool GSDevice12::CheckFeatures()
 	m_features.dual_source_blend = true;
 	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
+	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = false;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
@@ -1815,7 +1871,7 @@ bool GSDevice12::CompileCASPipelines()
 	if (!m_cas_root_signature)
 		return false;
 
-	std::optional<std::string> cas_source(Host::ReadResourceFileToString("shaders/dx11/cas.hlsl"));
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx11/cas.hlsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
@@ -1833,15 +1889,17 @@ bool GSDevice12::CompileCASPipelines()
 	cpb.SetShader(cs_sharpen->GetBufferPointer(), cs_sharpen->GetBufferSize());
 	m_cas_sharpen_pipeline = cpb.Create(m_device.get(), m_shader_cache, false);
 	if (!m_cas_upscale_pipeline || !m_cas_sharpen_pipeline)
+	{
+		Console.Error("Failed to create CAS pipelines");
 		return false;
+	}
 
-	m_features.cas_sharpening = true;
 	return true;
 }
 
 bool GSDevice12::CompileImGuiPipeline()
 {
-	const std::optional<std::string> hlsl = Host::ReadResourceFileToString("shaders/dx11/imgui.fx");
+	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
 	if (!hlsl.has_value())
 	{
 		Console.Error("Failed to read imgui.fx");
@@ -2212,13 +2270,13 @@ static void AddUtilityVertexAttributes(D3D12::GraphicsPipelineBuilder& gpb)
 
 GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::string& source, const char* entry_point)
 {
-	ShaderMacro sm_model(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm_model;
 	return m_shader_cache.GetVertexShader(source, sm_model.GetPtr(), entry_point);
 }
 
 GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* entry_point)
 {
-	ShaderMacro sm_model(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm_model;
 	return m_shader_cache.GetPixelShader(source, sm_model.GetPtr(), entry_point);
 }
 
@@ -2310,7 +2368,7 @@ bool GSDevice12::CreateRootSignatures()
 
 bool GSDevice12::CompileConvertPipelines()
 {
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/convert.fx");
+	std::optional<std::string> shader = ReadShaderSource("shaders/dx11/convert.fx");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/convert.fx.");
@@ -2461,7 +2519,7 @@ bool GSDevice12::CompileConvertPipelines()
 
 bool GSDevice12::CompilePresentPipelines()
 {
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/present.fx");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/present.fx");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/present.fx.");
@@ -2505,7 +2563,7 @@ bool GSDevice12::CompilePresentPipelines()
 
 bool GSDevice12::CompileInterlacePipelines()
 {
-	std::optional<std::string> source = Host::ReadResourceFileToString("shaders/dx11/interlace.fx");
+	const std::optional<std::string> source = ReadShaderSource("shaders/dx11/interlace.fx");
 	if (!source)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/interlace.fx.");
@@ -2541,7 +2599,7 @@ bool GSDevice12::CompileInterlacePipelines()
 
 bool GSDevice12::CompileMergePipelines()
 {
-	std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/merge.fx");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/merge.fx");
 	if (!shader)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/merge.fx.");
@@ -2588,14 +2646,16 @@ bool GSDevice12::CompilePostProcessingPipelines()
 	gpb.SetVertexShader(m_convert_vs.get());
 
 	{
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/common/fxaa.fx");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/common/fxaa.fx");
 		if (!shader)
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/common/fxaa.fx.");
 			return false;
 		}
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "ps_main"));
+		ShaderMacro sm;
+		sm.AddMacro("FXAA_HLSL_5", "1");
+		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, sm.GetPtr());
 		if (!ps)
 			return false;
 
@@ -2609,7 +2669,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 	}
 
 	{
-		std::optional<std::string> shader = Host::ReadResourceFileToString("shaders/dx11/shadeboost.fx");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
 		if (!shader)
 		{
 			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/shadeboost.fx.");
@@ -2710,7 +2770,7 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	if (it != m_tfx_vertex_shaders.end())
 		return it->second.get();
 
-	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm;
 	sm.AddMacro("VERTEX_SHADER", 1);
 	sm.AddMacro("VS_TME", sel.tme);
 	sm.AddMacro("VS_FST", sel.fst);
@@ -2729,7 +2789,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	if (it != m_tfx_pixel_shaders.end())
 		return it->second.get();
 
-	ShaderMacro sm(m_shader_cache.GetFeatureLevel());
+	ShaderMacro sm;
 	sm.AddMacro("PIXEL_SHADER", 1);
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
@@ -2753,12 +2813,13 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
 	sm.AddMacro("PS_REGION_RECT", sel.region_rect);
 	sm.AddMacro("PS_SHUFFLE", sel.shuffle);
+	sm.AddMacro("PS_SHUFFLE_SAME", sel.shuffle_same);
 	sm.AddMacro("PS_READ_BA", sel.read_ba);
 	sm.AddMacro("PS_READ16_SRC", sel.real16src);
 	sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 	sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 	sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
-	sm.AddMacro("PS_DFMT", sel.dfmt);
+	sm.AddMacro("PS_DST_FMT", sel.dst_fmt);
 	sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 	sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
 	sm.AddMacro("PS_HDR", sel.hdr);

@@ -1,5 +1,4 @@
 add_library(pcsx2-soundtouch
-	source/SoundStretch/WavFile.cpp
 	source/SoundTouch/AAFilter.cpp
 	source/SoundTouch/BPMDetect.cpp
 	source/SoundTouch/cpu_detect_x86.cpp
@@ -19,7 +18,6 @@ add_library(pcsx2-soundtouch
 	soundtouch/FIFOSamplePipe.h
 	soundtouch/SoundTouch.h
 	soundtouch/STTypes.h
-	source/SoundStretch/WavFile.h
 	source/SoundTouch/AAFilter.h
 	source/SoundTouch/cpu_detect.h
 	source/SoundTouch/FIRFilter.h

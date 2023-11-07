@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -85,8 +85,12 @@ jobs:
           cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
           flatpak run org.freedesktop.appstream-glib validate .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
 
+      - name: Validate manifest
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
+
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.3
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           manifest-path: .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
@@ -103,9 +107,17 @@ jobs:
         run: |
           ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 flatpak_app/screenshots
 
+      - name: Validate build directory
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir flatpak_app
+
+      - name: Validate repo
+        run: |
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
+
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
-        uses: flatpak/flatpak-github-actions/flat-manager@v6.1
+        uses: flatpak/flatpak-github-actions/flat-manager@v6.3
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: beta
@@ -113,7 +125,7 @@ jobs:
 
       - name: Push to Flathub stable
         if: inputs.publish == true && inputs.branch == 'stable'
-        uses: flatpak/flatpak-github-actions/flat-manager@v6.1
+        uses: flatpak/flatpak-github-actions/flat-manager@v6.3
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: stable

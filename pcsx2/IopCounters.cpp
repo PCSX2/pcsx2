@@ -161,7 +161,7 @@ void psxRcntInit()
 	psxCounters[4].interrupt = 0x08000;
 	psxCounters[5].interrupt = 0x10000;
 
-	psxCounters[6].rate = 768 * 12; // 12 SPU ticks. 768 would be ideal but some games slow down internally for some reason
+	psxCounters[6].rate = 768;
 	psxCounters[6].CycleT = psxCounters[6].rate;
 	psxCounters[6].mode = 0x8;
 
@@ -312,7 +312,7 @@ static void _psxCheckStartGate(int i)
 			return;
 
 		case 0x1: // GATE_ON_ClearStart - count normally with resets after every end gate
-				  // do nothing - All counting will be done on a need-to-count basis.
+			// do nothing - All counting will be done on a need-to-count basis.
 			return;
 
 		case 0x2: // GATE_ON_Clear_OFF_Start - start counting on gate start, stop on gate end
@@ -322,7 +322,7 @@ static void _psxCheckStartGate(int i)
 			break;
 
 		case 0x3: //GATE_ON_Start - start and count normally on gate end (no restarts or stops or clears)
-				  // do nothing!
+			// do nothing!
 			return;
 	}
 	_rcntSet(i);
@@ -443,8 +443,6 @@ void psxRcntUpdate()
 
 	for (i = 0; i <= 5; i++)
 	{
-		s32 change = psxRegs.cycle - psxCounters[i].sCycleT;
-
 		// don't count disabled or hblank counters...
 		// We can't check the ALTSOURCE flag because the PSXCLOCK source *should*
 		// be counted here.
@@ -460,17 +458,21 @@ void psxRcntUpdate()
 		if (psxCounters[i].rate == PSXHBLANK)
 			continue;
 
-		if (change <= 0)
-			continue;
-
-		psxCounters[i].count += change / psxCounters[i].rate;
 		if (psxCounters[i].rate != 1)
 		{
-			change -= (change / psxCounters[i].rate) * psxCounters[i].rate;
-			psxCounters[i].sCycleT = psxRegs.cycle - change;
+			const u32 change = (psxRegs.cycle - psxCounters[i].sCycleT) / psxCounters[i].rate;
+
+			if (change <= 0)
+				continue;
+
+			psxCounters[i].count += change;
+			psxCounters[i].sCycleT += change * psxCounters[i].rate;
 		}
 		else
+		{
+			psxCounters[i].count += psxRegs.cycle - psxCounters[i].sCycleT;
 			psxCounters[i].sCycleT = psxRegs.cycle;
+		}
 	}
 
 	// Do target/overflow testing
@@ -499,16 +501,12 @@ void psxRcntUpdate()
 	const s32 difference = psxRegs.cycle - psxCounters[6].sCycleT;
 	s32 c = psxCounters[6].CycleT;
 
-	if (difference >= psxCounters[6].CycleT)
-	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = psxCounters[6].rate;
-		SPU2async(difference);
-		c = psxCounters[6].CycleT;
-	}
-	else
-		c -= difference;
-	psxNextCounter = c;
+	const u32 spu2_delta = (psxRegs.cycle - lClocks) % 768;
+	psxCounters[6].sCycleT = psxRegs.cycle;
+	psxCounters[6].CycleT = psxCounters[6].rate - spu2_delta;
+	SPU2async();
+	psxNextCounter = psxCounters[6].CycleT;
+
 	DEV9async(1);
 	const s32 diffusb = psxRegs.cycle - psxCounters[7].sCycleT;
 	s32 cusb = psxCounters[7].CycleT;
@@ -516,7 +514,7 @@ void psxRcntUpdate()
 	if (diffusb >= psxCounters[7].CycleT)
 	{
 		USBasync(diffusb);
-		psxCounters[7].sCycleT = psxRegs.cycle;
+		psxCounters[7].sCycleT += psxCounters[7].rate * (diffusb / psxCounters[7].rate);
 		psxCounters[7].CycleT = psxCounters[7].rate;
 	}
 	else
@@ -533,21 +531,18 @@ void psxRcntUpdate()
 //
 void psxRcntWcount16(int index, u16 value)
 {
-	u32 change;
-
 	pxAssert(index < 3);
 	//DevCon.Warning("16bit IOP Counter[%d] writeCount16 = %x", index, value);
 
 	if (psxCounters[index].rate != PSXHBLANK)
 	{
-		// Re-adjust the sCycleT to match where the counter is currently
-		// (remainder of the rate divided into the time passed will do the trick)
-
-		change = psxRegs.cycle - psxCounters[index].sCycleT;
-		psxCounters[index].sCycleT = psxRegs.cycle - (change % psxCounters[index].rate);
+		const u32 change = (psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate;
+		psxCounters[index].sCycleT += change * psxCounters[index].rate;
 	}
 
 	psxCounters[index].count = value & 0xffff;
+
+	psxCounters[index].target &= 0xffff;
 
 	if (psxCounters[index].count > psxCounters[index].target)
 	{
@@ -555,8 +550,6 @@ void psxRcntWcount16(int index, u16 value)
 		//DevCon.Warning("32bit Count already higher than target");
 		psxCounters[index].target |= IOPCNT_FUTURE_TARGET;
 	}
-	else
-		psxCounters[index].target &= 0xffff;
 
 	_rcntSet(index);
 }
@@ -565,8 +558,6 @@ void psxRcntWcount16(int index, u16 value)
 //
 void psxRcntWcount32(int index, u32 value)
 {
-	u32 change;
-
 	pxAssert(index >= 3 && index < 6);
 	PSXCNT_LOG("32bit IOP Counter[%d] writeCount32 = %x", index, value);
 
@@ -575,11 +566,13 @@ void psxRcntWcount32(int index, u32 value)
 		// Re-adjust the sCycleT to match where the counter is currently
 		// (remainder of the rate divided into the time passed will do the trick)
 
-		change = psxRegs.cycle - psxCounters[index].sCycleT;
-		psxCounters[index].sCycleT = psxRegs.cycle - (change % psxCounters[index].rate);
+		const u32 change = (psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate;
+		psxCounters[index].sCycleT += change * psxCounters[index].rate;
 	}
 
 	psxCounters[index].count = value;
+
+	psxCounters[index].target &= 0xffffffff;
 
 	if (psxCounters[index].count > psxCounters[index].target)
 	{
@@ -587,8 +580,6 @@ void psxRcntWcount32(int index, u32 value)
 		//DevCon.Warning("32bit Count already higher than target");
 		psxCounters[index].target |= IOPCNT_FUTURE_TARGET;
 	}
-	else
-		psxCounters[index].target &= 0xffffffff;
 
 	_rcntSet(index);
 }
@@ -781,11 +772,23 @@ void psxRcntWtarget16(int index, u32 value)
 		// Pulse mode reset
 		psxCounters[index].mode |= IOPCNT_INT_REQ; // Interrupt flag reset to high
 	}
+
+	if (!(psxCounters[index].mode & IOPCNT_STOPPED) &&
+		(psxCounters[index].rate != PSXHBLANK))
+	{
+		// Re-adjust the sCycleT to match where the counter is currently
+		// (remainder of the rate divided into the time passed will do the trick)
+
+		const u32 change = (psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate;
+		psxCounters[index].count += change;
+		psxCounters[index].sCycleT += change * psxCounters[index].rate;
+	}
+
 	// protect the target from an early arrival.
 	// if the target is behind the current count, then set the target overflow
 	// flag, so that the target won't be active until after the next overflow.
 
-	if (psxCounters[index].target <= psxRcntCycles(index))
+	if (psxCounters[index].target <= psxCounters[index].count)
 		psxCounters[index].target |= IOPCNT_FUTURE_TARGET;
 
 	_rcntSet(index);
@@ -803,11 +806,22 @@ void psxRcntWtarget32(int index, u32 value)
 		// Pulse mode reset
 		psxCounters[index].mode |= IOPCNT_INT_REQ; // Interrupt flag reset to high
 	}
+
+	if (!(psxCounters[index].mode & IOPCNT_STOPPED) &&
+		(psxCounters[index].rate != PSXHBLANK))
+	{
+		// Re-adjust the sCycleT to match where the counter is currently
+		// (remainder of the rate divided into the time passed will do the trick)
+
+		const u32 change = (psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate;
+		psxCounters[index].count += change;
+		psxCounters[index].sCycleT += change * psxCounters[index].rate;
+	}
 	// protect the target from an early arrival.
 	// if the target is behind the current count, then set the target overflow
 	// flag, so that the target won't be active until after the next overflow.
 
-	if (psxCounters[index].target <= psxRcntCycles(index))
+	if (psxCounters[index].target <= psxCounters[index].count)
 		psxCounters[index].target |= IOPCNT_FUTURE_TARGET;
 
 	_rcntSet(index);
@@ -852,14 +866,6 @@ u32 psxRcntRcount32(int index)
 	}
 
 	return retval;
-}
-
-u64 psxRcntCycles(int index)
-{
-	if (psxCounters[index].mode & IOPCNT_STOPPED || psxCounters[index].rate == PSXHBLANK)
-		return psxCounters[index].count;
-
-	return (u64)(psxCounters[index].count + (u32)((psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate));
 }
 
 void psxRcntSetGates()

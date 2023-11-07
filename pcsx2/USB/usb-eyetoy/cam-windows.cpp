@@ -123,7 +123,7 @@ namespace usb_eyetoy
 			return devList;
 		}
 
-		int DirectShow::InitializeDevice(std::wstring selectedDevice)
+		int DirectShow::InitializeDevice(const std::wstring& selectedDevice)
 		{
 
 			// Create the Capture Graph Builder.

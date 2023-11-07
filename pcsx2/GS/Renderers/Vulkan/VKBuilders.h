@@ -48,6 +48,7 @@ namespace Vulkan
 		DescriptorSetLayoutBuilder();
 
 		void Clear();
+		void SetPushFlag();
 
 		VkDescriptorSetLayout Create(VkDevice device);
 
@@ -209,7 +210,7 @@ namespace Vulkan
 
 		VkSpecializationInfo m_si;
 		std::array<VkSpecializationMapEntry, MAX_SPECIALIZATION_CONSTANTS> m_smap_entries;
-		std::array<u8, SPECIALIZATION_CONSTANT_SIZE* MAX_SPECIALIZATION_CONSTANTS> m_smap_constants;
+		std::array<u8, SPECIALIZATION_CONSTANT_SIZE * MAX_SPECIALIZATION_CONSTANTS> m_smap_constants;
 	};
 
 	class SamplerBuilder
@@ -248,6 +249,8 @@ namespace Vulkan
 		void Clear();
 
 		void Update(VkDevice device, bool clear = true);
+		void PushUpdate(VkCommandBuffer cmdbuf, VkPipelineBindPoint bind_point, VkPipelineLayout layout, u32 set,
+			bool clear = true);
 
 		void AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
 			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

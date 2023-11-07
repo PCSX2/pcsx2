@@ -58,7 +58,7 @@ public:
 		Invalidated
 	};
 
-	union alignas(16) ClearValue
+	union ClearValue
 	{
 		u32 color;
 		float depth;

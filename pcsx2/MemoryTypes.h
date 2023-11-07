@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,18 +18,19 @@
 
 namespace Ps2MemSize
 {
-	static const uint MainRam	= _128mb;			// 128 MB main memory!
-	static const uint Rom		= _1mb * 4;			// 4 MB main rom
-	static const uint Rom1		= _1mb * 4;			// DVD player
-	static const uint Rom2		= 0x00080000;		// Chinese rom extension
-	static const uint Hardware	= _64kb;
-	static const uint Scratch	= _16kb;
+	static constexpr u32 MainRam = _128mb;      // 32 MB main memory.
+	static constexpr u32 ExtraRam = _1mb * 96; // 32+96 MB devkit memory.
+	static constexpr u32 Rom = _1mb * 4;       // 4 MB main rom
+	static constexpr u32 Rom1 = _1mb * 4;      // DVD player
+	static constexpr u32 Rom2 = 0x00080000;    // Chinese rom extension
+	static constexpr u32 Hardware = _64kb;
+	static constexpr u32 Scratch = _16kb;
 
-	static const uint IopRam	= _1mb * 2;			// 2MB main ram on the IOP.
-	static const uint IopHardware = _64kb;
+	static constexpr u32 IopRam = _1mb * 2; // 2MB main ram on the IOP.
+	static constexpr u32 IopHardware = _64kb;
 
-	static const uint GSregs = 0x00002000;			// 8k for the GS registers and stuff.
-}
+	static constexpr u32 GSregs = 0x00002000; // 8k for the GS registers and stuff.
+} // namespace Ps2MemSize
 
 typedef u8 mem8_t;
 typedef u16 mem16_t;
@@ -39,11 +40,12 @@ typedef u128 mem128_t;
 
 struct EEVM_MemoryAllocMess
 {
-	u8 Main[Ps2MemSize::MainRam];			// Main memory (hard-wired to 32MB)
-	u8 Scratch[Ps2MemSize::Scratch];		// Scratchpad!
-	u8 ROM[Ps2MemSize::Rom];				// Boot rom (4MB)
-	u8 ROM1[Ps2MemSize::Rom1];				// DVD player (4MB)
-	u8 ROM2[Ps2MemSize::Rom2];				// Chinese extensions
+	u8 Main[Ps2MemSize::MainRam];         // Main memory (hard-wired to 32MB)
+	u8 ExtraMemory[Ps2MemSize::ExtraRam]; // Extra memory (32MB up to 128MB => 96MB).
+	u8 Scratch[Ps2MemSize::Scratch];      // Scratchpad!
+	u8 ROM[Ps2MemSize::Rom];              // Boot rom (4MB)
+	u8 ROM1[Ps2MemSize::Rom1];            // DVD player (4MB)
+	u8 ROM2[Ps2MemSize::Rom2];            // Chinese extensions
 
 	// Two 1 megabyte (max DMA) buffers for reading and writing to high memory (>32MB).
 	// Such accesses are not documented as causing bus errors but as the memory does
@@ -56,9 +58,9 @@ struct EEVM_MemoryAllocMess
 
 struct IopVM_MemoryAllocMess
 {
-	u8 Main[Ps2MemSize::IopRam];			// Main memory (hard-wired to 2MB)
-	u8 P[_64kb];							// I really have no idea what this is... --air
-	u8 Sif[0x100];							// a few special SIF/SBUS registers (likely not needed)
+	u8 Main[Ps2MemSize::IopRam]; // Main memory (hard-wired to 2MB)
+	u8 P[_64kb];                 // I really have no idea what this is... --air
+	u8 Sif[0x100];               // a few special SIF/SBUS registers (likely not needed)
 };
 
 

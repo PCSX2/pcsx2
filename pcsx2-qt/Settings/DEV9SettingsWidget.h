@@ -24,7 +24,7 @@
 #include "DEV9DnsHostDialog.h"
 #include "DEV9/net.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class DEV9SettingsWidget : public QWidget
 {
@@ -47,17 +47,14 @@ private Q_SLOTS:
 
 	void onHddEnabledChanged(int state);
 	void onHddBrowseFileClicked();
+	void onHddFileTextChange();
 	void onHddFileEdit();
 	void onHddSizeSlide(int i);
-	// Per game only.
-	void onHddSizeSliderContext(const QPoint& pt);
-	void onHddSizeSliderReset(bool checked = false);
-	//
 	void onHddSizeAccessorSpin();
 	void onHddCreateClicked();
 
 public:
-	DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~DEV9SettingsWidget();
 
 protected:
@@ -73,7 +70,10 @@ private:
 	void AddNewHostConfig(const HostEntryUi& host);
 	void DeleteHostConfig(int index);
 
-	SettingsDialog* m_dialog;
+	void UpdateHddSizeUIEnabled();
+	void UpdateHddSizeUIValues();
+
+	SettingsWindow* m_dialog;
 
 	Ui::DEV9SettingsWidget m_ui;
 

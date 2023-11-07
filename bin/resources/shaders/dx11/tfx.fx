@@ -52,9 +52,10 @@
 #define PS_POINT_SAMPLER 0
 #define PS_REGION_RECT 0
 #define PS_SHUFFLE 0
+#define PS_SHUFFLE_SAME 0
 #define PS_READ_BA 0
 #define PS_READ16_SRC 0
-#define PS_DFMT 0
+#define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
@@ -796,7 +797,7 @@ void ps_color_clamp_wrap(inout float3 C)
 	// so we need to limit the color depth on dithered items
 	if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
 			C += 7.0f; // Need to round up, not down since the shader will invert
 
 		// Standard Clamp
@@ -804,7 +805,7 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
 			C = (float3)((int3)C & (int3)0xF8);
 		else if (PS_COLCLIP == 1 || PS_HDR == 1)
 			C = (float3)((int3)C & (int3)0xFF);
@@ -940,8 +941,17 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	{
 		uint4 denorm_c = uint4(C);
 		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
-		
-		if (PS_READ16_SRC)
+
+		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+		if (PS_SHUFFLE_SAME)
+		{
+			if (PS_READ_BA)
+				C = (float4)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+			else
+				C.ga = C.rg;
+		}
+		// Copy of a 16bit source in to this target
+		else if (PS_READ16_SRC)
 		{
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
 			if (denorm_c.a & 0x80u)
@@ -949,28 +959,23 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			else
 				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u));
 		}
+		// Write RB part. Mask will take care of the correct destination
+		else if (PS_READ_BA)
+		{
+			C.rb = C.bb;
+			if (denorm_c.a & 0x80u)
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+		}
 		else
 		{
-			// Mask will take care of the correct destination
-			if (PS_READ_BA)
-				C.rb = C.bb;
-			else
-				C.rb = C.rr;
+			C.rb = C.rr;
+			if (denorm_c.g & 0x80u)
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
 
-			if (PS_READ_BA)
-			{
-				if (denorm_c.a & 0x80u)
-					C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			}
 			else
-			{
-				if (denorm_c.g & 0x80u)
-					C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			}
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
 		}
 	}
 
@@ -994,12 +999,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	// Alpha correction
-	if (PS_DFMT == FMT_16)
+	if (PS_DST_FMT == FMT_16)
 	{
 		float A_one = 128.0f; // alpha output will be 0x80
 		C.a = PS_FBA ? A_one : step(A_one, C.a) * A_one;
 	}
-	else if ((PS_DFMT == FMT_32) && PS_FBA)
+	else if ((PS_DST_FMT == FMT_32) && PS_FBA)
 	{
 		float A_one = 128.0f;
 		if (C.a < A_one) C.a += A_one;

@@ -23,7 +23,6 @@
 #include "GS/Renderers/Common/GSVertexTrace.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSVector.h"
-#include "GSCrc.h"
 #include "GSAlignedClass.h"
 
 class GSDumpBase;
@@ -165,7 +164,7 @@ protected:
 	bool IsAutoFlushDraw(u32 prim);
 	template<u32 prim, bool index_swap>
 	void HandleAutoFlush();
-	void CLUTAutoFlush(u32 prim);
+	void CheckCLUTValidity(u32 prim);
 
 	template <u32 prim, bool auto_flush, bool index_swap>
 	void VertexKick(u32 skip);
@@ -176,7 +175,7 @@ protected:
 	GSVertexTrace::VertexAlpha& GetAlphaMinMax()
 	{
 		if (!m_vt.m_alpha.valid)
-			CalcAlphaMinMax(0, 255);
+			CalcAlphaMinMax(0, 500);
 		return m_vt.m_alpha;
 	}
 	struct TextureMinMaxResult
@@ -194,7 +193,7 @@ protected:
 		u8 uses_boundary;    ///< Whether or not the usage touches the left, top, right, or bottom edge (and therefore needs wrap modes preserved)
 	};
 	TextureMinMaxResult GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize);
-	bool TryAlphaTest(u32& fm, const u32 fm_mask, u32& zm);
+	bool TryAlphaTest(u32& fm, u32& zm);
 	bool IsOpaque();
 	bool IsMipMapDraw();
 	bool IsMipMapActive();
@@ -207,6 +206,7 @@ public:
 		GIFRegBITBLTBUF blit;
 		GSVector4i rect;
 		int draw;
+		bool zero_clear;
 	};
 
 	GIFPath m_path[4] = {};
@@ -218,8 +218,6 @@ public:
 	const GSDrawingEnvironment* m_draw_env = &m_env;
 	GSDrawingContext* m_context = nullptr;
 	GSVector4i temp_draw_rect = {};
-	u32 m_crc = 0;
-	CRC::Game m_game = {};
 	std::unique_ptr<GSDumpBase> m_dump;
 	bool m_scissor_invalid = false;
 	bool m_nativeres = false;
@@ -389,14 +387,15 @@ public:
 	bool TestDrawChanged();
 	void FlushWrite();
 	virtual void Draw() = 0;
-	virtual void PurgePool();
-	virtual void PurgeTextureCache();
+	virtual void PurgeTextureCache(bool sources, bool targets, bool hash_cache);
 	virtual void ReadbackTextureCache();
 	virtual void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) {}
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 
 	virtual void Move();
 
+	GSVector4i GetTEX0Rect();
+	void CheckWriteOverlap(bool req_write, bool req_read);
 	void Write(const u8* mem, int len);
 	void Read(u8* mem, int len);
 	void InitReadFIFO(u8* mem, int len);
@@ -408,10 +407,6 @@ public:
 	template<int index> void Transfer(const u8* mem, u32 size);
 	int Freeze(freezeData* fd, bool sizeonly);
 	int Defrost(const freezeData* fd);
-
-	u32 GetGameCRC() const { return m_crc; }
-	virtual void SetGameCRC(u32 crc);
-	virtual void UpdateCRCHacks();
 
 	u8* GetRegsMem() const { return reinterpret_cast<u8*>(m_regs); }
 	void SetRegsMem(u8* basemem) { m_regs = reinterpret_cast<GSPrivRegSet*>(basemem); }

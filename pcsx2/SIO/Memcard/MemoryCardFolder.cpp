@@ -18,6 +18,7 @@
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Memcard/MemoryCardFolder.h"
 
+#include "common/Assertions.h"
 #include "common/Path.h"
 
 #include "System.h"
@@ -2021,6 +2022,7 @@ std::FILE* FileAccessHelper::Open(const std::string_view& folderName, MemoryCard
 	MemoryCardFileHandleStructure handleStruct;
 	handleStruct.fileHandle = file;
 	handleStruct.fileRef = fileRef;
+	handleStruct.hostFilePath = std::move(filename);
 	m_files.emplace(std::move(internalPath), std::move(handleStruct));
 
 	if (writeMetadata)

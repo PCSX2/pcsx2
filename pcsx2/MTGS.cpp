@@ -57,9 +57,6 @@ namespace MTGS
 		}
 	};
 
-	static bool TryOpenGS();
-	static void CloseGS();
-
 	static void ThreadEntryPoint();
 	static void MainLoop();
 
@@ -176,7 +173,8 @@ void MTGS::ThreadEntryPoint()
 		}
 
 		// try initializing.. this could fail
-		const bool opened = TryOpenGS();
+		std::memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
+		const bool opened = GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs);
 		s_open_flag.store(opened, std::memory_order_release);
 
 		// notify emu thread that we finished opening (or failed)
@@ -195,7 +193,7 @@ void MTGS::ThreadEntryPoint()
 		// when we come back here, it's because we closed (or shutdown)
 		// that means the emu thread should be blocked, waiting for us to be done
 		pxAssertRel(!s_open_flag.load(std::memory_order_relaxed), "Open flag is clear on close");
-		CloseGS();
+		GSclose();
 		s_open_or_close_done.Post();
 
 		// we need to reset sem_event here, because MainLoop() kills it.
@@ -313,17 +311,6 @@ union PacketTagType
 	};
 };
 
-bool MTGS::TryOpenGS()
-{
-	std::memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
-
-	if (!GSopen(EmuConfig.GS, EmuConfig.GS.Renderer, RingBuffer.Regs))
-		return false;
-
-	GSSetGameCRC(VMManager::GetDiscCRC());
-	return true;
-}
-
 void MTGS::MainLoop()
 {
 	// Threading info: run in MTGS thread
@@ -337,7 +324,7 @@ void MTGS::MainLoop()
 
 	while (true)
 	{
-		if (s_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running)
+		if (s_run_idle_flag.load(std::memory_order_acquire) && VMManager::GetState() != VMState::Running && GSHasDisplayWindow())
 		{
 			if (!s_sem_event.CheckForWork())
 			{
@@ -554,10 +541,6 @@ void MTGS::MainLoop()
 						}
 						break;
 
-						case Command::CRC:
-							GSSetGameCRC(tag.data[0]);
-							break;
-
 						case Command::InitAndReadFIFO:
 							MTGS_LOG("(MTGS Packet Read) ringtype=Fifo2, size=%d", tag.data[0]);
 							GSInitAndReadFIFO((u8*)tag.pointer, tag.data[0]);
@@ -621,11 +604,6 @@ void MTGS::MainLoop()
 	// Unblock any threads in WaitGS in case MTGS gets cancelled while still processing work
 	s_ReadPos.store(s_WritePos.load(std::memory_order_acquire), std::memory_order_relaxed);
 	s_sem_event.Kill();
-}
-
-void MTGS::CloseGS()
-{
-	GSclose();
 }
 
 // Waits for the GS to empty out the entire ring buffer contents.
@@ -894,11 +872,6 @@ void MTGS::SendPointerPacket(Command type, u32 data0, void* data1)
 	_FinishSimplePacket();
 }
 
-void MTGS::SendGameCRC(u32 crc)
-{
-	SendSimplePacket(Command::CRC, crc, 0, 0);
-}
-
 bool MTGS::WaitForOpen()
 {
 	if (IsOpen())
@@ -956,6 +929,12 @@ void MTGS::RunOnGSThread(AsyncCallType func)
 	SetEvent();
 }
 
+void MTGS::GameChanged()
+{
+	pxAssertRel(IsOpen(), "MTGS is running");
+	RunOnGSThread(GSGameChanged);
+}
+
 void MTGS::ApplySettings()
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
@@ -1011,7 +990,7 @@ void MTGS::UpdateVSyncMode()
 	SetVSyncMode(Host::GetEffectiveVSyncMode());
 }
 
-void MTGS::SwitchRenderer(GSRendererType renderer, bool display_message /* = true */)
+void MTGS::SwitchRenderer(GSRendererType renderer, GSInterlaceMode interlace, bool display_message /* = true */)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
@@ -1021,8 +1000,8 @@ void MTGS::SwitchRenderer(GSRendererType renderer, bool display_message /* = tru
 			Pcsx2Config::GSOptions::GetRendererName(renderer)), Host::OSD_INFO_DURATION);
 	}
 
-	RunOnGSThread([renderer]() {
-		GSSwitchRenderer(renderer);
+	RunOnGSThread([renderer, interlace]() {
+		GSSwitchRenderer(renderer, interlace);
 	});
 
 	// See note in ApplySettings() for reasoning here.
@@ -1039,7 +1018,7 @@ void MTGS::SetSoftwareRendering(bool software, bool display_message /* = true */
 	else
 		new_renderer = GSRendererType::SW;
 
-	SwitchRenderer(new_renderer, display_message);
+	SwitchRenderer(new_renderer, EmuConfig.GS.InterlaceMode, display_message);
 }
 
 void MTGS::ToggleSoftwareRendering()

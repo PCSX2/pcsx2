@@ -115,8 +115,13 @@ GSTexture* GSRendererSW::GetOutput(int i, float& scale, int& y_offset)
 	GSPCRTCRegs::PCRTCDisplay& curFramebuffer = PCRTCDisplays.PCRTCDisplays[index];
 	GSVector2i framebufferSize = PCRTCDisplays.GetFramebufferSize(i);
 	GSVector4i framebufferRect = PCRTCDisplays.GetFramebufferRect(i);
-	int w = curFramebuffer.FBW * 64;
-	int h = framebufferSize.y;
+
+	// Try to avoid broken/incomplete setups which are probably ingnored on console, but can cause us problems.
+	if (framebufferRect.rempty() || curFramebuffer.FBW == 0)
+		return nullptr;
+
+	const int w = curFramebuffer.FBW * 64;
+	const int h = framebufferSize.y;
 
 	if (g_gs_device->ResizeRenderTarget(&m_texture[index], w, h, false, false))
 	{
@@ -987,7 +992,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if (context->TEST.ATE)
 	{
-		if (!TryAlphaTest(fm, fm_mask, zm))
+		if (!TryAlphaTest(fm, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
 			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);

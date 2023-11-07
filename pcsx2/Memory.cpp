@@ -701,28 +701,13 @@ void memBindConditionalHandlers()
 // --------------------------------------------------------------------------------------
 //  eeMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-eeMemoryReserve::eeMemoryReserve()
-	: _parent("EE Main Memory")
+void memAllocate()
 {
+	eeMem = reinterpret_cast<EEVM_MemoryAllocMess*>(SysMemory::GetEEMem());
 }
 
-eeMemoryReserve::~eeMemoryReserve()
+void memReset()
 {
-	Release();
-}
-
-void eeMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
-{
-	_parent::Assign(std::move(allocator), HostMemoryMap::EEmemOffset, sizeof(*eeMem));
-	eeMem = reinterpret_cast<EEVM_MemoryAllocMess*>(GetPtr());
-}
-
-
-// Resets memory mappings, unmaps TLBs, reloads bios roms, etc.
-void eeMemoryReserve::Reset()
-{
-	_parent::Reset();
-
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
 	// resets of the system hardware would only clear vtlb mappings, but since the
 	// rest of the emu is not really set up to support a "soft" reset of that sort
@@ -842,8 +827,7 @@ void eeMemoryReserve::Reset()
 	CopyBIOSToMemory();
 }
 
-void eeMemoryReserve::Release()
+void memRelease()
 {
 	eeMem = nullptr;
-	_parent::Release();
 }

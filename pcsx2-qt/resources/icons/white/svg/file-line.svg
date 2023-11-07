@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <g>
-        <path fill="none" d="M0 0h24v24H0z"/>
-        <path fill="#ffffff" d="M9 2.003V2h10.998C20.55 2 21 2.455 21 2.992v18.016a.993.993 0 0 1-.993.992H3.993A1 1 0 0 1 3 20.993V8l6-5.997zM5.83 8H9V4.83L5.83 8zM11 4v5a1 1 0 0 1-1 1H5v10h14V4h-8z"/>
-    </g>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?><svg id="File_-_Pcsx2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><style>.cls-1{stroke-linejoin:bevel;}.cls-1,.cls-2,.cls-3{fill:none;}.cls-1,.cls-3{stroke:#fff;stroke-width:12px;}.cls-3{stroke-miterlimit:10;}</style></defs><g id="Tela"><path class="cls-2" d="M0,0H150V150H0V0Z"/></g><g id="File"><path class="cls-3" d="M28.01,130.61H121.99c1.59,0,2.87-1.28,2.87-2.85V22.41c0-1.57-1.29-2.85-2.87-2.85H62.04L25.13,56.59V127.76c0,1.57,1.29,2.85,2.87,2.85Z"/><path class="cls-1" d="M59.61,56.96H25.13L63.04,19.39V53.56c0,1.87-1.53,3.39-3.42,3.39Z"/></g></svg>

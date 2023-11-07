@@ -40,16 +40,6 @@ namespace Host
 	static constexpr float OSD_INFO_DURATION = 5.0f;
 	static constexpr float OSD_QUICK_DURATION = 2.5f;
 
-	/// Reads a file from the resources directory of the application.
-	/// This may be outside of the "normal" filesystem on platforms such as Mac.
-	std::optional<std::vector<u8>> ReadResourceFile(const char* filename);
-
-	/// Reads a resource file file from the resources directory as a string.
-	std::optional<std::string> ReadResourceFileToString(const char* filename);
-
-	/// Returns the modified time of a resource.
-	std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
-
 	/// Returns a localized version of the specified string within the specified context.
 	/// The pointer is guaranteed to be valid until the next language change.
 	const char* TranslateToCString(const std::string_view& context, const std::string_view& msg);

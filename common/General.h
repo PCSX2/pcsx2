@@ -40,6 +40,19 @@
 		}; \
 	};
 
+template <typename T>
+[[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
+{
+	T value;
+	std::memcpy(&value, buffer + offset, sizeof(value));
+	return value;
+}
+
+[[maybe_unused]] __fi static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
+[[maybe_unused]] __fi static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
+[[maybe_unused]] __fi static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
+[[maybe_unused]] __fi static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }
+
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
 // --------------------------------------------------------------------------------------
@@ -140,12 +153,6 @@ namespace HostSys
 
 	extern void MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode);
 
-	template <uint size>
-	void MemProtectStatic(u8 (&arr)[size], const PageProtectionMode& mode)
-	{
-		MemProtect(arr, size, mode);
-	}
-
 	extern std::string GetFileMappingName(const char* prefix);
 	extern void* CreateSharedMemory(const char* name, size_t size);
 	extern void DestroySharedMemory(void* ptr);
@@ -192,11 +199,6 @@ private:
 	PlaceholderMap m_placeholder_ranges;
 #endif
 };
-
-
-// Safe version of Munmap -- NULLs the pointer variable immediately after free'ing it.
-#define SafeSysMunmap(ptr, size) \
-	((void)(HostSys::Munmap(ptr, size), (ptr) = 0))
 
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();

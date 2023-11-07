@@ -983,7 +983,7 @@ __fi static void finishmpeg2sliceIDEC()
 __ri static bool mpeg2sliceIDEC()
 {
 	u16 code;
-
+	static bool ready_to_decode = true;
 	switch (ipu_cmd.pos[0])
 	{
 	case 0:
@@ -1010,6 +1010,7 @@ __ri static bool mpeg2sliceIDEC()
 			// IPU0 isn't ready for data, so let's wait for it to be
 			if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[1] <= 2)
 			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
 				return false;
 			}
 			macroblock_8& mb8 = decoder.mb8;
@@ -1116,21 +1117,27 @@ __ri static bool mpeg2sliceIDEC()
 					ipu_dither(rgb32, rgb16, decoder.dte);
 					decoder.SetOutputTo(rgb16);
 				}
-				ProcessedData += decoder.ipu0_data;
 				ipu_cmd.pos[1] = 2;
-				return false;
-
+				[[fallthrough]];
 			case 2:
 			{
-
+				if (ready_to_decode == true)
+				{
+					ready_to_decode = false;
+					IPUCoreStatus.WaitingOnIPUFrom = false;
+					IPUCoreStatus.WaitingOnIPUTo = false;
+					IPU_INT_PROCESS( 64); // Should probably be much higher, but myst 3 doesn't like it right now.
+					ipu_cmd.pos[1] = 2;
+					return false;
+				}
 				pxAssert(decoder.ipu0_data > 0);
-
 				uint read = ipu_fifo.out.write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
 				decoder.AdvanceIpuDataBy(read);
 
 				if (decoder.ipu0_data != 0)
 				{
 					// IPU FIFO filled up -- Will have to finish transferring later.
+					IPUCoreStatus.WaitingOnIPUFrom = true;
 					ipu_cmd.pos[1] = 2;
 					return false;
 				}
@@ -1138,6 +1145,7 @@ __ri static bool mpeg2sliceIDEC()
 				mbaCount = 0;
 				if (read)
 				{
+					IPUCoreStatus.WaitingOnIPUFrom = true;
 					ipu_cmd.pos[1] = 3;
 					return false;
 				}
@@ -1145,6 +1153,7 @@ __ri static bool mpeg2sliceIDEC()
 				[[fallthrough]];
 
 			case 3:
+				ready_to_decode = true;
 				while (1)
 				{
 					if (!GETWORD())
@@ -1269,6 +1278,7 @@ finish_idec:
 __fi static bool mpeg2_slice()
 {
 	int DCT_offset, DCT_stride;
+	static bool ready_to_decode = true;
 
 	macroblock_8& mb8 = decoder.mb8;
 	macroblock_16& mb16 = decoder.mb16;
@@ -1303,6 +1313,7 @@ __fi static bool mpeg2_slice()
 		// IPU0 isn't ready for data, so let's wait for it to be
 		if ((!ipu0ch.chcr.STR || ipuRegs.ctrl.OFC || ipu0ch.qwc == 0) && ipu_cmd.pos[0] <= 3)
 		{
+			IPUCoreStatus.WaitingOnIPUFrom = true;
 			return false;
 		}
 
@@ -1406,23 +1417,23 @@ __fi static bool mpeg2_slice()
 		{
 			if (decoder.macroblock_modes & MACROBLOCK_PATTERN)
 			{
-				switch(ipu_cmd.pos[1])
+				switch (ipu_cmd.pos[1])
 				{
 				case 0:
-					{
-						// Get coded block pattern
-						const CBPtab* tab;
-						u16 code = UBITS(16);
+				{
+					// Get coded block pattern
+					const CBPtab* tab;
+					u16 code = UBITS(16);
 
-						if (code >= 0x2000)
-							tab = CBP_7 + (UBITS(7) - 16);
-						else
-							tab = CBP_9 + UBITS(9);
+					if (code >= 0x2000)
+						tab = CBP_7 + (UBITS(7) - 16);
+					else
+						tab = CBP_9 + UBITS(9);
 
-						DUMPBITS(tab->len);
-						decoder.coded_block_pattern = tab->cbp;
-					}
-					[[fallthrough]];
+					DUMPBITS(tab->len);
+					decoder.coded_block_pattern = tab->cbp;
+				}
+				[[fallthrough]];
 
 				case 1:
 					if (decoder.coded_block_pattern & 0x20)
@@ -1490,9 +1501,11 @@ __fi static bool mpeg2_slice()
 					}
 					break;
 
-				jNO_DEFAULT;
+					jNO_DEFAULT;
 				}
 			}
+			else
+				DevCon.Warning("No macroblock mode");
 		}
 
 		// Send The MacroBlock via DmaIpuFrom
@@ -1500,20 +1513,27 @@ __fi static bool mpeg2_slice()
 		coded_block_pattern = decoder.coded_block_pattern;
 
 		decoder.SetOutputTo(mb16);
-		ProcessedData += decoder.ipu0_data;
-		ipu_cmd.pos[0] = 3;
-		return false;
-
+		[[fallthrough]];
 	case 3:
 	{
-		pxAssert(decoder.ipu0_data > 0);
+		if (ready_to_decode == true)
+		{
+			ipu_cmd.pos[0] = 3;
+			ready_to_decode = false;
+			IPUCoreStatus.WaitingOnIPUFrom = false;
+			IPUCoreStatus.WaitingOnIPUTo = false;
+			IPU_INT_PROCESS( 64); // Should probably be much higher, but myst 3 doesn't like it right now.
+			return false;
+		}
 
+		pxAssert(decoder.ipu0_data > 0);
 		uint read = ipu_fifo.out.write((u32*)decoder.GetIpuDataPtr(), decoder.ipu0_data);
 		decoder.AdvanceIpuDataBy(read);
 
 		if (decoder.ipu0_data != 0)
 		{
 			// IPU FIFO filled up -- Will have to finish transferring later.
+			IPUCoreStatus.WaitingOnIPUFrom = true;
 			ipu_cmd.pos[0] = 3;
 			return false;
 		}
@@ -1521,6 +1541,7 @@ __fi static bool mpeg2_slice()
 		mbaCount = 0;
 		if (read)
 		{
+			IPUCoreStatus.WaitingOnIPUFrom = true;
 			ipu_cmd.pos[0] = 4;
 			return false;
 		}
@@ -1577,6 +1598,7 @@ __fi static bool mpeg2_slice()
 		break;
 	}
 
+	ready_to_decode = true;
 	return true;
 }
 
@@ -1789,12 +1811,20 @@ __ri static bool ipuCSC(tIPU_CMD_CSC csc)
 		if (csc.OFM)
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 32) return false;
+			if (ipu_cmd.pos[1] < 32)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 		else
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*) & decoder.rgb32) + 4 * ipu_cmd.pos[1], 64 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 64) return false;
+			if (ipu_cmd.pos[1] < 64)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 
 		ipu_cmd.pos[0] = 0;
@@ -1822,12 +1852,20 @@ __ri static bool ipuPACK(tIPU_CMD_CSC csc)
 		if (csc.OFM)
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*) & decoder.rgb16) + 4 * ipu_cmd.pos[1], 32 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 32) return false;
+			if (ipu_cmd.pos[1] < 32)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 		else
 		{
 			ipu_cmd.pos[1] += ipu_fifo.out.write(((u32*)g_ipu_indx4) + 4 * ipu_cmd.pos[1], 8 - ipu_cmd.pos[1]);
-			if (ipu_cmd.pos[1] < 8) return false;
+			if (ipu_cmd.pos[1] < 8)
+			{
+				IPUCoreStatus.WaitingOnIPUFrom = true;
+				return false;
+			}
 		}
 
 		ipu_cmd.pos[0] = 0;

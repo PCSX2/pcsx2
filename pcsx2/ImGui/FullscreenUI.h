@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,8 +14,12 @@
  */
 
 #pragma once
+
 #include "common/Pcsx2Defs.h"
 #include "common/ProgressCallback.h"
+#include "common/SmallString.h"
+
+#include <ctime>
 #include <string>
 #include <memory>
 
@@ -31,45 +35,17 @@ namespace FullscreenUI
 	void OnVMDestroyed();
 	void GameChanged(std::string title, std::string path, std::string serial, u32 disc_crc, u32 crc);
 	void OpenPauseMenu();
-	void OpenAchievementsWindow();
-	void OpenLeaderboardsWindow();
+	bool OpenAchievementsWindow();
+	bool OpenLeaderboardsWindow();
+
+	// NOTE: Only call from GS thread.
+	bool IsAchievementsWindowOpen();
+	bool IsLeaderboardsWindowOpen();
+	void ReturnToPreviousWindow();
+	void ReturnToMainWindow();
 
 	void Shutdown(bool clear_state);
 	void Render();
 	void InvalidateCoverCache();
-
-	class ProgressCallback final : public BaseProgressCallback
-	{
-	public:
-		ProgressCallback(std::string name);
-		~ProgressCallback() override;
-
-		__fi const std::string& GetName() const { return m_name; }
-
-		void PushState() override;
-		void PopState() override;
-
-		void SetCancellable(bool cancellable) override;
-		void SetTitle(const char* title) override;
-		void SetStatusText(const char* text) override;
-		void SetProgressRange(u32 range) override;
-		void SetProgressValue(u32 value) override;
-
-		void DisplayError(const char* message) override;
-		void DisplayWarning(const char* message) override;
-		void DisplayInformation(const char* message) override;
-		void DisplayDebugMessage(const char* message) override;
-
-		void ModalError(const char* message) override;
-		bool ModalConfirmation(const char* message) override;
-		void ModalInformation(const char* message) override;
-
-		void SetCancelled();
-
-	private:
-		void Redraw(bool force);
-
-		std::string m_name;
-		int m_last_progress_percent = -1;
-	};
+	TinyString TimeToPrintableString(time_t t);
 } // namespace FullscreenUI

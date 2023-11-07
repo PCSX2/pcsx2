@@ -10,9 +10,6 @@
     <height>463</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string notr="true">Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>0</number>
@@ -744,7 +741,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Extra Rendering Threads:</string>
+          <string>Software Rendering Threads:</string>
          </property>
         </widget>
        </item>
@@ -780,32 +777,6 @@
        <string>Hardware Fixes</string>
       </attribute>
       <layout class="QFormLayout" name="hardwareFixesLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Half Screen Fix:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="halfScreenFix">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Disabled</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Enabled</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_36">
          <property name="text">
@@ -1008,7 +979,7 @@
        <item row="6" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>Skipdraw Range:</string>
+          <string>Skip Draw Range:</string>
          </property>
         </widget>
        </item>
@@ -1050,13 +1021,6 @@
           <widget class="QCheckBox" name="disableSafeFeatures">
            <property name="text">
             <string>Disable Safe Features</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="targetPartialInvalidation">
-           <property name="text">
-            <string>Target Partial Invalidation</string>
            </property>
           </widget>
          </item>
@@ -1342,7 +1306,7 @@
           <item row="1" column="1">
            <widget class="QCheckBox" name="loadTextureReplacementsAsync">
             <property name="text">
-             <string>Async Texture Loading</string>
+             <string>Asynchronous Texture Loading</string>
             </property>
            </widget>
           </item>
@@ -1569,7 +1533,7 @@
             <item>
              <widget class="QLabel" name="label_33">
               <property name="text">
-               <string>Saturation</string>
+               <string>Saturation:</string>
               </property>
              </widget>
             </item>
@@ -2185,7 +2149,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="disableDualSource">
               <property name="text">
-               <string>Disable Dual Source Blending</string>
+               <string>Disable Dual-Source Blending</string>
               </property>
              </widget>
             </item>

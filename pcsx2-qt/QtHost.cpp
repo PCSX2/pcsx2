@@ -207,6 +207,8 @@ void EmuThread::startFullscreenUI(bool fullscreen)
 		return;
 	}
 
+	emit onFullscreenUIStateChange(true);
+
 	// poll more frequently so we don't lose events
 	stopBackgroundControllerPollTimer();
 	startBackgroundControllerPollTimer();
@@ -219,18 +221,20 @@ void EmuThread::stopFullscreenUI()
 		QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
 		// wait until the host display is gone
-		while (MTGS::IsOpen())
+		while (!QtHost::IsVMValid() && MTGS::IsOpen())
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 
 		return;
 	}
 
-	if (!MTGS::IsOpen())
-		return;
+	if (m_run_fullscreen_ui)
+	{
+		m_run_fullscreen_ui = false;
+		emit onFullscreenUIStateChange(false);
+	}
 
-	pxAssertRel(!VMManager::HasValidVM(), "VM is not valid at FSUI shutdown time");
-	m_run_fullscreen_ui = false;
-	MTGS::WaitForClose();
+	if (MTGS::IsOpen() && !VMManager::HasValidVM())
+		MTGS::WaitForClose();
 }
 
 void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
@@ -489,7 +493,7 @@ void EmuThread::stopBackgroundControllerPollTimer()
 
 void EmuThread::doBackgroundControllerPoll()
 {
-	InputManager::PollSources();
+	VMManager::IdlePollUpdate();
 }
 
 void EmuThread::toggleFullscreen()
@@ -534,10 +538,6 @@ void EmuThread::setSurfaceless(bool surfaceless)
 
 	if (!MTGS::IsOpen() || m_is_surfaceless == surfaceless)
 		return;
-
-	// If we went surfaceless and were running the fullscreen UI, stop MTGS running idle.
-	// Otherwise, we'll keep trying to present to nothing.
-	MTGS::SetRunIdle(!surfaceless && m_run_fullscreen_ui);
 
 	// This will call back to us on the MTGS thread.
 	m_is_surfaceless = surfaceless;
@@ -650,7 +650,7 @@ void EmuThread::switchRenderer(GSRendererType renderer)
 	if (!VMManager::HasValidVM())
 		return;
 
-	MTGS::SwitchRenderer(renderer);
+	MTGS::SwitchRenderer(renderer, EmuConfig.GS.InterlaceMode);
 }
 
 void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
@@ -665,6 +665,34 @@ void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
 		return;
 
 	VMManager::ChangeDisc(source, path.toStdString());
+}
+
+void EmuThread::setELFOverride(const QString& path)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "setELFOverride", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	VMManager::SetELFOverride(path.toStdString());
+}
+
+void EmuThread::changeGSDump(const QString& path)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "changeGSDump", Qt::QueuedConnection, Q_ARG(const QString&, path));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	VMManager::ChangeGSDump(path.toStdString());
 }
 
 void EmuThread::reloadPatches()
@@ -986,7 +1014,8 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		QString gs_stat;
 		if (THREAD_VU1)
 		{
-			gs_stat = QStringLiteral("%1 | EE: %2% | VU: %3% | GS: %4%")
+			gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
+						  .arg(VMManager::GetCurrentActiveSaveStateSlot())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
@@ -994,7 +1023,8 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		}
 		else
 		{
-			gs_stat = QStringLiteral("%1 | EE: %2% | GS: %3%")
+			gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
+						  .arg(VMManager::GetCurrentActiveSaveStateSlot())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
@@ -1080,37 +1110,34 @@ void Host::OnSaveStateSaved(const std::string_view& filename)
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
 	emit g_emu_thread->onAchievementsLoginRequested(reason);
 }
 
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+	emit g_emu_thread->onAchievementsLoginSucceeded(QString::fromUtf8(username), points, sc_points, unread_messages);
+}
+
 void Host::OnAchievementsRefreshed()
 {
 	u32 game_id = 0;
-	u32 achievement_count = 0;
-	u32 max_points = 0;
 
 	QString game_info;
 
 	if (Achievements::HasActiveGame())
 	{
 		game_id = Achievements::GetGameID();
-		achievement_count = Achievements::GetAchievementCount();
-		max_points = Achievements::GetMaximumPointsForGame();
 
-		game_info = qApp->translate("EmuThread", "Game ID: %1\n"
-												 "Game Title: %2\n"
-												 "Achievements: %5 (%6)\n\n")
-						.arg(game_id)
+		game_info = qApp
+						->translate("EmuThread", "Game: %1 (%2)\n")
 						.arg(QString::fromStdString(Achievements::GetGameTitle()))
-						.arg(achievement_count)
-						.arg(qApp->translate("EmuThread", "%n points", "", max_points));
+						.arg(game_id);
 
-		const std::string rich_presence_string(Achievements::GetRichPresenceString());
+		const std::string& rich_presence_string = Achievements::GetRichPresenceString();
 		if (!rich_presence_string.empty())
-			game_info.append(QString::fromStdString(rich_presence_string));
+			game_info.append(QString::fromStdString(StringUtil::Ellipsise(rich_presence_string, 128)));
 		else
 			game_info.append(qApp->translate("EmuThread", "Rich presence inactive or unsupported."));
 	}
@@ -1119,9 +1146,18 @@ void Host::OnAchievementsRefreshed()
 		game_info = qApp->translate("EmuThread", "Game not loaded or no RetroAchievements available.");
 	}
 
-	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info, achievement_count, max_points);
+	emit g_emu_thread->onAchievementsRefreshed(game_id, game_info);
 }
-#endif
+
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+	emit g_emu_thread->onAchievementsHardcoreModeChanged(enabled);
+}
+
+void Host::OnCoverDownloaderOpenRequested()
+{
+	emit g_emu_thread->onCoverDownloaderOpenRequested();
+}
 
 void Host::VSyncOnCPUThread()
 {
@@ -1260,6 +1296,7 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	si.SetBoolValue("UI", "RenderToSeparateWindow", false);
 	si.SetBoolValue("UI", "HideMainWindowWhenRunning", false);
 	si.SetBoolValue("UI", "DisableWindowResize", false);
+	si.SetBoolValue("UI", "PreferEnglishGameList", false);
 	si.SetStringValue("UI", "Theme", QtHost::GetDefaultThemeName());
 }
 
@@ -1374,34 +1411,6 @@ QString QtHost::GetAppConfigSuffix()
 QString QtHost::GetResourcesBasePath()
 {
 	return QString::fromStdString(EmuFolders::Resources);
-}
-
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file '%s'", filename);
-	return ret;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file to string '%s'", filename);
-	return ret;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	FILESYSTEM_STAT_DATA sd;
-	if (!FileSystem::StatFile(filename, &sd))
-		return std::nullopt;
-
-	return sd.ModificationTime;
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)

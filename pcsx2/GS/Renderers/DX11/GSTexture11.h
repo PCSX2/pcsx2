@@ -43,7 +43,6 @@ public:
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
 	void Unmap() override;
-	bool Save(const std::string& fn) override;
 	void GenerateMipmap() override;
 	void Swap(GSTexture* tex) override;
 	bool Equal(GSTexture11* tex);

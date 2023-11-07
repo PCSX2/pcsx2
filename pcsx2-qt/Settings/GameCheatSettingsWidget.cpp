@@ -20,14 +20,14 @@
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "Settings/GameCheatSettingsWidget.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsWindow.h"
 
 #include "pcsx2/GameList.h"
 #include "pcsx2/Patch.h"
 
 #include "common/HeterogeneousContainers.h"
 
-GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);

@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
 Texture2D Texture;
 SamplerState Sampler;
 
@@ -195,5 +193,3 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
-
-#endif

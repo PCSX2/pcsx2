@@ -151,7 +151,7 @@ void SetupWizardDialog::updatePageLabels(int prev_page)
 void SetupWizardDialog::updatePageButtons()
 {
 	const int page = m_ui.pages->currentIndex();
-	m_ui.next->setText((page == Page_Complete) ? "&Finish" : "&Next");
+	m_ui.next->setText((page == Page_Complete) ? tr("&Finish") : tr("&Next"));
 	m_ui.back->setEnabled(page > 0);
 }
 
@@ -417,7 +417,7 @@ void SetupWizardDialog::setupControllerPage()
 		for (const auto& [name, display_name] : Pad::GetControllerTypeNames())
 			w.type_combo->addItem(QString::fromUtf8(display_name), QString::fromUtf8(name));
 		ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-			nullptr, w.type_combo, section, "Type", Pad::GetDefaultPadType(port));
+			nullptr, w.type_combo, section, "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(port))->name);
 
 		w.mapping_result->setText((port == 0) ? tr("Default (Keyboard)") : tr("Default (None)"));
 

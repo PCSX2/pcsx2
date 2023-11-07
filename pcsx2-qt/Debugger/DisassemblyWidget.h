@@ -56,6 +56,7 @@ public slots:
 	void contextCopyInstructionText();
 	void contextAssembleInstruction();
 	void contextNoopInstruction();
+	void contextRestoreInstruction();
 	void contextRunToCursor();
 	void contextJumpToCursor();
 	void contextToggleBreakpoint();
@@ -64,8 +65,12 @@ public slots:
 	void contextAddFunction();
 	void contextRenameFunction();
 	void contextRemoveFunction();
+	void contextStubFunction();
+	void contextRestoreFunction();
+
 	void gotoAddress(u32 address);
 
+	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
 signals:
 	void gotoInMemory(u32 address);
 	void breakpointsChanged();
@@ -74,9 +79,6 @@ signals:
 private:
 	Ui::DisassemblyWidget ui;
 
-	QMenu* m_contextMenu = 0x0;
-	void CreateCustomContextMenu();
-
 	DebugInterface* m_cpu;
 	u32 m_visibleStart = 0x00336318; // The address of the first opcode shown(row 0)
 	u32 m_visibleRows;
@@ -84,9 +86,14 @@ private:
 	u32 m_selectedAddressEnd = 0;
 	u32 m_rowHeight = 0;
 
+	std::map<u32, u32> m_nopedInstructions;
+	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
+
+	bool m_demangleFunctions = true;
+
 	DisassemblyManager m_disassemblyManager;
 
-	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc);
+	inline QString DisassemblyStringFromAddress(u32 address, QFont font, u32 pc, bool selected);
 	QColor GetAddressFunctionColor(u32 address);
 	enum class SelectionInfo
 	{
@@ -95,4 +102,7 @@ private:
 		INSTRUCTIONTEXT,
 	};
 	QString FetchSelectionInfo(SelectionInfo selInfo);
+
+	bool AddressCanRestore(u32 start, u32 end);
+	bool FunctionCanRestore(u32 address);
 };

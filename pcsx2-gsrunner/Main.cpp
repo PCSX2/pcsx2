@@ -42,6 +42,7 @@
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/GSPerfMon.h"
 #include "pcsx2/GSDumpReplayer.h"
+#include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
@@ -166,34 +167,6 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 void Host::SetDefaultUISettings(SettingsInterface& si)
 {
 	// nothing
-}
-
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file '%s'", filename);
-	return ret;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file to string '%s'", filename);
-	return ret;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	FILESYSTEM_STAT_DATA sd;
-	if (!FileSystem::StatFile(filename, &sd))
-		return std::nullopt;
-
-	return sd.ModificationTime;
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
@@ -385,12 +358,27 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 	VMManager::SetState(VMState::Stopping);
 }
 
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+	// noop
+}
+
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
 	// noop
 }
 
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+	// noop
+}
+
 void Host::OnAchievementsRefreshed()
+{
+	// noop
+}
+
+void Host::OnCoverDownloaderOpenRequested()
 {
 	// noop
 }

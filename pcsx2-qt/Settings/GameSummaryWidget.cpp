@@ -17,7 +17,7 @@
 
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "GameSummaryWidget.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtProgressCallback.h"
@@ -38,7 +38,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent)
+GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);
@@ -63,6 +63,11 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsDialo
 	connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
 	connect(m_ui.verify, &QAbstractButton::clicked, this, &GameSummaryWidget::onVerifyClicked);
 	connect(m_ui.searchHash, &QAbstractButton::clicked, this, &GameSummaryWidget::onSearchHashClicked);
+
+	bool has_custom_title = false, has_custom_region = false;
+	GameList::CheckCustomAttributesForPath(m_entry_path, has_custom_title, has_custom_region);
+	m_ui.restoreTitle->setEnabled(has_custom_title);
+	m_ui.restoreRegion->setEnabled(has_custom_region);
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
@@ -76,6 +81,8 @@ void GameSummaryWidget::populateInputProfiles()
 void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 {
 	m_ui.title->setText(QString::fromStdString(entry->title));
+	m_ui.titleSort->setText(QString::fromStdString(entry->title_sort));
+	m_ui.titleEN->setText(QString::fromStdString(entry->title_en));
 	m_ui.path->setText(QString::fromStdString(entry->path));
 	m_ui.serial->setText(QString::fromStdString(entry->serial));
 	m_ui.crc->setText(QString::fromStdString(fmt::format("{:08X}", entry->crc)));
@@ -83,11 +90,35 @@ void GameSummaryWidget::populateDetails(const GameList::Entry* entry)
 	m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
 	m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility_rating));
 
+	int row = 0;
+	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleSort, &row, nullptr);
+	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_sort.empty());
+	m_ui.detailsFormLayout->getWidgetPosition(m_ui.titleEN, &row, nullptr);
+	m_ui.detailsFormLayout->setRowVisible(row, !entry->title_en.empty());
+
 	std::optional<std::string> profile(m_dialog->getStringValue("EmuCore", "InputProfileName", std::nullopt));
 	if (profile.has_value())
 		m_ui.inputProfile->setCurrentIndex(m_ui.inputProfile->findText(QString::fromStdString(profile.value())));
 	else
 		m_ui.inputProfile->setCurrentIndex(0);
+
+	connect(m_ui.title, &QLineEdit::editingFinished, this, [this]() {
+		if (m_ui.title->isModified())
+		{
+			setCustomTitle(m_ui.title->text().toStdString());
+			m_ui.title->setModified(false);
+		}
+	});
+	connect(m_ui.restoreTitle, &QAbstractButton::clicked, this, [this]() {
+		setCustomTitle("");
+	});
+
+	connect(m_ui.region, &QComboBox::currentIndexChanged, this, [this](int index) {
+		setCustomRegion(index);
+	});
+	connect(m_ui.restoreRegion, &QAbstractButton::clicked, this, [this]() {
+		setCustomRegion(-1);
+	});
 }
 
 void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
@@ -105,7 +136,9 @@ void GameSummaryWidget::populateDiscPath(const GameList::Entry* entry)
 	else
 	{
 		// Makes no sense to have disc override for a disc.
-		m_ui.detailsFormLayout->removeRow(8);
+		int row = 0;
+		m_ui.detailsFormLayout->getWidgetPosition(m_ui.label_discPath, &row, nullptr);
+		m_ui.detailsFormLayout->removeRow(row);
 		m_ui.discPath = nullptr;
 		m_ui.discPathBrowse = nullptr;
 		m_ui.discPathClear = nullptr;
@@ -129,12 +162,7 @@ void GameSummaryWidget::onDiscPathChanged(const QString& value)
 
 	// force rescan of elf to update the serial
 	g_main_window->rescanFile(m_entry_path);
-
-	// and re-fill our details (mainly the serial)
-	auto lock = GameList::GetLock();
-	const GameList::Entry* entry = GameList::GetEntryForPath(m_entry_path.c_str());
-	if (entry)
-		populateDetails(entry);
+	repopulateCurrentDetails();
 }
 
 void GameSummaryWidget::onDiscPathBrowseClicked()
@@ -352,4 +380,31 @@ void GameSummaryWidget::setVerifyResult(QString error)
 	m_ui.verifyResult->setPlainText(error);
 	m_ui.verifyResult->setVisible(true);
 	m_ui.searchHash->setVisible(true);
+}
+
+void GameSummaryWidget::repopulateCurrentDetails()
+{
+	auto lock = GameList::GetLock();
+	const GameList::Entry* entry = GameList::GetEntryForPath(m_entry_path.c_str());
+	if (entry)
+	{
+		populateDetails(entry);
+		m_dialog->setWindowTitle(QString::fromStdString(entry->title));
+	}
+}
+
+void GameSummaryWidget::setCustomTitle(const std::string& text)
+{
+	m_ui.restoreTitle->setEnabled(!text.empty());
+
+	GameList::SaveCustomTitleForPath(m_entry_path, text);
+	repopulateCurrentDetails();
+}
+
+void GameSummaryWidget::setCustomRegion(int region)
+{
+	m_ui.restoreRegion->setEnabled(region >= 0);
+
+	GameList::SaveCustomRegionForPath(m_entry_path, region);
+	repopulateCurrentDetails();
 }

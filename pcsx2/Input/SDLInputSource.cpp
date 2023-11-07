@@ -584,14 +584,26 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!gcontroller && !joystick)
 	{
 		Console.Error("(SDLInputSource) Failed to open controller %d", index);
-		if (gcontroller)
-			SDL_GameControllerClose(gcontroller);
 
 		return false;
 	}
 
 	const int joystick_id = SDL_JoystickInstanceID(joystick);
 	int player_id = gcontroller ? SDL_GameControllerGetPlayerIndex(gcontroller) : SDL_JoystickGetPlayerIndex(joystick);
+	for (auto it = m_controllers.begin(); it != m_controllers.end(); ++it)
+	{
+		if (it->joystick_id == joystick_id)
+		{
+			Console.Error("(SDLInputSource) Controller %d, instance %d, player %d already connected, ignoring.", index, joystick_id, player_id);
+			if (gcontroller)
+				SDL_GameControllerClose(gcontroller);
+			else
+				SDL_JoystickClose(joystick);
+
+			return false;
+		}
+	}
+
 	if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
 	{
 		const int free_player_id = GetFreePlayerId();

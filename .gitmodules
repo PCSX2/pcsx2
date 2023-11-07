@@ -7,9 +7,6 @@
 [submodule "3rdparty/fmt/fmt"]
 	path = 3rdparty/fmt/fmt
 	url = https://github.com/fmtlib/fmt.git
-[submodule "3rdparty/libchdr/libchdr"]
-	path = 3rdparty/libchdr/libchdr
-	url = https://github.com/rtissera/libchdr.git
 [submodule "3rdparty/wil"]
 	path = 3rdparty/wil
 	url = https://github.com/microsoft/wil.git
@@ -24,15 +21,12 @@
 [submodule "3rdparty/vulkan-headers"]
 	path = 3rdparty/vulkan-headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git
-[submodule "3rdparty/sdl2/SDL"]
-	path = 3rdparty/sdl2/SDL
-	url = https://github.com/libsdl-org/SDL.git
-[submodule "3rdparty/libzip/libzip"]
-	path = 3rdparty/libzip/libzip
-	url = https://github.com/nih-at/libzip.git
 [submodule "3rdparty/zstd/zstd"]
 	path = 3rdparty/zstd/zstd
 	url = https://github.com/facebook/zstd.git
 [submodule "3rdparty/rcheevos/rcheevos"]
 	path = 3rdparty/rcheevos/rcheevos
 	url = https://github.com/RetroAchievements/rcheevos.git
+[submodule "3rdparty/libwebp/libwebp"]
+	path = 3rdparty/libwebp/libwebp
+	url = https://github.com/webmproject/libwebp

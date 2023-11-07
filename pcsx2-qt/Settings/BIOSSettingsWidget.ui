@@ -10,9 +10,6 @@
     <height>408</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string notr="true">Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="leftMargin">
     <number>0</number>
@@ -90,7 +87,7 @@
         <item>
          <widget class="QPushButton" name="openSearchDirectory">
           <property name="text">
-           <string>Open in Explorer...</string>
+           <string>Open BIOS Folder...</string>
           </property>
          </widget>
         </item>

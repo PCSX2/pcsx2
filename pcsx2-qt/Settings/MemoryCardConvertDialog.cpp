@@ -301,7 +301,7 @@ void MemoryCardConvertDialog::SetType_8()
 
 void MemoryCardConvertDialog::SetType_16()
 {
-	SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger as a standard Memory Card. May have some compatibility issues."));
+	SetType(MemoryCardType::File, MemoryCardFileType::PS2_16MB, tr("2x larger than a standard Memory Card. May have some compatibility issues."));
 }
 
 void MemoryCardConvertDialog::SetType_32()

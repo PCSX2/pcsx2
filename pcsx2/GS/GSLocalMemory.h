@@ -60,6 +60,8 @@ class GSSwizzleInfo
 	u8 m_pageShiftY;  ///< Amount to rshift y value by to get page offset
 	u8 m_blockShiftX; ///< Amount to rshift x value by to get offset in block
 	u8 m_blockShiftY; ///< Amount to rshift y value by to get offset in block
+	u32 m_blockAddressXor; ///< Value to xor with the final block address (used for Z swizzles)
+	u32 m_pixelAddressXor; ///< Value to xor with the final pixel address
 	static constexpr u8 ilog2(u32 i) { return i < 2 ? 0 : 1 + ilog2(i >> 1); }
 
 public:
@@ -67,7 +69,7 @@ public:
 
 	/// @param blockSize Size of block in pixels
 	template <int PageWidth, int PageHeight, int BlocksWide, int BlocksHigh, int PixelRowMask>
-	constexpr GSSwizzleInfo(GSSwizzleTableList<PageHeight, PageWidth, BlocksHigh, BlocksWide, PixelRowMask> list)
+	constexpr GSSwizzleInfo(GSSwizzleTableList<PageHeight, PageWidth, BlocksHigh, BlocksWide, PixelRowMask> list, u32 blockXor)
 		: m_blockSwizzle(&list.block)
 		, m_pixelSwizzleCol(list.col.value)
 		, m_pixelSwizzleRow(list.row.rows)
@@ -76,6 +78,8 @@ public:
 		, m_pixelRowMask(PixelRowMask)
 		, m_pageShiftX(ilog2(PageWidth)), m_pageShiftY(ilog2(PageHeight))
 		, m_blockShiftX(ilog2(PageWidth / BlocksWide)), m_blockShiftY(ilog2(PageHeight / BlocksHigh))
+		, m_blockAddressXor(blockXor)
+		, m_pixelAddressXor(blockXor << (m_blockShiftX + m_blockShiftY))
 	{
 		static_assert(1 << ilog2(PageWidth) == PageWidth, "PageWidth must be a power of 2");
 		static_assert(1 << ilog2(PageHeight) == PageHeight, "PageHeight must be a power of 2");
@@ -127,6 +131,7 @@ public:
 		int m_pageMaskX; ///< mask for x value of block coordinate to get position within page (to detect page crossing)
 		int m_pageMaskY; ///< mask for y value of block coordinate to get position within page (to detect page crossing)
 		int m_addY;      ///< Amount to add to bp to advance one page in y direction
+		u32 m_xor;       ///< XOR mask for final address
 	public:
 		BNHelper(const GSOffset& off, int x, int y)
 		{
@@ -139,6 +144,7 @@ public:
 			m_pageMaskX = (1 << (off.m_pageShiftX - off.m_blockShiftX)) - 1;
 			m_pageMaskY = (1 << (off.m_pageShiftY - off.m_blockShiftY)) - 1;
 			m_addY = 32 * off.m_bwPg;
+			m_xor = off.m_blockAddressXor;
 		}
 
 		/// Get the current x position as an offset in blocks
@@ -168,7 +174,7 @@ public:
 		/// Get the current block number without wrapping at MAX_BLOCKS
 		u32 valueNoWrap() const
 		{
-			return m_bp + m_blockSwizzle->lookup(m_blkX, m_blkY);
+			return (m_bp + m_blockSwizzle->lookup(m_blkX, m_blkY)) ^ m_xor;
 		}
 
 		/// Get the current block number
@@ -217,8 +223,8 @@ public:
 				fn(bn.value());
 	}
 
-	/// Calculate the pixel address at the given y position with x of 0
-	int pixelAddressZeroX(int y) const
+	/// Calculate the pixel address at the given y position with x of 0 minus the final xor
+	int pixelAddressZeroXRaw(int y) const
 	{
 		int base = m_bp << (m_pageShiftX + m_pageShiftY - 5);   // Offset from base pointer
 		base += ((y & ~m_pageMask.y) * m_bwPg) << m_pageShiftX; // Offset from pages in y direction
@@ -234,43 +240,21 @@ public:
 		/// Pixel swizzle array
 		const int* m_pixelSwizzleRow;
 		int m_base;
+		u32 m_xor;
 
 	public:
 		PAHelper() = default;
 		PAHelper(const GSOffset& off, int x, int y)
 		{
 			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask]->value + x;
-			m_base = off.pixelAddressZeroX(y);
+			m_base = off.pixelAddressZeroXRaw(y);
+			m_xor = off.m_pixelAddressXor;
 		}
 
 		/// Get pixel reference for the given x offset from the one used to create the PAHelper
 		u32 value(int x) const
 		{
-			return m_base + m_pixelSwizzleRow[x];
-		}
-	};
-
-	/// Helper class for efficiently getting the addresses of multiple pixels in a line (along the x axis)
-	/// Slightly more efficient than PAHelper by pre-adding the base offset to the VM pointer
-	template <typename VM>
-	class PAPtrHelper
-	{
-		/// Pixel swizzle array
-		const int* m_pixelSwizzleRow;
-		VM* m_base;
-
-	public:
-		PAPtrHelper() = default;
-		PAPtrHelper(const GSOffset& off, VM* vm, int x, int y)
-		{
-			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask]->value + x;
-			m_base = &vm[off.pixelAddressZeroX(y)];
-		}
-
-		/// Get pixel reference for the given x offset from the one used to create the PAPtrHelper
-		VM* value(int x) const
-		{
-			return m_base + m_pixelSwizzleRow[x];
+			return (m_base + m_pixelSwizzleRow[x]) ^ m_xor;
 		}
 	};
 
@@ -286,13 +270,6 @@ public:
 		return PAHelper(*this, x, y);
 	}
 
-	/// Get a helper class for efficiently calculating multiple pixel addresses in a line (along the x axis)
-	template <typename VM>
-	PAPtrHelper<VM> paMulti(VM* vm, int x, int y) const
-	{
-		return PAPtrHelper(*this, vm, x, y);
-	}
-
 	/// Loop over the pixels in the given rectangle
 	/// Fn should be void(*)(VM*, Src*)
 	template <typename VM, typename Src, typename Fn>
@@ -302,10 +279,10 @@ public:
 
 		for (int y = r.top; y < r.bottom; y++, px = reinterpret_cast<Src*>(reinterpret_cast<u8*>(px) + pitch))
 		{
-			PAPtrHelper<VM> pa = paMulti(vm, 0, y);
+			PAHelper pa = paMulti(0, y);
 			for (int x = r.left; x < r.right; x++)
 			{
-				fn(pa.value(x), px + x);
+				fn(&vm[pa.value(x)], px + x);
 			}
 		}
 	}
@@ -468,6 +445,13 @@ public:
 	typedef void (*readTexture)(GSLocalMemory& mem, const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 	typedef void (*readTextureBlock)(const GSLocalMemory& mem, u32 bp, u8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
+	enum PSM_FMT
+	{
+		PSM_FMT_32,
+		PSM_FMT_24,
+		PSM_FMT_16
+	};
+
 	struct alignas(128) psm_t
 	{
 		GSSwizzleInfo info;
@@ -498,14 +482,14 @@ public:
 	GSClut m_clut;
 
 public:
-	static constexpr GSSwizzleInfo swizzle32   {swizzleTables32};
-	static constexpr GSSwizzleInfo swizzle32Z  {swizzleTables32Z};
-	static constexpr GSSwizzleInfo swizzle16   {swizzleTables16};
-	static constexpr GSSwizzleInfo swizzle16S  {swizzleTables16S};
-	static constexpr GSSwizzleInfo swizzle16Z  {swizzleTables16Z};
-	static constexpr GSSwizzleInfo swizzle16SZ {swizzleTables16SZ};
-	static constexpr GSSwizzleInfo swizzle8    {swizzleTables8};
-	static constexpr GSSwizzleInfo swizzle4    {swizzleTables4};
+	static constexpr GSSwizzleInfo swizzle32   {swizzleTables32,  0x00};
+	static constexpr GSSwizzleInfo swizzle32Z  {swizzleTables32,  0x18};
+	static constexpr GSSwizzleInfo swizzle16   {swizzleTables16,  0x00};
+	static constexpr GSSwizzleInfo swizzle16S  {swizzleTables16S, 0x00};
+	static constexpr GSSwizzleInfo swizzle16Z  {swizzleTables16,  0x18};
+	static constexpr GSSwizzleInfo swizzle16SZ {swizzleTables16S, 0x18};
+	static constexpr GSSwizzleInfo swizzle8    {swizzleTables8,   0x00};
+	static constexpr GSSwizzleInfo swizzle4    {swizzleTables4,   0x00};
 
 protected:
 	__forceinline static u32 Expand24To32(u32 c, const GIFRegTEXA& TEXA)
@@ -546,6 +530,7 @@ public:
 	GSPixelOffset* GetPixelOffset(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	GSPixelOffset4* GetPixelOffset4(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	std::vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
+	static bool HasOverlap(u32 src_bp, u32 src_bw, u32 src_psm, GSVector4i src_rect, u32 dst_bp, u32 dst_bw, u32 dst_psm, GSVector4i dst_rect);
 	static bool IsPageAligned(u32 psm, const GSVector4i& rc);
 	static u32 GetStartBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);
 	static u32 GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect);

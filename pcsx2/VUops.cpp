@@ -2693,10 +2693,10 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 		{
 			VUM_LOG("XGKICK transfer finished");
 			VU1.xgkickenable = false;
+			VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
 			// Check if VIF is waiting for the GIF to not be busy
 			if (vif1Regs.stat.VGW)
 			{
-				VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
 				vif1Regs.stat.VGW = false;
 				CPU_INT(DMAC_VIF1, 8);
 			}
@@ -4692,7 +4692,7 @@ _vuRegsTables(VU1, VU1regs, Fnptr_VuRegsN)
 
 static __fi void SYNCMSFLAGS()
 {
-	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0xC30) | (VU0.statusflag & 0xF) | ((VU0.statusflag & 0xF) << 6);
+	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0xFC0) | (VU0.statusflag & 0xF) | ((VU0.statusflag & 0xF) << 6);
 	VU0.VI[REG_MAC_FLAG].UL = VU0.macflag;
 }
 
@@ -4703,7 +4703,7 @@ static __fi void SYNCCLIPFLAG()
 
 static __fi void SYNCSTATUSFLAG()
 {
-	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0x3F) | (VU0.statusflag & 0xFC0);
+	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0xFC0) | (VU0.statusflag & 0xF) | ((VU0.statusflag & 0xF) << 6);
 }
 
 static __fi void SYNCFDIV()

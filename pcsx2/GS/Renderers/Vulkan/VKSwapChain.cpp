@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
-#include "GS/Renderers/Vulkan/VKSwapChain.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
+#include "GS/Renderers/Vulkan/VKSwapChain.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
@@ -183,8 +183,8 @@ static VkFormat GetLinearFormat(VkFormat format)
 std::optional<VkSurfaceFormatKHR> VKSwapChain::SelectSurfaceFormat(VkSurfaceKHR surface)
 {
 	u32 format_count;
-	VkResult res =
-		vkGetPhysicalDeviceSurfaceFormatsKHR(GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &format_count, nullptr);
+	VkResult res = vkGetPhysicalDeviceSurfaceFormatsKHR(
+		GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &format_count, nullptr);
 	if (res != VK_SUCCESS || format_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
@@ -254,8 +254,8 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 {
 	VkResult res;
 	u32 mode_count;
-	res =
-		vkGetPhysicalDeviceSurfacePresentModesKHR(GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &mode_count, nullptr);
+	res = vkGetPhysicalDeviceSurfacePresentModesKHR(
+		GSDeviceVK::GetInstance()->GetPhysicalDevice(), surface, &mode_count, nullptr);
 	if (res != VK_SUCCESS || mode_count == 0)
 	{
 		LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
@@ -376,7 +376,8 @@ bool VKSwapChain::CreateSwapChain()
 		GSDeviceVK::GetInstance()->GetGraphicsQueueFamilyIndex(),
 		GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex(),
 	}};
-	if (GSDeviceVK::GetInstance()->GetGraphicsQueueFamilyIndex() != GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex())
+	if (GSDeviceVK::GetInstance()->GetGraphicsQueueFamilyIndex() !=
+		GSDeviceVK::GetInstance()->GetPresentQueueFamilyIndex())
 	{
 		swap_chain_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		swap_chain_info.queueFamilyIndexCount = 2;
@@ -462,7 +463,8 @@ bool VKSwapChain::CreateSwapChain()
 		ImageSemaphores sema;
 
 		const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
-		res = vkCreateSemaphore(GSDeviceVK::GetInstance()->GetDevice(), &semaphore_info, nullptr, &sema.available_semaphore);
+		res = vkCreateSemaphore(
+			GSDeviceVK::GetInstance()->GetDevice(), &semaphore_info, nullptr, &sema.available_semaphore);
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");

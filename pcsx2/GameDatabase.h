@@ -66,7 +66,6 @@ namespace GameDatabaseSchema
 		DisableDepthSupport,
 		PreloadFrameData,
 		DisablePartialInvalidation,
-		TargetPartialInvalidation,
 		TextureInsideRT,
 		AlignSprite,
 		MergeSprite,
@@ -105,6 +104,8 @@ namespace GameDatabaseSchema
 	struct GameEntry
 	{
 		std::string name;
+		std::string name_sort;
+		std::string name_en;
 		std::string region;
 		Compatibility compat = Compatibility::Unknown;
 		RoundMode eeRoundMode = RoundMode::Undefined;

@@ -41,7 +41,6 @@ namespace MTGS
 		Freeze,
 		Reset, // issues a GSreset() command.
 		SoftReset, // issues a soft reset for the GIF
-		CRC,
 		GSPacket,
 		MTVUGSPacket,
 		InitAndReadFIFO,
@@ -71,7 +70,6 @@ namespace MTGS
 	void WaitGS(bool syncRegs = true, bool weakWait = false, bool isMTVU = false);
 	void ResetGS(bool hardware_reset);
 
-	void SendGameCRC(u32 crc);
 	bool WaitForOpen();
 	void WaitForClose();
 	void Freeze(FreezeAction mode, FreezeData& data);
@@ -80,12 +78,13 @@ namespace MTGS
 	void InitAndReadFIFO(u8* mem, u32 qwc);
 
 	void RunOnGSThread(AsyncCallType func);
+	void GameChanged();
 	void ApplySettings();
 	void ResizeDisplayWindow(int width, int height, float scale);
 	void UpdateDisplayWindow();
 	void SetVSyncMode(VsyncMode mode);
 	void UpdateVSyncMode();
-	void SwitchRenderer(GSRendererType renderer, bool display_message = true);
+	void SwitchRenderer(GSRendererType renderer, GSInterlaceMode interlace, bool display_message = true);
 	void SetSoftwareRendering(bool software, bool display_message = true);
 	void ToggleSoftwareRendering();
 	bool SaveMemorySnapshot(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,

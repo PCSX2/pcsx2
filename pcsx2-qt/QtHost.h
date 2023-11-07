@@ -106,6 +106,8 @@ public Q_SLOTS:
 	void toggleSoftwareRendering();
 	void switchRenderer(GSRendererType renderer);
 	void changeDisc(CDVD_SourceType source, const QString& path);
+	void setELFOverride(const QString& path);
+	void changeGSDump(const QString& path);
 	void reloadPatches();
 	void reloadInputSources();
 	void reloadInputBindings();
@@ -126,6 +128,7 @@ Q_SIGNALS:
 	void onResizeRenderWindowRequested(qint32 width, qint32 height);
 	void onReleaseRenderWindowRequested();
 	void onMouseModeRequested(bool relative_mode, bool hide_cursor);
+	void onFullscreenUIStateChange(bool running);
 
 	/// Called when the VM is starting initialization, but has not been completed yet.
 	void onVMStarting();
@@ -164,8 +167,17 @@ Q_SIGNALS:
 	/// Called when achievements login is requested.
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
+	/// Called when achievements login succeeds. Also happens on startup.
+	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
+
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
-	void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+	void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
+
+	/// Called when hardcore mode is enabled or disabled.
+	void onAchievementsHardcoreModeChanged(bool enabled);
+
+	/// Called when cover download is requested.
+	void onCoverDownloaderOpenRequested();
 
 	/// Called when video capture starts/stops.
 	void onCaptureStarted(const QString& filename);
@@ -235,6 +247,9 @@ namespace QtHost
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
 
+	/// Sets the icon theme, based on the current style (light/dark).
+	void SetIconThemeFromStyle();
+
 	/// Sets batch mode (exit after game shutdown).
 	bool InBatchMode();
 
@@ -268,4 +283,7 @@ namespace QtHost
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();
 	bool IsVMPaused();
+
+	/// Compare strings in the locale of the current UI language
+	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);
 } // namespace QtHost

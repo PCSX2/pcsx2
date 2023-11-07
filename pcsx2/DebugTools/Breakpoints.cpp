@@ -30,6 +30,7 @@ u64 CBreakPoints::breakSkipFirstTicksIop_ = 0;
 std::vector<MemCheck> CBreakPoints::memChecks_;
 std::vector<MemCheck*> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
+BreakPointCpu CBreakPoints::breakpointTriggeredCpu_;
 bool CBreakPoints::corePaused = false;
 std::function<void()> CBreakPoints::cb_bpUpdated_;
 
@@ -185,13 +186,13 @@ bool CBreakPoints::IsTempBreakPoint(BreakPointCpu cpu, u32 addr)
 	return bp != INVALID_BREAKPOINT;
 }
 
-void CBreakPoints::AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp)
+void CBreakPoints::AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp, bool enabled)
 {
 	size_t bp = FindBreakpoint(cpu, addr, true, temp);
 	if (bp == INVALID_BREAKPOINT)
 	{
 		BreakPoint pt;
-		pt.enabled = true;
+		pt.enabled = enabled;
 		pt.temporary = temp;
 		pt.addr = addr;
 		pt.cpu = cpu;

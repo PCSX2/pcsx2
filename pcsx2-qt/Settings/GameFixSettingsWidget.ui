@@ -10,9 +10,6 @@
     <height>535</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string notr="true">Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <property name="leftMargin">
     <number>0</number>
@@ -62,14 +59,14 @@
           <item>
            <widget class="QCheckBox" name="FpuNegDivHack">
             <property name="text">
-             <string extracomment="FPU = Floating Point Unit. A part of the PS2's CPU. Do not translate.\nNegative Divide: mathematical term.\nGundam: a multimedia franchise name. Leave as-is or use an official translation.">FPU Negative Divide Hack (For Gundam Games)</string>
+             <string extracomment="FPU = Floating Point Unit. A part of the PS2's CPU. Do not translate.\nNegative Divide: mathematical term.\nGundam: a multimedia franchise name. Leave as-is or use an official translation.">FPU Negative Divide Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="FpuMulHack">
             <property name="text">
-             <string extracomment="FPU = Floating Point Unit. A part of the PS2's CPU. Do not translate.\nMultiply: mathematical term.\nTales of Destiny: a game's name. Leave as-is or use an official translation.">FPU Multiply Hack (For Tales of Destiny)</string>
+             <string extracomment="FPU = Floating Point Unit. A part of the PS2's CPU. Do not translate.\nMultiply: mathematical term.\nTales of Destiny: a game's name. Leave as-is or use an official translation.">FPU Multiply Hack</string>
             </property>
            </widget>
           </item>
@@ -83,112 +80,112 @@
           <item>
            <widget class="QCheckBox" name="SkipMPEGHack">
             <property name="text">
-             <string extracomment="MPEG: video codec, leave as-is. FMV: Full Motion Video. Find the common used term in your language.">Skip MPEG Hack (Skips Videos/FMVs)</string>
+             <string extracomment="MPEG: video codec, leave as-is. FMV: Full Motion Video. Find the common used term in your language.">Skip MPEG Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="GoemonTlbHack">
             <property name="text">
-             <string extracomment="TLB: Translation Lookaside Buffer. Leave as-is. Goemon: name of a character from the series with his name. Leave as-is or use an official translation.">Preload TLB Hack (For Goemon)</string>
+             <string extracomment="TLB: Translation Lookaside Buffer. Leave as-is. Goemon: name of a character from the series with his name. Leave as-is or use an official translation.">Preload TLB Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="EETimingHack">
             <property name="text">
-             <string extracomment="EE: Emotion Engine. Leave as-is.">EE Timing Hack (General Purpose Timing Hack)</string>
+             <string extracomment="EE: Emotion Engine. Leave as-is.">EE Timing Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="InstantDMAHack">
             <property name="text">
-             <string extracomment="DMA: Direct Memory Access. Leave as-is.">Instant DMA Hack (Good for cache emulation problems)</string>
+             <string extracomment="DMA: Direct Memory Access. Leave as-is.">Instant DMA Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="OPHFlagHack">
             <property name="text">
-             <string extracomment="OPH: Name of a flag (Output PatH) in the GIF_STAT register in the EE. Leave as-is.\nBleach Blade Battles: a game's name. Leave as-is or use an official translation.">OPH Flag Hack (For Bleach Blade Battlers)</string>
+             <string extracomment="OPH: Name of a flag (Output PatH) in the GIF_STAT register in the EE. Leave as-is.\nBleach Blade Battles: a game's name. Leave as-is or use an official translation.">OPH Flag Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="GIFFIFOHack">
             <property name="text">
-             <string extracomment="GIF = GS (Graphics Synthesizer, the GPU) Interface. Leave as-is.\nFIFO = First-In-First-Out, a type of buffer. Leave as-is.">Emulate GIF FIFO (Correct But Slower)</string>
+             <string extracomment="GIF = GS (Graphics Synthesizer, the GPU) Interface. Leave as-is.\nFIFO = First-In-First-Out, a type of buffer. Leave as-is.">Emulate GIF FIFO</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="DMABusyHack">
             <property name="text">
-             <string extracomment="DMA: Direct Memory Access. Leave as-is.">DMA Busy Hack (Deny Writes When Busy)</string>
+             <string extracomment="DMA: Direct Memory Access. Leave as-is.">DMA Busy Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="VIF1StallHack">
             <property name="text">
-             <string extracomment="VIF = VU (Vector Unit) Interface. Leave as-is. SOCOM 2 and Spy Hunter: names of two different games. Leave as-is or use an official translation.\nHUD = Heads-Up Display. The games' interfaces.">Delay VIF1 Stalls (For SOCOM 2 HUD/Spy Hunter)</string>
+             <string extracomment="VIF = VU (Vector Unit) Interface. Leave as-is. SOCOM 2 and Spy Hunter: names of two different games. Leave as-is or use an official translation.\nHUD = Heads-Up Display. The games' interfaces.">Delay VIF1 Stalls</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="VIFFIFOHack">
             <property name="text">
-             <string extracomment="VIF = VU (Vector Unit) Interface. Leave as-is.\nFIFO = First-In-First-Out, a type of buffer. Leave as-is.">Emulate VIF FIFO (Correct But Slower)</string>
+             <string extracomment="VIF = VU (Vector Unit) Interface. Leave as-is.\nFIFO = First-In-First-Out, a type of buffer. Leave as-is.">Emulate VIF FIFO</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="FullVU0SyncHack">
             <property name="text">
-             <string extracomment="VU0 = VU (Vector Unit) 0. Leave as-is.">Full VU0 Synchronization (Correct But Slower)</string>
+             <string extracomment="VU0 = VU (Vector Unit) 0. Leave as-is.">Full VU0 Synchronization</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="IbitHack">
             <property name="text">
-             <string extracomment="VU = Vector Unit. Leave as-is.\nI Bit = A bit referred as I, not as 1.\nScarface The World is Yours and Crash Tag Team Racing: names of two different games. Leave as-is or use an official translation.">VU I Bit Hack (For Scarface The World is Yours/Crash Tag Team Racing)</string>
+             <string extracomment="VU = Vector Unit. Leave as-is.\nI Bit = A bit referred as I, not as 1.\nScarface The World is Yours and Crash Tag Team Racing: names of two different games. Leave as-is or use an official translation.">VU I Bit Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="VuAddSubHack">
             <property name="text">
-             <string extracomment="VU = Vector Unit. Leave as-is.\nTri-Ace: a game development company name. Leave as-is.">VU Add Hack (For Tri-Ace Games)</string>
+             <string extracomment="VU = Vector Unit. Leave as-is.\nTri-Ace: a game development company name. Leave as-is.">VU Add Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="VUOverflowHack">
             <property name="text">
-             <string extracomment="VU = Vector Unit. Leave as-is.\nSuperman Returns: a game's name. Leave as-is or use an official translation.">VU Overflow Hack (Superman Returns)</string>
+             <string extracomment="VU = Vector Unit. Leave as-is.\nSuperman Returns: a game's name. Leave as-is or use an official translation.">VU Overflow Hack</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="VUSyncHack">
             <property name="text">
-             <string extracomment="VU = Vector Unit. Leave as-is.\nRun Behind: watch out for misleading capitalization for non-English: this refers to making the VUs run behind (delayed relative to) the EE.\nM-Bit: a bitflag in VU instructions that tells VU0 to synchronize with the EE. M-Bit Game: A game that uses instructions with the M-Bit enabled (unofficial PCSX2 name).">VU Sync (Run Behind, M-Bit games)</string>
+             <string extracomment="VU = Vector Unit. Leave as-is.\nRun Behind: watch out for misleading capitalization for non-English: this refers to making the VUs run behind (delayed relative to) the EE.\nM-Bit: a bitflag in VU instructions that tells VU0 to synchronize with the EE. M-Bit Game: A game that uses instructions with the M-Bit enabled (unofficial PCSX2 name).">VU Sync</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="XgKickHack">
             <property name="text">
-             <string extracomment="VU = Vector Unit. Leave as-is.\nXGKick: the name of one of the VU's instructions. Leave as-is.">VU XGKick Sync (Correct But Slower)</string>
+             <string extracomment="VU = Vector Unit. Leave as-is.\nXGKick: the name of one of the VU's instructions. Leave as-is.">VU XGKick Sync</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="BlitInternalFPSHack">
             <property name="text">
-             <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit  This option tells PCSX2 to estimate internal FPS by detecting blits (image copies) onto visible display memory.">Force Blit Internal FPS Detection (When auto-detection fails)</string>
+             <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit  This option tells PCSX2 to estimate internal FPS by detecting blits (image copies) onto visible display memory.">Force Blit Internal FPS Detection</string>
             </property>
            </widget>
           </item>

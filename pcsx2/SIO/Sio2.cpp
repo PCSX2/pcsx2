@@ -166,7 +166,7 @@ void Sio2::Multitap()
 {
 	g_Sio2FifoOut.push_back(0x00);
 
-	const bool multitapEnabled = (port == 0 && EmuConfig.MultitapPort0_Enabled) || (port == 1 && EmuConfig.MultitapPort1_Enabled);
+	const bool multitapEnabled = EmuConfig.Pad.IsMultitapPortEnabled(port);
 	SetRecv1(multitapEnabled ? Recv1::CONNECTED : Recv1::DISCONNECTED);
 
 	if (multitapEnabled)
@@ -210,17 +210,6 @@ void Sio2::Memcard()
 		{
 			g_Sio2FifoIn.pop_front();
 			g_Sio2FifoOut.push_back(0x00);
-		}
-
-		mcd->autoEjectTicks--;
-
-		if (mcd->autoEjectTicks == 0)
-		{
-			Host::AddKeyedOSDMessage(fmt::format("AutoEjectSlotClear{}{}", port, slot),
-				fmt::format(TRANSLATE_FS("MemoryCard", "Memory card in port {} / slot {} reinserted"),
-					port + 1,
-					slot + 1),
-				Host::OSD_INFO_DURATION);
 		}
 
 		return;

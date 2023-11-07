@@ -74,29 +74,102 @@ static const SettingInfo s_settings[] = {
 	{SettingInfo::Type::Float, "Deadzone", TRANSLATE_NOOP("Pad", "Analog Deadzone"),
 		TRANSLATE_NOOP(
 			"Pad", "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
 		TRANSLATE_NOOP("Pad",
 			"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
 			"controllers, e.g. DualShock 4, Xbox One Controller."),
-		"1.33", "0.01", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"1.33", "0.01", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", TRANSLATE_NOOP("Pad", "Large Motor Vibration Scale"),
 		TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of low frequency vibration sent by the game."),
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"1.00", "0.00", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "SmallMotorScale", TRANSLATE_NOOP("Pad", "Small Motor Vibration Scale"),
 		TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of high frequency vibration sent by the game."),
-		"1.00", "0.00", "2.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"1.00", "0.00", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("Pad", "Button/Trigger Deadzone"),
 		TRANSLATE_NOOP("Pad", "Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger "
 							  "which will be ignored."),
-		"0.00", "0.00", "1.00", "0.01", "%.0f%%", nullptr, nullptr, 100.0f},
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "PressureModifier", TRANSLATE_NOOP("Pad", "Modifier Pressure"),
 		TRANSLATE_NOOP("Pad", "Sets the pressure when the modifier button is held."), "0.50", "0.01", "1.00", "0.01",
-		"%.0f%%", nullptr, nullptr, 100.0f},
+		TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 };
 
 const Pad::ControllerInfo PadDualshock2::ControllerInfo = {Pad::ControllerType::DualShock2, "DualShock2",
 	TRANSLATE_NOOP("Pad", "DualShock 2"), s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
+
+void PadDualshock2::ConfigLog()
+{
+	const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+	std::string_view smallMotorStr;
+
+	switch (this->smallMotorLastConfig)
+	{
+		case 0xff:
+			smallMotorStr = "Disabled";
+			break;
+		case 0x00:
+			smallMotorStr = "Normal";
+			break;
+		case 0x01:
+			smallMotorStr = "Inverted";
+			break;
+		default:
+			smallMotorStr = "Undefined";
+			break;
+	}
+
+	std::string_view largeMotorStr;
+
+	switch (this->largeMotorLastConfig)
+	{
+		case 0xff:
+			largeMotorStr = "Disabled";
+			break;
+		case 0x00:
+			largeMotorStr = "Inverted";
+			break;
+		case 0x01:
+			largeMotorStr = "Normal";
+			break;
+		default:
+			largeMotorStr = "Undefined";
+			break;
+	}
+
+	std::string_view pressureStr;
+
+	switch (this->responseBytes)
+	{
+		case static_cast<u32>(Pad::ResponseBytes::DUALSHOCK2):
+			pressureStr = "D+A+P";
+			break;
+		case static_cast<u32>(Pad::ResponseBytes::ANALOG):
+			pressureStr = "D+A";
+			break;
+		case static_cast<u32>(Pad::ResponseBytes::DIGITAL):
+			pressureStr = "D";
+			break;
+		default:
+			pressureStr = "U";
+			break;
+	}
+
+	// AL: Analog Light (is it turned on right now)
+	// AB: Analog Button (is it useable or is it locked in its current state)
+	// VS: Vibration Small (how is the small vibration motor mapped)
+	// VL: Vibration Large (how is the large vibration motor mapped)
+	// RB: Response Bytes (what data is included in the controller's responses - D = Digital, A = Analog, P = Pressure)
+	Console.WriteLn(fmt::format("[Pad] DS2 Config Finished - P{0}/S{1} - AL: {2} - AB: {3} - VS: {4} - VL: {5} - RB: {6} (0x{7:08X})",
+		port + 1,
+		slot + 1,
+		(this->analogLight ? "On" : "Off"),
+		(this->analogLocked ? "Locked" : "Usable"),
+		smallMotorStr,
+		largeMotorStr,
+		pressureStr,
+		this->responseBytes));
+}
 
 u8 PadDualshock2::Mystery(u8 commandByte)
 {
@@ -135,7 +208,7 @@ u8 PadDualshock2::ButtonQuery(u8 commandByte)
 			{
 				case 8:
 					g_Sio0.SetAcknowledge(false);
-					return 0x5a;
+					return 0x00;
 				default:
 					return 0x00;
 			}
@@ -145,6 +218,8 @@ u8 PadDualshock2::ButtonQuery(u8 commandByte)
 u8 PadDualshock2::Poll(u8 commandByte)
 {
 	const u32 buttons = GetButtons();
+	u8 largeMotor = 0x00;
+	u8 smallMotor = 0x00;
 
 	switch (commandBytesReceived)
 	{
@@ -153,12 +228,41 @@ u8 PadDualshock2::Poll(u8 commandByte)
 			return (buttons >> 8) & 0xff;
 		case 4:
 			this->vibrationMotors[1] = commandByte;
+
+			// Apply the vibration mapping to the motors
+			switch (this->largeMotorLastConfig)
+			{
+				case 0x00:
+					largeMotor = this->vibrationMotors[0];
+					break;
+				case 0x01:
+					largeMotor = this->vibrationMotors[1];
+					break;
+				default:
+					break;
+			}
+
+			// Small motor on the controller is only controlled by the LSB.
+			// Any value can be sent by the software, but only odd numbers
+			// (LSB set) will turn on the motor.
+			switch (this->smallMotorLastConfig)
+			{
+				case 0x00:
+					smallMotor = this->vibrationMotors[0] & 0x01;
+					break;
+				case 0x01:
+					smallMotor = this->vibrationMotors[1] & 0x01;
+					break;
+				default:
+					break;
+			}
+
 			// Order is reversed here - SetPadVibrationIntensity takes large motor first, then small. PS2 orders small motor first, large motor second.
 			InputManager::SetPadVibrationIntensity(this->unifiedSlot,
-				std::min(static_cast<float>(this->vibrationMotors[1]) * GetVibrationScale(1) * (1.0f / 255.0f), 1.0f),
+				std::min(static_cast<float>(largeMotor) * GetVibrationScale(1) * (1.0f / 255.0f), 1.0f),
 				// Small motor on the PS2 is either on full power or zero power, it has no variable speed. If the game supplies any value here at all,
 				// the pad in turn supplies full power to the motor, or no power at all if zero.
-				std::min(static_cast<float>((this->vibrationMotors[0] ? 0xff : 0)) * GetVibrationScale(0) * (1.0f / 255.0f), 1.0f)
+				std::min(static_cast<float>((smallMotor ? 0xff : 0)) * GetVibrationScale(0) * (1.0f / 255.0f), 1.0f)
 			);
 
 			// PS1 mode: If the controller is still in digital mode, it is time to stop acknowledging.
@@ -229,13 +333,7 @@ u8 PadDualshock2::Config(u8 commandByte)
 			if (this->isInConfig)
 			{
 				this->isInConfig = false;
-				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
-				Console.WriteLn(StringUtil::StdStringFromFormat("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: %s",
-					port + 1,
-					slot + 1,
-					(this->analogLight ? "On" : "Off"),
-					(this->analogLocked ? "Locked" : "Usable"),
-					(this->responseBytes == static_cast<u32>(Pad::ResponseBytes::DUALSHOCK2) ? "On" : "Off")));
+				this->ConfigLog();
 			}
 			else
 			{
@@ -352,6 +450,8 @@ u8 PadDualshock2::Constant2(u8 commandByte)
 	{
 		case 5:
 			return 0x02;
+		case 7:
+			return 0x01;
 		case 8:
 			g_Sio0.SetAcknowledge(false);
 			return 0x00;
@@ -453,47 +553,10 @@ u8 PadDualshock2::ResponseBytes(u8 commandByte)
 PadDualshock2::PadDualshock2(u8 unifiedSlot)
 	: PadBase(unifiedSlot)
 {
-	this->currentMode = Pad::Mode::DIGITAL;
-	Init();
+	currentMode = Pad::Mode::DIGITAL;
 }
 
 PadDualshock2::~PadDualshock2() = default;
-
-void PadDualshock2::Init()
-{
-	this->buttons = 0xffffffff;
-	this->analogs.lx = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.ly = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.rx = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.ry = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogs.lxInvert = 0;
-	this->analogs.lyInvert = 0;
-	this->analogs.rxInvert = 0;
-	this->analogs.ryInvert = 0;
-	this->analogLight = false;
-	this->analogLocked = false;
-	this->analogPressed = false;
-	this->responseBytes = 0;
-
-	for (u8 i = 0; i < this->rawInputs.size(); i++)
-	{
-		this->rawInputs[i] = 0;
-	}
-
-	for (u8 i = 0; i < this->pressures.size(); i++)
-	{
-		this->pressures[i] = 0;
-	}
-
-	this->axisScale = 1.0f;
-	this->axisDeadzone = 0.0f;
-	
-	this->vibrationScale[0] = 0.0f;
-	this->vibrationScale[1] = 1.0f;
-
-	this->pressureModifier = 0.5f;
-	this->buttonDeadzone = 0.0f;
-}
 
 Pad::ControllerType PadDualshock2::GetType() const
 {
@@ -612,8 +675,8 @@ void PadDualshock2::Set(u32 index, float value)
 	}
 	else if (IsTriggerKey(index))
 	{
-		const float s_value = std::clamp(value * this->triggerScale, 0.0f, 1.0f);
-		const float dz_value = (this->triggerDeadzone > 0.0f && s_value < this->triggerDeadzone) ? 0.0f : s_value;
+		const float s_value = std::clamp(value, 0.0f, 1.0f);
+		const float dz_value = (this->buttonDeadzone > 0.0f && s_value < this->buttonDeadzone) ? 0.0f : s_value;
 		this->rawInputs[index] = static_cast<u8>(dz_value * 255.0f);
 		if (dz_value > 0.0f)
 			this->buttons &= ~(1u << bitmaskMapping[index]);
@@ -674,8 +737,8 @@ void PadDualshock2::Set(u32 index, float value)
 				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
 				
 				Host::AddKeyedOSDMessage(fmt::format("PadAnalogButtonChange{}{}", port, slot),
-					this->analogLight ? fmt::format(TRANSLATE_FS("Pad", "Analog light is now on for port {} / slot {}"), port + 1, slot + 1) :
-										fmt::format(TRANSLATE_FS("Pad", "Analog light is now off for port {} / slot {}"), port + 1, slot + 1),
+					this->analogLight ? fmt::format(TRANSLATE_FS("Pad", "Analog light is now on for port {0} / slot {1}"), port + 1, slot + 1) :
+										fmt::format(TRANSLATE_FS("Pad", "Analog light is now off for port {0} / slot {1}"), port + 1, slot + 1),
 					Host::OSD_INFO_DURATION);
 			}
 		}
@@ -698,12 +761,6 @@ void PadDualshock2::SetAxisScale(float deadzone, float scale)
 {
 	this->axisDeadzone = deadzone;
 	this->axisScale = scale;
-}
-
-void PadDualshock2::SetTriggerScale(float deadzone, float scale)
-{
-	this->triggerDeadzone = deadzone;
-	this->triggerScale = scale;
 }
 
 float PadDualshock2::GetVibrationScale(u32 motor) const
@@ -790,22 +847,12 @@ bool PadDualshock2::Freeze(StateWrapper& sw)
 		return false;
 
 	// Private PadDualshock2 members
-	sw.Do(&buttons);
-	sw.DoBytes(&analogs, sizeof(Analogs));
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);
 	sw.Do(&analogPressed);
 	sw.Do(&commandStage);
 	sw.Do(&responseBytes);
-	sw.Do(&pressures);
 	sw.Do(&vibrationMotors);
-	sw.Do(&axisScale);
-	sw.Do(&axisDeadzone);
-	sw.Do(&triggerScale);
-	sw.Do(&triggerDeadzone);
-	sw.Do(&vibrationScale);
-	sw.Do(&pressureModifier);
-	sw.Do(&buttonDeadzone);
 	sw.Do(&smallMotorLastConfig);
 	sw.Do(&largeMotorLastConfig);
 	return !sw.HasError();

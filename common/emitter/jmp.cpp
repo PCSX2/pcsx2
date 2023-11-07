@@ -78,7 +78,7 @@ namespace x86Emitter
 		}
 	}
 
-	void xImpl_FastCall::operator()(void* f, const xRegister32& a1, const xRegister32& a2) const
+	void xImpl_FastCall::operator()(const void* f, const xRegister32& a1, const xRegister32& a2) const
 	{
 		prepareRegsForFastcall(a1, a2);
 		uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
@@ -93,7 +93,7 @@ namespace x86Emitter
 		}
 	}
 
-	void xImpl_FastCall::operator()(void* f, const xRegisterLong& a1, const xRegisterLong& a2) const
+	void xImpl_FastCall::operator()(const void* f, const xRegisterLong& a1, const xRegisterLong& a2) const
 	{
 		prepareRegsForFastcall(a1, a2);
 		uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
@@ -108,7 +108,7 @@ namespace x86Emitter
 		}
 	}
 
-	void xImpl_FastCall::operator()(void* f, u32 a1, const xRegisterLong& a2) const
+	void xImpl_FastCall::operator()(const void* f, u32 a1, const xRegisterLong& a2) const
 	{
 		if (!a2.IsEmpty())
 		{
@@ -118,13 +118,13 @@ namespace x86Emitter
 		(*this)(f, arg1reg, arg2reg);
 	}
 
-	void xImpl_FastCall::operator()(void* f, void* a1) const
+	void xImpl_FastCall::operator()(const void* f, void* a1) const
 	{
 		xLEA(arg1reg, ptr[a1]);
 		(*this)(f, arg1reg, arg2reg);
 	}
 
-	void xImpl_FastCall::operator()(void* f, u32 a1, const xRegister32& a2) const
+	void xImpl_FastCall::operator()(const void* f, u32 a1, const xRegister32& a2) const
 	{
 		if (!a2.IsEmpty())
 		{
@@ -134,13 +134,13 @@ namespace x86Emitter
 		(*this)(f, arg1regd, arg2regd);
 	}
 
-	void xImpl_FastCall::operator()(void* f, const xIndirect32& a1) const
+	void xImpl_FastCall::operator()(const void* f, const xIndirect32& a1) const
 	{
 		xMOV(arg1regd, a1);
 		(*this)(f, arg1regd);
 	}
 
-	void xImpl_FastCall::operator()(void* f, u32 a1, u32 a2) const
+	void xImpl_FastCall::operator()(const void* f, u32 a1, u32 a2) const
 	{
 		xMOV(arg1regd, a1);
 		xMOV(arg2regd, a2);

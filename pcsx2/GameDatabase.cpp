@@ -103,6 +103,14 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 	{
 		node["name"] >> gameEntry.name;
 	}
+	if (node.has_child("name-sort"))
+	{
+		node["name-sort"] >> gameEntry.name_sort;
+	}
+	if (node.has_child("name-en"))
+	{
+		node["name-en"] >> gameEntry.name_en;
+	}
 	if (node.has_child("region"))
 	{
 		node["region"] >> gameEntry.region;
@@ -339,7 +347,6 @@ static const char* s_gs_hw_fix_names[] = {
 	"disableDepthSupport",
 	"preloadFrameData",
 	"disablePartialInvalidation",
-	"partialTargetInvalidation",
 	"textureInsideRT",
 	"alignSprite",
 	"mergeSprite",
@@ -559,9 +566,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::DisablePartialInvalidation:
 			return (static_cast<int>(config.UserHacks_DisablePartialInvalidation) == value);
 
-		case GSHWFixId::TargetPartialInvalidation:
-			return (static_cast<int>(config.UserHacks_TargetPartialInvalidation) == value);
-
 		case GSHWFixId::TextureInsideRT:
 			return (static_cast<int>(config.UserHacks_TextureInsideRt) == value);
 
@@ -600,9 +604,6 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 
 		case GSHWFixId::SkipDrawEnd:
 			return (config.SkipDrawEnd == value);
-
-		case GSHWFixId::HalfBottomOverride:
-			return (config.UserHacks_HalfBottomOverride == value);
 
 		case GSHWFixId::HalfPixelOffset:
 			return (config.UpscaleMultiplier <= 1.0f || config.UserHacks_HalfPixelOffset == value);
@@ -704,10 +705,6 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				config.UserHacks_DisablePartialInvalidation = (value > 0);
 				break;
 
-			case GSHWFixId::TargetPartialInvalidation:
-				config.UserHacks_TargetPartialInvalidation = (value > 0);
-				break;
-
 			case GSHWFixId::TextureInsideRT:
 			{
 				if (value >= 0 && value <= static_cast<int>(GSTextureInRtMode::MergeTargets))
@@ -780,10 +777,6 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::SkipDrawEnd:
 				config.SkipDrawEnd = value;
-				break;
-
-			case GSHWFixId::HalfBottomOverride:
-				config.UserHacks_HalfBottomOverride = value;
 				break;
 
 			case GSHWFixId::HalfPixelOffset:
@@ -927,7 +920,7 @@ void GameDatabase::initDatabase()
 		Console.Error(fmt::format("[GameDB YAML] Internal Parsing error: {}", std::string_view(msg, msg_size)));
 	});
 
-	auto buf = Host::ReadResourceFileToString(GAMEDB_YAML_FILE_NAME);
+	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME).c_str());
 	if (!buf.has_value())
 	{
 		Console.Error("[GameDB] Unable to open GameDB file, file does not exist.");
@@ -1088,7 +1081,7 @@ bool GameDatabase::loadHashDatabase()
 
 	Common::Timer load_timer;
 
-	auto buf = Host::ReadResourceFileToString(HASHDB_YAML_FILE_NAME);
+	auto buf = FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, HASHDB_YAML_FILE_NAME).c_str());
 	if (!buf.has_value())
 	{
 		Console.Error("[GameDB] Unable to open hash database file, file does not exist.");
@@ -1178,7 +1171,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (audio_iter != s_track_hash_to_entry_map.end())
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is not found in database.\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {0} with hash {1} is not found in database.\n"), track + 1,
 				tracks[track].toString());
 			tracks_matched[track] = false;
 			all_okay = false;
@@ -1189,7 +1182,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (audio_iter->second != data_iter->second)
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} is for a different game ({}).\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {0} with hash {1} is for a different game ({2}).\n"), track + 1,
 				tracks[track].toString(), s_hash_database[audio_iter->second].name);
 			tracks_matched[track] = false;
 			all_okay = false;
@@ -1200,7 +1193,7 @@ const GameDatabase::HashDatabaseEntry* GameDatabase::lookupHash(
 		if (getTrackIndex(candidate->tracks.data(), candidate->tracks.size(), tracks[track]) != track)
 		{
 			fmt::format_to(std::back_inserter(*match_error),
-				TRANSLATE_FS("GameDatabase", "Track {} with hash {} does not match database track.\n"), track + 1,
+				TRANSLATE_FS("GameDatabase", "Track {0} with hash {1} does not match database track.\n"), track + 1,
 				tracks[track].toString());
 			tracks_matched[track] = false;
 			all_okay = false;

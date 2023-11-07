@@ -21,6 +21,8 @@
 #include <memory>
 #include <string>
 
+class Error;
+
 enum isoType
 {
 	ISOTYPE_ILLEGAL = 0,
@@ -30,12 +32,12 @@ enum isoType
 	ISOTYPE_DVDDL
 };
 
-static const int CD_FRAMESIZE_RAW = 2448;
+static constexpr int CD_FRAMESIZE_RAW = 2448;
 
 // --------------------------------------------------------------------------------------
 //  isoFile
 // --------------------------------------------------------------------------------------
-class InputIsoFile
+class InputIsoFile final
 {
 	DeclareNoncopyableObject(InputIsoFile);
 
@@ -67,13 +69,13 @@ protected:
 
 public:
 	InputIsoFile();
-	virtual ~InputIsoFile();
+	~InputIsoFile();
 
 	bool IsOpened() const;
 
-	isoType GetType() const { return m_type; }
-	uint GetBlockCount() const { return m_blocks; }
-	int GetBlockOffset() const { return m_blockofs; }
+	isoType GetType() const noexcept { return m_type; }
+	uint GetBlockCount() const noexcept { return m_blocks; }
+	int GetBlockOffset() const  noexcept { return m_blockofs; }
 
 	const std::string& GetFilename() const
 	{
@@ -81,7 +83,7 @@ public:
 	}
 
 	bool Test(std::string srcfile);
-	bool Open(std::string srcfile, bool testOnly = false);
+	bool Open(std::string srcfile, Error* error, bool testOnly);
 	void Close();
 	bool Detect(bool readType = true);
 
@@ -97,7 +99,7 @@ protected:
 	void FindParts();
 };
 
-class OutputIsoFile
+class OutputIsoFile final
 {
 	DeclareNoncopyableObject(OutputIsoFile);
 
@@ -120,12 +122,12 @@ protected:
 
 public:
 	OutputIsoFile();
-	virtual ~OutputIsoFile();
+	~OutputIsoFile();
 
 	bool IsOpened() const;
 	u32 GetBlockSize() const;
 
-	const std::string& GetFilename() const
+	const std::string& GetFilename() const noexcept
 	{
 		return m_filename;
 	}

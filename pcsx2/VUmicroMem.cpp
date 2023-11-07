@@ -21,42 +21,23 @@
 
 alignas(16) VURegs vuRegs[2];
 
-
-vuMemoryReserve::vuMemoryReserve()
-	: _parent("VU0/1 on-chip memory")
+void vuMemAllocate()
 {
-}
-
-vuMemoryReserve::~vuMemoryReserve()
-{
-	Release();
-}
-
-void vuMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
-{
-	static constexpr u32 VU_MEMORY_RESERVE_SIZE = VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE;
-
-	_parent::Assign(std::move(allocator), HostMemoryMap::VUmemOffset, VU_MEMORY_RESERVE_SIZE);
-
-	u8* curpos = GetPtr();
+	u8* curpos = SysMemory::GetVUMem();
 	VU0.Micro	= curpos; curpos += VU0_PROGSIZE;
 	VU0.Mem		= curpos; curpos += VU0_MEMSIZE;
 	VU1.Micro	= curpos; curpos += VU1_PROGSIZE;
 	VU1.Mem		= curpos; curpos += VU1_MEMSIZE;
 }
 
-void vuMemoryReserve::Release()
+void vuMemRelease()
 {
-	_parent::Release();
-
 	VU0.Micro = VU0.Mem = nullptr;
 	VU1.Micro = VU1.Mem = nullptr;
 }
 
-void vuMemoryReserve::Reset()
+void vuMemReset()
 {
-	_parent::Reset();
-
 	pxAssert( VU0.Mem );
 	pxAssert( VU1.Mem );
 

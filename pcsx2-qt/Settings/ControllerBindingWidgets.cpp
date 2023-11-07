@@ -29,9 +29,9 @@
 #include "pcsx2/SIO/Pad/Pad.h"
 
 #include "Settings/ControllerBindingWidgets.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -40,7 +40,7 @@
 #include "ui_USBBindingWidget_GTForce.h"
 #include "ui_USBBindingWidget_GunCon2.h"
 
-ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
+ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_config_section(fmt::format("Pad{}", port + 1))
@@ -52,8 +52,8 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	populateControllerTypes();
 	onTypeChanged();
 
-	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-		m_dialog->getProfileSettingsInterface(), m_ui.controllerType, m_config_section, "Type", Pad::GetDefaultPadType(port));
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileString(m_dialog->getProfileSettingsInterface(),
+		m_ui.controllerType, m_config_section, "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(port))->name);
 
 	connect(m_ui.controllerType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ControllerBindingWidget::onTypeChanged);
 	connect(m_ui.bindings, &QPushButton::clicked, this, &ControllerBindingWidget::onBindingsClicked);
@@ -79,7 +79,15 @@ void ControllerBindingWidget::populateControllerTypes()
 void ControllerBindingWidget::onTypeChanged()
 {
 	const bool is_initializing = (m_ui.stackedWidget->count() == 0);
-	m_controller_type = m_dialog->getStringValue(m_config_section.c_str(), "Type", Pad::GetDefaultPadType(m_port_number));
+	const std::string type_name = m_dialog->getStringValue(
+		m_config_section.c_str(), "Type", Pad::GetControllerInfo(Pad::GetDefaultPadType(m_port_number))->name);
+	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfoByName(type_name);
+	if (!cinfo)
+	{
+		Console.Error(fmt::format("Invalid controller type name '{}' in config, ignoring.", type_name));
+		cinfo = Pad::GetControllerInfo(Pad::ControllerType::NotConnected);
+	}
+	m_controller_type = cinfo->type;
 
 	if (m_bindings_widget)
 	{
@@ -100,17 +108,16 @@ void ControllerBindingWidget::onTypeChanged()
 		m_macros_widget = nullptr;
 	}
 
-	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_controller_type);
-	const bool has_settings = (cinfo && !cinfo->settings.empty());
-	const bool has_macros = (cinfo && !cinfo->bindings.empty());
+	const bool has_settings = (!cinfo->settings.empty());
+	const bool has_macros = (!cinfo->bindings.empty());
 	m_ui.settings->setEnabled(has_settings);
 	m_ui.macros->setEnabled(has_macros);
 
-	if (m_controller_type == "DualShock2")
+	if (cinfo->type == Pad::ControllerType::DualShock2)
 	{
 		m_bindings_widget = ControllerBindingWidget_DualShock2::createInstance(this);
 	}
-	else if (m_controller_type == "Guitar")
+	else if (cinfo->type == Pad::ControllerType::Guitar)
 	{
 		m_bindings_widget = ControllerBindingWidget_Guitar::createInstance(this);
 	}
@@ -318,7 +325,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 {
 	m_ui.setupUi(this);
 
-	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
+	ControllerSettingsWindow* dialog = m_bwidget->getDialog();
 	const std::string& section = m_bwidget->getConfigSection();
 	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
@@ -438,7 +445,7 @@ void ControllerMacroEditWidget::updateFrequencyText()
 
 void ControllerMacroEditWidget::updateBinds()
 {
-	ControllerSettingsDialog* dialog = m_bwidget->getDialog();
+	ControllerSettingsWindow* dialog = m_bwidget->getDialog();
 	const Pad::ControllerInfo* cinfo = Pad::GetControllerInfo(m_bwidget->getControllerType());
 	if (!cinfo)
 		return;
@@ -488,7 +495,7 @@ void ControllerMacroEditWidget::updateBinds()
 //////////////////////////////////////////////////////////////////////////
 
 ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(std::span<const SettingInfo> settings, std::string config_section,
-	std::string config_prefix, const char* translation_ctx, ControllerSettingsDialog* dialog, QWidget* parent_widget)
+	std::string config_prefix, const char* translation_ctx, ControllerSettingsWindow* dialog, QWidget* parent_widget)
 	: QWidget(parent_widget)
 	, m_settings(settings)
 	, m_config_section(std::move(config_section))
@@ -588,7 +595,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 				sb->setSingleStep(si.IntegerStepValue());
 				if (si.format)
 				{
-					const auto [prefix, suffix] = getPrefixAndSuffixForIntFormat(QString::fromUtf8(si.format));
+					const auto [prefix, suffix] = getPrefixAndSuffixForIntFormat(qApp->translate(translation_ctx, si.format));
 					sb->setPrefix(prefix);
 					sb->setSuffix(suffix);
 				}
@@ -624,7 +631,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(const char* translatio
 
 				if (si.format)
 				{
-					const auto [prefix, suffix, decimals] = getPrefixAndSuffixForFloatFormat(QString::fromUtf8(si.format));
+					const auto [prefix, suffix, decimals] = getPrefixAndSuffixForFloatFormat(qApp->translate(translation_ctx, si.format));
 					sb->setPrefix(prefix);
 					if (decimals >= 0)
 						sb->setDecimals(decimals);
@@ -905,7 +912,7 @@ ControllerBindingWidget_Base* ControllerBindingWidget_Guitar::createInstance(Con
 
 //////////////////////////////////////////////////////////////////////////
 
-USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsDialog* dialog, u32 port)
+USBDeviceWidget::USBDeviceWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_config_section(fmt::format("USB{}", port + 1))
@@ -932,6 +939,31 @@ USBDeviceWidget::~USBDeviceWidget() = default;
 
 QIcon USBDeviceWidget::getIcon() const
 {
+	static constexpr const char* icons[][2] = {
+		{"Pad", "wheel-line"}, // Wheel Device
+		{"Msd", "msd-line"}, // Mass Storage Device
+		{"singstar", "singstar-line"}, // Singstar
+		{"logitech_usbmic", "mic-line"}, // Logitech USB Mic
+		{"headset", "headset-line"}, // Logitech Headset Mic
+		{"hidkbd", "keyboard-2-line"}, // HID Keyboard
+		{"hidmouse", "mouse-line"}, // HID Mouse
+		{"RBDrumKit", "drum-line"}, // Rock Band Drum Kit
+		{"BuzzDevice", "buzz-controller-line"}, // Buzz Controller
+		{"webcam", "eyetoy-line"}, // EyeToy
+		{"beatmania", "keyboard-2-line"}, // BeatMania Da Da Da!! (Konami Keyboard)
+		{"seamic", "seamic-line"}, // SEGA Seamic
+		{"printer", "printer-line"}, // Printer
+		{"Keyboardmania", "keyboardmania-line"}, // KeyboardMania
+		{"guncon2", "guncon2-line"}, // GunCon 2
+		{"DJTurntable", "dj-hero-line"} // DJ Hero TurnTable
+	};
+
+	for (size_t i = 0; i < std::size(icons); i++)
+	{
+		if (m_device_type == icons[i][0])
+			return QIcon::fromTheme(icons[i][1]);
+	}
+
 	return QIcon::fromTheme("usb-fill");
 }
 

@@ -277,7 +277,7 @@ namespace InternalServers
 	}
 
 #ifdef _WIN32
-	void DNS_Server::GetHost(std::string url, DNS_State* state)
+	void DNS_Server::GetHost(const std::string& url, DNS_State* state)
 	{
 		//Need to convert to UTF16
 		const int size = MultiByteToWideChar(CP_UTF8, 0, url.c_str(), -1, nullptr, 0);
@@ -347,7 +347,7 @@ namespace InternalServers
 		delete data;
 	}
 #elif defined(__POSIX__)
-	void DNS_Server::GetHost(std::string url, DNS_State* state)
+	void DNS_Server::GetHost(const std::string& url, DNS_State* state)
 	{
 		//Need to spin up thread, pass the parms to it
 
@@ -357,7 +357,7 @@ namespace InternalServers
 		GetHostThread.detach();
 	}
 
-	void DNS_Server::GetAddrInfoThread(std::string url, DNS_State* state)
+	void DNS_Server::GetAddrInfoThread(const std::string& url, DNS_State* state)
 	{
 		addrinfo hints{0};
 		hints.ai_family = AF_INET;

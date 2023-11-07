@@ -165,9 +165,9 @@ public:
 	{
 	}
 
-	void SetJITCompile(void (*recompiler_)())
+	void SetJITCompile(const void *recompiler_)
 	{
-		recompiler = (uptr)recompiler_;
+		recompiler = reinterpret_cast<uptr>(recompiler_);
 	}
 
 	BASEBLOCKEX* New(u32 startpc, uptr fnptr);

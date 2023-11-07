@@ -548,7 +548,7 @@
     <ClCompile Include="x86\ir5900tables.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iR5900-32.cpp">
+    <ClCompile Include="x86\ix86-32\iR5900.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
     </ClCompile>
     <ClCompile Include="x86\ix86-32\iR5900Arit.cpp">
@@ -698,7 +698,7 @@
     <ClCompile Include="rdebug\deci2_ttyp.cpp">
       <Filter>System\Ps2\Debug\rdebug</Filter>
     </ClCompile>
-    <ClCompile Include="x86\ix86-32\iCore-32.cpp">
+    <ClCompile Include="x86\ix86-32\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
     </ClCompile>
     <ClCompile Include="x86\iCore.cpp">
@@ -995,9 +995,6 @@
     <ClCompile Include="GS\GSClut.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="GS\GSCrc.cpp">
-      <Filter>System\Ps2\GS</Filter>
-    </ClCompile>
     <ClCompile Include="GS\GSDump.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
@@ -1044,9 +1041,6 @@
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\GSTexture11.cpp">
-      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp">
@@ -1270,9 +1264,6 @@
     </ClCompile>
     <ClCompile Include="GSDumpReplayer.cpp">
       <Filter>Tools</Filter>
-    </ClCompile>
-    <ClCompile Include="VirtualMemory.cpp">
-      <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
@@ -1918,9 +1909,6 @@
     <ClInclude Include="GS\GSClut.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\GSCrc.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GSDump.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -2221,9 +2209,6 @@
     </ClInclude>
     <ClInclude Include="GS.h">
       <Filter>System\Ps2\GS\GIF</Filter>
-    </ClInclude>
-    <ClInclude Include="VirtualMemory.h">
-      <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>

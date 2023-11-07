@@ -30,11 +30,6 @@ PadNotConnected::PadNotConnected(u8 unifiedSlot)
 
 PadNotConnected::~PadNotConnected() = default;
 
-void PadNotConnected::Init()
-{
-
-}
-
 Pad::ControllerType PadNotConnected::GetType() const
 {
 	return Pad::ControllerType::NotConnected;
@@ -56,11 +51,6 @@ void PadNotConnected::SetRawAnalogs(const std::tuple<u8, u8> left, const std::tu
 }
 
 void PadNotConnected::SetAxisScale(float deadzone, float scale)
-{
-
-}
-
-void PadNotConnected::SetTriggerScale(float deadzone, float scale)
 {
 
 }

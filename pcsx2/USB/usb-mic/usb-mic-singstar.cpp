@@ -30,6 +30,8 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-mic/usb-mic-singstar.h"
 #include "USB/usb-mic/audiodev.h"
+#include "USB/usb-mic/audiodev-noop.h"
+#include "USB/usb-mic/audiodev-cubeb.h"
 #include "USB/usb-mic/audio.h"
 #include "USB/USB.h"
 #include "Host.h"
@@ -857,7 +859,7 @@ namespace usb_mic
 				nullptr, nullptr, &AudioDevice::GetInputDeviceList},
 			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
 				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
-				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
+				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
 		};
 		return info;
 	}
@@ -880,21 +882,16 @@ namespace usb_mic
 				nullptr, &AudioDevice::GetInputDeviceList},
 			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
 				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
-				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", "%dms", nullptr, nullptr, 1.0f},
+				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
 		};
 		return info;
 	}
 } // namespace usb_mic
 
-#include "USB/usb-mic/audiodev-noop.h"
-
 std::unique_ptr<AudioDevice> AudioDevice::CreateNoopDevice(u32 port, AudioDir dir, u32 channels)
 {
 	return std::make_unique<usb_mic::audiodev_noop::NoopAudioDevice>(port, dir, channels);
 }
-
-#ifdef SPU2X_CUBEB
-#include "USB/usb-mic/audiodev-cubeb.h"
 
 std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
 {
@@ -910,23 +907,3 @@ std::vector<std::pair<std::string, std::string>> AudioDevice::GetOutputDeviceLis
 {
 	return usb_mic::audiodev_cubeb::CubebAudioDevice::GetDeviceList(false);
 }
-
-#else
-
-std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
-{
-	Console.Warning("Cubeb is unavailable, creating a noop audio device.");
-	return CreateNoopDevice(port, dir, channels);
-}
-
-std::vector<std::pair<std::string, std::string>> AudioDevice::GetInputDeviceList()
-{
-	return {};
-}
-
-std::vector<std::pair<std::string, std::string>> AudioDevice::GetOutputDeviceList()
-{
-	return {};
-}
-
-#endif

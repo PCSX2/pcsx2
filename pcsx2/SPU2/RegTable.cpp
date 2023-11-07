@@ -28,18 +28,17 @@
 	PCORE(c, Voices[v].p)
 
 #define PVC(c, v)                          \
-	PVCP(c, v, Volume.Left.Reg_VOL)        \
-	,                                      \
+		PVCP(c, v, Volume.Left.Reg_VOL),   \
 		PVCP(c, v, Volume.Right.Reg_VOL),  \
 		PVCP(c, v, Pitch),                 \
 		PVCP(c, v, ADSR.regADSR1),         \
 		PVCP(c, v, ADSR.regADSR2),         \
-		PVCP(c, v, ADSR.Value) + 1,        \
-		PVCP(c, v, Volume.Left.Value) + 1, \
-		PVCP(c, v, Volume.Right.Value) + 1
+		PVCP(c, v, ADSR.Value),            \
+		PVCP(c, v, Volume.Left.Value),     \
+		PVCP(c, v, Volume.Right.Value)
 
 #define PVCA(c, v)                  \
-	PVCP(c, v, StartA) + 1,         \
+		PVCP(c, v, StartA) + 1,     \
 		PVCP(c, v, StartA),         \
 		PVCP(c, v, LoopStartA) + 1, \
 		PVCP(c, v, LoopStartA),     \
@@ -100,8 +99,8 @@ static std::array<u16*, 0x401> ComputeRegTable()
 		PVCA(0, 12), PVCA(0, 13), PVCA(0, 14), PVCA(0, 15), PVCA(0, 16), PVCA(0, 17),
 		PVCA(0, 18), PVCA(0, 19), PVCA(0, 20), PVCA(0, 21), PVCA(0, 22), PVCA(0, 23),
 
-		PCORE(0, ExtEffectsStartA) + 1,
-		PCORE(0, ExtEffectsStartA),
+		PCORE(0, EffectsStartA) + 1,
+		PCORE(0, EffectsStartA),
 
 		PREVB_REG(0, APF1_SIZE),
 		PREVB_REG(0, APF2_SIZE),
@@ -126,8 +125,8 @@ static std::array<u16*, 0x401> ComputeRegTable()
 		PREVB_REG(0, APF2_L_DST),
 		PREVB_REG(0, APF2_R_DST),
 
-		PCORE(0, ExtEffectsEndA) + 1,
-		PCORE(0, ExtEffectsEndA),
+		PCORE(0, EffectsEndA) + 1,
+		PCORE(0, EffectsEndA),
 
 		PCORE(0, Regs.ENDX),
 		PCORE(0, Regs.ENDX) + 1,
@@ -203,8 +202,8 @@ static std::array<u16*, 0x401> ComputeRegTable()
 		PVCA(1, 12), PVCA(1, 13), PVCA(1, 14), PVCA(1, 15), PVCA(1, 16), PVCA(1, 17),
 		PVCA(1, 18), PVCA(1, 19), PVCA(1, 20), PVCA(1, 21), PVCA(1, 22), PVCA(1, 23),
 
-		PCORE(1, ExtEffectsStartA) + 1,
-		PCORE(1, ExtEffectsStartA),
+		PCORE(1, EffectsStartA) + 1,
+		PCORE(1, EffectsStartA),
 
 		PREVB_REG(1, APF1_SIZE),
 		PREVB_REG(1, APF2_SIZE),
@@ -229,8 +228,8 @@ static std::array<u16*, 0x401> ComputeRegTable()
 		PREVB_REG(1, APF2_L_DST),
 		PREVB_REG(1, APF2_R_DST),
 
-		PCORE(1, ExtEffectsEndA) + 1,
-		PCORE(1, ExtEffectsEndA),
+		PCORE(1, EffectsEndA) + 1,
+		PCORE(1, EffectsEndA),
 
 		PCORE(1, Regs.ENDX),
 		PCORE(1, Regs.ENDX) + 1,
@@ -244,14 +243,14 @@ static std::array<u16*, 0x401> ComputeRegTable()
 		//0x760: weird area
 		PCORE(0, MasterVol.Left.Reg_VOL),
 		PCORE(0, MasterVol.Right.Reg_VOL),
-		PCORE(0, FxVol.Left) + 1,
-		PCORE(0, FxVol.Right) + 1,
-		PCORE(0, ExtVol.Left) + 1,
-		PCORE(0, ExtVol.Right) + 1,
-		PCORE(0, InpVol.Left) + 1,
-		PCORE(0, InpVol.Right) + 1,
-		PCORE(0, MasterVol.Left.Value) + 1,
-		PCORE(0, MasterVol.Right.Value) + 1,
+		PCORE(0, FxVol.Left),
+		PCORE(0, FxVol.Right),
+		PCORE(0, ExtVol.Left),
+		PCORE(0, ExtVol.Right),
+		PCORE(0, InpVol.Left),
+		PCORE(0, InpVol.Right),
+		PCORE(0, MasterVol.Left.Value),
+		PCORE(0, MasterVol.Right.Value),
 		PCORE(0, Revb.IIR_VOL),
 		PCORE(0, Revb.COMB1_VOL),
 		PCORE(0, Revb.COMB2_VOL),
@@ -265,14 +264,14 @@ static std::array<u16*, 0x401> ComputeRegTable()
 
 		PCORE(1, MasterVol.Left.Reg_VOL),
 		PCORE(1, MasterVol.Right.Reg_VOL),
-		PCORE(1, FxVol.Left) + 1,
-		PCORE(1, FxVol.Right) + 1,
-		PCORE(1, ExtVol.Left) + 1,
-		PCORE(1, ExtVol.Right) + 1,
-		PCORE(1, InpVol.Left) + 1,
-		PCORE(1, InpVol.Right) + 1,
-		PCORE(1, MasterVol.Left.Value) + 1,
-		PCORE(1, MasterVol.Right.Value) + 1,
+		PCORE(1, FxVol.Left),
+		PCORE(1, FxVol.Right),
+		PCORE(1, ExtVol.Left),
+		PCORE(1, ExtVol.Right),
+		PCORE(1, InpVol.Left),
+		PCORE(1, InpVol.Right),
+		PCORE(1, MasterVol.Left.Value),
+		PCORE(1, MasterVol.Right.Value),
 		PCORE(1, Revb.IIR_VOL),
 		PCORE(1, Revb.COMB1_VOL),
 		PCORE(1, Revb.COMB2_VOL),

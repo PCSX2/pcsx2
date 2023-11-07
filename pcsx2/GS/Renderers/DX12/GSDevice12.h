@@ -257,7 +257,7 @@ public:
 		std::vector<mcstr> mout;
 
 	public:
-		ShaderMacro(D3D_FEATURE_LEVEL fl);
+		ShaderMacro();
 		void AddMacro(const char* n, int d);
 		void AddMacro(const char* n, std::string d);
 		D3D_SHADER_MACRO* GetPtr(void);

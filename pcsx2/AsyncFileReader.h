@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,54 +16,56 @@
 #pragma once
 
 #ifdef _WIN32
-# include "common/RedtapeWindows.h"
+#include "common/RedtapeWindows.h"
 #elif defined(__linux__)
-#	include <libaio.h>
+#include <libaio.h>
 #elif defined(__POSIX__)
-#	include <aio.h>
+#include <aio.h>
 #endif
 #include <memory>
 #include <string>
 
+class Error;
+
 class AsyncFileReader
 {
 protected:
-	AsyncFileReader() : m_dataoffset(0), m_blocksize(0) {}
+	AsyncFileReader()
+		: m_dataoffset(0)
+		, m_blocksize(0)
+	{
+	}
 
 	std::string m_filename;
 
-	int m_dataoffset;
-	uint m_blocksize;
+	u32 m_dataoffset;
+	u32 m_blocksize;
 
 public:
-	virtual ~AsyncFileReader() {};
+	virtual ~AsyncFileReader(){};
 
-	virtual bool Open(std::string fileName)=0;
+	virtual bool Open(std::string filename, Error* error) = 0;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count)=0;
+	virtual int ReadSync(void* pBuffer, u32 sector, u32 count) = 0;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count)=0;
-	virtual int FinishRead(void)=0;
-	virtual void CancelRead(void)=0;
+	virtual void BeginRead(void* pBuffer, u32 sector, u32 count) = 0;
+	virtual int FinishRead() = 0;
+	virtual void CancelRead() = 0;
 
-	virtual void Close(void)=0;
+	virtual void Close() = 0;
 
-	virtual uint GetBlockCount(void) const=0;
+	virtual u32 GetBlockCount() const = 0;
 
-	virtual void SetBlockSize(uint bytes) {}
-	virtual void SetDataOffset(int bytes) {}
+	virtual void SetBlockSize(u32 bytes) {}
+	virtual void SetDataOffset(u32 bytes) {}
 
-	uint GetBlockSize() const { return m_blocksize; }
-
-	const std::string& GetFilename() const
-	{
-		return m_filename;
-	}
+	const std::string& GetFilename() const { return m_filename; }
+	u32 GetBlockSize() const { return m_blocksize; }
 };
 
-class FlatFileReader : public AsyncFileReader
+class FlatFileReader final : public AsyncFileReader
 {
-	DeclareNoncopyableObject( FlatFileReader );
+	DeclareNoncopyableObject(FlatFileReader);
 
 #ifdef _WIN32
 	HANDLE hOverlappedFile;
@@ -86,65 +88,66 @@ class FlatFileReader : public AsyncFileReader
 
 public:
 	FlatFileReader(bool shareWrite = false);
-	virtual ~FlatFileReader() override;
+	~FlatFileReader() override;
 
-	virtual bool Open(std::string fileName) override;
+	bool Open(std::string filenae, Error* error) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count) override;
+	int ReadSync(void* pBuffer, u32 sector, u32 count) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count) override;
-	virtual int FinishRead(void) override;
-	virtual void CancelRead(void) override;
+	void BeginRead(void* pBuffer, u32 sector, u32 count) override;
+	int FinishRead() override;
+	void CancelRead() override;
 
-	virtual void Close(void) override;
+	void Close() override;
 
-	virtual uint GetBlockCount(void) const override;
+	u32 GetBlockCount() const override;
 
-	virtual void SetBlockSize(uint bytes) override { m_blocksize = bytes; }
-	virtual void SetDataOffset(int bytes) override { m_dataoffset = bytes; }
+	void SetBlockSize(u32 bytes) override { m_blocksize = bytes; }
+	void SetDataOffset(u32 bytes) override { m_dataoffset = bytes; }
 };
 
-class MultipartFileReader : public AsyncFileReader
+class MultipartFileReader final : public AsyncFileReader
 {
-	DeclareNoncopyableObject( MultipartFileReader );
+	DeclareNoncopyableObject(MultipartFileReader);
 
 	static const int MaxParts = 8;
 
-	struct Part {
-		uint start;
-		uint end; // exclusive
+	struct Part
+	{
+		u32 start;
+		u32 end; // exclusive
 		bool isReading;
 		AsyncFileReader* reader;
 	} m_parts[MaxParts];
-	uint m_numparts;
+	u32 m_numparts;
 
-	uint GetFirstPart(uint lsn);
+	u32 GetFirstPart(u32 lsn);
 	void FindParts();
 
 public:
 	MultipartFileReader(AsyncFileReader* firstPart);
-	virtual ~MultipartFileReader() override;
+	~MultipartFileReader() override;
 
-	virtual bool Open(std::string fileName) override;
+	bool Open(std::string filename, Error* error) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count) override;
+	int ReadSync(void* pBuffer, u32 sector, u32 count) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count) override;
-	virtual int FinishRead(void) override;
-	virtual void CancelRead(void) override;
+	void BeginRead(void* pBuffer, u32 sector, u32 count) override;
+	int FinishRead() override;
+	void CancelRead() override;
 
-	virtual void Close(void) override;
+	void Close() override;
 
-	virtual uint GetBlockCount(void) const override;
+	u32 GetBlockCount() const override;
 
-	virtual void SetBlockSize(uint bytes) override;
+	void SetBlockSize(u32 bytes) override;
 
 	static AsyncFileReader* DetectMultipart(AsyncFileReader* reader);
 };
 
 class BlockdumpFileReader : public AsyncFileReader
 {
-	DeclareNoncopyableObject( BlockdumpFileReader );
+	DeclareNoncopyableObject(BlockdumpFileReader);
 
 	std::FILE* m_file;
 
@@ -160,21 +163,21 @@ class BlockdumpFileReader : public AsyncFileReader
 
 public:
 	BlockdumpFileReader();
-	virtual ~BlockdumpFileReader() override;
+	~BlockdumpFileReader() override;
 
-	virtual bool Open(std::string fileName) override;
+	bool Open(std::string filename, Error* error) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count) override;
+	int ReadSync(void* pBuffer, u32 sector, u32 count) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count) override;
-	virtual int FinishRead(void) override;
-	virtual void CancelRead(void) override;
+	void BeginRead(void* pBuffer, u32 sector, u32 count) override;
+	int FinishRead() override;
+	void CancelRead() override;
 
-	virtual void Close(void) override;
+	void Close() override;
 
-	virtual uint GetBlockCount(void) const override;
+	u32 GetBlockCount() const override;
 
 	static bool DetectBlockdump(AsyncFileReader* reader);
 
-	int GetBlockOffset() { return m_blockofs; }
+	s32 GetBlockOffset() { return m_blockofs; }
 };

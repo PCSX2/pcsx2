@@ -26,7 +26,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
 
 static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
 static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
@@ -39,7 +39,7 @@ static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
 static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
 static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
 
-AudioSettingsWidget::AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 {
@@ -251,23 +251,27 @@ void AudioSettingsWidget::volumeChanged(int value)
 
 		sif->SetIntValue("SPU2/Mixing", "FinalVolume", value);
 		sif->Save();
+
+		// There's two separate interfaces - one we're editing, and the active one.
+		// We need to reload the latter.
+		g_emu_thread->reloadGameSettings();
 	}
 	else
 	{
 		Host::SetBaseIntSettingValue("SPU2/Mixing", "FinalVolume", value);
 		Host::CommitBaseSettingChanges();
-	}
 
-	// Push through to emu thread since we're not applying.
-	if (QtHost::IsVMValid())
-	{
-		Host::RunOnCPUThread([value]() {
-			if (!VMManager::HasValidVM())
-				return;
+		// Push through to emu thread since we're not applying.
+		if (QtHost::IsVMValid())
+		{
+			Host::RunOnCPUThread([]() {
+				if (!VMManager::HasValidVM())
+					return;
 
-			EmuConfig.SPU2.FinalVolume = value;
-			SPU2::SetOutputVolume(value);
-		});
+				EmuConfig.SPU2.FinalVolume = Host::GetIntSettingValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME);
+				SPU2::SetOutputVolume(EmuConfig.SPU2.FinalVolume);
+			});
+		}
 	}
 
 	updateVolumeLabel();

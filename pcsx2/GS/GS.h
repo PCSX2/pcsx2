@@ -94,8 +94,9 @@ bool GSBeginCapture(std::string filename);
 void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
-void GSSetGameCRC(u32 crc);
+void GSGameChanged();
 void GSSetDisplayAlignment(GSDisplayAlignment alignment);
+bool GSHasDisplayWindow();
 void GSResizeDisplayWindow(int width, int height, float scale);
 void GSUpdateDisplayWindow();
 void GSSetVSyncMode(VsyncMode mode);
@@ -115,7 +116,7 @@ void GSgetTitleStats(std::string& info);
 void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float* display_x, float* display_y);
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config);
-void GSSwitchRenderer(GSRendererType new_renderer);
+void GSSwitchRenderer(GSRendererType new_renderer, GSInterlaceMode new_interlace);
 bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();

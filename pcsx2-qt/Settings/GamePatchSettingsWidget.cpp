@@ -19,15 +19,17 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/GamePatchSettingsWidget.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsWindow.h"
 
 #include "pcsx2/GameList.h"
 #include "pcsx2/Patch.h"
 
+#include "common/Assertions.h"
+
 #include <algorithm>
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-	const std::string& description, bool enabled, SettingsDialog* dialog, QWidget* parent)
+	const std::string& description, bool enabled, SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 	, m_dialog(dialog)
 	, m_name(name)
@@ -59,7 +61,7 @@ void GamePatchDetailsWidget::onEnabledStateChanged(int state)
 	g_emu_thread->reloadGameSettings();
 }
 
-GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);

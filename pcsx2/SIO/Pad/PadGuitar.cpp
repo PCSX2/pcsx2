@@ -51,6 +51,19 @@ static const SettingInfo s_settings[] = {
 const Pad::ControllerInfo PadGuitar::ControllerInfo = {Pad::ControllerType::Guitar, "Guitar",
 	TRANSLATE_NOOP("Pad", "Guitar"), s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
 
+void PadGuitar::ConfigLog()
+{
+	const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
+
+	// AL: Analog Light (is it turned on right now)
+	// AB: Analog Button (is it useable or is it locked in its current state)
+	Console.WriteLn(fmt::format("[Pad] Guitar Config Finished - P{0}/S{1} - AL: {2} - AB: {3}",
+		port + 1,
+		slot + 1,
+		(this->analogLight ? "On" : "Off"),
+		(this->analogLocked ? "Locked" : "Usable")));
+}
+
 u8 PadGuitar::Mystery(u8 commandByte)
 {
 	switch (this->commandBytesReceived)
@@ -124,12 +137,7 @@ u8 PadGuitar::Config(u8 commandByte)
 			if (this->isInConfig)
 			{
 				this->isInConfig = false;
-				const auto [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
-				Console.WriteLn("[Pad] Game finished pad setup for port %d / slot %d - Analogs: %s - Analog Button: %s - Pressure: Not available on guitars",
-					port + 1,
-					slot + 1,
-					(this->analogLight ? "On" : "Off"),
-					(this->analogLocked ? "Locked" : "Usable"));
+				this->ConfigLog();
 			}
 			else
 			{
@@ -243,21 +251,10 @@ u8 PadGuitar::VibrationMap(u8 commandByte)
 PadGuitar::PadGuitar(u8 unifiedSlot)
 	: PadBase(unifiedSlot)
 {
-	this->currentMode = Pad::Mode::DIGITAL;
-	Init();
+	currentMode = Pad::Mode::DIGITAL;
 }
 
 PadGuitar::~PadGuitar() = default;
-
-void PadGuitar::Init()
-{
-	this->buttons = 0xffffffff;
-	this->whammy = Pad::ANALOG_NEUTRAL_POSITION;
-	this->analogLight = false;
-	this->analogLocked = false;
-	this->whammyAxisScale = 1.0f;
-	this->whammyDeadzone = 0.0f;
-}
 
 Pad::ControllerType PadGuitar::GetType() const
 {
@@ -337,11 +334,6 @@ void PadGuitar::SetAxisScale(float deadzone, float scale)
 	this->whammyAxisScale = scale;
 }
 
-void PadGuitar::SetTriggerScale(float deadzone, float scale)
-{
-
-}
-
 float PadGuitar::GetVibrationScale(u32 motor) const
 {
 	return 0;
@@ -407,7 +399,6 @@ bool PadGuitar::Freeze(StateWrapper& sw)
 		return false;
 
 	// Private PadGuitar members
-	sw.Do(&buttons);
 	sw.Do(&whammy);
 	sw.Do(&analogLight);
 	sw.Do(&analogLocked);

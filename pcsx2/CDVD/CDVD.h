@@ -28,7 +28,7 @@ class IsoReader;
 #define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
 #define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
 
-static __fi s32 msf_to_lsn(u8* Time)
+static __fi s32 msf_to_lsn(const u8* Time) noexcept
 {
 	u32 lsn;
 
@@ -38,7 +38,7 @@ static __fi s32 msf_to_lsn(u8* Time)
 	return lsn;
 }
 
-static __fi s32 msf_to_lba(u8 m, u8 s, u8 f)
+static __fi s32 msf_to_lba(const u8 m, const u8 s, const u8 f) noexcept
 {
 	u32 lsn;
 	lsn = f;
@@ -47,7 +47,7 @@ static __fi s32 msf_to_lba(u8 m, u8 s, u8 f)
 	return lsn;
 }
 
-static __fi void lsn_to_msf(u8* Time, s32 lsn)
+static __fi void lsn_to_msf(u8* Time, s32 lsn) noexcept
 {
 	u8 m, s, f;
 
@@ -61,7 +61,7 @@ static __fi void lsn_to_msf(u8* Time, s32 lsn)
 	Time[2] = itob(f);
 }
 
-static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f)
+static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f) noexcept
 {
 	lba += 150;
 	*m = lba / (60 * 75);
@@ -111,22 +111,22 @@ struct cdvdStruct
 	u8 IntrStat;
 	u8 Status;
 	u8 StatusSticky;
-	u8 Type;
+	u8 DiscType;
 	u8 sCommand;
 	u8 sDataIn;
 	u8 sDataOut;
 	u8 HowTo;
 
-	u8 NCMDParam[16];
-	u8 SCMDParam[16];
-	u8 SCMDResult[16];
+	u8 NCMDParamBuff[16];
+	u8 SCMDParamBuff[16];
+	u8 SCMDResultBuff[16];
 
-	u8 NCMDParamC;
-	u8 NCMDParamP;
-	u8 SCMDParamC;
-	u8 SCMDParamP;
-	u8 SCMDResultC;
-	u8 SCMDResultP;
+	u8 NCMDParamCnt;
+	u8 NCMDParamPos;
+	u8 SCMDParamCnt;
+	u8 SCMDParamPos;
+	u8 SCMDResultCnt;
+	u8 SCMDResultPos;
 
 	u8 CBlockIndex;
 	u8 COffset;
@@ -138,17 +138,17 @@ struct cdvdStruct
 	int RTCcount;
 	cdvdRTC RTC;
 
-	u32 Sector;
-	int nSectors;
-	int Readed;  // change to bool. --arcum42
+	u32 CurrentSector;
+	int SectorCnt;
+	int SeekCompleted;  // change to bool. --arcum42
 	int Reading; // same here.
 	int WaitingDMA;
 	int ReadMode;
 	int BlockSize; // Total bytes transfered at 1x speed
 	int Speed;
-	int RetryCnt;
-	int RetryCntP;
-	int RErr;
+	int RetryCntMax;
+	int CurrentRetryCnt;
+	int ReadErr;
 	int SpindlCtrl;
 
 	u8 Key[16];
@@ -167,6 +167,7 @@ struct cdvdStruct
 	u32 SeekToSector; // Holds the destination sector during seek operations.
 	u32 MaxSector;    // Current disc max sector.
 	u32 ReadTime;     // Avg. time to read one block of data (in Iop cycles)
+	u32 RotSpeed;     // Rotational Speed
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 	cdvdTrayTimer Tray;
 	u8 nextSectorsBuffered;

@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
 struct VS_INPUT
 {
 	float4 p : POSITION;
@@ -166,8 +164,7 @@ PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 
 	// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
 	uint d = uint(sample_c(input.t).r * exp2(32.0f));
-	output.c = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) / float4(32.0f, 32.0f, 32.0f, 1.0f);
-
+	output.c = float4(uint4(d << 3, d >> 2, d >> 7, d >> 8) & uint4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
 	return output;
 }
 
@@ -413,5 +410,3 @@ float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
 		c = float(0x7FFFFFFF);
 	return c;
 }
-
-#endif

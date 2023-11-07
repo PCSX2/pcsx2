@@ -267,7 +267,7 @@ namespace usb_eyetoy
 			return devList;
 		}
 
-		static int v4l_open(std::string selectedDevice)
+		static int v4l_open(const std::string& selectedDevice)
 		{
 			char dev_name[64];
 			struct v4l2_capability cap;

@@ -25,7 +25,7 @@
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QListWidget>
 
-class SettingsDialog;
+class SettingsWindow;
 
 struct AvailableMcdInfo;
 
@@ -36,7 +36,7 @@ public:
 	explicit MemoryCardListWidget(QWidget* parent);
 	~MemoryCardListWidget() override;
 
-	void refresh(SettingsDialog* dialog);
+	void refresh(SettingsWindow* dialog);
 
 protected:
 	void mousePressEvent(QMouseEvent* event) override;
@@ -78,7 +78,7 @@ public:
 		MAX_SLOTS = 2
 	};
 
-	MemoryCardSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~MemoryCardSettingsWidget();
 
 protected:
@@ -115,7 +115,7 @@ private:
 	void renameCard();
 	void convertCard();
 
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 	Ui::MemoryCardSettingsWidget m_ui;
 
 	std::array<SlotGroup, MAX_SLOTS> m_slots;

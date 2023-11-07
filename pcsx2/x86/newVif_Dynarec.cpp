@@ -24,42 +24,19 @@
 #include "common/StringUtil.h"
 #include "fmt/core.h"
 
-static void recReset(int idx)
+void dVifReset(int idx)
 {
 	nVif[idx].vifBlocks.reset();
 
-	nVif[idx].recReserve->Reset();
-
-	nVif[idx].recWritePtr = nVif[idx].recReserve->GetPtr();
-}
-
-void dVifReserve(int idx)
-{
-	if (nVif[idx].recReserve)
-		return;
-	
 	const size_t offset = idx ? HostMemoryMap::VIF1recOffset : HostMemoryMap::VIF0recOffset;
-	nVif[idx].recReserve = new RecompiledCodeReserve(StringUtil::StdStringFromFormat("VIF%u Unpack Recompiler Cache", idx));
-	nVif[idx].recReserve->Assign(GetVmMemory().CodeMemory(), offset, 8 * _1mb);
-}
-
-void dVifReset(int idx)
-{
-	pxAssertDev(nVif[idx].recReserve, "Dynamic VIF recompiler reserve must be created prior to VIF use or reset!");
-
-	recReset(idx);
-}
-
-void dVifClose(int idx)
-{
-	if (nVif[idx].recReserve)
-		nVif[idx].recReserve->Reset();
+	const size_t size = idx ? HostMemoryMap::VIF1recSize : HostMemoryMap::VIF0recSize;
+	nVif[idx].recWritePtr = SysMemory::GetCodePtr(offset);
+	nVif[idx].recEndPtr = nVif[idx].recWritePtr + (size - _256kb);
 }
 
 void dVifRelease(int idx)
 {
-	dVifClose(idx);
-	safe_delete(nVif[idx].recReserve);
+	nVif[idx].vifBlocks.clear();
 }
 
 VifUnpackSSE_Dynarec::VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlock& vifBlock_)
@@ -368,11 +345,11 @@ _vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill)
 	nVifStruct& v = nVif[idx];
 
 	// Check size before the compilation
-	if (v.recWritePtr > (v.recReserve->GetPtrEnd() - _256kb))
+	if (v.recWritePtr >= v.recEndPtr)
 	{
 		DevCon.WriteLn("nVif Recompiler Cache Reset! [0x%016" PRIXPTR " > 0x%016" PRIXPTR "]",
-			v.recWritePtr, v.recReserve->GetPtrEnd());
-		recReset(idx);
+			v.recWritePtr, v.recEndPtr);
+		dVifReset(idx);
 	}
 
 	// Compile the block now

@@ -283,6 +283,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 						m_latest_version = data_object["version"].toString();
 						m_latest_version_timestamp = QDateTime::fromString(data_object["publishedAt"].toString(), QStringLiteral("yyyy-MM-ddThh:mm:ss.zzzZ"));
 						m_download_url = best_asset["url"].toString();
+						m_download_size = best_asset["size"].toInt();
 						found_update_info = true;
 					}
 				}
@@ -390,7 +391,6 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
 					tr("<h2>Settings Warning</h2><p>Installing this update will reset your program configuration. Please note "
 					   "that you will have to reconfigure your settings after this update.</p>"));
 			}
-
 			m_ui.updateNotes->setText(changes_html);
 		}
 		else
@@ -519,6 +519,7 @@ void AutoUpdaterDialog::checkIfUpdateNeeded()
 
 	m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(getCurrentVersion()).arg(getCurrentVersionDate()));
 	m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_version).arg(m_latest_version_timestamp.toString()));
+	m_ui.downloadSize->setText(tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1048576.0, 0, 'f', 2));
 	m_ui.updateNotes->setText(tr("Loading..."));
 	queueGetChanges();
 	exec();
@@ -788,7 +789,9 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDi
 		progress.setValue(progress.maximum());
 		if (untar.exitCode() != EXIT_SUCCESS)
 		{
-			reportError("Failed to unpack update (tar exited with %u)", untar.exitCode());
+			QByteArray msg = untar.readAllStandardError();
+			const char* join = msg.isEmpty() ? "" : ": ";
+			reportError("Failed to unpack update (tar exited with %u%s%s)", untar.exitCode(), join, msg.toStdString().c_str());
 			return false;
 		}
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,26 +17,29 @@
 #include <QtWidgets/QWidget>
 #include "ui_AchievementSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class AchievementSettingsWidget : public QWidget
 {
-  Q_OBJECT
+	Q_OBJECT
 
 public:
-  explicit AchievementSettingsWidget(SettingsDialog* dialog, QWidget* parent);
-  ~AchievementSettingsWidget();
+	explicit AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	~AchievementSettingsWidget();
 
 private Q_SLOTS:
-  void updateEnableState();
-  void onChallengeModeStateChanged();
-  void onLoginLogoutPressed();
-  void onViewProfilePressed();
-  void onAchievementsRefreshed(quint32 id, const QString& game_info_string, quint32 total, quint32 points);
+	void updateEnableState();
+	void onHardcoreModeStateChanged();
+	void onAchievementsNotificationDurationSliderChanged();
+	void onLeaderboardsNotificationDurationSliderChanged();
+	void onLoginLogoutPressed();
+	void onViewProfilePressed();
+	void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
 
 private:
-  void updateLoginState();
+	void updateLoginState();
 
-  Ui::AchievementSettingsWidget m_ui;
-  SettingsDialog* m_dialog;
+	Ui::AchievementSettingsWidget m_ui;
+
+	SettingsWindow* m_dialog;
 };

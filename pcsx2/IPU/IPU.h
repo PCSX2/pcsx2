@@ -24,7 +24,7 @@
 
 #define IPU_INT_TO( cycles )  if(!(cpuRegs.interrupt & (1<<4))) CPU_INT( DMAC_TO_IPU, cycles )
 #define IPU_INT_FROM( cycles )  CPU_INT( DMAC_FROM_IPU, cycles )
-
+#define IPU_INT_PROCESS( cycles ) if(!(cpuRegs.interrupt & (1 << IPU_PROCESS))) CPU_INT( IPU_PROCESS, cycles )
 //
 // Bitfield Structures
 //
@@ -132,7 +132,7 @@ struct alignas(16) tIPU_BP {
 				// be possible -- so if the fill fails we'll only return 0 if we don't have enough
 				// remaining bits in the FIFO to fill the request.
 				// Used to do ((FP!=0) && (BP + bits) <= 128) if we get here there's defo not enough data now though
-
+				IPUCoreStatus.WaitingOnIPUTo = true;
 				return false;
 			}
 
@@ -293,8 +293,6 @@ extern bool EnableFMV;
 
 alignas(16) extern tIPU_cmd ipu_cmd;
 extern uint eecount_on_last_vdec;
-extern bool CommandExecuteQueued;
-extern u32 ProcessedData;
 
 extern void ipuReset();
 

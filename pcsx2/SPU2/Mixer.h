@@ -16,5 +16,3 @@
 #pragma once
 
 extern void Mix();
-extern s32 clamp_mix(s32 x);
-extern StereoOut32 clamp_mix(StereoOut32 sample);
