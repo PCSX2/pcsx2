@@ -18,7 +18,7 @@
 
 namespace Ps2MemSize
 {
-	static constexpr u32 MainRam = _128mb;      // 32 MB main memory.
+	static constexpr u32 MainRam = _32mb + _1mb;      // 32 MB + 1 MB main memory.
 	static constexpr u32 ExtraRam = _1mb * 96; // 32+96 MB devkit memory.
 	static constexpr u32 Rom = _1mb * 4;       // 4 MB main rom
 	static constexpr u32 Rom1 = _1mb * 4;      // DVD player

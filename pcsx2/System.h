@@ -34,7 +34,6 @@ namespace HostMemoryMap
 	//////////////////////////////////////////////////////////////////////////
 	// Main
 	//////////////////////////////////////////////////////////////////////////
-	static const u32 MainSize = 0x14000000;
 
 	// PS2 main memory, SPR, and ROMs (approximately 138.5MB, but we round up to 139MB for simplicity).
 	static constexpr u32 EEmemOffset = 0x00000000;
