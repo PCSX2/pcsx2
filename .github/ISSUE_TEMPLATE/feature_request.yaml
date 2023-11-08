@@ -6,6 +6,15 @@ labels: ["Enhancement / Feature Request"]
 # assignees:
 #   - octocat
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Important: Read First
+
+        Please make an effort to make sure your issue isn't already reported.
+
+        Do not create issues involving software piracy of BIOS or ISO files, our rules specifically prohibit this and your issue will be closed.
+
   - type: textarea
     id: desc
     attributes:
