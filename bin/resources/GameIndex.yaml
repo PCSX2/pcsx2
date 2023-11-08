@@ -29657,8 +29657,8 @@ SLPM-55244:
     halfPixelOffset: 2 # Fixes blurriness.
     getSkipCount: "GSC_NFSUndercover"
 SLPM-55245:
-  name: ひまわり - Pebble in the Sky -
-  name-sort: ひまわり - Pebble in the Sky -
+  name: ひまわり -Pebble in the Sky-
+  name-sort: ひまわり -Pebble in the Sky-
   name-en: "Himawari - Pebble in the Sky"
   region: "NTSC-J"
 SLPM-55246:
