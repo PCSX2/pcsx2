@@ -101,6 +101,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.txtFuncSearch, &QLineEdit::textChanged, [this] { updateFunctionList(); });
 
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
+	connect(m_ui.btnReset, &QPushButton::clicked, this, &CpuWidget::onResetButtonClicked);
 	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) { m_ui.memoryviewWidget->gotoAddress(item->data(256).toUInt()); });
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, [this](int i) {
 		if (i < 4)
@@ -816,114 +817,151 @@ void CpuWidget::onStackListDoubleClick(const QModelIndex& index)
 }
 
 template <typename T>
-static std::vector<u32> searchWorker(DebugInterface* cpu, u32 start, u32 end, T value)
+static bool checkAddressValueMatches(DebugInterface* cpu, u32 addr, T value)
 {
-	std::vector<u32> hitAddresses;
-	for (u32 addr = start; addr < end; addr += sizeof(T))
+	T val = 0;
+	switch (sizeof(T))
 	{
-		T val = 0;
-		switch (sizeof(T))
+		case sizeof(u8):
+			val = cpu->read8(addr);
+			break;
+		case sizeof(u16):
+			val = cpu->read16(addr);
+			break;
+		case sizeof(u32):
 		{
-			case sizeof(u8):
-				val = cpu->read8(addr);
-				break;
-			case sizeof(u16):
-				val = cpu->read16(addr);
-				break;
-			case sizeof(u32):
+			if (std::is_same_v<T, float>)
 			{
-				if (std::is_same_v<T, float>)
+				const float fTop = value + 0.00001f;
+				const float fBottom = value - 0.00001f;
+				const float memValue = std::bit_cast<float, u32>(cpu->read32(addr));
+				if (fBottom < memValue && memValue < fTop)
 				{
-					const float fTop = value + 0.00001f;
-					const float fBottom = value - 0.00001f;
-					const float memValue = std::bit_cast<float, u32>(cpu->read32(addr));
-					if (fBottom < memValue && memValue < fTop)
-					{
-						hitAddresses.emplace_back(addr);
-					}
-					continue;
+					return true;
 				}
-
-				val = cpu->read32(addr);
-				break;
-			}
-			case sizeof(u64):
-			{
-				if (std::is_same_v<T, double>)
-				{
-					const double dTop = value + 0.00001f;
-					const double dBottom = value - 0.00001f;
-					const double memValue = std::bit_cast<double, u64>(cpu->read64(addr));
-					if (dBottom < memValue && memValue < dTop)
-					{
-						hitAddresses.emplace_back(addr);
-					}
-					continue;
-				}
-
-				val = cpu->read64(addr);
-				break;
 			}
 
-			default:
-				Console.Error("Debugger: Unknown type when doing memory search!");
-				return hitAddresses;
-				break;
+			val = cpu->read32(addr);
+			break;
+		}
+		case sizeof(u64):
+		{
+			if (std::is_same_v<T, double>)
+			{
+				const double dTop = value + 0.00001f;
+				const double dBottom = value - 0.00001f;
+				const double memValue = std::bit_cast<double, u64>(cpu->read64(addr));
+				if (dBottom < memValue && memValue < dTop)
+				{
+					return true;
+				}
+			}
+
+			val = cpu->read64(addr);
+			break;
 		}
 
-		if (val == value)
+		default:
+			Console.Error("Debugger: Unknown type when doing memory search!");
+			return false;
+			break;
+	}
+	
+	return val == value;
+}
+
+template <typename T>
+static std::vector<u32> searchWorker(DebugInterface* cpu, std::vector<u32> searchAddresses, u32 start, u32 end, T value)
+{
+	std::vector<u32> hitAddresses;
+	const bool isSearchingRange = searchAddresses.size() <= 0;
+	if (isSearchingRange)
+	{
+		for (u32 addr = start; addr < end; addr += sizeof(T))
 		{
-			hitAddresses.push_back(addr);
+			if (checkAddressValueMatches(cpu, addr, value))
+			{
+				hitAddresses.push_back(addr);
+			}
+		}
+	}
+	else
+	{
+		for (const u32 addr : searchAddresses)
+		{
+			if (checkAddressValueMatches(cpu, addr, value))
+			{
+				hitAddresses.push_back(addr);
+			}
+		
 		}
 	}
 	return hitAddresses;
 }
 
-static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, u32 start, u32 end, QByteArray value)
+static bool compareByteArrayAtAddress(DebugInterface* cpu, u32 addr, QByteArray value)
 {
-	std::vector<u32> hitAddresses;
-	for (u32 addr = start; addr < end; addr += 1)
+	for (qsizetype i = 0; i < value.length(); i++)
 	{
-		bool hit = true;
-		for (qsizetype i = 0; i < value.length(); i++)
+		if (static_cast<char>(cpu->read8(addr + i)) != value[i])
 		{
-			if (static_cast<char>(cpu->read8(addr + i)) != value[i])
+			return false;
+		}
+	}
+	return true;
+}
+
+static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u32> searchAddresses, u32 start, u32 end, QByteArray value)
+{
+
+	std::vector<u32> hitAddresses;
+	const bool isSearchingRange = searchAddresses.size() <= 0;
+	if (isSearchingRange)
+	{
+		for (u32 addr = start; addr < end; addr += 1)
+		{
+			if (compareByteArrayAtAddress(cpu, addr, value))
 			{
-				hit = false;
-				break;
+				hitAddresses.emplace_back(addr);
+				addr += value.length() - 1;
 			}
 		}
-		if (hit)
+	}
+	else
+	{
+		for (u32 addr : searchAddresses)
 		{
-			hitAddresses.emplace_back(addr);
-			addr += value.length() - 1;
+			if (compareByteArrayAtAddress(cpu, addr, value))
+			{
+				hitAddresses.emplace_back(addr);
+			}
 		}
 	}
 	return hitAddresses;
 }
 
-std::vector<u32> startWorker(DebugInterface* cpu, int type, u32 start, u32 end, QString value, int base)
+std::vector<u32> startWorker(DebugInterface* cpu, int type, std::vector<u32> searchAddresses, u32 start, u32 end, QString value, int base)
 {
 
 	const bool isSigned = value.startsWith("-");
 	switch (type)
 	{
 		case 0:
-			return isSigned ? searchWorker<s8>(cpu, start, end, value.toShort(nullptr, base)) : searchWorker<u8>(cpu, start, end, value.toUShort(nullptr, base));
+			return isSigned ? searchWorker<s8>(cpu, searchAddresses, start, end, value.toShort(nullptr, base)) : searchWorker<u8>(cpu, searchAddresses, start, end, value.toUShort(nullptr, base));
 		case 1:
-			return isSigned ? searchWorker<s16>(cpu, start, end, value.toShort(nullptr, base)) : searchWorker<u16>(cpu, start, end, value.toUShort(nullptr, base));
+			return isSigned ? searchWorker<s16>(cpu, searchAddresses, start, end, value.toShort(nullptr, base)) : searchWorker<u16>(cpu, searchAddresses, start, end, value.toUShort(nullptr, base));
 		case 2:
-			return isSigned ? searchWorker<s32>(cpu, start, end, value.toInt(nullptr, base)) : searchWorker<u32>(cpu, start, end, value.toUInt(nullptr, base));
+			return isSigned ? searchWorker<s32>(cpu, searchAddresses, start, end, value.toInt(nullptr, base)) : searchWorker<u32>(cpu, searchAddresses, start, end, value.toUInt(nullptr, base));
 		case 3:
-			return isSigned ? searchWorker<s64>(cpu, start, end, value.toLong(nullptr, base)) : searchWorker<s64>(cpu, start, end, value.toULongLong(nullptr, base));
+			return isSigned ? searchWorker<s64>(cpu, searchAddresses, start, end, value.toLong(nullptr, base)) : searchWorker<s64>(cpu, searchAddresses, start, end, value.toULongLong(nullptr, base));
 		case 4:
-			return searchWorker<float>(cpu, start, end, value.toFloat());
+			return searchWorker<float>(cpu, searchAddresses, start, end, value.toFloat());
 		case 5:
-			return searchWorker<double>(cpu, start, end, value.toDouble());
+			return searchWorker<double>(cpu, searchAddresses, start, end, value.toDouble());
 		case 6:
-			return searchWorkerByteArray(cpu, start, end, value.toUtf8());
+			return searchWorkerByteArray(cpu, searchAddresses, start, end, value.toUtf8());
 		case 7:
-			return searchWorkerByteArray(cpu, start, end, QByteArray::fromHex(value.toUtf8()));
+			return searchWorkerByteArray(cpu, searchAddresses, start, end, QByteArray::fromHex(value.toUtf8()));
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
 			break;
@@ -1030,10 +1068,60 @@ void CpuWidget::onSearchButtonClicked()
 			item->setData(256, address);
 			m_ui.listSearchResults->addItem(item);
 		}
+
+		if (m_ui.listSearchResults->count() <= 0)
+		{
+			m_ui.btnNextSearch->setDisabled(true);
+		}
 	});
 
+	setSearchButtonToNextSearch();
 	m_ui.btnSearch->setDisabled(true);
+	std::vector<u32> addresses;
+	if (!m_firstSearch)
+	{
+		addresses = getAddressesOfSearchMatches();
+	}
 	QFuture<std::vector<u32>> workerFuture =
-		QtConcurrent::run(startWorker, &m_cpu, searchType, searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
+		QtConcurrent::run(startWorker, &m_cpu, searchType, addresses, searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
 	workerWatcher->setFuture(workerFuture);
+}
+
+std::vector<u32> CpuWidget::getAddressesOfSearchMatches() {
+	std::vector<u32> convertedAddresses;
+	QStringList addresses;
+	for (auto i = 0; i < m_ui.listSearchResults->count(); i++)
+	{
+		addresses.append(m_ui.listSearchResults->item(i)->text());
+	}
+
+	bool ok;
+	for (QString address : addresses)
+	{
+		u32 convertedAddress = address.toUInt(&ok, 16);
+		if (ok)
+		{
+			convertedAddresses.push_back(convertedAddress);
+		}
+	}
+	return convertedAddresses;
+}
+
+void CpuWidget::setSearchButtonToNextSearch() {
+	m_firstSearch = false;
+	m_ui.btnSearch->setText("Next Search");
+	m_ui.btnReset->setVisible(true);
+}
+
+void CpuWidget::setSearchButtonToFirstSearch() {
+	m_firstSearch = true;
+	m_ui.btnSearch->setText("Search");
+	m_ui.btnReset->setVisible(false);
+}
+
+void CpuWidget::onResetButtonClicked()
+{
+	m_ui.listSearchResults->clear();
+	m_ui.btnReset->setVisible(false);
+	setSearchButtonToFirstSearch();
 }

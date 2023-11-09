@@ -94,6 +94,10 @@ public slots:
 	};
 
 	void onSearchButtonClicked();
+	std::vector<u32> getAddressesOfSearchMatches();
+	void setSearchButtonToNextSearch();
+	void setSearchButtonToFirstSearch();
+	void onResetButtonClicked();
 
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
@@ -113,4 +117,5 @@ private:
 
 	bool m_demangleFunctions = true;
 	bool m_moduleView = true;
+	bool m_firstSearch = true;
 };
