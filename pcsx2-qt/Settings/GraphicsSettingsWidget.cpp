@@ -671,8 +671,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	// Advanced tab
 	{
-		dialog->registerWidgetHelp(m_ui.overrideTextureBarriers, tr("Override Texture Barriers"), tr("Automatic (Default)"), tr(""));
-
 		dialog->registerWidgetHelp(m_ui.gsDumpCompression, tr("GS Dump Compression"), tr("Zstandard (zst)"),
 			tr("Change the compression algorithm used when creating a GS dump."));
 
@@ -686,12 +684,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.exclusiveFullscreenControl, tr("Allow Exclusive Fullscreen"), tr("Automatic (Default)"),
 			tr("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.<br>"
 			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."));
-
-		dialog->registerWidgetHelp(m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"), tr(""));
-
-		dialog->registerWidgetHelp(m_ui.disableDualSource, tr("Disable Dual-Source Blending"), tr("Unchecked"), tr(""));
-
-		dialog->registerWidgetHelp(m_ui.disableFramebufferFetch, tr("Disable Framebuffer Fetch"), tr("Unchecked"), tr(""));
 
 		dialog->registerWidgetHelp(m_ui.skipPresentingDuplicateFrames, tr("Skip Presenting Duplicate Frames"), tr("Unchecked"),
 			tr("Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still "
