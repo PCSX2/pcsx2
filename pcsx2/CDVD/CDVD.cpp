@@ -58,6 +58,12 @@ static __fi void SetSCMDResultSize(u8 size) noexcept
 	memset(&cdvd.SCMDResultBuff[0], 0, size);
 }
 
+static void CDVDCancelReadAhead()
+{
+	cdvd.nextSectorsBuffered = 0;
+	psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
+}
+
 static void CDVDSECTORREADY_INT(u32 eCycle)
 {
 	if (psxRegs.interrupt & (1 << IopEvt_CdvdSectorReady))
@@ -1141,6 +1147,18 @@ int cdvdReadSector()
 // inlined due to being referenced in only one place.
 __fi void cdvdActionInterrupt()
 {
+	if (cdvd.AbortRequested)
+	{
+		Console.Warning("Action Abort");
+		cdvd.Error = 0x1; // Abort Error
+		cdvdUpdateReady(CDVD_DRIVE_READY | CDVD_DRIVE_ERROR);
+		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
+		cdvd.WaitingDMA = false;
+		CDVDCancelReadAhead();
+		cdvdSetIrq();
+		return;
+	}
+
 	switch (cdvd.Action)
 	{
 		case cdvdAction_Seek:
@@ -1174,8 +1192,7 @@ __fi void cdvdActionInterrupt()
 			break;
 	}
 	
-	if(cdvd.Action != cdvdAction_Seek)
-		cdvd.Action = cdvdAction_None;
+	cdvd.Action = cdvdAction_None;
 	cdvdSetIrq();
 }
 
@@ -1229,6 +1246,7 @@ __fi void cdvdReadInterrupt()
 			cdvdUpdateReady(CDVD_DRIVE_READY | CDVD_DRIVE_ERROR);
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.WaitingDMA = false;
+			CDVDCancelReadAhead();
 			cdvdSetIrq();
 			return;
 		}
@@ -1332,10 +1350,8 @@ __fi void cdvdReadInterrupt()
 		if (cdvd.SectorCnt <= 0)
 		{
 			cdvdSetIrq();
-			//psxHu32(0x1070) |= 0x4;
-			iopIntcIrq(2);
-			cdvdUpdateReady(CDVD_DRIVE_READY);
 
+			cdvdUpdateReady(CDVD_DRIVE_READY);
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			return;
 		}
@@ -1363,7 +1379,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 
 	uint delta = abs(static_cast<s32>(cdvd.SeekToSector - cdvd.CurrentSector));
 	uint seektime = 0;
-	bool isSeeking = cdvd.nCommand == N_CD_SEEK;
+	bool isSeeking = false;
 
 	cdvdUpdateReady(CDVD_DRIVE_BUSY);
 	cdvd.Reading = 1;
@@ -1386,7 +1402,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 		const float new_rpm = (psx_clk_cycles / static_cast<float>(cdvd.RotSpeed)) * 60.0f;
 		// A rough cycles per RPM change based on 333ms for a full spin up.
 		drive_speed_change_cycles = (psx_clk_cycles / 1000.0f) * (0.054950495049505f * std::abs(new_rpm - old_rpm));
-		psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
+		CDVDCancelReadAhead();
 	}
 	cdvdUpdateStatus(CDVD_STATUS_SEEK);
 
@@ -1401,8 +1417,8 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 	else if ((tbl_ContigiousSeekDelta[mode] == 0) || (delta >= tbl_ContigiousSeekDelta[mode]))
 	{
 		// Select either Full or Fast seek depending on delta:
-		psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
-		cdvd.nextSectorsBuffered = 0;
+		CDVDCancelReadAhead();
+
 		if (delta >= tbl_FastSeekDelta[mode])
 		{
 			// Full Seek
@@ -1458,8 +1474,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 			{
 				if (delta >= cdvd.nextSectorsBuffered)
 				{
-					psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
-					cdvd.nextSectorsBuffered = 0;
+					CDVDCancelReadAhead();
 				}
 				else
 					cdvd.nextSectorsBuffered -= delta;
@@ -1477,8 +1492,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 		if (cdvd.Action == cdvdAction_Seek)
 		{
 			seektime += rotationalLatency;
-			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
-			cdvd.nextSectorsBuffered = 0;
+			CDVDCancelReadAhead();
 		}
 		else
 		{
@@ -1500,9 +1514,6 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 	{
 		CDVDSECTORREADY_INT(seektime);
 	}
-	// Clear the action on the following command, so we can rotate after seek.
-	if (cdvd.nCommand != N_CD_SEEK)
-		cdvd.Action = cdvdAction_None;
 
 	return seektime;
 }
@@ -1864,7 +1875,6 @@ static void cdvdWrite04(u8 rt)
 
 			// Seek to sector zero.  The cdvdStartSeek function will simulate
 			// spinup times if needed.
-			cdvdUpdateReady(CDVD_DRIVE_BUSY);
 			DevCon.Warning("CdStandby : %d", rt);
 			CDVD_INT(cdvdStartSeek(0, static_cast<CDVD_MODE_TYPE>(cdvdIsDVD()), false));
 			// Might not seek, but makes sense since it does move to the inner most track
@@ -1876,8 +1886,7 @@ static void cdvdWrite04(u8 rt)
 		case N_CD_STOP: // CdStop
 			DevCon.Warning("CdStop : %d", rt);
 			cdvdUpdateReady(CDVD_DRIVE_BUSY);
-			cdvd.nextSectorsBuffered = 0;
-			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
+			CDVDCancelReadAhead();
 			cdvdUpdateStatus(CDVD_STATUS_SPIN);
 			CDVD_INT(PSXCLK / 6); // 166ms delay?
 			cdvd.Action = cdvdAction_Stop;
@@ -1896,7 +1905,6 @@ static void cdvdWrite04(u8 rt)
 			break;
 
 		case N_CD_SEEK: // CdSeek
-			cdvdUpdateReady(CDVD_DRIVE_BUSY);
 			cdvd.Action = cdvdAction_Seek; // Have to do this first, the StartSeek relies on it
 			CDVD_INT(cdvdStartSeek(GetBufferU32(&cdvd.NCMDParamBuff[0], 0), static_cast<CDVD_MODE_TYPE>(cdvdIsDVD()), false));
 			cdvdUpdateStatus(CDVD_STATUS_SEEK);
@@ -2010,7 +2018,7 @@ static void cdvdWrite04(u8 rt)
 					cdvd.SeekToSector, cdvd.SectorCnt, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SpindlCtrl);
 
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, static_cast<CDVD_MODE_TYPE>(cdvdIsDVD()), !(cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) && (oldSpindleCtrl & CDVD_SPINDLE_CAV)));
-			cdvdUpdateReady(CDVD_DRIVE_BUSY);
+
 			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
@@ -2108,7 +2116,7 @@ static void cdvdWrite04(u8 rt)
 					cdvd.CurrentSector, cdvd.SectorCnt, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SpindlCtrl);
 
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM, !(cdvd.SpindlCtrl& CDVD_SPINDLE_CAV) && (oldSpindleCtrl& CDVD_SPINDLE_CAV)));
-			cdvdUpdateReady(CDVD_DRIVE_BUSY);
+
 			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
@@ -2203,7 +2211,7 @@ static void cdvdWrite04(u8 rt)
 					cdvd.SeekToSector, cdvd.SectorCnt, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SpindlCtrl);
 
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_DVDROM, !(cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) && (oldSpindleCtrl& CDVD_SPINDLE_CAV)));
-			cdvdUpdateReady(CDVD_DRIVE_BUSY);
+
 			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
