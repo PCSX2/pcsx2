@@ -56,6 +56,10 @@ oprofile_data/
 /UpgradeLog*.htm
 /.vscode*
 
+# KDevelop 4 Workspace Configuration Files
+*.kdev4
+/.kdev4*
+
 /bin/**/*.dll
 /bin/**/*.dmp
 /bin/**/*.exp
