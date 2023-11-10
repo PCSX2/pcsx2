@@ -1188,15 +1188,15 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 			return false;
 		}
 
-		Hle_SetElfPath(s_elf_override.c_str());
+		Hle_SetHostRoot(s_elf_override.c_str());
 	}
 	else if (CDVDsys_GetSourceType() == CDVD_SourceType::Iso)
 	{
-		Hle_SetIsoPath(CDVDsys_GetFile(CDVDsys_GetSourceType()).c_str());
+		Hle_SetHostRoot(CDVDsys_GetFile(CDVDsys_GetSourceType()).c_str());
 	}
 	else
 	{
-		Hle_ClearElfPath();
+		Hle_ClearHostRoot();
 	}
 
 	// Check for resuming with hardcore mode.
@@ -1984,9 +1984,9 @@ bool VMManager::SetELFOverride(std::string path)
 
 	s_fast_boot_requested = !s_elf_override.empty() || EmuConfig.EnableFastBoot;
 	if (s_elf_override.empty())
-		Hle_ClearElfPath();
+		Hle_ClearHostRoot();
 	else
-		Hle_SetElfPath(s_elf_override.c_str());
+		Hle_SetHostRoot(s_elf_override.c_str());
 
 	Reset();
 	return true;
