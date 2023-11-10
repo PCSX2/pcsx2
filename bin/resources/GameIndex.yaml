@@ -12109,6 +12109,9 @@ SLED-53719:
 SLED-53723:
   name: "Peter Jackson's King Kong [Demo]"
   region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLED-53731:
   name: "Battlefield 2 - Modern Combat [Demo]"
   region: "PAL-E"
@@ -21501,12 +21504,21 @@ SLES-53703:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-M10"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLES-53704:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-R"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLES-53705:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-PL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLES-53706:
   name: "The Chronicles of Narnia - The Lion Witch and The Wardrobe"
   name-sort: "Chronicles of Narnia, The - The Lion, The Witch and The Wardrobe"
@@ -28372,6 +28384,9 @@ SLKA-25335:
 SLKA-25337:
   name: "Peter Jackson's King Kong - The Official Game of the Movie"
   region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLKA-25338:
   name: "The Godfather"
   name-sort: "Godfather, The"
@@ -41186,6 +41201,9 @@ SLPM-66211:
   name-sort: PETER JACKSON’S きんぐ・こんぐ おふぃしゃる げーむ おぶ ざ むーびー
   name-en: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLPM-66212:
   name: セガラリー2006
   name-sort: せがらりー2006
@@ -61849,6 +61867,9 @@ SLUS-21311:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Increases image brightness.
+    autoFlush: 1 # Corrects vignette to match software.
 SLUS-21312:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-U"
