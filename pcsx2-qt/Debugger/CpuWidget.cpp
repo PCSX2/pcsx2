@@ -1071,7 +1071,7 @@ void CpuWidget::onSearchButtonClicked()
 
 		if (m_ui.listSearchResults->count() <= 0)
 		{
-			m_ui.btnNextSearch->setDisabled(true);
+			m_ui.btnSearch->setDisabled(true);
 		}
 	});
 
