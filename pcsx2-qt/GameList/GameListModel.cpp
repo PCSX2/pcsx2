@@ -180,11 +180,11 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 	// while there's outstanding jobs, the old jobs won't proceed (at the wrong size), or get added into the grid.
 	const u32 counter = m_cover_scale_counter.load(std::memory_order_acquire);
 
-	QFuture<QPixmap> future = QtConcurrent::run([this, path = ge->path, title = ge->GetTitle(m_prefer_english_titles), serial = ge->serial, counter]() -> QPixmap {
+	QFuture<QPixmap> future = QtConcurrent::run([this, entry = *ge, counter]() -> QPixmap {
 		QPixmap image;
 		if (m_cover_scale_counter.load(std::memory_order_acquire) == counter)
 		{
-			const std::string cover_path(GameList::GetCoverImagePath(path, serial, title));
+			const std::string cover_path(GameList::GetCoverImagePathForEntry(&entry));
 			if (!cover_path.empty())
 			{
 				const float dpr = qApp->devicePixelRatio();
@@ -196,6 +196,8 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 				}
 			}
 		}
+
+		const std::string& title = entry.GetTitle(m_prefer_english_titles);
 
 		if (image.isNull())
 			image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, title);

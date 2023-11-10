@@ -3545,43 +3545,43 @@ Enter function name</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../QtHost.cpp" line="1019"/>
+        <location filename="../QtHost.cpp" line="1015"/>
         <source>Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1028"/>
+        <location filename="../QtHost.cpp" line="1024"/>
         <source>Slot: %1 | %2 | EE: %3% | GS: %4%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1072"/>
+        <location filename="../QtHost.cpp" line="1068"/>
         <source>%1x%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1080"/>
+        <location filename="../QtHost.cpp" line="1076"/>
         <source>Game: %1 FPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1087"/>
+        <location filename="../QtHost.cpp" line="1083"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1136"/>
+        <location filename="../QtHost.cpp" line="1132"/>
         <source>Game: %1 (%2)
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1144"/>
+        <location filename="../QtHost.cpp" line="1140"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtHost.cpp" line="1148"/>
+        <location filename="../QtHost.cpp" line="1144"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8292,7 +8292,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="993"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="999"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8769,52 +8769,52 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="592"/>
+        <location filename="../GameList/GameListModel.cpp" line="598"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="593"/>
+        <location filename="../GameList/GameListModel.cpp" line="599"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="594"/>
+        <location filename="../GameList/GameListModel.cpp" line="600"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="595"/>
+        <location filename="../GameList/GameListModel.cpp" line="601"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="596"/>
+        <location filename="../GameList/GameListModel.cpp" line="602"/>
         <source>CRC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="597"/>
+        <location filename="../GameList/GameListModel.cpp" line="603"/>
         <source>Time Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="598"/>
+        <location filename="../GameList/GameListModel.cpp" line="604"/>
         <source>Last Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="599"/>
+        <location filename="../GameList/GameListModel.cpp" line="605"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="600"/>
+        <location filename="../GameList/GameListModel.cpp" line="606"/>
         <source>Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="601"/>
+        <location filename="../GameList/GameListModel.cpp" line="607"/>
         <source>Compatibility</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11624,135 +11624,135 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1016"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1024"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1060"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1022"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1030"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1066"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1072"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1078"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1083"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1096"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1159"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1084"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1089"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1102"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1125"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1165"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1179"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1017"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1023"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1024"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1030"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1044"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1061"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1067"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1067"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1079"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1078"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1084"/>
         <source>Toggle On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1083"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1089"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1092"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1096"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1102"/>
         <source>Cycle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1108"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1114"/>
         <source>Hardware mipmapping set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1119"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1125"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1141"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1147"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1159"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1154"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1160"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1167"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1173"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1168"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1174"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1180"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1181"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1187"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1186"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1192"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>

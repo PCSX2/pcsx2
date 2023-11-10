@@ -82,6 +82,12 @@ namespace Achievements
 	static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 	static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
 
+	// Some API calls are really slow. Set a longer timeout.
+	static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
+
+	// Chrome uses 10 server calls per domain, seems reasonable.
+	static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
+
 	static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
 	static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 	static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
@@ -133,18 +139,18 @@ namespace Achievements
 	static void BeginLoadingScreen(const char* text, bool* was_running_idle);
 	static void EndLoadingScreen(bool was_running_idle);
 	static std::string_view GetELFNameForHash(const std::string& elf_path);
-	static std::string GetGameHash();
+	static std::string GetGameHash(const std::string& elf_path);
 	static void SetHardcoreMode(bool enabled, bool force_display_message);
 	static bool IsLoggedInOrLoggingIn();
 	static bool IsUnknownGame();
 	static void ShowLoginSuccess(const rc_client_t* client);
-	static void IdentifyGame(u32 disc_crc);
+	static void IdentifyGame(u32 disc_crc, u32 crc);
 	static void BeginLoadGame();
 	static void UpdateGameSummary();
 	static void DownloadImage(std::string url, std::string cache_filename);
 
-	static bool CreateClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http);
-	static void DestroyClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http);
+	static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
+	static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 	static void ClientMessageCallback(const char* message, const rc_client_t* client);
 	static uint32_t ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
 	static void ClientServerCall(
@@ -203,12 +209,12 @@ namespace Achievements
 	static std::recursive_mutex s_achievements_mutex;
 	static rc_client_t* s_client;
 	static std::string s_image_directory;
-	static std::unique_ptr<Common::HTTPDownloader> s_http_downloader;
+	static std::unique_ptr<HTTPDownloader> s_http_downloader;
 
-	static u32 s_game_disc_crc;
 	static std::string s_game_hash;
 	static std::string s_game_title;
 	static std::string s_game_icon;
+	static u32 s_game_crc;
 	static rc_client_user_game_summary_t s_game_summary;
 	static u32 s_game_id = 0;
 
@@ -308,12 +314,8 @@ std::string_view Achievements::GetELFNameForHash(const std::string& elf_path)
 	return std::string_view(elf_path).substr(start, end - start);
 }
 
-std::string Achievements::GetGameHash()
+std::string Achievements::GetGameHash(const std::string& elf_path)
 {
-	const std::string elf_path = VMManager::GetDiscELF();
-	if (elf_path.empty())
-		return {};
-
 	// this.. really shouldn't be invalid
 	const std::string_view name_for_hash = GetELFNameForHash(elf_path);
 	if (name_for_hash.empty())
@@ -352,8 +354,8 @@ std::string Achievements::GetGameHash()
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-	auto callback = [cache_filename](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
-		if (status_code != Common::HTTPDownloader::HTTP_OK)
+	auto callback = [cache_filename](s32 status_code, std::string content_type, HTTPDownloader::Request::Data data) {
+		if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			return;
 
 		if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
@@ -454,7 +456,7 @@ bool Achievements::Initialize()
 
 	// Begin disc identification early, before the login finishes.
 	if (VMManager::HasValidVM())
-		IdentifyGame(VMManager::GetDiscCRC());
+		IdentifyGame(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 	const std::string username = Host::GetBaseStringSettingValue("Achievements", "Username");
 	const std::string api_token = Host::GetBaseStringSettingValue("Achievements", "Token");
@@ -472,14 +474,17 @@ bool Achievements::Initialize()
 	return true;
 }
 
-bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http)
+bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-	*http = Common::HTTPDownloader::Create(GetUserAgent().c_str());
+	*http = HTTPDownloader::Create(GetUserAgent().c_str());
 	if (!*http)
 	{
 		Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
 		return false;
 	}
+
+	(*http)->SetTimeout(SERVER_CALL_TIMEOUT);
+	(*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
 
 	rc_client_t* new_client = rc_client_create(ClientReadMemory, ClientServerCall);
 	if (!new_client)
@@ -501,7 +506,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<Common::HT
 	return true;
 }
 
-void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http)
+void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
 	(*http)->WaitForAllRequests();
 
@@ -649,17 +654,20 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
-	Common::HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
-																Common::HTTPDownloader::Request::Data data) {
+	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
+														HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
-		rr.http_status_code = status_code;
+		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
+														   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+														   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
+												   status_code;
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
 
 		callback(&rr, callback_data);
 	};
 
-	Common::HTTPDownloader* http = static_cast<Common::HTTPDownloader*>(rc_client_get_userdata(client));
+	HTTPDownloader* http = static_cast<HTTPDownloader*>(rc_client_get_userdata(client));
 
 	// TODO: Content-type for post
 	if (request->post_data)
@@ -833,21 +841,26 @@ void Achievements::GameChanged(u32 disc_crc, u32 crc)
 	if (!IsActive())
 		return;
 
-	IdentifyGame(disc_crc);
+	IdentifyGame(disc_crc, crc);
 }
 
-void Achievements::IdentifyGame(u32 disc_crc)
+void Achievements::IdentifyGame(u32 disc_crc, u32 crc)
 {
-	// avoid reading+hashing the executable if the crc hasn't changed
-	if (s_game_disc_crc == disc_crc)
+	// If we're currently loading the ELF, assume that we're going to load the default ELF.
+	// That way we can download achievement data while the PS2 logo runs. Pretty safe assumption.
+	const bool booted_elf = VMManager::Internal::HasBootedELF();
+	const u32 crc_to_use = booted_elf ? crc : disc_crc;
+
+	// Avoid reading+hashing the executable if the crc hasn't changed.
+	if (s_game_crc == crc_to_use)
 		return;
 
-	std::string game_hash = GetGameHash();
+	const std::string game_hash = GetGameHash(booted_elf ? VMManager::GetCurrentELF() : VMManager::GetDiscELF());
 	if (s_game_hash == game_hash)
 		return;
 
 	ClearGameHash();
-	s_game_disc_crc = disc_crc;
+	s_game_crc = crc_to_use;
 	s_game_hash = std::move(game_hash);
 
 #ifdef ENABLE_RAINTEGRATION
@@ -886,7 +899,7 @@ void Achievements::BeginLoadGame()
 	if (s_game_hash.empty())
 	{
 		// when we're booting the bios, or shutting down, this will fail
-		if (s_game_disc_crc != 0)
+		if (s_game_crc != 0)
 		{
 			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed",
 				TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
@@ -1007,7 +1020,7 @@ void Achievements::ClearGameInfo()
 
 void Achievements::ClearGameHash()
 {
-	s_game_disc_crc = 0;
+	s_game_crc = 0;
 	std::string().swap(s_game_hash);
 }
 
@@ -1480,8 +1493,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 		return;
 
 	// this assumes that the CRC and ELF name has been loaded prior to the cheevos state (it should be).
-	if (VMManager::GetDiscCRC() != s_game_disc_crc)
-		GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
+	GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())
@@ -1642,9 +1654,9 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
 
 	// We need to use a temporary client if achievements aren't currently active.
 	rc_client_t* client = s_client;
-	Common::HTTPDownloader* http = s_http_downloader.get();
+	HTTPDownloader* http = s_http_downloader.get();
 	const bool is_temporary_client = (client == nullptr);
-	std::unique_ptr<Common::HTTPDownloader> temporary_downloader;
+	std::unique_ptr<HTTPDownloader> temporary_downloader;
 	ScopedGuard temporary_client_guard = [&client, is_temporary_client, &temporary_downloader]() {
 		if (is_temporary_client)
 			DestroyClient(&client, &temporary_downloader);

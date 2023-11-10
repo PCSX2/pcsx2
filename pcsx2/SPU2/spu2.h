@@ -62,7 +62,7 @@ bool IsAudioCaptureActive();
 void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
 
-void SPU2async(u32 cycles);
+void SPU2async();
 s32 SPU2freeze(FreezeAction mode, freezeData* data);
 
 void SPU2readDMA4Mem(u16* pMem, u32 size);

@@ -239,7 +239,7 @@ static __fi void _doBranch_shared(u32 tar)
 				{
 					if ((cpuRegs.pc - tar) < (4 * 10))
 					{
-						for (int i = tar; i < cpuRegs.pc; i += 4)
+						for (u32 i = tar; i < cpuRegs.pc; i += 4)
 						{
 							if (PSM(i) != 0)
 							{

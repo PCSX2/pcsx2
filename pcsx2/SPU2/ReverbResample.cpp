@@ -66,7 +66,7 @@ s32 __forceinline ReverbDownsample_reference(V_Core& core, bool right)
 	int index = (core.RevbSampleBufPos - NUM_TAPS) & 63;
 	s32 out = 0;
 
-	for (int i = 0; i < NUM_TAPS; i++)
+	for (u32 i = 0; i < NUM_TAPS; i++)
 	{
 		out += core.RevbDownBuf[right][index + i] * filter_down_coefs[i];
 	}
@@ -148,7 +148,7 @@ StereoOut32 __forceinline ReverbUpsample_reference(V_Core& core)
 	int index = (core.RevbSampleBufPos - NUM_TAPS) & 63;
 	s32 l = 0, r = 0;
 
-	for (int i = 0; i < NUM_TAPS; i++)
+	for (u32 i = 0; i < NUM_TAPS; i++)
 	{
 		l += core.RevbUpBuf[0][index + i] * filter_up_coefs[i];
 		r += core.RevbUpBuf[1][index + i] * filter_up_coefs[i];
