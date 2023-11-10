@@ -95,20 +95,13 @@ typedef struct
 
 static std::string hostRoot;
 
-void Hle_SetElfPath(const char* elfFileName)
+void Hle_SetHostRoot(const char* bootFilename)
 {
-	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
-	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName));
+	hostRoot = Path::ToNativePath(Path::GetDirectory(bootFilename));
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
-void Hle_SetIsoPath(const char* isoFilename)
-{
-	hostRoot = Path::ToNativePath(Path::GetDirectory(isoFilename));
-	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
-}
-
-void Hle_ClearElfPath()
+void Hle_ClearHostRoot()
 {
 	hostRoot = {};
 }
