@@ -835,10 +835,7 @@ static bool checkAddressValueMatches(DebugInterface* cpu, u32 addr, T value)
 				const float fTop = value + 0.00001f;
 				const float fBottom = value - 0.00001f;
 				const float memValue = std::bit_cast<float, u32>(cpu->read32(addr));
-				if (fBottom < memValue && memValue < fTop)
-				{
-					return true;
-				}
+				return (fBottom < memValue && memValue < fTop);
 			}
 
 			val = cpu->read32(addr);
@@ -851,10 +848,7 @@ static bool checkAddressValueMatches(DebugInterface* cpu, u32 addr, T value)
 				const double dTop = value + 0.00001f;
 				const double dBottom = value - 0.00001f;
 				const double memValue = std::bit_cast<double, u64>(cpu->read64(addr));
-				if (dBottom < memValue && memValue < dTop)
-				{
-					return true;
-				}
+				return (dBottom < memValue && memValue < dTop);
 			}
 
 			val = cpu->read64(addr);
