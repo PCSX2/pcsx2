@@ -1190,6 +1190,10 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 		Hle_SetElfPath(s_elf_override.c_str());
 	}
+	else if (CDVDsys_GetSourceType() == CDVD_SourceType::Iso)
+	{
+		Hle_SetIsoPath(CDVDsys_GetFile(CDVDsys_GetSourceType()).c_str());
+	}
 	else
 	{
 		Hle_ClearElfPath();

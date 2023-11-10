@@ -102,6 +102,12 @@ void Hle_SetElfPath(const char* elfFileName)
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
+void Hle_SetIsoPath(const char* isoFilename)
+{
+	hostRoot = Path::ToNativePath(Path::GetDirectory(isoFilename));
+	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
+}
+
 void Hle_ClearElfPath()
 {
 	hostRoot = {};
