@@ -1920,7 +1920,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				dst_match = t;
 				break;
 			}
-			else if (t->m_age == 1 && (preserve_rgb || (preserve_alpha && (dst_match->m_valid_alpha_low || dst_match->m_valid_alpha_high))))
+			else if (t->m_age == 1 && (preserve_rgb || (preserve_alpha && (t->m_valid_alpha_low || t->m_valid_alpha_high))))
 			{
 				dst_match = t;
 			}
