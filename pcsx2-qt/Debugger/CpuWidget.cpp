@@ -101,7 +101,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.txtFuncSearch, &QLineEdit::textChanged, [this] { updateFunctionList(); });
 
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
-	connect(m_ui.btnReset, &QPushButton::clicked, this, &CpuWidget::onResetButtonClicked);
+	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
 	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) { m_ui.memoryviewWidget->gotoAddress(item->data(256).toUInt()); });
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, [this](int i) {
 		if (i < 4)
@@ -1055,24 +1055,21 @@ void CpuWidget::onSearchButtonClicked()
 
 		m_ui.listSearchResults->clear();
 		const auto& results = workerWatcher->future().result();
-
-		for (const auto& address : results)
+		QStringList addressList;
+		for (u32 addressNum : results)
 		{
-			QListWidgetItem* item = new QListWidgetItem(QtUtils::FilledQStringFromValue(address, 16));
-			item->setData(256, address);
-			m_ui.listSearchResults->addItem(item);
+			addressList.append(QtUtils::FilledQStringFromValue(addressNum, 16));
 		}
-
-		if (m_ui.listSearchResults->count() <= 0)
-		{
-			m_ui.btnSearch->setDisabled(true);
-		}
+		m_ui.listSearchResults->addItems(addressList);
+		m_ui.btnFilterSearch->setDisabled(m_ui.listSearchResults->count() == 0);
+		
 	});
 
-	setSearchButtonToNextSearch();
 	m_ui.btnSearch->setDisabled(true);
+	QPushButton* senderButton = qobject_cast<QPushButton*>(sender());
+	bool isFilterSearch = senderButton == m_ui.btnFilterSearch;
 	std::vector<u32> addresses;
-	if (!m_firstSearch)
+	if (isFilterSearch)
 	{
 		addresses = getAddressesOfSearchMatches();
 	}
@@ -1101,21 +1098,3 @@ std::vector<u32> CpuWidget::getAddressesOfSearchMatches() {
 	return convertedAddresses;
 }
 
-void CpuWidget::setSearchButtonToNextSearch() {
-	m_firstSearch = false;
-	m_ui.btnSearch->setText("Next Search");
-	m_ui.btnReset->setVisible(true);
-}
-
-void CpuWidget::setSearchButtonToFirstSearch() {
-	m_firstSearch = true;
-	m_ui.btnSearch->setText("Search");
-	m_ui.btnReset->setVisible(false);
-}
-
-void CpuWidget::onResetButtonClicked()
-{
-	m_ui.listSearchResults->clear();
-	m_ui.btnReset->setVisible(false);
-	setSearchButtonToFirstSearch();
-}
