@@ -1474,9 +1474,18 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 	{
 		const u32 rotationalLatency = cdvdRotationTime(static_cast<CDVD_MODE_TYPE>(cdvdIsDVD())) / 2; // Half it to average the rotational latency.
 		//DevCon.Warning("%s rotational latency at sector %d is %d cycles", (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SeekToSector, rotationalLatency);
-		seektime += rotationalLatency + cdvd.ReadTime;
-		CDVDSECTORREADY_INT(seektime);
-		seektime += (cdvd.BlockSize / 4) * 12;
+		if (cdvd.Action == cdvdAction_Seek)
+		{
+			seektime += rotationalLatency;
+			psxRegs.interrupt &= ~(1 << IopEvt_CdvdSectorReady);
+			cdvd.nextSectorsBuffered = 0;
+		}
+		else
+		{
+			seektime += rotationalLatency + cdvd.ReadTime;
+			CDVDSECTORREADY_INT(seektime);
+			seektime += (cdvd.BlockSize / 4) * 12;
+		}
 	}
 	else if (!isSeeking) // Not seeking but we have buffered stuff, need to just account for DMA time (and kick the read DMA if it's not running for some reason.
 	{
