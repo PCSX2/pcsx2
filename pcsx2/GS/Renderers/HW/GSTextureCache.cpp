@@ -460,7 +460,9 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 
 	int page_offset = (block_offset) >> 5;
 	// remove any hoizontal offset, this is added back on later.
-	const int start_page = (page_offset - (page_offset % src_pg_width)) + (src_r.x / src_info->pgs.x) + ((src_r.y / src_info->pgs.y) * std::max(static_cast<int>(sbw), 1));
+	int start_page = page_offset + (src_r.x / src_info->pgs.x) + ((src_r.y / src_info->pgs.y) * std::max(static_cast<int>(sbw), 1));
+	const int horizontal_pages = (start_page % src_pg_width);
+	start_page -= horizontal_pages;
 
 	// Pages aligned.
 	const GSVector4i page_mask(GSVector4i((src_info->pgs.x - 1), (src_info->pgs.y - 1)).xyxy());
@@ -512,6 +514,9 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 		// Update the block offset.
 		block_offset = static_cast<int>(sbp) - static_cast<int>(target_bp);
 	}
+	
+	if (!x_offset)
+		start_page += horizontal_pages;
 
 	const bool matched_format = (src_info->bpp == dst_info->bpp);
 	const bool block_matched_format = matched_format && block_aligned_rect;
