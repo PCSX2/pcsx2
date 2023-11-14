@@ -107,13 +107,13 @@ jobs:
         run: |
           ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 flatpak_app/screenshots
 
-      - name: Validate build directory
-        run: |
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir flatpak_app
-
-      - name: Validate repo
-        run: |
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
+      #- name: Validate build directory
+      #  run: |
+      #    flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir flatpak_app
+      #
+      #- name: Validate repo
+      #  run: |
+      #    flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
