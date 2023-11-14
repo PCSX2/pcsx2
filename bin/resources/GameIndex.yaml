@@ -16914,6 +16914,8 @@ SLES-51973:
 SLES-51974:
   name: "XS Junior League Soccer"
   region: "PAL-M5"
+  speedHacks:
+    eeCycleRate: -1 # Fixes FMV playback.
 SLES-51976:
   name: "Tom Clancy's Ghost Recon - Jungle Storm"
   region: "PAL-M5"
@@ -26338,6 +26340,8 @@ SLES-55517:
 SLES-55518:
   name: "Guitar Hero - Van Halen"
   region: "PAL-A"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes icons.
   roundModes:
     vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLES-55520:
@@ -64714,6 +64718,8 @@ SLUS-21867:
   name: "Guitar Hero - Van Halen"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes icons.
   roundModes:
     vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLUS-21868:
@@ -64973,6 +64979,8 @@ SLUS-21923:
 SLUS-21924:
   name: "Guitar Hero - Van Halen"
   region: "NTSC-U"
+  gsHWFixes:
+    preloadFrameData: 1 # Fixes icons.
   roundModes:
     vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues with GH3 engine.
 SLUS-21926:
