@@ -53,7 +53,7 @@ void psxReset()
 	std::memset(&psxRegs, 0, sizeof(psxRegs));
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap
-	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1
+	psxRegs.CP0.n.Status = 0x00400000; // BEV = 1
 	psxRegs.CP0.n.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
 
 	psxRegs.iopBreak = 0;
