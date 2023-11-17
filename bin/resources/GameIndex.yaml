@@ -17031,6 +17031,9 @@ SLES-52022:
 SLES-52023:
   name: "Manhunt"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 1 # Helps with light occlusion problems when upscaling.
+    autoFlush: 2 # Fixes light occlusion draws which mistakenly get all drawn at once, so wrong texture data is picked.
 SLES-52025:
   name: "NFL Street"
   region: "PAL-E"
@@ -59142,6 +59145,9 @@ SLUS-20827:
   name: "Manhunt"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Helps with light occlusion problems when upscaling.
+    autoFlush: 2 # Fixes light occlusion draws which mistakenly get all drawn at once, so wrong texture data is picked.
 SLUS-20828:
   name: "ShellShock - Nam '67"
   region: "NTSC-U"
