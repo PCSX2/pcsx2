@@ -318,292 +318,292 @@ Login token generated on %2.</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1057"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1070"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1821"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1833"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1453"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1466"/>
         <source>Hardcore mode is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1020"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1033"/>
         <source>{} (Hardcore Mode)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1085"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1098"/>
         <source>{} (Unofficial)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1109"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1122"/>
         <source>Mastered {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1130"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1143"/>
         <source>Leaderboard attempt started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1149"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1162"/>
         <source>Leaderboard attempt failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1168"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1181"/>
         <source>Your Time: {}{}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1169"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1182"/>
         <source>Your Score: {}{}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1170"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1183"/>
         <source>Your Value: {}{}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1178"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1191"/>
         <source> (Submitting)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1353"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1366"/>
         <source>Achievements Disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1354"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1367"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1367"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1380"/>
         <source>Achievements Reconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1368"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1381"/>
         <source>All pending unlock requests have completed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1454"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1467"/>
         <source>Hardcore mode is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1820"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1832"/>
         <source>Confirm Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2020"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2032"/>
         <source>Active Challenge Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2145"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2157"/>
         <source> (Hardcore Mode)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2156"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2168"/>
         <source>You have unlocked all achievements and earned {} points!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1027"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1040"/>
         <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1110"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1123"/>
         <source>{0} achievements, {1} points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1201"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1214"/>
         <source>Your Time: {0} (Best: {1})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1202"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1215"/>
         <source>Your Score: {0} (Best: {1})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1203"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1216"/>
         <source>Your Value: {0} (Best: {1})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1207"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1220"/>
         <source>{0}
 Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1339"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1352"/>
         <source>Server error in {0}:
 {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1768"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1780"/>
         <source>Score: {0} ({1} softcore)
 Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2161"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2173"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2199"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2211"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2200"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2212"/>
         <source>Locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2201"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2213"/>
         <source>Unlocked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2202"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2214"/>
         <source>Unsupported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2203"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2215"/>
         <source>Unofficial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2204"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2216"/>
         <source>Recently Unlocked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2205"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2217"/>
         <source>Active Challenges</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2206"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2218"/>
         <source>Almost There</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2294"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2306"/>
         <source>{} points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2294"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2306"/>
         <source>{} point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2296"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2308"/>
         <source>XXX points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2324"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2336"/>
         <source>Unlocked: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2490"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2502"/>
         <source>This game has {} leaderboards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2506"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2518"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2525"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2537"/>
         <source>Show Best</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2525"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2537"/>
         <source>Show Nearby</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2550"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2562"/>
         <source>Rank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2555"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2567"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2559"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2571"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2560"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2572"/>
         <source>Score</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2561"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2573"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2573"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2585"/>
         <source>Date Submitted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2629"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2641"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2648"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2657"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2660"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2669"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2810"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2829"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2822"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2841"/>
         <source>Leaderboard download failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1033"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1046"/>
         <source>This game has no achievements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="892"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="905"/>
         <source>Failed to read executable from disc. Achievements disabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8761,7 +8761,7 @@ graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1310"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1314"/>
         <source>Downloading cover for {0} [{1}]...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8769,52 +8769,52 @@ graphical quality, but this will increase system requirements.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="598"/>
+        <location filename="../GameList/GameListModel.cpp" line="600"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="599"/>
+        <location filename="../GameList/GameListModel.cpp" line="601"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="600"/>
+        <location filename="../GameList/GameListModel.cpp" line="602"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="601"/>
+        <location filename="../GameList/GameListModel.cpp" line="603"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="602"/>
+        <location filename="../GameList/GameListModel.cpp" line="604"/>
         <source>CRC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="603"/>
+        <location filename="../GameList/GameListModel.cpp" line="605"/>
         <source>Time Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="604"/>
+        <location filename="../GameList/GameListModel.cpp" line="606"/>
         <source>Last Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="605"/>
+        <location filename="../GameList/GameListModel.cpp" line="607"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="606"/>
+        <location filename="../GameList/GameListModel.cpp" line="608"/>
         <source>Region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListModel.cpp" line="607"/>
+        <location filename="../GameList/GameListModel.cpp" line="609"/>
         <source>Compatibility</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17092,32 +17092,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1596"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1604"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1581"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1589"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="847"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="851"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="908"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="912"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1143"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1147"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1144"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1148"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -17128,215 +17128,215 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1197"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1205"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1628"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1636"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1635"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1643"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1701"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1723"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1709"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1731"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1718"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1726"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1727"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1735"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1744"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1752"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1911"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1919"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1934"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1942"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1940"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1948"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1947"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1955"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1956"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1964"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2432"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2440"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2486"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2494"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2490"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2498"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2495"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2503"/>
         <source>Audio is using async mix, expect desynchronization in FMVs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2498"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2506"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2502"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2510"/>
         <source>Mipmapping is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2507"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2515"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2513"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2521"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2519"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2527"/>
         <source>Blending is below basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2524"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2532"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2530"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2538"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2536"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2544"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2542"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2550"/>
         <source>VU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2549"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2557"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2554"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2562"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2559"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2567"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2563"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2571"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2565"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2573"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2584"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2592"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2589"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2597"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2594"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2602"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2599"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2607"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2604"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2612"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2609"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2617"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2614"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2622"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2619"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2627"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2624"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2632"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2629"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2637"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2634"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2642"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2639"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2647"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
