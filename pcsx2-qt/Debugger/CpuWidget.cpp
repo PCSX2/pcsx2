@@ -102,7 +102,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
 	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
-	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) { m_ui.memoryviewWidget->gotoAddress(item->data(256).toUInt()); });
+	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) { m_ui.memoryviewWidget->gotoAddress(item->text().toUInt(nullptr, 16)); });
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, [this](int i) {
 		if (i < 4)
 			m_ui.chkSearchHex->setEnabled(true);
