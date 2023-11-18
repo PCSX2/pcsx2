@@ -96,6 +96,8 @@ void cpuReset()
 	g_eeloadMain = 0;
 	g_eeloadExec = 0;
 	g_osdsys_str = 0;
+
+	CBreakPoints::ClearSkipFirst();
 }
 
 __ri void cpuException(u32 code, u32 bd)

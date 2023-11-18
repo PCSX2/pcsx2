@@ -377,6 +377,14 @@ u32 CBreakPoints::CheckSkipFirst(BreakPointCpu cpu, u32 cmpPc)
 	return 0;
 }
 
+void CBreakPoints::ClearSkipFirst()
+{
+	breakSkipFirstAtEE_ = 0;
+	breakSkipFirstTicksEE_ = 0;
+	breakSkipFirstAtIop_ = 0;
+	breakSkipFirstTicksIop_ = 0;
+}
+
 const std::vector<MemCheck> CBreakPoints::GetMemCheckRanges()
 {
 	std::vector<MemCheck> ranges = memChecks_;
