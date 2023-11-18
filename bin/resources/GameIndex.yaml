@@ -30510,7 +30510,9 @@ SLPM-61046:
   name: "Dennou Senki - Virtual-On Marz [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-61048:
   name: "Dengeki PS2 PlayStation D60"
   region: "NTSC-J"
@@ -33377,7 +33379,9 @@ SLPM-62547:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-62548:
   name: SuperLite 2000パズル 平成博徒伝
   name-sort: SuperLite 2000ぱずる へいせいばくとでん
@@ -33675,7 +33679,9 @@ SLPM-62606:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-62607:
   name: "Shikigami no Shiro III [Taito The Best]"
   region: "NTSC-J"
@@ -34051,7 +34057,9 @@ SLPM-62687:
   name-en: "Sega Ages 2500 Series Vol.24 - Last Bronx"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-62689:
   name: ラングリッサーIII
   name-sort: らんぐりっさーIII
@@ -34130,7 +34138,9 @@ SLPM-62703:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-62704:
   name: オレたちゲーセン族 クォース
   name-sort: おれたちげーせんぞく くぉーす
@@ -34418,7 +34428,9 @@ SLPM-62767:
   clampModes:
     eeClampMode: 2 # Fixes white shadows.
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-62768:
   name: "Sengoku Musou 2 & Sengoku Musou 2 - Empires Saikyou Data"
   region: "NTSC-J"
@@ -36229,7 +36241,9 @@ SLPM-65303:
   name-en: "Dennou Senki - Virtual-On Marz"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-65305:
   name: 幻想水滸伝 III KONAMI THE BEST
   name-sort: げんそうすいこでん III KONAMI THE BEST
@@ -46767,7 +46781,9 @@ SLPM-74421:
   name-en: "Dennou Senki - Virtual-On Marz [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuCLUTRender: 2 # Fixes CLUT colours.
+    cpuSpriteRenderBW: 1 # Fixes CLUT colours.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-74901:
   name: "Metal Gear Solid 2 - Substance"
   region: "NTSC-J"
