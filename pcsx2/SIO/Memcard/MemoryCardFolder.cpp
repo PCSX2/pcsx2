@@ -41,10 +41,6 @@
 #include <mutex>
 #include <optional>
 
-#ifdef _MSC_VER
-#define timegm _mkgmtime
-#endif
-
 // A helper function to parse the YAML file
 static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 {
@@ -119,7 +115,12 @@ time_t MemoryCardFileEntryDateTime::ToTime() const
 	converted.tm_mday = day;
 	converted.tm_mon = std::max(static_cast<int>(month) - 1, 0);
 	converted.tm_year = std::max(static_cast<int>(year) - 1900, 0);
+
+#ifdef _MSC_VER
+	return _mkgmtime(&converted);
+#else
 	return timegm(&converted);
+#endif
 }
 
 FolderMemoryCard::FolderMemoryCard()
