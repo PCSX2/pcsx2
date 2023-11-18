@@ -26,10 +26,6 @@
 
 //#define DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
 
-#ifdef _WIN32
-#define timegm _mkgmtime
-#endif
-
 // --------------------------------------------------------------------------------------
 //  Superblock Header Struct
 // --------------------------------------------------------------------------------------

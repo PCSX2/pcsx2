@@ -41,6 +41,10 @@
 #include <mutex>
 #include <optional>
 
+#ifdef _MSC_VER
+#define timegm _mkgmtime
+#endif
+
 // A helper function to parse the YAML file
 static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 {
