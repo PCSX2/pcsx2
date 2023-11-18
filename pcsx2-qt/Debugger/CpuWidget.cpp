@@ -32,6 +32,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFutureWatcher>
+#include <QtWidgets/QScrollBar>
 
 #include "demangler/demangler.h"
 
@@ -103,6 +104,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
 	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
 	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) { m_ui.memoryviewWidget->gotoAddress(item->text().toUInt(nullptr, 16)); });
+	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &CpuWidget::onSearchResultsListScroll);
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, [this](int i) {
 		if (i < 4)
 			m_ui.chkSearchHex->setEnabled(true);
@@ -123,6 +125,11 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 		m_ui.listFunctions->setVisible(false);
 	}
 	this->repaint();
+
+	// Ensures we don't retrigger the load results function unintentionally
+	m_resultsLoadTimer.setInterval(100);
+	m_resultsLoadTimer.setSingleShot(true);
+	connect(&m_resultsLoadTimer, &QTimer::timeout, this, &CpuWidget::loadSearchResults);
 }
 
 CpuWidget::~CpuWidget() = default;
@@ -1055,12 +1062,9 @@ void CpuWidget::onSearchButtonClicked()
 
 		m_ui.listSearchResults->clear();
 		const auto& results = workerWatcher->future().result();
-		QStringList addressList;
-		for (u32 addressNum : results)
-		{
-			addressList.append(QtUtils::FilledQStringFromValue(addressNum, 16));
-		}
-		m_ui.listSearchResults->addItems(addressList);
+
+		m_searchResults = results;
+		loadSearchResults();
 		m_ui.btnFilterSearch->setDisabled(m_ui.listSearchResults->count() == 0);
 		
 	});
@@ -1071,30 +1075,41 @@ void CpuWidget::onSearchButtonClicked()
 	std::vector<u32> addresses;
 	if (isFilterSearch)
 	{
-		addresses = getAddressesOfSearchMatches();
+		addresses = m_searchResults;
 	}
 	QFuture<std::vector<u32>> workerFuture =
 		QtConcurrent::run(startWorker, &m_cpu, searchType, addresses, searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
 	workerWatcher->setFuture(workerFuture);
 }
 
-std::vector<u32> CpuWidget::getAddressesOfSearchMatches() {
-	std::vector<u32> convertedAddresses;
-	QStringList addresses;
-	for (auto i = 0; i < m_ui.listSearchResults->count(); i++)
-	{
-		addresses.append(m_ui.listSearchResults->item(i)->text());
-	}
+void CpuWidget::onSearchResultsListScroll(u32 value)
+{
+	bool hasResultsToLoad = m_ui.listSearchResults->count() < m_searchResults.size();
+	bool scrolledSufficiently = value > (m_ui.listSearchResults->verticalScrollBar()->maximum() * 0.95);
 
-	bool ok;
-	for (QString address : addresses)
+	if (!m_resultsLoadTimer.isActive() && hasResultsToLoad && scrolledSufficiently)
 	{
-		u32 convertedAddress = address.toUInt(&ok, 16);
-		if (ok)
-		{
-			convertedAddresses.push_back(convertedAddress);
-		}
+		// Load results once timer ends, allowing us to debounce repeated requests and only do one load.
+		m_resultsLoadTimer.start();
 	}
-	return convertedAddresses;
+}
+
+void CpuWidget::loadSearchResults() {
+	const u32 numLoaded = m_ui.listSearchResults->count();
+	const u32 amountLeftToLoad = m_searchResults.size() - numLoaded;
+	if (amountLeftToLoad < 1)
+		return;
+
+	const bool isFirstLoad = numLoaded == 0;
+	const u32 maxLoadAmount = isFirstLoad ? m_initialResultsLoadLimit : m_numResultsAddedPerLoad;
+	const u32 numToLoad = amountLeftToLoad > maxLoadAmount ? maxLoadAmount : amountLeftToLoad;
+
+	for (u32 i = 0; i < numToLoad; i++)
+	{
+		u32 address = m_searchResults.at(numLoaded + i);
+		QListWidgetItem* item = new QListWidgetItem(QtUtils::FilledQStringFromValue(address, 16));
+		item->setData(256, address);
+		m_ui.listSearchResults->addItem(item);
+	}
 }
 
