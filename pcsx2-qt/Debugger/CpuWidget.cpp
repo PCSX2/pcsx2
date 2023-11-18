@@ -1084,7 +1084,7 @@ void CpuWidget::onSearchButtonClicked()
 
 void CpuWidget::onSearchResultsListScroll(u32 value)
 {
-	bool hasResultsToLoad = m_ui.listSearchResults->count() < m_searchResults.size();
+	bool hasResultsToLoad = static_cast<size_t>(m_ui.listSearchResults->count()) < m_searchResults.size();
 	bool scrolledSufficiently = value > (m_ui.listSearchResults->verticalScrollBar()->maximum() * 0.95);
 
 	if (!m_resultsLoadTimer.isActive() && hasResultsToLoad && scrolledSufficiently)
