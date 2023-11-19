@@ -183,14 +183,14 @@
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
             <layout class="QGridLayout" name="gridLayout_2">
-             <item row="5" column="0">
+             <item row="6" column="0">
               <widget class="QLabel" name="label_5">
                <property name="text">
                 <string>End</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="1" colspan="3">
+             <item row="5" column="1" colspan="3">
               <widget class="QLineEdit" name="txtSearchStart">
                <property name="text">
                 <string notr="true">0x00</string>
@@ -207,28 +207,28 @@
              <item row="0" column="1">
               <widget class="QLineEdit" name="txtSearchValue"/>
              </item>
-             <item row="4" column="0">
+             <item row="5" column="0">
               <widget class="QLabel" name="label_4">
                <property name="text">
                 <string>Start</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="1" colspan="3">
+             <item row="6" column="1" colspan="3">
               <widget class="QLineEdit" name="txtSearchEnd">
                <property name="text">
                 <string notr="true">0x2000000</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
+             <item row="2" column="0">
               <widget class="QLabel" name="label_2">
                <property name="text">
                 <string>Type</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
+             <item row="2" column="1">
               <widget class="QComboBox" name="cmbSearchType">
                <item>
                 <property name="text">
@@ -272,14 +272,14 @@
                </item>
               </widget>
              </item>
-             <item row="1" column="2">
+             <item row="2" column="2">
               <widget class="QLabel" name="label_3">
                <property name="text">
                 <string>Hex</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="3">
+             <item row="2" column="3">
               <widget class="QCheckBox" name="chkSearchHex">
                <property name="text">
                 <string/>
@@ -293,6 +293,16 @@
               <widget class="QPushButton" name="btnSearch">
                <property name="text">
                 <string>Search</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2" colspan="2">
+              <widget class="QPushButton" name="btnFilterSearch">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Filter Search</string>
                </property>
               </widget>
              </item>

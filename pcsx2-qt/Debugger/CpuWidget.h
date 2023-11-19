@@ -30,6 +30,7 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
 #include <QtCore/QSortFilterProxyModel>
+#include <QtCore/QTimer>
 
 #include <vector>
 
@@ -94,9 +95,12 @@ public slots:
 	};
 
 	void onSearchButtonClicked();
+	void onSearchResultsListScroll(u32 value);
+	void loadSearchResults();
 
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
+	std::vector<u32> m_searchResults;
 
 	QMenu* m_stacklistContextMenu = 0;
 	QMenu* m_funclistContextMenu = 0;
@@ -110,7 +114,10 @@ private:
 	ThreadModel m_threadModel;
 	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
+	QTimer m_resultsLoadTimer;
 
 	bool m_demangleFunctions = true;
 	bool m_moduleView = true;
+	u32 m_initialResultsLoadLimit = 20000;
+	u32 m_numResultsAddedPerLoad = 10000;
 };
