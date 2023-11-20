@@ -148,7 +148,9 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 {
 	// Closing the separate widget will either cancel the close, or trigger shutdown.
 	// In the latter case, it's going to destroy us, so don't let Qt do it first.
-	if (QtHost::IsVMValid())
+	// Treat a close event while fullscreen as an exit, that way ALT+F4 closes PCSX2,
+	// rather than just the game.
+	if (QtHost::IsVMValid() && !isActuallyFullscreen())
 	{
 		QMetaObject::invokeMethod(g_main_window, "requestShutdown", Q_ARG(bool, true),
 			Q_ARG(bool, true), Q_ARG(bool, false));
@@ -170,10 +172,17 @@ void DisplayWidget::destroy()
 	// See Qt documentation, entire application is in full screen state, and the main
 	// window will get reopened fullscreen instead of windowed if we don't close the
 	// fullscreen window first.
-	if (isFullScreen())
+	if (isActuallyFullscreen())
 		close();
 #endif
 	deleteLater();
+}
+
+bool DisplayWidget::isActuallyFullscreen() const
+{
+	// I hate you QtWayland... have to check the parent, not ourselves.
+	QWidget* container = qobject_cast<QWidget*>(parent());
+	return container ? container->isFullScreen() : isFullScreen();
 }
 
 void DisplayWidget::updateCenterPos()
