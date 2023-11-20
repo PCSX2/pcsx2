@@ -175,7 +175,7 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 	TEX0.TBW = curFramebuffer.FBW;
 	TEX0.PSM = curFramebuffer.PSM;
 
-	if (GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, framebufferSize, GetTextureScaleFactor()))
+	if (GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, framebufferSize, GetTextureScaleFactor(), false))
 	{
 		rt->Update();
 		t = rt->m_texture;
@@ -214,7 +214,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
 	TEX0.PSM = PCRTCDisplays.PCRTCDisplays[index].PSM;
 
-	GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, fb_size, GetTextureScaleFactor());
+	GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, fb_size, GetTextureScaleFactor(), true);
 	if (!rt)
 		return nullptr;
 
