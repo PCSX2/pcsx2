@@ -5859,7 +5859,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	ReplaceVerticesWithSprite(m_r, GSVector2i(1, 1));
 
 	// Prevent wasting time looking up and creating the target which is getting blown away.
-	if (!clear_depth)
+	if (frame_psm.trbpp >= zbuf_psm.trbpp)
 	{
 		SetNewFRAME(base * BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
 		m_cached_ctx.ZBUF.ZMSK = true;
