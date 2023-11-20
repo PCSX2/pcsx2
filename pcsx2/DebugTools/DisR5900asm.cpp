@@ -990,8 +990,8 @@ void MTLO( std::string& output )    { _sap("mtlo\t%s")          GPR_REG[DECODE_R
 void DSLLV( std::string& output )   { _sap("dsllv\t%s, %s")     disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
 void DSRLV( std::string& output )   { _sap("dsrlv\t%s, %s")     disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
 void DSRAV( std::string& output )   { _sap("dsrav\t%s, %s")     disDestSource(DECODE_RD, DECODE_RT), GPR_REG[DECODE_RS]); }
-void MULT( std::string& output )    { _sap("mult\t%s, %s, %s")  GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
-void MULTU( std::string& output )   { _sap("multu\t%s, %s, %s") GPR_REG[DECODE_RD], GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
+void MULT( std::string& output )    { _sap("mult\t%s, %s")      GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
+void MULTU( std::string& output )   { _sap("multu\t%s, %s")     GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]);}
 void DIV( std::string& output )     { _sap("div\t%s, %s")       GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 void DIVU( std::string& output )    { _sap("divu\t%s, %s")      GPR_REG[DECODE_RS], GPR_REG[DECODE_RT]); }
 
