@@ -2361,13 +2361,68 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 	return hw_clear;
 }
 
-GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale)
+GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, bool is_feedback)
 {
 	Target* dst = LookupTarget(TEX0, size, scale, RenderTarget, true, 0, true);
 	if (dst)
 		return dst;
 
-	return CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true);
+	// Didn't find a target, check if the frame was uploaded.
+
+	bool can_create = is_feedback;
+
+	if (!is_feedback && GSRendererHW::GetInstance()->m_draw_transfers.size() > 0)
+	{
+		const GSVector4i newrect = GSVector4i::loadh(size);
+		const u32 rect_end = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, newrect);
+
+		std::vector<GSState::GSUploadQueue>::reverse_iterator iter;
+		GSVector4i eerect = GSVector4i::zero();
+		const int last_draw = GSRendererHW::GetInstance()->m_draw_transfers.back().draw;
+
+		for (iter = GSRendererHW::GetInstance()->m_draw_transfers.rbegin(); iter != GSRendererHW::GetInstance()->m_draw_transfers.rend(); )
+		{
+			// Would be nice to make this 100, but B-Boy seems to rely on data uploaded ~200 draws ago. Making it bigger for now to be safe.
+			if (last_draw - iter->draw > 500)
+				break;
+
+			const u32 transfer_end = GSLocalMemory::GetUnwrappedEndBlockAddress(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect);
+
+			// If the format, and location doesn't overlap
+			if (transfer_end >= TEX0.TBP0 && iter->blit.DBP <= rect_end && GSUtil::HasCompatibleBits(iter->blit.DPSM, TEX0.PSM))
+			{
+				GSVector4i targetr = iter->rect;
+				
+				if (eerect.rempty())
+					eerect = targetr;
+				else
+					eerect = eerect.runion(targetr);
+
+				if (iter->zero_clear && iter->draw == last_draw)
+				{
+					can_create = false;
+					break;
+				}
+
+				if (iter->blit.DBP == TEX0.TBP0 && transfer_end == rect_end)
+				{
+					iter = std::vector<GSState::GSUploadQueue>::reverse_iterator(GSRendererHW::GetInstance()->m_draw_transfers.erase(iter.base() - 1));
+				}
+				else
+					++iter;
+
+				if (eerect.rintersect(newrect).eq(newrect))
+				{
+					can_create = true;
+					break;
+				}
+			}
+			else
+				++iter;
+		}
+	}
+
+	return can_create ? CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true) : nullptr;
 }
 
 void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h)
