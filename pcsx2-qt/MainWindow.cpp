@@ -958,7 +958,8 @@ bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) ||
-		   (g_emu_thread->shouldRenderToMain() && isRenderingFullscreen()) || QtHost::InNoGUIMode();
+		   (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
+		   QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -2097,7 +2098,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		// and positioning has no effect anyway.
 		if (!s_use_central_widget)
 		{
-			if (isVisible() && g_emu_thread->shouldRenderToMain())
+			if ((isVisible() || m_is_temporarily_windowed) && g_emu_thread->shouldRenderToMain())
 				container->move(pos());
 			else
 				restoreDisplayWindowGeometryFromConfig();
@@ -2759,9 +2760,19 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 	// However, we do not want to switch back to render-to-main, the window might have generated this event.
 	if (was_fullscreen)
 	{
+		// m_is_temporarily_windowed needs to be set, so that we don't show the main window just for this popup.
+		pxAssertRel(!g_main_window->m_is_temporarily_windowed, "Not already temporarily windowed");
+		g_main_window->m_is_temporarily_windowed = true;
+
 		g_emu_thread->setFullscreen(false, false);
-		while (QtHost::IsVMValid() && g_emu_thread->isFullscreen())
-			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+		// Container could change... thanks Wayland.
+		QWidget* container;
+		while (QtHost::IsVMValid() && (g_emu_thread->isFullscreen() ||
+										  !(container = getDisplayContainer()) || container->isFullScreen()))
+		{
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+		}
 	}
 
 	// Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
@@ -2795,7 +2806,10 @@ MainWindow::VMLock::VMLock(VMLock&& lock)
 MainWindow::VMLock::~VMLock()
 {
 	if (m_was_fullscreen)
+	{
+		g_main_window->m_is_temporarily_windowed = false;
 		g_emu_thread->setFullscreen(true, true);
+	}
 
 	if (!m_was_paused)
 		g_emu_thread->setVMPaused(false);
@@ -2805,6 +2819,7 @@ void MainWindow::VMLock::cancelResume()
 {
 	m_was_paused = true;
 	m_was_fullscreen = false;
+	g_main_window->m_is_temporarily_windowed = false;
 }
 
 bool QtHost::IsVMValid()
