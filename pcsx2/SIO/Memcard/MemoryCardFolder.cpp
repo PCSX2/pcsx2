@@ -83,7 +83,6 @@ static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 	std::fclose(file);
 }
 
-static constexpr time_t MEMORY_CARD_FILE_ENTRY_DATE_TIME_OFFSET = 60 * 60 * 9; // 9 hours from UTC
 static auto last = std::chrono::time_point<std::chrono::system_clock>();
 
 MemoryCardFileEntryDateTime MemoryCardFileEntryDateTime::FromTime(time_t time)
