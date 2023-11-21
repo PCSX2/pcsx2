@@ -32,7 +32,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(QtLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Qt6Core$(QtLibSuffix).lib;Qt6Gui$(QtLibSuffix).lib;Qt6Widgets$(QtLibSuffix).lib;Qt6Network$(QtLibSuffix).lib;Qt6Concurrent$(QtLibSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6Core$(QtLibSuffix).lib;Qt6Gui$(QtLibSuffix).lib;Qt6Widgets$(QtLibSuffix).lib;Qt6Concurrent$(QtLibSuffix).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -118,24 +118,21 @@
 
   <!--Copy the needed dlls-->
   <ItemGroup>
-    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Network$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
+    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
     <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />
     <QtPlugins Condition="$(Configuration.Contains(Debug))" Include="@(QtAllPlugins)" />
     <QtPlugins Condition="!$(Configuration.Contains(Debug))" Exclude="$(QtPluginsDir)**\*$(QtDebugSuffix).dll" Include="@(QtAllPlugins)" />
     <QtPluginsDest Include="@(QtPlugins -> '$(QtBinaryOutputDir)$(QtPluginFolder)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <!--Our normal *d filter fails for the TLS DLLs, because backend ends in d. -->
-    <QtTLSDlls Include="$(QtPluginsDir)tls\qcertonlybackend$(QtLibSuffix).dll;$(QtPluginsDir)tls\qschannelbackend$(QtLibSuffix).dll" />
-    <QtTLSDllsDest Include="@(QtTLSDlls -> '$(QtBinaryOutputDir)$(QtPluginFolder)\tls\%(Filename)%(Extension)')" />
   </ItemGroup>
   <PropertyGroup>
     <QtConfFile>$(QtBinaryOutputDir)qt.conf</QtConfFile>
   </PropertyGroup>
   <Target Name="QtCopyBinaries"
     AfterTargets="Build"
-    Inputs="@(QtDlls);@(QtPlugins);@(QtTLSDlls)"
-    Outputs="@(QtDlls -> '$(QtBinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPluginsDest);@(QtTLSDllsDest)">
+    Inputs="@(QtDlls);@(QtPlugins)"
+    Outputs="@(QtDlls -> '$(QtBinaryOutputDir)%(RecursiveDir)%(Filename)%(Extension)');@(QtPluginsDest)">
     <Message Text="Copying Qt .dlls" Importance="High" />
     <Copy
       SourceFiles="@(QtDlls)"
@@ -145,11 +142,6 @@
     <Copy
       SourceFiles="@(QtPlugins)"
       DestinationFiles="@(QtPluginsDest)"
-      SkipUnchangedFiles="true"
-    />
-    <Copy
-      SourceFiles="@(QtTLSDlls)"
-      DestinationFiles="@(QtTLSDllsDest)"
       SkipUnchangedFiles="true"
     />
   </Target>
