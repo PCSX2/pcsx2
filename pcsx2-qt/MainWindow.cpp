@@ -2022,7 +2022,10 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 		}
 		else
 		{
-			restoreDisplayWindowGeometryFromConfig();
+			if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
+				container->setGeometry(geometry());
+			else
+				restoreDisplayWindowGeometryFromConfig();
 			container->showNormal();
 		}
 
@@ -2098,7 +2101,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		// and positioning has no effect anyway.
 		if (!s_use_central_widget)
 		{
-			if ((isVisible() || m_is_temporarily_windowed) && g_emu_thread->shouldRenderToMain())
+			if (isVisible() && g_emu_thread->shouldRenderToMain())
 				container->move(pos());
 			else
 				restoreDisplayWindowGeometryFromConfig();
@@ -2108,7 +2111,10 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	}
 	else if (!render_to_main)
 	{
-		restoreDisplayWindowGeometryFromConfig();
+		if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
+			container->setGeometry(geometry());
+		else
+			restoreDisplayWindowGeometryFromConfig();
 		container->showNormal();
 	}
 	else if (s_use_central_widget)
