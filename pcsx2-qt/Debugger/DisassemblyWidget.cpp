@@ -234,6 +234,11 @@ void DisassemblyWidget::contextAddFunction()
 	}
 }
 
+void DisassemblyWidget::contextCopyFunctionName()
+{
+	QGuiApplication::clipboard()->setText(QString::fromStdString(m_cpu->GetSymbolMap().GetLabelName(m_selectedAddressStart)));
+}
+
 void DisassemblyWidget::contextRemoveFunction()
 {
 	u32 curFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
@@ -665,6 +670,11 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionHex);
 	contextMenu->addAction(action = new QAction(tr("Copy Instruction Text"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionText);
+	if (m_selectedAddressStart == m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart)) 
+	{
+		contextMenu->addAction(action = new QAction(tr("Copy Function Name"), this));
+		connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyFunctionName);
+	}
 	contextMenu->addSeparator();
 	if (AddressCanRestore(m_selectedAddressStart, m_selectedAddressEnd))
 	{
