@@ -39,10 +39,10 @@ HTTPDownloaderCurl::~HTTPDownloaderCurl()
 		curl_multi_cleanup(m_multi_handle);
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(std::string user_agent)
 {
 	std::unique_ptr<HTTPDownloaderCurl> instance(std::make_unique<HTTPDownloaderCurl>());
-	if (!instance->Initialize(user_agent))
+	if (!instance->Initialize(std::move(user_agent)))
 		return {};
 
 	return instance;
@@ -51,7 +51,7 @@ std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
 static bool s_curl_initialized = false;
 static std::once_flag s_curl_initialized_once_flag;
 
-bool HTTPDownloaderCurl::Initialize(const char* user_agent)
+bool HTTPDownloaderCurl::Initialize(std::string user_agent)
 {
 	if (!s_curl_initialized)
 	{
@@ -79,7 +79,7 @@ bool HTTPDownloaderCurl::Initialize(const char* user_agent)
 		return false;
 	}
 
-	m_user_agent = user_agent;
+	m_user_agent = std::move(user_agent);
 	return true;
 }
 
@@ -90,7 +90,16 @@ size_t HTTPDownloaderCurl::WriteCallback(char* ptr, size_t size, size_t nmemb, v
 	const size_t transfer_size = size * nmemb;
 	const size_t new_size = current_size + transfer_size;
 	req->data.resize(new_size);
+	req->start_time = Common::Timer::GetCurrentValue();
 	std::memcpy(&req->data[current_size], ptr, transfer_size);
+
+	if (req->content_length == 0)
+	{
+		curl_off_t length;
+		if (curl_easy_getinfo(req->handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &length) == CURLE_OK)
+			req->content_length = static_cast<u32>(length);
+	}
+
 	return nmemb;
 }
 
@@ -174,8 +183,9 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
 	curl_easy_setopt(req->handle, CURLOPT_USERAGENT, m_user_agent.c_str());
 	curl_easy_setopt(req->handle, CURLOPT_WRITEFUNCTION, &HTTPDownloaderCurl::WriteCallback);
 	curl_easy_setopt(req->handle, CURLOPT_WRITEDATA, req);
-	curl_easy_setopt(req->handle, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(req->handle, CURLOPT_NOSIGNAL, 1L);
 	curl_easy_setopt(req->handle, CURLOPT_PRIVATE, req);
+	curl_easy_setopt(req->handle, CURLOPT_FOLLOWLOCATION, 1L);
 
 	if (request->type == Request::Type::Post)
 	{

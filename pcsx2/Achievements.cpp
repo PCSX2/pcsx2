@@ -28,7 +28,6 @@
 #include "IopMem.h"
 #include "MTGS.h"
 #include "Memory.h"
-#include "SysForwardDefs.h"
 #include "VMManager.h"
 #include "svnrev.h"
 #include "vtlb.h"
@@ -135,7 +134,6 @@ namespace Achievements
 	static void EnsureCacheDirectoriesExist();
 	static void ClearGameInfo();
 	static void ClearGameHash();
-	static std::string GetUserAgent();
 	static void BeginLoadingScreen(const char* text, bool* was_running_idle);
 	static void EndLoadingScreen(bool was_running_idle);
 	static std::string_view GetELFNameForHash(const std::string& elf_path);
@@ -246,19 +244,6 @@ namespace Achievements
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
 	return std::unique_lock(s_achievements_mutex);
-}
-
-std::string Achievements::GetUserAgent()
-{
-	std::string ret;
-	if (!PCSX2_isReleaseVersion && GIT_TAGGED_COMMIT)
-		ret = fmt::format("PCSX2 Nightly - {} ({})", GIT_TAG, GetOSVersionString());
-	else if (!PCSX2_isReleaseVersion)
-		ret = fmt::format("PCSX2 {} ({})", GIT_REV, GetOSVersionString());
-	else
-		ret = fmt::format("PCSX2 {}.{}.{}-{} ({})", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV, GetOSVersionString());
-
-	return ret;
 }
 
 void Achievements::BeginLoadingScreen(const char* text, bool* was_running_idle)
@@ -476,7 +461,7 @@ bool Achievements::Initialize()
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-	*http = HTTPDownloader::Create(GetUserAgent().c_str());
+	*http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
 	if (!*http)
 	{
 		Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
@@ -2918,7 +2903,7 @@ void Achievements::SwitchToRAIntegration()
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
 	RA_InitClient((HWND)main_window_handle, "PCSX2", GIT_TAG);
-	RA_SetUserAgentDetail(Achievements::GetUserAgent().c_str());
+	RA_SetUserAgentDetail(Host::GetHTTPUserAgent().c_str());
 
 	RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,
 		RACallbackEstimateTitle, RACallbackResetEmulator, RACallbackLoadROM);

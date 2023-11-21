@@ -1286,7 +1286,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 		return false;
 	}
 
-	std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create());
+	std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent()));
 	if (!downloader)
 	{
 		progress->DisplayError("Failed to create HTTP downloader.");

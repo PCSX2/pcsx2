@@ -19,7 +19,9 @@
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "LayeredSettingsInterface.h"
+#include "SysForwardDefs.h"
 #include "VMManager.h"
+#include "svnrev.h"
 
 #include "common/Assertions.h"
 #include "common/CrashHandler.h"
@@ -27,6 +29,8 @@
 #include "common/HeterogeneousContainers.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+
+#include "fmt/format.h"
 
 #include <cstdarg>
 #include <shared_mutex>
@@ -166,6 +170,19 @@ bool Host::ConfirmFormattedMessage(const std::string_view& title, const char* fo
 	va_end(ap);
 
 	return ConfirmMessage(title, message);
+}
+
+std::string Host::GetHTTPUserAgent()
+{
+	std::string ret;
+	if (!PCSX2_isReleaseVersion && GIT_TAGGED_COMMIT)
+		ret = fmt::format("PCSX2 Nightly - {} ({})", GIT_TAG, GetOSVersionString());
+	else if (!PCSX2_isReleaseVersion)
+		ret = fmt::format("PCSX2 {} ({})", GIT_REV, GetOSVersionString());
+	else
+		ret = fmt::format("PCSX2 {}.{}.{}-{} ({})", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV, GetOSVersionString());
+
+	return ret;
 }
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()

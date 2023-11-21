@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,14 +14,19 @@
  */
 
 #pragma once
+
 #include "common/Pcsx2Defs.h"
+
 #include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <variant>
 #include <vector>
+
+class ProgressCallback;
 
 class HTTPDownloader
 {
@@ -56,6 +61,7 @@ public:
 
 		HTTPDownloader* parent;
 		Callback callback;
+		ProgressCallback* progress;
 		std::string url;
 		std::string post_data;
 		std::string content_type;
@@ -63,6 +69,7 @@ public:
 		u64 start_time;
 		s32 status_code = 0;
 		u32 content_length = 0;
+		u32 last_progress_update = 0;
 		Type type = Type::Get;
 		std::atomic<State> state{State::Pending};
 	};
@@ -70,7 +77,7 @@ public:
 	HTTPDownloader();
 	virtual ~HTTPDownloader();
 
-	static std::unique_ptr<HTTPDownloader> Create(const char* user_agent = DEFAULT_USER_AGENT);
+	static std::unique_ptr<HTTPDownloader> Create(std::string user_agent = DEFAULT_USER_AGENT);
 	static std::string URLEncode(const std::string_view& str);
 	static std::string URLDecode(const std::string_view& str);
 	static std::string GetExtensionForContentType(const std::string& content_type);
@@ -78,8 +85,8 @@ public:
 	void SetTimeout(float timeout);
 	void SetMaxActiveRequests(u32 max_active_requests);
 
-	void CreateRequest(std::string url, Request::Callback callback);
-	void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback);
+	void CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress = nullptr);
+	void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback, ProgressCallback* progress = nullptr);
 	void PollRequests();
 	void WaitForAllRequests();
 	bool HasAnyRequests();

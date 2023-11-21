@@ -99,6 +99,9 @@ namespace Host
 	/// Requests shut down of the current virtual machine.
 	void RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state);
 
+	/// Returns the user agent to use for HTTP requests.
+	std::string GetHTTPUserAgent();
+
 	/// Base setting retrieval, bypasses layers.
 	std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
 	bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);

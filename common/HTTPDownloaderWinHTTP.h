@@ -26,7 +26,7 @@ public:
 	HTTPDownloaderWinHttp();
 	~HTTPDownloaderWinHttp() override;
 
-	bool Initialize(const char* user_agent);
+	bool Initialize(std::string user_agent);
 
 protected:
 	Request* InternalCreateRequest() override;
@@ -45,6 +45,8 @@ private:
 
 	static void CALLBACK HTTPStatusCallback(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus,
 		LPVOID lpvStatusInformation, DWORD dwStatusInformationLength);
+
+	static bool CheckCancelled(Request* request);
 
 	HINTERNET m_hSession = NULL;
 };
