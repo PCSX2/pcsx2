@@ -82,8 +82,8 @@ public:
 	virtual void PushState() override;
 	virtual void PopState() override;
 
-	virtual bool IsCancelled() const override;
-	virtual bool IsCancellable() const override;
+	bool IsCancelled() const;
+	bool IsCancellable() const;
 
 	virtual void SetCancellable(bool cancellable) override;
 	virtual void SetStatusText(const char* text) override;
