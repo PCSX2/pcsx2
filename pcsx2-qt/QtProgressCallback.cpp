@@ -34,15 +34,11 @@ QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float s
 	m_dialog.setModal(parent_widget != nullptr);
 	m_dialog.setAutoClose(false);
 	m_dialog.setAutoReset(false);
+	connect(&m_dialog, &QProgressDialog::canceled, this, &QtModalProgressCallback::dialogCancelled);
 	checkForDelayedShow();
 }
 
 QtModalProgressCallback::~QtModalProgressCallback() = default;
-
-bool QtModalProgressCallback::IsCancelled() const
-{
-	return m_dialog.wasCanceled();
-}
 
 void QtModalProgressCallback::SetCancellable(bool cancellable)
 {
@@ -121,6 +117,11 @@ bool QtModalProgressCallback::ModalConfirmation(const char* message)
 void QtModalProgressCallback::ModalInformation(const char* message)
 {
 	QMessageBox::information(&m_dialog, tr("Information"), QString::fromUtf8(message));
+}
+
+void QtModalProgressCallback::dialogCancelled()
+{
+	m_cancelled = true;
 }
 
 void QtModalProgressCallback::checkForDelayedShow()
