@@ -40,6 +40,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\cubeb\cubeb.h" />
+    <ClInclude Include="src\cubeb_triple_buffer.h" />
     <ClInclude Include="subprojects\speex\arch.h" />
     <ClInclude Include="subprojects\speex\fixed_generic.h" />
     <ClInclude Include="subprojects\speex\resample_neon.h" />

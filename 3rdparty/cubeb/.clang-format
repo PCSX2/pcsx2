@@ -1,0 +1,13 @@
+IndentWidth: 2
+UseTab: Never
+ReflowComments: true
+PointerAlignment: Middle
+AlignAfterOpenBracket: Align
+AlwaysBreakAfterReturnType: TopLevel
+ColumnLimit: 80
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterControlStatement: Never
+SpaceBeforeParens: ControlStatements
+BreakBeforeBinaryOperators: None

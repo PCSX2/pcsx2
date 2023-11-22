@@ -163,6 +163,7 @@ typedef enum {
                             implications. */
 } cubeb_log_level;
 
+/// A single channel position, to be used in a bitmask.
 typedef enum {
   CHANNEL_UNKNOWN = 0,
   CHANNEL_FRONT_LEFT = 1 << 0,
@@ -185,6 +186,9 @@ typedef enum {
   CHANNEL_TOP_BACK_RIGHT = 1 << 17
 } cubeb_channel;
 
+/// A bitmask representing the channel layout of a cubeb stream. This is
+/// bit-compatible with WAVEFORMATEXENSIBLE and in the same order as the SMPTE
+/// ordering.
 typedef uint32_t cubeb_channel_layout;
 // Some common layout definitions.
 enum {
@@ -433,7 +437,7 @@ typedef void (*cubeb_state_callback)(cubeb_stream * stream, void * user_ptr,
 
 /**
  * User supplied callback called when the underlying device changed.
- * @param user The pointer passed to cubeb_stream_init. */
+ * @param user_ptr The pointer passed to cubeb_stream_init. */
 typedef void (*cubeb_device_changed_callback)(void * user_ptr);
 
 /**
@@ -468,11 +472,6 @@ typedef void (*cubeb_log_callback)(char const * fmt, ...);
 CUBEB_EXPORT int
 cubeb_init(cubeb ** context, char const * context_name,
            char const * backend_name);
-
-/** Returns a list of backend names which can be supplid to cubeb_init().
-    Array is null-terminated. */
-CUBEB_EXPORT const char* const*
-cubeb_get_backend_names();
 
 /** Get a read-only string identifying this context's current backend.
     @param context A pointer to the cubeb context.

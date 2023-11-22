@@ -105,10 +105,13 @@ struct cubeb_stream {
   int free_buffers;
   int shutdown;
   int draining;
+  int error;
   HANDLE event;
   HWAVEOUT waveout;
   CRITICAL_SECTION lock;
   uint64_t written;
+  /* number of frames written during preroll */
+  uint64_t position_base;
   float soft_volume;
   /* For position wrap-around handling: */
   size_t frame_size;
@@ -150,6 +153,14 @@ winmm_get_next_buffer(cubeb_stream * stm)
   return hdr;
 }
 
+static long
+preroll_callback(cubeb_stream * stream, void * user, const void * inputbuffer,
+                 void * outputbuffer, long nframes)
+{
+  memset((uint8_t *)outputbuffer, 0, nframes * bytes_per_frame(stream->params));
+  return nframes;
+}
+
 static void
 winmm_refill_stream(cubeb_stream * stm)
 {
@@ -158,13 +169,20 @@ winmm_refill_stream(cubeb_stream * stm)
   long wanted;
   MMRESULT r;
 
+  ALOG("winmm_refill_stream");
+
   EnterCriticalSection(&stm->lock);
+  if (stm->error) {
+    LeaveCriticalSection(&stm->lock);
+    return;
+  }
   stm->free_buffers += 1;
   XASSERT(stm->free_buffers > 0 && stm->free_buffers <= NBUFS);
 
   if (stm->draining) {
     LeaveCriticalSection(&stm->lock);
     if (stm->free_buffers == NBUFS) {
+      ALOG("winmm_refill_stream draining");
       stm->state_callback(stm, stm->user_ptr, CUBEB_STATE_DRAINED);
     }
     SetEvent(stm->event);
@@ -187,9 +205,10 @@ winmm_refill_stream(cubeb_stream * stm)
   got = stm->data_callback(stm, stm->user_ptr, NULL, hdr->lpData, wanted);
   EnterCriticalSection(&stm->lock);
   if (got < 0) {
+    stm->error = 1;
     LeaveCriticalSection(&stm->lock);
-    /* XXX handle this case */
-    XASSERT(0);
+    SetEvent(stm->event);
+    stm->state_callback(stm, stm->user_ptr, CUBEB_STATE_ERROR);
     return;
   } else if (got < wanted) {
     stm->draining = 1;
@@ -223,6 +242,8 @@ winmm_refill_stream(cubeb_stream * stm)
     stm->state_callback(stm, stm->user_ptr, CUBEB_STATE_ERROR);
     return;
   }
+
+  ALOG("winmm_refill_stream %ld frames", got);
 
   LeaveCriticalSection(&stm->lock);
 }
@@ -486,7 +507,11 @@ winmm_stream_init(cubeb * context, cubeb_stream ** stream,
 
   stm->params = *output_stream_params;
 
-  stm->data_callback = data_callback;
+  // Data callback is set to the user-provided data callback after
+  // the initialization and potential preroll callback calls are done, because
+  // cubeb users don't expect the data callback to be called during
+  // initialization.
+  stm->data_callback = preroll_callback;
   stm->state_callback = state_callback;
   stm->user_ptr = user_ptr;
   stm->written = 0;
@@ -553,8 +578,17 @@ winmm_stream_init(cubeb * context, cubeb_stream ** stream,
   stm->frame_size = bytes_per_frame(stm->params);
   stm->prev_pos_lo_dword = 0;
   stm->pos_hi_dword = 0;
+  // Set the user data callback now that preroll has finished.
+  stm->data_callback = data_callback;
+  stm->position_base = 0;
+
+  // Offset the position by the number of frames written during preroll.
+  stm->position_base = stm->written;
+  stm->written = 0;
 
   *stream = stm;
+
+  LOG("winmm_stream_init OK");
 
   return CUBEB_OK;
 }
@@ -585,7 +619,7 @@ winmm_stream_destroy(cubeb_stream * stm)
     LeaveCriticalSection(&stm->lock);
 
     /* Wait for all blocks to complete. */
-    while (device_valid && enqueued > 0) {
+    while (device_valid && enqueued > 0 && !stm->error) {
       DWORD rv = WaitForSingleObject(stm->event, INFINITE);
       XASSERT(rv == WAIT_OBJECT_0);
 
@@ -774,7 +808,17 @@ winmm_stream_get_position(cubeb_stream * stm, uint64_t * position)
     return CUBEB_ERROR;
   }
 
-  *position = update_64bit_position(stm, time.u.cb) / stm->frame_size;
+  uint64_t position_not_adjusted =
+      update_64bit_position(stm, time.u.cb) / stm->frame_size;
+
+  // Subtract the number of frames that were written while prerolling, during
+  // initialization.
+  if (position_not_adjusted < stm->position_base) {
+    *position = 0;
+  } else {
+    *position = position_not_adjusted - stm->position_base;
+  }
+
   LeaveCriticalSection(&stm->lock);
 
   return CUBEB_OK;
@@ -787,17 +831,12 @@ winmm_stream_get_latency(cubeb_stream * stm, uint32_t * latency)
   MMTIME time;
   uint64_t written, position;
 
-  EnterCriticalSection(&stm->lock);
-  /* See the long comment above for why not just use TIME_SAMPLES here. */
-  time.wType = TIME_BYTES;
-  r = waveOutGetPosition(stm->waveout, &time, sizeof(time));
-
-  if (r != MMSYSERR_NOERROR || time.wType != TIME_BYTES) {
-    LeaveCriticalSection(&stm->lock);
-    return CUBEB_ERROR;
+  int rv = winmm_stream_get_position(stm, &position);
+  if (rv != CUBEB_OK) {
+    return rv;
   }
 
-  position = update_64bit_position(stm, time.u.cb);
+  EnterCriticalSection(&stm->lock);
   written = stm->written;
   LeaveCriticalSection(&stm->lock);
 

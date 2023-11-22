@@ -37,6 +37,7 @@
     </ClInclude>
     <ClInclude Include="include\cubeb\cubeb.h" />
     <ClInclude Include="include\cubeb_export.h" />
+    <ClInclude Include="src\cubeb_triple_buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="speex">

@@ -183,7 +183,7 @@ MixerContext::auto_matrix()
 {
   double matrix[NUM_NAMED_CHANNELS][NUM_NAMED_CHANNELS] = {{0}};
   double maxcoef = 0;
-  float maxval;
+  double maxval;
 
   cubeb_channel_layout in_ch_layout = clean_layout(_in_ch_layout);
   cubeb_channel_layout out_ch_layout = clean_layout(_out_ch_layout);

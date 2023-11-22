@@ -252,13 +252,11 @@ cubeb_init(cubeb ** context, char const * context_name,
 #if defined(USE_SUN)
     sun_init,
 #endif
-#if defined(USE_OPENSL)
-    opensl_init,
-#endif
-  // TODO: should probably be preferred over OpenSLES when available.
-  // Initialization will fail on old android devices.
 #if defined(USE_AAUDIO)
     aaudio_init,
+#endif
+#if defined(USE_OPENSL)
+    opensl_init,
 #endif
 #if defined(USE_AUDIOTRACK)
     audiotrack_init,
@@ -288,61 +286,6 @@ cubeb_init(cubeb ** context, char const * context_name,
     }
   }
   return CUBEB_ERROR;
-}
-
-const char* const*
-cubeb_get_backend_names()
-{
-  static const char* backend_names[] = {
-#if defined(USE_PULSE)
-    "pulse",
-#endif
-#if defined(USE_PULSE_RUST)
-    "pulse-rust",
-#endif
-#if defined(USE_JACK)
-    "jack",
-#endif
-#if defined(USE_ALSA)
-    "alsa",
-#endif
-#if defined(USE_AUDIOUNIT)
-    "audiounit",
-#endif
-#if defined(USE_AUDIOUNIT_RUST)
-    "audiounit-rust",
-#endif
-#if defined(USE_WASAPI)
-    "wasapi",
-#endif
-#if defined(USE_WINMM)
-    "winmm",
-#endif
-#if defined(USE_SNDIO)
-    "sndio",
-#endif
-#if defined(USE_SUN)
-    "sun",
-#endif
-#if defined(USE_OPENSL)
-    "opensl",
-#endif
-#if defined(USE_OSS)
-    "oss",
-#endif
-#if defined(USE_AAUDIO)
-    "aaudio",
-#endif
-#if defined(USE_AUDIOTRACK)
-    "audiotrack",
-#endif
-#if defined(USE_KAI)
-    "kai",
-#endif
-    NULL,
-  };
-
-  return backend_names;
 }
 
 char const *
@@ -406,6 +349,8 @@ cubeb_destroy(cubeb * context)
   }
 
   context->ops->destroy(context);
+
+  cubeb_set_log_callback(CUBEB_LOG_DISABLED, NULL);
 }
 
 int

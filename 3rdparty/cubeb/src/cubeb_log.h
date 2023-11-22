@@ -33,9 +33,9 @@ extern "C" {
 void
 cubeb_log_set(cubeb_log_level log_level, cubeb_log_callback log_callback);
 cubeb_log_level
-cubeb_log_get_level();
+cubeb_log_get_level(void);
 cubeb_log_callback
-cubeb_log_get_callback();
+cubeb_log_get_callback(void);
 void
 cubeb_log_internal_no_format(const char * msg);
 void

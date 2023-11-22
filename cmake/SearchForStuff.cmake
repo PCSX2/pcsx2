@@ -151,9 +151,10 @@ if(USE_VULKAN)
 	add_subdirectory(3rdparty/vulkan-headers EXCLUDE_FROM_ALL)
 endif()
 
+set(BUILD_TESTS OFF CACHE INTERNAL "Build tests")
+set(BUILD_TOOLS OFF CACHE INTERNAL "Build tools")
 add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(cubeb)
-disable_compiler_warnings_for_target(speex)
 
 # Find the Qt components that we need.
 find_package(Qt6 6.6.0 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
