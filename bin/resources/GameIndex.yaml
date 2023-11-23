@@ -24832,7 +24832,7 @@ SLES-54915:
   region: "PAL-M5"
 SLES-54917:
   name: "Agent Hugo - Lemoon Twist"
-  region: "PAL-M5"
+  region: "PAL-SC"
 SLES-54918:
   name: "Agent Hugo - Lemoon Twist"
   region: "PAL-M7"
@@ -26020,7 +26020,7 @@ SLES-55359:
   region: "PAL-A"
 SLES-55364:
   name: "Agent Hugo - Hula Holiday"
-  region: "PAL-M5"
+  region: "PAL-SC"
 SLES-55365:
   name: "Agent Hugo - Hula Holiday"
   region: "PAL-M7"
@@ -46852,7 +46852,7 @@ SLPS-20007:
   clampModes:
     vuClampMode: 3 # Fixes missing geometry.
   gameFixes:
-    - EETimingHack # Garbage in FMVs.
+    - InstantDMAHack # Garbage in FMVs.
     - VUSyncHack # Fixes missing geometry.
   gsHWFixes:
     textureInsideRT: 1
