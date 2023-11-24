@@ -9,6 +9,7 @@
 #define CUBEB_RING_ARRAY_H
 
 #include "cubeb_utils.h"
+#include <CoreAudio/CoreAudioTypes.h>
 
 /** Ring array of pointers is used to hold buffers. In case that
     asynchronous producer/consumer callbacks do not arrive in a
@@ -46,7 +47,7 @@ single_audiobuffer_init(AudioBuffer * buffer, uint32_t bytesPerFrame,
 /** Initialize the ring array.
     @param ra The ring_array pointer of allocated structure.
     @retval 0 on success. */
-int
+static int
 ring_array_init(ring_array * ra, uint32_t capacity, uint32_t bytesPerFrame,
                 uint32_t channelsPerFrame, uint32_t framesPerBuffer)
 {
@@ -78,7 +79,7 @@ ring_array_init(ring_array * ra, uint32_t capacity, uint32_t bytesPerFrame,
 
 /** Destroy the ring array.
     @param ra The ring_array pointer.*/
-void
+static void
 ring_array_destroy(ring_array * ra)
 {
   assert(ra);
@@ -97,7 +98,7 @@ ring_array_destroy(ring_array * ra)
     @param ra The ring_array pointer.
     @retval Pointer of the allocated space to be stored with fresh data or NULL
    if full. */
-AudioBuffer *
+static AudioBuffer *
 ring_array_get_free_buffer(ring_array * ra)
 {
   assert(ra && ra->buffer_array);
@@ -118,7 +119,7 @@ ring_array_get_free_buffer(ring_array * ra)
 /** Get the next available buffer with data.
     @param ra The ring_array pointer.
     @retval Pointer of the next in order data buffer or NULL if empty. */
-AudioBuffer *
+static AudioBuffer *
 ring_array_get_data_buffer(ring_array * ra)
 {
   assert(ra && ra->buffer_array);
@@ -136,20 +137,6 @@ ring_array_get_data_buffer(ring_array * ra)
   --ra->count;
 
   return ret;
-}
-
-/** When array is empty get the first allocated buffer in the array.
-    @param ra The ring_array pointer.
-    @retval If arrays is empty, pointer of the allocated space else NULL. */
-AudioBuffer *
-ring_array_get_dummy_buffer(ring_array * ra)
-{
-  assert(ra && ra->buffer_array);
-  assert(ra->capacity > 0);
-  if (ra->count > 0) {
-    return NULL;
-  }
-  return &ra->buffer_array[0];
 }
 
 #endif // CUBEB_RING_ARRAY_H

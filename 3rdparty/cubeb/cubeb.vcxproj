@@ -49,7 +49,6 @@
     <ClInclude Include="subprojects\speex\stack_alloc.h" />
     <ClInclude Include="src\cubeb-internal.h" />
     <ClInclude Include="src\cubeb-speex-resampler.h" />
-    <ClInclude Include="src\cubeb_array_queue.h" />
     <ClInclude Include="src\cubeb_assert.h" />
     <ClInclude Include="src\cubeb_log.h" />
     <ClInclude Include="src\cubeb_mixer.h" />
@@ -73,6 +72,11 @@
     <ClCompile Include="src\cubeb_winmm.c" />
     <ClCompile Include="subprojects\speex\resample.c" />
   </ItemGroup>
+  <ItemDefinitionGroup>
+    <Lib>
+      <AdditionalDependencies Condition="'$(Platform)'!='ARM64'">ksuser.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
