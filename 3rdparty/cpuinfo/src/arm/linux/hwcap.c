@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <string.h>
 
 #include <unistd.h>
@@ -15,7 +16,8 @@
 #include <arm/linux/api.h>
 #include <cpuinfo/log.h>
 
-#if CPUINFO_ARCH_ARM64 || CPUINFO_ARCH_ARM && !defined(__ANDROID__)
+#if CPUINFO_ARCH_ARM64 || CPUINFO_ARCH_ARM && \
+		defined(__GLIBC__) && defined(__GLIBC_MINOR__) && (__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 16)
 	#include <sys/auxv.h>
 #else
 	#define AT_HWCAP 16
@@ -74,11 +76,13 @@
 				libc = NULL;
 			}
 			return getauxval != NULL;
-		#else
-			/* GNU/Linux: getauxval is always supported */
+		#elif defined(__GLIBC__) && defined(__GLIBC_MINOR__) && (__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 16)
+			/* GNU/Linux: getauxval is supported since glibc-2.16 */
 			*hwcap  = getauxval(AT_HWCAP);
 			*hwcap2 = getauxval(AT_HWCAP2);
 			return true;
+		#else
+			return false;
 		#endif
 	}
 

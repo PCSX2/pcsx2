@@ -234,7 +234,7 @@ static bool transform_token(char* token_start, char* token_end, struct parser_st
 				return true;
 			}
 			/*
-			 * Erase everywhing after "SOC" on AMD System-on-Chips, e.g.
+			 * Erase everything after "SOC" on AMD System-on-Chips, e.g.
 			 *  "AMD GX-212JC SOC with Radeon(TM) R2E Graphics  \0"
 			 */
 			if (erase_matching(token_start, token_length, "SOC")) {
@@ -581,7 +581,7 @@ uint32_t cpuinfo_x86_normalize_brand_string(
 	/* Iterate through all tokens and erase redundant parts */
 	{
 		bool is_token = false;
-		char* token_start;
+		char* token_start = NULL;
 		for (char* char_ptr = name; char_ptr != name_end; char_ptr++) {
 			if (*char_ptr == ' ') {
 				if (is_token) {
@@ -619,7 +619,7 @@ uint32_t cpuinfo_x86_normalize_brand_string(
 	/* Compact tokens: collapse multiple spacing into one */
 	{
 		char* output_ptr = normalized_name;
-		char* token_start;
+		char* token_start = NULL;
 		bool is_token = false;
 		bool previous_token_ends_with_dash = true;
 		bool current_token_starts_with_dash = false;

@@ -314,7 +314,7 @@ CPUINFO_INTERNAL bool cpuinfo_arm_linux_parse_proc_cpuinfo(
 		struct cpuinfo_arm_isa isa[restrict static 1]);
 #endif
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
 	CPUINFO_INTERNAL struct cpuinfo_arm_chipset
 		cpuinfo_arm_android_decode_chipset(
 			const struct cpuinfo_android_properties properties[restrict static 1],

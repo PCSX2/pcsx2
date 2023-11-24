@@ -199,9 +199,13 @@ void cpuinfo_arm_linux_init(void) {
 	for (uint32_t i = 0; i < arm_linux_processors_count; i++) {
 		arm_linux_processors[i].system_processor_id = i;
 		if (bitmask_all(arm_linux_processors[i].flags, CPUINFO_LINUX_FLAG_VALID)) {
-			valid_processors += 1;
-
-			if (!(arm_linux_processors[i].flags & CPUINFO_ARM_LINUX_VALID_PROCESSOR)) {
+			if (arm_linux_processors[i].flags & CPUINFO_ARM_LINUX_VALID_PROCESSOR) {
+				/*
+				 * Processor is in possible and present lists, and also reported in /proc/cpuinfo.
+				 * This processor is availble for compute.
+				 */
+				valid_processors += 1;
+			} else {
 				/*
 				 * Processor is in possible and present lists, but not reported in /proc/cpuinfo.
 				 * This is fairly common: high-index processors can be not reported if they are offline.
@@ -510,7 +514,7 @@ void cpuinfo_arm_linux_init(void) {
 	uint32_t l2_count = 0, l3_count = 0, big_l3_size = 0, cluster_id = UINT32_MAX;
 	/* Indication whether L3 (if it exists) is shared between all cores */
 	bool shared_l3 = true;
-	/* Populate cache infromation structures in l1i, l1d */
+	/* Populate cache information structures in l1i, l1d */
 	for (uint32_t i = 0; i < valid_processors; i++) {
 		if (arm_linux_processors[i].package_leader_id == arm_linux_processors[i].system_processor_id) {
 			cluster_id += 1;

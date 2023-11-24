@@ -21,7 +21,8 @@
 #define CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER    UINT32_C(0x00000400)
 #define CPUINFO_LINUX_FLAG_PROC_CPUINFO       UINT32_C(0x00000800)
 #define CPUINFO_LINUX_FLAG_VALID              UINT32_C(0x00001000)
-
+#define CPUINFO_LINUX_FLAG_CUR_FREQUENCY      UINT32_C(0x00002000)
+#define CPUINFO_LINUX_FLAG_CLUSTER_CLUSTER    UINT32_C(0x00004000)
 
 typedef bool (*cpuinfo_cpulist_callback)(uint32_t, uint32_t, void*);
 CPUINFO_INTERNAL bool cpuinfo_linux_parse_cpulist(const char* filename, cpuinfo_cpulist_callback callback, void* context);
@@ -33,6 +34,7 @@ CPUINFO_INTERNAL bool cpuinfo_linux_parse_multiline_file(const char* filename, s
 CPUINFO_INTERNAL uint32_t cpuinfo_linux_get_max_processors_count(void);
 CPUINFO_INTERNAL uint32_t cpuinfo_linux_get_max_possible_processor(uint32_t max_processors_count);
 CPUINFO_INTERNAL uint32_t cpuinfo_linux_get_max_present_processor(uint32_t max_processors_count);
+CPUINFO_INTERNAL uint32_t cpuinfo_linux_get_processor_cur_frequency(uint32_t processor);
 CPUINFO_INTERNAL uint32_t cpuinfo_linux_get_processor_min_frequency(uint32_t processor);
 CPUINFO_INTERNAL uint32_t cpuinfo_linux_get_processor_max_frequency(uint32_t processor);
 CPUINFO_INTERNAL bool cpuinfo_linux_get_processor_package_id(uint32_t processor, uint32_t package_id[restrict static 1]);
@@ -50,6 +52,21 @@ CPUINFO_INTERNAL bool cpuinfo_linux_detect_core_siblings(
 	cpuinfo_siblings_callback callback,
 	void* context);
 CPUINFO_INTERNAL bool cpuinfo_linux_detect_thread_siblings(
+	uint32_t max_processors_count,
+	uint32_t processor,
+	cpuinfo_siblings_callback callback,
+	void* context);
+CPUINFO_INTERNAL bool cpuinfo_linux_detect_cluster_cpus(
+	uint32_t max_processors_count,
+	uint32_t processor,
+	cpuinfo_siblings_callback callback,
+	void* context);
+CPUINFO_INTERNAL bool cpuinfo_linux_detect_core_cpus(
+	uint32_t max_processors_count,
+	uint32_t processor,
+	cpuinfo_siblings_callback callback,
+	void* context);
+CPUINFO_INTERNAL bool cpuinfo_linux_detect_package_cpus(
 	uint32_t max_processors_count,
 	uint32_t processor,
 	cpuinfo_siblings_callback callback,

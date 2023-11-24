@@ -1,10 +1,9 @@
 #pragma once
 
-#include <stdint.h>
-
 #ifdef _MSC_VER
-#include <intrin.h> // _BitScanReverse
+#include <intrin.h>
 #endif
+#include <stdint.h>
 
 
 inline static uint32_t bit_length(uint32_t n) {

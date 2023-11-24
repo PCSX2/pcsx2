@@ -195,35 +195,37 @@ enum cpuinfo_uarch cpuinfo_x86_decode_uarch(
 					}
 					break;
 				case 0x16:
-					if (model_info->model >= 0x03) {
+					if (model_info->extended_model >= 0x03) {
 						return cpuinfo_uarch_puma;
 					} else {
 						return cpuinfo_uarch_jaguar;
 					}
 				case 0x17:
-					switch (model_info->model) {
-						case 0x01: // 14 nm Naples, Whitehaven, Summit Ridge, Snowy Owl
-						case 0x08: // 12 nm Pinnacle Ridge
-						case 0x11: // 14 nm Raven Ridge, Great Horned Owl
-						case 0x18: // 12 nm Picasso
+					switch (model_info->extended_model) {
+						case 0x0: // model 01h -> 14 nm Naples/Whitehaven/Summit Ridge/Snowy Owl, model 08h -> 12 nm Colfax/Pinnacle Ridge
+						case 0x1: // model 11h -> 14 nm Raven Ridge/Great Horned Owl, model 18h -> 14 nm Banded Kestrel / 12 nm Picasso
 							return cpuinfo_uarch_zen;
-						case 0x31: // Rome, Castle Peak
-						case 0x60: // Renoir
-						case 0x68: // Lucienne
-						case 0x71: // Matisse
-						case 0x90: // Van Gogh
-						case 0x98: // Mero
+						case 0x3: // model 31h -> Rome/Castle Peak
+						case 0x4: // model 47h -> Xbox Series X
+						case 0x6: // model 60h -> Renoir/Grey Hawk, model 68h -> Lucienne
+						case 0x7: // model 71h -> Matisse
+						case 0x9: // model 90h -> Van Gogh, model 98h -> Mero
 							return cpuinfo_uarch_zen2;
 					}
 					break;
 				case 0x19:
-					switch (model_info->model) {
-						case 0x01: // Genesis
-						case 0x21: // Vermeer
-						case 0x30: // Badami, Trento
-						case 0x40: // Rembrandt
-						case 0x50: // Cezanne
+					switch (model_info->extended_model) {
+						case 0x0: // model 00h -> Genesis, model 01h -> Milan, model 08h -> Chagall
+						case 0x2: // model 21h -> Vermeer
+						case 0x3: // model 30h -> Badami, Trento
+						case 0x4: // model 40h -> Rembrandt
+						case 0x5: // model 50h -> Cezanne
 							return cpuinfo_uarch_zen3;
+						case 0x1: // model 10h..1Fh -> Stones
+						case 0x6: // model 60h..6Fh -> Raphael
+						case 0x7: // model 70h..77h -> Phoenix/Hawkpoint1, model 78h..7Fh -> Phoenix 2/Hawkpoint2
+						case 0xA: // model A0h..AFh -> Stones-Dense
+							return cpuinfo_uarch_zen4;
 					}
 					break;
 			}
