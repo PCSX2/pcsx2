@@ -112,7 +112,7 @@ private:
 	u8 ResponseBytes(u8 commandByte);
 
 public:
-	PadDualshock2(u8 unifiedSlot);
+	PadDualshock2(u8 unifiedSlot, size_t ejectTicks);
 	~PadDualshock2() override;
 
 	static inline bool IsAnalogKey(int index)

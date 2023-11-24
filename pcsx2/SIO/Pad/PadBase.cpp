@@ -17,9 +17,10 @@
 
 #include "SIO/Pad/PadBase.h"
 
-PadBase::PadBase(u8 unifiedSlot)
+PadBase::PadBase(u8 unifiedSlot, size_t ejectTicks)
 {
 	this->unifiedSlot = unifiedSlot;
+	this->ejectTicks = ejectTicks;
 }
 
 PadBase::~PadBase() = default;

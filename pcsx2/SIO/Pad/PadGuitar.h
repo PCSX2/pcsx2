@@ -63,7 +63,7 @@ private:
 	u8 VibrationMap(u8 commandByte);
 
 public:
-	PadGuitar(u8 unifiedSlot);
+	PadGuitar(u8 unifiedSlot, size_t ejectTicks);
 	~PadGuitar() override;
 
 	Pad::ControllerType GetType() const override;

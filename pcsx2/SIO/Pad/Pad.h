@@ -28,6 +28,8 @@ class StateWrapper;
 
 namespace Pad
 {
+	constexpr size_t DEFAULT_EJECT_TICKS = 50;
+
 	bool Initialize();
 	void Shutdown();
 
