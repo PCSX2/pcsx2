@@ -2411,11 +2411,10 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				else
 					++iter;
 
-				if (eerect.rintersect(newrect).eq(newrect))
-				{
-					can_create = true;
-					break;
-				}
+				// In theory it might not be a full rect, but it should be enough to display *something*.
+				// It's also possible we haven't saved enough of the transfers to fill the rect if the game draws the picture in lots of small transfers.
+				can_create = true;
+				break;
 			}
 			else
 				++iter;
