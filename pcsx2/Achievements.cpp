@@ -339,7 +339,7 @@ std::string Achievements::GetGameHash(const std::string& elf_path)
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-	auto callback = [cache_filename](s32 status_code, std::string content_type, HTTPDownloader::Request::Data data) {
+	auto callback = [cache_filename](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
 		if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			return;
 
@@ -639,7 +639,7 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
-	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
+	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type,
 														HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
 		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
