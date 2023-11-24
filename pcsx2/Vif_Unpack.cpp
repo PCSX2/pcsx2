@@ -331,9 +331,12 @@ _vifT int nVifUnpack(const u8* data)
 	const uint ret    = std::min(vif.vifpacketsize, vif.tag.size);
 	const bool isFill = (vifRegs.cycle.cl < wl);
 	s32        size   = ret << 2;
+	int num_transferred = 0;
 
 	if (ret == vif.tag.size) // Full Transfer
 	{
+		num_transferred = vifRegs.num;
+
 		if (v.bSize) // Last transfer was partial
 		{
 			memcpy(&v.buffer[v.bSize], data, size);
@@ -357,6 +360,11 @@ _vifT int nVifUnpack(const u8* data)
 		else
 			vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, (size + 4) & ~0x3);
 
+		if (idx)
+			g_vif1Cycles += num_transferred;
+		else
+			g_vif0Cycles += num_transferred;
+
 		vif.pass     = 0;
 		vif.tag.size = 0;
 		vif.cmd      = 0;
@@ -377,13 +385,19 @@ _vifT int nVifUnpack(const u8* data)
 
 		if (!isFill)
 		{
-			vifRegs.num -= (size / vSize);
+			num_transferred = (size / vSize);
 		}
 		else
 		{
 			int dataSize = (size / vSize);
-			vifRegs.num = vifRegs.num - (((dataSize / vifRegs.cycle.cl) * (vifRegs.cycle.wl - vifRegs.cycle.cl)) + dataSize);
+			num_transferred = (((dataSize / vifRegs.cycle.cl) * (vifRegs.cycle.wl - vifRegs.cycle.cl)) + dataSize);
 		}
+		if (idx)
+			g_vif1Cycles += num_transferred;
+		else
+			g_vif0Cycles += num_transferred;
+
+		vifRegs.num -= num_transferred;
 	}
 
 	return ret;
