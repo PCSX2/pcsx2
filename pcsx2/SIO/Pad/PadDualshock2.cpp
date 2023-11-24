@@ -547,8 +547,8 @@ u8 PadDualshock2::ResponseBytes(u8 commandByte)
 	}
 }
 
-PadDualshock2::PadDualshock2(u8 unifiedSlot)
-	: PadBase(unifiedSlot)
+PadDualshock2::PadDualshock2(u8 unifiedSlot, size_t ejectTicks)
+	: PadBase(unifiedSlot, ejectTicks)
 {
 	currentMode = Pad::Mode::DIGITAL;
 }

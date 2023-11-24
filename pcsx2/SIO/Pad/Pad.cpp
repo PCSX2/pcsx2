@@ -25,6 +25,7 @@
 
 #include "IconsFontAwesome5.h"
 
+#include "VMManager.h"
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -57,6 +58,9 @@ namespace Pad
 
 	static std::array<std::array<MacroButton, NUM_MACRO_BUTTONS_PER_CONTROLLER>, NUM_CONTROLLER_PORTS> s_macro_buttons;
 	static std::array<std::unique_ptr<PadBase>, NUM_CONTROLLER_PORTS> s_controllers;
+
+	bool mtapPort0LastState;
+	bool mtapPort1LastState;
 }
 
 bool Pad::Initialize()
@@ -90,19 +94,24 @@ void Pad::LoadConfig(const SettingsInterface& si)
 {
 	s_macro_buttons = {};
 
+	const bool mtapPort0Changed = EmuConfig.Pad.MultitapPort0_Enabled != Pad::mtapPort0LastState;
+	const bool mtapPort1Changed = EmuConfig.Pad.MultitapPort1_Enabled != Pad::mtapPort1LastState;
+
 	for (u32 i = 0; i < Pad::NUM_CONTROLLER_PORTS; i++)
 	{
 		const std::string section = GetConfigSection(i);
 		const ControllerInfo* ci = GetControllerInfo(EmuConfig.Pad.Ports[i].Type);
 		pxAssert(ci);
 
-		// If a pad is not yet constructed, at minimum place a NotConnected pad in the slot.
-		// Do not abort the for loop - If there are pad settings, we want those to be applied to the slot.
 		PadBase* pad = Pad::GetPad(i);
 
-		if (!pad || pad->GetType() != ci->type)
+		// If pad pointer is not occupied yet, type in settings no longer matches the current type, or a multitap was slotted in/out,
+		// then reconstruct a new pad.
+		if (!pad || pad->GetType() != ci->type || (mtapPort0Changed && (i <= 4 && i != 1)) || (mtapPort1Changed && (i >= 5 || i == 1)))
 		{
-			pad = Pad::CreatePad(i, ci->type);
+			// Create the new pad. If the VM is in any kind of running state at all, set eject ticks so the PS2 will think
+			// there was some kind of pad ejection event and properly detect the new one, and properly initiate its config sequence.
+			pad = Pad::CreatePad(i, ci->type, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
 			pxAssert(pad);
 		}
 
@@ -129,6 +138,9 @@ void Pad::LoadConfig(const SettingsInterface& si)
 		pad->SetAnalogInvertR((invert_r & 1) != 0, (invert_r & 2) != 0);
 		LoadMacroButtonConfig(si, i, ci, section);
 	}
+
+	Pad::mtapPort0LastState = EmuConfig.Pad.MultitapPort0_Enabled;
+	Pad::mtapPort1LastState = EmuConfig.Pad.MultitapPort1_Enabled;
 }
 
 Pad::ControllerType Pad::GetDefaultPadType(u32 pad)
@@ -526,35 +538,57 @@ bool Pad::Freeze(StateWrapper& sw)
 
 		for (u32 unifiedSlot = 0; unifiedSlot < NUM_CONTROLLER_PORTS; unifiedSlot++)
 		{
-			ControllerType type;
-			sw.Do(&type);
+			PadBase* currentPad = GetPad(unifiedSlot);
+			ControllerType statePadType;
+			
+			sw.Do(&statePadType);
+			
 			if (sw.HasError())
 				return false;
-
-			PadBase* tempPad;
-			PadBase* pad = GetPad(unifiedSlot);
-			if (!pad || pad->GetType() != type)
+			
+			if (!currentPad)
 			{
+				pxAssertMsg(false, fmt::format("Pad::Freeze (on read) Existing Pad {0} was nullptr", unifiedSlot).c_str());
+			}
+			// If the currently configured pad is of a different type than the pad which was used during the savestate...
+			else if (currentPad->GetType() != statePadType)
+			{
+				const ControllerType currentPadType = currentPad->GetType();
+
 				const auto& [port, slot] = sioConvertPadToPortAndSlot(unifiedSlot);
 				Host::AddIconOSDMessage(fmt::format("UnfreezePad{}Changed", unifiedSlot), ICON_FA_GAMEPAD,
 					fmt::format(TRANSLATE_FS("Pad",
 									"Controller port {0}, slot {1} has a {2} connected, but the save state has a "
-									"{3}.\nLeaving the original controller type connected, but this may cause issues."),
+									"{3}.\nEjecting {3} and replacing it with {2}."),
 						port, slot,
-						GetControllerTypeName(pad ? pad->GetType() : Pad::ControllerType::NotConnected),
-						GetControllerTypeName(type)));
+						GetControllerTypeName(currentPad ? currentPad->GetType() : Pad::ControllerType::NotConnected),
+						GetControllerTypeName(statePadType)));
+				
+				// Run the freeze, using a new pad instance of the old type just so we make sure all those attributes
+				// from the state are read out and we aren't going to run into some sort of consistency problem.
+				currentPad = CreatePad(unifiedSlot, statePadType);
 
-				// Reset the transfer etc state of the pad, at least it has a better chance of surviving.
-				if (pad)
-					pad->SoftReset();
+				if (currentPad)
+				{
+					currentPad->Freeze(sw);
 
-				// But we still need to pull the data from the state..
-				tempPad = CreatePad(unifiedSlot, type);
-				pad = tempPad;
+					// Now immediately discard whatever malformed pad state we just created, and replace it with a fresh pad loaded
+					// using whatever the current user settings are. Savestates are, by definition, never going to occur in the middle
+					// of a transfer between SIO2 and the peripheral, since they aren't captured until the VM is at a point where everything
+					// is "stoppable". For all intents and purposes, by the time a savestate is captured, the IOP is "done" and there is no
+					// "pending work" left hanging in SIO2 or the pads. So there is nothing actually lost from just throwing the pad away and making a new one here.
+					currentPad = CreatePad(unifiedSlot, currentPadType, Pad::DEFAULT_EJECT_TICKS);
+				}
+				else
+				{
+					pxAssertMsg(false, fmt::format("Pad::Freeze (on read) State Pad {0} was nullptr", unifiedSlot).c_str());
+				}
 			}
-
-			if (!pad->Freeze(sw))
+			// ... else, just run the freeze normally.
+			else if (currentPad && !currentPad->Freeze(sw))
+			{
 				return false;
+			}
 		}
 	}
 	else

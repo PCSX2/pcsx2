@@ -248,8 +248,8 @@ u8 PadGuitar::VibrationMap(u8 commandByte)
 	return 0xff;
 }
 
-PadGuitar::PadGuitar(u8 unifiedSlot)
-	: PadBase(unifiedSlot)
+PadGuitar::PadGuitar(u8 unifiedSlot, size_t ejectTicks)
+	: PadBase(unifiedSlot, ejectTicks)
 {
 	currentMode = Pad::Mode::DIGITAL;
 }

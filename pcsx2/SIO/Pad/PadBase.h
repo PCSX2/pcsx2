@@ -23,6 +23,14 @@
 
 class PadBase
 {
+public:
+	// How many commands the pad should pretend to be ejected for.
+	// Since changing pads in the UI or ejecting a multitap is instant,
+	// this simulates the time it would take for a human to plug in the pad.
+	// That gives games a chance to see a pad get inserted rather than the
+	// pad's type magically changing from one frame to the next.
+	size_t ejectTicks = 0;
+
 protected:
 	std::array<u8, 32> rawInputs = {};
 	u8 unifiedSlot;
@@ -32,7 +40,7 @@ protected:
 	size_t commandBytesReceived = 0;
 
 public: // Public members
-	PadBase(u8 unifiedSlot);
+	PadBase(u8 unifiedSlot, size_t ejectTicks = 0);
 	virtual ~PadBase();
 
 	void SoftReset();

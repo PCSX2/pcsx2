@@ -162,7 +162,7 @@ void Sio2::Pad()
 	this->recv1 |= Recv1::NO_DEVICES_MISSING;
 
 	// If the currently accessed pad is missing, also tick those bits
-	if (pad->GetType() == Pad::ControllerType::NotConnected)
+	if (pad->GetType() == Pad::ControllerType::NotConnected || pad->ejectTicks)
 	{
 		if (!port)
 		{
@@ -180,10 +180,28 @@ void Sio2::Pad()
 	// Then for every byte in g_Sio2FifoIn, pass to PAD and see what it kicks back to us.
 	while (!g_Sio2FifoIn.empty())
 	{
-		const u8 commandByte = g_Sio2FifoIn.front();
-		g_Sio2FifoIn.pop_front();
-		const u8 responseByte = pad->SendCommandByte(commandByte);
-		g_Sio2FifoOut.push_back(responseByte);
+		// If the pad is "ejected", respond with nothing
+		if (pad->ejectTicks)
+		{
+			g_Sio2FifoIn.pop_front();
+			g_Sio2FifoOut.push_back(0xff);
+		}
+		// Else, actually forward to the pad.
+		else
+		{
+			const u8 commandByte = g_Sio2FifoIn.front();
+			g_Sio2FifoIn.pop_front();
+			const u8 responseByte = pad->SendCommandByte(commandByte);
+			g_Sio2FifoOut.push_back(responseByte);
+		}
+	}
+
+	// If the pad is "ejected", then decrement one tick.
+	// This needs to happen AFTER anything else which might
+	// consider if the pad is "ejected"!
+	if (pad->ejectTicks)
+	{
+		pad->ejectTicks -= 1;
 	}
 }
 
