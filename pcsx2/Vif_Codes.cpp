@@ -159,6 +159,8 @@ __fi int _vifCode_Direct(int pass, const u8* data, bool isDirectHL)
 		vif1.tag.size -= ret / 4; // Convert to u32's
 		vif1Regs.stat.VGW = false;
 
+		g_vif1Cycles += (ret / 16) * 2; // Need to add on the same amount of cycles again, as the GS has a 64bit bus bottleneck.
+
 		if (ret & 3)
 			DevCon.Warning("Vif %s: Ret wasn't a multiple of 4!", name); // Shouldn't happen
 		if (size == 0)
@@ -520,6 +522,7 @@ vifOp(vifCode_MskPath3)
 			GUNIT_WARN("VIF MSKPATH3 off Path3 triggering!");
 			gifInterrupt();
 		}
+
 		vif1.cmd = 0;
 		vif1.pass = 0;
 	}

@@ -84,6 +84,8 @@ int GIF_Fifo::write_fifo(u32* pMem, int size)
 {
 	if (fifoSize == 16)
 	{
+		gifRegs.stat.FQC = fifoSize;
+		CalculateFIFOCSR();
 		//GIF_LOG("GIF FIFO Full");
 		return 0;
 	}
@@ -232,6 +234,7 @@ __fi void gifInterrupt()
 				GifDMAInt(16);
 			}
 			CPU_SET_DMASTALL(DMAC_GIF, gifUnit.Path3Masked() || !gifUnit.CanDoPath3());
+
 			return;
 		}
 	}
@@ -251,7 +254,6 @@ __fi void gifInterrupt()
 		if (gif_fifo.fifoSize == 16)
 			return;
 	}
-
 	// If there's something in the FIFO and we can do PATH3, empty the FIFO.
 	if (gif_fifo.fifoSize > 0)
 	{
@@ -326,12 +328,18 @@ static u32 WRITERING_DMA(u32* pMem, u32 qwc)
 	{
 		if (gif_fifo.fifoSize < 16)
 		{
+			if (vif1Regs.stat.VGW && gifUnit.Path3Masked())
+			{
+				DevCon.Warning("Check paths %d fifosize %d qwc %d", CheckPaths(), gif_fifo.fifoSize, qwc);
+				//return 0;
+			}
 			size = gif_fifo.write_fifo((u32*)pMem, originalQwc); // Use original QWC here, the intermediate mode is for the GIF unit, not DMA
 			incGifChAddr(size);
 			return size;
 		}
 		return 4; // Arbitrary value, probably won't schedule a DMA anwyay since the FIFO is full and GIF is paused
 	}
+
 
 	size = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)pMem, qwc * 16) / 16;
 	incGifChAddr(size);
@@ -353,7 +361,7 @@ static __fi void GIFchain()
 	}
 
 	const int transferred = WRITERING_DMA((u32*)pMem, gifch.qwc);
-	gif.gscycles += transferred * BIAS;
+	gif.gscycles += (gif_fifo.fifoSize > 0) ? transferred * 2 : transferred * 4;
 
 	if (!gifUnit.Path3Masked() || (gif_fifo.fifoSize < 16))
 		GifDMAInt(gif.gscycles);
@@ -420,8 +428,11 @@ void GIFdma()
 				return;
 			//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
 			GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
-			gifRegs.stat.FQC = std::min((u32)0x10, gifch.qwc);
-			CalculateFIFOCSR();
+			if (!CHECK_GIFFIFOHACK)
+			{
+				gifRegs.stat.FQC = std::min((u32)0x10, gifch.qwc);
+				CalculateFIFOCSR();
+			}
 
 			if (dmacRegs.ctrl.STD == STD_GIF)
 			{
@@ -658,8 +669,11 @@ void mfifoGIFtransfer()
 		gifch.unsafeTransfer(ptag);
 		gifch.madr = ptag[1]._u32;
 
-		gifRegs.stat.FQC = std::min((u32)0x10, gifch.qwc);
-		CalculateFIFOCSR();
+		if (!CHECK_GIFFIFOHACK)
+		{
+			gifRegs.stat.FQC = std::min((u32)0x10, gifch.qwc);
+			CalculateFIFOCSR();
+		}
 
 		gif.mfifocycles += 2;
 

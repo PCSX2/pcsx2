@@ -263,7 +263,7 @@ struct Gif_Path
 	bool isMTVU() const { return !idx && THREAD_VU1; }
 	s32 getReadAmount() { return readAmount.load(std::memory_order_acquire) + gsPack.readAmount; }
 	bool hasDataRemaining() const { return curOffset < curSize; }
-	bool isDone() const { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
+	bool isDone() const { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE/* || state == GIF_PATH_WAIT*/)); }
 
 	// Waits on the MTGS to process gs packets
 	void mtgsReadWait()
@@ -429,7 +429,7 @@ struct Gif_Path
 						//Including breaking packets early (Rewind DMA to pick up where left off)
 						//but only do this when the path is masked, else we're pointlessly slowing things down.
 						dmaRewind = curSize - curOffset;
-						curSize = curOffset;
+						curSize -= dmaRewind;
 					}
 				}
 				else
