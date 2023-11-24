@@ -163,6 +163,7 @@ typedef enum {
                             implications. */
 } cubeb_log_level;
 
+/// A single channel position, to be used in a bitmask.
 typedef enum {
   CHANNEL_UNKNOWN = 0,
   CHANNEL_FRONT_LEFT = 1 << 0,
@@ -185,43 +186,46 @@ typedef enum {
   CHANNEL_TOP_BACK_RIGHT = 1 << 17
 } cubeb_channel;
 
+/// A bitmask representing the channel layout of a cubeb stream. This is
+/// bit-compatible with WAVEFORMATEXENSIBLE and in the same order as the SMPTE
+/// ordering.
 typedef uint32_t cubeb_channel_layout;
 // Some common layout definitions.
 enum {
   CUBEB_LAYOUT_UNDEFINED = 0, // Indicate the speaker's layout is undefined.
-  CUBEB_LAYOUT_MONO = CHANNEL_FRONT_CENTER,
-  CUBEB_LAYOUT_MONO_LFE = CUBEB_LAYOUT_MONO | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_STEREO = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT,
-  CUBEB_LAYOUT_STEREO_LFE = CUBEB_LAYOUT_STEREO | CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_MONO = (uint32_t)CHANNEL_FRONT_CENTER,
+  CUBEB_LAYOUT_MONO_LFE = (uint32_t)CUBEB_LAYOUT_MONO | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_STEREO = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT,
+  CUBEB_LAYOUT_STEREO_LFE = (uint32_t)CUBEB_LAYOUT_STEREO | (uint32_t)CHANNEL_LOW_FREQUENCY,
   CUBEB_LAYOUT_3F =
-      CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT | CHANNEL_FRONT_CENTER,
-  CUBEB_LAYOUT_3F_LFE = CUBEB_LAYOUT_3F | CHANNEL_LOW_FREQUENCY,
+      (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT | (uint32_t)CHANNEL_FRONT_CENTER,
+  CUBEB_LAYOUT_3F_LFE = (uint32_t)CUBEB_LAYOUT_3F | (uint32_t)CHANNEL_LOW_FREQUENCY,
   CUBEB_LAYOUT_2F1 =
-      CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT | CHANNEL_BACK_CENTER,
-  CUBEB_LAYOUT_2F1_LFE = CUBEB_LAYOUT_2F1 | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F1 = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
-                     CHANNEL_FRONT_CENTER | CHANNEL_BACK_CENTER,
-  CUBEB_LAYOUT_3F1_LFE = CUBEB_LAYOUT_3F1 | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_2F2 = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
-                     CHANNEL_SIDE_LEFT | CHANNEL_SIDE_RIGHT,
-  CUBEB_LAYOUT_2F2_LFE = CUBEB_LAYOUT_2F2 | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_QUAD = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
-                      CHANNEL_BACK_LEFT | CHANNEL_BACK_RIGHT,
-  CUBEB_LAYOUT_QUAD_LFE = CUBEB_LAYOUT_QUAD | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F2 = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
-                     CHANNEL_FRONT_CENTER | CHANNEL_SIDE_LEFT |
-                     CHANNEL_SIDE_RIGHT,
-  CUBEB_LAYOUT_3F2_LFE = CUBEB_LAYOUT_3F2 | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F2_BACK = CUBEB_LAYOUT_QUAD | CHANNEL_FRONT_CENTER,
-  CUBEB_LAYOUT_3F2_LFE_BACK = CUBEB_LAYOUT_3F2_BACK | CHANNEL_LOW_FREQUENCY,
-  CUBEB_LAYOUT_3F3R_LFE = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
-                          CHANNEL_FRONT_CENTER | CHANNEL_LOW_FREQUENCY |
-                          CHANNEL_BACK_CENTER | CHANNEL_SIDE_LEFT |
-                          CHANNEL_SIDE_RIGHT,
-  CUBEB_LAYOUT_3F4_LFE = CHANNEL_FRONT_LEFT | CHANNEL_FRONT_RIGHT |
-                         CHANNEL_FRONT_CENTER | CHANNEL_LOW_FREQUENCY |
-                         CHANNEL_BACK_LEFT | CHANNEL_BACK_RIGHT |
-                         CHANNEL_SIDE_LEFT | CHANNEL_SIDE_RIGHT,
+      (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT | (uint32_t)CHANNEL_BACK_CENTER,
+  CUBEB_LAYOUT_2F1_LFE = (uint32_t)CUBEB_LAYOUT_2F1 | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F1 = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
+                     (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_BACK_CENTER,
+  CUBEB_LAYOUT_3F1_LFE = (uint32_t)CUBEB_LAYOUT_3F1 | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_2F2 = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
+                     (uint32_t)CHANNEL_SIDE_LEFT | (uint32_t)CHANNEL_SIDE_RIGHT,
+  CUBEB_LAYOUT_2F2_LFE = (uint32_t)CUBEB_LAYOUT_2F2 | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_QUAD = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
+                      (uint32_t)CHANNEL_BACK_LEFT | (uint32_t)CHANNEL_BACK_RIGHT,
+  CUBEB_LAYOUT_QUAD_LFE = (uint32_t)CUBEB_LAYOUT_QUAD | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F2 = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
+                     (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_SIDE_LEFT |
+                     (uint32_t)CHANNEL_SIDE_RIGHT,
+  CUBEB_LAYOUT_3F2_LFE = (uint32_t)CUBEB_LAYOUT_3F2 | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F2_BACK = (uint32_t)CUBEB_LAYOUT_QUAD | (uint32_t)CHANNEL_FRONT_CENTER,
+  CUBEB_LAYOUT_3F2_LFE_BACK = (uint32_t)CUBEB_LAYOUT_3F2_BACK | (uint32_t)CHANNEL_LOW_FREQUENCY,
+  CUBEB_LAYOUT_3F3R_LFE = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
+                          (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_LOW_FREQUENCY |
+                          (uint32_t)CHANNEL_BACK_CENTER | (uint32_t)CHANNEL_SIDE_LEFT |
+                          (uint32_t)CHANNEL_SIDE_RIGHT,
+  CUBEB_LAYOUT_3F4_LFE = (uint32_t)CHANNEL_FRONT_LEFT | (uint32_t)CHANNEL_FRONT_RIGHT |
+                         (uint32_t)CHANNEL_FRONT_CENTER | (uint32_t)CHANNEL_LOW_FREQUENCY |
+                         (uint32_t)CHANNEL_BACK_LEFT | (uint32_t)CHANNEL_BACK_RIGHT |
+                         (uint32_t)CHANNEL_SIDE_LEFT | (uint32_t)CHANNEL_SIDE_RIGHT,
 };
 
 /** Miscellaneous stream preferences. */
@@ -433,7 +437,7 @@ typedef void (*cubeb_state_callback)(cubeb_stream * stream, void * user_ptr,
 
 /**
  * User supplied callback called when the underlying device changed.
- * @param user The pointer passed to cubeb_stream_init. */
+ * @param user_ptr The pointer passed to cubeb_stream_init. */
 typedef void (*cubeb_device_changed_callback)(void * user_ptr);
 
 /**
@@ -471,7 +475,7 @@ cubeb_init(cubeb ** context, char const * context_name,
 
 /** Returns a list of backend names which can be supplid to cubeb_init().
     Array is null-terminated. */
-CUBEB_EXPORT const char* const*
+CUBEB_EXPORT const char**
 cubeb_get_backend_names();
 
 /** Get a read-only string identifying this context's current backend.
