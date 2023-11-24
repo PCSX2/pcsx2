@@ -46,6 +46,14 @@
 	#endif
 #endif
 
+#if defined(__riscv)
+	#if (__riscv_xlen == 32)
+		#define CPUINFO_ARCH_RISCV32 1
+	#elif (__riscv_xlen == 64)
+		#define CPUINFO_ARCH_RISCV64 1
+	#endif
+#endif
+
 /* Define other architecture-specific macros as 0 */
 
 #ifndef CPUINFO_ARCH_X86
@@ -78,6 +86,14 @@
 
 #ifndef CPUINFO_ARCH_WASMSIMD
 	#define CPUINFO_ARCH_WASMSIMD 0
+#endif
+
+#ifndef CPUINFO_ARCH_RISCV32
+	#define CPUINFO_ARCH_RISCV32 0
+#endif
+
+#ifndef CPUINFO_ARCH_RISCV64
+	#define CPUINFO_ARCH_RISCV64 0
 #endif
 
 #if CPUINFO_ARCH_X86 && defined(_MSC_VER)
@@ -188,6 +204,8 @@ enum cpuinfo_vendor {
 	 * Processors are variants of AMD cores.
 	 */
 	cpuinfo_vendor_hygon    = 16,
+	/** SiFive, Inc. Vendor of RISC-V processor microarchitectures. */
+	cpuinfo_vendor_sifive   = 17,
 
 	/* Active vendors of embedded CPUs */
 
@@ -363,6 +381,8 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_zen2        = 0x0020010A,
 	/** AMD Zen 3 microarchitecture. */
 	cpuinfo_uarch_zen3        = 0x0020010B,
+	/** AMD Zen 4 microarchitecture. */
+	cpuinfo_uarch_zen4        = 0x0020010C,
 
 	/** NSC Geode and AMD Geode GX and LX. */
 	cpuinfo_uarch_geode  = 0x00200200,
@@ -426,9 +446,26 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_neoverse_n1  = 0x00300400,
 	/** ARM Neoverse E1. */
 	cpuinfo_uarch_neoverse_e1  = 0x00300401,
+	/** ARM Neoverse V1. */
+	cpuinfo_uarch_neoverse_v1  = 0x00300402,
+	/** ARM Neoverse N2. */
+	cpuinfo_uarch_neoverse_n2  = 0x00300403,
+	/** ARM Neoverse V2. */
+	cpuinfo_uarch_neoverse_v2  = 0x00300404,
 
 	/** ARM Cortex-X1. */
-	cpuinfo_uarch_cortex_x1    = 0x00300500,
+	cpuinfo_uarch_cortex_x1    = 0x00300501,
+	/** ARM Cortex-X2. */
+	cpuinfo_uarch_cortex_x2    = 0x00300502,
+	/** ARM Cortex-X3. */
+	cpuinfo_uarch_cortex_x3    = 0x00300503,
+
+	/** ARM Cortex-A510. */
+	cpuinfo_uarch_cortex_a510  = 0x00300551,
+	/** ARM Cortex-A710. */
+	cpuinfo_uarch_cortex_a710  = 0x00300571,
+	/** ARM Cortex-A715. */
+	cpuinfo_uarch_cortex_a715  = 0x00300572,
 
 	/** Qualcomm Scorpion. */
 	cpuinfo_uarch_scorpion = 0x00400100,
@@ -489,10 +526,14 @@ enum cpuinfo_uarch {
 	cpuinfo_uarch_lightning = 0x00700109,
 	/** Apple A13 processor (little cores). */
 	cpuinfo_uarch_thunder   = 0x0070010A,
-	/** Apple M1 processor (big cores). */
+	/** Apple A14 / M1 processor (big cores). */
 	cpuinfo_uarch_firestorm = 0x0070010B,
-	/** Apple M1 processor (little cores). */
+	/** Apple A14 / M1 processor (little cores). */
 	cpuinfo_uarch_icestorm  = 0x0070010C,
+	/** Apple A15 / M2 processor (big cores). */
+	cpuinfo_uarch_avalanche = 0x0070010D,
+	/** Apple A15 / M2 processor (little cores). */
+	cpuinfo_uarch_blizzard  = 0x0070010E,
 
 	/** Cavium ThunderX. */
 	cpuinfo_uarch_thunderx = 0x00800100,
@@ -706,6 +747,7 @@ void CPUINFO_ABI cpuinfo_deinitialize(void);
 		bool sse4a;
 		bool misaligned_sse;
 		bool avx;
+		bool avxvnni;
 		bool fma3;
 		bool fma4;
 		bool xop;
@@ -725,6 +767,7 @@ void CPUINFO_ABI cpuinfo_deinitialize(void);
 		bool avx512vpopcntdq;
 		bool avx512vnni;
 		bool avx512bf16;
+		bool avx512fp16;
 		bool avx512vp2intersect;
 		bool avx512_4vnniw;
 		bool avx512_4fmaps;
@@ -1052,6 +1095,14 @@ static inline bool cpuinfo_has_x86_avx(void) {
 	#endif
 }
 
+static inline bool cpuinfo_has_x86_avxvnni(void) {
+	#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+		return cpuinfo_isa.avxvnni;
+	#else
+		return false;
+	#endif
+}
+
 static inline bool cpuinfo_has_x86_fma3(void) {
 	#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
 		return cpuinfo_isa.fma3;
@@ -1199,6 +1250,14 @@ static inline bool cpuinfo_has_x86_avx512vnni(void) {
 static inline bool cpuinfo_has_x86_avx512bf16(void) {
 	#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
 		return cpuinfo_isa.avx512bf16;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_x86_avx512fp16(void) {
+	#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+		return cpuinfo_isa.avx512fp16;
 	#else
 		return false;
 	#endif
@@ -1460,14 +1519,17 @@ static inline bool cpuinfo_has_x86_sha(void) {
 		#endif
 		#if CPUINFO_ARCH_ARM64
 			bool atomics;
+			bool bf16;
 			bool sve;
 			bool sve2;
+			bool i8mm;
 		#endif
 		bool rdm;
 		bool fp16arith;
 		bool dot;
 		bool jscvt;
 		bool fcma;
+		bool fhm;
 
 		bool aes;
 		bool sha1;
@@ -1623,6 +1685,22 @@ static inline bool cpuinfo_has_arm_vfpv4_d32(void) {
 	#endif
 }
 
+static inline bool cpuinfo_has_arm_fp16_arith(void) {
+	#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+		return cpuinfo_isa.fp16arith;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_arm_bf16(void) {
+	#if CPUINFO_ARCH_ARM64
+		return cpuinfo_isa.bf16;
+	#else
+		return false;
+	#endif
+}
+
 static inline bool cpuinfo_has_arm_wmmx(void) {
 	#if CPUINFO_ARCH_ARM
 		return cpuinfo_isa.wmmx;
@@ -1705,9 +1783,9 @@ static inline bool cpuinfo_has_arm_neon_fp16_arith(void) {
 	#endif
 }
 
-static inline bool cpuinfo_has_arm_fp16_arith(void) {
+static inline bool cpuinfo_has_arm_fhm(void) {
 	#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
-		return cpuinfo_isa.fp16arith;
+		return cpuinfo_isa.fhm;
 	#else
 		return false;
 	#endif
@@ -1716,6 +1794,14 @@ static inline bool cpuinfo_has_arm_fp16_arith(void) {
 static inline bool cpuinfo_has_arm_neon_dot(void) {
 	#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
 		return cpuinfo_isa.dot;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_arm_neon_bf16(void) {
+	#if CPUINFO_ARCH_ARM64
+		return cpuinfo_isa.bf16;
 	#else
 		return false;
 	#endif
@@ -1732,6 +1818,14 @@ static inline bool cpuinfo_has_arm_jscvt(void) {
 static inline bool cpuinfo_has_arm_fcma(void) {
 	#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
 		return cpuinfo_isa.fcma;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_arm_i8mm(void) {
+	#if CPUINFO_ARCH_ARM64
+		return cpuinfo_isa.i8mm;
 	#else
 		return false;
 	#endif
@@ -1785,9 +1879,120 @@ static inline bool cpuinfo_has_arm_sve(void) {
 	#endif
 }
 
+static inline bool cpuinfo_has_arm_sve_bf16(void) {
+	#if CPUINFO_ARCH_ARM64
+		return cpuinfo_isa.sve && cpuinfo_isa.bf16;
+	#else
+		return false;
+	#endif
+}
+
 static inline bool cpuinfo_has_arm_sve2(void) {
 	#if CPUINFO_ARCH_ARM64
 		return cpuinfo_isa.sve2;
+	#else
+		return false;
+	#endif
+}
+
+#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+	/* This structure is not a part of stable API. Use cpuinfo_has_riscv_* functions instead. */
+	struct cpuinfo_riscv_isa {
+		/**
+		 * Keep fields in line with the canonical order as defined by
+		 * Section 27.11 Subset Naming Convention.
+		 */
+		/* RV32I/64I/128I Base ISA. */
+		bool i;
+		#if CPUINFO_ARCH_RISCV32
+			/* RV32E Base ISA. */
+			bool e;
+		#endif
+		/* Integer Multiply/Divide Extension. */
+		bool m;
+		/* Atomic Extension. */
+		bool a;
+		/* Single-Precision Floating-Point Extension. */
+		bool f;
+		/* Double-Precision Floating-Point Extension. */
+		bool d;
+		/* Compressed Extension. */
+		bool c;
+		/* Vector Extension. */
+		bool v;
+	};
+
+	extern struct cpuinfo_riscv_isa cpuinfo_isa;
+#endif
+
+static inline bool cpuinfo_has_riscv_i(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.i;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_e(void) {
+	#if CPUINFO_ARCH_RISCV32
+		return cpuinfo_isa.e;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_m(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.m;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_a(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.a;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_f(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.f;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_d(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.d;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_g(void) {
+	// The 'G' extension is simply shorthand for 'IMAFD'.
+	return cpuinfo_has_riscv_i()
+		&& cpuinfo_has_riscv_m()
+		&& cpuinfo_has_riscv_a()
+		&& cpuinfo_has_riscv_f()
+		&& cpuinfo_has_riscv_d();
+}
+
+static inline bool cpuinfo_has_riscv_c(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.c;
+	#else
+		return false;
+	#endif
+}
+
+static inline bool cpuinfo_has_riscv_v(void) {
+	#if CPUINFO_ARCH_RISCV32 || CPUINFO_ARCH_RISCV64
+		return cpuinfo_isa.v;
 	#else
 		return false;
 	#endif

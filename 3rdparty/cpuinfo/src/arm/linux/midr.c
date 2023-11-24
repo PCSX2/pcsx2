@@ -675,10 +675,10 @@ static bool cpuinfo_arm_linux_detect_cluster_midr_by_big_little_heuristic(
 
 /*
  * Initializes MIDR for leaders of core clusters in a single sequential scan:
- *  - Clusters preceeding the first reported MIDR value are assumed to have default MIDR value.
+ *  - Clusters preceding the first reported MIDR value are assumed to have default MIDR value.
  *  - Clusters following any reported MIDR value to have that MIDR value.
  *
- * @param default_midr - MIDR value that will be assigned to cluster leaders preceeding any reported MIDR value.
+ * @param default_midr - MIDR value that will be assigned to cluster leaders preceding any reported MIDR value.
  * @param processors_count - number of logical processor descriptions in the @p processors array.
  * @param[in,out] processors - array of logical processor descriptions with pre-parsed MIDR, maximum frequency,
  *                             and decoded core cluster (package_leader_id) information.
@@ -833,7 +833,7 @@ uint32_t cpuinfo_arm_linux_detect_cluster_midr(
 			 * 2. For systems with 2 clusters and MIDR known for one cluster, assume big.LITTLE configuration,
 			 *    and estimate MIDR for the other cluster under assumption that MIDR for the big cluster is known.
 			 * 3. Initialize MIDRs for core clusters in a single sequential scan:
-			 *    - Clusters preceeding the first reported MIDR value are assumed to have the last reported MIDR value.
+			 *    - Clusters preceding the first reported MIDR value are assumed to have the last reported MIDR value.
 			 *    - Clusters following any reported MIDR value to have that MIDR value.
 			 */
 

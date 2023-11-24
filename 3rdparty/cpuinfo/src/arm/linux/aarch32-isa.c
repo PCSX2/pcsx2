@@ -33,6 +33,13 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 	const struct cpuinfo_arm_chipset chipset[restrict static 1],
 	struct cpuinfo_arm_isa isa[restrict static 1])
 {
+	if (architecture_version < 8) {
+		const uint32_t armv8_features2_mask = CPUINFO_ARM_LINUX_FEATURE2_AES | CPUINFO_ARM_LINUX_FEATURE2_PMULL |
+			CPUINFO_ARM_LINUX_FEATURE2_SHA1 | CPUINFO_ARM_LINUX_FEATURE2_SHA2 | CPUINFO_ARM_LINUX_FEATURE2_CRC32;
+		if (features2 & armv8_features2_mask) {
+			architecture_version = 8;
+		}
+	}
 	if (architecture_version >= 8) {
 		/*
 		 * ARMv7 code running on ARMv8: IDIV, VFP, NEON are always supported,
@@ -57,13 +64,22 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 		 * NEON FP16 compute extension and VQRDMLAH/VQRDMLSH instructions are not indicated in /proc/cpuinfo.
 		 * Use a MIDR-based heuristic to whitelist processors known to support it:
 		 * - Processors with Cortex-A55 cores
-		 * - Processors with Cortex-A65 cores
 		 * - Processors with Cortex-A75 cores
 		 * - Processors with Cortex-A76 cores
 		 * - Processors with Cortex-A77 cores
+		 * - Processors with Cortex-A78 cores
+		 * - Processors with Cortex-A510 cores
+		 * - Processors with Cortex-A710 cores
+		 * - Processors with Cortex-A715 cores
+		 * - Processors with Cortex-X1 cores
+		 * - Processors with Cortex-X2 cores
+		 * - Processors with Cortex-X3 cores
 		 * - Processors with Exynos M4 cores
 		 * - Processors with Exynos M5 cores
 		 * - Neoverse N1 cores
+		 * - Neoverse N2 cores
+		 * - Neoverse V1 cores
+		 * - Neoverse V2 cores
 		 */
 		if (chipset->series == cpuinfo_arm_chipset_series_samsung_exynos && chipset->model == 9810) {
 			/* Only little cores of Exynos 9810 support FP16 & RDM */
@@ -71,11 +87,21 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 		} else {
 			switch (midr & (CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK)) {
 				case UINT32_C(0x4100D050): /* Cortex-A55 */
-				case UINT32_C(0x4100D060): /* Cortex-A65 */
+				case UINT32_C(0x4100D0A0): /* Cortex-A75 */
 				case UINT32_C(0x4100D0B0): /* Cortex-A76 */
 				case UINT32_C(0x4100D0C0): /* Neoverse N1 */
 				case UINT32_C(0x4100D0D0): /* Cortex-A77 */
 				case UINT32_C(0x4100D0E0): /* Cortex-A76AE */
+				case UINT32_C(0x4100D400): /* Neoverse V1 */
+				case UINT32_C(0x4100D410): /* Cortex-A78 */
+				case UINT32_C(0x4100D440): /* Cortex-X1 */
+				case UINT32_C(0x4100D460): /* Cortex-A510 */
+				case UINT32_C(0x4100D470): /* Cortex-A710 */
+				case UINT32_C(0x4100D480): /* Cortex-X2 */
+				case UINT32_C(0x4100D490): /* Neoverse N2 */
+				case UINT32_C(0x4100D4D0): /* Cortex-A715 */
+				case UINT32_C(0x4100D4E0): /* Cortex-X3 */
+				case UINT32_C(0x4100D4F0): /* Neoverse V2 */
 				case UINT32_C(0x4800D400): /* Cortex-A76 (HiSilicon) */
 				case UINT32_C(0x51008020): /* Kryo 385 Gold (Cortex-A75) */
 				case UINT32_C(0x51008030): /* Kryo 385 Silver (Cortex-A55) */
@@ -91,25 +117,57 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 
 		/*
 		 * NEON VDOT instructions are not indicated in /proc/cpuinfo.
-		 * Use a MIDR-based heuristic to whitelist processors known to support it.
+		 * Use a MIDR-based heuristic to whitelist processors known to support it:
+		 * - Processors with Cortex-A76 cores
+		 * - Processors with Cortex-A77 cores
+		 * - Processors with Cortex-A78 cores
+		 * - Processors with Cortex-A510 cores
+		 * - Processors with Cortex-A710 cores
+		 * - Processors with Cortex-A715 cores
+		 * - Processors with Cortex-X1 cores
+		 * - Processors with Cortex-X2 cores
+		 * - Processors with Cortex-X3 cores
+		 * - Processors with Exynos M4 cores
+		 * - Processors with Exynos M5 cores
+		 * - Neoverse N1 cores
+		 * - Neoverse N2 cores
+		 * - Neoverse V1 cores
+		 * - Neoverse V2 cores
 		 */
-		switch (midr & (CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK)) {
-			case UINT32_C(0x4100D0B0): /* Cortex-A76 */
-			case UINT32_C(0x4100D0D0): /* Cortex-A77 */
-			case UINT32_C(0x4100D0E0): /* Cortex-A76AE */
-			case UINT32_C(0x4800D400): /* Cortex-A76 (HiSilicon) */
-			case UINT32_C(0x51008040): /* Kryo 485 Gold (Cortex-A76) */
-			case UINT32_C(0x51008050): /* Kryo 485 Silver (Cortex-A55) */
-			case UINT32_C(0x53000030): /* Exynos-M4 */
-			case UINT32_C(0x53000040): /* Exynos-M5 */
-				isa->dot = true;
-				break;
-			case UINT32_C(0x4100D050): /* Cortex A55: revision 1 or later only */
-				isa->dot = !!(midr_get_variant(midr) >= 1);
-				break;
-			case UINT32_C(0x4100D0A0): /* Cortex A75: revision 2 or later only */
-				isa->dot = !!(midr_get_variant(midr) >= 2);
-				break;
+		if (chipset->series == cpuinfo_arm_chipset_series_spreadtrum_sc && chipset->model == 9863) {
+			cpuinfo_log_warning("VDOT instructions disabled: cause occasional SIGILL on Spreadtrum SC9863A");
+		} else if (chipset->series == cpuinfo_arm_chipset_series_unisoc_t && chipset->model == 310) {
+			cpuinfo_log_warning("VDOT instructions disabled: cause occasional SIGILL on Unisoc T310");
+		} else {
+			switch (midr & (CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK)) {
+				case UINT32_C(0x4100D0B0): /* Cortex-A76 */
+				case UINT32_C(0x4100D0C0): /* Neoverse N1 */
+				case UINT32_C(0x4100D0D0): /* Cortex-A77 */
+				case UINT32_C(0x4100D0E0): /* Cortex-A76AE */
+				case UINT32_C(0x4100D400): /* Neoverse V1 */
+				case UINT32_C(0x4100D410): /* Cortex-A78 */
+				case UINT32_C(0x4100D440): /* Cortex-X1 */
+				case UINT32_C(0x4100D460): /* Cortex-A510 */
+				case UINT32_C(0x4100D470): /* Cortex-A710 */
+				case UINT32_C(0x4100D480): /* Cortex-X2 */
+				case UINT32_C(0x4100D490): /* Neoverse N2 */
+				case UINT32_C(0x4100D4D0): /* Cortex-A715 */
+				case UINT32_C(0x4100D4E0): /* Cortex-X3 */
+				case UINT32_C(0x4100D4F0): /* Neoverse V2 */
+				case UINT32_C(0x4800D400): /* Cortex-A76 (HiSilicon) */
+				case UINT32_C(0x51008040): /* Kryo 485 Gold (Cortex-A76) */
+				case UINT32_C(0x51008050): /* Kryo 485 Silver (Cortex-A55) */
+				case UINT32_C(0x53000030): /* Exynos M4 */
+				case UINT32_C(0x53000040): /* Exynos M5 */
+					isa->dot = true;
+					break;
+				case UINT32_C(0x4100D050): /* Cortex A55: revision 1 or later only */
+					isa->dot = !!(midr_get_variant(midr) >= 1);
+					break;
+				case UINT32_C(0x4100D0A0): /* Cortex A75: revision 2 or later only */
+					isa->dot = !!(midr_get_variant(midr) >= 2);
+					break;
+			}
 		}
 	} else {
 		/* ARMv7 or lower: use feature flags to detect optional features */
@@ -167,19 +225,24 @@ void cpuinfo_arm_linux_decode_isa_from_proc_cpuinfo(
 		}
 
 		if (features & CPUINFO_ARM_LINUX_FEATURE_IWMMXT) {
-			const uint32_t wcid = read_wcid();
-			cpuinfo_log_debug("WCID = 0x%08"PRIx32, wcid);
-			const uint32_t coprocessor_type = (wcid >> 8) & UINT32_C(0xFF);
-			if (coprocessor_type >= 0x10) {
-				isa->wmmx = true;
-				if (coprocessor_type >= 0x20) {
-					isa->wmmx2 = true;
+			#if !defined(__ARM_ARCH_8A__) && !(defined(__ARM_ARCH) && (__ARM_ARCH >= 8))
+				const uint32_t wcid = read_wcid();
+				cpuinfo_log_debug("WCID = 0x%08"PRIx32, wcid);
+				const uint32_t coprocessor_type = (wcid >> 8) & UINT32_C(0xFF);
+				if (coprocessor_type >= 0x10) {
+					isa->wmmx = true;
+					if (coprocessor_type >= 0x20) {
+						isa->wmmx2 = true;
+					}
+				} else {
+					cpuinfo_log_warning("WMMX ISA disabled: OS reported iwmmxt feature, "
+						"but WCID coprocessor type 0x%"PRIx32" indicates no WMMX support",
+						coprocessor_type);
 				}
-			} else {
+			#else
 				cpuinfo_log_warning("WMMX ISA disabled: OS reported iwmmxt feature, "
-					"but WCID coprocessor type 0x%"PRIx32" indicates no WMMX support",
-					coprocessor_type);
-			}
+					"but there is no iWMMXt coprocessor");
+			#endif
 		}
 
 		if ((features & CPUINFO_ARM_LINUX_FEATURE_THUMB) || (architecture_flags & CPUINFO_ARM_LINUX_ARCH_T)) {

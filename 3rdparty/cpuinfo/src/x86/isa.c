@@ -491,6 +491,18 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 	isa.avx512vp2intersect = avx512_regs && !!(structured_feature_info0.edx & UINT32_C(0x00000100));
 
 	/*
+	 * AVX512_FP16 instructions:
+	 * - Intel: edx[bit 23] in structured feature info (ecx = 0).
+	 */
+	isa.avx512fp16 = avx512_regs && !!(structured_feature_info0.edx & UINT32_C(0x00800000));
+
+	/*
+	 * AVX_VNNI instructions:
+	 * - Intel: eax[bit 4] in structured feature info (ecx = 1).
+	 */
+	isa.avxvnni = avx_regs && !!(structured_feature_info1.eax & UINT32_C(0x00000010));
+
+	/*
 	 * AVX512_BF16 instructions:
 	 * - Intel: eax[bit 5] in structured feature info (ecx = 1).
 	 */

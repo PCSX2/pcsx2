@@ -35,10 +35,16 @@
 			return mvfr0;
 		}
 	#endif
-
-	static inline uint32_t read_wcid(void) {
-		uint32_t wcid;
-		__asm__ __volatile__("MRC p1, 0, %[wcid], c0, c0" : [wcid] "=r" (wcid));
-		return wcid;
-	}
+	#if !defined(__ARM_ARCH_8A__) && !(defined(__ARM_ARCH) && (__ARM_ARCH >= 8))
+		/*
+		 * In ARMv8, AArch32 state supports only conceptual coprocessors CP10, CP11, CP14, and CP15.
+		 * AArch64 does not support the concept of coprocessors.
+		 * and clang refuses to compile inline assembly when targeting ARMv8+
+		 */
+		static inline uint32_t read_wcid(void) {
+			uint32_t wcid;
+			__asm__ __volatile__("MRC p1, 0, %[wcid], c0, c0" : [wcid] "=r" (wcid));
+			return wcid;
+		}
+	#endif
 #endif
