@@ -11371,6 +11371,9 @@ SLAJ-25045:
 SLAJ-25046:
   name: "NBA Live 2005"
   region: "NTSC-Unk"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLAJ-25047:
   name: "Dororo"
   region: "NTSC-C-J"
@@ -18679,6 +18682,9 @@ SLES-52711:
 SLES-52713:
   name: "NBA Live 2005"
   region: "PAL-M3"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52714:
   name: "Board Games Gallery"
   region: "PAL-E"
@@ -18712,9 +18718,15 @@ SLES-52725:
 SLES-52726:
   name: "NBA Live 2005"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52727:
   name: "NBA Live 2005"
   region: "PAL-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52729:
   name: "Animaniacs - The Great Edgar Hunt"
   region: "PAL-M5"
@@ -25908,15 +25920,27 @@ SLES-55332:
 SLES-55334:
   name: "NBA Live 09"
   region: "PAL-E-I-A"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-55335:
   name: "NBA Live 09"
   region: "PAL-E-G"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-55336:
   name: "NBA Live 09"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-55337:
   name: "NBA Live 09"
   region: "PAL-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-55338:
   name: "NHL 09"
   region: "PAL-M6"
@@ -27511,6 +27535,9 @@ SLKA-25109:
 SLKA-25110:
   name: "NBA Live 2005"
   region: "NTSC-K"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25111:
   name: "The King of Fighters 2001"
   name-sort: "King of Fighters 2001, The"
@@ -29231,6 +29258,9 @@ SLPM-55096:
 SLPM-55097:
   name: "NBA Live 09"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-55098:
   name: "Koi suru Otome to Shugo no Tate - The Shield of AIGIS"
   region: "NTSC-J"
@@ -38800,6 +38830,9 @@ SLPM-65787:
   name-sort: NBAらいぶ2005
   name-en: "NBA Live 2005"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-65788:
   name: ワールドサッカーウイニングイレブン8 ライヴウエアエヴォリューション
   name-sort: わーるどさっかーういにんぐいれぶん8 らいゔうえあえゔぉりゅーしょん
@@ -40643,6 +40676,9 @@ SLPM-66116:
   name-sort: NBA らいぶ 2005 [EA BEST HITS]
   name-en: "NBA Live 2005 [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66117:
   name: METAL GEAR SOLID 3 SUBSISTENCE [ヘッドセット同梱版] [ディスク1/3]
   name-sort: METAL GEAR SOLID 3 SUBSISTENCE [へっどせっとどうこんばん] [でぃすく1/3]
@@ -60457,6 +60493,9 @@ SLUS-21057:
 SLUS-21058:
   name: "NBA Live 2005"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21059:
   name: "Tekken 5"
   region: "NTSC-U"
@@ -64363,6 +64402,9 @@ SLUS-21776:
 SLUS-21777:
   name: "NBA Live '09"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21778:
   name: "Dokapon Kingdom"
   region: "NTSC-U"
