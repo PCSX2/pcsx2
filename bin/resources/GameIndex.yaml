@@ -11931,9 +11931,6 @@ SLED-52736:
   region: "PAL-E"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLED-52851:
   name: "TOCA Race Driver 2"
   region: "PAL-Unk"
@@ -18712,9 +18709,6 @@ SLES-52725:
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLES-52726:
   name: "NBA Live 2005"
   region: "PAL-F"
@@ -28023,9 +28017,6 @@ SLKA-25241:
   region: "NTSC-K"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLKA-25242:
   name: "Fight Night Round 2"
   region: "NTSC-K"
@@ -30260,9 +30251,6 @@ SLPM-60250:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
   region: "NTSC-J"
@@ -38723,9 +38711,6 @@ SLPM-65766:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-65767:
   name: NBA STARTINGFIVE 2005
   name-sort: NBA STARTINGFIVE 2005
@@ -40272,9 +40257,6 @@ SLPM-66051:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-66052:
   name: 巫女舞 〜永遠の想い〜
   name-sort: みこまい 〜えいえんのおもい〜
@@ -45559,9 +45541,6 @@ SLPM-66960:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLPM-66961:
   name: EA:SY!1980 BLACK
   name-sort: EA:SY!1980 BLACK
@@ -60511,9 +60490,6 @@ SLUS-21065:
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLUS-21066:
   name: "The Urbz - Sims in the City"
   name-sort: "Urbz, The - Sims in the City"
@@ -65751,9 +65727,6 @@ SLUS-29118:
   region: "NTSC-U"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
-    halfPixelOffset: 1 # Fixes misaligned post-processing.
-  gameFixes:
-    - SoftwareRendererFMVHack # Workaround for strange HPO Normal screen shake.
 SLUS-29123:
   name: "Ghost in the Shell - Stand Alone Complex [Demo]"
   region: "NTSC-U"
