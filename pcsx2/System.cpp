@@ -29,6 +29,7 @@
 #include "svnrev.h"
 #include "SysForwardDefs.h"
 #include "x86/newVif.h"
+#include "cpuinfo.h"
 
 #include "common/BitUtils.h"
 #include "common/Perf.h"
@@ -113,26 +114,16 @@ void SysLogMachineCaps()
 	Console.WriteLn(Color_StrongBlack, "Host Machine Init:");
 
 	Console.Indent().WriteLn(
-		"Operating System =  %s\n"
-		"Physical RAM     =  %u MB",
+		"Operating System = %s\n"
+		"Physical RAM     = %u MB",
 
 		GetOSVersionString().c_str(),
 		(u32)(GetPhysicalMemory() / _1mb));
 
-
-	Console.Indent().WriteLn(
-		"CPU name         =  %s\n"
-		"Vendor/Model     =  %s (stepping %02X)\n"
-		"Logical Cores    =  %u\n"
-		"x86PType         =  %s\n"
-		"x86Flags         =  %08x %08x\n"
-		"x86EFlags        =  %08x",
-		x86caps.FamilyName,
-		x86caps.VendorName, x86caps.StepID,
-		x86caps.LogicalCores,
-		x86caps.GetTypeName(),
-		x86caps.Flags, x86caps.Flags2,
-		x86caps.EFlags);
+    cpuinfo_initialize();
+	Console.Indent().WriteLn("Processor        = %s", cpuinfo_get_package(0)->name);
+	Console.Indent().WriteLn("Core Count       = %u cores", cpuinfo_get_cores_count());
+	Console.Indent().WriteLn("Thread Count     = %u threads", cpuinfo_get_processors_count());
 
 	Console.Newline();
 
