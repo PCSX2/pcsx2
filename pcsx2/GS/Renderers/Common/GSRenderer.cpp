@@ -944,11 +944,6 @@ bool GSRenderer::IsIdleFrame() const
 	return (m_last_draw_n == s_n && m_last_transfer_n == s_transfer_n);
 }
 
-int GSRenderer::GetLastVSyncDraw() const
-{
-	return m_last_draw_n;
-}
-
 bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels)
 {
