@@ -6135,14 +6135,15 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
 		{
 			// sRect is the top of texture
+			// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.
 			const GSVector4 sRect(m_vt.m_min.t.x / tw, m_vt.m_min.t.y / th, m_vt.m_max.t.x / tw, m_vt.m_max.t.y / th);
-			const GSVector4 dRect(r_texture);
+			const GSVector4 dRect = GSVector4(r_texture) + GSVector4(0.5f);
 			const GSVector4i r_full(0, 0, tw, th);
 
 			g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect);
+			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect, ShaderConvert::COPY, m_vt.IsRealLinear());
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			g_gs_device->CopyRect(rt, tex->m_texture, r_full, 0, 0);
