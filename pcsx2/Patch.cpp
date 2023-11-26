@@ -449,8 +449,8 @@ bool Patch::PatchStringHasUnlabelledPatch(std::string pnach_data)
 
 			foundPatch = true;
 		}
-		return false;
 	}
+	return false;
 }
 
 void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches)
