@@ -855,17 +855,12 @@ void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state
 	params.fast_boot = fast_boot;
 
 	// switch to nothing, we'll get brought back if init fails
-	const MainWindowType prev_window = s_current_main_window;
-	s_current_main_window = MainWindowType::None;
-
-	Host::RunOnCPUThread([params = std::move(params), prev_window]() {
+	Host::RunOnCPUThread([params = std::move(params)]() {
 		if (VMManager::HasValidVM())
 			return;
 
 		if (VMManager::Initialize(std::move(params)))
 			VMManager::SetState(VMState::Running);
-		else
-			s_current_main_window = prev_window;
 	});
 }
 
@@ -5513,6 +5508,18 @@ void FullscreenUI::DrawGameListWindow()
 			break;
 		default:
 			break;
+	}
+	
+	if (VMManager::GetState() != VMState::Shutdown)
+	{
+		// Dummy window to prevent interacting with the game list while loading.
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowBgAlpha(0.25f);
+		ImGui::Begin("##dummy", nullptr, ImGuiWindowFlags_NoDecoration);
+		ImGui::End();
+		ImGui::PopStyleColor();
 	}
 }
 

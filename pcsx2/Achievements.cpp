@@ -1825,6 +1825,43 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 	return true;
 }
 
+void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
+{
+#ifdef ENABLE_RAINTEGRATION
+	if (IsUsingRAIntegration())
+	{
+		const bool result = (RA_WarnDisableHardcore(trigger) != 0);
+		callback(result);
+		return;
+	}
+#endif
+
+	if (!FullscreenUI::Initialize())
+	{
+		Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcode mode is active.", trigger)),
+			Host::OSD_WARNING_DURATION);
+		callback(false);
+		return;
+	}
+
+	auto real_callback = [callback = std::move(callback)](bool res) mutable {
+		// don't run the callback in the middle of rendering the UI
+		Host::RunOnCPUThread([callback = std::move(callback), res]() {
+			if (res)
+				DisableHardcoreMode();
+			callback(res);
+		});
+	};
+
+	ImGuiFullscreen::OpenConfirmMessageDialog(
+		TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
+		fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
+												 "want to disable hardcore mode? {0} will be cancelled if you select No."),
+			trigger),
+		std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
+		fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
+}
+
 void Achievements::ClearUIState()
 {
 	if (FullscreenUI::IsAchievementsWindowOpen() || FullscreenUI::IsLeaderboardsWindowOpen())

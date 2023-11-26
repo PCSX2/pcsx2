@@ -392,13 +392,33 @@ void EmuThread::run()
 	// Main CPU thread loop.
 	while (!m_shutdown_flag.load())
 	{
-		if (!VMManager::HasValidVM())
+		switch (VMManager::GetState())
 		{
-			m_event_loop->exec();
-			continue;
-		}
+			case VMState::Initializing:
+				pxFailRel("Shouldn't be in the starting state");
+				continue;
 
-		executeVM();
+			case VMState::Shutdown:
+			case VMState::Paused:
+				m_event_loop->exec();
+				continue;
+
+			case VMState::Running:
+				m_event_loop->processEvents(QEventLoop::AllEvents);
+				VMManager::Execute();
+				continue;
+
+			case VMState::Resetting:
+				VMManager::Reset();
+				continue;
+
+			case VMState::Stopping:
+				destroyVM();
+				continue;
+
+			default:
+				continue;
+		}
 	}
 
 	// Teardown in reverse order.
@@ -421,40 +441,6 @@ void EmuThread::destroyVM()
 	m_was_paused_by_focus_loss = false;
 	VMManager::Shutdown(m_save_state_on_shutdown);
 	m_save_state_on_shutdown = false;
-}
-
-void EmuThread::executeVM()
-{
-	for (;;)
-	{
-		switch (VMManager::GetState())
-		{
-			case VMState::Initializing:
-				pxFailRel("Shouldn't be in the starting state state");
-				continue;
-
-			case VMState::Paused:
-				m_event_loop->exec();
-				continue;
-
-			case VMState::Running:
-				m_event_loop->processEvents(QEventLoop::AllEvents);
-				VMManager::Execute();
-				continue;
-
-			case VMState::Resetting:
-				VMManager::Reset();
-				continue;
-
-			case VMState::Stopping:
-				destroyVM();
-				m_event_loop->processEvents(QEventLoop::AllEvents);
-				return;
-
-			default:
-				continue;
-		}
-	}
 }
 
 void EmuThread::createBackgroundControllerPollTimer()

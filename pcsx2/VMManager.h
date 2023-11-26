@@ -47,6 +47,7 @@ struct VMBootParameters
 
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
+	bool disable_achievements_hardcore_mode = false;
 };
 
 namespace VMManager
