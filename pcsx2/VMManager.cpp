@@ -527,7 +527,7 @@ void VMManager::ApplyGameFixes()
 
 	game->applyGameFixes(EmuConfig, EmuConfig.EnableGameFixes);
 	game->applyGSHardwareFixes(EmuConfig.GS);
-	
+
 	// Re-remove upscaling fixes, make sure they don't apply at native res.
 	// We do this in LoadCoreSettings(), but game fixes get applied afterwards because of the unsafe warning.
 	EmuConfig.GS.MaskUpscalingHacks();
@@ -658,7 +658,7 @@ void VMManager::Internal::UpdateEmuFolders()
 
 			AutoEject::SetAll();
 
-			if(!GSDumpReplayer::IsReplayingDump())
+			if (!GSDumpReplayer::IsReplayingDump())
 				FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
 		}
 
@@ -1085,6 +1085,12 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		s_elf_override = {};
 		ClearELFInfo();
 		ClearDiscDetails();
+
+		Achievements::GameChanged(0, 0);
+		FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
+		UpdateDiscordPresence();
+		Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
+
 		UpdateGameSettingsLayer();
 		s_state.store(VMState::Shutdown, std::memory_order_release);
 		Host::OnVMDestroyed();
@@ -1184,7 +1190,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		if (!FileSystem::FileExists(s_elf_override.c_str()))
 		{
 			Host::ReportErrorAsync("Error", fmt::format("Requested boot ELF '{}' does not exist.", s_elf_override));
-			DoCDVDclose();
 			return false;
 		}
 
@@ -1200,11 +1205,34 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	}
 
 	// Check for resuming with hardcore mode.
-	Achievements::ResetHardcoreMode();
-	if (!state_to_load.empty() && Achievements::IsHardcoreModeActive() &&
-		!Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Resuming state")))
+	// Why do we need the boot param? Because we need some way of telling BootSystem() that
+	// the user allowed HC mode to be disabled, because otherwise we'll ResetHardcoreMode()
+	// and send ourselves into an infinite loop.
+	if (boot_params.disable_achievements_hardcore_mode)
+		Achievements::DisableHardcoreMode();
+	else
+		Achievements::ResetHardcoreMode();
+	if (!state_to_load.empty() && Achievements::IsHardcoreModeActive())
 	{
-		return false;
+		if (FullscreenUI::IsInitialized())
+		{
+			boot_params.elf_override = std::move(s_elf_override);
+			boot_params.save_state = std::move(state_to_load);
+			boot_params.disable_achievements_hardcore_mode = true;
+			s_elf_override = {};
+
+			Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Resuming state"),
+				[boot_params = std::move(boot_params)](bool approved) mutable {
+					if (approved && Initialize(std::move(boot_params)))
+						SetState(VMState::Running);
+				});
+
+			return false;
+		}
+		else if (!Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Resuming state")))
+		{
+			return false;
+		}
 	}
 
 	s_limiter_mode = GetInitialLimiterMode();
@@ -1233,7 +1261,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	}
 	ScopedGuard close_spu2(&SPU2::Close);
 
-	
+
 	Console.WriteLn("Initializing Pad...");
 	if (!Pad::Initialize())
 	{
@@ -1706,8 +1734,15 @@ u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also
 
 bool VMManager::LoadState(const char* filename)
 {
-	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Loading state")))
+	if (Achievements::IsHardcoreModeActive())
+	{
+		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Loading state"),
+			[filename = std::string(filename)](bool approved) {
+				if (approved)
+					LoadState(filename.c_str());
+			});
 		return false;
+	}
 
 	// TODO: Save the current state so we don't need to reset.
 	if (DoLoadState(filename))
@@ -1719,7 +1754,7 @@ bool VMManager::LoadState(const char* filename)
 
 bool VMManager::LoadStateFromSlot(s32 slot)
 {
-	const std::string filename(GetCurrentSaveStateFileName(slot));
+	const std::string filename = GetCurrentSaveStateFileName(slot);
 	if (filename.empty())
 	{
 		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
@@ -1728,8 +1763,15 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 		return false;
 	}
 
-	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Loading state")))
+	if (Achievements::IsHardcoreModeActive())
+	{
+		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Loading state"),
+			[slot](bool approved) {
+				if (approved)
+					LoadStateFromSlot(slot);
+			});
 		return false;
+	}
 
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
 		fmt::format(TRANSLATE_FS("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
@@ -1916,8 +1958,16 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 	if (!HasValidVM())
 		return;
 
-	if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Frame advancing")))
+	if (Achievements::IsHardcoreModeActive())
+	{
+		Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Frame advancing"),
+			[num_frames](bool approved) {
+				if (approved)
+					FrameAdvance(num_frames);
+			});
+
 		return;
+	}
 
 	s_frame_advance_count = num_frames;
 	SetState(VMState::Running);
@@ -1961,7 +2011,7 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		if (!DoCDVDopen(&error))
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-					fmt::format(TRANSLATE_FS("VMManager", "Failed to switch back to old disc image. Removing disc.\nError was: {}"),
+				fmt::format(TRANSLATE_FS("VMManager", "Failed to switch back to old disc image. Removing disc.\nError was: {}"),
 					error.GetDescription()),
 				Host::OSD_CRITICAL_ERROR_DURATION);
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
@@ -2263,7 +2313,7 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 	}
 	else if (EmuConfig.GS.VsyncEnable != old_config.GS.VsyncEnable)
 	{
-		// Still need to update target speed, because of sync-to-host-refresh.	
+		// Still need to update target speed, because of sync-to-host-refresh.
 		UpdateTargetSpeed();
 	}
 
@@ -2482,8 +2532,7 @@ void VMManager::WarnAboutUnsafeSettings()
 		return;
 
 	std::string messages;
-	auto append = [&messages](const char* icon, const std::string_view& msg)
-	{
+	auto append = [&messages](const char* icon, const std::string_view& msg) {
 		messages += icon;
 		messages += ' ';
 		messages += msg;
@@ -2860,11 +2909,12 @@ static void InitializeCPUInfo()
 	s_big_cores = 0;
 	s_small_cores = 0;
 	std::vector<DarwinMisc::CPUClass> classes = DarwinMisc::GetCPUClasses();
-	for (size_t i = 0; i < classes.size(); i++) {
+	for (size_t i = 0; i < classes.size(); i++)
+	{
 		const DarwinMisc::CPUClass& cls = classes[i];
 		const bool is_big = i == 0 || i < classes.size() - 1; // Assume only one group is small
 		DevCon.WriteLn("(VMManager) Found %u physical cores and %u logical cores in perf level %u (%s), assuming %s",
-		               cls.num_physical, cls.num_logical, i, cls.name.c_str(), is_big ? "big" : "small");
+			cls.num_physical, cls.num_logical, i, cls.name.c_str(), is_big ? "big" : "small");
 		(is_big ? s_big_cores : s_small_cores) += cls.num_physical;
 	}
 }

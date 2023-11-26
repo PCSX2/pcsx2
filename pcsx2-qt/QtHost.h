@@ -194,7 +194,6 @@ private:
 	static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
 	void destroyVM();
-	void executeVM();
 
 	void createBackgroundControllerPollTimer();
 	void destroyBackgroundControllerPollTimer();
