@@ -285,7 +285,7 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 				}
 				else
 				{
-					Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped loading patch '{}' due patch with duplicate name being loaded.", current_patch_group.name));
+					Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped loading patch '{}' since with duplicate name was already loaded.", current_patch_group.name));
 				}
 				current_patch_group = {};
 			}
