@@ -158,8 +158,8 @@ namespace Patch
 	static std::vector<std::string> FindPatchFilesOnDisk(
 		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
 
-	static bool ContainsPatchName(PatchInfoList& patches, const std::string_view& patchName);
-	static bool ContainsPatchName(PatchList& patches, const std::string_view& patchName);
+	static bool ContainsPatchName(const PatchInfoList& patches, const std::string_view& patchName);
+	static bool ContainsPatchName(const PatchList& patches, const std::string_view& patchName);
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
