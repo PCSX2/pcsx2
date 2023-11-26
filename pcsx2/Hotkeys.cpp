@@ -28,6 +28,7 @@
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/Timer.h"
 
 static s32 s_current_save_slot = 1;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
@@ -141,25 +142,51 @@ static void HotkeySaveStateSlot(s32 slot)
 	VMManager::SaveStateToSlot(slot);
 }
 
+static bool CanPause()
+{
+	static constexpr const float PAUSE_INTERVAL = 3.0f;
+	static Common::Timer::Value s_last_pause_time = 0;
+
+	if (!Achievements::IsHardcoreModeActive() || VMManager::GetState() == VMState::Paused)
+		return true;
+
+	const Common::Timer::Value time = Common::Timer::GetCurrentValue();
+	const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
+	if (delta < PAUSE_INTERVAL)
+	{
+		Host::AddIconOSDMessage(
+			"PauseCooldown", ICON_FA_CLOCK,
+			fmt::format(TRANSLATE_FS("Hotkeys", "You cannot pause until another {:.1f} seconds have passed."),
+				PAUSE_INTERVAL - delta),
+			Host::OSD_QUICK_DURATION);
+		return false;
+	}
+
+	Host::RemoveKeyedOSDMessage("PauseCooldown");
+	s_last_pause_time = time;
+
+	return true;
+}
+
 BEGIN_HOTKEY_LIST(g_common_hotkeys)
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
 	[](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
+		if (!pressed && VMManager::HasValidVM() && CanPause())
 			FullscreenUI::OpenPauseMenu();
 	})
 DEFINE_HOTKEY("OpenAchievementsList", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Open Achievements List"), [](s32 pressed) {
-		if (!pressed)
+		if (!pressed && CanPause())
 			FullscreenUI::OpenAchievementsWindow();
 	})
 DEFINE_HOTKEY("OpenLeaderboardsList", TRANSLATE_NOOP("Hotkeys", "System"),
 	TRANSLATE_NOOP("Hotkeys", "Open Leaderboards List"), [](s32 pressed) {
-		if (!pressed)
+		if (!pressed && CanPause())
 			FullscreenUI::OpenLeaderboardsWindow();
 	})
 DEFINE_HOTKEY(
 	"TogglePause", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"), [](s32 pressed) {
-		if (!pressed && VMManager::HasValidVM())
+		if (!pressed && VMManager::HasValidVM() && CanPause())
 			VMManager::SetPaused(VMManager::GetState() != VMState::Paused);
 	})
 DEFINE_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"),
