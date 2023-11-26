@@ -158,13 +158,13 @@ namespace Patch
 	static std::vector<std::string> FindPatchFilesOnDisk(
 		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
 
-	static bool containsPatchName(PatchInfoList& patches, std::string patchName);
-	static bool containsPatchName(PatchList& patches, std::string patchName);
+	static bool ContainsPatchName(PatchInfoList& patches, const std::string_view& patchName);
+	static bool ContainsPatchName(PatchList& patches, const std::string_view& patchName);
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
 
-	static bool PatchStringHasUnlabelledPatch(std::string pnach_data);
+	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
 	static void ReloadEnabledLists();
 	static u32 EnablePatches(const PatchList& patches, const EnablePatchList& enable_list);
@@ -219,9 +219,9 @@ void Patch::TrimPatchLine(std::string& buffer)
 		buffer.erase(pos);
 }
 
-bool Patch::containsPatchName(PatchList& patchList, std::string patchName)
+bool Patch::ContainsPatchName(const PatchList& patchList, const std::string_view& patchName)
 {
-	return std::find_if(patchList.begin(), patchList.end(), [patchName](const PatchGroup& patch) {
+	return std::find_if(patchList.begin(), patchList.end(), [&patchName](const PatchGroup& patch) {
 		return patch.name == patchName;
 	}) != patchList.end();
 }
@@ -279,7 +279,7 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 			if (!current_patch_group.name.empty() || !current_patch_group.patches.empty())
 			{
 				// Don't show patches with duplicate names, prefer the first loaded.
-				if (!containsPatchName(*patch_list, current_patch_group.name))
+				if (!ContainsPatchName(*patch_list, current_patch_group.name))
 				{
 					patch_list->push_back(std::move(current_patch_group));
 				}
@@ -369,9 +369,9 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& ser
 	return ret;
 }
 
-bool Patch::containsPatchName(PatchInfoList& patches, std::string patchName)
+bool Patch::ContainsPatchName(const PatchInfoList& patches, const std::string_view& patchName)
 {
-	return std::find_if(patches.begin(), patches.end(), [patchName](const PatchInfo& patch) {
+	return std::find_if(patches.begin(), patches.end(), [&patchName](const PatchInfo& patch) {
 		return patch.name == patchName;
 	}) != patches.end();
 }
@@ -420,7 +420,7 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 		f(std::move(zip_filename), std::move(pnach_data.value()));
 }
 
-bool Patch::PatchStringHasUnlabelledPatch(std::string pnach_data)
+bool Patch::PatchStringHasUnlabelledPatch(const std::string& pnach_data)
 {
 	std::istringstream ss(pnach_data);
 	std::string line;
@@ -474,7 +474,7 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 						[&current_patch](const PatchInfo& pi) { return (pi.name == current_patch.name); }))
 				{
 					// Don't show patches with duplicate names, prefer the first loaded.
-					if (!containsPatchName(*dst, current_patch.name))
+					if (!ContainsPatchName(*dst, current_patch.name))
 					{
 						dst->push_back(std::move(current_patch));
 					}
