@@ -60,6 +60,7 @@ private Q_SLOTS:
 
 private:
 	void reloadList();
+	void setUnlabeledPatchesWarningVisibility(bool visible);
 
 	Ui::GamePatchSettingsWidget m_ui;
 	SettingsWindow* m_dialog;

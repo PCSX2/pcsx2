@@ -34,6 +34,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="unlabeledPatchWarning">
+     <property name="text">
+      <string>Any patches bundled with PCSX2 for this game will be disabled since you have unlabeled patches loaded.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="widgetResizable">
       <bool>true</bool>

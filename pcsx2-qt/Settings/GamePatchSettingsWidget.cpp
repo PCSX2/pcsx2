@@ -68,6 +68,8 @@ GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget
 	m_ui.scrollArea->setFrameShape(QFrame::WinPanel);
 	m_ui.scrollArea->setFrameShadow(QFrame::Sunken);
 
+	setUnlabeledPatchesWarningVisibility(false);
+
 	connect(m_ui.reload, &QPushButton::clicked, this, &GamePatchSettingsWidget::onReloadClicked);
 
 	reloadList();
@@ -86,10 +88,12 @@ void GamePatchSettingsWidget::onReloadClicked()
 void GamePatchSettingsWidget::reloadList()
 {
 	// Patches shouldn't have any unlabelled patch groups, because they're new.
-	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, nullptr);
+	u32 numberOfUnlabeledPatches = 0;
+	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, &numberOfUnlabeledPatches);
 	std::vector<std::string> enabled_list =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 
+	setUnlabeledPatchesWarningVisibility(numberOfUnlabeledPatches > 0);
 	delete m_ui.scrollArea->takeWidget();
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
@@ -129,4 +133,8 @@ void GamePatchSettingsWidget::reloadList()
 	layout->addStretch(1);
 
 	m_ui.scrollArea->setWidget(container);
+}
+
+void GamePatchSettingsWidget::setUnlabeledPatchesWarningVisibility(bool visible) {
+	m_ui.unlabeledPatchWarning->setVisible(visible);
 }
