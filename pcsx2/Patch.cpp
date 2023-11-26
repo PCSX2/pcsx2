@@ -396,7 +396,7 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 				if (PatchStringHasUnlabelledPatch(contents.value()))
 				{
 					unlabeled_patch_found = true;
-					Console.WriteLn(fmt::format("Patch: Disabling any bundled '{}' patches due to unlabeled patch being loaded. (To avoid conflicts)"), PATCHES_ZIP_NAME);
+					Console.WriteLn(fmt::format("Patch: Disabling any bundled '{}' patches due to unlabeled patch being loaded. (To avoid conflicts)", PATCHES_ZIP_NAME));
 				}
 
 				f(std::move(file), std::move(contents.value()));
