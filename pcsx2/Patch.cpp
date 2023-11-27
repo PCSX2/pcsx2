@@ -480,7 +480,7 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 					}
 					else
 					{
-						Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped reading patch '{}' due patch with duplicate name being loaded.", current_patch.name));
+						Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped reading patch '{}' since with duplicate name was already loaded.", current_patch.name));
 					}
 				}
 				current_patch = {};
