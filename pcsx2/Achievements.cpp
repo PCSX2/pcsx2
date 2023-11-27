@@ -2196,16 +2196,23 @@ void Achievements::DrawAchievementsWindow()
 			ImGui::PopFont();
 
 			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
-			if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
+			if (s_game_summary.num_core_achievements > 0)
 			{
-				text.fmt(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
-					s_game_summary.points_unlocked);
+				if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
+				{
+					text.fmt(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
+						s_game_summary.points_unlocked);
+				}
+				else
+				{
+					text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
+						s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
+						s_game_summary.points_core);
+				}
 			}
 			else
 			{
-				text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-					s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
-					s_game_summary.points_core);
+				text.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
 			}
 
 			top += g_medium_font->FontSize + spacing;
@@ -2215,21 +2222,24 @@ void Achievements::DrawAchievementsWindow()
 				summary_bb.Min, summary_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 			ImGui::PopFont();
 
-			const float progress_height = ImGuiFullscreen::LayoutScale(20.0f);
-			const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
-			const float fraction =
-				static_cast<float>(s_game_summary.num_unlocked_achievements) / static_cast<float>(s_game_summary.num_core_achievements);
-			dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
-			dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-				ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
+			if (s_game_summary.num_core_achievements > 0)
+			{
+				const float progress_height = ImGuiFullscreen::LayoutScale(20.0f);
+				const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
+				const float fraction =
+					static_cast<float>(s_game_summary.num_unlocked_achievements) / static_cast<float>(s_game_summary.num_core_achievements);
+				dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
+				dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+					ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
 
-			text.fmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
-			text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
-			const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
-				progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
-			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor),
-				text.c_str(), text.end_ptr());
-			top += progress_height + spacing;
+				text.fmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+				text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
+				const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+					progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
+				dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor),
+					text.c_str(), text.end_ptr());
+				top += progress_height + spacing;
+			}
 		}
 	}
 	ImGuiFullscreen::EndFullscreenWindow();
