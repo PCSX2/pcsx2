@@ -68,6 +68,7 @@ private:
 	bool IsDiscardingDstRGB();
 	bool IsDiscardingDstAlpha() const;
 	bool PrimitiveCoversWithoutGaps();
+	bool TextureCoversWithoutGapsNotEqual();
 
 	enum class CLUTDrawTestResult
 	{

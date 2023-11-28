@@ -1900,7 +1900,8 @@ void GSRendererHW::Draw()
 	}
 
 	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC);
-	const bool not_writing_to_all = (!PrimitiveCoversWithoutGaps() || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
+	const bool no_gaps = PrimitiveCoversWithoutGaps();
+	const bool not_writing_to_all = (!no_gaps || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
 	bool preserve_depth =
 		not_writing_to_all || (!no_ds && (!all_depth_tests_pass || !m_cached_ctx.DepthWrite() || m_cached_ctx.TEST.ATE));
 
@@ -2036,6 +2037,7 @@ void GSRendererHW::Draw()
 		if (height_invalid && m_cached_ctx.FRAME.FBW <= 1 &&
 			TryToResolveSinglePageFramebuffer(m_cached_ctx.FRAME, true))
 		{
+			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
 			const GSVector2i& pgs = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
 			ReplaceVerticesWithSprite(
 				GetDrawRectForPages(m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, (m_r.w + (pgs.y - 1)) / pgs.y),
@@ -2559,6 +2561,42 @@ void GSRendererHW::Draw()
 	const bool can_update_size = !is_possible_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
+		// Try to turn blits in to single sprites, saves upscaling problems when striped clears/blits.
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && no_gaps && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
+		{
+			// Full final framebuffer only.
+			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
+			if (std::abs(fb_size.x - m_r.width()) <= 1 && std::abs(fb_size.y - m_r.height()) <= 1)
+			{
+				GSVertex* v = m_vertex.buff;
+
+				v[0].XYZ.Z = v[1].XYZ.Z;
+				v[0].RGBAQ = v[1].RGBAQ;
+				v[0].FOG = v[1].FOG;
+				m_vt.m_eq.rgba = 0xFFFF;
+				m_vt.m_eq.z = true;
+				m_vt.m_eq.f = true;
+
+				v[1].XYZ.X = v[m_index.tail - 1].XYZ.X;
+				v[1].XYZ.Y = v[m_index.tail - 1].XYZ.Y;
+
+				if (PRIM->FST)
+				{
+					v[1].U = v[m_index.tail - 1].U;
+					v[1].V = v[m_index.tail - 1].V;
+				}
+				else
+				{
+					v[1].ST.S = v[m_index.tail - 1].ST.S;
+					v[1].ST.T = v[m_index.tail - 1].ST.T;
+					v[1].RGBAQ.Q = v[m_index.tail - 1].RGBAQ.Q;
+				}
+
+				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+				m_index.tail = 2;
+			}
+		}
+
 		if (rt && (!is_possible_mem_clear || rt->m_TEX0.PSM != FRAME_TEX0.PSM))
 		{
 			if (rt->m_TEX0.TBW != FRAME_TEX0.TBW && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
@@ -2610,11 +2648,11 @@ void GSRendererHW::Draw()
 		GSVector2i new_size = t_size;
 
 		// We need to adjust the size if it's a texture shuffle as we could end up making the RT twice the size.
-		if (rt && m_texture_shuffle && m_split_texture_shuffle_pages == 0)
+		if (src && m_texture_shuffle && m_split_texture_shuffle_pages == 0)
 		{
-			if ((new_size.x > rt->m_valid.z && m_vt.m_max.p.x == new_size.x) || (new_size.y > rt->m_valid.w && m_vt.m_max.p.y == new_size.y))
+			if ((new_size.x > src->m_valid_rect.z && m_vt.m_max.p.x == new_size.x) || (new_size.y > src->m_valid_rect.w && m_vt.m_max.p.y == new_size.y))
 			{
-				if (new_size.y <= rt->m_valid.w && (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW))
+				if (new_size.y <= src->m_valid_rect.w && (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW))
 					new_size.x /= 2;
 				else
 					new_size.y /= 2;
@@ -6228,24 +6266,22 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 	// Check that the height matches. Xenosaga 3 draws a letterbox around
 	// the FMV with a sprite at the top and bottom of the framebuffer.
 	const GSVertex* v = &m_vertex.buff[0];
-	const u32 first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
-	const u32 first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 
 	// Horizontal Match.
 	if ((first_dpX >> 4) == m_r.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
-		u32 last_pY = v[1].XYZ.Y;
 		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			const u32 dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
-			if (dpY != first_dpY || v[i].XYZ.Y != last_pY)
+			const int last_pY = v[i - 1].XYZ.Y;
+			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			if (std::abs(dpY - first_dpY) >= 16 || std::abs(static_cast<int>(v[i].XYZ.Y) - last_pY) >= 16)
 			{
 				m_primitive_covers_without_gaps = false;
 				return false;
 			}
-
-			last_pY = v[i + 1].XYZ.Y;
 		}
 
 		m_primitive_covers_without_gaps = true;
@@ -6256,14 +6292,19 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 	if ((first_dpY >> 4) == m_r.w)
 	{
 		// Borrowed from MergeSprite().
-		u32 last_pX = v[1].XYZ.X;
+		const int offset_X = m_context->XYOFFSET.OFX;
 		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			if (v[i].XYZ.X < v[i-2].XYZ.X)
+			const int last_pX = v[i - 1].XYZ.X;
+			const int this_start_X = v[i].XYZ.X;
+			const int last_start_X = v[i - 2].XYZ.X;
+
+			const int  dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+
+			if (this_start_X < last_start_X)
 			{
-				const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-				const u32 prev_X = v[i - 2].XYZ.X - m_context->XYOFFSET.OFX;
-				if (dpX != prev_X || v[i].XYZ.X != m_context->XYOFFSET.OFX)
+				const int prev_X = last_start_X - offset_X;
+				if (std::abs(dpX - prev_X) >= 16 || std::abs(this_start_X - offset_X) >= 16)
 				{
 					m_primitive_covers_without_gaps = false;
 					return false;
@@ -6271,15 +6312,12 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 			}
 			else
 			{
-				const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-				if (dpX != first_dpX || v[i].XYZ.X != last_pX)
+				if (std::abs(dpX - first_dpX) >= 16 || std::abs(this_start_X - last_pX) >= 16)
 				{
 					m_primitive_covers_without_gaps = false;
 					return false;
 				}
 			}
-
-			last_pX = v[i + 1].XYZ.X;
 		}
 
 		m_primitive_covers_without_gaps = true;
@@ -6287,6 +6325,79 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 	}
 
 	m_primitive_covers_without_gaps = false;
+	return false;
+}
+
+// Like PrimitiveCoversWithoutGaps but with texture coordinates.
+bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
+{
+	if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	{
+		return false;
+	}
+
+	// Simple case: one sprite.
+	if (m_index.tail == 2)
+	{
+		return true;
+	}
+
+	const GSVertex* v = &m_vertex.buff[0];
+	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+	const int first_dtV = v[1].V - v[0].V;
+	const int first_dtU = v[1].U - v[0].U;
+
+	// Horizontal Match.
+	if ((first_dpX >> 4) == m_r.z)
+	{
+		// Borrowed from MergeSprite() modified to calculate heights.
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int last_tV = v[i - 1].V;
+			const int dtV = v[i + 1].V - v[i].V;
+			const u32 last_tV_diff = std::abs(static_cast<int>(v[i].XYZ.Y) - last_tV);
+			if (std::abs(dtV - first_dtV) >= 16 || last_tV_diff >= 16 || last_tV_diff == 0)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// Vertical Match.
+	if ((first_dpY >> 4) == m_r.w)
+	{
+		// Borrowed from MergeSprite().
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int last_tU = v[i - 1].U;
+			const int this_start_U = v[i].U;
+			const int last_start_U = v[i - 2].U;
+
+			const int  dtU = v[i + 1].U - v[i].U;
+
+			if (this_start_U < last_start_U)
+			{
+				if (std::abs(dtU - last_start_U) >= 16 || std::abs(this_start_U) >= 16)
+				{;
+					return false;
+				}
+			}
+			else
+			{
+				const u32 last_tU_diff = std::abs(this_start_U - last_tU);
+				if (std::abs(dtU - first_dtU) >= 16 || last_tU_diff >= 16 || last_tU_diff == 0)
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	return false;
 }
 
