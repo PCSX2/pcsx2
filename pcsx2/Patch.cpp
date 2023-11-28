@@ -158,8 +158,8 @@ namespace Patch
 	static std::vector<std::string> FindPatchFilesOnDisk(
 		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
 
-	static bool ContainsPatchName(const PatchInfoList& patches, const std::string_view& patchName);
-	static bool ContainsPatchName(const PatchList& patches, const std::string_view& patchName);
+	static bool ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName);
+	static bool ContainsPatchName(const PatchList& patches, const std::string_view patchName);
 
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
@@ -219,11 +219,11 @@ void Patch::TrimPatchLine(std::string& buffer)
 		buffer.erase(pos);
 }
 
-bool Patch::ContainsPatchName(const PatchList& patchList, const std::string_view& patchName)
+bool Patch::ContainsPatchName(const PatchList& patch_list, const std::string_view patch_name)
 {
-	return std::find_if(patchList.begin(), patchList.end(), [&patchName](const PatchGroup& patch) {
-		return patch.name == patchName;
-	}) != patchList.end();
+	return std::find_if(patch_list.begin(), patch_list.end(), [&patch_name](const PatchGroup& patch) {
+		return patch.name == patch_name;
+	}) != patch_list.end();
 }
 
 int Patch::PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
@@ -369,7 +369,7 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& ser
 	return ret;
 }
 
-bool Patch::ContainsPatchName(const PatchInfoList& patches, const std::string_view& patchName)
+bool Patch::ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName)
 {
 	return std::find_if(patches.begin(), patches.end(), [&patchName](const PatchInfo& patch) {
 		return patch.name == patchName;

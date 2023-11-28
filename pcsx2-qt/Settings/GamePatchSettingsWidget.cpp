@@ -88,12 +88,12 @@ void GamePatchSettingsWidget::onReloadClicked()
 void GamePatchSettingsWidget::reloadList()
 {
 	// Patches shouldn't have any unlabelled patch groups, because they're new.
-	u32 numberOfUnlabeledPatches = 0;
-	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, &numberOfUnlabeledPatches);
+	u32 number_of_unlabeled_patches = 0;
+	std::vector<Patch::PatchInfo> patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), false, &number_of_unlabeled_patches);
 	std::vector<std::string> enabled_list =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::PATCHES_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 
-	setUnlabeledPatchesWarningVisibility(numberOfUnlabeledPatches > 0);
+	setUnlabeledPatchesWarningVisibility(number_of_unlabeled_patches > 0);
 	delete m_ui.scrollArea->takeWidget();
 
 	QWidget* container = new QWidget(m_ui.scrollArea);
