@@ -285,7 +285,7 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 				}
 				else
 				{
-					Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped loading patch '{}' since with duplicate name was already loaded.", current_patch_group.name));
+					Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped loading patch '{}' since a patch with a duplicate name was already loaded.", current_patch_group.name));
 				}
 				current_patch_group = {};
 			}
@@ -480,7 +480,7 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 					}
 					else
 					{
-						Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped reading patch '{}' since with duplicate name was already loaded.", current_patch.name));
+						Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped reading patch '{}' since a patch with a duplicate name was already loaded.", current_patch.name));
 					}
 				}
 				current_patch = {};
