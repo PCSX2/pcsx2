@@ -1186,6 +1186,9 @@ SCAJ-20068:
 SCAJ-20069:
   name: "Gallop Racer - Lucky 7"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20070:
   name: "Star Ocean 3 [Director's Cut]"
   region: "NTSC-Unk"
@@ -16714,6 +16717,10 @@ SLES-51893:
 SLES-51896:
   name: "Attheraces Presents Gallop Racer"
   region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Improves lighting, maximum blending is needed for full accuracy.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51897:
   name: "The Simpsons - Hit & Run"
   name-sort: "Simpsons, The - Hit & Run"
@@ -19504,6 +19511,9 @@ SLES-53009:
 SLES-53011:
   name: "Gallop Racer 2"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53012:
   name: "Tenchu - Fatal Shadows"
   region: "PAL-E"
@@ -48685,6 +48695,8 @@ SLPS-20443:
   name-sort: ぶろっくすくらぶ withばんぴーとろっと
   name-en: "Blokus Club with Bumpy Trot"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes water reflections.
 SLPS-20444:
   name: SIMPLE2000シリーズ Vol.90 THE お姉チャンバラ2
   name-sort: SIMPLE2000しりーず Vol.90 THE おあねちゃんばら2
@@ -50048,6 +50060,10 @@ SLPS-25177:
   name-sort: Gallop Racer 6 -Revolution-
   name-en: "Gallop Racer 6 - Revolution"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Improves lighting, maximum blending is needed for full accuracy.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25178:
   name: アルゴスの戦士
   name-sort: あるごすのせんし
@@ -50842,6 +50858,9 @@ SLPS-25333:
   name-sort: ぎゃろっぷれーさー らっきー7
   name-en: "Gallop Racer Lucky 7"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25334:
   name: シャドウハーツ II [通常版] [ディスク1/2]
   name-sort: しゃどうはーつ II [つうじょうばん] [でぃすく1/2]
@@ -55179,6 +55198,10 @@ SLPS-73415:
   name-sort: Gallop Racer 6 -Revolution- PS2 the Best
   name-en: "Gallop Racer 6 - Revolution [PS2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Improves lighting, maximum blending is needed for full accuracy.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-73416:
   name: スーパーロボット大戦IMPACT PS2 the Best
   name-sort: すーぱーろぼっとたいせんIMPACT PS2 the Best
@@ -58328,6 +58351,10 @@ SLUS-20661:
 SLUS-20662:
   name: "Gallop Racer 2003 - A New Breed"
   region: "NTSC-U"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Improves lighting, maximum blending is needed for full accuracy.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20663:
   name: "Naval Ops - Warship Gunner"
   region: "NTSC-U"
@@ -60349,6 +60376,9 @@ SLUS-21030:
 SLUS-21031:
   name: "Gallop Racer 2004"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21032:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
   region: "NTSC-U"
@@ -62412,6 +62442,8 @@ SLUS-21380:
   clampModes:
     vuClampMode: 3 # Fixes bad textures and missing geometry.
   gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes fog line.
   patches:
     213DCAC9:
