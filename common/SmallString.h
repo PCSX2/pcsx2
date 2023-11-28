@@ -321,3 +321,25 @@ __fi void SmallStringBase::fmt(fmt::format_string<T...> fmt, T&&... args)
 	clear();
 	fmt::vformat_to(std::back_inserter(*this), fmt, fmt::make_format_args(args...));
 }
+
+#define MAKE_FORMATTER(type) \
+	template <> \
+	struct fmt::formatter<type> \
+	{ \
+		template <typename ParseContext> \
+		constexpr auto parse(ParseContext& ctx) \
+		{ \
+			return ctx.begin(); \
+		} \
+\
+		template <typename FormatContext> \
+		auto format(const type& str, FormatContext& ctx) \
+		{ \
+			return fmt::format_to(ctx.out(), "{}", str.view()); \
+		} \
+	};
+
+MAKE_FORMATTER(TinyString);
+MAKE_FORMATTER(SmallString);
+
+#undef MAKE_FORMATTER
