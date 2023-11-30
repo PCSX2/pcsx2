@@ -387,6 +387,9 @@ int GzippedFileReader::_ReadSync(void* pBuffer, s64 offset, uint bytesToRead)
 	if (!OkIndex(nullptr))
 		return -1;
 
+	if ((offset + bytesToRead) > m_pIndex->uncompressed_size)
+		return -1;
+
 	// Without all the caching, chunking and states, this would be enough:
 	// return extract(m_src, m_pIndex, offset, (unsigned char*)pBuffer, bytesToRead);
 
