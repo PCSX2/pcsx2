@@ -1448,6 +1448,8 @@ SCAJ-20118:
   region: "NTSC-J"
   gameFixes:
     - VuAddSubHack
+  clampModes:
+    eeClampMode: 2 # Fixes incorrect model position.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical bars.
     halfPixelOffset: 2 # Fixes misalignment bloom effects.
@@ -38941,6 +38943,8 @@ SLPM-65800:
   region: "NTSC-J"
   gameFixes:
     - VuAddSubHack
+  clampModes:
+    eeClampMode: 2 # Fixes incorrect model position.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical bars.
     halfPixelOffset: 2 # Fixes misalignment bloom effects.
@@ -61665,6 +61669,8 @@ SLUS-21262:
   compat: 5
   gameFixes:
     - VuAddSubHack
+  clampModes:
+    eeClampMode: 2 # Fixes incorrect model position.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical bars.
     halfPixelOffset: 2 # Fixes misalignment bloom effects.
