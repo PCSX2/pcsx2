@@ -299,16 +299,16 @@ bool InputIsoFile::IsOpened() const
 	return m_reader != NULL;
 }
 
-bool InputIsoFile::tryIsoType(u32 _size, s32 _offset, s32 _blockofs)
+bool InputIsoFile::tryIsoType(u32 size, u32 offset, u32 blockofs)
 {
-	static u8 buf[2456];
+	u8 buf[2456];
 
-	m_blocksize = _size;
-	m_offset = _offset;
-	m_blockofs = _blockofs;
+	m_blocksize = size;
+	m_offset = offset;
+	m_blockofs = blockofs;
 
-	m_reader->SetDataOffset(_offset);
-	m_reader->SetBlockSize(_size);
+	m_reader->SetDataOffset(offset);
+	m_reader->SetBlockSize(size);
 
 	if (ReadSync(buf, 16) < 0)
 		return false;
@@ -358,13 +358,6 @@ bool InputIsoFile::Detect(bool readType)
 		return true; // NERO RAW 2352
 	if (tryIsoType(2448, 150 * 2048, 0))
 		return true; // NERO RAWQ 2448
-
-	if (tryIsoType(2048, -8, 24))
-		return true; // ISO 2048
-	if (tryIsoType(2352, -8, 0))
-		return true; // RAW 2352
-	if (tryIsoType(2448, -8, 0))
-		return true; // RAWQ 2448
 
 	m_offset = 0;
 	m_blocksize = CD_FRAMESIZE_RAW;
