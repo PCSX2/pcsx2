@@ -103,9 +103,9 @@ namespace Achievements
 		struct LeaderboardTrackerIndicator
 		{
 			u32 tracker_id;
-			ImVec2 size;
 			std::string text;
 			Common::Timer show_hide_time;
+			u32 display_length;
 			bool active;
 		};
 
@@ -1223,17 +1223,10 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
 	DevCon.WriteLn(
 		"(Achievements) Showing leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
-	TinyString width_string;
-	width_string.append(ICON_FA_STOPWATCH);
-	const u32 display_len = static_cast<u32>(std::strlen(event->leaderboard_tracker->display));
-	for (u32 i = 0; i < display_len; i++)
-		width_string.append('0');
-
 	LeaderboardTrackerIndicator indicator;
 	indicator.tracker_id = event->leaderboard_tracker->id;
-	indicator.size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
-		ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
-	indicator.text = fmt::format(ICON_FA_STOPWATCH " {}", event->leaderboard_tracker->display);
+	indicator.text = event->leaderboard_tracker->display;
+	indicator.display_length = static_cast<u32>(std::strlen(event->leaderboard_tracker->display));
 	indicator.active = true;
 	s_active_leaderboard_trackers.push_back(std::move(indicator));
 }
@@ -1262,8 +1255,7 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
 	DevCon.WriteLn(
 		"(Achievements) Updating leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
-	it->text.clear();
-	fmt::format_to(std::back_inserter(it->text), ICON_FA_STOPWATCH " {}", event->leaderboard_tracker->display);
+	it->text = event->leaderboard_tracker->display;
 	it->active = true;
 }
 
@@ -1978,6 +1970,8 @@ void Achievements::DrawGameOverlays()
 			DevCon.WriteLn("(Achievements) Remove progress indicator");
 			s_active_progress_indicator.reset();
 		}
+
+		position.y -= image_size.y - padding * 3.0f;
 	}
 
 	if (!s_active_leaderboard_trackers.empty())
@@ -1987,17 +1981,31 @@ void Achievements::DrawGameOverlays()
 			const LeaderboardTrackerIndicator& indicator = *it;
 			const float opacity = IndicatorOpacity(indicator);
 
-			const ImVec2 box_min = ImVec2(position.x - indicator.size.x - padding * 2.0f, position.y - indicator.size.y - padding * 2.0f);
+			TinyString width_string;
+			width_string.append(ICON_FA_STOPWATCH);
+			for (u32 i = 0; i < indicator.display_length; i++)
+				width_string.append('0');
+			const ImVec2 size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
+				ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
+
+			const ImVec2 box_min = ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f);
 			const ImVec2 box_max = position;
 			const float box_rounding = LayoutScale(1.0f);
 			dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ImVec4(0.13f, 0.13f, 0.13f, opacity * 0.5f)), box_rounding);
 			dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.8f, opacity)), box_rounding);
 
 			const u32 text_col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
-			const ImVec2 text_pos = box_min + ImVec2(padding, padding);
-			const ImVec4 text_clip_rect(text_pos.x, text_pos.y, box_max.x, box_max.y);
+			const ImVec2 text_size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
+				ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, indicator.text.c_str(),
+				indicator.text.c_str() + indicator.text.length());
+			const ImVec2 text_pos = ImVec2(box_max.x - padding - text_size.x, box_min.y + padding);
+			const ImVec4 text_clip_rect(box_min.x, box_min.y, box_max.x, box_max.y);
 			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, text_col, indicator.text.c_str(),
 				indicator.text.c_str() + indicator.text.length(), 0.0f, &text_clip_rect);
+
+			const ImVec2 icon_pos = ImVec2(box_min.x + padding, box_min.y + padding);
+			dl->AddText(g_medium_font, g_medium_font->FontSize, icon_pos, text_col, ICON_FA_STOPWATCH,
+				nullptr, 0.0f, &text_clip_rect);
 
 			if (!indicator.active && opacity <= 0.01f)
 			{
@@ -2008,9 +2016,12 @@ void Achievements::DrawGameOverlays()
 			{
 				++it;
 			}
+
+			position.x = box_min.x - padding;
 		}
 
-		position.y -= image_size.y + padding;
+		// Uncomment if there are any other overlays above this one.
+		//position.y -= image_size.y - padding * 3.0f;
 	}
 }
 
