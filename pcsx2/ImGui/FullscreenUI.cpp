@@ -4591,7 +4591,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		ImVec2 path_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - path_size.x,
 			title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
 		ImVec2 subtitle_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - subtitle_size.x,
-			(path_string.empty() ? title_pos.y : path_pos.y) + g_medium_font->FontSize + LayoutScale(4.0f));
+			(path_string.empty() ? title_pos.y + g_large_font->FontSize : path_pos.y + g_medium_font->FontSize) + LayoutScale(4.0f));
 
 		float rp_height = 0.0f;
 		{
@@ -4605,7 +4605,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					g_medium_font->FontSize, std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.length());
 
 				// Add a small extra gap if any Rich Presence is displayed
-				rp_height = rp_size.y - g_medium_font->FontSize + 2.0f;
+				rp_height = rp_size.y - g_medium_font->FontSize + LayoutScale(2.0f);
 
 				const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x,
 					subtitle_pos.y + g_medium_font->FontSize + LayoutScale(4.0f) - rp_height);
