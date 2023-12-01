@@ -37,16 +37,16 @@ echo INSTALLDIR=%INSTALLDIR%
 
 cd "%BUILDDIR%"
 
-set QT=6.6.0
+set QT=6.6.1
 set QTMINOR=6.6
-set SDL=SDL2-2.28.4
+set SDL=SDL2-2.28.5
 
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" b53b9b42e731a33552d0a533316a88009b423c16a8a3a418df9ffe498c37da3d || goto error
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 0b9dafd9a42deeb55fd4b74a6caaa6871a03d0051ddb54ea4ea448f28cb90ecc || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" ae31eadd81da19e1bba0d72e16d29fdce0b98e991c4dcbf6351acf09967fd175 || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 88b4b1a8224465cb04feed2a37823e95e959164cf824e9969648335614a4c855 || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 051787f12e2457425f35f31e642163f0d481cdd687b4b164ca41ddb84d5ea3a6 || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 5d04b33336d3d49512eedfa85b378f0805dc4d8770365db318234b125deef9dc || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 97bd14ee0ec67494d2b93f1a4f7da2bf891103c57090d96fdcc2b019d885c76a || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 818f92518d1a89ee98ae818891a7d2f0e41aa45b933d55215da2df6d5459428e || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 03f01042f86b4dbf7329a179f20835817c660a183178c11570cc0535b3c3ba58 || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" d44d5ead8d4682f54c91687b5e32f2735f086419e3889e05609feae1a7f02da9 || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" a17eba4e1c00dbd62c13d708c2bc918c2954b2b25a94d3c05e891d62e8f187c8 || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" e5ccf0eefd6b1ef9604fdf57f6d16ad8484d07fb141ca3a2d9c3f1771296ae25 || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
