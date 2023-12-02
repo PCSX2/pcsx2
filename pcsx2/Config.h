@@ -377,6 +377,16 @@ enum class GSBilinearDirtyMode : u8
 	MaxCount
 };
 
+enum class GSHalfPixelOffset : u8
+{
+	Off,
+	Normal,
+	Special,
+	SpecialAggressive,
+	Native,
+	MaxCount
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -761,7 +771,7 @@ struct Pcsx2Config
 		int SkipDrawEnd = 0;
 
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
-		s8 UserHacks_HalfPixelOffset = 0;
+		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 		s8 UserHacks_RoundSprite = 0;
 		s32 UserHacks_TCOffsetX = 0;
 		s32 UserHacks_TCOffsetY = 0;

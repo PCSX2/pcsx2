@@ -391,8 +391,8 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("AF={} ", EmuConfig.GS.MaxAnisotropy);
 		if (GSConfig.Dithering != 2)
 			APPEND("DI={} ", GSConfig.Dithering);
-		if (GSConfig.UserHacks_HalfPixelOffset > 0)
-			APPEND("HPO={} ", GSConfig.UserHacks_HalfPixelOffset);
+		if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Off)
+			APPEND("HPO={} ", static_cast<u32>(GSConfig.UserHacks_HalfPixelOffset));
 		if (GSConfig.UserHacks_RoundSprite > 0)
 			APPEND("RS={} ", GSConfig.UserHacks_RoundSprite);
 		if (GSConfig.UserHacks_TCOffsetX != 0 || GSConfig.UserHacks_TCOffsetY != 0)

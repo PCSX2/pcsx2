@@ -593,8 +593,12 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
-	if (GSConfig.UserHacks_HalfPixelOffset <= 1 || GetUpscaleMultiplier() == 1.0f)
+	if (GSConfig.UserHacks_HalfPixelOffset <= GSHalfPixelOffset::Normal ||
+		GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Native ||
+		GetUpscaleMultiplier() == 1.0f)
+	{
 		return GSVector4(0.0f);
+	}
 
 	const GSVertex* v = &m_vertex.buff[0];
 	const float scale = tex->GetScale();
@@ -607,7 +611,7 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 
 	if (PRIM->FST)
 	{
-		if (GSConfig.UserHacks_HalfPixelOffset == 3)
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::SpecialAggressive)
 		{
 			if (!linear && t_position == 8)
 			{
@@ -5154,30 +5158,43 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.vs.fst = PRIM->FST;
 
 	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
-	const GSVector2i rtsize = m_conf.ds ? m_conf.ds->GetSize() : m_conf.rt->GetSize();
-	const float rtscale = (ds ? ds->GetScale() : rt->GetScale());
-	const float sx = 2.0f * rtscale / (rtsize.x << 4);
-	const float sy = 2.0f * rtscale / (rtsize.y << 4);
-	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
-	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-	float ox2 = -1.0f / rtsize.x;
-	float oy2 = -1.0f / rtsize.y;
-	float mod_xy = 0.0f;
-	//This hack subtracts around half a pixel from OFX and OFY.
-	//
-	//The resulting shifted output aligns better with common blending / corona / blurring effects,
-	//but introduces a few bad pixels on the edges.
-	if (!rt)
+	const GSTextureCache::Target* rt_or_ds = rt ? rt : ds;
+	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
+	const float rtscale = rt_or_ds->GetScale();
+	float sx, sy, ox, oy, ox2, oy2;
+	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native)
 	{
-		mod_xy = GetModXYOffset();
+		sx = 2.0f * rtscale / (rtsize.x << 4);
+		sy = 2.0f * rtscale / (rtsize.y << 4);
+		ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+		oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+		ox2 = -1.0f / rtsize.x;
+		oy2 = -1.0f / rtsize.y;
+		float mod_xy = 0.0f;
+		//This hack subtracts around half a pixel from OFX and OFY.
+		//
+		//The resulting shifted output aligns better with common blending / corona / blurring effects,
+		//but introduces a few bad pixels on the edges.
+		if (!rt)
+			mod_xy = GetModXYOffset();
+		else
+			mod_xy = rt->OffsetHack_modxy;
+
+		if (mod_xy > 1.0f)
+		{
+			ox2 *= mod_xy;
+			oy2 *= mod_xy;
+		}
 	}
 	else
-		mod_xy = rt->OffsetHack_modxy;
-
-	if (mod_xy > 1.0f)
 	{
-		ox2 *= mod_xy;
-		oy2 *= mod_xy;
+		// Align coordinates to native resolution framebuffer, hope for the best.
+		sx = 2.0f / (rt_or_ds->GetUnscaledWidth() << 4);
+		sy = 2.0f / (rt_or_ds->GetUnscaledHeight() << 4);
+		ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+		oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+		ox2 = -1.0f / rt_or_ds->GetUnscaledWidth();
+		oy2 = -1.0f / rt_or_ds->GetUnscaledHeight();
 	}
 
 	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
