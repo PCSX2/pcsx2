@@ -270,7 +270,7 @@ float GSRenderer::GetModXYOffset()
 {
 	float mod_xy = 0.0f;
 
-	if (GSConfig.UserHacks_HalfPixelOffset == 1)
+	if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Normal)
 	{
 		mod_xy = GetUpscaleMultiplier();
 		switch (static_cast<int>(std::round(mod_xy)))
