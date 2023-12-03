@@ -1233,8 +1233,12 @@ std::string GSDeviceMTL::GetDriverInfo() const
 void GSDeviceMTL::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	m_window_info.surface_scale = new_window_scale;
-	if (m_window_info.surface_width == static_cast<u32>(new_window_width) && m_window_info.surface_height == static_cast<u32>(new_window_height))
+	if (!m_layer ||
+		(m_window_info.surface_width == static_cast<u32>(new_window_width) && m_window_info.surface_height == static_cast<u32>(new_window_height)))
+	{
 		return;
+	}
+
 	m_window_info.surface_width = new_window_width;
 	m_window_info.surface_height = new_window_height;
 	@autoreleasepool
