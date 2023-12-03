@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -81,7 +81,7 @@ namespace ImGuiManager
 static float s_global_scale = 1.0f;
 
 static std::string s_font_path;
-static const ImWchar* s_font_range = nullptr;
+static std::vector<ImWchar> s_font_range;
 
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
@@ -112,16 +112,30 @@ static bool s_fullscreen_ui_was_initialized = false;
 
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
 
-void ImGuiManager::SetFontPath(std::string path)
+void ImGuiManager::SetFontPathAndRange(std::string path, std::vector<u16> range)
 {
-	s_font_path = std::move(path);
-	s_standard_font_data = {};
-}
+	if (s_font_path == path && s_font_range == range)
+		return;
 
-void ImGuiManager::SetFontRange(const u16* range)
-{
-	s_font_range = range;
+	s_font_path = std::move(path);
+	s_font_range = std::move(range);
 	s_standard_font_data = {};
+
+	if (ImGui::GetCurrentContext())
+	{
+		ImGui::EndFrame();
+
+		if (!LoadFontData())
+			pxFailRel("Failed to load font data");
+
+		if (!AddImGuiFonts(HasFullscreenFonts()))
+			pxFailRel("Failed to create ImGui font text");
+
+		if (!g_gs_device->UpdateImGuiFontTexture())
+			pxFailRel("Failed to recreate font texture after scale+resize");
+
+		NewFrame();
+	}
 }
 
 bool ImGuiManager::Initialize()
@@ -235,7 +249,7 @@ void ImGuiManager::UpdateScale()
 	const float window_scale = g_gs_device ? g_gs_device->GetWindowScale() : 1.0f;
 	const float scale = std::max(window_scale * (EmuConfig.GS.OsdScale / 100.0f), 0.5f);
 
-	if (scale == s_global_scale && (!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()))
+	if ((!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()) && scale == s_global_scale)
 		return;
 
 	// This is assumed to be called mid-frame.
@@ -456,7 +470,8 @@ ImFont* ImGuiManager::AddTextFont(float size)
 	ImFontConfig cfg;
 	cfg.FontDataOwnedByAtlas = false;
 	return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-		s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg, s_font_range ? s_font_range : default_ranges);
+		s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg,
+		s_font_range.empty() ? default_ranges : s_font_range.data());
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)

@@ -457,8 +457,15 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 
 void MainWindow::recreate()
 {
-	if (s_vm_valid)
-		requestShutdown(false, true, EmuConfig.SaveStateOnShutdown);
+	const bool was_display_created = m_display_created;
+	if (was_display_created)
+	{
+		g_emu_thread->setSurfaceless(true);
+		while (m_display_widget || !g_emu_thread->isSurfaceless())
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+		m_display_created = false;
+	}
 
 	// We need to close input sources, because e.g. DInput uses our window handle.
 	g_emu_thread->closeInputSources();
@@ -467,6 +474,7 @@ void MainWindow::recreate()
 	g_main_window = nullptr;
 
 	MainWindow* new_main_window = new MainWindow();
+	pxAssert(g_main_window == new_main_window);
 	new_main_window->initialize();
 	new_main_window->refreshGameList(false);
 	new_main_window->show();
@@ -474,6 +482,13 @@ void MainWindow::recreate()
 
 	// Reload the sources we just closed.
 	g_emu_thread->reloadInputSources();
+
+	if (was_display_created)
+	{
+		g_emu_thread->setSurfaceless(false);
+		g_main_window->updateEmulationActions(false, s_vm_valid, Achievements::IsHardcoreModeActive());
+		g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
+	}
 }
 
 void MainWindow::recreateSettings()
@@ -1824,10 +1839,10 @@ void MainWindow::showEvent(QShowEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 	// If there's no VM, we can just exit as normal.
-	if (!s_vm_valid)
+	if (!s_vm_valid || !m_display_created)
 	{
 		saveStateToConfig();
-		if (m_display_widget)
+		if (m_display_created)
 			g_emu_thread->stopFullscreenUI();
 		destroySubWindows();
 		QMainWindow::closeEvent(event);
