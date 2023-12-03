@@ -147,6 +147,12 @@
          <property name="wordWrap">
           <bool>true</bool>
          </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
+         <property name="textInteractionFlags">
+          <enum>Qt::TextBrowserInteraction</enum>
+         </property>
         </widget>
        </item>
        <item>
