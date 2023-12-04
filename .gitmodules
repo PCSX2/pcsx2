@@ -1,6 +1,3 @@
-[submodule "3rdparty/xz/xz"]
-	path = 3rdparty/xz/xz
-	url = https://github.com/PCSX2/xz.git
 [submodule "3rdparty/gtest"]
 	path = 3rdparty/gtest
 	url = https://github.com/google/googletest.git
@@ -30,3 +27,6 @@
 [submodule "3rdparty/libwebp/libwebp"]
 	path = 3rdparty/libwebp/libwebp
 	url = https://github.com/webmproject/libwebp
+[submodule "3rdparty/xz/xz"]
+	path = 3rdparty/xz/xz
+	url = https://github.com/tukaani-project/xz.git
