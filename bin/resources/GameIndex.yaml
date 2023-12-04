@@ -11564,6 +11564,9 @@ SLAJ-25080:
 SLAJ-25081:
   name: "FIFA World Cup - Germany 2006"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLAJ-25084:
   name: "Sengoku Musou 2 - Empires"
   region: "NTSC-Unk"
@@ -22513,15 +22516,27 @@ SLES-54061:
   name: "FIFA World Cup - Germany '06"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54062:
   name: "FIFA World Cup - Germany '06"
   region: "PAL-F-G"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54063:
   name: "FIFA World Cup 2006"
   region: "PAL-M3"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54064:
   name: "FIFA World Cup 2006"
   region: "PAL-M3"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54066:
   name: "X-Men - The Official Game"
   region: "PAL-M4"
@@ -22539,6 +22554,9 @@ SLES-54080:
 SLES-54081:
   name: "FIFA World Cup 2006"
   region: "PAL-PL"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54083:
   name: "Pirates of the Caribbean - The Legend of Jack Sparrow"
   region: "PAL-E"
@@ -42355,6 +42373,9 @@ SLPM-66386:
   name-sort: 2006 FIFA わーるどかっぷ どいつたいかい
   name-en: "FIFA World Cup - Germany 2006"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66387:
   name: 真・爆走デコトラ伝説 〜天下統一頂上決戦〜 [Spike The Best]
   name-sort: しん・ばくそうでことらでんせつ 〜てんかとういつちょうじょうけっせん〜 [Spike The Best]
@@ -62676,6 +62697,9 @@ SLUS-21408:
   name: "FIFA World Cup Germany '06"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21409:
   name: "LEGO Star Wars II - The Original Trilogy"
   region: "NTSC-U"
@@ -66156,6 +66180,9 @@ SLUS-29188:
 SLUS-29189:
   name: "FIFA World Cup - Germany 2006 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-29191:
   name: "Hitman - Blood Money & Urban Chaos [Demo]"
   region: "NTSC-U"
