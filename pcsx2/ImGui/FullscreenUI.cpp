@@ -4110,13 +4110,14 @@ void FullscreenUI::DrawControllerSettingsPage()
 					});
 			}
 
-			const TinyString freq_key = TinyString::from_fmt(FSUI_FSTR("Macro {} Frequency"), macro_index + 1);
+			const TinyString freq_key = TinyString::from_fmt("Macro{}Frequency", macro_index + 1);
+			const TinyString freq_label = TinyString::from_fmt(FSUI_FSTR("Macro {} Frequency"), macro_index + 1);
 			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
 			const SmallString freq_summary =
 				((frequency == 0) ? TinyString(FSUI_VSTR("Macro will not auto-toggle.")) :
 									TinyString::from_fmt(FSUI_FSTR("Macro will toggle every {} frames."), frequency));
 			if (MenuButton(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Frequency"), freq_summary.c_str()))
-				ImGui::OpenPopup(freq_key.c_str());
+				ImGui::OpenPopup(freq_label.c_str());
 
 			const std::string pressure_key(fmt::format("Macro{}Pressure", macro_index + 1));
 			DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Pressure"),
@@ -4139,7 +4140,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 				LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
 
 			if (ImGui::BeginPopupModal(
-					freq_key.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+					freq_label.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 			{
 				ImGui::SetNextItemWidth(LayoutScale(450.0f));
 				if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"), ImGuiSliderFlags_NoInput))
