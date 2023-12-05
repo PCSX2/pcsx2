@@ -4107,6 +4107,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 							bsi->DeleteValue(section, key.c_str());
 						else
 							bsi->SetStringValue(section, key.c_str(), binds_string.c_str());
+
+						SetSettingsChanged(bsi);
 					});
 			}
 
@@ -4149,6 +4151,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 						bsi->DeleteValue(section, freq_key.c_str());
 					else
 						bsi->SetIntValue(section, freq_key.c_str(), frequency);
+
+					SetSettingsChanged(bsi);
 				}
 
 				BeginMenuButtons();
