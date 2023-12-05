@@ -4125,7 +4125,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 				1.0f, 0.01f, 100.0f, "%.0f%%");
 
 			const std::string deadzone_key(fmt::format("Macro{}Deadzone", macro_index + 1));
-			DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Pressure"),
+			DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Deadzone"),
 				FSUI_CSTR("Determines the pressure required to activate the macro."), section, deadzone_key.c_str(), 0.0f, 0.00f, 1.0f,
 				0.01f, 100.0f, "%.0f%%");
 
@@ -7160,6 +7160,7 @@ TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Buttons");
 TRANSLATE_NOOP("FullscreenUI", "Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Pressure");
+TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Settings");
 TRANSLATE_NOOP("FullscreenUI", "USB Port {}");
