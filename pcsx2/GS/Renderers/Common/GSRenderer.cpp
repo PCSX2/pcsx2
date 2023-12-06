@@ -688,21 +688,21 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(),
 					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = TRANSLATE_SV("with no compression");
+				compression_str = TRANSLATE_SV("GS", "with no compression");
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(
 					new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
 						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = TRANSLATE_SV("with LZMA compression");
+				compression_str = TRANSLATE_SV("GS", "with LZMA compression");
 			}
 			else
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(
 					new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
 						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = TRANSLATE_SV("with Zstandard compression");
+				compression_str = TRANSLATE_SV("GS", "with Zstandard compression");
 			}
 
 			delete[] fd.data;
