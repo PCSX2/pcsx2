@@ -688,28 +688,28 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpUncompressed(m_snapshot, VMManager::GetDiscSerial(),
 					VMManager::GetDiscCRC(), screenshot_width, screenshot_height,
 					screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = TRANSLATE_SV("GS", "with no compression");
+				compression_str = "with no compression";
 			}
 			else if (GSConfig.GSDumpCompression == GSDumpCompressionMethod::LZMA)
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(
 					new GSDumpXz(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
 						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = TRANSLATE_SV("GS", "with LZMA compression");
+				compression_str = "with LZMA compression";
 			}
 			else
 			{
 				m_dump = std::unique_ptr<GSDumpBase>(
 					new GSDumpZst(m_snapshot, VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), screenshot_width,
 						screenshot_height, screenshot_pixels.empty() ? nullptr : screenshot_pixels.data(), fd, m_regs));
-				compression_str = TRANSLATE_SV("GS", "with Zstandard compression");
+				compression_str = "with Zstandard compression";
 			}
 
 			delete[] fd.data;
 
 			Host::AddKeyedOSDMessage("GSDump",
 				fmt::format(TRANSLATE_FS("GS", "Saving {0} GS dump {1} to '{2}'"),
-					(m_dump_frames == 1) ? TRANSLATE_SV("GS", "single frame") : TRANSLATE_SV("GS", "multi-frame"), compression_str,
+					(m_dump_frames == 1) ? "single frame" : "multi-frame", compression_str,
 					Path::GetFileName(m_dump->GetPath())),
 				Host::OSD_INFO_DURATION);
 		}

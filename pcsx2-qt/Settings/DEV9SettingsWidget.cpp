@@ -757,7 +757,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 		//GHC uses UTF8 on all platforms
 		QMessageBox::StandardButton selection =
 			QMessageBox::question(this, tr("Overwrite File?"),
-				tr("HDD image \"%1\" already exists.\n\n"
+				tr("HDD image \"%1\" already exists?\n\n"
 				   "Do you want to overwrite?")
 					.arg(QString::fromStdString(hddPath)),
 				QMessageBox::Yes | QMessageBox::No);
