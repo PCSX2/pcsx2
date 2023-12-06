@@ -3056,7 +3056,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	};
 	static constexpr const char* s_deinterlacing_options[] = {
 		FSUI_NSTR("Automatic (Default)"),
-		FSUI_NSTR("None"),
+		FSUI_NSTR("No Deinterlacing"),
 		FSUI_NSTR("Weave (Top Field First, Sawtooth)"),
 		FSUI_NSTR("Weave (Bottom Field First, Sawtooth)"),
 		FSUI_NSTR("Bob (Top Field First)"),
@@ -3348,7 +3348,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				FSUI_CSTR("Force a primitive flush when a framebuffer is also an input texture."), "EmuCore/GS", "UserHacks_AutoFlushLevel",
 				0, s_auto_flush_options, std::size(s_auto_flush_options), true, 0, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("CPU Framebuffer Conversion"),
-				FSUI_CSTR("Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU."), "EmuCore/GS",
+				FSUI_CSTR("Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU."), "EmuCore/GS",
 				"UserHacks_CPU_FB_Conversion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("Disable Depth Emulation"),
 				FSUI_CSTR("Disable the support of depth buffers in the texture cache."), "EmuCore/GS", "UserHacks_DisableDepthSupport",
@@ -6581,7 +6581,7 @@ TRANSLATE_NOOP("FullscreenUI", "Object range to skip drawing.");
 TRANSLATE_NOOP("FullscreenUI", "Skip Draw End");
 TRANSLATE_NOOP("FullscreenUI", "Auto Flush (Hardware)");
 TRANSLATE_NOOP("FullscreenUI", "CPU Framebuffer Conversion");
-TRANSLATE_NOOP("FullscreenUI", "Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU.");
+TRANSLATE_NOOP("FullscreenUI", "Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Depth Emulation");
 TRANSLATE_NOOP("FullscreenUI", "Disable the support of depth buffers in the texture cache.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Safe Features");
@@ -6956,6 +6956,7 @@ TRANSLATE_NOOP("FullscreenUI", "On");
 TRANSLATE_NOOP("FullscreenUI", "Adaptive");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (Smooth)");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (Sharp)");
+TRANSLATE_NOOP("FullscreenUI", "No Deinterlacing");
 TRANSLATE_NOOP("FullscreenUI", "Weave (Top Field First, Sawtooth)");
 TRANSLATE_NOOP("FullscreenUI", "Weave (Bottom Field First, Sawtooth)");
 TRANSLATE_NOOP("FullscreenUI", "Bob (Top Field First)");
