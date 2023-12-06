@@ -204,6 +204,8 @@ PAPX-90216:
 PAPX-90218:
   name: "SkyGunner"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned blur in menus.
 PAPX-90220:
   name: "Surveillance - Kanshisha"
   region: "NTSC-J"
@@ -621,6 +623,8 @@ PCPX-96320:
 PCPX-96321:
   name: "SkyGunner [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned blur in menus.
 PCPX-96322:
   name: "Ico [Trial]"
   region: "NTSC-J"
@@ -57015,6 +57019,8 @@ SLUS-20384:
   name: "SkyGunner"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 1 # Fixes misaligned blur in menus.
 SLUS-20385:
   name: "WWE Crush Hour"
   region: "NTSC-U"
