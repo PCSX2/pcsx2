@@ -153,7 +153,7 @@
          </item>
          <item>
           <property name="text">
-           <string>None (Interlaced, also used by Progressive)</string>
+           <string>No Deinterlacing</string>
           </property>
          </item>
          <item>
@@ -1048,7 +1048,7 @@
          <item row="0" column="1">
           <widget class="QCheckBox" name="frameBufferConversion">
            <property name="text">
-            <string>Frame Buffer Conversion</string>
+            <string>Framebuffer Conversion</string>
            </property>
           </widget>
          </item>
