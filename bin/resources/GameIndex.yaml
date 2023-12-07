@@ -17369,6 +17369,10 @@ SLES-52190:
   name: "RPM Tuning"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1
+    roundSprite: 2 # Aligns bloom effect
+    wildArmsHack: 1 # Aligns bloom effect
 SLES-52202:
   name: "Downhill Domination"
   region: "PAL-M5"
