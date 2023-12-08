@@ -515,6 +515,8 @@ static __fi void VSyncStart(u32 sCycle)
 	hwIntcIrq(INTC_VBLANK_S);
 	psxVBlankStart();
 
+	// Memcard auto ejection - Uses a tick system timed off of real time, decrementing one tick per frame.
+	AutoEject::CountDownTicks();
 	if (gates)
 		rcntStartGate(true, sCycle); // Counters Start Gate code
 
