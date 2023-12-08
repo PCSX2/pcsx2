@@ -97,6 +97,8 @@ public slots:
 	void onSearchButtonClicked();
 	void onSearchResultsListScroll(u32 value);
 	void loadSearchResults();
+	void contextSearchResultGoToDisassembly();
+	void onListSearchResultsContextMenu(QPoint pos);
 
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
