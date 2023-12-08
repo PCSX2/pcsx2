@@ -861,6 +861,9 @@ bool GSDevice12::CreateSwapChain()
 		Console.WriteLn("Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(
 			m_command_queue.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
+
+		if (FAILED(hr))
+			Console.Warning("Failed to create windowed swap chain.");
 	}
 
 	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
