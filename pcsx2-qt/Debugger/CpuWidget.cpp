@@ -493,6 +493,21 @@ void CpuWidget::contextSearchResultGoToDisassembly()
 	m_ui.disassemblyWidget->gotoAddress(m_ui.listSearchResults->selectedItems().first()->data(256).toUInt());
 }
 
+void CpuWidget::contextRemoveSearchResult()
+{
+	const QItemSelectionModel* selModel = m_ui.listSearchResults->selectionModel();
+	if (!selModel->hasSelection())
+		return;
+
+	const int selectedResultIndex = m_ui.listSearchResults->row(m_ui.listSearchResults->selectedItems().first());
+	auto* rowToRemove = m_ui.listSearchResults->takeItem(selectedResultIndex);
+	if (m_searchResults.size() > selectedResultIndex && m_searchResults.at(selectedResultIndex) == rowToRemove->data(256).toUInt())
+	{
+		m_searchResults.erase(m_searchResults.begin() + selectedResultIndex);
+	}
+	delete rowToRemove;
+}
+
 void CpuWidget::updateFunctionList(bool whenEmpty)
 {
 	if (!m_cpu.isAlive())
@@ -797,6 +812,10 @@ void CpuWidget::onListSearchResultsContextMenu(QPoint pos)
 		QAction* goToDisassemblyAction = new QAction(tr("Go to in Disassembly"), m_ui.listSearchResults);
 		connect(goToDisassemblyAction, &QAction::triggered, this, &CpuWidget::contextSearchResultGoToDisassembly);
 		contextMenu->addAction(goToDisassemblyAction);
+
+		QAction* removeResultAction = new QAction(tr("Remove Result"), m_ui.listSearchResults);
+		connect(removeResultAction, &QAction::triggered, this, &CpuWidget::contextRemoveSearchResult);
+		contextMenu->addAction(removeResultAction);
 	}
 
 	contextMenu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
