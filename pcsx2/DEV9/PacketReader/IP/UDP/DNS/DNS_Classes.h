@@ -36,7 +36,7 @@ namespace PacketReader::IP::UDP::DNS
 
 	private:
 		void ReadDNS_String(u8* buffer, int* offset, std::string* value);
-		void WriteDNS_String(u8* buffer, int* offset, std::string value);
+		void WriteDNS_String(u8* buffer, int* offset, const std::string& value);
 	};
 
 	class DNS_ResponseEntry : public DNS_QuestionEntry
