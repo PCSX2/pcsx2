@@ -46,6 +46,7 @@
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
+#include "pcsx2/SIO/Sio.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
@@ -433,10 +434,10 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onAchievementsHardcoreModeChanged, this, &MainWindow::onAchievementsHardcoreModeChanged);
 	connect(thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
 
-	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
+	connect(m_ui.actionReset, &QAction::triggered, this, &MainWindow::requestReset);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
 	connect(m_ui.actionFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
-	connect(m_ui.actionToolbarReset, &QAction::triggered, thread, &EmuThread::resetVM);
+	connect(m_ui.actionToolbarReset, &QAction::triggered, this, &MainWindow::requestReset);
 	connect(m_ui.actionToolbarPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
 	connect(m_ui.actionToolbarFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
 	connect(m_ui.actionToggleSoftwareRendering, &QAction::triggered, thread, &EmuThread::toggleSoftwareRendering);
@@ -977,6 +978,25 @@ bool MainWindow::shouldHideMainWindow() const
 		   QtHost::InNoGUIMode();
 }
 
+bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
+{
+	if (MemcardBusy::IsBusy() && !GSDumpReplayer::IsReplayingDump())
+	{
+		const QMessageBox::StandardButton res = QMessageBox::question(
+			lock.getDialogParent(), 
+			tr("WARNING: Memory Card Busy"), 
+			tr("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?")
+		);
+		
+		if (res != QMessageBox::Yes)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void MainWindow::switchToGameListView()
 {
 	if (isShowingGameList())
@@ -1044,6 +1064,22 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 	func();
 }
 
+void MainWindow::requestReset()
+{
+	if (!s_vm_valid)
+		return;
+
+	const auto lock = pauseAndLockVM();
+
+	// Check if memcard is busy, deny request if so
+	if (shouldAbortForMemcardBusy(lock))
+	{
+		return;
+	}
+
+	g_emu_thread->resetVM();
+}
+
 bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool default_save_to_state)
 {
 	if (!s_vm_valid)
@@ -1052,12 +1088,17 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 	// If we don't have a crc, we can't save state.
 	allow_save_to_state &= (m_current_disc_crc != 0);
 	bool save_state = allow_save_to_state && default_save_to_state;
+	VMLock lock(pauseAndLockVM());
 
+	// Check if memcard is busy, deny request if so.
+	if (shouldAbortForMemcardBusy(lock))
+	{
+		return false;
+	}
+	
 	// Only confirm on UI thread because we need to display a msgbox.
 	if (!m_is_closing && allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
-		VMLock lock(pauseAndLockVM());
-
 		QMessageBox msgbox(lock.getDialogParent());
 		msgbox.setIcon(QMessageBox::Question);
 		msgbox.setWindowTitle(tr("Confirm Shutdown"));
@@ -1899,6 +1940,14 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
+	const auto mcLock = pauseAndLockVM();
+
+	// Check if memcard is busy, deny request if so
+	if (shouldAbortForMemcardBusy(mcLock))
+	{
+		return;
+	}
+
 	const QString filename(getFilenameFromMimeData(event->mimeData()));
 	const std::string filename_str(filename.toStdString());
 	if (VMManager::IsSaveStateFileName(filename_str))
@@ -2729,6 +2778,12 @@ void MainWindow::doStartFile(std::optional<CDVD_SourceType> source, const QStrin
 void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 {
 	const auto lock = pauseAndLockVM();
+
+	// Check if memcard is busy, deny request if so
+	if (shouldAbortForMemcardBusy(lock))
+	{
+		return;
+	}
 
 	bool reset_system = false;
 	if (!m_was_disc_change_request)

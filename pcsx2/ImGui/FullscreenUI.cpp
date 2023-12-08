@@ -274,12 +274,18 @@ namespace FullscreenUI
 	static void DoStartDisc();
 	static void DoToggleFrameLimit();
 	static void DoToggleSoftwareRenderer();
+	static void RequestShutdown(bool save_state);
 	static void DoShutdown(bool save_state);
+	static void RequestReset();
 	static void DoReset();
+	static void RequestChangeDiscFromFile();
 	static void DoChangeDiscFromFile();
+	static void RequestChangeDisc();
 	static void DoChangeDisc();
 	static void DoRequestExit();
 	static void DoToggleFullscreen();
+
+	static void ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callback);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Settings
@@ -958,9 +964,29 @@ void FullscreenUI::DoToggleSoftwareRenderer()
 	});
 }
 
+void FullscreenUI::RequestShutdown(bool save_state)
+{
+	ConfirmShutdownIfMemcardBusy([save_state](bool result) {
+		if (result)
+			DoShutdown(save_state);
+
+		ClosePauseMenu();
+	});
+}
+
 void FullscreenUI::DoShutdown(bool save_state)
 {
 	Host::RunOnCPUThread([save_state]() { Host::RequestVMShutdown(false, save_state, save_state); });
+}
+
+void FullscreenUI::RequestReset()
+{
+	ConfirmShutdownIfMemcardBusy([](bool result) {
+		if (result)
+			DoReset();
+
+		ClosePauseMenu();
+	});
 }
 
 void FullscreenUI::DoReset()
@@ -970,6 +996,16 @@ void FullscreenUI::DoReset()
 			return;
 
 		VMManager::Reset();
+	});
+}
+
+void FullscreenUI::RequestChangeDiscFromFile()
+{
+	ConfirmShutdownIfMemcardBusy([](bool result) {
+		if (result)
+			DoChangeDiscFromFile();
+		else
+			ClosePauseMenu();
 	});
 }
 
@@ -991,10 +1027,21 @@ void FullscreenUI::DoChangeDiscFromFile()
 		QueueResetFocus();
 		CloseFileSelector();
 		ReturnToPreviousWindow();
+		ClosePauseMenu();
 	};
 
 	OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback), GetDiscImageFilters(),
 		std::string(Path::GetDirectory(s_current_disc_path)));
+}
+
+void FullscreenUI::RequestChangeDisc()
+{
+	ConfirmShutdownIfMemcardBusy([](bool result) {
+		if (result)
+			DoChangeDisc();
+		else
+			ClosePauseMenu();
+	});
 }
 
 void FullscreenUI::DoChangeDisc()
@@ -1010,6 +1057,20 @@ void FullscreenUI::DoRequestExit()
 void FullscreenUI::DoToggleFullscreen()
 {
 	Host::RunOnCPUThread([]() { Host::SetFullscreen(!Host::IsFullscreen()); });
+}
+
+void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callback)
+{
+	if (!MemcardBusy::IsBusy())
+	{
+		callback(true);
+		return;
+	}
+
+	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_FA_SD_CARD, "WARNING: Memory Card Busy"),
+		FSUI_STR("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"),
+		std::move(callback)
+	);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -4807,7 +4868,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc"), false))
 				{
 					s_current_main_window = MainWindowType::None;
-					DoChangeDisc();
+					RequestChangeDisc();
 				}
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings"), false))
@@ -4817,7 +4878,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				{
 					// skip submenu when we can't save anyway
 					if (!can_load_or_save_state)
-						DoShutdown(false);
+						RequestShutdown(false);
 					else
 						OpenPauseSubMenu(PauseSubMenu::Exit);
 				}
@@ -4836,15 +4897,14 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
 				{
-					ClosePauseMenu();
-					DoReset();
+					RequestReset();
 				}
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SAVE, "Exit And Save State"), false))
-					DoShutdown(true);
+					RequestShutdown(true);
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving"), false))
-					DoShutdown(false);
+					RequestShutdown(false);
 			}
 			break;
 
@@ -6369,7 +6429,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 						return;
 
 					if (reset)
-						DoReset();
+						RequestReset();
 				});
 		}
 	}

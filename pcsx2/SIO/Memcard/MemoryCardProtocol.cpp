@@ -234,6 +234,8 @@ void MemoryCardProtocol::WriteData()
 	g_Sio2FifoOut.push_back(mcd->term);
 
 	ReadWriteIncrement(writeLength);
+
+	MemcardBusy::SetBusy();
 }
 
 void MemoryCardProtocol::ReadData()
@@ -396,8 +398,9 @@ u8 MemoryCardProtocol::PS1Write(u8 data)
 	}
 
 	g_Sio0.SetAcknowledge(sendAck);
-
 	ps1McState.currentByte++;
+
+	MemcardBusy::SetBusy();
 	return ret;
 }
 
@@ -421,6 +424,8 @@ void MemoryCardProtocol::EraseBlock()
 	PS1_FAIL();
 	mcd->EraseBlock();
 	The2bTerminator(4);
+
+	MemcardBusy::SetBusy();
 }
 
 void MemoryCardProtocol::UnknownBoot()

@@ -517,6 +517,9 @@ static __fi void VSyncStart(u32 sCycle)
 
 	// Memcard auto ejection - Uses a tick system timed off of real time, decrementing one tick per frame.
 	AutoEject::CountDownTicks();
+	// Memcard IO detection - Uses a tick system to determine when memcards are no longer being written.
+	MemcardBusy::Decrement();
+
 	if (gates)
 		rcntStartGate(true, sCycle); // Counters Start Gate code
 

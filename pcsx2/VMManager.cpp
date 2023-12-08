@@ -1421,6 +1421,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	Pad::Shutdown();
 	g_Sio2.Shutdown();
 	g_Sio0.Shutdown();
+	MemcardBusy::ClearBusy();
 	DEV9close();
 	DoCDVDclose();
 	FWclose();
@@ -1744,6 +1745,14 @@ bool VMManager::LoadState(const char* filename)
 		return false;
 	}
 
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to load state (Memory card is busy)")),
+			Host::OSD_QUICK_DURATION);
+		return false;
+	}
+
 	// TODO: Save the current state so we don't need to reset.
 	if (DoLoadState(filename))
 		return true;
@@ -1773,6 +1782,14 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 		return false;
 	}
 
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to load state from slot {} (Memory card is busy)"), slot),
+			Host::OSD_QUICK_DURATION);
+		return false;
+	}
+
 	Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_FOLDER_OPEN,
 		fmt::format(TRANSLATE_FS("VMManager", "Loading state from slot {}..."), slot), Host::OSD_QUICK_DURATION);
 	return DoLoadState(filename.c_str());
@@ -1780,6 +1797,14 @@ bool VMManager::LoadStateFromSlot(s32 slot)
 
 bool VMManager::SaveState(const char* filename, bool zip_on_thread, bool backup_old_state)
 {
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state (Memory card is busy)")),
+			Host::OSD_QUICK_DURATION);
+		return false;
+	}
+
 	return DoSaveState(filename, -1, zip_on_thread, backup_old_state);
 }
 
@@ -1788,6 +1813,14 @@ bool VMManager::SaveStateToSlot(s32 slot, bool zip_on_thread)
 	const std::string filename(GetCurrentSaveStateFileName(slot));
 	if (filename.empty())
 		return false;
+
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("LoadStateFromSlot", ICON_FA_EXCLAMATION_TRIANGLE,
+			fmt::format(TRANSLATE_FS("VMManager", "Failed to save state to slot {} (Memory card is busy)"), slot),
+			Host::OSD_QUICK_DURATION);
+		return false;
+	}
 
 	// if it takes more than a minute.. well.. wtf.
 	Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot), ICON_FA_SAVE,

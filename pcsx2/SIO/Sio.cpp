@@ -134,3 +134,31 @@ void AutoEject::ClearAll()
 		}
 	}
 }
+
+// Decremented once per frame if nonzero, indicates how many more frames must pass before
+// memcards are considered "no longer being written to". Used as a way to detect if it is
+// unsafe to shutdown the VM due to memcard access.
+static std::atomic_uint32_t currentBusyTicks = 0;
+
+void MemcardBusy::Decrement()
+{
+	if (currentBusyTicks.load(std::memory_order_relaxed) == 0)
+		return;
+
+	currentBusyTicks.fetch_sub(1, std::memory_order_release);
+}
+
+void MemcardBusy::SetBusy()
+{
+	currentBusyTicks.store(300, std::memory_order_release);
+}
+
+bool MemcardBusy::IsBusy()
+{
+	return (currentBusyTicks.load(std::memory_order_acquire) > 0);
+}
+
+void MemcardBusy::ClearBusy()
+{
+	currentBusyTicks.store(0, std::memory_order_release);
+}

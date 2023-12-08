@@ -129,3 +129,11 @@ namespace AutoEject
 	extern void SetAll();
 	extern void ClearAll();
 } // namespace AutoEject
+
+namespace MemcardBusy
+{
+	extern void Decrement();
+	extern void SetBusy();
+	extern bool IsBusy();
+	extern void ClearBusy();
+}
