@@ -101,10 +101,12 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.btnRefreshFunctions, &QPushButton::clicked, [this] { updateFunctionList(); });
 	connect(m_ui.txtFuncSearch, &QLineEdit::textChanged, [this] { updateFunctionList(); });
 
+	m_ui.listSearchResults->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
 	connect(m_ui.btnFilterSearch, &QPushButton::clicked, this, &CpuWidget::onSearchButtonClicked);
 	connect(m_ui.listSearchResults, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) { m_ui.memoryviewWidget->gotoAddress(item->text().toUInt(nullptr, 16)); });
 	connect(m_ui.listSearchResults->verticalScrollBar(), &QScrollBar::valueChanged, this, &CpuWidget::onSearchResultsListScroll);
+	connect(m_ui.listSearchResults, &QListView::customContextMenuRequested, this, &CpuWidget::onListSearchResultsContextMenu);
 	connect(m_ui.cmbSearchType, &QComboBox::currentIndexChanged, [this](int i) {
 		if (i < 4)
 			m_ui.chkSearchHex->setEnabled(true);
@@ -482,6 +484,15 @@ void CpuWidget::contextBPListPasteCSV()
 	}
 }
 
+void CpuWidget::contextSearchResultGoToDisassembly()
+{
+	const QItemSelectionModel* selModel = m_ui.listSearchResults->selectionModel();
+	if (!selModel->hasSelection())
+		return;
+
+	m_ui.disassemblyWidget->gotoAddress(m_ui.listSearchResults->selectedItems().first()->data(256).toUInt());
+}
+
 void CpuWidget::updateFunctionList(bool whenEmpty)
 {
 	if (!m_cpu.isAlive())
@@ -774,6 +785,21 @@ void CpuWidget::onModuleTreeDoubleClick(QTreeWidgetItem* item)
 void CpuWidget::updateStackFrames()
 {
 	m_stackModel.refreshData();
+}
+
+void CpuWidget::onListSearchResultsContextMenu(QPoint pos)
+{
+	QMenu* contextMenu = new QMenu(tr("Search Results List Context Menu"), m_ui.listSearchResults);
+	const QItemSelectionModel* selModel = m_ui.listSearchResults->selectionModel();
+
+	if (selModel->hasSelection())
+	{
+		QAction* goToDisassemblyAction = new QAction(tr("Go to in Disassembly"), m_ui.listSearchResults);
+		connect(goToDisassemblyAction, &QAction::triggered, this, &CpuWidget::contextSearchResultGoToDisassembly);
+		contextMenu->addAction(goToDisassemblyAction);
+	}
+
+	contextMenu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::onStackListContextMenu(QPoint pos)
