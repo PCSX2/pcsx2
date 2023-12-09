@@ -27994,6 +27994,7 @@ SLKA-25214:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
+    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLKA-25215:
@@ -35338,6 +35339,7 @@ SLPM-65115:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
+    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-65116:
@@ -44109,6 +44111,7 @@ SLPM-66677:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
+    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-66678:
@@ -46023,6 +46026,7 @@ SLPM-67513:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
+    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPM-67514:
@@ -49665,6 +49669,7 @@ SLPS-25088:
     eeRoundMode: 1 # Fixes reverse control and boss in some places.
   clampModes:
     eeClampMode: 3 # Fixes animations.
+    vu0ClampMode: 3 # Fixes character flickering caused by EE clamp full.
   gsHWFixes:
     roundSprite: 2 # Fixes font artifacts.
 SLPS-25089:
