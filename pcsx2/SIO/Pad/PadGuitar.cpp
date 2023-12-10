@@ -25,17 +25,17 @@
 // would do what actions, if you played Guitar Hero on a PS2 with a DS2 instead of a controller.
 static const InputBindingInfo s_bindings[] = {
 	// clang-format off
-	{"Up", TRANSLATE_NOOP("Pad", "Strum Up"), InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
-	{"Down", TRANSLATE_NOOP("Pad", "Strum Down"), InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
-	{"Select", TRANSLATE_NOOP("Pad", "Select"), InputBindingInfo::Type::Button, PadGuitar::Inputs::SELECT, GenericInputBinding::Select},
-	{"Start", TRANSLATE_NOOP("Pad", "Start"), InputBindingInfo::Type::Button, PadGuitar::Inputs::START, GenericInputBinding::Start},
-	{"Green", TRANSLATE_NOOP("Pad", "Green Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::GREEN, GenericInputBinding::R2},
-	{"Red", TRANSLATE_NOOP("Pad", "Red Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::RED, GenericInputBinding::Circle},
-	{"Yellow", TRANSLATE_NOOP("Pad", "Yellow Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::YELLOW, GenericInputBinding::Triangle},
-	{"Blue", TRANSLATE_NOOP("Pad", "Blue Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::BLUE, GenericInputBinding::Cross},
-	{"Orange", TRANSLATE_NOOP("Pad", "Orange Fret"), InputBindingInfo::Type::Button, PadGuitar::Inputs::ORANGE, GenericInputBinding::Square},
-	{"Whammy", TRANSLATE_NOOP("Pad", "Whammy Bar"), InputBindingInfo::Type::HalfAxis, PadGuitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
-	{"Tilt", TRANSLATE_NOOP("Pad", "Tilt Up"), InputBindingInfo::Type::Button, PadGuitar::Inputs::TILT, GenericInputBinding::L2},
+	{"Up", TRANSLATE_NOOP("Pad", "Strum Up"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_UP, GenericInputBinding::DPadUp},
+	{"Down", TRANSLATE_NOOP("Pad", "Strum Down"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::STRUM_DOWN, GenericInputBinding::DPadDown},
+	{"Select", TRANSLATE_NOOP("Pad", "Select"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::SELECT, GenericInputBinding::Select},
+	{"Start", TRANSLATE_NOOP("Pad", "Start"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::START, GenericInputBinding::Start},
+	{"Green", TRANSLATE_NOOP("Pad", "Green Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::GREEN, GenericInputBinding::R2},
+	{"Red", TRANSLATE_NOOP("Pad", "Red Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::RED, GenericInputBinding::Circle},
+	{"Yellow", TRANSLATE_NOOP("Pad", "Yellow Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::YELLOW, GenericInputBinding::Triangle},
+	{"Blue", TRANSLATE_NOOP("Pad", "Blue Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::BLUE, GenericInputBinding::Cross},
+	{"Orange", TRANSLATE_NOOP("Pad", "Orange Fret"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::ORANGE, GenericInputBinding::Square},
+	{"Whammy", TRANSLATE_NOOP("Pad", "Whammy Bar"), nullptr, InputBindingInfo::Type::HalfAxis, PadGuitar::Inputs::WHAMMY, GenericInputBinding::LeftStickUp},
+	{"Tilt", TRANSLATE_NOOP("Pad", "Tilt Up"), nullptr, InputBindingInfo::Type::Button, PadGuitar::Inputs::TILT, GenericInputBinding::L2},
 	// clang-format on
 };
 
@@ -49,7 +49,7 @@ static const SettingInfo s_settings[] = {
 };
 
 const Pad::ControllerInfo PadGuitar::ControllerInfo = {Pad::ControllerType::Guitar, "Guitar",
-	TRANSLATE_NOOP("Pad", "Guitar"), s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
+	TRANSLATE_NOOP("Pad", "Guitar"), nullptr, s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
 
 void PadGuitar::ConfigLog()
 {

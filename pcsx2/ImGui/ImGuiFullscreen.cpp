@@ -55,7 +55,6 @@ namespace ImGuiFullscreen
 	static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
 	static void DrawNotifications(ImVec2& position, float spacing);
 	static void DrawToast();
-	static void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 	static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImRect* bb,
 		ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 	static void PopulateFileSelectorItems();

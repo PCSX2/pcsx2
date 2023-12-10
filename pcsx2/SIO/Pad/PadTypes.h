@@ -92,6 +92,7 @@ namespace Pad
 		ControllerType type;
 		const char* name;
 		const char* display_name;
+		const char* icon_name;
 		std::span<const InputBindingInfo> bindings;
 		std::span<const SettingInfo> settings;
 		VibrationCapabilities vibration_caps;
