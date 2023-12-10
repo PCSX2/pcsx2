@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "common/Pcsx2Defs.h"
+#include "common/SmallString.h"
 #include "Input/InputManager.h"
 
 class SettingsInterface;
@@ -39,7 +40,8 @@ public:
 	virtual void PollEvents() = 0;
 
 	virtual std::optional<InputBindingKey> ParseKeyString(const std::string_view& device, const std::string_view& binding) = 0;
-	virtual std::string ConvertKeyToString(InputBindingKey key) = 0;
+	virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
+	virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
 
 	/// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
 	virtual std::vector<std::pair<std::string, std::string>> EnumerateDevices() = 0;

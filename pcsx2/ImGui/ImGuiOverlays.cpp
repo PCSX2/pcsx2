@@ -53,7 +53,7 @@
 
 namespace ImGuiManager
 {
-	static void FormatProcessorStat(std::string& text, double usage, double time);
+	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
 	static void DrawPerformanceOverlay(float& position_y);
 	static void DrawSettingsOverlay();
 	static void DrawInputsOverlay();
@@ -86,15 +86,15 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
 	return std::tie(min, max);
 }
 
-void ImGuiManager::FormatProcessorStat(std::string& text, double usage, double time)
+void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
 {
 	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
 	// which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
 	// so that people don't get confused, and remove the decimal places when it's there while we're at it.
 	if (usage >= 99.95)
-		fmt::format_to(std::back_inserter(text), "100% ({:.2f}ms)", time);
+		text.append_fmt("100% ({:.2f}ms)", time);
 	else
-		fmt::format_to(std::back_inserter(text), "{:.1f}% ({:.2f}ms)", usage, time);
+		text.append_fmt("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
 void ImGuiManager::DrawPerformanceOverlay(float& position_y)
@@ -108,10 +108,8 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
 
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	std::string text;
+	SmallString text;
 	ImVec2 text_size;
-
-	text.reserve(128);
 
 #define DRAW_LINE(font, text, color) \
 	do \
@@ -136,31 +134,31 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 			switch (PerformanceMetrics::GetInternalFPSMethod())
 			{
 				case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:
-					fmt::format_to(std::back_inserter(text), "G: {:.2f} [P] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(),
+					text.append_fmt("G: {:.2f} [P] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(),
 						PerformanceMetrics::GetFPS());
 					break;
 
 				case PerformanceMetrics::InternalFPSMethod::DISPFBBlit:
-					fmt::format_to(std::back_inserter(text), "G: {:.2f} [B] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(),
+					text.append_fmt("G: {:.2f} [B] | V: {:.2f}", PerformanceMetrics::GetInternalFPS(),
 						PerformanceMetrics::GetFPS());
 					break;
 
 				case PerformanceMetrics::InternalFPSMethod::None:
 				default:
-					fmt::format_to(std::back_inserter(text), "V: {:.2f}", PerformanceMetrics::GetFPS());
+					text.append_fmt("V: {:.2f}", PerformanceMetrics::GetFPS());
 					break;
 			}
 			first = false;
 		}
 		if (GSConfig.OsdShowSpeed)
 		{
-			fmt::format_to(std::back_inserter(text), "{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
+			text.append_fmt("{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
 
 			const float target_speed = VMManager::GetTargetSpeed();
 			if (target_speed == 0.0f)
-				text += " (Max)";
+				text.append(" (Max)");
 			else
-				fmt::format_to(std::back_inserter(text), " ({:.0f}%)", target_speed * 100.0f);
+				text.append_fmt(" ({:.0f}%)", target_speed * 100.0f);
 		}
 		if (!text.empty())
 		{
@@ -193,20 +191,20 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 			GSgetInternalResolution(&width, &height);
 
 			text.clear();
-			fmt::format_to(std::back_inserter(text), "{}x{} {} {}", width, height, ReportVideoMode(), ReportInterlaceMode());
+			text.append_fmt("{}x{} {} {}", width, height, ReportVideoMode(), ReportInterlaceMode());
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 		}
 
 		if (GSConfig.OsdShowCPU)
 		{
 			text.clear();
-			fmt::format_to(std::back_inserter(text), "{:.2f}ms | {:.2f}ms | {:.2f}ms", PerformanceMetrics::GetMinimumFrameTime(),
+			text.append_fmt("{:.2f}ms | {:.2f}ms | {:.2f}ms", PerformanceMetrics::GetMinimumFrameTime(),
 				PerformanceMetrics::GetAverageFrameTime(), PerformanceMetrics::GetMaximumFrameTime());
 			DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 			text.clear();
 			if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
-				fmt::format_to(std::back_inserter(text), "EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
+				text.append_fmt("EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
 			else
 				text = "EE: ";
 			FormatProcessorStat(text, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
@@ -220,7 +218,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 			for (u32 i = 0; i < gs_sw_threads; i++)
 			{
 				text.clear();
-				fmt::format_to(std::back_inserter(text), "SW-{}: ", i);
+				text.append_fmt("SW-{}: ", i);
 				FormatProcessorStat(text, PerformanceMetrics::GetGSSWThreadUsage(i), PerformanceMetrics::GetGSSWThreadAverageTime(i));
 				DRAW_LINE(fixed_font, text.c_str(), IM_COL32(255, 255, 255, 255));
 			}
@@ -297,7 +295,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 				const ImVec2 wpos(ImGui::GetCurrentWindow()->Pos);
 
 				text.clear();
-				fmt::format_to(std::back_inserter(text), "{:.1f} ms", max);
+				text.append_fmt("{:.1f} ms", max);
 				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
 				win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing + shadow_offset, wpos.y + shadow_offset),
 					IM_COL32(0, 0, 0, 100), text.c_str(), text.c_str() + text.length());
@@ -305,7 +303,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 					text.c_str() + text.length());
 
 				text.clear();
-				fmt::format_to(std::back_inserter(text), "{:.1f} ms", min);
+				text.append_fmt("{:.1f} ms", min);
 				text_size = fixed_font->CalcTextSizeA(fixed_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.c_str() + text.length());
 				win_dl->AddText(ImVec2(wpos.x + history_size.x - text_size.x - spacing + shadow_offset,
 									wpos.y + history_size.y - fixed_font->FontSize + shadow_offset),
@@ -470,7 +468,7 @@ void ImGuiManager::DrawInputsOverlay()
 	const float shadow_offset = 1.0f * scale;
 	const float margin = 10.0f * scale;
 	const float spacing = 5.0f * scale;
-	ImFont* font = ImGuiManager::GetFixedFont();
+	ImFont* font = ImGuiManager::GetStandardFont();
 
 	static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
 	static constexpr u32 shadow_color = IM_COL32(0x00, 0x00, 0x00, 100);
@@ -497,8 +495,7 @@ void ImGuiManager::DrawInputsOverlay()
 
 	const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y - margin);
 
-	std::string text;
-	text.reserve(256);
+	SmallString text;
 
 	for (u32 slot = 0; slot < Pad::NUM_CONTROLLER_PORTS; slot++)
 	{
@@ -507,10 +504,12 @@ void ImGuiManager::DrawInputsOverlay()
 		if (ctype == Pad::ControllerType::NotConnected)
 			continue;
 	
-		text.clear();
-		fmt::format_to(std::back_inserter(text), "P{} |", slot + 1u);
-
 		const Pad::ControllerInfo& cinfo = pad->GetInfo();
+		if (cinfo.icon_name)
+			text.fmt("{} {}", cinfo.icon_name, slot + 1u);
+		else
+			text.fmt("{} |", slot + 1u);
+
 		for (u32 bind = 0; bind < static_cast<u32>(cinfo.bindings.size()); bind++)
 		{
 			const InputBindingInfo& bi = cinfo.bindings[bind];
@@ -522,9 +521,9 @@ void ImGuiManager::DrawInputsOverlay()
 					// axes are always shown
 					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
 					if (value >= (254.0f / 255.0f))
-						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
 					else if (value > (1.0f / 255.0f))
-						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
+						text.append_fmt(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
@@ -533,7 +532,7 @@ void ImGuiManager::DrawInputsOverlay()
 					// buttons only shown when active
 					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
 					if (value >= 0.5f)
-						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
 				}
 				break;
 
@@ -562,8 +561,7 @@ void ImGuiManager::DrawInputsOverlay()
 		if (bindings.empty())
 			continue;
 
-		text.clear();
-		fmt::format_to(std::back_inserter(text), "USB{} |", port + 1u);
+		text.fmt("USB{} |", port + 1u);
 
 		for (const InputBindingInfo& bi : bindings)
 		{
@@ -575,9 +573,9 @@ void ImGuiManager::DrawInputsOverlay()
 					// axes are always shown
 					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
 					if (value >= (254.0f / 255.0f))
-						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
 					else if (value > (1.0f / 255.0f))
-						fmt::format_to(std::back_inserter(text), " {}: {:.2f}", bi.name, value);
+						text.append_fmt(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
@@ -586,7 +584,7 @@ void ImGuiManager::DrawInputsOverlay()
 					// buttons only shown when active
 					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
 					if (value >= 0.5f)
-						fmt::format_to(std::back_inserter(text), " {}", bi.name);
+						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
 				}
 				break;
 

@@ -378,8 +378,7 @@ namespace FullscreenUI
 	static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
 		const std::string_view& key, const std::string_view& display_name);
 	static void DrawInputBindingWindow();
-	static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name,
-		const char* display_name, bool show_type = true);
+	static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, const char* icon_name, bool show_type = true);
 	static void ClearInputBindingVariables();
 	static void StartAutomaticBinding(u32 port);
 	static void DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si,
@@ -1155,53 +1154,87 @@ s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* sec
 }
 
 void FullscreenUI::DrawInputBindingButton(
-	SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, bool show_type)
+	SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, const char* icon_name, bool show_type)
 {
-	std::string title(fmt::format("{}/{}", section, name));
+	TinyString title;
+	title.fmt("{}/{}", section, name);
+
+	std::string value = bsi->GetStringValue(section, name);
+	const bool oneline = (std::count_if(value.begin(), value.end(), [](char ch) { return (ch == '&'); }) <= 1);
 
 	ImRect bb;
 	bool visible, hovered, clicked;
-	clicked = MenuButtonFrame(title.c_str(), true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, &visible, &hovered, &bb.Min, &bb.Max);
+	clicked = MenuButtonFrame(title, true,
+		oneline ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY :
+				  ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+		&visible, &hovered, &bb.Min, &bb.Max);
 	if (!visible)
 		return;
 
-	const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
-	const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-	const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
+	if (oneline)
+		InputManager::PrettifyInputBinding(value);
 
 	if (show_type)
 	{
-		switch (type)
+		if (icon_name)
 		{
-			case InputBindingInfo::Type::Button:
-				title = fmt::format(ICON_FA_DOT_CIRCLE " {}", display_name);
-				break;
-			case InputBindingInfo::Type::Axis:
-			case InputBindingInfo::Type::HalfAxis:
-				title = fmt::format(ICON_FA_BULLSEYE " {}", display_name);
-				break;
-			case InputBindingInfo::Type::Motor:
-				title = fmt::format(ICON_FA_BELL " {}", display_name);
-				break;
-			case InputBindingInfo::Type::Macro:
-				title = fmt::format(ICON_FA_PIZZA_SLICE " {}", display_name);
-				break;
-			default:
-				title = display_name;
-				break;
+			title.fmt("{} {}", icon_name, display_name);
+		}
+		else
+		{
+			switch (type)
+			{
+				case InputBindingInfo::Type::Button:
+					title.fmt(ICON_FA_DOT_CIRCLE " {}", display_name);
+					break;
+				case InputBindingInfo::Type::Axis:
+				case InputBindingInfo::Type::HalfAxis:
+					title.fmt(ICON_FA_BULLSEYE " {}", display_name);
+					break;
+				case InputBindingInfo::Type::Motor:
+					title.fmt(ICON_FA_BELL " {}", display_name);
+					break;
+				case InputBindingInfo::Type::Macro:
+					title.fmt(ICON_FA_PIZZA_SLICE " {}", display_name);
+					break;
+				default:
+					title = display_name;
+					break;
+			}
 		}
 	}
 
-	ImGui::PushFont(g_large_font);
-	ImGui::RenderTextClipped(
-		title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
-	ImGui::PopFont();
+	const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
 
-	const std::string value(bsi->GetStringValue(section, name));
-	ImGui::PushFont(g_medium_font);
-	ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(), nullptr, nullptr,
-		ImVec2(0.0f, 0.0f), &summary_bb);
-	ImGui::PopFont();
+	if (oneline)
+	{
+		ImGui::PushFont(g_large_font);
+
+		const ImVec2 value_size(ImGui::CalcTextSize(value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr));
+		const float text_end = bb.Max.x - value_size.x;
+		const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
+
+		ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
+			ImVec2(0.0f, 0.0f), &title_bb);
+		ImGui::RenderTextClipped(bb.Min, bb.Max, value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr, &value_size,
+			ImVec2(1.0f, 0.5f), &bb);
+		ImGui::PopFont();
+	}
+	else
+	{
+		const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
+		const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
+
+		ImGui::PushFont(g_large_font);
+		ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
+			ImVec2(0.0f, 0.0f), &title_bb);
+		ImGui::PopFont();
+
+		ImGui::PushFont(g_medium_font);
+		ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
+			nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+		ImGui::PopFont();
+	}
 
 	if (clicked)
 	{
@@ -4023,7 +4056,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			StartAutomaticBinding(global_slot);
 
 		for (const InputBindingInfo& bi : ci->bindings)
-			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), true);
+			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), bi.icon_name, true);
 
 		if (mtap_enabled[mtap_port])
 		{
@@ -4047,11 +4080,28 @@ void FullscreenUI::DrawControllerSettingsPage()
 				continue;
 
 			DrawInputBindingButton(
-				bsi, InputBindingInfo::Type::Macro, section, TinyString::from_fmt("Macro{}", macro_index + 1), "Trigger");
+				bsi, InputBindingInfo::Type::Macro, section, TinyString::from_fmt("Macro{}", macro_index + 1), "Trigger", nullptr);
 
 			std::string binds_string(bsi->GetStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str()));
-			if (MenuButton(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Buttons"),
-					binds_string.empty() ? FSUI_CSTR("No Buttons Selected") : binds_string.c_str()))
+			TinyString pretty_binds_string;
+			if (!binds_string.empty())
+			{
+				for (const std::string_view& bind : StringUtil::SplitString(binds_string, '&', true))
+				{
+					const char* dispname = nullptr;
+					for (const InputBindingInfo& bi : ci->bindings)
+					{
+						if (bind == bi.name)
+						{
+							dispname = bi.icon_name ? bi.icon_name : Host::TranslateToCString("Pad", bi.display_name);
+							break;
+						}
+					}
+					pretty_binds_string.append_fmt("{}{}", pretty_binds_string.empty() ? "" : " ", dispname);
+				}
+			}
+			if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Buttons"), nullptr, pretty_binds_string.empty() ? FSUI_CSTR("-") : pretty_binds_string.c_str(), true,
+					LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
 			{
 				std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
 				ImGuiFullscreen::ChoiceDialogOptions options;
@@ -4114,12 +4164,12 @@ void FullscreenUI::DrawControllerSettingsPage()
 			}
 
 			const TinyString freq_key = TinyString::from_fmt("Macro{}Frequency", macro_index + 1);
-			const TinyString freq_label = TinyString::from_fmt(FSUI_FSTR("Macro {} Frequency"), macro_index + 1);
+			const TinyString freq_label = TinyString::from_fmt(ICON_FA_CLOCK " {}##macro_{}_frequency", FSUI_VSTR("Frequency"), macro_index + 1);
 			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
 			const SmallString freq_summary =
-				((frequency == 0) ? TinyString(FSUI_VSTR("Macro will not auto-toggle.")) :
-									TinyString::from_fmt(FSUI_FSTR("Macro will toggle every {} frames."), frequency));
-			if (MenuButton(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Frequency"), freq_summary.c_str()))
+				((frequency == 0) ? TinyString(FSUI_VSTR("Disabled")) :
+									TinyString::from_fmt(FSUI_FSTR("{} Frames"), frequency));
+			if (MenuButtonWithValue(freq_label, FSUI_CSTR("Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."), freq_summary, true))
 				ImGui::OpenPopup(freq_label.c_str());
 
 			const std::string pressure_key(fmt::format("Macro{}Pressure", macro_index + 1));
@@ -4264,7 +4314,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 			for (const InputBindingInfo& bi : bindings)
 			{
 				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(),
-					Host::TranslateToCString("USB", bi.display_name));
+					Host::TranslateToCString("USB", bi.display_name), bi.icon_name);
 			}
 		}
 
@@ -4299,7 +4349,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
 		}
 
 		DrawInputBindingButton(
-			bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name, Host::TranslateToCString("Hotkeys", hotkey->display_name), false);
+			bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name, Host::TranslateToCString("Hotkeys", hotkey->display_name), nullptr, false);
 	}
 
 	EndMenuButtons();
@@ -5512,7 +5562,7 @@ void FullscreenUI::DrawGameListWindow()
 		default:
 			break;
 	}
-	
+
 	if (VMManager::GetState() != VMState::Shutdown)
 	{
 		// Dummy window to prevent interacting with the game list while loading.
@@ -6133,9 +6183,9 @@ void FullscreenUI::DrawAboutWindow()
 	if (ImGui::BeginPopupModal(FSUI_CSTR("About PCSX2"), &s_about_window_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
 	{
 		ImGui::TextWrapped("%s", FSUI_CSTR(
-			"PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a "
-			"combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. "
-			"This allows you to play PS2 games on your PC, with many additional features and benefits."));
+									 "PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a "
+									 "combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. "
+									 "This allows you to play PS2 games on your PC, with many additional features and benefits."));
 
 		ImGui::NewLine();
 
@@ -6428,6 +6478,7 @@ TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
 TRANSLATE_NOOP("FullscreenUI", "Start a game from a disc in your PC's DVD drive.");
 TRANSLATE_NOOP("FullscreenUI", "Change settings for the emulator.");
 TRANSLATE_NOOP("FullscreenUI", "Exits the program.");
+TRANSLATE_NOOP("FullscreenUI", "-");
 TRANSLATE_NOOP("FullscreenUI", "No Binding");
 TRANSLATE_NOOP("FullscreenUI", "Setting %s binding %s.");
 TRANSLATE_NOOP("FullscreenUI", "Push a controller button or axis now.");
@@ -6710,7 +6761,7 @@ TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/
 TRANSLATE_NOOP("FullscreenUI", "Multitap");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
-TRANSLATE_NOOP("FullscreenUI", "No Buttons Selected");
+TRANSLATE_NOOP("FullscreenUI", "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much pressure is simulated when macro is active.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the pressure required to activate the macro.");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
@@ -6866,8 +6917,7 @@ TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to save input profile '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
 TRANSLATE_NOOP("FullscreenUI", "Select Macro {} Binds");
-TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
-TRANSLATE_NOOP("FullscreenUI", "Macro will toggle every {} frames.");
+TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Device");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Subtype");
 TRANSLATE_NOOP("FullscreenUI", "{} unlabelled patch codes will automatically activate.");
@@ -7090,6 +7140,7 @@ TRANSLATE_NOOP("FullscreenUI", "CRC");
 TRANSLATE_NOOP("FullscreenUI", "Time Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Size");
+TRANSLATE_NOOP("FullscreenUI", "Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Drive");
 TRANSLATE_NOOP("FullscreenUI", "Start File");
@@ -7164,7 +7215,6 @@ TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Buttons");
-TRANSLATE_NOOP("FullscreenUI", "Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Pressure");
 TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Settings");

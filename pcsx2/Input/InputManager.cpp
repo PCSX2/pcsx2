@@ -27,6 +27,8 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
+#include "IconsPromptFont.h"
+
 #include "fmt/core.h"
 
 #include <array>
@@ -104,6 +106,7 @@ namespace InputManager
 
 	static std::vector<std::string_view> SplitChord(const std::string_view& binding);
 	static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
+	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed);
 	static void AddBinding(const std::string_view& binding, const InputEventHandler& handler);
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 	static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
@@ -325,7 +328,7 @@ std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type 
 		}
 		else if (key.source_type < InputSourceType::Count && s_input_sources[static_cast<u32>(key.source_type)])
 		{
-			return s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key);
+			return std::string(s_input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key));
 		}
 	}
 
@@ -357,6 +360,117 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
 
 	return ss.str();
 }
+
+bool InputManager::PrettifyInputBinding(std::string& binding)
+{
+	if (binding.empty())
+		return false;
+
+	const std::string_view binding_view(binding);
+
+	SmallString ret;
+	bool changed = false;
+
+	std::string_view::size_type last = 0;
+	std::string_view::size_type next;
+	while ((next = binding_view.find('&', last)) != std::string_view::npos)
+	{
+		if (last != next)
+		{
+			const std::string_view part = StringUtil::StripWhitespace(binding_view.substr(last, next - last));
+			if (!part.empty())
+			{
+				if (!ret.empty())
+					ret.append(" + ");
+				PrettifyInputBindingPart(part, ret, changed);
+			}
+		}
+		last = next + 1;
+	}
+	if (last < (binding_view.size() - 1))
+	{
+		const std::string_view part = StringUtil::StripWhitespace(binding_view.substr(last));
+		if (!part.empty())
+		{
+			if (!ret.empty())
+				ret.append(" + ");
+			PrettifyInputBindingPart(part, ret, changed);
+		}
+	}
+
+	if (changed)
+		binding = ret.view();
+
+	return changed;
+}
+
+void InputManager::PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed)
+{
+	std::string_view source, sub_binding;
+	if (!SplitBinding(binding, &source, &sub_binding))
+		return;
+
+	// lameee, string matching
+	if (StringUtil::StartsWith(source, "Keyboard"))
+	{
+		std::optional<InputBindingKey> key = ParseHostKeyboardKey(source, sub_binding);
+		const char* icon = key.has_value() ? ConvertHostKeyboardCodeToIcon(key->data) : nullptr;
+		if (icon)
+		{
+			ret.append(icon);
+			changed = true;
+			return;
+		}
+	}
+	else if (StringUtil::StartsWith(source, "Pointer"))
+	{
+		const std::optional<InputBindingKey> key = ParsePointerKey(source, sub_binding);
+		if (key.has_value())
+		{
+			if (key->source_subtype == InputSubclass::PointerButton)
+			{
+				static constexpr const char* button_icons[] = {
+					ICON_PF_MOUSE_BUTTON_1,
+					ICON_PF_MOUSE_BUTTON_2,
+					ICON_PF_MOUSE_BUTTON_3,
+					ICON_PF_MOUSE_BUTTON_4,
+					ICON_PF_MOUSE_BUTTON_5,
+				};
+				if (key->data < std::size(button_icons))
+				{
+					ret.append(button_icons[key->data]);
+					changed = true;
+					return;
+				}
+			}
+		}
+	}
+	else
+	{
+		for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+		{
+			if (s_input_sources[i])
+			{
+				std::optional<InputBindingKey> key = s_input_sources[i]->ParseKeyString(source, sub_binding);
+				if (key.has_value())
+				{
+					const TinyString icon = s_input_sources[i]->ConvertKeyToIcon(key.value());
+					if (!icon.empty())
+					{
+						ret.append(icon);
+						changed = true;
+						return;
+					}
+
+					break;
+				}
+			}
+		}
+	}
+
+	ret.append(binding);
+}
+
 
 void InputManager::AddBinding(const std::string_view& binding, const InputEventHandler& handler)
 {

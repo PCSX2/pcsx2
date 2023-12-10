@@ -64,6 +64,7 @@ enum class GSDisplayAlignment
 extern Pcsx2Config::GSOptions GSConfig;
 
 class HostDisplay;
+class SmallStringBase;
 
 // Returns the ID for the specified function, otherwise -1.
 s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
@@ -107,8 +108,8 @@ void GSGetAdaptersAndFullscreenModes(
 	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
-void GSgetStats(std::string& info);
-void GSgetMemoryStats(std::string& info);
+void GSgetStats(SmallStringBase& info);
+void GSgetMemoryStats(SmallStringBase& info);
 void GSgetTitleStats(std::string& info);
 
 /// Converts window position to normalized display coordinates (0..1). A value less than 0 or greater than 1 is

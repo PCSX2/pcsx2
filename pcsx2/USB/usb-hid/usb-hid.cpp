@@ -951,7 +951,7 @@ namespace usb_hid
 	std::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
-			{"Keyboard", TRANSLATE_NOOP("USB", "Keyboard"), InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
+			{"Keyboard", TRANSLATE_NOOP("USB", "Keyboard"), nullptr, InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
 		};
 		return info;
 	}
@@ -1044,10 +1044,10 @@ namespace usb_hid
 	std::span<const InputBindingInfo> HIDMouseDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
-			{"Pointer", TRANSLATE_NOOP("USB", "Pointer"), InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},
-			{"LeftButton", TRANSLATE_NOOP("USB", "Left Button"), InputBindingInfo::Type::Button, INPUT_BUTTON_LEFT, GenericInputBinding::Unknown},
-			{"RightButton", TRANSLATE_NOOP("USB", "Right Button"), InputBindingInfo::Type::Button, INPUT_BUTTON_RIGHT, GenericInputBinding::Unknown},
-			{"MiddleButton", TRANSLATE_NOOP("USB", "Middle Button"), InputBindingInfo::Type::Button, INPUT_BUTTON_MIDDLE, GenericInputBinding::Unknown},
+			{"Pointer", TRANSLATE_NOOP("USB", "Pointer"), nullptr, InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},
+			{"LeftButton", TRANSLATE_NOOP("USB", "Left Button"), nullptr, InputBindingInfo::Type::Button, INPUT_BUTTON_LEFT, GenericInputBinding::Unknown},
+			{"RightButton", TRANSLATE_NOOP("USB", "Right Button"), nullptr, InputBindingInfo::Type::Button, INPUT_BUTTON_RIGHT, GenericInputBinding::Unknown},
+			{"MiddleButton", TRANSLATE_NOOP("USB", "Middle Button"), nullptr, InputBindingInfo::Type::Button, INPUT_BUTTON_MIDDLE, GenericInputBinding::Unknown},
 		};
 		return info;
 	}
