@@ -253,10 +253,58 @@ public:
 		assign(move);
 	}
 
+	__fi SmallStackString(const SmallStackString& copy)
+	{
+		init();
+		assign(copy);
+	}
+
+	__fi SmallStackString(SmallStackString&& move)
+	{
+		init();
+		assign(move);
+	}
+
 	__fi SmallStackString(const std::string_view& sv)
 	{
 		init();
 		assign(sv);
+	}
+
+	__fi SmallStackString& operator=(const SmallStringBase& copy)
+	{
+		assign(copy);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(SmallStringBase&& move)
+	{
+		assign(move);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(const SmallStackString& copy)
+	{
+		assign(copy);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(SmallStackString&& move)
+	{
+		assign(move);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(const std::string_view& sv)
+	{
+		assign(sv);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(const char* str)
+	{
+		assign(str);
+		return *this;
 	}
 
 	// Override the fromstring method
