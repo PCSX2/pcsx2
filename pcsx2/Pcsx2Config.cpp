@@ -1687,7 +1687,7 @@ bool EmuFolders::InitializeCriticalFolders()
 
 void EmuFolders::SetAppRoot()
 {
-	std::string program_path(FileSystem::GetProgramPath());
+	const std::string program_path = FileSystem::GetProgramPath();
 	Console.WriteLn("Program Path: %s", program_path.c_str());
 
 	AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
@@ -1732,12 +1732,11 @@ void EmuFolders::SetDataDirectory()
 	const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
 	if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
 	{
-		DataRoot = Path::Combine(xdg_config_home, "PCSX2");
+		DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
 	}
 	else
 	{
 		// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
-		// Maybe we should drop the former when Qt goes live.
 		const char* home_dir = getenv("HOME");
 		if (home_dir)
 		{
@@ -1746,14 +1745,14 @@ void EmuFolders::SetDataDirectory()
 			if (!FileSystem::DirectoryExists(config_dir.c_str()))
 				FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
 
-			DataRoot = Path::Combine(config_dir, "PCSX2");
+			DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
 		}
 	}
 #elif defined(__APPLE__)
 	static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
 	const char* home_dir = getenv("HOME");
 	if (home_dir)
-		DataRoot = Path::Combine(home_dir, MAC_DATA_DIR);
+		DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
 
 	// make sure it exists
