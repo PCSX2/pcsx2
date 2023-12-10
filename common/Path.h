@@ -47,6 +47,9 @@ namespace Path
 	/// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 	bool IsAbsolute(const std::string_view& path);
 
+	/// Resolves any symbolic links in the specified path.
+	std::string RealPath(const std::string_view& path);
+
 	/// Makes the specified path relative to another (e.g. /a/b/c, /a/b -> ../c).
 	/// Both paths must be relative, otherwise this function will just return the input path.
 	std::string MakeRelative(const std::string_view& path, const std::string_view& relative_to);
