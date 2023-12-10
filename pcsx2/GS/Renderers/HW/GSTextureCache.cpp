@@ -2279,82 +2279,86 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 	}
 
 	dst->UpdateValidity(GSVector4i::loadh(valid_size));
-	
-	for (int type = 0; type < 2; type++)
+
+	// Can't do channel writes to depth targets, and DirectX can't partial copy depth targets.
+	if (psm_s.depth == 0)
 	{
-		auto& list = m_dst[type];
-		for (auto i = list.begin(); i != list.end();)
+		for (int type = 0; type < 2; type++)
 		{
-			auto j = i;
-			Target* t = *j;
+			auto& list = m_dst[type];
+			for (auto i = list.begin(); i != list.end();)
+			{
+				auto j = i;
+				Target* t = *j;
 
-			if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->m_TEX0.TBW > 4)
-				if(t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid))
-				{
-					// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
-					if (((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0)
+				if (dst != t && t->m_TEX0.TBW == dst->m_TEX0.TBW && t->m_TEX0.PSM == dst->m_TEX0.PSM && t->m_TEX0.TBW > 4)
+					if (t->Overlaps(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, dst->m_valid))
 					{
-						GSVector4i new_valid = t->m_valid;
-						new_valid.w /= 2;
-						GL_INS("RT resize buffer for FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, t->m_valid.width(), t->m_valid.height(), new_valid.width(), new_valid.height());
-						t->ResizeValidity(new_valid);
-						return hw_clear;
-					}
-					// The new texture is behind it but engulfs the whole thing, shrink the new target so it grows in the HW Draw resize.
-					else if (((((dst->UnwrappedEndBlock() + 1) - dst->m_TEX0.TBP0) >> 1) + dst->m_TEX0.TBP0) == t->m_TEX0.TBP0)
-					{
-						int overlapping_pages = ((dst->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5;
-						int y_reduction = (overlapping_pages / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
-
-						if (y_reduction == 0 || (overlapping_pages % dst->m_TEX0.TBW))
+						// could be overwriting a double buffer, so if it's the second half of it, just reduce the size down to half.
+						if (((((t->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) == dst->m_TEX0.TBP0)
 						{
-							i++;
-							continue;
+							GSVector4i new_valid = t->m_valid;
+							new_valid.w /= 2;
+							GL_INS("RT resize buffer for FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, t->m_valid.width(), t->m_valid.height(), new_valid.width(), new_valid.height());
+							t->ResizeValidity(new_valid);
+							return hw_clear;
 						}
-
-						if (preserve_target || preload)
+						// The new texture is behind it but engulfs the whole thing, shrink the new target so it grows in the HW Draw resize.
+						else if (((((dst->UnwrappedEndBlock() + 1) - dst->m_TEX0.TBP0) >> 1) + dst->m_TEX0.TBP0) == t->m_TEX0.TBP0)
 						{
-							const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
-							const int copy_height = y_reduction * t->m_scale;
-							const int old_height = (dst->m_valid.w - y_reduction) * dst->m_scale;
-							GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
+							int overlapping_pages = ((dst->UnwrappedEndBlock() + 1) - t->m_TEX0.TBP0) >> 5;
+							int y_reduction = (overlapping_pages / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y;
 
-							pxAssert(old_height > 0);
-
-							// Clear the dirty first
-							dst->Update();
-							// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
-							if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low))
+							if (y_reduction == 0 || (overlapping_pages % dst->m_TEX0.TBW))
 							{
-								const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
-								const GSVector4 dst_rect = GSVector4(0, old_height, copy_width, copy_height);
-								g_gs_device->StretchRect(t->m_texture, src_rect, dst->m_texture, dst_rect, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_alpha_high || t->m_valid_alpha_low);
+								i++;
+								continue;
+							}
+
+							if (preserve_target || preload)
+							{
+								const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
+								const int copy_height = y_reduction * t->m_scale;
+								const int old_height = (dst->m_valid.w - y_reduction) * dst->m_scale;
+								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, old_height);
+
+								pxAssert(old_height > 0);
+
+								// Clear the dirty first
+								dst->Update();
+								// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
+								if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low))
+								{
+									const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
+									const GSVector4 dst_rect = GSVector4(0, old_height, copy_width, copy_height);
+									g_gs_device->StretchRect(t->m_texture, src_rect, dst->m_texture, dst_rect, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_rgb, t->m_valid_alpha_high || t->m_valid_alpha_low);
+								}
+								else
+								{
+									// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
+									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+								}
+							}
+							if (src && src->m_target && src->m_from_target == t)
+							{
+								// This should never happen as we're making a new target so the src should never be something it overlaps, but just incase..
+								GSVector4i new_valid = t->m_valid;
+								new_valid.y = std::max(new_valid.y - y_reduction, 0);
+								new_valid.w = std::max(new_valid.w - y_reduction, 0);
+								t->m_TEX0.TBP0 += (y_reduction / GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y) << 5;
+								t->ResizeValidity(new_valid);
 							}
 							else
 							{
-								// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
-								g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, old_height);
+								InvalidateSourcesFromTarget(t);
+								i = list.erase(j);
+								delete t;
 							}
+							return hw_clear;
 						}
-						if (src && src->m_target && src->m_from_target == t)
-						{
-							// This should never happen as we're making a new target so the src should never be something it overlaps, but just incase..
-							GSVector4i new_valid = t->m_valid;
-							new_valid.y = std::max(new_valid.y - y_reduction, 0);
-							new_valid.w = std::max(new_valid.w - y_reduction, 0);
-							t->m_TEX0.TBP0 += (y_reduction / GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y) << 5;
-							t->ResizeValidity(new_valid);
-						}
-						else
-						{
-							InvalidateSourcesFromTarget(t);
-							i = list.erase(j);
-							delete t;
-						}
-						return hw_clear;
 					}
-				}
-			i++;
+				i++;
+			}
 		}
 	}
 
