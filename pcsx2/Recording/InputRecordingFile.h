@@ -33,7 +33,7 @@ class InputRecordingFile
 
 	public:
 		void init() noexcept;
-	} m_header;
+	} m_header = {};
 
 
 public:
