@@ -25588,40 +25588,50 @@ SLES-55184:
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55185:
   name: "Disney-Pixar WALL-E"
   region: "PAL-UK"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55186:
   name: "Disney-Pixar WALL-E"
   region: "PAL-S-P"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55187:
   name: "Disney-Pixar WALL-E"
   region: "PAL-F-G"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55188:
   name: "Disney-Pixar WALL-E"
   region: "PAL-G"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55189:
   name: "Nick Jr. Go Diego Go! Safari Rescue"
   region: "PAL-E-F"
@@ -25644,32 +25654,40 @@ SLES-55193:
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55194:
   name: "Disney-Pixar WALL-E"
   region: "PAL-SC"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55195:
   name: "Disney-Pixar WALL-E"
   region: "PAL-GR-I"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55196:
   name: "Disney-Pixar WALL-E"
   region: "PAL-PL-CR"
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLES-55197:
   name: "Dancing Stage SuperNOVA 2"
   region: "PAL-M5"
@@ -64316,8 +64334,10 @@ SLUS-21736:
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    cpuSpriteRenderBW: 2 # Fixes bloom on HW renderer.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 4 # Reduces the ghosting effect.
+    roundSprite: 2 # Reduces the ghosting effect.
 SLUS-21737:
   name: "Riding Star"
   region: "NTSC-U"
