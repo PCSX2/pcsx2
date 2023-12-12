@@ -74,7 +74,7 @@ bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
 	if ( (hdr.magic[0] != 'C' && hdr.magic[0] != 'Z' ) || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')
 	{
 		// Invalid magic, definitely a bad file.
-		Error::SetString(error, "File is not a CHD.");
+		Error::SetString(error, "File is not a CSO or ZSO.");
 		return false;
 	}
 	if (hdr.ver > 1)
@@ -171,7 +171,9 @@ bool CsoFileReader::InitializeBuffers(Error* error)
 		return false;
 	}
 
-	if (!m_uselz4){ // initialize zlib if not a ZSO
+	// initialize zlib if not a ZSO
+	if (!m_uselz4)
+	{
 		m_z_stream = std::make_unique<z_stream>();
 		m_z_stream->zalloc = Z_NULL;
 		m_z_stream->zfree = Z_NULL;
@@ -264,11 +266,13 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 		const u32 readRawBytes = fread(m_readBuffer.get(), 1, frameRawSize, m_src);
 		bool success = false;
 
-		if (m_uselz4){
+		if (m_uselz4)
+		{
 			int res = LZ4_decompress_safe(m_readBuffer.get(), static_cast<char*>(dst), readRawBytes, m_frameSize);
 			success = res == m_frameSize;
 		}
-		else {
+		else
+		{
 			m_z_stream->next_in = m_readBuffer.get();
 			m_z_stream->avail_in = readRawBytes;
 			m_z_stream->next_out = static_cast<Bytef*>(dst);
