@@ -33,10 +33,11 @@
 */
 #pragma once
 
+/*
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
+*/
 
 /**************************************
    Version
@@ -242,7 +243,8 @@ They are provided here for compatibility with existing user programs.
 int LZ4_uncompress(const char *source, char *dest, int outputSize);
 int LZ4_uncompress_unknownOutputSize(const char *source, char *dest, int isize, int maxOutputSize);
 
-
+/*
 #if defined(__cplusplus)
 }
 #endif
+*/

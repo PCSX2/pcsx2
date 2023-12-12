@@ -241,7 +241,7 @@ set(pcsx2CDVDSources
 	CDVD/CsoFileReader.cpp
 	CDVD/GzippedFileReader.cpp
 	CDVD/ThreadedFileReader.cpp
-	CDVD/lz4.c
+	CDVD/lz4.cpp
 	)
 
 # CDVD headers
