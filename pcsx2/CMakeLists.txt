@@ -241,6 +241,7 @@ set(pcsx2CDVDSources
 	CDVD/CsoFileReader.cpp
 	CDVD/GzippedFileReader.cpp
 	CDVD/ThreadedFileReader.cpp
+	CDVD/lz4.c
 	)
 
 # CDVD headers
@@ -260,6 +261,7 @@ set(pcsx2CDVDHeaders
 	CDVD/IsoHasher.h
 	CDVD/IsoReader.h
 	CDVD/zlib_indexed.h
+	CDVD/lz4.h
 	)
 
 # SPU2 sources
@@ -1139,7 +1141,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	PNG::PNG
 	LibLZMA::LibLZMA
 	Zstd::Zstd
-	lz4
 	${LIBC_LIBRARIES}
 )
 
