@@ -71,7 +71,7 @@ bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& di
 
 bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
 {
-	if ( (hdr.magic[0] != 'C' && hdr.magic[0] != 'Z' ) || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')
+	if ((hdr.magic[0] != 'C' && hdr.magic[0] != 'Z') || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')
 	{
 		// Invalid magic, definitely a bad file.
 		Error::SetString(error, "File is not a CSO or ZSO.");
