@@ -23,6 +23,7 @@
 #include "common/StringUtil.h"
 
 #include <zlib.h>
+#include <lz4.h>
 
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
@@ -52,7 +53,7 @@ CsoFileReader::~CsoFileReader()
 bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
 {
 	bool supported = false;
-	if (StringUtil::EndsWith(displayName, ".cso"))
+	if (StringUtil::EndsWith(displayName, ".cso") || StringUtil::EndsWith(displayName, ".zso"))
 	{
 		FILE* fp = FileSystem::OpenCFile(fileName.c_str(), "rb");
 		CsoHeader hdr;
@@ -70,7 +71,7 @@ bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& di
 
 bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
 {
-	if (hdr.magic[0] != 'C' || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')
+	if ( (hdr.magic[0] != 'C' && hdr.magic[0] != 'Z' ) || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')
 	{
 		// Invalid magic, definitely a bad file.
 		Error::SetString(error, "File is not a CHD.");
@@ -141,6 +142,9 @@ bool CsoFileReader::ReadFileHeader(Error* error)
 	m_indexShift = hdr.align;
 	m_totalSize = hdr.total_bytes;
 
+	// Check compression method (ZSO=lz4)
+	m_uselz4 = hdr.magic[0] == 'Z';
+
 	return true;
 }
 
@@ -167,14 +171,16 @@ bool CsoFileReader::InitializeBuffers(Error* error)
 		return false;
 	}
 
-	m_z_stream = std::make_unique<z_stream>();
-	m_z_stream->zalloc = Z_NULL;
-	m_z_stream->zfree = Z_NULL;
-	m_z_stream->opaque = Z_NULL;
-	if (inflateInit2(m_z_stream.get(), -15) != Z_OK)
-	{
-		Error::SetString(error, "Unable to initialize zlib for CSO decompression.");
-		return false;
+	if (!m_uselz4){ // initialize zlib if not a ZSO
+		m_z_stream = std::make_unique<z_stream>();
+		m_z_stream->zalloc = Z_NULL;
+		m_z_stream->zfree = Z_NULL;
+		m_z_stream->opaque = Z_NULL;
+		if (inflateInit2(m_z_stream.get(), -15) != Z_OK)
+		{
+			Error::SetString(error, "Unable to initialize zlib for CSO decompression.");
+			return false;
+		}
 	}
 
 	return true;
@@ -256,14 +262,21 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 		// This might be less bytes than frameRawSize in case of padding on the last frame.
 		// This is because the index positions must be aligned.
 		const u32 readRawBytes = fread(m_readBuffer.get(), 1, frameRawSize, m_src);
+		bool success = false;
 
-		m_z_stream->next_in = m_readBuffer.get();
-		m_z_stream->avail_in = readRawBytes;
-		m_z_stream->next_out = static_cast<Bytef*>(dst);
-		m_z_stream->avail_out = m_frameSize;
+		if (m_uselz4){
+			int res = LZ4_decompress_safe(m_readBuffer.get(), static_cast<char*>(dst), readRawBytes, m_frameSize);
+			success = res == m_frameSize;
+		}
+		else {
+			m_z_stream->next_in = m_readBuffer.get();
+			m_z_stream->avail_in = readRawBytes;
+			m_z_stream->next_out = static_cast<Bytef*>(dst);
+			m_z_stream->avail_out = m_frameSize;
 
-		int status = inflate(m_z_stream.get(), Z_FINISH);
-		bool success = status == Z_STREAM_END && m_z_stream->total_out == m_frameSize;
+			int status = inflate(m_z_stream.get(), Z_FINISH);
+			success = status == Z_STREAM_END && m_z_stream->total_out == m_frameSize;
+		}
 
 		if (!success)
 			Console.Error("Unable to decompress CSO frame using zlib.");

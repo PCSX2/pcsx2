@@ -1139,6 +1139,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	PNG::PNG
 	LibLZMA::LibLZMA
 	Zstd::Zstd
+	lz4
 	${LIBC_LIBRARIES}
 )
 
