@@ -23,7 +23,7 @@
 #include "common/StringUtil.h"
 
 #include <zlib.h>
-#include <lz4.h>
+#include "lz4.h"
 
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
@@ -268,8 +268,8 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 
 		if (m_uselz4)
 		{
-			int res = LZ4_decompress_safe(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), static_cast<int>(readRawBytes), static_cast<int>(m_frameSize));
-			success = res == static_cast<int>(m_frameSize);
+			int res = LZ4_decompress_fast(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), static_cast<int>(m_frameSize));
+			success = res > 0;
 		}
 		else
 		{
