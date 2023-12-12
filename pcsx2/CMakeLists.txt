@@ -1188,6 +1188,7 @@ target_include_directories(PCSX2_FLAGS INTERFACE
 	"${CMAKE_BINARY_DIR}/pcsx2"
 	"${CMAKE_BINARY_DIR}/common/include"
 	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak"
+	"${CMAKE_SOURCE_DIR}/3rdparty/lz4/lib"
 	"${FFMPEG_INCLUDE_DIRS}"
 )
 target_compile_definitions(PCSX2_FLAGS INTERFACE
