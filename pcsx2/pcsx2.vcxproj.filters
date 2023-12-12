@@ -1723,9 +1723,6 @@
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h">
       <Filter>System\ISO</Filter>
     </ClInclude>
-    <ClInclude Include="CDVD\lz4.h">
-      <Filter>System\ISO</Filter>
-    </ClInclude>
     <ClInclude Include="x86\R5900_Profiler.h">
       <Filter>System\Include</Filter>
     </ClInclude>

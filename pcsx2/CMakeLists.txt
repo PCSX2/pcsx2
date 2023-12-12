@@ -261,7 +261,6 @@ set(pcsx2CDVDHeaders
 	CDVD/IsoHasher.h
 	CDVD/IsoReader.h
 	CDVD/zlib_indexed.h
-	CDVD/lz4.h
 	)
 
 # SPU2 sources
