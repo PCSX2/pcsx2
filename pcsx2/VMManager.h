@@ -222,7 +222,7 @@ namespace VMManager
 	u64 GetSessionPlayedTime();
 
 	/// Called when the rich presence string, provided by RetroAchievements, changes.
-	void UpdateDiscordPresence();
+	void UpdateDiscordPresence(bool update_session_time);
 
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal
