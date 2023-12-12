@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soun
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "3rdparty\zlib\zlib.vcxproj", "{2F6C0388-20CB-4242-9F6C-A6EBB6A83F47}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblz4", "3rdparty\lz4\build\VS2017\liblz4\liblz4.vcxproj", "{9092C5CC-3E71-41B3-BF68-4A7BDD8A5476}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "3rdparty\libpng\libpng.vcxproj", "{D6973076-9317-4EF2-A0B8-B7A18AC0713E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblzma", "3rdparty\xz\liblzma.vcxproj", "{12728250-16EC-4DC6-94D7-E21DD88947F8}"

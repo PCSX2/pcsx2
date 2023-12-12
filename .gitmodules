@@ -23,7 +23,7 @@
 	url = https://github.com/facebook/zstd.git
 [submodule "3rdparty/lz4"]
 	path = 3rdparty/lz4
-	url = https://github.com/lz4/lz4.git
+	url = https://github.com/lz4/lz4
 [submodule "3rdparty/rcheevos/rcheevos"]
 	path = 3rdparty/rcheevos/rcheevos
 	url = https://github.com/RetroAchievements/rcheevos.git
