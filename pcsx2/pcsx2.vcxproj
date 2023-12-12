@@ -125,6 +125,7 @@
     <ClCompile Include="CDVD\IsoHasher.cpp" />
     <ClCompile Include="CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
+    <ClCompile Include="CDVD\lz4.c" />
     <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -488,6 +489,7 @@
     <ClInclude Include="CDVD\IsoReader.h" />
     <ClInclude Include="CDVD\IsoHasher.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
+    <ClInclude Include="CDVD\lz4.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
     <ClInclude Include="DebugTools\Breakpoints.h" />
     <ClInclude Include="DebugTools\DebugInterface.h" />

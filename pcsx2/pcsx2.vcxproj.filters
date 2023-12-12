@@ -782,6 +782,9 @@
     <ClCompile Include="CDVD\ChunksCache.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="CDVD\lz4.c">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
     <ClCompile Include="IopGte.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
@@ -1718,6 +1721,9 @@
       <Filter>System\ISO</Filter>
     </ClInclude>
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\lz4.h">
       <Filter>System\ISO</Filter>
     </ClInclude>
     <ClInclude Include="x86\R5900_Profiler.h">
