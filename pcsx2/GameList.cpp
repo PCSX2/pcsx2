@@ -591,7 +591,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	Console.WriteLn("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
 	progress->PushState();
-	progress->SetFormattedStatusText("Scanning directory '%s'%s...", path, recursive ? " (recursively)" : "");
+	progress->SetFormattedStatusText(TRANSLATE("GameList", "Scanning directory '%s'%s..."), path, recursive ? TRANSLATE("GameList", " (recursively)") : "");
 
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(path, "*",
@@ -619,7 +619,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		}
 
 		const std::string_view filename = Path::GetFileName(ffd.FileName);
-		progress->SetFormattedStatusText("Scanning '%.*s'...", static_cast<int>(filename.size()), filename.data());
+		progress->SetFormattedStatusText(TRANSLATE("GameList", "Scanning '%.*s'..."), static_cast<int>(filename.size()), filename.data());
 		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
 		progress->SetProgressValue(files_scanned);
 	}
