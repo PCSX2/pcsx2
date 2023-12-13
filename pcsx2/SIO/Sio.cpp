@@ -98,7 +98,7 @@ void AutoEject::CountDownTicks()
 
 void AutoEject::Set(size_t port, size_t slot)
 {
-	if (EmuConfig.McdEnableEjection && mcds[port][slot].autoEjectTicks == 0)
+	if (mcds[port][slot].autoEjectTicks == 0)
 	{
 		mcds[port][slot].autoEjectTicks = 1; // 1 second is enough.
 		mcds[port][slot].term = 0x55; // Reset terminator to default (0x55), forces the PS2 to recheck the memcard.

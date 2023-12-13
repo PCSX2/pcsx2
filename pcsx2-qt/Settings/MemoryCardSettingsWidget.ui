@@ -185,17 +185,10 @@
       <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="1" column="0">
+      <item row="0" column="0">
        <widget class="QCheckBox" name="automaticManagement">
         <property name="text">
          <string>Automatically manage saves based on running game</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="autoEject">
-        <property name="text">
-         <string>Auto-eject Memory Cards when loading save states</string>
         </property>
        </widget>
       </item>

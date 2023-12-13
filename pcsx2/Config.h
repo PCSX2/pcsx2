@@ -1298,8 +1298,6 @@ struct Pcsx2Config
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
 		SavestateZstdCompression : 1,
-		// enables simulated ejection of memory cards when loading savestates
-		McdEnableEjection : 1,
 		McdFolderAutoManage : 1,
 
 		HostFs : 1,
