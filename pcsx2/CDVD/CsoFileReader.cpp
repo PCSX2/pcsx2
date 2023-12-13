@@ -284,7 +284,9 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 
 		if (!success)
 			Console.Error(fmt::format("Unable to decompress CSO frame using {}", ((m_uselz4)? "lz4":"zlib")));
-		inflateReset(m_z_stream.get());
+		
+		if (!m_uselz4)
+			inflateReset(m_z_stream.get());
 
 		return success ? m_frameSize : 0;
 	}
