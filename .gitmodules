@@ -30,3 +30,6 @@
 [submodule "3rdparty/xz/xz"]
 	path = 3rdparty/xz/xz
 	url = https://github.com/tukaani-project/xz.git
+[submodule "3rdparty/lz4/lz4"]
+	path = 3rdparty/lz4/lz4
+	url = https://github.com/lz4/lz4
