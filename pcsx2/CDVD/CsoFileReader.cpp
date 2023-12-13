@@ -268,7 +268,9 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 
 		if (m_uselz4)
 		{
-			const int res = LZ4_decompress_safe(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), static_cast<int>(readRawBytes), static_cast<int>(m_frameSize));
+			int raw_size = static_cast<int>(readRawBytes);
+			if (m_indexShift) raw_size -= (1<<m_indexShift); // calculate exact size of compressed data
+			const int res = LZ4_decompress_safe(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), raw_size, static_cast<int>(m_frameSize));
 			success = res > 0;
 		}
 		else
