@@ -270,7 +270,10 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 		{
 			int src_size = static_cast<int>(readRawBytes);
 			int dst_size = static_cast<int>(m_frameSize);
-			const int res = LZ4_decompress_safe_partial(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), src_size, dst_size, dst_size);
+			const char* src_buf = reinterpret_cast<const char*>(m_readBuffer.get());
+			char* dst_buf = static_cast<char*>(dst);
+			
+			const int res = LZ4_decompress_safe_partial(src_buf, dst_buf, src_size, dst_size, dst_size);
 			success = res > 0;
 		}
 		else
