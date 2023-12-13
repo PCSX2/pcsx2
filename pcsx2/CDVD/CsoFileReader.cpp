@@ -22,7 +22,6 @@
 #include "common/Error.h"
 #include "common/StringUtil.h"
 
-#include <format>
 #include <zlib.h>
 #include <lz4.h>
 
@@ -284,7 +283,7 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 		}
 
 		if (!success)
-			Console.Error(std::format("Unable to decompress CSO frame using {}", ((m_uselz4)? "lz4":"zlib")));
+			Console.Error(fmt::format("Unable to decompress CSO frame using {}", ((m_uselz4)? "lz4":"zlib")));
 		inflateReset(m_z_stream.get());
 
 		return success ? m_frameSize : 0;
