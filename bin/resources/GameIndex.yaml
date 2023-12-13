@@ -1107,6 +1107,13 @@ SCAJ-20050:
 SCAJ-20052:
   name: "Ratchet & Clank 2 - Gagaga! Ginga no Commando-ssu"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes SPR errors while going in-game.
+  gsHWFixes:
+    mipmap: 1
+  memcardFilters:
+    - "SCAJ-20052"
+    - "SCAJ-20001"
 SCAJ-20055:
   name: "Battle Gear 3"
   region: "NTSC-Unk"
@@ -1405,6 +1412,10 @@ SCAJ-20109:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
+  memcardFilters:
+    - "SCAJ-20109"
+    - "SCAJ-20052"
+    - "SCAJ-20001"
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
@@ -10875,6 +10886,9 @@ SCUS-97513:
   gsHWFixes:
     mipmap: 1
     autoFlush: 2
+  memcardFilters:
+    - "SCUS-97513"
+    - "SCUS-97199"
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
@@ -10914,6 +10928,11 @@ SCUS-97518:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
+  memcardFilters:
+    - "SCUS-97518"
+    - "SCUS-97513"
+    - "SCUS-97268"
+    - "SCUS-97199"
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
   region: "NTSC-U"
