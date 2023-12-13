@@ -22,6 +22,7 @@
 #include "common/Error.h"
 #include "common/StringUtil.h"
 
+#include <format>
 #include <zlib.h>
 #include <lz4.h>
 
