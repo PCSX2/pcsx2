@@ -268,7 +268,7 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 
 		if (m_uselz4)
 		{
-			int res = LZ4_decompress_fast(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), static_cast<int>(m_frameSize));
+			const int res = LZ4_decompress_fast(reinterpret_cast<const char*>(m_readBuffer.get()), static_cast<char*>(dst), static_cast<int>(m_frameSize));
 			success = res > 0;
 		}
 		else
@@ -278,12 +278,12 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 			m_z_stream->next_out = static_cast<Bytef*>(dst);
 			m_z_stream->avail_out = m_frameSize;
 
-			int status = inflate(m_z_stream.get(), Z_FINISH);
+			const int status = inflate(m_z_stream.get(), Z_FINISH);
 			success = status == Z_STREAM_END && m_z_stream->total_out == m_frameSize;
 		}
 
 		if (!success)
-			Console.Error("Unable to decompress CSO frame using zlib.");
+			Console.Error("Unable to decompress CSO frame using " + ((m_uselz4)? "lz4":"zlib"));
 		inflateReset(m_z_stream.get());
 
 		return success ? m_frameSize : 0;
