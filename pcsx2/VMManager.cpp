@@ -2402,7 +2402,6 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 		}
 	}
 
-	changed |= (EmuConfig.McdEnableEjection != old_config.McdEnableEjection);
 	changed |= (EmuConfig.McdFolderAutoManage != old_config.McdFolderAutoManage);
 
 	if (!changed)
