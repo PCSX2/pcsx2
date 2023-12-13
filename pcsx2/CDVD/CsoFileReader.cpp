@@ -23,7 +23,7 @@
 #include "common/StringUtil.h"
 
 #include <zlib.h>
-#include "lz4.h"
+#include <lz4.h>
 
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
@@ -283,7 +283,7 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 		}
 
 		if (!success)
-			Console.Error(string("Unable to decompress CSO frame using ") + ((m_uselz4)? "lz4":"zlib"));
+			Console.Error(std::string("Unable to decompress CSO frame using ") + ((m_uselz4)? "lz4":"zlib"));
 		inflateReset(m_z_stream.get());
 
 		return success ? m_frameSize : 0;
