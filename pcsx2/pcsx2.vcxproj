@@ -126,9 +126,6 @@
     <ClCompile Include="CDVD\IsoHasher.cpp" />
     <ClCompile Include="CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
-    <ClCompile Include="CDVD\lz4.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>

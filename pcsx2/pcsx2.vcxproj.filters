@@ -782,9 +782,6 @@
     <ClCompile Include="CDVD\ChunksCache.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="CDVD\lz4.cpp">
-      <Filter>System\ISO</Filter>
-    </ClCompile>
     <ClCompile Include="IopGte.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
