@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,11 +15,27 @@
 
 #pragma once
 
-#pragma once
-
 #include "ImGuiManager.h"
 
 namespace ImGuiManager
 {
 	void RenderOverlays();
 }
+
+namespace SaveStateSelectorUI
+{
+	static constexpr float DEFAULT_OPEN_TIME = 7.5f;
+
+	void Open(float open_time = DEFAULT_OPEN_TIME);
+	void RefreshList(const std::string& serial, u32 crc);
+	void DestroyTextures();
+	void Clear();
+	void Close();
+
+	void SelectNextSlot(bool open_selector);
+	void SelectPreviousSlot(bool open_selector);
+
+	s32 GetCurrentSlot();
+	void LoadCurrentSlot();
+	void SaveCurrentSlot();
+} // namespace SaveStateSelectorUI

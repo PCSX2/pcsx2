@@ -55,9 +55,6 @@ namespace VMManager
 	/// The number of usable save state slots.
 	static constexpr s32 NUM_SAVE_STATE_SLOTS = 10;
 
-	/// Returns the currently active savestate slot.
-	s32 GetCurrentActiveSaveStateSlot();
-
 	/// The stack size to use for threads running recompilers
 	static constexpr std::size_t EMU_THREAD_STACK_SIZE = 2 * 1024 * 1024; // µVU likes recursion
 

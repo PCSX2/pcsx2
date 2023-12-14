@@ -20,6 +20,7 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "Recording/InputRecording.h"
 #include "SPU2/spu2.h"
@@ -30,16 +31,10 @@
 #include "common/Path.h"
 #include "common/Timer.h"
 
-static s32 s_current_save_slot = 1;
 static std::optional<LimiterModeType> s_limiter_mode_prior_to_hold_interaction;
-s32 VMManager::GetCurrentActiveSaveStateSlot()
-{
-	return s_current_save_slot;
-}
 
 void VMManager::Internal::ResetVMHotkeyState()
 {
-	s_current_save_slot = 1;
 	s_limiter_mode_prior_to_hold_interaction.reset();
 }
 
@@ -77,48 +72,6 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	{
 		Host::AddIconOSDMessage("VolumeChanged", (current_vol < new_volume) ? ICON_FA_VOLUME_UP : ICON_FA_VOLUME_DOWN,
 			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {}%"), new_volume));
-	}
-}
-
-static constexpr s32 CYCLE_SAVE_STATE_SLOTS = 10;
-
-static void HotkeyCycleSaveSlot(s32 delta)
-{
-	// 1..10
-	s_current_save_slot = ((s_current_save_slot - 1) + delta);
-	if (s_current_save_slot < 0)
-		s_current_save_slot = CYCLE_SAVE_STATE_SLOTS;
-	else
-		s_current_save_slot = (s_current_save_slot % CYCLE_SAVE_STATE_SLOTS) + 1;
-
-	const u32 crc = VMManager::GetDiscCRC();
-	const std::string serial = VMManager::GetDiscSerial();
-	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, s_current_save_slot);
-	FILESYSTEM_STAT_DATA sd;
-	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
-	{
-		char date_buf[128] = {};
-#ifdef _WIN32
-		ctime_s(date_buf, std::size(date_buf), &sd.ModificationTime);
-#else
-		ctime_r(&sd.ModificationTime, date_buf);
-#endif
-
-		// remove terminating \n
-		size_t len = std::strlen(date_buf);
-		if (len > 0 && date_buf[len - 1] == '\n')
-			date_buf[len - 1] = 0;
-
-		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
-			fmt::format(
-				TRANSLATE_FS("Hotkeys", "Save slot {0} selected (last save: {1})."), s_current_save_slot, date_buf),
-			Host::OSD_QUICK_DURATION);
-	}
-	else
-	{
-		Host::AddIconOSDMessage("CycleSaveSlot", ICON_FA_SEARCH,
-			fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {} selected (no save yet)."), s_current_save_slot),
-			Host::OSD_QUICK_DURATION);
 	}
 }
 
@@ -284,22 +237,30 @@ DEFINE_HOTKEY("InputRecToggleMode", TRANSLATE_NOOP("Hotkeys", "System"),
 DEFINE_HOTKEY("PreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyCycleSaveSlot(-1);
+			SaveStateSelectorUI::SelectPreviousSlot(true);
 	})
 DEFINE_HOTKEY("NextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyCycleSaveSlot(1);
+			SaveStateSelectorUI::SelectNextSlot(true);
 	})
 DEFINE_HOTKEY("SaveStateToSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Save State To Selected Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			VMManager::SaveStateToSlot(s_current_save_slot);
+			SaveStateSelectorUI::SaveCurrentSlot();
 	})
 DEFINE_HOTKEY("LoadStateFromSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
 	TRANSLATE_NOOP("Hotkeys", "Load State From Selected Slot"), [](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			HotkeyLoadStateSlot(s_current_save_slot);
+			SaveStateSelectorUI::LoadCurrentSlot();
+	})
+DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+	TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"), [](s32 pressed) {
+		if (!pressed && VMManager::HasValidVM())
+		{
+			SaveStateSelectorUI::SaveCurrentSlot();
+			SaveStateSelectorUI::SelectNextSlot(false);
+		}
 	})
 
 #define DEFINE_HOTKEY_SAVESTATE_X(slotnum, title) \

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,13 +21,16 @@
 #include "GS/GS.h"
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
+#include "GS/Renderers/Common/GSDevice.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiAnimated.h"
 #include "ImGui/ImGuiFullscreen.h"
 #include "ImGui/ImGuiManager.h"
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
+#include "MTGS.h"
 #include "PerformanceMetrics.h"
 #include "Recording/InputRecording.h"
 #include "SIO/Pad/Pad.h"
@@ -36,10 +39,13 @@
 #include "VMManager.h"
 
 #include "common/BitUtils.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
-#include "fmt/core.h"
+#include "fmt/chrono.h"
+#include "fmt/format.h"
 #include "imgui.h"
 
 #include <array>
@@ -421,7 +427,7 @@ void ImGuiManager::DrawSettingsOverlay()
 			APPEND("FBC ");
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			APPEND("FTC ");
-		if(GSConfig.UserHacks_DisableDepthSupport)
+		if (GSConfig.UserHacks_DisableDepthSupport)
 			APPEND("DDE ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
 			APPEND("DPIV ");
@@ -503,7 +509,7 @@ void ImGuiManager::DrawInputsOverlay()
 		const Pad::ControllerType ctype = pad->GetType();
 		if (ctype == Pad::ControllerType::NotConnected)
 			continue;
-	
+
 		const Pad::ControllerInfo& cinfo = pad->GetInfo();
 		if (cinfo.icon_name)
 			text.fmt("{} {}", cinfo.icon_name, slot + 1u);
@@ -654,6 +660,392 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 #undef DRAW_LINE
 }
 
+namespace SaveStateSelectorUI
+{
+	namespace
+	{
+		struct ListEntry
+		{
+			std::string title;
+			std::string summary;
+			std::string filename;
+			std::unique_ptr<GSTexture> preview_texture;
+		};
+	} // namespace
+
+	static void InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot);
+	static void InitializeListEntry(const std::string& serial, u32 crc, ListEntry* li, s32 slot);
+
+	static void RefreshHotkeyLegend();
+	static void Draw();
+	static void ShowSlotOSDMessage();
+
+	static constexpr const char* DATE_TIME_FORMAT = TRANSLATE_NOOP("ImGuiOverlays", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
+
+	static std::shared_ptr<GSTexture> s_placeholder_texture;
+	static std::string s_load_legend;
+	static std::string s_save_legend;
+	static std::string s_prev_legend;
+	static std::string s_next_legend;
+
+	static std::array<ListEntry, VMManager::NUM_SAVE_STATE_SLOTS> s_slots;
+	static std::atomic_int32_t s_current_slot{0};
+
+	static float s_open_time = 0.0f;
+	static float s_close_time = 0.0f;
+
+	static ImAnimatedFloat s_scroll_animated;
+	static ImAnimatedFloat s_background_animated;
+
+	static bool s_open = false;
+} // namespace SaveStateSelectorUI
+
+void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
+{
+	const std::string serial = VMManager::GetDiscSerial();
+	if (serial.empty())
+	{
+		Host::AddIconOSDMessage("SaveStateSelectorUIUnavailable", ICON_FA_SD_CARD,
+			TRANSLATE_SV("ImGuiOverlays", "Save state selector is unavailable without a valid game serial."));
+		return;
+	}
+
+	s_open_time = 0.0f;
+	s_close_time = open_time;
+
+	if (s_open)
+		return;
+
+
+	if (!s_placeholder_texture)
+		s_placeholder_texture = ImGuiFullscreen::LoadTexture("fullscreenui/no-save.png");
+
+	s_scroll_animated.Reset(0.0f);
+	s_background_animated.Reset(0.0f);
+	s_open = true;
+	RefreshList(serial, VMManager::GetDiscCRC());
+	RefreshHotkeyLegend();
+}
+
+void SaveStateSelectorUI::Close()
+{
+	s_open = false;
+	s_load_legend = {};
+	s_save_legend = {};
+	s_prev_legend = {};
+	s_next_legend = {};
+}
+
+void SaveStateSelectorUI::RefreshList(const std::string& serial, u32 crc)
+{
+	for (ListEntry& entry : s_slots)
+	{
+		if (entry.preview_texture)
+			g_gs_device->Recycle(entry.preview_texture.release());
+	}
+
+	for (u32 i = 0; i < VMManager::NUM_SAVE_STATE_SLOTS; i++)
+		InitializeListEntry(serial, crc, &s_slots[i], static_cast<s32>(i + 1));
+}
+
+void SaveStateSelectorUI::Clear()
+{
+	// called on CPU thread at shutdown, textures should already be deleted, unless running
+	// big picture UI, in which case we have to delete them here...
+	for (ListEntry& li : s_slots)
+	{
+		if (li.preview_texture)
+		{
+			MTGS::RunOnGSThread([tex = li.preview_texture.release()]() {
+				g_gs_device->Recycle(tex);
+			});
+		}
+
+		li = {};
+	}
+
+	s_current_slot.store(0, std::memory_order_release);
+}
+
+void SaveStateSelectorUI::DestroyTextures()
+{
+	Close();
+
+	for (ListEntry& entry : s_slots)
+	{
+		if (entry.preview_texture)
+			g_gs_device->Recycle(entry.preview_texture.release());
+	}
+
+	s_placeholder_texture.reset();
+}
+
+void SaveStateSelectorUI::RefreshHotkeyLegend()
+{
+	auto format_legend_entry = [](std::string binding, std::string_view caption) {
+		InputManager::PrettifyInputBinding(binding);
+		return fmt::format("{} - {}", binding, caption);
+	};
+
+	s_load_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "LoadStateFromSlot"),
+		TRANSLATE_STR("ImGuiOverlays", "Load"));
+	s_save_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SaveStateToSlot"),
+		TRANSLATE_STR("ImGuiOverlays", "Save"));
+	s_prev_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "PreviousSaveStateSlot"),
+		TRANSLATE_STR("ImGuiOverlays", "Select Previous"));
+	s_next_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "NextSaveStateSlot"),
+		TRANSLATE_STR("ImGuiOverlays", "Select Next"));
+}
+
+void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
+{
+	const s32 current_slot = s_current_slot.load(std::memory_order_acquire);
+	s_current_slot.store((current_slot == (VMManager::NUM_SAVE_STATE_SLOTS - 1)) ? 0 : (current_slot + 1), std::memory_order_release);
+
+	if (open_selector)
+	{
+		MTGS::RunOnGSThread([]() {
+			if (!s_open)
+				Open();
+
+			s_open_time = 0.0f;
+		});
+	}
+	else
+	{
+		ShowSlotOSDMessage();
+	}
+}
+
+void SaveStateSelectorUI::SelectPreviousSlot(bool open_selector)
+{
+	const s32 current_slot = s_current_slot.load(std::memory_order_acquire);
+	s_current_slot.store((current_slot == 0) ? (VMManager::NUM_SAVE_STATE_SLOTS - 1) : (current_slot - 1), std::memory_order_release);
+
+	if (open_selector)
+	{
+		MTGS::RunOnGSThread([]() {
+			if (!s_open)
+				Open();
+
+			s_open_time = 0.0f;
+		});
+	}
+	else
+	{
+		ShowSlotOSDMessage();
+	}
+}
+
+void SaveStateSelectorUI::InitializeListEntry(const std::string& serial, u32 crc, ListEntry* li, s32 slot)
+{
+	std::string path = VMManager::GetSaveStateFileName(serial.c_str(), crc, slot);
+	FILESYSTEM_STAT_DATA sd;
+	if (!FileSystem::StatFile(path.c_str(), &sd))
+	{
+		InitializePlaceholderListEntry(li, std::move(path), slot);
+		return;
+	}
+
+	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
+	li->summary = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+	li->filename = Path::GetFileName(path);
+
+	u32 screenshot_width, screenshot_height;
+	std::vector<u32> screenshot_pixels;
+	if (SaveState_ReadScreenshot(path, &screenshot_width, &screenshot_height, &screenshot_pixels))
+	{
+		li->preview_texture =
+			std::unique_ptr<GSTexture>(g_gs_device->CreateTexture(screenshot_width, screenshot_height, 1, GSTexture::Format::Color));
+		if (!li->preview_texture || !li->preview_texture->Update(GSVector4i(0, 0, screenshot_width, screenshot_height),
+										screenshot_pixels.data(), sizeof(u32) * screenshot_width))
+		{
+			Console.Error("Failed to upload save state image to GPU");
+			if (li->preview_texture)
+				g_gs_device->Recycle(li->preview_texture.release());
+		}
+	}
+}
+
+void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot)
+{
+	li->title = fmt::format(TRANSLATE_FS("ImGuiOverlays", "Save Slot {0}"), slot);
+	li->summary = TRANSLATE_STR("ImGuiOverlays", "No save present in this slot.");
+	li->filename = Path::GetFileName(path);
+}
+
+void SaveStateSelectorUI::Draw()
+{
+	static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
+	static constexpr float BG_ANIMATION_TIME = 0.15f;
+
+	const auto& io = ImGui::GetIO();
+	const float scale = ImGuiManager::GetGlobalScale();
+	const float width = (600.0f * scale);
+	const float height = (420.0f * scale);
+
+	const float padding_and_rounding = 15.0f * scale;
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.15f, 0.17f, 0.8f));
+	ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
+	ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
+		ImVec2(0.5f, 0.5f));
+
+	if (ImGui::Begin("##save_state_selector", nullptr,
+			ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+				ImGuiWindowFlags_NoScrollbar))
+	{
+		// Leave 2 lines for the legend
+		const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
+		const float padding = 10.0f * scale;
+		const s32 current_slot = s_current_slot.load(std::memory_order_acquire);
+
+		ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
+			ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+				ImGuiWindowFlags_NoBackground);
+		{
+			const ImVec2 image_size = ImVec2(128.0f * scale, (128.0f / (4.0f / 3.0f)) * scale);
+			const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
+			const float item_height = std::floor(image_size.y + padding * 2.0f);
+			const float text_indent = image_size.x + padding + padding;
+
+			for (size_t i = 0; i < s_slots.size(); i++)
+			{
+				const ListEntry& entry = s_slots[i];
+				const float y_start = item_height * static_cast<float>(i);
+
+				if (i == current_slot)
+				{
+					ImGui::SetCursorPosY(y_start);
+
+					const ImVec2 p_start(ImGui::GetCursorScreenPos());
+					const ImVec2 p_end(p_start.x + item_width, p_start.y + item_height);
+					const ImRect item_rect(p_start, p_end);
+					const ImRect& window_rect = ImGui::GetCurrentWindow()->ClipRect;
+					if (!window_rect.Contains(item_rect))
+					{
+						float scroll_target = ImGui::GetScrollY();
+						if (item_rect.Min.y < window_rect.Min.y)
+							scroll_target = (ImGui::GetScrollY() - (window_rect.Min.y - item_rect.Min.y));
+						else if (item_rect.Max.y > window_rect.Max.y)
+							scroll_target = (ImGui::GetScrollY() + (item_rect.Max.y - window_rect.Max.y));
+
+						if (scroll_target != s_scroll_animated.GetEndValue())
+							s_scroll_animated.Start(ImGui::GetScrollY(), scroll_target, SCROLL_ANIMATION_TIME);
+					}
+
+					if (s_scroll_animated.IsActive())
+						ImGui::SetScrollY(s_scroll_animated.UpdateAndGetValue());
+
+					if (s_background_animated.GetEndValue() != p_start.y)
+						s_background_animated.Start(s_background_animated.UpdateAndGetValue(), p_start.y, BG_ANIMATION_TIME);
+
+					ImVec2 highlight_pos;
+					if (s_background_animated.IsActive())
+						highlight_pos = ImVec2(p_start.x, s_background_animated.UpdateAndGetValue());
+					else
+						highlight_pos = p_start;
+
+					ImGui::GetWindowDrawList()->AddRectFilled(highlight_pos,
+						ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
+						ImColor(0.22f, 0.30f, 0.34f, 0.9f), padding_and_rounding);
+				}
+
+				if (GSTexture* preview_texture = entry.preview_texture ? entry.preview_texture.get() : s_placeholder_texture.get())
+				{
+					ImGui::SetCursorPosY(y_start + padding);
+					ImGui::SetCursorPosX(padding);
+					ImGui::Image(preview_texture, image_size);
+				}
+
+				ImGui::SetCursorPosY(y_start + padding);
+
+				ImGui::Indent(text_indent);
+
+				ImGui::TextUnformatted(entry.title.c_str(), entry.title.c_str() + entry.title.length());
+				ImGui::TextUnformatted(entry.summary.c_str(), entry.summary.c_str() + entry.summary.length());
+				ImGui::PushFont(ImGuiManager::GetFixedFont());
+				ImGui::TextUnformatted(entry.filename.c_str(), entry.filename.c_str() + entry.filename.length());
+				ImGui::PopFont();
+
+				ImGui::Unindent(text_indent);
+				ImGui::SetCursorPosY(y_start);
+				ImGui::ItemSize(ImVec2(item_width, item_height));
+			}
+		}
+		ImGui::EndChild();
+
+		ImGui::BeginChild("##legend", ImVec2(0, 0), false,
+			ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+				ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+		{
+			ImGui::SetCursorPosX(padding);
+			ImGui::BeginTable("table", 2);
+
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(s_load_legend.c_str());
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(s_prev_legend.c_str());
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(s_save_legend.c_str());
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(s_next_legend.c_str());
+
+			ImGui::EndTable();
+		}
+		ImGui::EndChild();
+	}
+	ImGui::End();
+
+	ImGui::PopStyleVar(2);
+	ImGui::PopStyleColor();
+
+	// auto-close
+	s_open_time += io.DeltaTime;
+	if (s_open_time >= s_close_time)
+		Close();
+}
+
+s32 SaveStateSelectorUI::GetCurrentSlot()
+{
+	return s_current_slot.load(std::memory_order_acquire) + 1;
+}
+
+void SaveStateSelectorUI::LoadCurrentSlot()
+{
+	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
+		VMManager::LoadStateFromSlot(slot);
+	});
+	Close();
+}
+
+void SaveStateSelectorUI::SaveCurrentSlot()
+{
+	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {
+		VMManager::SaveStateToSlot(slot);
+	});
+	Close();
+}
+
+void SaveStateSelectorUI::ShowSlotOSDMessage()
+{
+	const s32 slot = GetCurrentSlot();
+	const u32 crc = VMManager::GetDiscCRC();
+	const std::string serial = VMManager::GetDiscSerial();
+	const std::string filename = VMManager::GetSaveStateFileName(serial.c_str(), crc, slot);
+	FILESYSTEM_STAT_DATA sd;
+	std::string date;
+	if (!filename.empty() && FileSystem::StatFile(filename.c_str(), &sd))
+		date = fmt::format(TRANSLATE_FS("ImGuiOverlays", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+	else
+		date = TRANSLATE_STR("ImGuiOverlays", "no save yet");
+
+	Host::AddIconOSDMessage("ShowSlotOSDMessage", ICON_FA_SEARCH,
+		fmt::format(TRANSLATE_FS("Hotkeys", "Save slot {0} selected ({1})."), slot, date),
+		Host::OSD_QUICK_DURATION);
+}
+
 void ImGuiManager::RenderOverlays()
 {
 	float position_y = 0;
@@ -661,4 +1053,6 @@ void ImGuiManager::RenderOverlays()
 	DrawPerformanceOverlay(position_y);
 	DrawSettingsOverlay();
 	DrawInputsOverlay();
+	if (SaveStateSelectorUI::s_open)
+		SaveStateSelectorUI::Draw();
 }

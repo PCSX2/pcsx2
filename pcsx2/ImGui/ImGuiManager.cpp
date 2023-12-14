@@ -204,6 +204,7 @@ void ImGuiManager::Shutdown(bool clear_state)
 
 	FullscreenUI::Shutdown(clear_state);
 	ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
+	SaveStateSelectorUI::DestroyTextures();
 	if (clear_state)
 		s_fullscreen_ui_was_initialized = false;
 
