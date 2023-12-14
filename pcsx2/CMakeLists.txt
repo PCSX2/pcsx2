@@ -828,6 +828,7 @@ set(pcsx2ImGuiSources
 
 set(pcsx2ImGuiHeaders
 	ImGui/FullscreenUI.h
+	ImGui/ImGuiAnimated.h
 	ImGui/ImGuiFullscreen.h
 	ImGui/ImGuiManager.h
 	ImGui/ImGuiOverlays.h

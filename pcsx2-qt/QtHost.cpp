@@ -37,6 +37,7 @@
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/ImGui/ImGuiOverlays.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
@@ -999,7 +1000,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		if (THREAD_VU1)
 		{
 			gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
-						  .arg(VMManager::GetCurrentActiveSaveStateSlot())
+						  .arg(SaveStateSelectorUI::GetCurrentSlot())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
@@ -1008,7 +1009,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		else
 		{
 			gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
-						  .arg(VMManager::GetCurrentActiveSaveStateSlot())
+						  .arg(SaveStateSelectorUI::GetCurrentSlot())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);

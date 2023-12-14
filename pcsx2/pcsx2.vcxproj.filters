@@ -1424,6 +1424,7 @@
     <ClCompile Include="SIO\Pad\Pad.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="SPU2\ReverbResample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2354,6 +2355,7 @@
     <ClInclude Include="SIO\Pad\Pad.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
+    <ClInclude Include="ImGui\ImGuiAnimated.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">
