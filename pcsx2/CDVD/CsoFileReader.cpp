@@ -23,7 +23,7 @@
 #include "common/StringUtil.h"
 
 #include <zlib.h>
-#include <lz4.h>
+#include "lz4.h"
 
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md
@@ -53,7 +53,7 @@ CsoFileReader::~CsoFileReader()
 bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
 {
 	bool supported = false;
-	if (StringUtil::EndsWith(displayName, ".cso") || StringUtil::EndsWith(displayName, ".zso"))
+	if (displayName.ends_with(".cso") || displayName.ends_with(".zso"))
 	{
 		FILE* fp = FileSystem::OpenCFile(fileName.c_str(), "rb");
 		CsoHeader hdr;
@@ -268,13 +268,13 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 
 		if (m_uselz4)
 		{
-			int src_size = static_cast<int>(readRawBytes);
-			int dst_size = static_cast<int>(m_frameSize);
+			const int src_size = static_cast<int>(readRawBytes);
+			const int dst_size = static_cast<int>(m_frameSize);
 			const char* src_buf = reinterpret_cast<const char*>(m_readBuffer.get());
 			char* dst_buf = static_cast<char*>(dst);
 			
 			const int res = LZ4_decompress_safe_partial(src_buf, dst_buf, src_size, dst_size, dst_size);
-			success = res > 0;
+			success = (res > 0);
 		}
 		else
 		{
@@ -284,11 +284,11 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 			m_z_stream->avail_out = m_frameSize;
 
 			const int status = inflate(m_z_stream.get(), Z_FINISH);
-			success = status == Z_STREAM_END && m_z_stream->total_out == m_frameSize;
+			success = (status == Z_STREAM_END && m_z_stream->total_out == m_frameSize);
 		}
 
 		if (!success)
-			Console.Error(fmt::format("Unable to decompress CSO frame using {}", ((m_uselz4)? "lz4":"zlib")));
+			Console.Error(fmt::format("Unable to decompress CSO frame using {}", (m_uselz4)? "lz4":"zlib"));
 		
 		if (!m_uselz4)
 			inflateReset(m_z_stream.get());
