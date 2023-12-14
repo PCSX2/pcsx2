@@ -115,7 +115,7 @@ public slots:
 	void gotoAddress(u32 address);
 
 signals:
-	void gotoInDisasm(u32 address);
+	void gotoInDisasm(u32 address, bool should_set_focus = true);
 	void VMUpdate();
 
 private:
