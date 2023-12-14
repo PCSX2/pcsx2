@@ -37452,6 +37452,10 @@ SLPM-65495:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
   gsHWFixes:
     maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
+  memcardFilters:
+    - "BISLPM-65286NET"
+    - "BWNETCNF"
+    - "SLPM-65495"
 SLPM-65496:
   name: ハイパーストリートファイターII アニバーサリー エディション
   name-sort: はいぱーすとりーとふぁいたーII あにばーさりー えでぃしょん
@@ -39458,6 +39462,11 @@ SLPM-65869:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
   gsHWFixes:
     maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
+  memcardFilters:
+    - "BISLPM-65286NET"
+    - "BWNETCNF"
+    - "SLPM-65495"
+    - "SLPM-65869"
 SLPM-65870:
   name: 魔法先生ネギま! 1時間目 お子ちゃま先生は魔法使い!〜優等生版
   name-sort: まほうせんせいねぎま! 1じかんめ おこちゃませんせいはまほうつかい!〜ゆうとうせいばん
@@ -41895,6 +41904,12 @@ SLPM-66280:
     vuClampMode: 3 # Fixes lighting on character models as caves and other locations don't turn mobs into glow-in-the-dark creatures by themselves.
   gsHWFixes:
     maximumBlendingLevel: 0 # Fixes unnecessary load on the GPU.
+  memcardFilters:
+    - "BISLPM-65286NET"
+    - "BWNETCNF"
+    - "SLPM-65495"
+    - "SLPM-65869"
+    - "SLPM-66280"
 SLPM-66281:
   name: ソニックライダーズ
   name-sort: そにっくらいだーず
