@@ -57,7 +57,7 @@ public slots:
 	void tabCurrentChanged(int cur);
 
 signals:
-	void gotoInDisasm(u32 address);
+	void gotoInDisasm(u32 address, bool should_set_focus = true);
 	void gotoInMemory(u32 address);
 	void VMUpdate();
 

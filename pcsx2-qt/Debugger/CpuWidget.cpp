@@ -262,7 +262,7 @@ void CpuWidget::onVMPaused()
 	}
 	else
 	{
-		m_ui.disassemblyWidget->gotoAddress(m_cpu.getPC());
+		m_ui.disassemblyWidget->gotoAddress(m_cpu.getPC(), false);
 	}
 
 	reloadCPUWidgets();
@@ -501,7 +501,7 @@ void CpuWidget::contextRemoveSearchResult()
 
 	const int selectedResultIndex = m_ui.listSearchResults->row(m_ui.listSearchResults->selectedItems().first());
 	auto* rowToRemove = m_ui.listSearchResults->takeItem(selectedResultIndex);
-	if (m_searchResults.size() > selectedResultIndex && m_searchResults.at(selectedResultIndex) == rowToRemove->data(256).toUInt())
+	if (m_searchResults.size() > static_cast<size_t>(selectedResultIndex) && m_searchResults.at(selectedResultIndex) == rowToRemove->data(256).toUInt())
 	{
 		m_searchResults.erase(m_searchResults.begin() + selectedResultIndex);
 	}
