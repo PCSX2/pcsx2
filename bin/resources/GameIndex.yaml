@@ -318,7 +318,7 @@ PAPX-90512:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PAPX-90514:
   name: "Fuyu no Osusume Soft Otameshi Disc"
@@ -521,7 +521,7 @@ PBPX-95523:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
@@ -532,7 +532,7 @@ PBPX-95524:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
@@ -548,7 +548,7 @@ PBPX-95601:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -765,7 +765,7 @@ PCPX-96649:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   # eeClampMode = 3  Text in races works.
 PCPX-96653:
@@ -1107,6 +1107,13 @@ SCAJ-20050:
 SCAJ-20052:
   name: "Ratchet & Clank 2 - Gagaga! Ginga no Commando-ssu"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes SPR errors while going in-game.
+  gsHWFixes:
+    mipmap: 1
+  memcardFilters:
+    - "SCAJ-20052"
+    - "SCAJ-20001"
 SCAJ-20055:
   name: "Battle Gear 3"
   region: "NTSC-Unk"
@@ -1156,7 +1163,7 @@ SCAJ-20066:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -1405,6 +1412,10 @@ SCAJ-20109:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
+  memcardFilters:
+    - "SCAJ-20109"
+    - "SCAJ-20052"
+    - "SCAJ-20001"
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
@@ -2027,7 +2038,7 @@ SCAJ-30006:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -2051,7 +2062,7 @@ SCAJ-30007:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCAJ-30008:
   name: "Gran Turismo 4 [PS2 The Best]"
@@ -2062,7 +2073,7 @@ SCAJ-30008:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -2168,7 +2179,7 @@ SCCS-60002:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
@@ -3122,7 +3133,7 @@ SCED-52455:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
@@ -3144,7 +3155,7 @@ SCED-52578:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCED-52580:
   name: "Magazine Ufficiale PlayStation 2 Italia 06/04"
@@ -3161,7 +3172,7 @@ SCED-52681:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCED-52687:
   name: "Formula One 04 [Demo]"
@@ -4668,7 +4679,7 @@ SCES-51719:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCES-51719"
@@ -4906,7 +4917,7 @@ SCES-52438:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCES-51719"
@@ -6320,7 +6331,7 @@ SCKA-20022:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
@@ -6955,7 +6966,7 @@ SCKA-30001:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCKA-30002:
   name: "God of War"
@@ -7620,7 +7631,7 @@ SCPS-15055:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -8190,7 +8201,7 @@ SCPS-17001:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -8444,7 +8455,7 @@ SCPS-19252:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -8499,7 +8510,7 @@ SCPS-19304:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -9273,7 +9284,7 @@ SCUS-90682:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCUS-94346:
   name: "SingStar Latino"
@@ -10083,7 +10094,7 @@ SCUS-97328:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters: # Allows car imports from GT3 or something.
     - "SCUS-97328"
@@ -10477,7 +10488,7 @@ SCUS-97436:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
   memcardFilters:
     - "SCUS-97328"
@@ -10695,7 +10706,7 @@ SCUS-97483:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
-    halfPixelOffset: 1 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCUS-97484:
   name: "Sly 3 - Honor Among Thieves [E3 Demo]"
@@ -10875,6 +10886,9 @@ SCUS-97513:
   gsHWFixes:
     mipmap: 1
     autoFlush: 2
+  memcardFilters:
+    - "SCUS-97513"
+    - "SCUS-97199"
 SCUS-97514:
   name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
@@ -10914,6 +10928,11 @@ SCUS-97518:
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
+  memcardFilters:
+    - "SCUS-97518"
+    - "SCUS-97513"
+    - "SCUS-97268"
+    - "SCUS-97199"
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
   region: "NTSC-U"
@@ -11573,6 +11592,9 @@ SLAJ-25084:
 SLAJ-25087:
   name: "NBA Live '07"
   region: "NTSC-Unk"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLAJ-25088:
   name: "FIFA Soccer 2007"
   region: "NTSC-Unk"
@@ -11622,6 +11644,9 @@ SLAJ-25096:
 SLAJ-25099:
   name: "NBA Live '08"
   region: "NTSC-Unk"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLAJ-25103:
   name: "Musou Orochi - Maou Sairin"
   region: "NTSC-J"
@@ -12262,8 +12287,11 @@ SLED-54327:
   name: "FIFA 07"
   region: "PAL-Unk"
 SLED-54328:
-  name: "NBA Live 07"
+  name: "NBA Live 07 [Demo]"
   region: "PAL-Unk"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLED-54401:
   name: "Destroy All Humans 2 [Demo]"
   region: "PAL-E"
@@ -13196,6 +13224,8 @@ SLES-50356:
   region: "PAL-E"
   gameFixes:
     - VUSyncHack # Fixes flickering and missing textures.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes graphical corruption.
 SLES-50358:
   name: "Devil May Cry"
   region: "PAL-M5"
@@ -13760,6 +13790,8 @@ SLES-50640:
   region: "PAL-M4"
   gameFixes:
     - VUSyncHack # Fixes flickering and missing textures.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes graphical corruption.
 SLES-50641:
   name: "Dynasty Warriors 3"
   region: "PAL-M3"
@@ -17369,6 +17401,10 @@ SLES-52190:
   name: "RPM Tuning"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1
+    roundSprite: 2 # Aligns bloom effect
+    wildArmsHack: 1 # Aligns bloom effect
 SLES-52202:
   name: "Downhill Domination"
   region: "PAL-M5"
@@ -21090,9 +21126,15 @@ SLES-53545:
 SLES-53546:
   name: "NBA Live 2006"
   region: "PAL-E"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53547:
   name: "NBA Live '06"
   region: "PAL-M3"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53548:
   name: "Yokushin - Giga Wing Generations"
   region: "PAL-E"
@@ -21189,6 +21231,8 @@ SLES-53563:
 SLES-53564:
   name: "Darkwatch"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blood vision bloom
 SLES-53566:
   name: "London Taxi - Rush Hour"
   region: "PAL-E"
@@ -21228,9 +21272,15 @@ SLES-53579:
 SLES-53580:
   name: "NBA Live '06"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53581:
   name: "NBA Live 06"
   region: "PAL-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53582:
   name: "Bratz - Rock Angelz"
   region: "PAL-SW"
@@ -23110,12 +23160,21 @@ SLES-54248:
 SLES-54250:
   name: "NBA Live '07"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54251:
   name: "NBA Live 07"
   region: "PAL-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54252:
   name: "NBA Live '07"
   region: "PAL-M3"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54253:
   name: "Tiger Woods PGA Tour 07"
   region: "PAL-E"
@@ -24844,9 +24903,15 @@ SLES-54893:
 SLES-54895:
   name: "NBA Live 08"
   region: "PAL-M3"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54896:
   name: "NBA Live 08"
   region: "PAL-F"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54897:
   name: "GrimGrimoire"
   region: "PAL-E-JP"
@@ -24936,6 +25001,9 @@ SLES-54931:
 SLES-54933:
   name: "NBA Live 08"
   region: "PAL-S"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-54937:
   name: "RTL Biathlon 2008"
   region: "PAL-G"
@@ -28411,6 +28479,9 @@ SLKA-25314:
 SLKA-25315:
   name: "NBA Live 06"
   region: "NTSC-K"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25316:
   name: "Disney/Pixar Mr. Incredible - Kyouteki Underminer Toujou"
   region: "NTSC-K"
@@ -29501,6 +29572,9 @@ SLPM-55143:
 SLPM-55144:
   name: "NBA Live 08"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-55145:
   name: "Akudaikan 3"
   region: "NTSC-J"
@@ -41115,6 +41189,9 @@ SLPM-66171:
   name-sort: NBAらいぶ06
   name-en: "NBA Live '06"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66172:
   name: "Sangokushi IX"
   region: "NTSC-J"
@@ -43422,6 +43499,9 @@ SLPM-66561:
   name-sort: NBAらいぶ 06 [EA BEST HITS]
   name-en: "NBA Live '06 [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66562:
   name: ニード・フォー・スピード モスト・ウォンテッド [EA BEST HITS]
   name-sort: にーど・ふぉー・すぴーど もすと・うぉんてっど [EA BEST HITS]
@@ -43605,6 +43685,9 @@ SLPM-66589:
   name-sort: NBAらいぶ 07
   name-en: "NBA Live '07"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66590:
   name: 実況パワフルプロ野球13 決定版
   name-sort: じっきょうぱわふるぷろやきゅう13 けっていばん
@@ -45306,6 +45389,9 @@ SLPM-66884:
   name-sort: NBA LIVE 08
   name-en: "NBA Live '08"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66885:
   name: ワールドサッカーウイニングイレブン2008
   name-sort: わーるどさっかーういにんぐいれぶん2008
@@ -45625,6 +45711,9 @@ SLPM-66946:
   name-sort: NBAらいぶ 07 [EA BEST HITS]
   name-en: "NBA Live '07 [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66947:
   name: 信長の野望・革新 with パワーアップキット
   name-sort: のぶながのやぼう・かくしん with ぱわーあっぷきっと
@@ -49701,6 +49790,8 @@ SLPS-25089:
   region: "NTSC-J"
   gameFixes:
     - VUSyncHack # Fixes flickering and missing textures.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes graphical corruption.
 SLPS-25094:
   name: リーヴェルファンタジア 〜マリエルと妖精物語〜
   name-sort: りーゔぇるふぁんたじあ 〜まりえるとようせいものがたり〜
@@ -57012,6 +57103,8 @@ SLUS-20378:
   region: "NTSC-U"
   gameFixes:
     - VUSyncHack # Fixes flickering and missing textures.
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes graphical corruption.
   patches:
     466D1C13:
       content: |-
@@ -60557,6 +60650,8 @@ SLUS-21042:
   name: "Darkwatch"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes blood vision bloom
 SLUS-21043:
   name: "Backyard Wrestling 2 - There Goes the Neighborhood"
   region: "NTSC-U"
@@ -61911,6 +62006,9 @@ SLUS-21278:
 SLUS-21279:
   name: "NBA Live '06"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21280:
   name: "FIFA '06"
   region: "NTSC-U"
@@ -62027,6 +62125,9 @@ SLUS-21297:
 SLUS-21298:
   name: "NCAA March Madness '06"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21299:
   name: "Dynasty Warriors 5 - Xtreme Legends"
   region: "NTSC-U"
@@ -63061,6 +63162,9 @@ SLUS-21459:
 SLUS-21460:
   name: "NBA Live '07"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21461:
   name: "NASCAR '07"
   region: "NTSC-U"
@@ -63177,6 +63281,9 @@ SLUS-21480:
 SLUS-21481:
   name: "NCAA March Madness '07"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21482:
   name: "NFL Street 3"
   region: "NTSC-U"
@@ -63927,6 +64034,9 @@ SLUS-21648:
 SLUS-21649:
   name: "NBA Live '08"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21650:
   name: "Mercenaries 2 - World in Flames"
   region: "NTSC-U"
@@ -64147,6 +64257,9 @@ SLUS-21697:
 SLUS-21698:
   name: "NCAA March Madness '08"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21699:
   name: "UEFA Euro 2008"
   region: "NTSC-U"
@@ -66111,9 +66224,15 @@ SLUS-29161:
 SLUS-29162:
   name: "NBA Live '06 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-29163:
   name: "NCAA March Madness '06 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-29164:
   name: "Star Wars - Battlefront II [Online Public Beta]"
   region: "NTSC-U"
