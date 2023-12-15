@@ -56,7 +56,7 @@ void main(uint3 LocalThreadId : SV_GroupThreadID, uint3 WorkGroupId : SV_GroupID
 #endif
 
   // Filter.
-  AF3 c = (float4)0.0f;
+  AF3 c = (float3)0.0f;
 
   CasFilter(c.r, c.g, c.b, gxy, const0, const1, sharpenOnly);
   OutputTexture[ASU2(gxy)] = AF4(c, 1);
