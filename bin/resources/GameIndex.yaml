@@ -6756,7 +6756,6 @@ SCKA-20090:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly if CRC hack is off + Shifts buildings correctly.
 SCKA-20091:
   name: "MLB 07 - The Show"
@@ -23799,7 +23798,6 @@ SLES-54490:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLES-54492:
   name: "Need for Speed - Carbon [Collector's Edition]"
@@ -43436,7 +43434,6 @@ SLPM-66550:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLPM-66551:
   name: APPLESEED EX(アップルシード エクス)
@@ -46683,7 +46680,6 @@ SLPM-74241:
   name-en: "God Hand [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLPM-74242:
   name: Devil May Cry 3 Special Edition PS2 the Best
@@ -63417,7 +63413,6 @@ SLUS-21503:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mergeSprite: 1 # Reduces bloom but fixes blurriness around models + Recommended to use Shadeboost brightness 80.
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
 SLUS-21536:
   name: "The Sims 2 - Pets"
