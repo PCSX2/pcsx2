@@ -2122,7 +2122,7 @@ void GSState::Move()
 		m_draw_transfers.push_back(new_transfer);
 	}
 
-	auto copy = [=](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
+	auto copy = [this, sbp, dbp, sx, sy, dx, dy, w, h, yinc, xinc](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
 	{
 		int _sy = sy, _dy = dy; // Faster with local copied variables, compiler optimizations are dumb
 		if (xinc > 0)
