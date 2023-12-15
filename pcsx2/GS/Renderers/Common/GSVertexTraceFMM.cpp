@@ -107,7 +107,7 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
 
 	// Process 2 vertices at a time for increased efficiency
-	auto processVertices = [&](const GSVertex& v0, const GSVertex& v1, bool finalVertex)
+	auto processVertices = [&tmin, &tmax, &cmin, &cmax, &pmin, &pmax, n](const GSVertex& v0, const GSVertex& v1, bool finalVertex)
 	{
 		if (color)
 		{

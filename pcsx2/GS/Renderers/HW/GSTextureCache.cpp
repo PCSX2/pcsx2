@@ -2789,7 +2789,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	// But this causes rects to be too big, especially in WRC games, I don't think there's any need to align them here.
 	GSVector4i r = rect;
 
-	off.loopPages(rect, [&](u32 page)
+	off.loopPages(rect, [this, &rect, bp, bw, psm, &found, &r](u32 page)
 	{
 		auto& list = m_src.m_map[page];
 		for (auto i = list.begin(); i != list.end();)
@@ -4345,7 +4345,8 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 	int page_y = 0;
 
 	// Helper to preload a page.
-	auto preload_page = [&](int dst_x, int dst_y) {
+	auto preload_page = [&TEXA, scale, &psm, &lm_off, &lmtex, &lmtex_map, &lmtex_mapped,
+		page_width, page_height, tex_width, tex_height, copy_queue, &copy_count](int dst_x, int dst_y) {
 		if (!lmtex)
 		{
 			lmtex = g_gs_device->CreateTexture(tex_width, tex_height, 1, GSTexture::Format::Color, false);

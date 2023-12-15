@@ -62,7 +62,7 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 	m_textures.insert(t);
 
-	t->m_pages.loopPages([&](u32 page)
+	t->m_pages.loopPages([this, t](u32 page)
 	{
 		t->m_erase_it[page] = m_map[page].InsertFront(t);
 	});
@@ -72,7 +72,7 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 void GSTextureCacheSW::InvalidatePages(const GSOffset::PageLooper& pages, u32 psm)
 {
-	pages.loopPages([&](u32 page)
+	pages.loopPages([this, psm](u32 page)
 	{
 		for (Texture* t : m_map[page])
 		{
@@ -115,13 +115,13 @@ void GSTextureCacheSW::IncAge()
 {
 	for (auto i = m_textures.begin(); i != m_textures.end();)
 	{
-		Texture* t = *i;
+		Texture* const t = *i;
 
 		if (++t->m_age > 10)
 		{
 			i = m_textures.erase(i);
 
-			t->m_pages.loopPages([&](u32 page)
+			t->m_pages.loopPages([this, t](u32 page)
 			{
 				m_map[page].EraseIndex(t->m_erase_it[page]);
 			});
@@ -140,11 +140,11 @@ void GSTextureCacheSW::IncAge()
 GSTextureCacheSW::Texture::Texture(u32 tw0, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 	: m_TEX0(TEX0)
 	, m_TEXA(TEXA)
-	, m_buff(NULL)
+	, m_buff(nullptr)
 	, m_tw(tw0)
 	, m_age(0)
 	, m_complete(false)
-	, m_p2t(NULL)
+	, m_p2t(nullptr)
 {
 	if (m_tw == 0)
 	{
@@ -179,13 +179,13 @@ void GSTextureCacheSW::Texture::Reset(u32 tw0, const GIFRegTEX0& TEX0, const GIF
 	if (m_buff && (m_TEX0.TW != TEX0.TW || m_TEX0.TH != TEX0.TH))
 	{
 		_aligned_free(m_buff);
-		m_buff = NULL;
+		m_buff = nullptr;
 	}
 
 	m_tw = tw0;
 	m_age = 0;
 	m_complete = false;
-	m_p2t = NULL;
+	m_p2t = nullptr;
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
 
@@ -234,7 +234,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 		m_complete = true; // lame, but better than nothing
 	}
 
-	if (m_buff == NULL)
+	if (!m_buff)
 	{
 		const u32 pitch = (1 << m_tw) << shift;
 
@@ -330,7 +330,7 @@ bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
 
 	GSTexture::GSMap m;
 
-	if (t.Map(m, NULL))
+	if (t.Map(m, nullptr))
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
 
