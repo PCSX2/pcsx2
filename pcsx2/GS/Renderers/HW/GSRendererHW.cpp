@@ -2322,8 +2322,9 @@ void GSRendererHW::Draw()
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
-		const bool possible_shuffle = draw_sprite_tex && ((src && src->m_target && src->m_from_target && src->m_from_target->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].depth == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].depth) &&
-									GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || IsPossibleChannelShuffle();
+		const bool possible_shuffle = draw_sprite_tex && (((src && src->m_target && src->m_from_target && src->m_from_target->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].depth == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].depth) &&
+															  GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) ||
+															 IsPossibleChannelShuffle());
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
 			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block());
 
