@@ -899,12 +899,12 @@ void SaveStateSelectorUI::Draw()
 		// Leave 2 lines for the legend
 		const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
 		const float padding = 10.0f * scale;
-		const s32 current_slot = s_current_slot.load(std::memory_order_acquire);
 
 		ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
 			ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
 				ImGuiWindowFlags_NoBackground);
 		{
+			const s32 current_slot = s_current_slot.load(std::memory_order_acquire);
 			const ImVec2 image_size = ImVec2(128.0f * scale, (128.0f / (4.0f / 3.0f)) * scale);
 			const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
 			const float item_height = std::floor(image_size.y + padding * 2.0f);
@@ -915,7 +915,7 @@ void SaveStateSelectorUI::Draw()
 				const ListEntry& entry = s_slots[i];
 				const float y_start = item_height * static_cast<float>(i);
 
-				if (i == current_slot)
+				if (i == static_cast<size_t>(current_slot))
 				{
 					ImGui::SetCursorPosY(y_start);
 
