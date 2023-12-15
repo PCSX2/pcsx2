@@ -208,7 +208,7 @@ void Sio2::Pad()
 void Sio2::Multitap()
 {
 	const bool multitapEnabled = EmuConfig.Pad.IsMultitapPortEnabled(this->port);
-	
+
 	// Update the third nibble with which ports have been accessed
 	if (this->recv1 & Recv1::ONE_PORT_OPEN)
 	{
@@ -225,7 +225,7 @@ void Sio2::Multitap()
 
 	// If the currently accessed multitap is missing, also tick those bits.
 	// MTAPMAN is special though.
-	// 
+	//
 	// For PADMAN and pads, the bits represented by PORT_1_MISSING and PORT_2_MISSING
 	// are always faithful - suppose your game only opened port 2 for some reason,
 	// then a disconnect value would look like 0x0002D100.
@@ -374,11 +374,15 @@ void Sio2::Memcard()
 		case MemcardCommand::AUTH_XOR:
 			g_MemoryCardProtocol.AuthXor();
 			break;
-		case MemcardCommand::AUTH_F3:
-			g_MemoryCardProtocol.AuthF3();
+		case MemcardCommand::AUTH_CRYPT1:
+		case MemcardCommand::AUTH_CRYPT2:
+			g_MemoryCardProtocol.AuthCrypt();
 			break;
-		case MemcardCommand::AUTH_F7:
-			g_MemoryCardProtocol.AuthF7();
+		case MemcardCommand::AUTH_RESET:
+			g_MemoryCardProtocol.AuthReset();
+			break;
+		case MemcardCommand::AUTH_KEY_SELECT:
+			g_MemoryCardProtocol.AuthKeySelect();
 			break;
 		default:
 			Console.Warning("%s() Unhandled memcard command %02X, things are about to break!", __FUNCTION__, commandByte);

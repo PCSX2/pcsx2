@@ -36,6 +36,7 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
+#include "des.h"
 
 #include <cctype>
 #include <ctime>
@@ -46,6 +47,68 @@ cdvdStruct cdvd;
 s64 PSXCLK = 36864000;
 
 u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+#pragma pack(push, 1)
+struct KeyStore
+{
+	uint8_t CardKeyLow[3][8];
+	uint8_t CardKeyHi[3][8];
+	uint8_t CardKey2Low[3][8];
+	uint8_t CardKey2Hi[3][8];
+	uint8_t CardIV[3][8];
+	uint8_t CardIV2[3][8];
+	uint8_t KbitMasterKey[16];
+	uint8_t KcMasterKey[16];
+	uint8_t KbitIv[8];
+	uint8_t KcIv[8];
+	uint8_t icvps2LowKey[16];
+	uint8_t icvps2HiKey[16];
+	uint8_t icvps2LowIV[8];
+	uint8_t icvps2HiIV[8];
+	uint8_t SignatureMasterKey[8];
+	uint8_t SignatureHashKey[8];
+	uint8_t RootSigHashKey[16];
+	uint8_t RootSigMasterKey[8];
+	uint8_t ContentIV[8];
+	uint8_t ContentTableIV[8];
+	uint8_t ChallengeIV[8];
+};
+#pragma pack(pop)
+KeyStore g_keyStore;
+
+uint16_t g_EncryptedKeyStore[0x200] = {
+	/* SHA256: 04bcc6b13827829fb5cc8dbd86420d30f69a2bfd3b7719398b341e15368bd365 */
+};
+
+uint32_t ks_index = 0;
+
+class ks_reg
+{
+	uint16_t value;
+
+public:
+	ks_reg() {}
+
+	operator uint16_t() { return g_EncryptedKeyStore[ks_index++]; }
+};
+ks_reg ks_data;
+
+uint16_t g_MemoryCardKeyIndexes[72] = {
+	0x0018, 0xFFFF, 0xFFFF, 0x001C, 0xFFFF, 0xFFFF, 0x0020, 0xFFFF, 0xFFFF, 0x0024, 0xFFFF, 0xFFFF, 0x0028, 0xFFFF, 0xFFFF, 0x002C, 0xFFFF, 0xFFFF,
+	0x0030, 0x0048, 0x0060, 0x0034, 0x004C, 0x0064, 0x0038, 0x0050, 0x0068, 0x003C, 0x0054, 0x006C, 0x0040, 0x0058, 0x0070, 0x0044, 0x005C, 0x0074,
+	0x0000, 0x1000, 0x1001, 0x0004, 0x1002, 0x1003, 0x0008, 0x1004, 0x1005, 0x000C, 0x1006, 0x1007, 0x0010, 0x1008, 0x1009, 0x0014, 0x100A, 0x100B,
+	0x0090, 0x00A8, 0x00A8, 0x0094, 0x00AC, 0x00AC, 0x0098, 0x00B0, 0x00B0, 0x009C, 0x00B4, 0x00B4, 0x00A0, 0x00B8, 0x00B8, 0x00A4, 0x00BC, 0x00BC
+};
+
+uint16_t g_KelfKeysIndex[4] = { 0x110, 0x110, 0xC4, 0x15C };
+
+uint16_t g_cardKeyStore[48] = {
+	/* SHA256: 04bcc6b13827829fb5cc8dbd86420d30f69a2bfd3b7719398b341e15368bd365 */
+};
+
+uint8_t g_KeyStoreKey[16] = { /* SHA256: 04bcc6b13827829fb5cc8dbd86420d30f69a2bfd3b7719398b341e15368bd365 */ };
+
+uint8_t MG_IV_NULL[8] = { 0 };
 
 u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
 
@@ -910,6 +973,125 @@ static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode) noexcept
 	return static_cast<int>(cycles);
 }
 
+void readKeyStore(int idx_set)
+{
+	uint16_t *ks = (uint16_t *) &g_keyStore;
+
+	uint32_t keyOffset = 0;
+	for (int i = 0; i < 18; ++i)
+	{
+		uint16_t keyIdx = g_MemoryCardKeyIndexes[18 * idx_set + i];
+		if (keyIdx >= 0x200)
+		{
+			if ( keyIdx == 0xFFFF )
+			{
+				ks[keyOffset++] = 0;
+				ks[keyOffset++] = 0;
+				ks[keyOffset++] = 0;
+				ks[keyOffset++] = 0;
+			}
+			else
+			{
+				ks[keyOffset++] = g_cardKeyStore[4 * (uint8_t)keyIdx];
+				ks[keyOffset++] = g_cardKeyStore[4 * (uint8_t)keyIdx + 1];
+				ks[keyOffset++] = g_cardKeyStore[4 * (uint8_t)keyIdx + 2];
+				ks[keyOffset++] = g_cardKeyStore[4 * (uint8_t)keyIdx + 3];
+			}
+		}
+		else
+		{
+			ks_index = keyIdx;
+
+			ks[keyOffset++] = ks_data;
+			ks[keyOffset++] = ks_data;
+			ks[keyOffset++] = ks_data;
+			ks[keyOffset++] = ks_data;
+
+		}
+	}
+
+	ks_index = g_KelfKeysIndex[idx_set];
+	for (int j = 0; j < 19; ++j)
+	{
+		ks[keyOffset++] = ks_data;
+		ks[keyOffset++] = ks_data;
+		ks[keyOffset++] = ks_data;
+		ks[keyOffset++] = ks_data;
+	}
+
+	ks_index = 192;
+	ks[keyOffset++] = ks_data;
+	ks[keyOffset++] = ks_data;
+	ks[keyOffset++] = ks_data;
+	ks[keyOffset++] = ks_data;
+}
+
+static void desEncrypt(void *key, void *data)
+{
+	DesContext dc;
+	desInit(&dc, (uint8_t *) key, 8);
+	desEncryptBlock(&dc, (uint8_t *) data, (uint8_t *) data);
+}
+
+static void desDecrypt(void *key, void *data)
+{
+	DesContext dc;
+	desInit(&dc, (uint8_t *) key, 8);
+	desDecryptBlock(&dc, (uint8_t *) data, (uint8_t *) data);
+}
+
+static void doubleDesEncrypt(void *key, void *data)
+{
+	desEncrypt(key, data);
+	desDecrypt(&((uint8_t *) key)[8], data);
+	desEncrypt(key, data);
+}
+
+static void doubleDesDecrypt(void *key, void *data)
+{
+	desDecrypt(key, data);
+	desEncrypt(&((uint8_t *) key)[8], data);
+	desDecrypt(key, data);
+}
+
+static void xor_bit(const void* a, const void* b, void* Result, size_t Length)
+{
+	size_t i;
+	for (i = 0; i < Length; i++) {
+		((uint8_t*)Result)[i] = ((uint8_t*)a)[i] ^ ((uint8_t*)b)[i];
+	}
+}
+
+void readAndDecryptKeyStore(int idx_set)
+{
+	uint8_t *ks = (uint8_t *) &g_keyStore;
+
+	readKeyStore(idx_set);
+	for (int i = 0; i < 38; ++i)
+		doubleDesDecrypt(g_KeyStoreKey, &ks[i * 8]);
+
+	uint8_t consoleID[8];
+	cdvdReadConsoleID(consoleID);
+
+	uint8_t iLinkID[8];
+	cdvdReadILinkID(iLinkID);
+
+	uint8_t icvps2Seed[8];
+	xor_bit(iLinkID, consoleID, icvps2Seed, 8);
+
+	uint8_t icvps2LowSeed[8];
+	xor_bit(icvps2Seed, g_keyStore.icvps2LowIV, icvps2LowSeed, 8);
+
+	uint8_t icvps2HiSeed[8];
+	xor_bit(icvps2Seed, g_keyStore.icvps2HiIV, icvps2HiSeed, 8);
+
+	doubleDesEncrypt(g_keyStore.icvps2LowKey, icvps2LowSeed);
+	doubleDesEncrypt(g_keyStore.icvps2HiKey, icvps2HiSeed);
+
+	memcpy(cdvd.icvps2Key, icvps2LowSeed, 8);
+	memcpy(&cdvd.icvps2Key[8], icvps2HiSeed, 8);
+}
+
 void cdvdReset()
 {
 	std::memset(&cdvd, 0, sizeof(cdvd));
@@ -961,6 +1143,42 @@ void cdvdReset()
 	}
 
 	cdvdCtrlTrayClose();
+
+	{
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "eks.bin");
+		FILE *f = fopen(filename, "rb");
+		if (f)
+		{
+			fread(g_EncryptedKeyStore, 1, sizeof(g_EncryptedKeyStore), f);
+			fclose(f);
+		}
+	}
+
+	{
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "cks.bin");
+		FILE *f = fopen(filename, "rb");
+		if (f)
+		{
+			fread(g_cardKeyStore, 1, sizeof(g_cardKeyStore), f);
+			fclose(f);
+		}
+	}
+
+	{
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "kek.bin");
+		FILE* f = fopen(filename, "rb");
+		if (f)
+		{
+			fread(g_KeyStoreKey, 1, sizeof(g_KeyStoreKey), f);
+			fclose(f);
+		}
+	}
+
+	readAndDecryptKeyStore(1); // 0: dev, 1: retail, 2: proto?, 3: arcade
+	cdvd.mecha_state = MECHA_STATE_READY;
 }
 
 bool SaveStateBase::cdvdFreeze()
@@ -1190,7 +1408,7 @@ __fi void cdvdActionInterrupt()
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			break;
 	}
-	
+
 	cdvd.Action = cdvdAction_None;
 	cdvdSetIrq();
 }
@@ -1436,7 +1654,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode, bool transition_t
 		CDVD_LOG("CdSeek Begin > Contiguous block without seek - delta=%d sectors", delta);
 
 		// if delta > 0 it will read a new sector so the readInterrupt will account for this.
-		
+
 		isSeeking = false;
 
 		if (cdvd.Action != cdvdAction_Seek)
@@ -2337,6 +2555,462 @@ static __fi void fail_pol_cal()
 	cdvd.SCMDResultBuff[0] = 0x80;
 }
 
+MECHA_RESULT generateCardChallenge()
+{
+	uint8_t cardIVSeed[8];
+	xor_bit(cdvd.memcard_iv, cdvd.memcard_seed, cardIVSeed, 8);
+
+	xor_bit(g_keyStore.CardIV[cdvd.cardKeyIndex], cardIVSeed, cdvd.memcard_key, 8);
+	xor_bit(g_keyStore.CardIV2[cdvd.cardKeyIndex], cardIVSeed, &cdvd.memcard_key[8], 8);
+
+	uint8_t key1[16];
+	memcpy(key1, g_keyStore.CardKeyLow[cdvd.cardKeyIndex], 8);
+	memcpy(&key1[8], g_keyStore.CardKeyHi[cdvd.cardKeyIndex], 8);
+
+	uint8_t key2[16];
+	memcpy(key2, g_keyStore.CardKeyLow[cdvd.cardKeyIndex], 8);
+	memcpy(&key2[8], g_keyStore.CardKeyHi[cdvd.cardKeyIndex], 8);
+
+	doubleDesEncrypt(key1, cdvd.memcard_key);
+	doubleDesEncrypt(key2, &cdvd.memcard_key[8]);
+
+	for (int i = 0; i < 8; i++)
+		cdvd.memcard_random[i] = rand();
+
+	xor_bit(g_keyStore.ChallengeIV, cdvd.memcard_random, cdvd.memcard_challenge1, 8);
+	doubleDesEncrypt(cdvd.memcard_key, cdvd.memcard_challenge1);
+
+	xor_bit(cdvd.memcard_nonce, cdvd.memcard_challenge1, cdvd.memcard_challenge2, 8);
+	doubleDesEncrypt(cdvd.memcard_key, cdvd.memcard_challenge2);
+
+	xor_bit(cdvd.memcard_iv, cdvd.memcard_challenge2, cdvd.memcard_challenge3, 8);
+	doubleDesEncrypt(cdvd.memcard_key, cdvd.memcard_challenge3);
+
+	return MECHA_RESULT_CARD_CHALLANGE_GENERATED;
+}
+
+MECHA_RESULT verifyCardChallenge()
+{
+	uint8_t rp1[8];
+	memcpy(rp1, cdvd.memcard_reponse1, 8);
+	doubleDesDecrypt(cdvd.memcard_key, rp1);
+	xor_bit(rp1, g_keyStore.ChallengeIV, rp1, 8);
+	if (memcmp(cdvd.memcard_nonce, rp1, 8) != 0)
+	{
+		Console.Error("Invalid response1");
+		return MECHA_RESULT_FAILED;
+	}
+
+	uint8_t rp2[8];
+	memcpy(rp2, cdvd.memcard_reponse2, 8);
+	doubleDesDecrypt(cdvd.memcard_key, rp2);
+	xor_bit(rp2, cdvd.memcard_reponse1, rp2, 8);
+	if (memcmp(cdvd.memcard_random, rp2, 8) != 0)
+	{
+		Console.Error("Invalid response2");
+		return MECHA_RESULT_FAILED;
+	}
+
+	uint8_t rp3[8];
+	memcpy(rp3, cdvd.memcard_reponse3, 8);
+	doubleDesDecrypt(cdvd.memcard_key, rp3);
+	xor_bit(cdvd.memcard_reponse2, rp3, cdvd.CardKey[cdvd.cardKeySlot], 8);
+
+	return MECHA_RESULT_CARD_VERIFIED;
+}
+
+static MECHA_RESULT DecryptKelfHeader()
+{
+	KELFHeader *header = (KELFHeader *) cdvd.data_buffer;
+	uint32_t headerSize = sizeof(KELFHeader) + sizeof(ConsoleBan) * header->BanCount;
+
+	if (header->Flags & 1)
+		headerSize += cdvd.data_buffer[headerSize] + 1;
+
+	uint8_t HeaderSignature[8];
+	memset(HeaderSignature, 0, sizeof(HeaderSignature));
+	for (unsigned int i = 0; i < (headerSize & 0xFFFFFFF8); i += 8)
+	{
+		xor_bit(&cdvd.data_buffer[i], HeaderSignature, HeaderSignature, 8);
+		desEncrypt(g_keyStore.SignatureMasterKey, HeaderSignature);
+	}
+	desDecrypt(g_keyStore.SignatureHashKey, HeaderSignature);
+	desEncrypt(g_keyStore.SignatureMasterKey, HeaderSignature);
+
+	if (memcmp(HeaderSignature, &cdvd.data_buffer[headerSize], 8) != 0)
+	{
+		Console.Error("Invalid HeaderSignature");
+		cdvd.mecha_errorcode = 0x84;
+		return MECHA_RESULT_FAILED;
+	}
+
+	if (header->HeaderSize != cdvd.DataSize)
+	{
+		Console.Error("Invalid HeaderSize");
+		cdvd.mecha_errorcode = 0x81;
+		return MECHA_RESULT_FAILED;
+	}
+
+	// SystemType, ApplicationType, Flags check is skipped
+
+	if (cdvd.mode == 3 && !(header->Flags & 4) && !(header->Flags & 8))
+	{
+		cdvd.mecha_errorcode = 0x82;
+		return MECHA_RESULT_FAILED;
+	}
+
+	uint8_t consoleID[8];
+	cdvdReadConsoleID(consoleID);
+
+	uint8_t iLinkID[8];
+	cdvdReadILinkID(iLinkID);
+
+	ConsoleBan *bans = (ConsoleBan *) &cdvd.data_buffer[sizeof(KELFHeader)];
+	for (int i = 0; i < header->BanCount; ++i)
+	{
+		if (memcmp(bans[i].iLinkID, iLinkID, 8) == 0)
+		{
+			if (memcmp(bans[i].consoleID, consoleID, 8) == 0)
+			{
+				cdvd.mecha_errorcode = 0x85;
+				return MECHA_RESULT_FAILED;
+			}
+		}
+	}
+
+	uint32_t offset = headerSize + sizeof(HeaderSignature);
+
+	// Region check is skipped
+
+	// Nonce ban is skipped
+
+	uint8_t Kbit[16];
+	if (cdvd.mode == 1 || cdvd.mode == 3)
+	{
+		memcpy(Kbit, &cdvd.data_buffer[offset], 16);
+		offset += 16;
+		memcpy(cdvd.Kc, &cdvd.data_buffer[offset], 16);
+		offset += 16;
+
+		desDecrypt(cdvd.CardKey[cdvd.cardKeySlot], Kbit);
+		desDecrypt(cdvd.CardKey[cdvd.cardKeySlot], &Kbit[8]);
+		desDecrypt(cdvd.CardKey[cdvd.cardKeySlot], cdvd.Kc);
+		desDecrypt(cdvd.CardKey[cdvd.cardKeySlot], &cdvd.Kc[8]);
+	}
+	else
+	{
+		uint8_t Nonce[8];
+		xor_bit(cdvd.data_buffer, &cdvd.data_buffer[8], Nonce, 8);
+
+		uint8_t KEK[16];
+		xor_bit(g_keyStore.KbitIv, Nonce, KEK, 8);
+		doubleDesEncrypt(g_keyStore.KbitMasterKey, KEK);
+		xor_bit(g_keyStore.KcIv, Nonce, &KEK[8], 8);
+		doubleDesEncrypt(g_keyStore.KcMasterKey, &KEK[8]);
+
+		memcpy(Kbit, &cdvd.data_buffer[offset], 16);
+		offset += 16;
+		memcpy(cdvd.Kc, &cdvd.data_buffer[offset], 16);
+		offset += 16;
+
+		doubleDesDecrypt(KEK, Kbit);
+		doubleDesDecrypt(KEK, &Kbit[8]);
+		doubleDesDecrypt(KEK, cdvd.Kc);
+		doubleDesDecrypt(KEK, &cdvd.Kc[8]);
+	}
+
+	cdvd.bitTablePtr = (BitTable *) &cdvd.data_buffer[offset];
+
+	uint8_t BitTableEvenCiphertext[8];
+	memcpy(BitTableEvenCiphertext, cdvd.bitTablePtr, 8);
+
+	doubleDesDecrypt(Kbit, cdvd.bitTablePtr);
+	xor_bit(g_keyStore.ContentTableIV, cdvd.bitTablePtr, cdvd.bitTablePtr, 8);
+	cdvd.lastBitTable = 0;
+
+	int signedBitBlocks = 0;
+	for (int i = 0; cdvd.bitTablePtr->BlockCount > i; ++i)
+	{
+		BitBlock *currentBitBlock = &cdvd.bitTablePtr->Blocks[i];
+
+		uint8_t BitTableOddCiphertext[8];
+		memcpy(BitTableOddCiphertext, currentBitBlock, 8);
+		doubleDesDecrypt(Kbit, currentBitBlock);
+		xor_bit(BitTableEvenCiphertext, currentBitBlock, currentBitBlock, 8);
+
+		memcpy(BitTableEvenCiphertext, currentBitBlock->Signature, 8);
+		doubleDesDecrypt(Kbit, currentBitBlock->Signature);
+		xor_bit(BitTableOddCiphertext, currentBitBlock->Signature, currentBitBlock->Signature, 8);
+
+		if (currentBitBlock->Flags & BIT_BLOCK_SIGNED || currentBitBlock->Flags & BIT_BLOCK_ENCRYPTED)
+		{
+			if (cdvd.lastBitTable >= 64)
+			{
+				Console.Error("Too much bit block!");
+				cdvd.mecha_errorcode = 0x81;
+				return MECHA_RESULT_FAILED;
+			}
+
+			cdvd.bitBlocks[cdvd.lastBitTable].Flags = currentBitBlock->Flags;
+			cdvd.bitBlocks[cdvd.lastBitTable].Size = currentBitBlock->Size;
+			memcpy(cdvd.bitBlocks[cdvd.lastBitTable].Signature, currentBitBlock->Signature, 8);
+
+			++cdvd.lastBitTable;
+			if (currentBitBlock->Flags & BIT_BLOCK_SIGNED)
+				++signedBitBlocks;
+		}
+	}
+
+	if (!signedBitBlocks)
+	{
+		Console.Error("No signed bit block!");
+		cdvd.mecha_errorcode = 0x81;
+		return MECHA_RESULT_FAILED;
+	}
+
+	uint8_t BitTableSignature[8];
+	memcpy(BitTableSignature, Kbit, 8);
+	if (memcmp(Kbit, &Kbit[8], 8) != 0)
+		xor_bit(&Kbit[8], BitTableSignature, BitTableSignature, 8);
+
+	xor_bit(cdvd.Kc, BitTableSignature, BitTableSignature, 8);
+	if (memcmp(cdvd.Kc, &cdvd.Kc[8], 8) != 0)
+		xor_bit(&cdvd.Kc[8], BitTableSignature, BitTableSignature, 8);
+
+	for (int i = 0; i < cdvd.bitTablePtr->BlockCount * 2 + 1; i++)
+		xor_bit(&((uint8_t*) cdvd.bitTablePtr)[i * 8], BitTableSignature, BitTableSignature, 8);
+
+	uint8_t SignatureMasterHashKey[16];
+	memcpy(SignatureMasterHashKey, g_keyStore.SignatureMasterKey, 8);
+	memcpy(&SignatureMasterHashKey[8], g_keyStore.SignatureHashKey, 8);
+
+	doubleDesEncrypt(SignatureMasterHashKey, BitTableSignature);
+
+	if (memcmp(&cdvd.data_buffer[offset + 8 + cdvd.bitTablePtr->BlockCount * 16], BitTableSignature, 8) != 0)
+	{
+		Console.Error("Invalid BitTableSignature!");
+		cdvd.mecha_errorcode = 0x84;
+		return MECHA_RESULT_FAILED;
+	}
+
+	cdvd.bit_length = 16 * cdvd.bitTablePtr->BlockCount + 8;
+
+	uint8_t RootSignature[8];
+	memcpy(RootSignature, HeaderSignature, 8);
+	desEncrypt(g_keyStore.RootSigMasterKey, RootSignature);
+	xor_bit(BitTableSignature, RootSignature, RootSignature, 8);
+	desEncrypt(g_keyStore.RootSigMasterKey, RootSignature);
+	for (int i = 0; i < cdvd.lastBitTable; ++i)
+	{
+		if (cdvd.bitBlocks[i].Flags & BIT_BLOCK_SIGNED)
+		{
+			xor_bit(cdvd.bitBlocks[i].Signature, RootSignature, RootSignature, 8);
+			desEncrypt(g_keyStore.RootSigMasterKey, RootSignature);
+		}
+	}
+
+	uint8_t RootSignatureSource[8];
+	memcpy(RootSignatureSource, RootSignature, 8);
+
+	if ((cdvd.mode == 1 || cdvd.mode == 3) && header->Flags & 2)
+		doubleDesDecrypt(cdvd.icvps2Key, RootSignature);
+	else
+		doubleDesDecrypt(g_keyStore.RootSigHashKey, RootSignature);
+
+	if (memcmp(&cdvd.data_buffer[offset + 8 + cdvd.bitTablePtr->BlockCount * 16 + 8], RootSignature, 8) != 0)
+	{
+		if ((cdvd.mode == 1 || cdvd.mode == 3) && header->Flags & 2)
+			cdvd.mecha_errorcode = 0x83;
+		else
+			cdvd.mecha_errorcode = 0x84;
+		return MECHA_RESULT_FAILED;
+	}
+
+	if (cdvd.mode == 2 && header->Flags & 2)
+	{
+		memcpy(cdvd.pub_icvps2, RootSignatureSource, 8);
+		doubleDesDecrypt(cdvd.icvps2Key, cdvd.pub_icvps2);
+	}
+
+	if (cdvd.mode == 2)
+	{
+		memcpy(cdvd.pub_Kbit, Kbit, 16);
+		memcpy(cdvd.pub_Kc, cdvd.Kc, 16);
+
+		desEncrypt(cdvd.CardKey[cdvd.cardKeySlot], cdvd.pub_Kbit);
+		desEncrypt(cdvd.CardKey[cdvd.cardKeySlot], &cdvd.pub_Kbit[8]);
+		desEncrypt(cdvd.CardKey[cdvd.cardKeySlot], cdvd.pub_Kc);
+		desEncrypt(cdvd.CardKey[cdvd.cardKeySlot], &cdvd.pub_Kc[8]);
+	}
+	else if (cdvd.mode == 3)
+	{
+		memcpy(cdvd.pub_Kbit, Kbit, 16);
+		memcpy(cdvd.pub_Kc, cdvd.Kc, 16);
+
+		desEncrypt(cdvd.CardKey[cdvd.mode3KeyIndex], cdvd.pub_Kbit);
+		desEncrypt(cdvd.CardKey[cdvd.mode3KeyIndex], &cdvd.pub_Kbit[8]);
+		desEncrypt(cdvd.CardKey[cdvd.mode3KeyIndex], cdvd.pub_Kc);
+		desEncrypt(cdvd.CardKey[cdvd.mode3KeyIndex], &cdvd.pub_Kc[8]);
+	}
+
+	memcpy(&cdvd.verifiedKelfHeader, cdvd.data_buffer, sizeof(KELFHeader));
+	cdvd.DoneBlocks = 0;
+	cdvd.currentBlockIdx = 0;
+	if (cdvd.mode == 2 || cdvd.mode == 3)
+	{
+		while (!(cdvd.bitBlocks[cdvd.currentBlockIdx].Flags & BIT_BLOCK_SIGNED))
+			++cdvd.currentBlockIdx;
+	}
+
+	return MECHA_RESULT_KELF_HEADER_VERIFED;
+}
+
+static MECHA_RESULT DecryptKelfContent()
+{
+	uint8_t *buffer_ptr = cdvd.data_buffer;
+	if (!cdvd.DoneBlocks)
+	{
+		memcpy(cdvd.ContentLastCiphertext, g_keyStore.ContentIV, 8);
+		memset(cdvd.SignatureLastCiphertext, 0, 8);
+	}
+
+	int v0 = 0;
+	if (cdvd.bitBlocks[cdvd.currentBlockIdx].Flags & BIT_BLOCK_ENCRYPTED)
+	{
+		while (v0 < cdvd.DataSize)
+		{
+			if (v0 < cdvd.data_buffer_offset)
+			{
+				int cryptoType = (cdvd.verifiedKelfHeader.Flags >> 8) & 0xF;
+				if (cryptoType == 1) // ECB
+				{
+					int keyCount = (cdvd.verifiedKelfHeader.Flags >> 4) & 0xF;
+					if (keyCount == 1) // Singe
+					{
+						desDecrypt(cdvd.Kc, buffer_ptr);
+					}
+					else if (keyCount == 2) // Double
+					{
+						doubleDesDecrypt(cdvd.Kc, buffer_ptr);
+					}
+				}
+				else if (cryptoType == 2) // CBC
+				{
+					uint8_t temp[8];
+					int keyCount = (cdvd.verifiedKelfHeader.Flags >> 4) & 0xF;
+					if (keyCount == 1) // Singe
+					{
+						memcpy(temp, buffer_ptr, 8);
+						desDecrypt(cdvd.Kc, temp);
+					}
+					else if (keyCount == 2) // Double
+					{
+						memcpy(temp, buffer_ptr, 8);
+						doubleDesDecrypt(cdvd.Kc, temp);
+					}
+
+					xor_bit(cdvd.ContentLastCiphertext, temp, temp, 8);
+
+					memcpy(cdvd.ContentLastCiphertext, buffer_ptr, 8);
+
+					memcpy(buffer_ptr, temp, 8);
+				}
+				else
+				{
+					cdvd.mecha_errorcode = 0x81;
+					return MECHA_RESULT_FAILED; // FIX
+				}
+				if (cdvd.bitBlocks[cdvd.currentBlockIdx].Flags & BIT_BLOCK_SIGNED)
+				{
+					xor_bit(buffer_ptr, cdvd.SignatureLastCiphertext, cdvd.SignatureLastCiphertext, 8);
+				}
+				v0 += 8;
+				buffer_ptr += 8;
+			}
+		}
+	}
+	else
+	{
+		while (v0 < cdvd.DataSize)
+		{
+			if (v0 < cdvd.data_buffer_offset)
+			{
+				xor_bit(buffer_ptr, cdvd.SignatureLastCiphertext, cdvd.SignatureLastCiphertext, 8);
+				desEncrypt(g_keyStore.SignatureMasterKey, cdvd.SignatureLastCiphertext);
+				v0 += 8;
+				buffer_ptr += 8;
+			}
+		}
+	}
+	cdvd.DoneBlocks += v0;
+
+	if (cdvd.bitBlocks[cdvd.currentBlockIdx].Size <= cdvd.DoneBlocks)
+	{
+		cdvd.DoneBlocks = 0;
+		if (cdvd.bitBlocks[cdvd.currentBlockIdx].Flags & BIT_BLOCK_ENCRYPTED)
+		{
+			uint8_t SignatureMasterHashKey[16];
+			memcpy(SignatureMasterHashKey, g_keyStore.SignatureMasterKey, 8);
+			memcpy(&SignatureMasterHashKey[8], g_keyStore.SignatureHashKey, 8);
+
+			doubleDesEncrypt(SignatureMasterHashKey, cdvd.SignatureLastCiphertext);
+		}
+		else
+		{
+			desDecrypt(g_keyStore.SignatureHashKey, cdvd.SignatureLastCiphertext);
+			desEncrypt(g_keyStore.SignatureMasterKey, cdvd.SignatureLastCiphertext);
+		}
+
+		if (cdvd.bitBlocks[cdvd.currentBlockIdx].Flags & BIT_BLOCK_SIGNED)
+		{
+			if (memcmp(cdvd.bitBlocks[cdvd.currentBlockIdx].Signature, cdvd.SignatureLastCiphertext, 8) != 0)
+			{
+				Console.Error("Signature error!");
+				cdvd.mecha_errorcode = 0x84;
+				return MECHA_RESULT_FAILED; // FIX
+			}
+		}
+
+		if (cdvd.mode == 2 || cdvd.mode == 3)
+		{
+			do
+				++cdvd.currentBlockIdx;
+			while (!(cdvd.bitBlocks[cdvd.currentBlockIdx].Flags & BIT_BLOCK_SIGNED) && cdvd.currentBlockIdx < cdvd.lastBitTable);
+		}
+		else
+		{
+			++cdvd.currentBlockIdx;
+		}
+	}
+
+	return MECHA_RESULT_KELF_CONTENT_DECRYPTED;
+}
+
+static void executeMechaHandler()
+{
+	switch(cdvd.mecha_state)
+	{
+		case MECHA_STATE_CARD_NONCE_SET:
+			cdvd.mecha_result = generateCardChallenge();
+			break;
+
+		case MECHA_STATE_CARD_RESPONSE3_RECEIVED:
+			//memset(cdvd.CardKey[cdvd.cardKeySlot], 0xAA, 8);
+			//cdvd.mecha_result = MECHA_RESULT_CARD_VERIFIED;
+			cdvd.mecha_result = verifyCardChallenge();
+			break;
+
+		case MECHA_STATE_KELF_HEADER_RECEIVED:
+			cdvd.mecha_result = DecryptKelfHeader();
+			break;
+
+		case MECHA_STATE_DATA_IN_LENGTH_SET:
+		case MECHA_STATE_KELF_CONTENT_RECEIVED:
+			cdvd.mecha_result = DecryptKelfContent();
+			break;
+	}
+}
+
 static void cdvdWrite16(u8 rt) // SCOMMAND
 {
 	{
@@ -2423,7 +3097,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x06: // CdTrayCtrl  (1:1)
 				SetSCMDResultSize(1);
-				//Console.Warning( "CdTrayCtrl, param = %d", cdvd.SCMDParam[0]);
+				//Console.Warning( "CdTrayCtrl, param = %d", cdvd.SCMDParamBuff[0]);
 				if (cdvd.SCMDParamBuff[0] == 0)
 					cdvd.SCMDResultBuff[0] = cdvdCtrlTrayOpen();
 				else
@@ -2756,203 +3430,464 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			case 0x80: // secrman: __mechacon_auth_0x80
 				SetSCMDResultSize(1); //in:1
-				cdvd.mg_datatype = 0; //data
-				cdvd.SCMDResultBuff[0] = 0;
+				cdvd.SCMDResultBuff[0] = 0x80;
+				if (cdvd.mecha_state)
+				{
+					if (cdvd.SCMDParamCnt == 1)
+					{
+						cdvd.mecha_state = MECHA_STATE_READY;
+						if (cdvd.SCMDParamBuff[0] < 0x10)
+							cdvd.SCMDResultBuff[0] = 0;
+					}
+				}
 				break;
 
 			case 0x81: // secrman: __mechacon_auth_0x81
 				SetSCMDResultSize(1); //in:1
-				cdvd.mg_datatype = 0; //data
-				cdvd.SCMDResultBuff[0] = 0;
+				cdvd.SCMDResultBuff[0] = 0x80;
+				if (cdvd.mecha_state)
+				{
+					if (cdvd.SCMDParamCnt == 1)
+					{
+						cdvd.mecha_state = MECHA_STATE_READY;
+						uint8_t cardKeySlot = cdvd.SCMDParamBuff[0] & 0x3F;
+						uint8_t cardKeyIndex = (cdvd.SCMDParamBuff[0] >> 6) & 3;
+						if (cardKeySlot < 0x10 && cardKeyIndex != 3)
+						{
+							cdvd.cardKeySlot = cardKeySlot;
+							cdvd.cardKeyIndex = cardKeyIndex;
+							cdvd.mecha_state = MECHA_STATE_KEY_INDEXES_SET;
+							cdvd.SCMDResultBuff[0] = 0;
+						}
+					}
+				}
 				break;
 
 			case 0x82: // secrman: __mechacon_auth_0x82
 				SetSCMDResultSize(1); //in:16
-				cdvd.SCMDResultBuff[0] = 0;
+				if (cdvd.mecha_state == MECHA_STATE_KEY_INDEXES_SET && cdvd.SCMDParamCnt == 16)
+				{
+					memcpy(cdvd.memcard_iv, cdvd.SCMDParamBuff, 8);
+					memcpy(cdvd.memcard_seed, &cdvd.SCMDParamBuff[8], 8);
+					cdvd.mecha_state = MECHA_STATE_CARD_IV_SEED_SET;
+					cdvd.SCMDResultBuff[0] = 0;
+				}
+				else
+				{
+					cdvd.mecha_state = MECHA_STATE_READY;
+					cdvd.SCMDResultBuff[0] = 0x80;
+				}
 				break;
 
 			case 0x83: // secrman: __mechacon_auth_0x83
 				SetSCMDResultSize(1); //in:8
-				cdvd.SCMDResultBuff[0] = 0;
+				if (cdvd.mecha_state == MECHA_STATE_CARD_IV_SEED_SET && cdvd.SCMDParamCnt == 8)
+				{
+					memcpy(cdvd.memcard_nonce, cdvd.SCMDParamBuff, 8);
+					cdvd.mecha_state = MECHA_STATE_CARD_NONCE_SET;
+					executeMechaHandler();
+					cdvd.SCMDResultBuff[0] = 0;
+				}
+				else
+				{
+					cdvd.mecha_state = MECHA_STATE_READY;
+					cdvd.SCMDResultBuff[0] = 0x80;
+				}
 				break;
 
 			case 0x84: // secrman: __mechacon_auth_0x84
-				SetSCMDResultSize(1 + 8 + 4); //in:0
-				cdvd.SCMDResultBuff[0] = 0;
-
-				cdvd.SCMDResultBuff[1] = 0x21;
-				cdvd.SCMDResultBuff[2] = 0xdc;
-				cdvd.SCMDResultBuff[3] = 0x31;
-				cdvd.SCMDResultBuff[4] = 0x96;
-				cdvd.SCMDResultBuff[5] = 0xce;
-				cdvd.SCMDResultBuff[6] = 0x72;
-				cdvd.SCMDResultBuff[7] = 0xe0;
-				cdvd.SCMDResultBuff[8] = 0xc8;
-
-				cdvd.SCMDResultBuff[9] = 0x69;
-				cdvd.SCMDResultBuff[10] = 0xda;
-				cdvd.SCMDResultBuff[11] = 0x34;
-				cdvd.SCMDResultBuff[12] = 0x9b;
+				if (cdvd.mecha_state == MECHA_STATE_CARD_CHALLANGE_GENERATED && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 8 + 4);
+					cdvd.SCMDResultBuff[0] = 0;
+					memcpy(&cdvd.SCMDResultBuff[1], cdvd.memcard_challenge1, 8);
+					memcpy(&cdvd.SCMDResultBuff[9], cdvd.memcard_challenge2, 4);
+					cdvd.mecha_state = MECHA_STATE_CARD_CHALLENGE12_SENT;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x85: // secrman: __mechacon_auth_0x85
-				SetSCMDResultSize(1 + 4 + 8); //in:0
-				cdvd.SCMDResultBuff[0] = 0;
-
-				cdvd.SCMDResultBuff[1] = 0xeb;
-				cdvd.SCMDResultBuff[2] = 0x01;
-				cdvd.SCMDResultBuff[3] = 0xc7;
-				cdvd.SCMDResultBuff[4] = 0xa9;
-
-				cdvd.SCMDResultBuff[5] = 0x3f;
-				cdvd.SCMDResultBuff[6] = 0x9c;
-				cdvd.SCMDResultBuff[7] = 0x5b;
-				cdvd.SCMDResultBuff[8] = 0x19;
-				cdvd.SCMDResultBuff[9] = 0x31;
-				cdvd.SCMDResultBuff[10] = 0xa0;
-				cdvd.SCMDResultBuff[11] = 0xb3;
-				cdvd.SCMDResultBuff[12] = 0xa3;
+				if (cdvd.mecha_state == MECHA_STATE_CARD_CHALLENGE12_SENT && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 4 + 8);
+					cdvd.SCMDResultBuff[0] = 0;
+					memcpy(&cdvd.SCMDResultBuff[1], &cdvd.memcard_challenge2[4], 4);
+					memcpy(&cdvd.SCMDResultBuff[5], cdvd.memcard_challenge3, 8);
+					cdvd.mecha_state = MECHA_STATE_CARD_CHALLENGE23_SENT;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+				}
 				break;
 
 			case 0x86: // secrman: __mechacon_auth_0x86
 				SetSCMDResultSize(1); //in:16
-				cdvd.SCMDResultBuff[0] = 0;
+				if (cdvd.mecha_state == MECHA_STATE_CARD_CHALLENGE23_SENT && cdvd.SCMDParamCnt == 16)
+				{
+					memcpy(cdvd.memcard_reponse1, cdvd.SCMDParamBuff, 8);
+					memcpy(cdvd.memcard_reponse2, &cdvd.SCMDParamBuff[8], 8);
+					cdvd.mecha_state = MECHA_STATE_CARD_RESPONSE12_RECEIVED;
+					cdvd.SCMDResultBuff[0] = 0;
+				}
+				else
+				{
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x87: // secrman: __mechacon_auth_0x87
 				SetSCMDResultSize(1); //in:8
+				if (cdvd.mecha_state == MECHA_STATE_CARD_RESPONSE12_RECEIVED && cdvd.SCMDParamCnt == 8)
+				{
+					memcpy(cdvd.memcard_reponse3, cdvd.SCMDParamBuff, 8);
+					cdvd.mecha_state = MECHA_STATE_CARD_RESPONSE3_RECEIVED;
+					executeMechaHandler();
+					cdvd.SCMDResultBuff[0] = 0;
+				}
+				else
+				{
+					cdvd.mecha_state = MECHA_STATE_READY;
+					cdvd.SCMDResultBuff[0] = 0x80;
+				}
+				break;
+
+			case 0x88: // secrman: __mechacon_auth_0x88
+				SetSCMDResultSize(1); //in:0
+				if (cdvd.mecha_state == MECHA_STATE_CARD_VERIFIED && cdvd.SCMDParamCnt == 0)
+				{
+					cdvd.SCMDResultBuff[0] = 0;
+				}
+				else
+				{
+					cdvd.SCMDResultBuff[0] = 0x80;
+				}
+				break;
+
+			case 0x8C:
+				SetSCMDResultSize(1); //in:0
+				executeMechaHandler();
+				cdvd.mecha_result = MECHA_RESULT_0;
+				cdvd.mecha_state = MECHA_STATE_READY;
 				cdvd.SCMDResultBuff[0] = 0;
 				break;
 
 			case 0x8D: // sceMgWriteData
-				SetSCMDResultSize(1); //in:length<=16
-				if (cdvd.mg_size + cdvd.SCMDParamCnt > cdvd.mg_maxsize)
+				SetSCMDResultSize(1);
+				cdvd.SCMDResultBuff[0] = 0x80;
+
+				if (cdvd.SCMDParamCnt &&
+					(cdvd.mecha_state == MECHA_STATE_KELF_HEADER_PARAMS_SET ||
+					cdvd.mecha_state == MECHA_STATE_DATA_IN_LENGTH_SET ||
+					cdvd.mecha_state == MECHA_STATE_CRYPTO_DATA_IN_SIZE_SET) &&
+					cdvd.data_buffer_offset + cdvd.SCMDParamCnt <= 0x800)
 				{
-					cdvd.SCMDResultBuff[0] = 0x80;
-				}
-				else
-				{
-					memcpy(&cdvd.mg_buffer[cdvd.mg_size], cdvd.SCMDParamBuff, cdvd.SCMDParamCnt);
-					cdvd.mg_size += cdvd.SCMDParamCnt;
-					cdvd.SCMDResultBuff[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+					memcpy(&cdvd.data_buffer[cdvd.data_buffer_offset], cdvd.SCMDParamBuff, cdvd.SCMDParamCnt);
+					cdvd.data_buffer_offset += cdvd.SCMDParamCnt;
+					switch (cdvd.mecha_state)
+					{
+						case MECHA_STATE_KELF_HEADER_PARAMS_SET:
+							if (cdvd.DataSize <= cdvd.data_buffer_offset)
+							{
+								cdvd.mecha_state = MECHA_STATE_KELF_HEADER_RECEIVED;
+								executeMechaHandler();
+							}
+							break;
+						case MECHA_STATE_DATA_IN_LENGTH_SET:
+							if (cdvd.DataSize <= cdvd.data_buffer_offset)
+							{
+								cdvd.mecha_state = MECHA_STATE_KELF_CONTENT_RECEIVED;
+								executeMechaHandler();
+							}
+							break;
+						case MECHA_STATE_CRYPTO_DATA_IN_SIZE_SET:
+							if (cdvd.DataSize <= cdvd.data_buffer_offset)
+							{
+								cdvd.mecha_state = MECHA_STATE_CRYPTO_DATA_RECVED;
+								executeMechaHandler();
+							}
+						break;
+					}
+					cdvd.SCMDResultBuff[0] = 0;
 				}
 				break;
 
 			case 0x8E: // sceMgReadData
-				SetSCMDResultSize(std::min(16, cdvd.mg_size));
-				memcpy(&cdvd.SCMDResultBuff[0], &cdvd.mg_buffer[0], cdvd.SCMDResultCnt);
-				cdvd.mg_size -= cdvd.SCMDResultCnt;
-				memcpy(&cdvd.mg_buffer[0], &cdvd.mg_buffer[cdvd.SCMDResultCnt], cdvd.mg_size);
-				break;
-
-			case 0x88: // secrman: __mechacon_auth_0x88	//for now it is the same; so, fall;)
-			case 0x8F: // secrman: __mechacon_auth_0x8F
-				SetSCMDResultSize(1); //in:0
-				if (cdvd.mg_datatype == 1) // header data
+				SetSCMDResultSize(1);
+				if (cdvd.SCMDParamCnt == 0 &&
+					(cdvd.mecha_state == MECHA_STATE_BIT_LENGTH_SENT ||
+					cdvd.mecha_state == MECHA_STATE_DATA_OUT_LENGTH_SET ||
+					cdvd.mecha_state == MECHA_STATE_CRYPTO_DATA_OUT_SIZE_SET))
 				{
-					int bit_ofs = 0;
-
-					if ((cdvd.mg_maxsize != cdvd.mg_size) || (cdvd.mg_size < 0x20) || (cdvd.mg_size != GetBufferU16(&cdvd.mg_buffer[0], 0x14)))
+					uint16_t len = cdvd.DataSize - cdvd.data_out_offset;
+					if (len > 0x10)
+						len = 0x10;
+					SetSCMDResultSize(len);
+					for (int i = 0; i < len; i++)
 					{
-						fail_pol_cal();
-						break;
+						cdvd.SCMDResultBuff[i] = *cdvd.data_out_ptr++;
 					}
+					cdvd.data_out_offset += len;
 
-					std::string zoneStr;
-					for (int i = 0; i < 8; i++)
+					if (cdvd.DataSize <= cdvd.data_out_offset)
 					{
-						if (cdvd.mg_buffer[0x1C] & (1 << i))
-							zoneStr += mg_zones[i];
-					}
-
-					Console.WriteLn("[MG] ELF_size=0x%X Hdr_size=0x%X unk=0x%X flags=0x%X count=%d zones=%s",
-						*(u32*)&cdvd.mg_buffer[0x10], *(u16*)&cdvd.mg_buffer[0x14], *(u16*)&cdvd.mg_buffer[0x16],
-						*(u16*)&cdvd.mg_buffer[0x18], *(u16*)&cdvd.mg_buffer[0x1A],
-						zoneStr.c_str());
-
-					bit_ofs = mg_BIToffset(&cdvd.mg_buffer[0]);
-
-					memcpy(&cdvd.mg_kbit[0], &cdvd.mg_buffer[bit_ofs - 0x20], 0x10);
-					memcpy(&cdvd.mg_kcon[0], &cdvd.mg_buffer[bit_ofs - 0x10], 0x10);
-
-					if ((cdvd.mg_buffer[bit_ofs + 5] || cdvd.mg_buffer[bit_ofs + 6] || cdvd.mg_buffer[bit_ofs + 7]) ||
-						(GetBufferU16(&cdvd.mg_buffer[0],bit_ofs + 4) * 16 + bit_ofs + 8 + 16 != GetBufferU16(&cdvd.mg_buffer[0], 0x14)))
-					{
-						fail_pol_cal();
-						break;
+						switch (cdvd.mecha_state)
+						{
+							case MECHA_STATE_BIT_LENGTH_SENT:
+								cdvd.mecha_state = MECHA_STATE_KELF_CONTENT_DECRYPT_IN_PROGRESS;
+								break;
+							case MECHA_STATE_DATA_OUT_LENGTH_SET:
+								if (cdvd.currentBlockIdx >= cdvd.lastBitTable)
+									cdvd.mecha_state = MECHA_STATE_READY;
+								else
+									cdvd.mecha_state = MECHA_STATE_KELF_CONTENT_DECRYPT_IN_PROGRESS;
+								break;
+							case MECHA_STATE_CRYPTO_DATA_OUT_SIZE_SET:
+								cdvd.mecha_state = MECHA_STATE_CRYPTO_KEYGEN_DONE;
+								break;
+						}
 					}
 				}
-				cdvd.SCMDResultBuff[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+				else
+				{
+					SetSCMDResultSize(0);
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
+				break;
+
+			case 0x8F: // secrman: __mechacon_auth_0x8F
+				SetSCMDResultSize(1); //in:0
+				cdvd.SCMDResultBuff[0] = 0x80;
+				if (cdvd.SCMDParamCnt)
+					break;
+				switch (cdvd.mecha_state)
+				{
+					case MECHA_STATE_CARD_NONCE_SET:
+					case MECHA_STATE_CARD_CHALLANGE_GENERATED:
+						if (cdvd.mecha_result == MECHA_RESULT_CARD_CHALLANGE_GENERATED)
+						{
+							cdvd.mecha_state = MECHA_STATE_CARD_CHALLANGE_GENERATED;
+							cdvd.SCMDResultBuff[0] = 0;
+						}
+						break;
+					case MECHA_STATE_CARD_RESPONSE3_RECEIVED:
+					case MECHA_STATE_CARD_VERIFIED:
+						if (cdvd.mecha_result == MECHA_RESULT_CARD_VERIFIED)
+						{
+							cdvd.mecha_state = MECHA_STATE_CARD_VERIFIED;
+							cdvd.SCMDResultBuff[0] = 0;
+						}
+						break;
+					case MECHA_STATE_KELF_HEADER_RECEIVED:
+					case MECHA_STATE_KELF_HEADER_VERIFED:
+						if (cdvd.mecha_result == MECHA_RESULT_KELF_HEADER_VERIFED)
+						{
+							cdvd.mecha_state = MECHA_STATE_KELF_HEADER_VERIFED;
+							cdvd.SCMDResultBuff[0] = 0;
+						}
+						else if (cdvd.mecha_result == MECHA_RESULT_FAILED)
+						{
+							cdvd.mecha_state = MECHA_STATE_READY;
+							cdvd.SCMDResultBuff[0] = cdvd.mecha_errorcode;
+						}
+						break;
+
+					case MECHA_STATE_DATA_IN_LENGTH_SET:
+					case MECHA_STATE_UNK17:
+					case MECHA_STATE_KELF_CONTENT_RECEIVED:
+						if (cdvd.mecha_result == MECHA_RESULT_KELF_CONTENT_DECRYPTED)
+						{
+							if (cdvd.mode == 2 || cdvd.mode == 3)
+							{
+								if (cdvd.currentBlockIdx >= cdvd.lastBitTable)
+									cdvd.mecha_state = MECHA_STATE_KELF_CONTENT_DECRYPT_DONE;
+								else
+									cdvd.mecha_state = MECHA_STATE_KELF_CONTENT_DECRYPT_IN_PROGRESS;
+							}
+							else
+							{
+								cdvd.mecha_state = MECHA_STATE_UNK17;
+							}
+							cdvd.SCMDResultBuff[0] = 0;
+						}
+						else if (cdvd.mecha_result == MECHA_RESULT_FAILED)
+						{
+							cdvd.mecha_state = MECHA_STATE_READY;
+							cdvd.SCMDResultBuff[0] = cdvd.mecha_errorcode;
+						}
+						break;
+				}
 				break;
 
 			case 0x90: // sceMgWriteHeaderStart
 				SetSCMDResultSize(1); //in:5
-				cdvd.mg_size = 0;
-				cdvd.mg_datatype = 1; //header data
-				Console.WriteLn("[MG] hcode=%d cnum=%d a2=%d length=0x%X",
-					cdvd.SCMDParamBuff[0], cdvd.SCMDParamBuff[3], cdvd.SCMDParamBuff[4], cdvd.mg_maxsize = cdvd.SCMDParamBuff[1] | (static_cast<int>(cdvd.SCMDParamBuff[2]) << 8));
+				cdvd.SCMDResultBuff[0] = 0x80;
+				if (cdvd.mecha_state && cdvd.SCMDParamCnt == 5)
+				{
+					cdvd.mode = cdvd.SCMDParamBuff[0];
+					cdvd.DataSize = *(uint16_t*)&cdvd.SCMDParamBuff[1];
+					cdvd.cardKeySlot = cdvd.SCMDParamBuff[3];
+					cdvd.mode3KeyIndex = cdvd.SCMDParamBuff[4];
+					cdvd.data_buffer_offset = 0;
+					cdvd.mecha_state = MECHA_STATE_READY;
 
-				cdvd.SCMDResultBuff[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+					if (cdvd.mode <= 3 && cdvd.DataSize <= 0x800)
+					{
+						if (cdvd.mode == 0 || (cdvd.cardKeySlot <= 0x10 && ((cdvd.mode == 1 || cdvd.mode == 2) || cdvd.mode3KeyIndex < 0x10)))
+						{
+							cdvd.mecha_state = MECHA_STATE_KELF_HEADER_PARAMS_SET;
+							cdvd.SCMDResultBuff[0] = 0;
+						}
+					}
+				}
+				else
+				{
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x91: // sceMgReadBITLength
 			{
-				SetSCMDResultSize(3); //in:0
-				const int bit_ofs = mg_BIToffset(&cdvd.mg_buffer[0]);
-				memcpy(&cdvd.mg_buffer[0], &cdvd.mg_buffer[bit_ofs], static_cast<size_t>(8 + 16 * static_cast<int>(cdvd.mg_buffer[bit_ofs + 4])));
-
-				cdvd.mg_maxsize = 0; // don't allow any write
-				cdvd.mg_size = 8 + 16 * cdvd.mg_buffer[4]; //new offset, i just moved the data
-				Console.WriteLn("[MG] BIT count=%d", cdvd.mg_buffer[4]);
-
-				cdvd.SCMDResultBuff[0] = (cdvd.mg_datatype == 1) ? 0 : 0x80; // 0 complete ; 1 busy ; 0x80 error
-				cdvd.SCMDResultBuff[1] = (cdvd.mg_size >> 0) & 0xFF;
-				cdvd.SCMDResultBuff[2] = (cdvd.mg_size >> 8) & 0xFF;
+				if (cdvd.mecha_state == MECHA_STATE_KELF_HEADER_VERIFED && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(3); //in:0
+					cdvd.SCMDResultBuff[0] = 0;
+					*(uint16_t *) &cdvd.SCMDResultBuff[1] = cdvd.bit_length;
+					cdvd.DataSize = cdvd.bit_length;
+					cdvd.data_out_offset = 0;
+					cdvd.data_out_ptr = (uint8_t *) cdvd.bitTablePtr;
+					cdvd.mecha_state = MECHA_STATE_BIT_LENGTH_SENT;
+				}
+				else
+				{
+					SetSCMDResultSize(1); //in:0
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 			}
+
 			case 0x92: // sceMgWriteDatainLength
 				SetSCMDResultSize(1); //in:2
-				cdvd.mg_size = 0;
-				cdvd.mg_datatype = 0; //data (encrypted)
-				cdvd.mg_maxsize = cdvd.SCMDParamBuff[0] | (((int)cdvd.SCMDParamBuff[1]) << 8);
-				cdvd.SCMDResultBuff[0] = 0; // 0 complete ; 1 busy ; 0x80 error
+				cdvd.SCMDResultBuff[0] = 0x80;
+				if (cdvd.mecha_state == MECHA_STATE_KELF_CONTENT_DECRYPT_IN_PROGRESS && cdvd.SCMDParamCnt == 2)
+				{
+					cdvd.DataSize = *(uint16_t *) cdvd.SCMDParamBuff;
+					uint16_t len = cdvd.bitBlocks[cdvd.currentBlockIdx].Size - cdvd.DoneBlocks;
+					if (len > 0x800)
+						len = 0x800;
+					if (cdvd.DataSize == len)
+					{
+						cdvd.data_buffer_offset = 0;
+						cdvd.mecha_state = MECHA_STATE_DATA_IN_LENGTH_SET;
+						cdvd.SCMDResultBuff[0] = 0;
+					}
+				}
+				else
+				{
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x93: // sceMgWriteDataoutLength
 				SetSCMDResultSize(1); //in:2
-				if (((cdvd.SCMDParamBuff[0] | (static_cast<int>(cdvd.SCMDParamBuff[1]) << 8)) == cdvd.mg_size) && (cdvd.mg_datatype == 0))
+				cdvd.SCMDResultBuff[0] = 0x80;
+				if (cdvd.mecha_state == MECHA_STATE_UNK17 && cdvd.SCMDParamCnt == 2)
 				{
-					cdvd.mg_maxsize = 0; // don't allow any write
-					cdvd.SCMDResultBuff[0] = 0; // 0 complete ; 1 busy ; 0x80 error
-				}
-				else
-				{
-					cdvd.SCMDResultBuff[0] = 0x80;
+					if (*(uint16_t*)cdvd.SCMDParamBuff == cdvd.DataSize)
+					{
+						cdvd.data_out_offset = 0;
+						cdvd.data_out_ptr = cdvd.data_buffer;
+						cdvd.mecha_state = MECHA_STATE_DATA_OUT_LENGTH_SET;
+						cdvd.SCMDResultBuff[0] = 0;
+					}
 				}
 				break;
 
 			case 0x94: // sceMgReadKbit - read first half of BIT key
-				SetSCMDResultSize(1 + 8); //in:0
-				cdvd.SCMDResultBuff[0] = 0;
-				memcpy(&cdvd.SCMDResultBuff[1], cdvd.mg_kbit, 8);
+				if (cdvd.mecha_state == MECHA_STATE_KELF_CONTENT_DECRYPT_DONE && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 8);
+					memcpy(&cdvd.SCMDResultBuff[1], cdvd.pub_Kbit, 8);
+					cdvd.mecha_state = MECHA_STATE_KBIT1_SENT;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x95: // sceMgReadKbit2 - read second half of BIT key
-				SetSCMDResultSize(1 + 8); //in:0
-				cdvd.SCMDResultBuff[0] = 0;
-				memcpy(&cdvd.SCMDResultBuff[1], cdvd.mg_kbit+8, 8);
+				if (cdvd.mecha_state == MECHA_STATE_KBIT1_SENT && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 8);
+					memcpy(&cdvd.SCMDResultBuff[1], &cdvd.pub_Kbit[8], 8);
+					cdvd.mecha_state = MECHA_STATE_KBIT2_SENT;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x96: // sceMgReadKcon - read first half of content key
-				SetSCMDResultSize(1 + 8); //in:0
-				cdvd.SCMDResultBuff[0] = 0;
-				memcpy(&cdvd.SCMDResultBuff[1], cdvd.mg_kcon, 8);
+				if (cdvd.mecha_state == MECHA_STATE_KBIT2_SENT && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 8);
+					memcpy(&cdvd.SCMDResultBuff[1], cdvd.pub_Kc, 8);
+					cdvd.mecha_state = MECHA_STATE_KC1_SENT;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			case 0x97: // sceMgReadKcon2 - read second half of content key
-				SetSCMDResultSize(1 + 8); //in:0
-				cdvd.SCMDResultBuff[0] = 0;
-				memcpy(&cdvd.SCMDResultBuff[1], cdvd.mg_kcon + 8, 8);
+				if (cdvd.mecha_state == MECHA_STATE_KC1_SENT && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 8);
+					memcpy(&cdvd.SCMDResultBuff[1], &cdvd.pub_Kc[8], 8);
+					if (cdvd.mode == 2 && cdvd.verifiedKelfHeader.Flags & 2)
+						cdvd.mecha_state = MECHA_STATE_KC2_SENT;
+					else
+						cdvd.mecha_state = MECHA_STATE_READY;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
+				break;
+
+			case 0x98: // sceMgReadKcon2 - read second half of content key
+				if (cdvd.mecha_state == MECHA_STATE_KC2_SENT && cdvd.SCMDParamCnt == 0)
+				{
+					SetSCMDResultSize(1 + 8);
+					memcpy(&cdvd.SCMDResultBuff[1], cdvd.pub_icvps2, 8);
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
+				else
+				{
+					SetSCMDResultSize(1);
+					cdvd.SCMDResultBuff[0] = 0x80;
+					cdvd.mecha_state = MECHA_STATE_READY;
+				}
 				break;
 
 			default:

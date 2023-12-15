@@ -1,7 +1,3 @@
-.*.swp
-.*.swn
-.*.swo
-
 *.suo
 *.ncb
 *.sdf
@@ -27,15 +23,18 @@ _ReSharper.*
 pcsx2.snapshot_*
 svnrev.h
 
-/build*
+/build
+/build_dev
+/build_dbg
 /obj-*
 *.obj
 
-.DS_Store
 Thumbs.db
 
 Debug.txt
 install_log.txt
+padLog.txt
+GS_opengl_debug.txt
 bad_shader_*
 crash-*.txt
 
@@ -54,7 +53,6 @@ oprofile_data/
 # Visual Studio upgrades
 /Backup*
 /UpgradeLog*.htm
-/.vscode*
 
 /bin/**/*.dll
 /bin/**/*.dmp
@@ -62,7 +60,10 @@ oprofile_data/
 /bin/**/*.ilk
 /bin/**/*.lib
 /bin/**/*.pdb
-/bin/pcsx2*
+/bin/pcsx2
+/bin/PCSX2-linux.sh
+/bin/*ReplayLoader
+/bin/GS*.txt
 /bin/qt.conf
 /bin/bios
 /bin/cache
@@ -81,13 +82,21 @@ oprofile_data/
 /bin/translations
 /bin/inputprofiles
 /deps
+/deps-build
 /ipch
 
 !/3rdparty/libjpeg/change.log
 /tools/bin
-.vs
 
 /out/build/x64-Debug (default)
 CMakeSettings.json
 /ci-artifacts/
 /out/
+
+.*
+!.github
+!.clang-format
+!.codacy.yaml
+!.gitattributes
+!.gitmodules
+!.prettierrc.yaml

@@ -117,6 +117,7 @@ endif()
 # Prevent fmt from being built with exceptions, or being thrown at call sites.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
 
+add_subdirectory(3rdparty/des)
 add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
