@@ -1136,6 +1136,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	discord-rpc
 	SDL2::SDL2
 	ZLIB::ZLIB
+	LZ4::LZ4
 	SoundTouch::SoundTouch
 	PNG::PNG
 	LibLZMA::LibLZMA

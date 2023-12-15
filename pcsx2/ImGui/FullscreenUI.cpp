@@ -844,12 +844,12 @@ void FullscreenUI::DestroyResources()
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetOpenFileFilters()
 {
-	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.gz", "*.elf", "*.irx", "*.gs", "*.gs.xz", "*.gs.zst", "*.dump"};
+	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.zso", "*.gz", "*.elf", "*.irx", "*.gs", "*.gs.xz", "*.gs.zst", "*.dump"};
 }
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 {
-	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.gz"};
+	return {"*.bin", "*.iso", "*.cue", "*.mdf", "*.chd", "*.cso", "*.zso", "*.gz"};
 }
 
 void FullscreenUI::DoStartPath(const std::string& path, std::optional<s32> state_index, std::optional<bool> fast_boot)
