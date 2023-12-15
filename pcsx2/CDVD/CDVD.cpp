@@ -3440,7 +3440,6 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 							cdvd.SCMDResultBuff[0] = 0;
 					}
 				}
-				cdvd.mg_datatype = 0; //data
 				break;
 
 			case 0x81: // secrman: __mechacon_auth_0x81
@@ -3462,7 +3461,6 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						}
 					}
 				}
-				cdvd.mg_datatype = 0; //data
 				break;
 
 			case 0x82: // secrman: __mechacon_auth_0x82
