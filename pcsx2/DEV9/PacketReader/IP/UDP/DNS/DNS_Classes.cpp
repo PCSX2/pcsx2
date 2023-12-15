@@ -71,7 +71,7 @@ namespace PacketReader::IP::UDP::DNS
 		//null char
 		*offset += 1;
 	}
-	void DNS_QuestionEntry::WriteDNS_String(u8* buffer, int* offset, std::string value)
+	void DNS_QuestionEntry::WriteDNS_String(u8* buffer, int* offset, const std::string& value)
 	{
 		int segmentLength = 0;
 		int segmentStart = 0;

@@ -1,4 +1,0 @@
-#!/bin/sh
-
-APPDIR=$(dirname "$0")
-exec "$APPDIR/usr/bin/pcsx2-qt" "$@"

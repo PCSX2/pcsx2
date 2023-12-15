@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>PCSX2 Debugger</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
@@ -20,19 +25,84 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>22</height>
-    </rect>
+  <widget class="QToolBar" name="toolBar">
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
    </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionRun"/>
+   <addaction name="actionStepInto"/>
+   <addaction name="actionStepOver"/>
+   <addaction name="actionStepOut"/>
+   <addaction name="actionOnTop"/>
   </widget>
   <action name="actionRun">
+   <property name="icon">
+    <iconset theme="play-line"/>
+   </property>
    <property name="text">
     <string>Run</string>
+   </property>
+  </action>
+  <action name="actionStepInto">
+   <property name="icon">
+    <iconset theme="debug-step-into-line"/>
+   </property>
+   <property name="text">
+    <string>Step Into</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
+  </action>
+  <action name="actionStepOver">
+   <property name="icon">
+    <iconset theme="debug-step-over-line"/>
+   </property>
+   <property name="text">
+    <string>Step Over</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="actionStepOut">
+   <property name="icon">
+    <iconset theme="debug-step-out-line"/>
+   </property>
+   <property name="text">
+    <string>Step Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F11</string>
+   </property>
+  </action>
+  <action name="actionOnTop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Always On Top</string>
+   </property>
+   <property name="toolTip">
+    <string>Show this window on top</string>
    </property>
   </action>
  </widget>

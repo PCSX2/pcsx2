@@ -8,12 +8,16 @@ if (WIN32)
 	# We bundle everything on Windows
 	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libpng EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/libjpeg EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/wil EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/winpixeventruntime EXCLUDE_FROM_ALL)
 	set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/ffmpeg/include")
+	find_package(Vtune)
+
+	# Don't try to build tests for WIL, it needs NuGet.
+	set(WIL_BUILD_TESTS OFF CACHE BOOL "")
+	set(WIL_BUILD_PACKAGING OFF CACHE BOOL "")
+	add_subdirectory(3rdparty/wil EXCLUDE_FROM_ALL)
 else()
 	find_package(PCAP REQUIRED)
 	find_package(LibLZMA REQUIRED)
@@ -30,6 +34,7 @@ else()
 	set(FIND_FRAMEWORK_BACKUP ${CMAKE_FIND_FRAMEWORK})
 	set(CMAKE_FIND_FRAMEWORK NEVER)
 	find_package(PNG REQUIRED)
+	find_package(CURL REQUIRED)
 	set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
 	find_package(Vtune)
 
@@ -53,11 +58,6 @@ else()
 		if(USE_OPENGL)
 			check_lib(EGL EGL EGL/egl.h)
 		endif()
-		if(X11_API)
-			check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
-			check_lib(XCB xcb xcb/xcb.h)
-			check_lib(XRANDR Xrandr X11/extensions/Xrandr.h)
-		endif()
 
 		if(Linux)
 			check_lib(AIO aio libaio.h)
@@ -71,26 +71,31 @@ else()
 				check_lib(LIBUDEV libudev libudev.h)
 			endif()
 		endif()
-	endif()
 
-	check_lib(SOUNDTOUCH SoundTouch SoundTouch.h PATH_SUFFIXES soundtouch)
-
-	if(NOT QT_BUILD)
-		find_optional_system_library(SDL2 3rdparty/sdl2 2.0.12)
-	endif()
-
-	if(UNIX AND NOT APPLE)
-		find_package(X11 REQUIRED)
-		make_imported_target_if_missing(X11::X11 X11)
+		if(X11_API)
+			find_package(X11 REQUIRED)
+			if (NOT X11_Xrandr_FOUND)
+				message(FATAL_ERROR "XRandR extension is required")
+			endif()
+		endif()
 
 		if(WAYLAND_API)
-			find_package(Wayland REQUIRED)
+			find_package(ECM REQUIRED NO_MODULE)
+			list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
+			find_package(Wayland REQUIRED Egl)
 		endif()
+
+		find_package(Libbacktrace)
+		find_package(PkgConfig REQUIRED)
+		pkg_check_modules(DBUS REQUIRED dbus-1)
 	endif()
 endif(WIN32)
 
 # Require threads on all OSes.
 find_package(Threads REQUIRED)
+
+# Also need SDL2.
+find_package(SDL2 2.28.4 REQUIRED)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -100,18 +105,7 @@ if(ENABLE_TESTS)
 	endif()
 endif()
 
-#----------------------------------------
-# Check correctness of the parameter
-# Note: wxWidgets_INCLUDE_DIRS must be defined
-#----------------------------------------
-include(ApiValidation)
-
-# Blacklist bad GCC
-if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
-	GCC7_BUG()
-endif()
-
-if((GCC_VERSION VERSION_EQUAL "9.0" OR GCC_VERSION VERSION_GREATER "9.0") AND GCC_VERSION LESS "9.2")
+if(GCC_VERSION VERSION_GREATER_EQUAL "9.0" AND GCC_VERSION VERSION_LESS "9.2")
 	message(WARNING "
 	It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
 	as there is a bug known to cause the compiler to segfault while compiling. See patch
@@ -120,57 +114,16 @@ if((GCC_VERSION VERSION_EQUAL "9.0" OR GCC_VERSION VERSION_GREATER "9.0") AND GC
 	This text being in a compile log in an open issue may cause it to be closed.")
 endif()
 
-find_optional_system_library(fmt 3rdparty/fmt/fmt 7.1.3)
-find_optional_system_library(ryml 3rdparty/rapidyaml/rapidyaml 0.4.0)
-find_optional_system_library(zstd 3rdparty/zstd 1.4.5)
-if (${zstd_TYPE} STREQUAL System)
-	alias_library(Zstd::Zstd zstd::libzstd_shared)
-	alias_library(pcsx2-zstd zstd::libzstd_shared)
-endif()
-find_optional_system_library(libzip 3rdparty/libzip 1.8.0)
-
-if(QT_BUILD)
-	# Default to bundled Qt6 for Windows.
-	if(WIN32 AND NOT DEFINED Qt6_DIR)
-		set(Qt6_DIR ${CMAKE_SOURCE_DIR}/3rdparty/qt/6.4.0/msvc2022_64/lib/cmake/Qt6)
-	endif()
-
-	# Find the Qt components that we need.
-	find_package(Qt6 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets Network LinguistTools REQUIRED)
-
-	if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.15)
-		get_target_property(QT_FEATURES Qt6::Core QT_ENABLED_PUBLIC_FEATURES)
-		if (cxx17_filesystem IN_LIST QT_FEATURES)
-			message("Qt compiled with std::filesystem support, requires macOS 10.15")
-			set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-		endif()
-	endif()
-
-	# We use the bundled (latest) SDL version for Qt.
-	find_optional_system_library(SDL2 3rdparty/sdl2 2.0.22)
-
-	# rcheevos backend for RetroAchievements.
-	if(USE_ACHIEVEMENTS)
-		add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
-	endif()
-
-	# Discord-RPC library for rich presence.
-	if(USE_DISCORD_PRESENCE)
-		add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
-		add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
-	endif()
-
-	# Demangler for the debugger
-	add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
-endif()
-
-if(NOT WIN32 AND QT_BUILD)
-	find_package(CURL REQUIRED)
-endif()
+# Prevent fmt from being built with exceptions, or being thrown at call sites.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
 
 add_subdirectory(3rdparty/des)
+add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
+disable_compiler_warnings_for_target(libchdr)
+add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
 
 # rapidyaml includes fast_float as a submodule, saves us pulling it in directly.
 # Normally, we'd just pull in the cmake project, and link to it, but... it seems to enable
@@ -181,10 +134,18 @@ add_library(fast_float INTERFACE)
 target_include_directories(fast_float INTERFACE 3rdparty/rapidyaml/rapidyaml/ext/c4core/src/c4/ext/fast_float/include)
 
 add_subdirectory(3rdparty/jpgd EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/libwebp EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/cpuinfo EXCLUDE_FROM_ALL)
+disable_compiler_warnings_for_target(cpuinfo)
 add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/lz4 EXCLUDE_FROM_ALL)
 
 if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
@@ -195,9 +156,22 @@ if(USE_VULKAN)
 	add_subdirectory(3rdparty/vulkan-headers EXCLUDE_FROM_ALL)
 endif()
 
-if(CUBEB_API)
-	add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
-	target_compile_options(cubeb PRIVATE "-w")
-	target_compile_options(speex PRIVATE "-w")
+add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
+disable_compiler_warnings_for_target(cubeb)
+disable_compiler_warnings_for_target(speex)
+
+# Find the Qt components that we need.
+find_package(Qt6 6.6.0 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
+
+if(WIN32)
+  add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)
 endif()
 
+# Demangler for the debugger
+add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
+
+# Deliberately at the end. We don't want to set the flag on third-party projects.
+if(MSVC)
+	# Don't warn about "deprecated" POSIX functions.
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS" "-DCRT_SECURE_NO_DEPRECATE")
+endif()

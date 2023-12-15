@@ -71,7 +71,9 @@ public:
 	void DrawTable(QPainter& painter, const QPalette& palette, s32 height);
 	void SelectAt(QPoint pos);
 	u128 GetSelectedSegment();
-	void KeyPress(int key, QChar keychar);
+	void InsertAtCurrentSelection(const QString& text);
+	// Returns true if the keypress was handled
+	bool KeyPress(int key, QChar keychar);
 
 	MemoryViewType GetViewType()
 	{
@@ -109,6 +111,7 @@ public slots:
 	void contextCopyByte();
 	void contextCopySegment();
 	void contextCopyCharacter();
+	void contextPaste();
 	void gotoAddress(u32 address);
 
 signals:

@@ -66,9 +66,16 @@ struct GSMTLCASPSUniform
 
 struct GSMTLCLUTConvertPSUniform
 {
-	vector_float2 scale;
+	float scale;
 	vector_uint2 offset;
 	uint doffset;
+};
+
+struct GSMTLIndexedConvertPSUniform
+{
+	float scale;
+	uint sbw;
+	uint dbw;
 };
 
 struct GSMTLMainVertex
@@ -127,6 +134,8 @@ struct GSMTLMainPSUniform
 	vector_float2 tc_offset;
 	vector_float2 st_scale;
 	matrix_float4x4 dither_matrix;
+
+	vector_float4 scale_factor;
 };
 
 enum GSMTLAttributes
@@ -151,7 +160,6 @@ enum class GSMTLExpandType : unsigned char
 enum GSMTLFnConstants
 {
 	GSMTLConstantIndex_CAS_SHARPEN_ONLY,
-	GSMTLConstantIndex_SCALING_FACTOR,
 	GSMTLConstantIndex_FRAMEBUFFER_FETCH,
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,
@@ -159,7 +167,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_VS_EXPAND_TYPE,
 	GSMTLConstantIndex_PS_AEM_FMT,
 	GSMTLConstantIndex_PS_PAL_FMT,
-	GSMTLConstantIndex_PS_DFMT,
+	GSMTLConstantIndex_PS_DST_FMT,
 	GSMTLConstantIndex_PS_DEPTH_FMT,
 	GSMTLConstantIndex_PS_AEM,
 	GSMTLConstantIndex_PS_FBA,
@@ -174,6 +182,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_ADJT,
 	GSMTLConstantIndex_PS_LTF,
 	GSMTLConstantIndex_PS_SHUFFLE,
+	GSMTLConstantIndex_PS_SHUFFLE_SAME,
 	GSMTLConstantIndex_PS_READ_BA,
 	GSMTLConstantIndex_PS_READ16_SRC,
 	GSMTLConstantIndex_PS_WRITE_RG,
@@ -182,10 +191,12 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_BLEND_B,
 	GSMTLConstantIndex_PS_BLEND_C,
 	GSMTLConstantIndex_PS_BLEND_D,
-	GSMTLConstantIndex_PS_CLR_HW,
+	GSMTLConstantIndex_PS_BLEND_HW,
+	GSMTLConstantIndex_PS_A_MASKED,
 	GSMTLConstantIndex_PS_HDR,
 	GSMTLConstantIndex_PS_COLCLIP,
 	GSMTLConstantIndex_PS_BLEND_MIX,
+	GSMTLConstantIndex_PS_ROUND_INV,
 	GSMTLConstantIndex_PS_FIXED_ONE_A,
 	GSMTLConstantIndex_PS_PABE,
 	GSMTLConstantIndex_PS_NO_COLOR,
@@ -201,5 +212,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_AUTOMATIC_LOD,
 	GSMTLConstantIndex_PS_MANUAL_LOD,
 	GSMTLConstantIndex_PS_POINT_SAMPLER,
+	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
 };

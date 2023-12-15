@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -68,57 +68,57 @@ extern void ResetDplIIDecoder()
 
 void ProcessDplIISample32(const StereoOut16& src, Stereo51Out32DplII* s)
 {
-	float IL = src.Left / (float)(1 << 16);
-	float IR = src.Right / (float)(1 << 16);
+	const float IL = src.Left / static_cast<float>(1 << 16);
+	const float IR = src.Right / static_cast<float>(1 << 16);
 
 	// Calculate center channel and LFE
-	float C = (IL + IR) * 0.5f;
-	float SUB = C; // no need to lowpass, the speaker amplifier should take care of it
+	const float C = (IL + IR) * 0.5f;
+	const float SUB = C; // no need to lowpass, the speaker amplifier should take care of it
 
 	float L = IL - C; // Effective L/R data
 	float R = IR - C;
 
 	// Peak L/R
-	float PL = std::abs(L);
-	float PR = std::abs(R);
+	const float PL = std::abs(L);
+	const float PR = std::abs(R);
 
 	AccL += (PL - AccL) * 0.1f;
 	AccR += (PR - AccR) * 0.1f;
 
 	// Calculate power balance
-	float Balance = (AccR - AccL); // -1 .. 1
+	const float Balance = (AccR - AccL); // -1 .. 1
 
 	// If the power levels are different, then the audio is meant for the front speakers
-	float Frontness = std::abs(Balance);
-	float Rearness = 1 - Frontness; // And the other way around
+	const float Frontness = std::abs(Balance);
+	const float Rearness = 1 - Frontness; // And the other way around
 
 	// Equalize the power levels for L/R
-	float B = std::min(0.9f, std::max(-0.9f, Balance));
+	const float B = std::min(0.9f, std::max(-0.9f, Balance));
 
-	float VL = L / (1 - B); // if B>0, it means R>L, so increase L, else decrease L
-	float VR = R / (1 + B); // vice-versa
+	const float VL = L / (1 - B); // if B>0, it means R>L, so increase L, else decrease L
+	const float VR = R / (1 + B); // vice-versa
 
 	// 1.73+1.22 = 2.94; 2.94 = 0.34 = 0.9996; Close enough.
 	// The range for VL/VR is approximately 0..1,
 	// But in the cases where VL/VR are > 0.5, Rearness is 0 so it should never overflow.
-	const float RearScale = 0.34f * 2;
+	constexpr float RearScale = 0.34f * 2;
 
-	float SL = (VR * 1.73f - VL * 1.22f) * RearScale * Rearness;
-	float SR = (VR * 1.22f - VL * 1.73f) * RearScale * Rearness;
+	const float SL = (VR * 1.73f - VL * 1.22f) * RearScale * Rearness;
+	const float SR = (VR * 1.22f - VL * 1.73f) * RearScale * Rearness;
 	// Possible experiment: Play with stereo expension levels on rear
 
 	// Adjust the volume of the front speakers based on what we calculated above
 	L *= Frontness;
 	R *= Frontness;
 
-	s32 CX = (s32)(C * AddCLR);
+	const s32 CX = static_cast<s32>(C * AddCLR);
 
-	s->Left = (s32)(L * GainL) + CX;
-	s->Right = (s32)(R * GainR) + CX;
-	s->Center = (s32)(C * GainC);
-	s->LFE = (s32)(SUB * GainLFE);
-	s->LeftBack = (s32)(SL * GainSL);
-	s->RightBack = (s32)(SR * GainSR);
+	s->Left = static_cast<s32>(L * GainL) + CX;
+	s->Right = static_cast<s32>(R * GainR) + CX;
+	s->Center = static_cast<s32>(C * GainC);
+	s->LFE = static_cast<s32>(SUB * GainLFE);
+	s->LeftBack = static_cast<s32>(SL * GainSL);
+	s->RightBack = static_cast<s32>(SR * GainSR);
 }
 
 void ProcessDplIISample16(const StereoOut16& src, Stereo51Out16DplII* s)
@@ -136,25 +136,25 @@ void ProcessDplIISample16(const StereoOut16& src, Stereo51Out16DplII* s)
 
 void ProcessDplSample32(const StereoOut16& src, Stereo51Out32Dpl* s)
 {
-	float ValL = src.Left / (float)(1 << 16);
-	float ValR = src.Right / (float)(1 << 16);
+	const float ValL = src.Left / static_cast<float>(1 << 16);
+	const float ValR = src.Right / static_cast<float>(1 << 16);
 
-	float C = (ValL + ValR) * 0.5f; //+15.8
-	float S = (ValL - ValR) * 0.5f;
+	const float C = (ValL + ValR) * 0.5f; //+15.8
+	const float S = (ValL - ValR) * 0.5f;
 
-	float L = ValL - C; //+15.8
-	float R = ValR - C;
+	const float L = ValL - C; //+15.8
+	const float R = ValR - C;
 
-	float SUB = C;
+	const float SUB = C;
 
-	s32 CX = (s32)(C * AddCLR); // +15.16
+	const s32 CX = static_cast<s32>(C * AddCLR); // +15.16
 
-	s->Left = (s32)(L * GainL) + CX; // +15.16 = +31, can grow to +32 if (GainL + AddCLR)>255
-	s->Right = (s32)(R * GainR) + CX;
-	s->Center = (s32)(C * GainC); // +15.16 = +31
-	s->LFE = (s32)(SUB * GainLFE);
-	s->LeftBack = (s32)(S * GainSL);
-	s->RightBack = (s32)(S * GainSR);
+	s->Left = static_cast<s32>(L * GainL) + CX; // +15.16 = +31, can grow to +32 if (GainL + AddCLR)>255
+	s->Right = static_cast<s32>(R * GainR) + CX;
+	s->Center = static_cast<s32>(C * GainC); // +15.16 = +31
+	s->LFE = static_cast<s32>(SUB * GainLFE);
+	s->LeftBack = static_cast<s32>(S * GainSL);
+	s->RightBack = static_cast<s32>(S * GainSR);
 }
 
 void ProcessDplSample16(const StereoOut16& src, Stereo51Out16Dpl* s)

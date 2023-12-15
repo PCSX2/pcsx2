@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -253,7 +253,7 @@ HANDLE TAPOpen(const std::string& device_guid)
 		return INVALID_HANDLE_VALUE;
 	}
 
-	BOOL bret = DeviceIoControl(handle.get(), TAP_IOCTL_GET_VERSION,
+	const BOOL bret = DeviceIoControl(handle.get(), TAP_IOCTL_GET_VERSION,
 		&version, sizeof(version),
 		&version, sizeof(version), (LPDWORD)&version_len, NULL);
 
@@ -400,14 +400,13 @@ bool TAPGetWin32Adapter(const std::string& name, PIP_ADAPTER_ADDRESSES adapter, 
 	//Note that we append to the collection during iteration
 	for (size_t vi = 0; vi < searchList.size(); vi++)
 	{
-		int targetIndex = searchList[vi];
-
 		for (ULONG i = 0; i < table->NumEntries; i++)
 		{
+			int targetIndex = searchList[vi];
 			MIB_IFSTACK_ROW row = table->Table[i];
 			if (row.LowerLayerInterfaceIndex == targetIndex)
 			{
-				PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(AdapterInfoReduced.get(), row.HigherLayerInterfaceIndex);
+				const PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(AdapterInfoReduced.get(), row.HigherLayerInterfaceIndex);
 				if (potentialAdapter != nullptr)
 				{
 					Console.WriteLn(fmt::format("DEV9: {} is possible bridge (Check 1 passed)", StringUtil::WideStringToUTF8String(potentialAdapter->Description)));
@@ -598,7 +597,7 @@ bool TAPAdapter::recv(NetPacket* pkt)
 
 	if (!result)
 	{
-		DWORD dwError = GetLastError();
+		const DWORD dwError = GetLastError();
 		if (dwError == ERROR_IO_PENDING)
 		{
 			HANDLE readHandles[]{read.hEvent, cancel};
@@ -639,7 +638,7 @@ bool TAPAdapter::send(NetPacket* pkt)
 
 	if (!result)
 	{
-		DWORD dwError = GetLastError();
+		const DWORD dwError = GetLastError();
 		if (dwError == ERROR_IO_PENDING)
 		{
 			WaitForSingleObject(write.hEvent, INFINITE);

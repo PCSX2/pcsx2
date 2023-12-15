@@ -275,7 +275,9 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 		//
 		const bool is_lqc_sqc = (_Opcode_ == 066 || _Opcode_ == 076);
 		const bool is_non_interlocked_move = (_Opcode_ == 022 && _Rs_ < 020 && ((cpuRegs.code & 1) == 0));
-		if (needs_vu0_sync && (is_lqc_sqc || is_non_interlocked_move))
+		// Moving zero to the VU registers, so likely removing a loop/lock.
+		const bool likely_clear = _Opcode_ == 022 && _Rs_ < 020 && _Rs_ > 004 && _Rt_ == 000;
+		if ((needs_vu0_sync && (is_lqc_sqc || is_non_interlocked_move)) || likely_clear)
 		{
 			bool following_needs_finish = false;
 			ForEachInstruction(apc + 4, end, inst_cache + 1, [&following_needs_finish](u32 apc2, EEINST* inst2) {
@@ -304,7 +306,7 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 			else
 			{
 				inst->info |= EEINST_COP2_FLUSH_VU0_REGISTERS | EEINST_COP2_SYNC_VU0;
-				needs_vu0_sync = block_interlocked;
+				needs_vu0_sync = block_interlocked || (is_non_interlocked_move && likely_clear);
 				needs_vu0_finish = true;
 			}
 

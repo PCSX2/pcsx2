@@ -22,9 +22,6 @@
     <height>500</height>
    </size>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>0</number>
@@ -92,7 +89,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -149,7 +146,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -189,7 +186,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -242,7 +239,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -301,7 +298,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -341,7 +338,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -383,7 +380,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../resources/resources.qrc">:/images/GTForce.png</pixmap>
+          <pixmap resource="../resources/resources.qrc">:/images/GT_Force.svg</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -434,7 +431,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -480,7 +477,7 @@
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string notr="true">PushButton</string>
             </property>
            </widget>
           </item>
@@ -552,7 +549,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -592,7 +589,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>
@@ -645,7 +642,7 @@
            </size>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string notr="true">PushButton</string>
           </property>
          </widget>
         </item>

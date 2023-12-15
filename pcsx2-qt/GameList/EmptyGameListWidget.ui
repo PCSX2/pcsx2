@@ -10,9 +10,6 @@
     <height>470</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <spacer name="verticalSpacer_2">
@@ -40,7 +37,7 @@
    <item>
     <widget class="QLabel" name="supportedFormats">
      <property name="text">
-      <string>TextLabel</string>
+      <string notr="true">TextLabel</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

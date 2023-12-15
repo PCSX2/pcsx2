@@ -450,6 +450,11 @@ static void recCFC2()
 			xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
 		}
 	}
+	else if (_Rd_ == REG_R)
+	{
+		xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[REG_R].UL]);
+		xAND(xRegister64(regt), 0x7FFFFF);
+	}
 	else if (_Rd_ >= REG_STATUS_FLAG) // FixMe: Should R-Reg have upper 9 bits 0?
 	{
 		xMOVSX(xRegister64(regt), ptr32[&vu0Regs.VI[_Rd_].UL]);
@@ -885,6 +890,7 @@ void recSQC2()
 }
 
 #else
+namespace Interp = R5900::Interpreter::OpcodeImpl;
 
 REC_FUNC(LQC2);
 REC_FUNC(SQC2);

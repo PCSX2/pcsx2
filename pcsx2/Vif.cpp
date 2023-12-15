@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,22 +14,23 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
-#include "Vif.h"
-#include "Vif_Dma.h"
-#include "newVif.h"
 #include "GS.h"
 #include "Gif.h"
-#include "MTVU.h"
 #include "Gif_Unit.h"
+#include "MTVU.h"
+#include "Vif.h"
+#include "Vif_Dma.h"
+#include "x86/newVif.h"
 
 alignas(16) vifStruct vif0, vif1;
 
 void vif0Reset()
 {
 	/* Reset the whole VIF, meaning the internal pcsx2 vars and all the registers */
-	memzero(vif0);
-	memzero(vif0Regs);
+	std::memset(&vif0, 0, sizeof(vif0));
+	std::memset(&vif0Regs, 0, sizeof(vif0Regs));
 
 	resetNewVif(0);
 }
@@ -37,15 +38,16 @@ void vif0Reset()
 void vif1Reset()
 {
 	/* Reset the whole VIF, meaning the internal pcsx2 vars, and all the registers */
-	memzero(vif1);
-	memzero(vif1Regs);
+	std::memset(&vif1, 0, sizeof(vif1));
+	std::memset(&vif1Regs, 0, sizeof(vif1Regs));
 
 	resetNewVif(1);
 }
 
-void SaveStateBase::vif0Freeze()
+bool SaveStateBase::vif0Freeze()
 {
-	FreezeTag("VIF0dma");
+	if (!FreezeTag("VIF0dma"))
+		return false;
 
 	Freeze(g_vif0Cycles);
 
@@ -53,11 +55,14 @@ void SaveStateBase::vif0Freeze()
 
 	Freeze(nVif[0].bSize);
 	FreezeMem(nVif[0].buffer, nVif[0].bSize);
+
+	return IsOkay();
 }
 
-void SaveStateBase::vif1Freeze()
+bool SaveStateBase::vif1Freeze()
 {
-	FreezeTag("VIF1dma");
+	if (!FreezeTag("VIF1dma"))
+		return false;
 
 	Freeze(g_vif1Cycles);
 
@@ -65,6 +70,8 @@ void SaveStateBase::vif1Freeze()
 
 	Freeze(nVif[1].bSize);
 	FreezeMem(nVif[1].buffer, nVif[1].bSize);
+
+	return IsOkay();
 }
 
 //------------------------------------------------------------------
@@ -126,7 +133,7 @@ __fi void vif0FBRST(u32 value)
 		SaveCol._u64[1] = vif0.MaskCol._u64[1];
 		SaveRow._u64[0] = vif0.MaskRow._u64[0];
 		SaveRow._u64[1] = vif0.MaskRow._u64[1];
-		memzero(vif0);
+		std::memset(&vif0, 0, sizeof(vif0));
 		vif0.MaskCol._u64[0] = SaveCol._u64[0];
 		vif0.MaskCol._u64[1] = SaveCol._u64[1];
 		vif0.MaskRow._u64[0] = SaveRow._u64[0];
@@ -224,7 +231,7 @@ __fi void vif1FBRST(u32 value)
 		SaveRow._u64[0] = vif1.MaskRow._u64[0];
 		SaveRow._u64[1] = vif1.MaskRow._u64[1];
 		u8 mfifo_empty = vif1.inprogress & 0x10;
-		memzero(vif1);
+		std::memset(&vif1, 0, sizeof(vif1));
 		vif1.MaskCol._u64[0] = SaveCol._u64[0];
 		vif1.MaskCol._u64[1] = SaveCol._u64[1];
 		vif1.MaskRow._u64[0] = SaveRow._u64[0];

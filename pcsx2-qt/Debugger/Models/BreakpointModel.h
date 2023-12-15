@@ -16,6 +16,8 @@
 #pragma once
 
 #include <QtCore/QAbstractTableModel>
+#include <QtWidgets/QHeaderView>
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
 
@@ -28,14 +30,31 @@ class BreakpointModel : public QAbstractTableModel
 public:
 	enum BreakpointColumns : int
 	{
-		TYPE = 0,
+		ENABLED = 0,
+		TYPE,
 		OFFSET,
 		SIZE_LABEL,
 		OPCODE,
 		CONDITION,
 		HITS,
-		ENABLED,
 		COLUMN_COUNT
+	};
+
+	enum BreakpointRoles : int
+	{
+		DataRole = Qt::UserRole,
+		ExportRole = Qt::UserRole + 1,
+	};
+
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[BreakpointColumns::COLUMN_COUNT] =
+	{
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::Stretch,
+		QHeaderView::ResizeMode::Stretch,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
 	};
 
 	explicit BreakpointModel(DebugInterface& cpu, QObject* parent = nullptr);

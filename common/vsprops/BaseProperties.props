@@ -1,38 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
-    <_PropertySheetDisplayName>PcsxBaseProperties</_PropertySheetDisplayName>
-    <OutDir>$(SolutionDir)bin\$(PcsxSubsection)\</OutDir>
-    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
-    <ExtensionsToDeleteOnClean>*.bsc;*.idb;*.sbr;*.res;*.pch;*.pdb;*.obj;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.pgc;*.pgd;*.meta;$(TargetPath);$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <OutDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)bin-arm64\</OutDir>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>__WIN32__;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;WINVER=0x0A00;_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <CompileAs>Default</CompileAs>
-      <DisableSpecificWarnings>4063;4100;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-
-      <!-- Force ThinLTO for Release builds, MSVC doesn't seem to do it otherwise. -->
-      <!-- Also due to include order, needs to be set here, rather than in CodeGen_Release.props -->
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(Release))"> -flto=thin %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-    </Link>
-    <PreBuildEvent>
-      <Command>"$(SolutionDir)common\vsprops\preBuild.cmd"</Command>
-    </PreBuildEvent>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
 </Project>

@@ -1,6 +1,6 @@
 # Setting it to a range tells it that it supports the features on the newer
 # versions as well, avoiding setting policies.
-cmake_minimum_required(VERSION 3.12...3.24)
+cmake_minimum_required(VERSION 3.16...3.24)
 
 #Enabling this cmake policy gets rid of warnings regarding LTO.
 cmake_policy(SET CMP0069 NEW)
@@ -50,20 +50,15 @@ add_subdirectory(common)
 
 # make pcsx2
 add_subdirectory(pcsx2)
+add_subdirectory(pcsx2-qt)
 
-if (QT_BUILD)
-	add_subdirectory(pcsx2-qt)
-
-	# Updater is Windows only for now.
-	if (WIN32)
-		add_subdirectory(updater)
-	endif()
+# Updater is Windows only for now.
+if (WIN32)
+	add_subdirectory(updater)
 endif()
 
 # tests
 if(ACTUALLY_ENABLE_TESTS)
-	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-	add_subdirectory(3rdparty/gtest EXCLUDE_FROM_ALL)
 	add_subdirectory(tests/ctest)
 endif()
 

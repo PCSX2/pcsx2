@@ -24,26 +24,36 @@ namespace GameList
 	struct Entry;
 }
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GameSummaryWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	GameSummaryWidget(const GameList::Entry* entry, SettingsDialog* dialog, QWidget* parent);
+	GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent);
 	~GameSummaryWidget();
+
+private Q_SLOTS:
+	void onInputProfileChanged(int index);
+	void onDiscPathChanged(const QString& value);
+	void onDiscPathBrowseClicked();
+	void onVerifyClicked();
+	void onSearchHashClicked();
 
 private:
 	void populateInputProfiles();
 	void populateDetails(const GameList::Entry* entry);
 	void populateDiscPath(const GameList::Entry* entry);
+	void populateTrackList(const GameList::Entry* entry);
+	void setVerifyResult(QString error);
+	void repopulateCurrentDetails();
 
-	void onInputProfileChanged(int index);
-	void onDiscPathChanged(const QString& value);
-	void onDiscPathBrowseClicked();
+	void setCustomTitle(const std::string& text);
+	void setCustomRegion(int region);
 
 	Ui::GameSummaryWidget m_ui;
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 	std::string m_entry_path;
+	std::string m_redump_search_keyword;
 };

@@ -23,19 +23,19 @@
 
 #include "PrecompiledHeader.h"
 
+#include "DebugTools/Debug.h"
+#include "R3000A.h"
+#include "System.h"
+#include "x86/iR5900.h"
+
+#include "fmt/core.h"
+
+#include <cctype>
+#include <cstdarg>
+
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
-
-#include <cstdarg>
-#include <ctype.h>
-
-#include "R3000A.h"
-#include "iR5900.h"
-#include "System.h"
-#include "DebugTools/Debug.h"
-
-#include "fmt/core.h"
 
 using namespace R5900;
 

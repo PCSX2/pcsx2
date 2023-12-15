@@ -1,13 +1,14 @@
 add_library(rcheevos
+	rcheevos/include/rcheevos.h
 	rcheevos/include/rc_api_editor.h
 	rcheevos/include/rc_api_info.h
 	rcheevos/include/rc_api_request.h
 	rcheevos/include/rc_api_runtime.h
 	rcheevos/include/rc_api_user.h
+	rcheevos/include/rc_client.h
 	rcheevos/include/rc_consoles.h
 	rcheevos/include/rc_error.h
 	rcheevos/include/rc_hash.h
-	rcheevos/include/rcheevos.h
 	rcheevos/include/rc_runtime.h
 	rcheevos/include/rc_runtime_types.h
 	rcheevos/include/rc_url.h
@@ -18,7 +19,6 @@ add_library(rcheevos
 	rcheevos/src/rapi/rc_api_runtime.c
 	rcheevos/src/rapi/rc_api_user.c
 	rcheevos/src/rcheevos/alloc.c
-	rcheevos/src/rcheevos/compat.c
 	rcheevos/src/rcheevos/condition.c
 	rcheevos/src/rcheevos/condset.c
 	rcheevos/src/rcheevos/consoleinfo.c
@@ -26,7 +26,6 @@ add_library(rcheevos
 	rcheevos/src/rcheevos/lboard.c
 	rcheevos/src/rcheevos/memref.c
 	rcheevos/src/rcheevos/operand.c
-	rcheevos/src/rcheevos/rc_compat.h
 	rcheevos/src/rcheevos/rc_internal.h
 	rcheevos/src/rcheevos/rc_validate.c
 	rcheevos/src/rcheevos/rc_validate.h
@@ -35,6 +34,14 @@ add_library(rcheevos
 	rcheevos/src/rcheevos/runtime_progress.c
 	rcheevos/src/rcheevos/trigger.c
 	rcheevos/src/rcheevos/value.c
+	rcheevos/src/rc_client.c
+	rcheevos/src/rc_client_internal.h
+	rcheevos/src/rc_compat.c
+	rcheevos/src/rc_compat.h
+	rcheevos/src/rc_util.c
+	rcheevos/src/rc_util.h
+	rcheevos/src/rc_version.h
+	rcheevos/src/rhash/cdreader.c
 	rcheevos/src/rhash/hash.c
 	rcheevos/src/rhash/md5.c
 	rcheevos/src/rhash/md5.h

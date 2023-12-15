@@ -17,16 +17,12 @@
 #include "microVU.h"
 #include <array>
 
-union regInfo
+struct regCycleInfo
 {
-	u32 reg;
-	struct
-	{
-		u8 x;
-		u8 y;
-		u8 z;
-		u8 w;
-	};
+	u8 x : 4;
+	u8 y : 4;
+	u8 z : 4;
+	u8 w : 4;
 };
 
 // microRegInfo is carefully ordered for faster compares.  The "important" information is
@@ -57,24 +53,24 @@ union alignas(16) microRegInfo
 		};
 
 		u32 xgkickcycles;
-		u8 mbitinblock;
+		u8 unused;
 		u8 vi15v; // 'vi15' constant is valid
 		u16 vi15; // Constant Prop Info for vi15
 
 		struct
 		{
 			u8 VI[16];
-			regInfo VF[32];
+			regCycleInfo VF[32];
 		};
 	};
 
-	u128 full128[160 / sizeof(u128)];
-	u64  full64[160 / sizeof(u64)];
-	u32  full32[160 / sizeof(u32)];
+	u128 full128[96 / sizeof(u128)];
+	u64  full64[96 / sizeof(u64)];
+	u32  full32[96 / sizeof(u32)];
 };
 
 // Note: mVUcustomSearch needs to be updated if this is changed
-static_assert(sizeof(microRegInfo) == 160, "microRegInfo was not 160 bytes");
+static_assert(sizeof(microRegInfo) == 96, "microRegInfo was not 96 bytes");
 
 struct microProgram;
 struct microJumpCache
@@ -94,14 +90,14 @@ struct alignas(16) microBlock
 
 struct microTempRegInfo
 {
-	regInfo VF[2]; // Holds cycle info for Fd, VF[0] = Upper Instruction, VF[1] = Lower Instruction
-	u8 VFreg[2];   // Index of the VF reg
-	u8 VI;         // Holds cycle info for Id
-	u8 VIreg;      // Index of the VI reg
-	u8 q;          // Holds cycle info for Q reg
-	u8 p;          // Holds cycle info for P reg
-	u8 r;          // Holds cycle info for R reg (Will never cause stalls, but useful to know if R is modified)
-	u8 xgkick;     // Holds the cycle info for XGkick
+	regCycleInfo VF[2]; // Holds cycle info for Fd, VF[0] = Upper Instruction, VF[1] = Lower Instruction
+	u8 VFreg[2];        // Index of the VF reg
+	u8 VI;              // Holds cycle info for Id
+	u8 VIreg;           // Index of the VI reg
+	u8 q;               // Holds cycle info for Q reg
+	u8 p;               // Holds cycle info for P reg
+	u8 r;               // Holds cycle info for R reg (Will never cause stalls, but useful to know if R is modified)
+	u8 xgkick;          // Holds the cycle info for XGkick
 };
 
 struct microVFreg
@@ -1015,6 +1011,9 @@ public:
 				microMapGPR& mapI = gprMap[i];
 				if (mapI.VIreg == viLoadReg)
 				{
+					// Do this first, there is a case where when loadReg != writeReg, the findFreeGPR can steal the loadReg
+					gprMap[i].count = this_counter;
+
 					if (viWriteReg >= 0) // Reg will be modified
 					{
 						if (viLoadReg != viWriteReg)
@@ -1025,7 +1024,17 @@ public:
 							// allocate a new register for writing to
 							int x = findFreeGPR(viWriteReg);
 							const xRegister32& gprX = xRegister32::GetInstance(x);
+
 							writeBackReg(gprX, true);
+
+							// writeReg not cached, needs backing up
+							if (backup && gprMap[x].VIreg != viWriteReg)
+							{
+								xMOVZX(gprX, ptr16[&getVI(viWriteReg)]);
+								writeVIBackup(gprX);
+								backup = false;
+							}
+
 							if (zext_if_dirty)
 								xMOVZX(gprX, xRegister16(i));
 							else
@@ -1048,7 +1057,7 @@ public:
 						xMOVZX(xRegister32(i), xRegister16(i));
 						gprMap[i].isZeroExtended = true;
 					}
-					gprMap[i].count = this_counter;
+
 					gprMap[i].isNeeded = true;
 
 					if (backup)

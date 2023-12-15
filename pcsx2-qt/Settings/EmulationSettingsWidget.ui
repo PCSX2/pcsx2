@@ -10,9 +10,6 @@
     <height>431</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>0</number>
@@ -51,14 +48,14 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Slow Motion Speed:</string>
+         <string>Slow-Motion Speed:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Fast Forward Speed:</string>
+         <string>Fast-Forward Speed:</string>
         </property>
        </widget>
       </item>
@@ -97,7 +94,7 @@
         <item row="0" column="0">
          <widget class="QCheckBox" name="MTVU">
           <property name="text">
-           <string>Enable Multi-Threaded VU1 (MTVU)</string>
+           <string>Enable Multithreaded VU1 (MTVU)</string>
           </property>
          </widget>
         </item>
@@ -252,7 +249,7 @@
       <item row="1" column="1">
        <widget class="QSpinBox" name="maxFrameLatency">
         <property name="suffix">
-         <string> frames</string>
+         <string extracomment="This string will appear next to the amount of frames selected, in a dropdown box."> frames</string>
         </property>
         <property name="minimum">
          <number>1</number>

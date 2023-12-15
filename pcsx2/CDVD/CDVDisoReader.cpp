@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,18 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-/*
- *  Original code from libcdvd by Hiryu & Sjeep (C) 2002
- *  Modified by Florin for PCSX2 emu
- *  Fixed CdRead by linuzappz
- */
-
 #include "PrecompiledHeader.h"
 #include "IsoFileFormats.h"
 #include "AsyncFileReader.h"
 #include "CDVD/CDVD.h"
-#include "common/Exceptions.h"
+
+#include "common/Assertions.h"
+#include "common/Error.h"
 
 #include <cstring>
 #include <array>
@@ -36,23 +31,23 @@ static int pmode, cdtype;
 static s32 layer1start = -1;
 static bool layer1searched = false;
 
-void CALLBACK ISOclose()
+static void ISOclose()
 {
 	iso.Close();
 }
 
-s32 CALLBACK ISOopen(const char* pTitle)
+static bool ISOopen(std::string filename, Error* error)
 {
 	ISOclose(); // just in case
 
-	if ((pTitle == NULL) || (pTitle[0] == 0))
+	if (filename.empty())
 	{
-		Console.Error("CDVDiso Error: No filename specified.");
-		return -1;
+		Error::SetString(error, "No filename specified.");
+		return false;
 	}
 
-	if (!iso.Open(pTitle))
-		return -1;
+	if (!iso.Open(std::move(filename), error, false))
+		return false;
 
 	switch (iso.GetType())
 	{
@@ -70,10 +65,10 @@ s32 CALLBACK ISOopen(const char* pTitle)
 	layer1start = -1;
 	layer1searched = false;
 
-	return 0;
+	return true;
 }
 
-s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
+static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	// fake it
 	u8 min, sec, frm;
@@ -97,7 +92,7 @@ s32 CALLBACK ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 	return 0;
 }
 
-s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
+static s32 ISOgetTN(cdvdTN* Buffer)
 {
 	Buffer->strack = 1;
 	Buffer->etrack = 1;
@@ -105,7 +100,7 @@ s32 CALLBACK ISOgetTN(cdvdTN* Buffer)
 	return 0;
 }
 
-s32 CALLBACK ISOgetTD(u8 Track, cdvdTD* Buffer)
+static s32 ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
 	if (Track == 0)
 	{
@@ -169,7 +164,7 @@ static void FindLayer1Start()
 }
 
 // Should return 0 if no error occurred, or -1 if layer detection FAILED.
-s32 CALLBACK ISOgetDualInfo(s32* dualType, u32* _layer1start)
+static s32 ISOgetDualInfo(s32* dualType, u32* _layer1start)
 {
 	FindLayer1Start();
 
@@ -186,12 +181,12 @@ s32 CALLBACK ISOgetDualInfo(s32* dualType, u32* _layer1start)
 	return 0;
 }
 
-s32 CALLBACK ISOgetDiskType()
+static s32 ISOgetDiskType()
 {
 	return cdtype;
 }
 
-s32 CALLBACK ISOgetTOC(void* toc)
+static s32 ISOgetTOC(void* toc)
 {
 	u8 type = ISOgetDiskType();
 	u8* tocBuff = (u8*)toc;
@@ -208,7 +203,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 
 		if (layer1start < 0)
 		{
-			// fake it
+			// Single Layer - Values are fixed.
 			tocBuff[0] = 0x04;
 			tocBuff[1] = 0x02;
 			tocBuff[2] = 0xF2;
@@ -216,15 +211,35 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			tocBuff[4] = 0x86;
 			tocBuff[5] = 0x72;
 
+			// These values are fixed on all discs, except position 14 which is the OTP/PTP flags which are 0 in single layer.
+			tocBuff[12] = 0x01;
+			tocBuff[13] = 0x02;
+			tocBuff[14] = 0x01;
+			tocBuff[15] = 0x00;
+
+			// Values are fixed.
 			tocBuff[16] = 0x00;
 			tocBuff[17] = 0x03;
 			tocBuff[18] = 0x00;
 			tocBuff[19] = 0x00;
+
+			cdvdTD trackInfo;
+			// Get the max LSN for the track
+			if (ISOgetTD(0, &trackInfo) == -1)
+				trackInfo.lsn = 0;
+
+			// Max LSN in the TOC is calculated as the blocks + 0x30000, then - 1.
+			// same as layer 1 start.
+			const s32 maxlsn = trackInfo.lsn + (0x30000 - 1);
+			tocBuff[20] = maxlsn >> 24;
+			tocBuff[21] = (maxlsn >> 16) & 0xff;
+			tocBuff[22] = (maxlsn >> 8) & 0xff;
+			tocBuff[23] = (maxlsn >> 0) & 0xff;
 			return 0;
 		}
 		else
 		{
-			// dual sided
+			// Dual sided - Values are fixed.
 			tocBuff[0] = 0x24;
 			tocBuff[1] = 0x02;
 			tocBuff[2] = 0xF2;
@@ -232,14 +247,19 @@ s32 CALLBACK ISOgetTOC(void* toc)
 			tocBuff[4] = 0x41;
 			tocBuff[5] = 0x95;
 
-			tocBuff[14] = 0x60; // dual sided, ptp
+			// These values are fixed on all discs, except position 14 which is the OTP/PTP flags.
+			tocBuff[12] = 0x01;
+			tocBuff[13] = 0x02;
+			tocBuff[14] = 0x21; // PTP
+			tocBuff[15] = 0x10;
 
+			// Values are fixed.
 			tocBuff[16] = 0x00;
 			tocBuff[17] = 0x03;
 			tocBuff[18] = 0x00;
 			tocBuff[19] = 0x00;
 
-			s32 l1s = layer1start + 0x30000 - 1;
+			const s32 l1s = layer1start + 0x30000 - 1;
 			tocBuff[20] = (l1s >> 24);
 			tocBuff[21] = (l1s >> 16) & 0xff;
 			tocBuff[22] = (l1s >> 8) & 0xff;
@@ -280,7 +300,9 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		tocBuff[22] = 0xA2;
 		tocBuff[27] = itob(min);
 		tocBuff[28] = itob(sec);
+		tocBuff[29] = itob(frm);
 
+		// TODO: When cue support is added, this will need to account for pregap.
 		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
 		{
 			err = ISOgetTD(i, &trackInfo);
@@ -298,7 +320,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 	return 0;
 }
 
-s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
+static s32 ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 {
 	static u8 cdbuffer[CD_FRAMESIZE_RAW] = {0};
 
@@ -349,7 +371,7 @@ s32 CALLBACK ISOreadSector(u8* tempbuffer, u32 lsn, int mode)
 	return 0;
 }
 
-s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
+static s32 ISOreadTrack(u32 lsn, int mode)
 {
 	int _lsn = lsn;
 
@@ -363,41 +385,30 @@ s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
 	return 0;
 }
 
-s32 CALLBACK ISOgetBuffer(u8* buffer)
+static s32 ISOgetBuffer(u8* buffer)
 {
 	return iso.FinishRead3(buffer, pmode);
 }
 
-//u8* CALLBACK ISOgetBuffer()
-//{
-//	iso.FinishRead();
-//	return pbuffer;
-//}
-
-s32 CALLBACK ISOgetTrayStatus()
+static s32 ISOgetTrayStatus()
 {
 	return CDVD_TRAY_CLOSE;
 }
 
-s32 CALLBACK ISOctrlTrayOpen()
+static s32 ISOctrlTrayOpen()
 {
 	return 0;
 }
-s32 CALLBACK ISOctrlTrayClose()
-{
-	return 0;
-}
-
-s32 CALLBACK ISOdummyS32()
+static s32 ISOctrlTrayClose()
 {
 	return 0;
 }
 
-void CALLBACK ISOnewDiskCB(void (*/* callback */)())
+static void ISOnewDiskCB(void (* /* callback */)())
 {
 }
 
-CDVD_API CDVDapi_Iso =
+const CDVD_API CDVDapi_Iso =
 	{
 		ISOclose,
 
@@ -409,10 +420,9 @@ CDVD_API CDVDapi_Iso =
 		ISOgetTD,
 		ISOgetTOC,
 		ISOgetDiskType,
-		ISOdummyS32, // trayStatus
-		ISOdummyS32, // trayOpen
-		ISOdummyS32, // trayClose
-
+		ISOgetTrayStatus,
+		ISOctrlTrayOpen,
+		ISOctrlTrayClose,
 		ISOnewDiskCB,
 
 		ISOreadSector,

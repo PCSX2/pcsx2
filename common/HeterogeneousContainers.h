@@ -60,8 +60,6 @@ namespace detail
 	};
 } // namespace detail
 
-// This requires C++20, so fallback to ugly heap allocations if we don't have it.
-#if __cplusplus >= 202002L
 template <typename ValueType>
 using UnorderedStringMap =
 	std::unordered_map<std::string, ValueType, detail::transparent_string_hash, detail::transparent_string_equal>;
@@ -72,84 +70,6 @@ using UnorderedStringSet =
 	std::unordered_set<std::string, detail::transparent_string_hash, detail::transparent_string_equal>;
 using UnorderedStringMultiSet =
 	std::unordered_multiset<std::string, detail::transparent_string_hash, detail::transparent_string_equal>;
-
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMap<ValueType>::const_iterator
-UnorderedStringMapFind(const UnorderedStringMap<ValueType>& map, const KeyType& key)
-{
-	return map.find(key);
-}
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMap<ValueType>::iterator
-UnorderedStringMapFind(UnorderedStringMap<ValueType>& map, const KeyType& key)
-{
-	return map.find(key);
-}
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMultimap<ValueType>::const_iterator
-UnorderedStringMultiMapFind(const UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.find(key);
-}
-template <typename KeyType, typename ValueType>
-__fi std::pair<typename UnorderedStringMultimap<ValueType>::const_iterator, typename UnorderedStringMultimap<ValueType>::const_iterator>
-UnorderedStringMultiMapEqualRange(const UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.equal_range(key);
-}
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMultimap<ValueType>::iterator
-UnorderedStringMultiMapFind(UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.find(key);
-}
-template <typename KeyType, typename ValueType>
-__fi std::pair<typename UnorderedStringMultimap<ValueType>::iterator, typename UnorderedStringMultimap<ValueType>::iterator>
-UnorderedStringMultiMapEqualRange(UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.equal_range(key);
-}
-#else
-template <typename ValueType>
-using UnorderedStringMap = std::unordered_map<std::string, ValueType>;
-template <typename ValueType>
-using UnorderedStringMultimap = std::unordered_multimap<std::string, ValueType>;
-using UnorderedStringSet = std::unordered_set<std::string>;
-using UnorderedStringMultiSet = std::unordered_multiset<std::string>;
-
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMap<ValueType>::const_iterator UnorderedStringMapFind(const UnorderedStringMap<ValueType>& map, const KeyType& key)
-{
-	return map.find(std::string(key));
-}
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMap<ValueType>::iterator UnorderedStringMapFind(UnorderedStringMap<ValueType>& map, const KeyType& key)
-{
-	return map.find(std::string(key));
-}
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMultimap<ValueType>::const_iterator UnorderedStringMultiMapFind(const UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.find(std::string(key));
-}
-template <typename KeyType, typename ValueType>
-__fi std::pair<typename UnorderedStringMultimap<ValueType>::const_iterator, typename UnorderedStringMultimap<ValueType>::const_iterator>
-UnorderedStringMultiMapEqualRange(const UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.equal_range(std::string(key));
-}
-template <typename KeyType, typename ValueType>
-__fi typename UnorderedStringMultimap<ValueType>::iterator UnorderedStringMultiMapFind(UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.find(std::string(key));
-}
-template <typename KeyType, typename ValueType>
-__fi std::pair<typename UnorderedStringMultimap<ValueType>::iterator, typename UnorderedStringMultimap<ValueType>::iterator>
-UnorderedStringMultiMapEqualRange(UnorderedStringMultimap<ValueType>& map, const KeyType& key)
-{
-	return map.equal_range(std::string(key));
-}
-#endif
 
 template <typename ValueType>
 using StringMap = std::map<std::string, ValueType, detail::transparent_string_less>;

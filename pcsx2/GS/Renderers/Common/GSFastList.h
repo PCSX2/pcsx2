@@ -228,9 +228,7 @@ private:
 	void Grow()
 	{
 		if (m_capacity == USHRT_MAX)
-		{
-			throw std::runtime_error("FastList size maxed out at USHRT_MAX (65535) elements, cannot grow futhermore.");
-		}
+			pxFailRel("FastList size maxed out at USHRT_MAX (65535) elements, cannot grow futhermore.");
 
 		const u16 new_capacity = m_capacity <= (USHRT_MAX / 2) ? (m_capacity * 2) : USHRT_MAX;
 
@@ -247,9 +245,7 @@ private:
 
 		// Initialize the additional space in the stack
 		for (u16 i = m_capacity - 1; i < new_capacity - 1; i++)
-		{
 			m_free_indexes_stack[i] = i + 1;
-		}
 
 		m_capacity = new_capacity;
 	}

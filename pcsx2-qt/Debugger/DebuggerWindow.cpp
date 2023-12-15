@@ -30,31 +30,29 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 // Easiest way to handle cross platform monospace fonts
 // There are issues related to TabWidget -> Children font inheritance otherwise
-#ifdef WIN32
-	this->setStyleSheet("font: 8pt 'Lucida Console'");
+#if defined(WIN32)
+	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Lucida Console'"));
+#elif defined(__APPLE__)
+	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 10pt 'Monaco'"));
 #else
-	this->setStyleSheet("font: 8pt 'Monospace'");
+	m_ui.cpuTabs->setStyleSheet(QStringLiteral("font: 8pt 'Monospace'"));
 #endif
 
-	m_actionRunPause = new QAction(tr("Run"), this);
-	m_actionStepInto = new QAction(tr("Step Into"), this);
-	m_actionStepOver = new QAction(tr("Step Over"), this);
-	m_actionStepOut = new QAction(tr("Step Out"), this);
-
-	m_ui.menubar->addAction(m_actionRunPause);
-	m_ui.menubar->addAction(m_actionStepInto);
-	m_ui.menubar->addAction(m_actionStepOver);
-	m_ui.menubar->addAction(m_actionStepOut);
-
-	connect(m_actionRunPause, &QAction::triggered, this, &DebuggerWindow::onRunPause);
-	connect(m_actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
-	connect(m_actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
-	connect(m_actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
+	connect(m_ui.actionRun, &QAction::triggered, this, &DebuggerWindow::onRunPause);
+	connect(m_ui.actionStepInto, &QAction::triggered, this, &DebuggerWindow::onStepInto);
+	connect(m_ui.actionStepOver, &QAction::triggered, this, &DebuggerWindow::onStepOver);
+	connect(m_ui.actionStepOut, &QAction::triggered, this, &DebuggerWindow::onStepOut);
+	connect(m_ui.actionOnTop, &QAction::triggered, [this] { this->setWindowFlags(this->windowFlags() ^ Qt::WindowStaysOnTopHint); this->show(); });
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &DebuggerWindow::onVMStateChanged);
 	connect(g_emu_thread, &EmuThread::onVMResumed, this, &DebuggerWindow::onVMStateChanged);
 
 	onVMStateChanged(); // If we missed a state change while we weren't loaded
+
+	// We can't do this in the designer, but we want to right align the actionOnTop action in the toolbar
+	QWidget* spacer = new QWidget(this);
+	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	m_ui.toolBar->insertWidget(m_ui.actionOnTop, spacer);
 
 	m_cpuWidget_r5900 = new CpuWidget(this, r5900Debug);
 	m_cpuWidget_r3000 = new CpuWidget(this, r3000Debug);
@@ -69,44 +67,65 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 DebuggerWindow::~DebuggerWindow() = default;
 
-// TODO: not this
-bool nextStatePaused = true;
+// There is no straightforward way to set the tab text to bold in Qt
+// Sorry colour blind people, but this is the best we can do for now
+void DebuggerWindow::setTabActiveStyle(BreakPointCpu enabledCpu)
+{
+	m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r5900), (enabledCpu == BREAKPOINT_EE) ? Qt::red : this->palette().text().color());
+	m_ui.cpuTabs->tabBar()->setTabTextColor(m_ui.cpuTabs->indexOf(m_cpuWidget_r3000), (enabledCpu == BREAKPOINT_IOP) ? Qt::red : this->palette().text().color());
+}
+
 void DebuggerWindow::onVMStateChanged()
 {
 	if (!QtHost::IsVMPaused())
 	{
-		nextStatePaused = true;
-		m_actionRunPause->setText(tr("Pause"));
-		m_actionStepInto->setEnabled(false);
-		m_actionStepOver->setEnabled(false);
-		m_actionStepOut->setEnabled(false);
+		m_ui.actionRun->setText(tr("Pause"));
+		m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("pause-line")));
+		m_ui.actionStepInto->setEnabled(false);
+		m_ui.actionStepOver->setEnabled(false);
+		m_ui.actionStepOut->setEnabled(false);
+		setTabActiveStyle(BREAKPOINT_IOP_AND_EE);
 	}
 	else
 	{
-		nextStatePaused = false;
-		m_actionRunPause->setText(tr("Run"));
-		m_actionStepInto->setEnabled(true);
-		m_actionStepOver->setEnabled(true);
-		m_actionStepOut->setEnabled(true);
-		Host::RunOnCPUThread([] {
-			if (CBreakPoints::GetBreakpointTriggered())
+		m_ui.actionRun->setText(tr("Run"));
+		m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("play-line")));
+		m_ui.actionStepInto->setEnabled(true);
+		m_ui.actionStepOver->setEnabled(true);
+		m_ui.actionStepOut->setEnabled(true);
+		// Switch to the CPU tab that triggered the breakpoint
+		// Also bold the tab text to indicate that a breakpoint was triggered
+		if (CBreakPoints::GetBreakpointTriggered())
+		{
+			const BreakPointCpu triggeredCpu = CBreakPoints::GetBreakpointTriggeredCpu();
+			setTabActiveStyle(triggeredCpu);
+			switch (triggeredCpu)
 			{
+				case BREAKPOINT_EE:
+					m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r5900);
+					break;
+				case BREAKPOINT_IOP:
+					m_ui.cpuTabs->setCurrentWidget(m_cpuWidget_r3000);
+					break;
+				default:
+					break;
+			}
+			Host::RunOnCPUThread([] {
 				CBreakPoints::ClearTemporaryBreakPoints();
-				CBreakPoints::SetBreakpointTriggered(false);
+				CBreakPoints::SetBreakpointTriggered(false, BREAKPOINT_IOP_AND_EE);
 				// Our current PC is on a breakpoint.
 				// When we run the core again, we want to skip this breakpoint and run
 				CBreakPoints::SetSkipFirst(BREAKPOINT_EE, r5900Debug.getPC());
 				CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, r3000Debug.getPC());
-			}
-		});
-		
+			});
+		}
 	}
 	return;
 }
 
 void DebuggerWindow::onRunPause()
 {
-	g_emu_thread->setVMPaused(nextStatePaused);
+	g_emu_thread->setVMPaused(!QtHost::IsVMPaused());
 }
 
 void DebuggerWindow::onStepInto()

@@ -15,9 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "ExpressionParser.h"
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
+#include <cctype>
+#include <cstring>
+#include <cstdio>
 
 typedef enum {
 	EXOP_BRACKETL, EXOP_BRACKETR, EXOP_MEML, EXOP_MEMR, EXOP_MEMSIZE, EXOP_SIGNPLUS, EXOP_SIGNMINUS,
@@ -255,7 +255,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				isFloat = true;
 			else if (!parseNumber(subStr,16,subPos,value))
 			{
-				sprintf(expressionError,"Invalid number \"%s\"",subStr);
+				std::snprintf(expressionError, std::size(expressionError),"Invalid number \"%s\"",subStr);
 				return false;
 			}
 
@@ -284,14 +284,14 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				continue;
 			}
 
-			sprintf(expressionError,"Invalid symbol \"%s\"",subStr);
+			std::snprintf(expressionError, std::size(expressionError),"Invalid symbol \"%s\"",subStr);
 			return false;
 		} else {
 			int len;
 			ExpressionOpcodeType type = getExpressionOpcode(&infix[infixPos],len,lastOpcode);
 			if (type == EXOP_NONE)
 			{
-				sprintf(expressionError,"Invalid operator at \"%s\"",&infix[infixPos]);
+				std::snprintf(expressionError, std::size(expressionError),"Invalid operator at \"%s\"",&infix[infixPos]);
 				return false;
 			}
 
@@ -306,7 +306,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				{
 					if (opcodeStack.empty())
 					{
-						sprintf(expressionError,"Closing parenthesis without opening one");
+						std::snprintf(expressionError, std::size(expressionError),"Closing parenthesis without opening one");
 						return false;
 					}
 					ExpressionOpcodeType t = opcodeStack[opcodeStack.size()-1];
@@ -320,7 +320,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				{
 					if (opcodeStack.empty())
 					{
-						sprintf(expressionError,"Closing bracket without opening one");
+						std::snprintf(expressionError, std::size(expressionError),"Closing bracket without opening one");
 						return false;
 					}
 					ExpressionOpcodeType t = opcodeStack[opcodeStack.size()-1];
@@ -373,7 +373,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 
 		if (t == EXOP_BRACKETL)	// opening bracket without closing one
 		{
-			sprintf(expressionError,"Parenthesis not closed");
+			std::snprintf(expressionError, std::size(expressionError),"Parenthesis not closed");
 			return false;
 		}
 		dest.push_back(ExpressionPair(EXCOMM_OP,t));
@@ -388,13 +388,13 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 		{
 		case EXCOMM_CONST:
 		case EXCOMM_CONST_FLOAT:
-			testPos += sprintf(&test[testPos],"0x%04X ",dest[i].second);
+			testPos += std::snprintf(&test[testPos],std::size(test),"0x%04X ",dest[i].second);
 			break;
 		case EXCOMM_REF:
-			testPos += sprintf(&test[testPos],"r%d ",dest[i].second);
+			testPos += std::snprintf(&test[testPos],std::size(test),"r%d ",dest[i].second);
 			break;
 		case EXCOMM_OP:
-			testPos += sprintf(&test[testPos],"%s ",ExpressionOpcodes[dest[i].second].Name);
+			testPos += std::snprintf(&test[testPos],std::size(test),"%s ",ExpressionOpcodes[dest[i].second].Name);
 			break;
 		};
 	}
@@ -432,7 +432,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			opcode = exp[num++].second;
 			if (valueStack.size() < ExpressionOpcodes[opcode].args)
 			{
-				sprintf(expressionError,"Not enough arguments");
+				std::snprintf(expressionError, std::size(expressionError),"Not enough arguments");
 				return false;
 			}
 			for (int l = 0; l < ExpressionOpcodes[opcode].args; l++)
@@ -447,7 +447,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_MEMSIZE:	// must be followed by EXOP_MEM
 				if (exp[num++].second != EXOP_MEM)
 				{
-					sprintf(expressionError,"Invalid memsize operator");
+					std::snprintf(expressionError, std::size(expressionError),"Invalid memsize operator");
 					return false;
 				}
 
@@ -468,7 +468,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 					valueStack.push_back(val);
 				}
 				break;
-			case EXOP_SIGNPLUS:		// keine aktion nötig
+			case EXOP_SIGNPLUS:		// keine aktion nÃ¶tig
 				break;
 			case EXOP_SIGNMINUS:	// -0
 				if (useFloat)
@@ -491,7 +491,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_DIV:			// a/b
 				if (arg[0] == 0)
 				{
-					sprintf(expressionError,"Division by zero");
+					std::snprintf(expressionError, std::size(expressionError),"Division by zero");
 					return false;
 				}
 				if (useFloat)
@@ -502,7 +502,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_MOD:			// a%b
 				if (arg[0] == 0)
 				{
-					sprintf(expressionError,"Modulo by zero");
+					std::snprintf(expressionError, std::size(expressionError),"Modulo by zero");
 					return false;
 				}
 				valueStack.push_back(arg[1]%arg[0]);
@@ -575,7 +575,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_TERTELSE:			// exp ? exp : exp, else muss zuerst kommen!
 				if (exp[num++].second != EXOP_TERTIF)
 				{
-					sprintf(expressionError,"Invalid tertiary operator");
+					std::snprintf(expressionError, std::size(expressionError),"Invalid tertiary operator");
 					return false;
 				}
 				valueStack.push_back(arg[2]?arg[1]:arg[0]);

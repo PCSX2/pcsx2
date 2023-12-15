@@ -10,9 +10,6 @@
     <height>487</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>0</number>
@@ -59,7 +56,7 @@
       <item row="0" column="0" colspan="4">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Used for storing shaders, gzip indices, and game list data.</string>
+         <string>Used for storing shaders, game list, and achievement data.</string>
         </property>
        </widget>
       </item>

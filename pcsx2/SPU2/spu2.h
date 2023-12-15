@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -23,10 +23,6 @@ struct Pcsx2Config;
 
 namespace SPU2
 {
-/// Initialization/cleanup, call at process startup/shutdown.
-bool Initialize();
-void Shutdown();
-
 /// Open/close, call at VM startup/shutdown.
 bool Open();
 void Close();
@@ -66,7 +62,7 @@ bool IsAudioCaptureActive();
 void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
 
-void SPU2async(u32 cycles);
+void SPU2async();
 s32 SPU2freeze(FreezeAction mode, freezeData* data);
 
 void SPU2readDMA4Mem(u16* pMem, u32 size);

@@ -21,14 +21,14 @@
 
 enum class GSRendererType : s8;
 
-class SettingsDialog;
+class SettingsWindow;
 
 class GraphicsSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	GraphicsSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~GraphicsSettingsWidget();
 
 Q_SIGNALS:
@@ -41,6 +41,7 @@ private Q_SLOTS:
 	void onAdapterChanged(int index);
 	void onTrilinearFilteringChanged();
 	void onGpuPaletteConversionChanged(int state);
+	void onCPUSpriteRenderBWChanged();
 	void onFullscreenModeChanged(int index);
 	void onShadeBoostChanged();
 	void onCaptureContainerChanged();
@@ -53,8 +54,9 @@ private Q_SLOTS:
 private:
 	GSRendererType getEffectiveRenderer() const;
 	void updateRendererDependentOptions();
+	void resetManualHardwareFixes();
 
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	Ui::GraphicsSettingsWidget m_ui;
 

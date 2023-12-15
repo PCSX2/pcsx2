@@ -71,10 +71,9 @@ static __fi u8* iopPhysMem( u32 addr )
 #define psxHu16(mem)	(*(u16*)&iopHw[(mem) & 0xffff])
 #define psxHu32(mem)	(*(u32*)&iopHw[(mem) & 0xffff])
 
-extern void psxMemReserve();
-extern void psxMemAlloc();
-extern void psxMemReset();
-extern void psxMemShutdown();
+extern void iopMemAlloc();
+extern void iopMemReset();
+extern void iopMemRelease();
 
 extern u8   iopMemRead8 (u32 mem);
 extern u16  iopMemRead16(u32 mem);
@@ -82,6 +81,11 @@ extern u32  iopMemRead32(u32 mem);
 extern void iopMemWrite8 (u32 mem, u8 value);
 extern void iopMemWrite16(u32 mem, u16 value);
 extern void iopMemWrite32(u32 mem, u32 value);
+
+// NOTE: Does not call MMIO handlers.
+extern int iopMemSafeCmpBytes(u32 mem, const void* src, u32 size);
+extern bool iopMemSafeReadBytes(u32 mem, void* dst, u32 size);
+extern bool iopMemSafeWriteBytes(u32 mem, const void* src, u32 size);
 
 std::string iopMemReadString(u32 mem, int maxlen = 65536);
 

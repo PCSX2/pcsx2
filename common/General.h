@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,11 +15,13 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+
 #include <atomic>
 #include <map>
 #include <memory>
 #include <string>
-#include "common/Pcsx2Defs.h"
+#include <cstring>
 
 // This macro is actually useful for about any and every possible application of C++
 // equality operators.
@@ -37,6 +39,19 @@
 #define BITFIELD_END \
 		}; \
 	};
+
+template <typename T>
+[[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
+{
+	T value;
+	std::memcpy(&value, buffer + offset, sizeof(value));
+	return value;
+}
+
+[[maybe_unused]] __fi static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
+[[maybe_unused]] __fi static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
+[[maybe_unused]] __fi static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
+[[maybe_unused]] __fi static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }
 
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
@@ -138,12 +153,6 @@ namespace HostSys
 
 	extern void MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode);
 
-	template <uint size>
-	void MemProtectStatic(u8 (&arr)[size], const PageProtectionMode& mode)
-	{
-		MemProtect(arr, size, mode);
-	}
-
 	extern std::string GetFileMappingName(const char* prefix);
 	extern void* CreateSharedMemory(const char* name, size_t size);
 	extern void DestroySharedMemory(void* ptr);
@@ -191,12 +200,6 @@ private:
 #endif
 };
 
-
-// Safe version of Munmap -- NULLs the pointer variable immediately after free'ing it.
-#define SafeSysMunmap(ptr, size) \
-	((void)(HostSys::Munmap(ptr, size), (ptr) = 0))
-
-extern void InitCPUTicks();
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();
 extern u64 GetPhysicalMemory();

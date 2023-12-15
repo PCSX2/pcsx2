@@ -65,7 +65,7 @@ GSLocalMemory::GSLocalMemory()
 {
 	m_vm8 = (u8*)GSAllocateWrappedMemory(m_vmsize, 4);
 	if (!m_vm8)
-		throw std::bad_alloc();
+		pxFailRel("Failed to allocate GS memory storage.");
 
 	memset(m_vm8, 0, m_vmsize);
 
@@ -90,160 +90,160 @@ GSLocalMemory::GSLocalMemory()
 		psm.fmsk = 0xffffffff;
 	}
 
-	m_psm[PSM_PSGPU24].info = GSLocalMemory::swizzle16;
-	m_psm[PSM_PSMCT16].info = GSLocalMemory::swizzle16;
-	m_psm[PSM_PSMCT16S].info = GSLocalMemory::swizzle16S;
-	m_psm[PSM_PSMT8].info = GSLocalMemory::swizzle8;
-	m_psm[PSM_PSMT4].info = GSLocalMemory::swizzle4;
-	m_psm[PSM_PSMZ32].info = GSLocalMemory::swizzle32Z;
-	m_psm[PSM_PSMZ24].info = GSLocalMemory::swizzle32Z;
-	m_psm[PSM_PSMZ16].info = GSLocalMemory::swizzle16Z;
-	m_psm[PSM_PSMZ16S].info = GSLocalMemory::swizzle16SZ;
+	m_psm[PSGPU24].info = GSLocalMemory::swizzle16;
+	m_psm[PSMCT16].info = GSLocalMemory::swizzle16;
+	m_psm[PSMCT16S].info = GSLocalMemory::swizzle16S;
+	m_psm[PSMT8].info = GSLocalMemory::swizzle8;
+	m_psm[PSMT4].info = GSLocalMemory::swizzle4;
+	m_psm[PSMZ32].info = GSLocalMemory::swizzle32Z;
+	m_psm[PSMZ24].info = GSLocalMemory::swizzle32Z;
+	m_psm[PSMZ16].info = GSLocalMemory::swizzle16Z;
+	m_psm[PSMZ16S].info = GSLocalMemory::swizzle16SZ;
 
-	m_psm[PSM_PSMCT24].rp = &GSLocalMemory::ReadPixel24;
-	m_psm[PSM_PSMCT16].rp = &GSLocalMemory::ReadPixel16;
-	m_psm[PSM_PSMCT16S].rp = &GSLocalMemory::ReadPixel16S;
-	m_psm[PSM_PSMT8].rp = &GSLocalMemory::ReadPixel8;
-	m_psm[PSM_PSMT4].rp = &GSLocalMemory::ReadPixel4;
-	m_psm[PSM_PSMT8H].rp = &GSLocalMemory::ReadPixel8H;
-	m_psm[PSM_PSMT4HL].rp = &GSLocalMemory::ReadPixel4HL;
-	m_psm[PSM_PSMT4HH].rp = &GSLocalMemory::ReadPixel4HH;
-	m_psm[PSM_PSMZ32].rp = &GSLocalMemory::ReadPixel32Z;
-	m_psm[PSM_PSMZ24].rp = &GSLocalMemory::ReadPixel24Z;
-	m_psm[PSM_PSMZ16].rp = &GSLocalMemory::ReadPixel16Z;
-	m_psm[PSM_PSMZ16S].rp = &GSLocalMemory::ReadPixel16SZ;
+	m_psm[PSMCT24].rp = &GSLocalMemory::ReadPixel24;
+	m_psm[PSMCT16].rp = &GSLocalMemory::ReadPixel16;
+	m_psm[PSMCT16S].rp = &GSLocalMemory::ReadPixel16S;
+	m_psm[PSMT8].rp = &GSLocalMemory::ReadPixel8;
+	m_psm[PSMT4].rp = &GSLocalMemory::ReadPixel4;
+	m_psm[PSMT8H].rp = &GSLocalMemory::ReadPixel8H;
+	m_psm[PSMT4HL].rp = &GSLocalMemory::ReadPixel4HL;
+	m_psm[PSMT4HH].rp = &GSLocalMemory::ReadPixel4HH;
+	m_psm[PSMZ32].rp = &GSLocalMemory::ReadPixel32Z;
+	m_psm[PSMZ24].rp = &GSLocalMemory::ReadPixel24Z;
+	m_psm[PSMZ16].rp = &GSLocalMemory::ReadPixel16Z;
+	m_psm[PSMZ16S].rp = &GSLocalMemory::ReadPixel16SZ;
 
-	m_psm[PSM_PSMCT24].rpa = &GSLocalMemory::ReadPixel24;
-	m_psm[PSM_PSMCT16].rpa = &GSLocalMemory::ReadPixel16;
-	m_psm[PSM_PSMCT16S].rpa = &GSLocalMemory::ReadPixel16;
-	m_psm[PSM_PSMT8].rpa = &GSLocalMemory::ReadPixel8;
-	m_psm[PSM_PSMT4].rpa = &GSLocalMemory::ReadPixel4;
-	m_psm[PSM_PSMT8H].rpa = &GSLocalMemory::ReadPixel8H;
-	m_psm[PSM_PSMT4HL].rpa = &GSLocalMemory::ReadPixel4HL;
-	m_psm[PSM_PSMT4HH].rpa = &GSLocalMemory::ReadPixel4HH;
-	m_psm[PSM_PSMZ32].rpa = &GSLocalMemory::ReadPixel32;
-	m_psm[PSM_PSMZ24].rpa = &GSLocalMemory::ReadPixel24;
-	m_psm[PSM_PSMZ16].rpa = &GSLocalMemory::ReadPixel16;
-	m_psm[PSM_PSMZ16S].rpa = &GSLocalMemory::ReadPixel16;
+	m_psm[PSMCT24].rpa = &GSLocalMemory::ReadPixel24;
+	m_psm[PSMCT16].rpa = &GSLocalMemory::ReadPixel16;
+	m_psm[PSMCT16S].rpa = &GSLocalMemory::ReadPixel16;
+	m_psm[PSMT8].rpa = &GSLocalMemory::ReadPixel8;
+	m_psm[PSMT4].rpa = &GSLocalMemory::ReadPixel4;
+	m_psm[PSMT8H].rpa = &GSLocalMemory::ReadPixel8H;
+	m_psm[PSMT4HL].rpa = &GSLocalMemory::ReadPixel4HL;
+	m_psm[PSMT4HH].rpa = &GSLocalMemory::ReadPixel4HH;
+	m_psm[PSMZ32].rpa = &GSLocalMemory::ReadPixel32;
+	m_psm[PSMZ24].rpa = &GSLocalMemory::ReadPixel24;
+	m_psm[PSMZ16].rpa = &GSLocalMemory::ReadPixel16;
+	m_psm[PSMZ16S].rpa = &GSLocalMemory::ReadPixel16;
 
-	m_psm[PSM_PSMCT32].wp = &GSLocalMemory::WritePixel32;
-	m_psm[PSM_PSMCT24].wp = &GSLocalMemory::WritePixel24;
-	m_psm[PSM_PSMCT16].wp = &GSLocalMemory::WritePixel16;
-	m_psm[PSM_PSMCT16S].wp = &GSLocalMemory::WritePixel16S;
-	m_psm[PSM_PSMT8].wp = &GSLocalMemory::WritePixel8;
-	m_psm[PSM_PSMT4].wp = &GSLocalMemory::WritePixel4;
-	m_psm[PSM_PSMT8H].wp = &GSLocalMemory::WritePixel8H;
-	m_psm[PSM_PSMT4HL].wp = &GSLocalMemory::WritePixel4HL;
-	m_psm[PSM_PSMT4HH].wp = &GSLocalMemory::WritePixel4HH;
-	m_psm[PSM_PSMZ32].wp = &GSLocalMemory::WritePixel32Z;
-	m_psm[PSM_PSMZ24].wp = &GSLocalMemory::WritePixel24Z;
-	m_psm[PSM_PSMZ16].wp = &GSLocalMemory::WritePixel16Z;
-	m_psm[PSM_PSMZ16S].wp = &GSLocalMemory::WritePixel16SZ;
+	m_psm[PSMCT32].wp = &GSLocalMemory::WritePixel32;
+	m_psm[PSMCT24].wp = &GSLocalMemory::WritePixel24;
+	m_psm[PSMCT16].wp = &GSLocalMemory::WritePixel16;
+	m_psm[PSMCT16S].wp = &GSLocalMemory::WritePixel16S;
+	m_psm[PSMT8].wp = &GSLocalMemory::WritePixel8;
+	m_psm[PSMT4].wp = &GSLocalMemory::WritePixel4;
+	m_psm[PSMT8H].wp = &GSLocalMemory::WritePixel8H;
+	m_psm[PSMT4HL].wp = &GSLocalMemory::WritePixel4HL;
+	m_psm[PSMT4HH].wp = &GSLocalMemory::WritePixel4HH;
+	m_psm[PSMZ32].wp = &GSLocalMemory::WritePixel32Z;
+	m_psm[PSMZ24].wp = &GSLocalMemory::WritePixel24Z;
+	m_psm[PSMZ16].wp = &GSLocalMemory::WritePixel16Z;
+	m_psm[PSMZ16S].wp = &GSLocalMemory::WritePixel16SZ;
 
-	m_psm[PSM_PSMCT32].wpa = &GSLocalMemory::WritePixel32;
-	m_psm[PSM_PSMCT24].wpa = &GSLocalMemory::WritePixel24;
-	m_psm[PSM_PSMCT16].wpa = &GSLocalMemory::WritePixel16;
-	m_psm[PSM_PSMCT16S].wpa = &GSLocalMemory::WritePixel16;
-	m_psm[PSM_PSMT8].wpa = &GSLocalMemory::WritePixel8;
-	m_psm[PSM_PSMT4].wpa = &GSLocalMemory::WritePixel4;
-	m_psm[PSM_PSMT8H].wpa = &GSLocalMemory::WritePixel8H;
-	m_psm[PSM_PSMT4HL].wpa = &GSLocalMemory::WritePixel4HL;
-	m_psm[PSM_PSMT4HH].wpa = &GSLocalMemory::WritePixel4HH;
-	m_psm[PSM_PSMZ32].wpa = &GSLocalMemory::WritePixel32;
-	m_psm[PSM_PSMZ24].wpa = &GSLocalMemory::WritePixel24;
-	m_psm[PSM_PSMZ16].wpa = &GSLocalMemory::WritePixel16;
-	m_psm[PSM_PSMZ16S].wpa = &GSLocalMemory::WritePixel16;
+	m_psm[PSMCT32].wpa = &GSLocalMemory::WritePixel32;
+	m_psm[PSMCT24].wpa = &GSLocalMemory::WritePixel24;
+	m_psm[PSMCT16].wpa = &GSLocalMemory::WritePixel16;
+	m_psm[PSMCT16S].wpa = &GSLocalMemory::WritePixel16;
+	m_psm[PSMT8].wpa = &GSLocalMemory::WritePixel8;
+	m_psm[PSMT4].wpa = &GSLocalMemory::WritePixel4;
+	m_psm[PSMT8H].wpa = &GSLocalMemory::WritePixel8H;
+	m_psm[PSMT4HL].wpa = &GSLocalMemory::WritePixel4HL;
+	m_psm[PSMT4HH].wpa = &GSLocalMemory::WritePixel4HH;
+	m_psm[PSMZ32].wpa = &GSLocalMemory::WritePixel32;
+	m_psm[PSMZ24].wpa = &GSLocalMemory::WritePixel24;
+	m_psm[PSMZ16].wpa = &GSLocalMemory::WritePixel16;
+	m_psm[PSMZ16S].wpa = &GSLocalMemory::WritePixel16;
 
-	m_psm[PSM_PSMCT24].rt = &GSLocalMemory::ReadTexel24;
-	m_psm[PSM_PSMCT16].rt = &GSLocalMemory::ReadTexel16;
-	m_psm[PSM_PSMCT16S].rt = &GSLocalMemory::ReadTexel16S;
-	m_psm[PSM_PSMT8].rt = &GSLocalMemory::ReadTexel8;
-	m_psm[PSM_PSMT4].rt = &GSLocalMemory::ReadTexel4;
-	m_psm[PSM_PSMT8H].rt = &GSLocalMemory::ReadTexel8H;
-	m_psm[PSM_PSMT4HL].rt = &GSLocalMemory::ReadTexel4HL;
-	m_psm[PSM_PSMT4HH].rt = &GSLocalMemory::ReadTexel4HH;
-	m_psm[PSM_PSMZ32].rt = &GSLocalMemory::ReadTexel32Z;
-	m_psm[PSM_PSMZ24].rt = &GSLocalMemory::ReadTexel24Z;
-	m_psm[PSM_PSMZ16].rt = &GSLocalMemory::ReadTexel16Z;
-	m_psm[PSM_PSMZ16S].rt = &GSLocalMemory::ReadTexel16SZ;
+	m_psm[PSMCT24].rt = &GSLocalMemory::ReadTexel24;
+	m_psm[PSMCT16].rt = &GSLocalMemory::ReadTexel16;
+	m_psm[PSMCT16S].rt = &GSLocalMemory::ReadTexel16S;
+	m_psm[PSMT8].rt = &GSLocalMemory::ReadTexel8;
+	m_psm[PSMT4].rt = &GSLocalMemory::ReadTexel4;
+	m_psm[PSMT8H].rt = &GSLocalMemory::ReadTexel8H;
+	m_psm[PSMT4HL].rt = &GSLocalMemory::ReadTexel4HL;
+	m_psm[PSMT4HH].rt = &GSLocalMemory::ReadTexel4HH;
+	m_psm[PSMZ32].rt = &GSLocalMemory::ReadTexel32Z;
+	m_psm[PSMZ24].rt = &GSLocalMemory::ReadTexel24Z;
+	m_psm[PSMZ16].rt = &GSLocalMemory::ReadTexel16Z;
+	m_psm[PSMZ16S].rt = &GSLocalMemory::ReadTexel16SZ;
 
-	m_psm[PSM_PSMCT24].rta = &GSLocalMemory::ReadTexel24;
-	m_psm[PSM_PSMCT16].rta = &GSLocalMemory::ReadTexel16;
-	m_psm[PSM_PSMCT16S].rta = &GSLocalMemory::ReadTexel16;
-	m_psm[PSM_PSMT8].rta = &GSLocalMemory::ReadTexel8;
-	m_psm[PSM_PSMT4].rta = &GSLocalMemory::ReadTexel4;
-	m_psm[PSM_PSMT8H].rta = &GSLocalMemory::ReadTexel8H;
-	m_psm[PSM_PSMT4HL].rta = &GSLocalMemory::ReadTexel4HL;
-	m_psm[PSM_PSMT4HH].rta = &GSLocalMemory::ReadTexel4HH;
-	m_psm[PSM_PSMZ24].rta = &GSLocalMemory::ReadTexel24;
-	m_psm[PSM_PSMZ16].rta = &GSLocalMemory::ReadTexel16;
-	m_psm[PSM_PSMZ16S].rta = &GSLocalMemory::ReadTexel16;
+	m_psm[PSMCT24].rta = &GSLocalMemory::ReadTexel24;
+	m_psm[PSMCT16].rta = &GSLocalMemory::ReadTexel16;
+	m_psm[PSMCT16S].rta = &GSLocalMemory::ReadTexel16;
+	m_psm[PSMT8].rta = &GSLocalMemory::ReadTexel8;
+	m_psm[PSMT4].rta = &GSLocalMemory::ReadTexel4;
+	m_psm[PSMT8H].rta = &GSLocalMemory::ReadTexel8H;
+	m_psm[PSMT4HL].rta = &GSLocalMemory::ReadTexel4HL;
+	m_psm[PSMT4HH].rta = &GSLocalMemory::ReadTexel4HH;
+	m_psm[PSMZ24].rta = &GSLocalMemory::ReadTexel24;
+	m_psm[PSMZ16].rta = &GSLocalMemory::ReadTexel16;
+	m_psm[PSMZ16S].rta = &GSLocalMemory::ReadTexel16;
 
-	m_psm[PSM_PSMCT24].wfa = &GSLocalMemory::WritePixel24;
-	m_psm[PSM_PSMCT16].wfa = &GSLocalMemory::WriteFrame16;
-	m_psm[PSM_PSMCT16S].wfa = &GSLocalMemory::WriteFrame16;
-	m_psm[PSM_PSMZ24].wfa = &GSLocalMemory::WritePixel24;
-	m_psm[PSM_PSMZ16].wfa = &GSLocalMemory::WriteFrame16;
-	m_psm[PSM_PSMZ16S].wfa = &GSLocalMemory::WriteFrame16;
+	m_psm[PSMCT24].wfa = &GSLocalMemory::WritePixel24;
+	m_psm[PSMCT16].wfa = &GSLocalMemory::WriteFrame16;
+	m_psm[PSMCT16S].wfa = &GSLocalMemory::WriteFrame16;
+	m_psm[PSMZ24].wfa = &GSLocalMemory::WritePixel24;
+	m_psm[PSMZ16].wfa = &GSLocalMemory::WriteFrame16;
+	m_psm[PSMZ16S].wfa = &GSLocalMemory::WriteFrame16;
 
-	m_psm[PSM_PSGPU24].bpp = 16;
-	m_psm[PSM_PSMCT16].bpp = m_psm[PSM_PSMCT16S].bpp = 16;
-	m_psm[PSM_PSMT8].bpp = 8;
-	m_psm[PSM_PSMT4].bpp = 4;
-	m_psm[PSM_PSMZ16].bpp = m_psm[PSM_PSMZ16S].bpp = 16;
+	m_psm[PSGPU24].bpp = 16;
+	m_psm[PSMCT16].bpp = m_psm[PSMCT16S].bpp = 16;
+	m_psm[PSMT8].bpp = 8;
+	m_psm[PSMT4].bpp = 4;
+	m_psm[PSMZ16].bpp = m_psm[PSMZ16S].bpp = 16;
 
-	m_psm[PSM_PSMCT24].trbpp = 24;
-	m_psm[PSM_PSGPU24].trbpp = 16;
-	m_psm[PSM_PSMCT16].trbpp = m_psm[PSM_PSMCT16S].trbpp = 16;
-	m_psm[PSM_PSMT8].trbpp = m_psm[PSM_PSMT8H].trbpp = 8;
-	m_psm[PSM_PSMT4].trbpp = m_psm[PSM_PSMT4HL].trbpp = m_psm[PSM_PSMT4HH].trbpp = 4;
-	m_psm[PSM_PSMZ24].trbpp = 24;
-	m_psm[PSM_PSMZ16].trbpp = m_psm[PSM_PSMZ16S].trbpp = 16;
+	m_psm[PSMCT24].trbpp = 24;
+	m_psm[PSGPU24].trbpp = 16;
+	m_psm[PSMCT16].trbpp = m_psm[PSMCT16S].trbpp = 16;
+	m_psm[PSMT8].trbpp = m_psm[PSMT8H].trbpp = 8;
+	m_psm[PSMT4].trbpp = m_psm[PSMT4HL].trbpp = m_psm[PSMT4HH].trbpp = 4;
+	m_psm[PSMZ24].trbpp = 24;
+	m_psm[PSMZ16].trbpp = m_psm[PSMZ16S].trbpp = 16;
 
-	m_psm[PSM_PSMT8].pal = m_psm[PSM_PSMT8H].pal = 256;
-	m_psm[PSM_PSMT4].pal = m_psm[PSM_PSMT4HL].pal = m_psm[PSM_PSMT4HH].pal = 16;
+	m_psm[PSMT8].pal = m_psm[PSMT8H].pal = 256;
+	m_psm[PSMT4].pal = m_psm[PSMT4HL].pal = m_psm[PSMT4HH].pal = 16;
 
 	for (psm_t& psm : m_psm)
 		psm.fmt = 3;
-	m_psm[PSM_PSMCT32].fmt = m_psm[PSM_PSMZ32].fmt = 0;
-	m_psm[PSM_PSMCT24].fmt = m_psm[PSM_PSMZ24].fmt = 1;
-	m_psm[PSM_PSMCT16].fmt = m_psm[PSM_PSMZ16].fmt = 2;
-	m_psm[PSM_PSMCT16S].fmt = m_psm[PSM_PSMZ16S].fmt = 2;
+	m_psm[PSMCT32].fmt = m_psm[PSMZ32].fmt = PSM_FMT_32;
+	m_psm[PSMCT24].fmt = m_psm[PSMZ24].fmt = PSM_FMT_24;
+	m_psm[PSMCT16].fmt = m_psm[PSMZ16].fmt = PSM_FMT_16;
+	m_psm[PSMCT16S].fmt = m_psm[PSMZ16S].fmt = PSM_FMT_16;
 
 
-	m_psm[PSM_PSGPU24].bs = GSVector2i(16, 8);
-	m_psm[PSM_PSMCT16].bs = m_psm[PSM_PSMCT16S].bs = GSVector2i(16, 8);
-	m_psm[PSM_PSMT8].bs = GSVector2i(16, 16);
-	m_psm[PSM_PSMT4].bs = GSVector2i(32, 16);
-	m_psm[PSM_PSMZ16].bs = m_psm[PSM_PSMZ16S].bs = GSVector2i(16, 8);
+	m_psm[PSGPU24].bs = GSVector2i(16, 8);
+	m_psm[PSMCT16].bs = m_psm[PSMCT16S].bs = GSVector2i(16, 8);
+	m_psm[PSMT8].bs = GSVector2i(16, 16);
+	m_psm[PSMT4].bs = GSVector2i(32, 16);
+	m_psm[PSMZ16].bs = m_psm[PSMZ16S].bs = GSVector2i(16, 8);
 
-	m_psm[PSM_PSGPU24].pgs = GSVector2i(64, 64);
-	m_psm[PSM_PSMCT16].pgs = m_psm[PSM_PSMCT16S].pgs = GSVector2i(64, 64);
-	m_psm[PSM_PSMT8].pgs = GSVector2i(128, 64);
-	m_psm[PSM_PSMT4].pgs = GSVector2i(128, 128);
-	m_psm[PSM_PSMZ16].pgs = m_psm[PSM_PSMZ16S].pgs = GSVector2i(64, 64);
+	m_psm[PSGPU24].pgs = GSVector2i(64, 64);
+	m_psm[PSMCT16].pgs = m_psm[PSMCT16S].pgs = GSVector2i(64, 64);
+	m_psm[PSMT8].pgs = GSVector2i(128, 64);
+	m_psm[PSMT4].pgs = GSVector2i(128, 128);
+	m_psm[PSMZ16].pgs = m_psm[PSMZ16S].pgs = GSVector2i(64, 64);
 
-	m_psm[PSM_PSMCT24].msk = 0x3f;
-	m_psm[PSM_PSMZ24].msk = 0x3f;
-	m_psm[PSM_PSMT8H].msk = 0xc0;
-	m_psm[PSM_PSMT4HL].msk = 0x40;
-	m_psm[PSM_PSMT4HH].msk = 0x80;
+	m_psm[PSMCT24].msk = 0x3f;
+	m_psm[PSMZ24].msk = 0x3f;
+	m_psm[PSMT8H].msk = 0xc0;
+	m_psm[PSMT4HL].msk = 0x40;
+	m_psm[PSMT4HH].msk = 0x80;
 
-	m_psm[PSM_PSMZ32].depth  = 1;
-	m_psm[PSM_PSMZ24].depth  = 1;
-	m_psm[PSM_PSMZ16].depth  = 1;
-	m_psm[PSM_PSMZ16S].depth = 1;
+	m_psm[PSMZ32].depth  = 1;
+	m_psm[PSMZ24].depth  = 1;
+	m_psm[PSMZ16].depth  = 1;
+	m_psm[PSMZ16S].depth = 1;
 
-	m_psm[PSM_PSMCT24].fmsk = 0x00FFFFFF;
-	m_psm[PSM_PSGPU24].fmsk = 0x00FFFFFF;
-	m_psm[PSM_PSMCT16].fmsk = 0x80F8F8F8;
-	m_psm[PSM_PSMCT16S].fmsk = 0x80F8F8F8;
-	m_psm[PSM_PSMT8H].fmsk = 0xFF000000;
-	m_psm[PSM_PSMT4HL].fmsk = 0x0F000000;
-	m_psm[PSM_PSMT4HH].fmsk = 0xF0000000;
-	m_psm[PSM_PSMZ24].fmsk = 0x00FFFFFF;
-	m_psm[PSM_PSMZ16].fmsk = 0x80F8F8F8;
-	m_psm[PSM_PSMZ16S].fmsk = 0x80F8F8F8;
+	m_psm[PSMCT24].fmsk = 0x00FFFFFF;
+	m_psm[PSGPU24].fmsk = 0x00FFFFFF;
+	m_psm[PSMCT16].fmsk = 0x80F8F8F8;
+	m_psm[PSMCT16S].fmsk = 0x80F8F8F8;
+	m_psm[PSMT8H].fmsk = 0xFF000000;
+	m_psm[PSMT4HL].fmsk = 0x0F000000;
+	m_psm[PSMT4HH].fmsk = 0xF0000000;
+	m_psm[PSMZ24].fmsk = 0x00FFFFFF;
+	m_psm[PSMZ16].fmsk = 0x80F8F8F8;
+	m_psm[PSMZ16S].fmsk = 0x80F8F8F8;
 }
 
 GSLocalMemory::~GSLocalMemory()
@@ -286,7 +286,7 @@ GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIF
 		return it->second;
 	}
 
-	GSPixelOffset* off = (GSPixelOffset*)_aligned_malloc(sizeof(GSPixelOffset), 32);
+	GSPixelOffset* off = (GSPixelOffset*)_aligned_malloc(sizeof(GSPixelOffset), VECTOR_ALIGNMENT);
 
 	off->hash = hash;
 	off->fbp = fbp;
@@ -339,7 +339,7 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 		return it->second;
 	}
 
-	GSPixelOffset4* off = (GSPixelOffset4*)_aligned_malloc(sizeof(GSPixelOffset4), 32);
+	GSPixelOffset4* off = (GSPixelOffset4*)_aligned_malloc(sizeof(GSPixelOffset4), VECTOR_ALIGNMENT);
 
 	off->hash = hash;
 	off->fbp = fbp;
@@ -446,6 +446,119 @@ std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 	return p2t;
 }
 
+bool GSLocalMemory::IsPageAligned(u32 psm, const GSVector4i& rc)
+{
+	const psm_t& psm_s = m_psm[psm];
+	const GSVector4i pgmsk = GSVector4i(psm_s.pgs).xyxy() - GSVector4i(1);
+	return (rc & pgmsk).eq(GSVector4i::zero());
+}
+
+u32 GSLocalMemory::GetStartBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
+{
+	u32 result = m_psm[psm].info.bn(rect.x, rect.y, bp, bw); // Valid only for color formats
+
+	// If rect is page aligned, we can assume it's the start of the page. Z formats don't place block 0
+	// in the top-left, so we have to round them down.
+	const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
+	if ((rect.x & (page_size.x - 1)) == 0 && (rect.y & (page_size.y - 1)) == 0)
+	{
+		constexpr u32 page_mask = (1 << 5) - 1;
+		result &= ~page_mask;
+	}
+
+	return result;
+}
+
+u32 GSLocalMemory::GetEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
+{
+	u32 result = m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw); // Valid only for color formats
+
+	// If rect is page aligned, we can assume it's the start of the next block-1 as the max block position.
+	// Using real end point for Z formats causes problems because it's a lower value.
+	const GSVector2i page_size = GSLocalMemory::m_psm[psm].pgs;
+	if ((rect.z & (page_size.x - 1)) == 0 && (rect.w & (page_size.y - 1)) == 0)
+	{
+		constexpr u32 page_mask = (1 << 5) - 1;
+		result = (((result + page_mask) & ~page_mask)) - 1;
+	}
+
+	return result;
+}
+
+u32 GSLocalMemory::GetUnwrappedEndBlockAddress(u32 bp, u32 bw, u32 psm, GSVector4i rect)
+{
+	const u32 result = GetEndBlockAddress(bp, bw, psm, rect);
+	return (result < bp) ? (result + MAX_BLOCKS) : result;
+}
+
+GSVector4i GSLocalMemory::GetRectForPageOffset(u32 base_bp, u32 offset_bp, u32 bw, u32 psm)
+{
+	pxAssert((base_bp % BLOCKS_PER_PAGE) == 0 && (offset_bp % BLOCKS_PER_PAGE) == 0);
+
+	const u32 page_offset = (offset_bp - base_bp) >> 5;
+	const GSVector2i& pgs = m_psm[psm].pgs;
+	const u32 valid_bw = std::max(1U, bw);
+	const GSVector2i page_offset_xy = GSVector2i(page_offset % valid_bw, page_offset / std::max(1U, valid_bw));
+	return GSVector4i(pgs * page_offset_xy).xyxy() + GSVector4i::loadh(pgs);
+}
+
+bool GSLocalMemory::HasOverlap(const u32 src_bp, const u32 src_bw, const u32 src_psm, const GSVector4i src_rect
+							, const u32 dst_bp, const u32 dst_bw, const u32 dst_psm, const GSVector4i dst_rect)
+{
+	const u32 src_start_bp = GSLocalMemory::GetStartBlockAddress(src_bp, src_bw, src_psm, src_rect) & ~(BLOCKS_PER_PAGE - 1);
+	const u32 dst_start_bp = GSLocalMemory::GetStartBlockAddress(dst_bp, dst_bw, dst_psm, dst_rect) & ~(BLOCKS_PER_PAGE - 1);
+
+	u32 src_end_bp = ((GSLocalMemory::GetEndBlockAddress(src_bp, src_bw, src_psm, src_rect) + 1) + (BLOCKS_PER_PAGE - 1)) & ~(BLOCKS_PER_PAGE - 1);
+	u32 dst_end_bp = ((GSLocalMemory::GetEndBlockAddress(dst_bp, dst_bw, dst_psm, dst_rect) + 1) + (BLOCKS_PER_PAGE - 1)) & ~(BLOCKS_PER_PAGE - 1);
+	
+	if (src_start_bp == src_end_bp)
+	{
+		src_end_bp = (src_end_bp + BLOCKS_PER_PAGE) & ~(MAX_BLOCKS - 1);
+	}
+
+	if (dst_start_bp == dst_end_bp)
+	{
+		dst_end_bp = (dst_end_bp + BLOCKS_PER_PAGE) & ~(MAX_BLOCKS - 1);
+	}
+
+	// Source has wrapped, 2 separate checks.
+	if (src_end_bp <= src_start_bp)
+	{
+		// Destination has also wrapped, so they *have* to overlap.
+		if (dst_end_bp <= dst_start_bp)
+		{
+			return true;
+		}
+		else
+		{
+			if (dst_end_bp > src_start_bp)
+				return true;
+
+			if (dst_start_bp < src_end_bp)
+				return true;
+		}
+	}
+	else // No wrapping on source.
+	{
+		// Destination wraps.
+		if (dst_end_bp <= dst_start_bp)
+		{
+			if (src_end_bp > dst_start_bp)
+				return true;
+
+			if (src_start_bp < dst_end_bp)
+				return true;
+		}
+		else
+		{
+			if (dst_start_bp < src_end_bp && dst_end_bp > src_start_bp)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 ///////////////////
 
 void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA)
@@ -537,7 +650,7 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 {
 	int pitch = w * 4;
 	int size = pitch * h;
-	void* bits = _aligned_malloc(size, 32);
+	void* bits = _aligned_malloc(size, VECTOR_ALIGNMENT);
 
 	GIFRegTEX0 TEX0;
 
@@ -624,10 +737,7 @@ GSOffset::PageLooper GSOffset::pageLooperForRect(const GSVector4i& rect) const
 	//   e.g. if bp is 1 on PSMCT32, the top left tile uses page 1 if the rect covers the bottom right block, and uses page 0 if the rect covers any block other than the bottom right
 	// - Center tiles (ones that aren't first or last) cover all blocks that the first and last do in a row
 	//   Therefore, if the first tile in a row touches the higher of its two pages, subsequent non-last tiles will at least touch the higher of their pages as well (and same for center to last, etc)
-	//   Therefore, with the exception of row covering two pages in a z swizzle (which could touch e.g. pages 1 and 3 but not 2), all rows touch contiguous pages
-	//   For now, we won't deal with that case as it's rare (only possible with a thin, unaligned rect on an unaligned bp on a z swizzle), and the worst issue looping too many pages could cause is unneccessary cache invalidation
-	//   If code is added later to deal with the case, you'll need to change loopPagesWithBreak's block deduplication code, as it currently works by forcing the page number to increase monotonically which could cause blocks to be missed if e.g. the first row touches 1 and 3, and the second row touches 2 and 4
-	// - Based on the above assumption, we calculate the range of pages a row could touch with full coverage, then add one to the start if the first tile doesn't touch its lower page, and subtract one from the end if the last tile doesn't touch its upper page
+	// - Based on the above, we calculate the range of pages a row could touch with full coverage, then add one to the start if the first tile doesn't touch its lower page, and subtract one from the end if the last tile doesn't touch its upper page
 	// - This is done separately for the first and last rows in the y axis, as they may not have the same coverage as a row in the middle
 
 	PageLooper out;

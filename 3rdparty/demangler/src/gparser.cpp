@@ -4764,23 +4764,9 @@ void cGram::demangleClassName(const std::string& input, cName* retvalue, cGram::
 				std::string sLength = match[1];
 				std::string name = match[2];
 
-				unsigned long length = 0;
-
-				bool ok = true;
-				try {
-					length = std::stoul(sLength);
-				}
-				catch (const std::invalid_argument&) {
-					ok = false;
-				}
-				catch (const std::out_of_range&) {
-					ok = false;
-				}
-
-				if (ok) {
-					if (name.length() == length) {
-						className = name;
-					}
+				unsigned long length = std::stoul(sLength);
+				if (name.length() == length) {
+					className = name;
 				}
 			}
 		}

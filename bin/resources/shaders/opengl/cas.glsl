@@ -30,7 +30,7 @@ layout(binding=0, rgba8) uniform writeonly image2D imgDst;
 
 AF3 CasLoad(ASU2 p)
 {
-    return texelFetch(imgSrc, srcOffset + ivec2(p), 0).rgb;
+	return texelFetch(imgSrc, srcOffset + ivec2(p), 0).rgb;
 }
 
 // Lets you transform input from the load into a linear color space between 0 and 1. See ffx_cas.h
@@ -42,23 +42,23 @@ void CasInput(inout AF1 r, inout AF1 g, inout AF1 b) {}
 layout(local_size_x=64) in;
 void main()
 {
-    // Do remapping of local xy in workgroup for a more PS-like swizzle pattern.
-    AU2 gxy = ARmp8x8(gl_LocalInvocationID.x)+AU2(gl_WorkGroupID.x<<4u,gl_WorkGroupID.y<<4u);
+	// Do remapping of local xy in workgroup for a more PS-like swizzle pattern.
+	AU2 gxy = ARmp8x8(gl_LocalInvocationID.x)+AU2(gl_WorkGroupID.x<<4u,gl_WorkGroupID.y<<4u);
 
-    // Filter.
-    AF4 c;
-    CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-    imageStore(imgDst, ASU2(gxy), c);
-    gxy.x += 8u;
+	// Filter.
+	AF4 c = vec4(0.0f);
+	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
+	imageStore(imgDst, ASU2(gxy), c);
+	gxy.x += 8u;
 
-    CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-    imageStore(imgDst, ASU2(gxy), c);
-    gxy.y += 8u;
+	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
+	imageStore(imgDst, ASU2(gxy), c);
+	gxy.y += 8u;
 
-    CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-    imageStore(imgDst, ASU2(gxy), c);
-    gxy.x -= 8u;
+	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
+	imageStore(imgDst, ASU2(gxy), c);
+	gxy.x -= 8u;
 
-    CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-    imageStore(imgDst, ASU2(gxy), c);
+	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
+	imageStore(imgDst, ASU2(gxy), c);
 }

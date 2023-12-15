@@ -1,6 +1,17 @@
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1.0
-#endif
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifdef VERTEX_SHADER
 
@@ -23,7 +34,17 @@ layout(location = 0) in vec2 v_tex;
 
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint o_col0;
-#else
+#elif !defined(ps_datm1) && \
+	!defined(ps_datm0) && \
+	!defined(ps_convert_rgba8_float32) && \
+	!defined(ps_convert_rgba8_float24) && \
+	!defined(ps_convert_rgba8_float16) && \
+	!defined(ps_convert_rgb5a1_float16) && \
+	!defined(ps_convert_rgba8_float32_biln) && \
+	!defined(ps_convert_rgba8_float24_biln) && \
+	!defined(ps_convert_rgba8_float16_biln) && \
+	!defined(ps_convert_rgb5a1_float16_biln) && \
+	!defined(ps_depth_copy)
 layout(location = 0) out vec4 o_col0;
 #endif
 
@@ -69,8 +90,6 @@ void ps_convert_rgba8_16bits()
 #ifdef ps_datm1
 void ps_datm1()
 {
-	o_col0 = vec4(0, 0, 0, 0);
-
 	if(sample_c(v_tex).a < (127.5f / 255.0f)) // >= 0x80 pass
 		discard;
 
@@ -80,8 +99,6 @@ void ps_datm1()
 #ifdef ps_datm0
 void ps_datm0()
 {
-	o_col0 = vec4(0, 0, 0, 0);
-
 	if((127.5f / 255.0f) < sample_c(v_tex).a) // < 0x80 pass (== 0x80 should not pass)
 		discard;
 }
@@ -125,7 +142,7 @@ void ps_convert_float16_rgb5a1()
 {
 	// Convert a vec32 (only 16 lsb) depth into a RGB5A1 color texture
 	uint d = uint(sample_c(v_tex).r * exp2(32.0f));
-	o_col0 = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) / vec4(32.0f, 32.0f, 32.0f, 1.0f);
+	o_col0 = vec4(uvec4(d << 3, d >> 2, d >> 7, d >> 8) & uvec4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
 }
 #endif
 
@@ -238,6 +255,15 @@ void ps_convert_rgb5a1_float16_biln()
 #endif
 
 #ifdef ps_convert_rgba_8i
+layout(push_constant) uniform cb10
+{
+	uint SBW;
+	uint DBW;
+	uvec2 cb_pad1;
+	float ScaleFactor;
+	vec3 cb_pad2;
+};
+
 void ps_convert_rgba_8i()
 {
 	// Convert a RGBA texture into a 8 bits packed texture
@@ -249,37 +275,45 @@ void ps_convert_rgba_8i()
 	// 1: 8 R | 8 B
 	// 2: 8 G | 8 A
 	// 3: 8 G | 8 A
-  uvec2 pos = uvec2(gl_FragCoord.xy);
+	uvec2 pos = uvec2(gl_FragCoord.xy);
 
-  // Collapse separate R G B A areas into their base pixel
-  uvec2 block = (pos & ~uvec2(15u, 3u)) >> 1;
-  uvec2 subblock = pos & uvec2(7u, 1u);
-  uvec2 coord = block | subblock;
+	// Collapse separate R G B A areas into their base pixel
+	uvec2 block = (pos & ~uvec2(15u, 3u)) >> 1;
+	uvec2 subblock = pos & uvec2(7u, 1u);
+	uvec2 coord = block | subblock;
 
-  // Apply offset to cols 1 and 2
-  uint is_col23 = pos.y & 4u;
-  uint is_col13 = pos.y & 2u;
-  uint is_col12 = is_col23 ^ (is_col13 << 1);
-  coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
+	// Compensate for potentially differing page pitch.
+	uvec2 block_xy = coord / uvec2(64u, 32u);
+	uint block_num = (block_xy.y * (DBW / 128u)) + block_xy.x;
+	uvec2 block_offset = uvec2((block_num % (SBW / 64u)) * 64u, (block_num / (SBW / 64u)) * 32u);
+	coord = (coord % uvec2(64u, 32u)) + block_offset;
 
-  if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
-    coord = uvec2(vec2(coord) * PS_SCALE_FACTOR);
-  else
-    coord *= uvec2(PS_SCALE_FACTOR);
+	// Apply offset to cols 1 and 2
+	uint is_col23 = pos.y & 4u;
+	uint is_col13 = pos.y & 2u;
+	uint is_col12 = is_col23 ^ (is_col13 << 1);
+	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
 
-  vec4 pixel = texelFetch(samp0, ivec2(coord), 0);
-  vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
-  float sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
-  o_col0 = vec4(sel1); // Divide by something here?
+	if (floor(ScaleFactor) != ScaleFactor)
+		coord = uvec2(vec2(coord) * ScaleFactor);
+	else
+		coord *= uvec2(ScaleFactor);
+
+	vec4 pixel = texelFetch(samp0, ivec2(coord), 0);
+	vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
+	float sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
+	o_col0 = vec4(sel1); // Divide by something here?
 }
 #endif
 
 #ifdef ps_convert_clut_4
 layout(push_constant) uniform cb10
 {
-	vec2 scale;
 	uvec2 offset;
 	uint doffset;
+	uint cb_pad1;
+	float scale;
+	vec3 cb_pad2;
 };
 
 void ps_convert_clut_4()
@@ -288,7 +322,7 @@ void ps_convert_clut_4()
 	uint index = uint(gl_FragCoord.x) + doffset;
 	uvec2 pos = uvec2(index % 8u, index / 8u);
 
-	ivec2 final = ivec2(floor(vec2(offset + pos) * scale));
+	ivec2 final = ivec2(floor(vec2(offset + pos) * vec2(scale)));
 	o_col0 = texelFetch(samp0, final, 0);
 }
 #endif
@@ -296,9 +330,11 @@ void ps_convert_clut_4()
 #ifdef ps_convert_clut_8
 layout(push_constant) uniform cb10
 {
-	vec2 scale;
 	uvec2 offset;
 	uint doffset;
+	uint cb_pad1;
+	float scale;
+	vec3 cb_pad2;
 };
 
 void ps_convert_clut_8()
@@ -312,7 +348,7 @@ void ps_convert_clut_8()
 	pos.x = (index % 8u) + ((subgroup >= 2u) ? 8u : 0u);
 	pos.y = ((index / 32u) * 2u) + (subgroup % 2u);
 
-	ivec2 final = ivec2(floor(vec2(offset + pos) * scale));
+	ivec2 final = ivec2(floor(vec2(offset + pos) * vec2(scale)));
 	o_col0 = texelFetch(samp0, final, 0);
 }
 #endif
@@ -327,7 +363,7 @@ layout(push_constant) uniform cb10
 void ps_yuv()
 {
 	vec4 i = sample_c(v_tex);
-	vec4 o;
+	vec4 o = vec4(0.0f);
 
 	mat3 rgb2yuv;
 	rgb2yuv[0] = vec3(0.587, -0.311, -0.419);
@@ -340,7 +376,8 @@ void ps_yuv()
 	float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
 	float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
 
-	switch(EMODA) {
+	switch(EMODA)
+	{
 		case 0:
 			o.a = i.a;
 			break;
@@ -355,7 +392,8 @@ void ps_yuv()
 			break;
 	}
 
-	switch(EMODC) {
+	switch(EMODC)
+	{
 		case 0:
 			o.rgb = i.rgb;
 			break;

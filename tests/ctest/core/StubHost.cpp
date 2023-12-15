@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,18 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pcsx2/Frontend/CommonHost.h"
-#include "pcsx2/Frontend/ImGuiManager.h"
-#include "pcsx2/Frontend/InputManager.h"
+#include "pcsx2/Achievements.h"
 #include "pcsx2/GS.h"
+#include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
-#include "pcsx2/HostDisplay.h"
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/Input/InputManager.h"
 #include "pcsx2/VMManager.h"
-
-#ifdef ENABLE_ACHIEVEMENTS
-#include "pcsx2/Frontend/Achievements.h"
-#endif
 
 void Host::CommitBaseSettingChanges()
 {
@@ -45,21 +40,6 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 
 void Host::SetDefaultUISettings(SettingsInterface& si)
 {
-}
-
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
-{
-    return std::nullopt;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	return std::nullopt;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	return std::nullopt;
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
@@ -90,7 +70,7 @@ void Host::EndTextInput()
 
 std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 {
-    return std::nullopt;
+	return std::nullopt;
 }
 
 void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
@@ -101,33 +81,20 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 {
 }
 
-void Host::SetRelativeMouseMode(bool enabled)
+void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
+std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
 {
-    return false;
+	return std::nullopt;
 }
 
-void Host::ReleaseHostDisplay(bool clear_state)
-{
-}
-
-HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
-{
-	return HostDisplay::PresentResult::FrameSkipped;
-}
-
-void Host::EndPresentFrame()
+void Host::ReleaseRenderWindow()
 {
 }
 
-void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
-{
-}
-
-void Host::UpdateHostDisplay()
+void Host::BeginPresentFrame()
 {
 }
 
@@ -155,8 +122,8 @@ void Host::OnVMResumed()
 {
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
-	const std::string& game_name, u32 game_crc)
+void Host::OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
+		const std::string& disc_serial, u32 disc_crc, u32 current_crc)
 {
 }
 
@@ -197,6 +164,14 @@ void Host::SetFullscreen(bool enabled)
 {
 }
 
+void Host::OnCaptureStarted(const std::string& filename)
+{
+}
+
+void Host::OnCaptureStopped()
+{
+}
+
 void Host::RequestExit(bool save_state_if_running)
 {
 }
@@ -205,15 +180,41 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 {
 }
 
-void Host::CPUThreadVSync()
+void Host::VSyncOnCPUThread()
 {
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
+s32 Host::Internal::GetTranslatedStringImpl(
+	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+{
+	if (msg.size() > tbuf_space)
+		return -1;
+	else if (msg.empty())
+		return 0;
+
+	std::memcpy(tbuf, msg.data(), msg.size());
+	return static_cast<s32>(msg.size());
+}
+
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+}
+
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+}
+
 void Host::OnAchievementsRefreshed()
 {
 }
-#endif
+
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+}
+
+void Host::OnCoverDownloaderOpenRequested()
+{
+}
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
@@ -225,15 +226,10 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
 	return std::nullopt;
 }
 
-SysMtgsThread& GetMTGS()
+const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
 {
-    throw std::exception();
+	return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Interface Stuff
-//////////////////////////////////////////////////////////////////////////
-
-const IConsoleWriter* PatchesCon = &Console;
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()

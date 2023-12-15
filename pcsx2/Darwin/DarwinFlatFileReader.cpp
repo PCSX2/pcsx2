@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,7 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+
 #include "common/FileSystem.h"
+
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -27,34 +29,35 @@
 #warning AIO has been disabled.
 #endif
 
-FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
+FlatFileReader::FlatFileReader(bool shareWrite)
+	: shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
 	m_fd = -1;
 	m_async_read_in_progress = false;
 }
 
-FlatFileReader::~FlatFileReader(void)
+FlatFileReader::~FlatFileReader()
 {
 	Close();
 }
 
-bool FlatFileReader::Open(std::string fileName)
+bool FlatFileReader::Open(std::string filename, Error* error)
 {
-    m_filename = std::move(fileName);
+	m_filename = std::move(filename);
 
-    m_fd = FileSystem::OpenFDFile(m_filename.c_str(), O_RDONLY, 0);
+	m_fd = FileSystem::OpenFDFile(m_filename.c_str(), O_RDONLY, 0, error);
 
 	return (m_fd != -1);
 }
 
-int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
+int FlatFileReader::ReadSync(void* pBuffer, u32 sector, u32 count)
 {
 	BeginRead(pBuffer, sector, count);
 	return FinishRead();
 }
 
-void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
+void FlatFileReader::BeginRead(void* pBuffer, u32 sector, u32 count)
 {
 	u64 offset = sector * (u64)m_blocksize + m_dataoffset;
 
@@ -98,20 +101,20 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 	}
 }
 
-int FlatFileReader::FinishRead(void)
+int FlatFileReader::FinishRead()
 {
 	if (!m_async_read_in_progress)
 		return m_aiocb.aio_nbytes == (size_t)-1 ? -1 : 1;
 	m_async_read_in_progress = true;
 
-	struct aiocb *aiocb_list[] = {&m_aiocb};
+	struct aiocb* aiocb_list[] = {&m_aiocb};
 
 	while (aio_suspend(aiocb_list, 1, nullptr) == -1 && errno == EINTR)
 		;
 	return aio_return(&m_aiocb);
 }
 
-void FlatFileReader::CancelRead(void)
+void FlatFileReader::CancelRead()
 {
 	if (m_async_read_in_progress)
 	{
@@ -120,7 +123,7 @@ void FlatFileReader::CancelRead(void)
 	}
 }
 
-void FlatFileReader::Close(void)
+void FlatFileReader::Close()
 {
 	CancelRead();
 	if (m_fd != -1)
@@ -129,7 +132,7 @@ void FlatFileReader::Close(void)
 	m_fd = -1;
 }
 
-uint FlatFileReader::GetBlockCount(void) const
+u32 FlatFileReader::GetBlockCount() const
 {
-	return (int)(FileSystem::GetPathFileSize(m_filename.c_str()) / m_blocksize);
+	return static_cast<u32>(FileSystem::GetPathFileSize(m_filename.c_str()) / m_blocksize);
 }

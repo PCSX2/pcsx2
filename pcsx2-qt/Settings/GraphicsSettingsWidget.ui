@@ -7,11 +7,8 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>466</height>
+    <height>463</height>
    </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -29,7 +26,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
-      <string>Renderer</string>
+      <string/>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
@@ -143,7 +140,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_23">
          <property name="text">
-          <string>De-interlacing:</string>
+          <string>Deinterlacing:</string>
          </property>
         </widget>
        </item>
@@ -156,47 +153,47 @@
          </item>
          <item>
           <property name="text">
-           <string>None (Interlaced, also used by Progressive)</string>
+           <string>No Deinterlacing</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Weave (Top Field First, Sawtooth)</string>
+           <string extracomment="Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.">Weave (Top Field First, Sawtooth)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Weave (Bottom Field First, Sawtooth)</string>
+           <string extracomment="Weave: deinterlacing method that can be translated or left as-is in English. Sawtooth: refers to the jagged effect weave deinterlacing has on motion.">Weave (Bottom Field First, Sawtooth)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bob (Top Field First, Full Frames)</string>
+           <string extracomment="Bob: deinterlacing method that refers to the way it makes video look like it's bobbing up and down.">Bob (Top Field First, Full Frames)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bob (Bottom Field First, Full Frames)</string>
+           <string extracomment="Bob: deinterlacing method that refers to the way it makes video look like it's bobbing up and down.">Bob (Bottom Field First, Full Frames)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Blend (Top Field First, Merge 2 Fields)</string>
+           <string extracomment="Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.">Blend (Top Field First, Merge 2 Fields)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Blend (Bottom Field First, Merge 2 Fields)</string>
+           <string extracomment="Blend: deinterlacing method that blends the colors of the two frames, can be translated or left as-is in English.">Blend (Bottom Field First, Merge 2 Fields)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Adaptive (Top Field First, Similar to Bob + Weave)</string>
+           <string extracomment="Adaptive: deinterlacing method that should be translated.">Adaptive (Top Field First, Similar to Bob + Weave)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Adaptive (Bottom Field First, Similar to Bob + Weave)</string>
+           <string extracomment="Adaptive: deinterlacing method that should be translated.">Adaptive (Bottom Field First, Similar to Bob + Weave)</string>
           </property>
          </item>
         </widget>
@@ -217,12 +214,12 @@
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (Smooth)</string>
+           <string extracomment="Smooth: Refers to the texture clarity.">Bilinear (Smooth)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Bilinear (Sharp)</string>
+           <string extracomment="Sharp: Refers to the texture clarity.">Bilinear (Sharp)</string>
           </property>
          </item>
         </widget>
@@ -237,7 +234,7 @@
        <item row="6" column="1">
         <widget class="QSpinBox" name="stretchY">
          <property name="suffix">
-          <string>%</string>
+          <string extracomment="Percentage sign that shows next to a value. You might want to add a space before if your language requires it.">%</string>
          </property>
          <property name="minimum">
           <number>1</number>
@@ -259,7 +256,7 @@
          <item>
           <widget class="QLabel" name="label_39">
            <property name="text">
-            <string>Left:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Left:</string>
            </property>
           </widget>
          </item>
@@ -276,7 +273,7 @@
          <item>
           <widget class="QLabel" name="label_25">
            <property name="text">
-            <string>Top:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Top:</string>
            </property>
           </widget>
          </item>
@@ -293,7 +290,7 @@
          <item>
           <widget class="QLabel" name="label_40">
            <property name="text">
-            <string>Right:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Right:</string>
            </property>
           </widget>
          </item>
@@ -310,7 +307,7 @@
          <item>
           <widget class="QLabel" name="label_41">
            <property name="text">
-            <string>Bottom:</string>
+            <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Bottom:</string>
            </property>
           </widget>
          </item>
@@ -338,7 +335,7 @@
          <item row="1" column="1">
           <widget class="QCheckBox" name="integerScaling">
            <property name="text">
-            <string>Integer Upscaling</string>
+            <string>Integer Scaling</string>
            </property>
           </widget>
          </item>
@@ -600,54 +597,13 @@
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>CRC Fix Level:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QComboBox" name="crcFixLevel">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>None (Debug)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Minimum (Debug)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Partial (OpenGL)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Full (Direct3D)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Aggressive</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="7" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>Blending Accuracy:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="1">
         <widget class="QComboBox" name="blending">
          <item>
           <property name="text">
@@ -681,14 +637,14 @@
          </item>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_20">
          <property name="text">
           <string>Texture Preloading:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="7" column="1">
         <widget class="QComboBox" name="texturePreloading">
          <item>
           <property name="text">
@@ -707,30 +663,23 @@
          </item>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
-        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+       <item row="8" column="0" colspan="2">
+        <layout class="QGridLayout" name="hardwareRenderingOptionsLayout">
          <item row="0" column="0">
-          <widget class="QCheckBox" name="gpuPaletteConversion">
-           <property name="text">
-            <string>GPU Palette Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="enableHWFixes">
-           <property name="text">
-            <string>Manual Hardware Renderer Fixes</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
           <widget class="QCheckBox" name="spinGPUDuringReadbacks">
            <property name="text">
             <string>Spin GPU During Readbacks</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Manual Hardware Renderer Fixes</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
           <widget class="QCheckBox" name="spinCPUDuringReadbacks">
            <property name="text">
             <string>Spin CPU During Readbacks</string>
@@ -792,7 +741,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Extra Rendering Threads:</string>
+          <string>Software Rendering Threads:</string>
          </property>
         </widget>
        </item>
@@ -828,32 +777,6 @@
        <string>Hardware Fixes</string>
       </attribute>
       <layout class="QFormLayout" name="hardwareFixesLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Half Screen Fix:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="halfScreenFix">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Disabled</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Enabled</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_36">
          <property name="text">
@@ -862,141 +785,93 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QComboBox" name="cpuSpriteRenderBW">
+        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0">
          <item>
-          <property name="text">
-           <string>0 (Disabled)</string>
-          </property>
+          <widget class="QComboBox" name="cpuSpriteRenderBW">
+           <item>
+            <property name="text">
+             <string>0 (Disabled)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1 (64 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2 (128 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3 (192 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4 (256 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5 (320 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6 (384 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>7 (448 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>8 (512 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>9 (576 Max Width)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>10 (640 Max Width)</string>
+            </property>
+           </item>
+          </widget>
          </item>
          <item>
-          <property name="text">
-           <string>1 (64 Max Width)</string>
-          </property>
+          <widget class="QComboBox" name="cpuSpriteRenderLevel">
+           <item>
+            <property name="text">
+             <string>Sprites Only</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Sprites/Triangles</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Blended Sprites/Triangles</string>
+            </property>
+           </item>
+          </widget>
          </item>
-         <item>
-          <property name="text">
-           <string>2 (128 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>3 (192 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>4 (256 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5 (320 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>6 (384 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>7 (448 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>8 (512 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>9 (576 Max Width)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10 (640 Max Width)</string>
-          </property>
-         </item>
-        </widget>
+        </layout>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_12">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_16">
          <property name="text">
-          <string>Skipdraw Range:</string>
+          <string>Software CLUT Render:</string>
          </property>
         </widget>
-       </item>
-       <item row="4" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QSpinBox" name="skipDrawStart">
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="skipDrawEnd">
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="hwAutoFlush">
-           <property name="text">
-            <string>Auto Flush</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="frameBufferConversion">
-           <property name="text">
-            <string>Frame Buffer Conversion</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="disableDepthEmulation">
-           <property name="text">
-            <string>Disable Depth Emulation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="disableSafeFeatures">
-           <property name="text">
-            <string>Disable Safe Features</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="disablePartialInvalidation">
-           <property name="text">
-            <string>Disable Partial Invalidation</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="preloadFrameData">
-           <property name="text">
-            <string>Preload Frame Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="textureInsideRt">
-           <property name="text">
-            <string>Texture Inside RT</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="2" column="1">
         <widget class="QComboBox" name="cpuCLUTRender">
@@ -1023,17 +898,10 @@
          </item>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_16">
-         <property name="text">
-          <string>Software CLUT Render:</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_47">
          <property name="text">
-          <string>GPU Target CLUT:</string>
+          <string extracomment="CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.">GPU Target CLUT:</string>
          </property>
         </widget>
        </item>
@@ -1055,6 +923,150 @@
           </property>
          </item>
         </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>Auto Flush:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="hwAutoFlush">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled (Sprites Only)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enabled (All Primitives)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_45">
+         <property name="text">
+          <string>Texture Inside RT:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="textureInsideRt">
+         <item>
+          <property name="text">
+           <string>Disabled (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Inside Target</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Merge Targets</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Skip Draw Range:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSpinBox" name="skipDrawStart">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="skipDrawEnd">
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="disableDepthEmulation">
+           <property name="text">
+            <string>Disable Depth Emulation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="disablePartialInvalidation">
+           <property name="text">
+            <string>Disable Partial Source Invalidation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="disableSafeFeatures">
+           <property name="text">
+            <string>Disable Safe Features</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="readTCOnClose">
+           <property name="text">
+            <string>Read Targets When Closing</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="preloadFrameData">
+           <property name="text">
+            <string>Preload Frame Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="gpuPaletteConversion">
+           <property name="text">
+            <string>GPU Palette Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="frameBufferConversion">
+           <property name="text">
+            <string>Framebuffer Conversion</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QCheckBox" name="estimateTextureRegion">
+           <property name="text">
+            <string>Estimate Texture Region</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="disableRenderFixes">
+           <property name="text">
+            <string>Disable Render Fixes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -1092,6 +1104,11 @@
            <string>Special (Texture - Aggressive)</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>Align To Native</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="1" column="0">
@@ -1120,14 +1137,14 @@
          </item>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="textureOffsetLabel">
          <property name="text">
           <string>Texture Offsets:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <layout class="QHBoxLayout" name="textureOffsetLayout" stretch="0,1,0,1">
          <item>
           <widget class="QLabel" name="textureOffsetXLabel">
@@ -1159,15 +1176,8 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="mergeSprite">
-           <property name="text">
-            <string>Merge Sprite</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QCheckBox" name="alignSprite">
            <property name="text">
@@ -1175,14 +1185,54 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="nativePaletteDraw">
+           <property name="text">
+            <string>Unscaled Palette Texture Draws</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
           <widget class="QCheckBox" name="wildHack">
            <property name="text">
-            <string>Wild Arms Hack</string>
+            <string extracomment="Wild Arms: name of a game series. Leave as-is or use an official translation.">Wild Arms Hack</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="mergeSprite">
+           <property name="text">
+            <string>Merge Sprite</string>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Bilinear Dirty Upscale:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="bilinearHack">
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Bilinear</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Nearest</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1261,7 +1311,7 @@
           <item row="1" column="1">
            <widget class="QCheckBox" name="loadTextureReplacementsAsync">
             <property name="text">
-             <string>Async Texture Loading</string>
+             <string>Asynchronous Texture Loading</string>
             </property>
            </widget>
           </item>
@@ -1311,7 +1361,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_17">
             <property name="text">
-             <string>Contrast Adaptive Sharpening:</string>
+             <string extracomment="You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx">Contrast Adaptive Sharpening:</string>
             </property>
            </widget>
           </item>
@@ -1348,7 +1398,7 @@
               <item>
                <widget class="QSpinBox" name="casSharpness">
                 <property name="suffix">
-                 <string>%</string>
+                 <string extracomment="Percentage sign that will appear next to a number. Add a space or whatever is needed before depending on your language.">%</string>
                 </property>
                 <property name="maximum">
                  <number>100</number>
@@ -1414,7 +1464,17 @@
             </item>
             <item>
              <property name="text">
-              <string>Lottes CRT</string>
+              <string extracomment="Lottes = Timothy Lottes, the creator of the shader filter. Leave as-is. CRT= Cathode Ray Tube, an old type of television technology.">Lottes CRT</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4xRGSS downsampling (4x Rotated Grid SuperSampling)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>NxAGSS downsampling (Nx Automatic Grid SuperSampling)</string>
              </property>
             </item>
            </widget>
@@ -1478,7 +1538,7 @@
             <item>
              <widget class="QLabel" name="label_33">
               <property name="text">
-               <string>Saturation</string>
+               <string>Saturation:</string>
               </property>
              </widget>
             </item>
@@ -1590,7 +1650,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="osdShowMessages">
               <property name="text">
-               <string>Show Notifications</string>
+               <string>Show OSD Messages</string>
               </property>
              </widget>
             </item>
@@ -1611,7 +1671,7 @@
             <item row="0" column="1">
              <widget class="QCheckBox" name="osdShowSpeed">
               <property name="text">
-               <string>Show Speed</string>
+               <string>Show Speed Percentages</string>
               </property>
              </widget>
             </item>
@@ -1818,7 +1878,7 @@
                <item row="1" column="1">
                 <widget class="QSpinBox" name="videoCaptureBitrate">
                  <property name="suffix">
-                  <string> kbps</string>
+                  <string extracomment="Unit that will appear next to a number. Alter the space or whatever is needed before the text depending on your language."> kbps</string>
                  </property>
                  <property name="minimum">
                   <number>100</number>
@@ -1930,7 +1990,7 @@
      </widget>
      <widget class="QGroupBox" name="advancedTab">
       <attribute name="title">
-       <string>Advanced</string>
+       <string extracomment="Advanced here refers to the advanced graphics options.">Advanced</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
@@ -2008,7 +2068,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="useBlitSwapChain">
               <property name="text">
-               <string>Use Blit Swap Chain</string>
+               <string extracomment="Blit = a data operation. You might want to write it as-is, but fully uppercased. More information: https://en.wikipedia.org/wiki/Bit_blit \nSwap chain: see Microsoft's Terminology Portal.">Use Blit Swap Chain</string>
               </property>
              </widget>
             </item>
@@ -2020,6 +2080,32 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_48">
+            <property name="text">
+             <string>Allow Exclusive Fullscreen:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="exclusiveFullscreenControl">
+            <item>
+             <property name="text">
+              <string>Automatic (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Disallowed</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Allowed</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -2056,52 +2142,40 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_30">
-            <property name="text">
-             <string>Override Geometry Shader:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="overrideGeometryShader">
-            <item>
-             <property name="text">
-              <string>Automatic (Default)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Force Disabled</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Force Enabled</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_7">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="useDebugDevice">
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="disableFramebufferFetch">
               <property name="text">
-               <string>Use Debug Device</string>
+               <string>Disable Framebuffer Fetch</string>
               </property>
              </widget>
             </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="disableDualSource">
               <property name="text">
-               <string>Disable Dual Source Blending</string>
+               <string>Disable Dual-Source Blending</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="disableFramebufferFetch">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="disableShaderCache">
               <property name="text">
-               <string>Disable Framebuffer Fetch</string>
+               <string>Disable Shader Cache</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="useDebugDevice">
+              <property name="text">
+               <string>Use Debug Device</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="disableVertexShaderExpand">
+              <property name="text">
+               <string>Disable Vertex Shader Expand</string>
               </property>
              </widget>
             </item>

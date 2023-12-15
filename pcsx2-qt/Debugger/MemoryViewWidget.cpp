@@ -17,8 +17,6 @@
 
 #include "MemoryViewWidget.h"
 
-#include "common/BitCast.h"
-
 #include "QtHost.h"
 #include "QtUtils.h"
 #include <QtGui/QMouseEvent>
@@ -225,11 +223,32 @@ void MemoryViewTable::InsertIntoSelectedHexView(u8 value)
 		QtHost::RunOnUIThread([this] { parent->update(); });
 	});
 }
-// We need both key and keychar because `key` is easy to use, but is case insensitive
-void MemoryViewTable::KeyPress(int key, QChar keychar)
-{
+
+void MemoryViewTable::InsertAtCurrentSelection(const QString& text) {
 	if (!m_cpu->isValidAddress(selectedAddress))
 		return;
+
+	// If pasting into the hex view, also decode the input as hex bytes.
+	// This approach prevents one from pasting on a nibble boundary, but that is almost always
+	// user error, and we don't have an undo function in this view, so best to stay conservative.
+	QByteArray input = selectedText ? text.toUtf8() : QByteArray::fromHex(text.toUtf8());
+
+	Host::RunOnCPUThread([this, address = selectedAddress, cpu = m_cpu, inBytes = input] {
+		for (int i = 0; i < inBytes.size(); i++)
+		{
+			cpu->write8(address + i, inBytes[i]);
+		}
+		QtHost::RunOnUIThread([this, inBytes] { UpdateSelectedAddress(selectedAddress + inBytes.size()); parent->update(); });
+	});
+}
+
+// We need both key and keychar because `key` is easy to use, but is case insensitive
+bool MemoryViewTable::KeyPress(int key, QChar keychar)
+{
+	if (!m_cpu->isValidAddress(selectedAddress))
+		return false;
+
+	bool pressHandled = false;
 
 	const bool keyCharIsText = keychar.isLetterOrNumber() || keychar.isSpace();
 
@@ -241,6 +260,7 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 				cpu->write8(address, val);
 				QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress + 1); parent->update(); });
 			});
+			pressHandled = true;
 		}
 
 		switch (key)
@@ -251,12 +271,17 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 					cpu->write8(address, 0);
 					QtHost::RunOnUIThread([this] { UpdateSelectedAddress(selectedAddress - 1); parent->update(); });
 				});
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Right:
 				UpdateSelectedAddress(selectedAddress + 1);
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Left:
 				UpdateSelectedAddress(selectedAddress - 1);
+				pressHandled = true;
+				break;
+			default:
 				break;
 		}
 	}
@@ -266,10 +291,13 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 
 		if (keyCharIsText)
 		{
-			InsertIntoSelectedHexView(((u8)QString(QChar(key)).toInt(nullptr, 16)));
-			// Increment to the next nibble or byte
-			if ((selectedNibbleHI = !selectedNibbleHI))
-				UpdateSelectedAddress(selectedAddress + 1);
+			InsertIntoSelectedHexView(((u8)QString(QChar(key)).toInt(&pressHandled, 16)));
+			if (pressHandled)
+			{
+				// Increment to the next nibble or byte
+				if ((selectedNibbleHI = !selectedNibbleHI))
+					UpdateSelectedAddress(selectedAddress + 1);
+			}
 		}
 
 		switch (key)
@@ -280,14 +308,19 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 				// Move back a byte or nibble if it's backspace being pressed
 				if (!(selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress - 1);
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Right:
 				if ((selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress + 1);
+				pressHandled = true;
 				break;
 			case Qt::Key::Key_Left:
 				if (!(selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress - 1);
+				pressHandled = true;
+				break;
+			default:
 				break;
 		}
 	}
@@ -298,17 +331,25 @@ void MemoryViewTable::KeyPress(int key, QChar keychar)
 	{
 		case Qt::Key::Key_Up:
 			UpdateSelectedAddress(selectedAddress - 0x10);
+			pressHandled = true;
 			break;
 		case Qt::Key::Key_PageUp:
 			UpdateSelectedAddress(selectedAddress - (0x10 * rowVisible), true);
+			pressHandled = true;
 			break;
 		case Qt::Key::Key_Down:
 			UpdateSelectedAddress(selectedAddress + 0x10);
+			pressHandled = true;
 			break;
 		case Qt::Key::Key_PageDown:
 			UpdateSelectedAddress(selectedAddress + (0x10 * rowVisible), true);
+			pressHandled = true;
+			break;
+		default:
 			break;
 	}
+
+	return pressHandled;
 }
 
 /*
@@ -360,7 +401,11 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 	{
 		m_contextMenu = new QMenu(this);
 
-		QAction* action = new QAction(tr("Go to in disassembly"));
+		QAction* action = new QAction(tr("Copy Address"));
+		m_contextMenu->addAction(action);
+		connect(action, &QAction::triggered, this, [this]() { QApplication::clipboard()->setText(QString::number(m_table.selectedAddress, 16).toUpper()); });
+
+		action = new QAction(tr("Go to in disassembly"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { emit gotoInDisasm(m_table.selectedAddress); });
 
@@ -404,6 +449,10 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 		action = new QAction(tr("Copy Character"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextCopyCharacter(); });
+
+		action = new QAction(tr("Paste"));
+		m_contextMenu->addAction(action);
+		connect(action, &QAction::triggered, this, [this]() { contextPaste(); });
 	}
 	const MemoryViewType currentViewType = m_table.GetViewType();
 
@@ -430,6 +479,11 @@ void MemoryViewWidget::contextCopySegment()
 void MemoryViewWidget::contextCopyCharacter()
 {
 	QApplication::clipboard()->setText(QChar::fromLatin1(m_cpu->read8(m_table.selectedAddress)).toUpper());
+}
+
+void MemoryViewWidget::contextPaste()
+{
+	m_table.InsertAtCurrentSelection(QApplication::clipboard()->text());
 }
 
 void MemoryViewWidget::contextGoToAddress()
@@ -471,26 +525,21 @@ void MemoryViewWidget::wheelEvent(QWheelEvent* event)
 
 void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 {
-	bool handledByWidget = true;
-	switch (event->key())
+	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0'))
 	{
-		case Qt::Key_G:
-			contextGoToAddress();
-			break;
-		case Qt::Key_C:
-			if (event->modifiers() & Qt::ControlModifier)
-				contextCopySegment();
-			else
-				handledByWidget = false;
-			break;
-		default:
-			handledByWidget = false;
-			break;
+		switch (event->key())
+		{
+			case Qt::Key_G:
+				contextGoToAddress();
+				break;
+			case Qt::Key_C:
+				if (event->modifiers() & Qt::ControlModifier)
+					contextCopySegment();
+				break;
+			default:
+				break;
+		}
 	}
-
-	if (!handledByWidget)
-		m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0');
-
 	this->repaint();
 	VMUpdate();
 }

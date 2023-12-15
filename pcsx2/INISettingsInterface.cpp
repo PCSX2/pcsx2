@@ -305,9 +305,10 @@ std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyVal
 	using KVEntry = std::pair<const char*, Entry>;
 	std::vector<KVEntry> entries;
 	std::vector<std::pair<std::string, std::string>> output;
-	std::list<Entry> keys, values;
+	std::list<Entry> keys;
 	if (m_ini.GetAllKeys(section, keys))
 	{
+		std::list<Entry> values;
 		for (Entry& key : keys)
 		{
 			if (!m_ini.GetAllValues(section, key.pItem, values)) // [[unlikely]]

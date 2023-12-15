@@ -217,7 +217,20 @@ u64 Threading::GetThreadTicksPerSecond()
 	// So, the frequency is our base clock speed (and stable regardless of power management).
 	static u64 frequency = 0;
 	if (unlikely(frequency == 0))
-		frequency = x86caps.CachedMHz() * u64(1000000);
+	{
+		HKEY key;
+		LSTATUS res =
+			RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_READ, &key);
+		if (res == ERROR_SUCCESS)
+		{
+			DWORD mhz;
+			DWORD size = sizeof(mhz);
+			res = RegQueryValueExW(key, L"~MHz", nullptr, nullptr, reinterpret_cast<LPBYTE>(&mhz), &size);
+			if (res == ERROR_SUCCESS)
+				frequency = static_cast<u64>(mhz) * static_cast<u64>(1000000);
+			RegCloseKey(key);
+		}
+	}
 	return frequency;
 }
 

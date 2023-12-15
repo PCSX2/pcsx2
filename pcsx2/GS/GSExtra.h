@@ -15,8 +15,11 @@
 
 #pragma once
 
-#include "GSVector.h"
+#include "GS/GSVector.h"
 #include "pcsx2/Config.h"
+#include "common/BitUtils.h"
+
+#include <utility>
 
 /// Like `memcmp(&a, &b, sizeof(T)) == 0` but faster
 template <typename T>
@@ -117,13 +120,21 @@ static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAMES = 3;
 extern void* GSAllocateWrappedMemory(size_t size, size_t repeat);
 extern void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat);
 
-// clang-format off
+/// We want all allocations and pitches to be aligned to 32-bit, regardless of whether we're
+/// SSE4 or AVX2, because of multi-ISA.
+static constexpr u32 VECTOR_ALIGNMENT = 32;
 
-#ifdef __POSIX__
-	#include <zlib.h>
-#else
-	#include <zlib/zlib.h>
-#endif
+/// Aligns allocation/pitch size to preferred host size.
+template<typename T>
+__fi static T VectorAlign(T value)
+{
+	return Common::AlignUpPow2(value, VECTOR_ALIGNMENT);
+}
+
+/// Returns the maximum alpha value across a range of data. Assumes stride is 16 byte aligned.
+std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height, u32 stride);
+
+// clang-format off
 
 #ifdef _MSC_VER
 	#define ALIGN_STACK(n) alignas(n) int dummy__; (void)dummy__;
@@ -136,18 +147,4 @@ extern void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat);
 		// TODO Check clang behavior
 		#define ALIGN_STACK(n) alignas(n) int dummy__;
 	#endif
-#endif
-
-#ifdef ENABLE_VTUNE
-	#include "jitprofiling.h"
-	#ifdef _WIN32
-		#pragma comment(lib, "jitprofiling.lib")
-	#endif
-#endif
-
-#ifdef _WIN32
-	#define DIRECTORY_SEPARATOR '\\'
-#else
-	#include <sys/stat.h> // mkdir
-	#define DIRECTORY_SEPARATOR '/'
 #endif

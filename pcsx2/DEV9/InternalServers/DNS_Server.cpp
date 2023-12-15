@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -81,7 +81,7 @@ namespace InternalServers
 	{
 #ifdef _WIN32
 		/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
-		WORD wVersionRequested = MAKEWORD(2, 2);
+		const WORD wVersionRequested = MAKEWORD(2, 2);
 
 		WSADATA wsaData{0};
 		const int err = WSAStartup(wVersionRequested, &wsaData);
@@ -162,14 +162,14 @@ namespace InternalServers
 			DNS_Packet* ret = new DNS_Packet();
 			ret->id = dns.id; //TODO, drop duplicate requests based on ID
 			ret->SetQR(true);
-			ret->SetOpCode((u8)DNS_OPCode::Query);
+			ret->SetOpCode(static_cast<u8>(DNS_OPCode::Query));
 			ret->SetAA(false);
 			ret->SetTC(false);
 			ret->SetRD(true);
 			ret->SetRA(true);
 			ret->SetAD(false);
 			ret->SetCD(false);
-			ret->SetRCode((u8)DNS_RCode::NoError);
+			ret->SetRCode(static_cast<u8>(DNS_RCode::NoError));
 			//Counts
 			ret->questions = dns.questions;
 
@@ -277,7 +277,7 @@ namespace InternalServers
 	}
 
 #ifdef _WIN32
-	void DNS_Server::GetHost(std::string url, DNS_State* state)
+	void DNS_Server::GetHost(const std::string& url, DNS_State* state)
 	{
 		//Need to convert to UTF16
 		const int size = MultiByteToWideChar(CP_UTF8, 0, url.c_str(), -1, nullptr, 0);
@@ -292,8 +292,7 @@ namespace InternalServers
 		data->session = this;
 		data->url = url;
 
-		int ret = GetAddrInfoEx(converted_string.data(), nullptr, NS_ALL, 0, &hints, (ADDRINFOEX**)&data->result, nullptr, &data->overlapped, &DNS_Server::GetAddrInfoExCallback, &data->cancelHandle);
-
+		const int ret = GetAddrInfoEx(converted_string.data(), nullptr, NS_ALL, 0, &hints, (ADDRINFOEX**)&data->result, nullptr, &data->overlapped, &DNS_Server::GetAddrInfoExCallback, &data->cancelHandle);
 		if (ret == WSA_IO_PENDING)
 			return;
 		else
@@ -348,7 +347,7 @@ namespace InternalServers
 		delete data;
 	}
 #elif defined(__POSIX__)
-	void DNS_Server::GetHost(std::string url, DNS_State* state)
+	void DNS_Server::GetHost(const std::string& url, DNS_State* state)
 	{
 		//Need to spin up thread, pass the parms to it
 
@@ -358,7 +357,7 @@ namespace InternalServers
 		GetHostThread.detach();
 	}
 
-	void DNS_Server::GetAddrInfoThread(std::string url, DNS_State* state)
+	void DNS_Server::GetAddrInfoThread(const std::string& url, DNS_State* state)
 	{
 		addrinfo hints{0};
 		hints.ai_family = AF_INET;

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,9 +14,12 @@
  */
 
 #pragma once
-#include "pcsx2/Frontend/GameList.h"
+
 #include "ui_EmptyGameListWidget.h"
 #include "ui_GameListWidget.h"
+
+#include "pcsx2/GameList.h"
+
 #include <QtWidgets/QListView>
 #include <QtWidgets/QTableView>
 
@@ -56,7 +59,7 @@ public:
 
 	void refresh(bool invalidate_cache);
 	void cancelRefresh();
-	void refreshImages();
+	void reloadThemeSpecificImages();
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
@@ -89,6 +92,7 @@ private Q_SLOTS:
 	void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
 	void onListViewItemActivated(const QModelIndex& index);
 	void onListViewContextMenuRequested(const QPoint& point);
+	void onCoverScaleChanged();
 
 public Q_SLOTS:
 	void showGameList();
@@ -109,7 +113,6 @@ private:
 	void loadTableViewColumnSortSettings();
 	void saveTableViewColumnSortSettings();
 	void listZoom(float delta);
-	void updateListFont();
 	void updateToolbar();
 
 	Ui::GameListWidget m_ui;

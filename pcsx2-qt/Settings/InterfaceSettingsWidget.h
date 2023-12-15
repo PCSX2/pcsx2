@@ -19,22 +19,29 @@
 
 #include "ui_InterfaceSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class InterfaceSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	InterfaceSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~InterfaceSettingsWidget();
 
 Q_SIGNALS:
 	void themeChanged();
+	void languageChanged();
 
 private Q_SLOTS:
 	void onRenderToSeparateWindowChanged();
 
 private:
+	void populateLanguages();
+
 	Ui::InterfaceSettingsWidget m_ui;
+
+public:
+	static const char* THEME_NAMES[];
+	static const char* THEME_VALUES[];
 };

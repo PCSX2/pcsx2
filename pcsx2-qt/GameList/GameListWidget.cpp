@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,11 +15,19 @@
 
 #include "PrecompiledHeader.h"
 
+#include "GameListModel.h"
+#include "GameListRefreshThread.h"
+#include "GameListWidget.h"
+#include "QtHost.h"
+#include "QtUtils.h"
+
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
+
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 
-#include "pcsx2/Frontend/GameList.h"
-#include "pcsx2/HostSettings.h"
+#include "fmt/format.h"
 
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QPixmap>
@@ -29,16 +37,9 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 
-#include "GameListModel.h"
-#include "GameListRefreshThread.h"
-#include "GameListWidget.h"
-#include "QtHost.h"
-#include "QtUtils.h"
-
-#include "fmt/format.h"
-
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
+	".mdf (Media Descriptor File)\n"
 	".chd (Compressed Hunks of Data)\n"
 	".cso (Compressed ISO)\n"
 	".gz (Gzip Compressed ISO)");
@@ -86,7 +87,8 @@ public:
 			if (!m_filter_name.isEmpty() &&
 				!QString::fromStdString(entry->path).contains(m_filter_name, Qt::CaseInsensitive) &&
 				!QString::fromStdString(entry->serial).contains(m_filter_name, Qt::CaseInsensitive) &&
-				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+				!QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive) &&
+				!QString::fromStdString(entry->title_en).contains(m_filter_name, Qt::CaseInsensitive))
 				return false;
 		}
 
@@ -114,9 +116,9 @@ GameListWidget::~GameListWidget() = default;
 
 void GameListWidget::initialize()
 {
-	m_model = new GameListModel(this);
-	m_model->setCoverScale(Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f));
-	m_model->setShowCoverTitles(Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true));
+	const float cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
+	const bool show_cover_titles = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
+	m_model = new GameListModel(cover_scale, show_cover_titles, this);
 	m_model->updateCacheSize(width(), height());
 
 	m_sort_model = new GameListSortModel(m_model);
@@ -181,18 +183,16 @@ void GameListWidget::initialize()
 	m_list_view = new GameListGridListView(m_ui.stack);
 	m_list_view->setModel(m_sort_model);
 	m_list_view->setModelColumn(GameListModel::Column_Cover);
-	m_list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	m_list_view->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_list_view->setViewMode(QListView::IconMode);
 	m_list_view->setResizeMode(QListView::Adjust);
 	m_list_view->setUniformItemSizes(true);
 	m_list_view->setItemAlignment(Qt::AlignHCenter);
 	m_list_view->setContextMenuPolicy(Qt::CustomContextMenu);
 	m_list_view->setFrameStyle(QFrame::NoFrame);
-	m_list_view->setSpacing(m_model->getCoverArtSpacing());
 	m_list_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 	m_list_view->verticalScrollBar()->setSingleStep(15);
-
-	updateListFont();
+	onCoverScaleChanged();
 
 	connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
 		&GameListWidget::onSelectionModelCurrentChanged);
@@ -200,6 +200,7 @@ void GameListWidget::initialize()
 	connect(m_list_view, &GameListGridListView::zoomOut, this, &GameListWidget::gridZoomOut);
 	connect(m_list_view, &QListView::activated, this, &GameListWidget::onListViewItemActivated);
 	connect(m_list_view, &QListView::customContextMenuRequested, this, &GameListWidget::onListViewContextMenuRequested);
+	connect(m_model, &GameListModel::coverScaleChanged, this, &GameListWidget::onCoverScaleChanged);
 
 	m_ui.stack->insertWidget(1, m_list_view);
 
@@ -259,9 +260,9 @@ void GameListWidget::cancelRefresh()
 		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 }
 
-void GameListWidget::refreshImages()
+void GameListWidget::reloadThemeSpecificImages()
 {
-	m_model->refreshImages();
+	m_model->reloadThemeSpecificImages();
 }
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
@@ -353,14 +354,23 @@ void GameListWidget::onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder)
 	saveTableViewColumnSortSettings();
 }
 
+void GameListWidget::onCoverScaleChanged()
+{
+	m_model->updateCacheSize(width(), height());
+
+	m_list_view->setSpacing(m_model->getCoverArtSpacing());
+
+	QFont font;
+	font.setPointSizeF(16.0f * m_model->getCoverScale());
+	m_list_view->setFont(font);
+}
+
 void GameListWidget::listZoom(float delta)
 {
 	const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_SCALE, MAX_SCALE);
 	Host::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
 	Host::CommitBaseSettingChanges();
 	m_model->setCoverScale(new_scale);
-	m_model->updateCacheSize(width(), height());
-	updateListFont();
 	updateToolbar();
 }
 
@@ -381,8 +391,6 @@ void GameListWidget::gridIntScale(int int_scale)
 	Host::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", new_scale);
 	Host::CommitBaseSettingChanges();
 	m_model->setCoverScale(new_scale);
-	m_model->updateCacheSize(width(), height());
-	updateListFont();
 	updateToolbar();
 }
 
@@ -436,13 +444,6 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 		m_model->refresh();
 	updateToolbar();
 	emit layoutChange();
-}
-
-void GameListWidget::updateListFont()
-{
-	QFont font;
-	font.setPointSizeF(16.0f * m_model->getCoverScale());
-	m_list_view->setFont(font);
 }
 
 void GameListWidget::updateToolbar()

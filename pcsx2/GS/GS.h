@@ -20,8 +20,20 @@
 #include "pcsx2/Config.h"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
+
+enum class RenderAPI
+{
+	None,
+	D3D11,
+	Metal,
+	D3D12,
+	Vulkan,
+	OpenGL
+};
 
 // ST_WRITE is defined in libc, avoid this
 enum stateType
@@ -42,18 +54,27 @@ enum class GSVideoMode : u8
 	HDTV_1080I
 };
 
+enum class GSDisplayAlignment
+{
+	Center,
+	LeftOrTop,
+	RightOrBottom
+};
+
 extern Pcsx2Config::GSOptions GSConfig;
 
 class HostDisplay;
+class SmallStringBase;
 
 // Returns the ID for the specified function, otherwise -1.
 s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
 s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
+s16 GSLookupMoveHandlerFunctionId(const std::string_view& name);
 
-int GSinit();
+void GSinit();
 void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
-bool GSreopen(bool recreate_display, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);
+bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);
 void GSreset(bool hardware_reset);
 void GSclose();
 void GSgifSoftReset(u32 mask);
@@ -74,12 +95,21 @@ bool GSBeginCapture(std::string filename);
 void GSEndCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
-void GSsetGameCRC(u32 crc);
+void GSGameChanged();
+void GSSetDisplayAlignment(GSDisplayAlignment alignment);
+bool GSHasDisplayWindow();
+void GSResizeDisplayWindow(int width, int height, float scale);
+void GSUpdateDisplayWindow();
+void GSSetVSyncMode(VsyncMode mode);
 
+bool GSWantsExclusiveFullscreen();
+bool GSGetHostRefreshRate(float* refresh_rate);
+void GSGetAdaptersAndFullscreenModes(
+	GSRendererType renderer, std::vector<std::string>* adapters, std::vector<std::string>* fullscreen_modes);
 GSVideoMode GSgetDisplayMode();
 void GSgetInternalResolution(int* width, int* height);
-void GSgetStats(std::string& info);
-void GSgetMemoryStats(std::string& info);
+void GSgetStats(SmallStringBase& info);
+void GSgetMemoryStats(SmallStringBase& info);
 void GSgetTitleStats(std::string& info);
 
 /// Converts window position to normalized display coordinates (0..1). A value less than 0 or greater than 1 is
@@ -87,16 +117,33 @@ void GSgetTitleStats(std::string& info);
 void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float* display_x, float* display_y);
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config);
-void GSSwitchRenderer(GSRendererType new_renderer);
-void GSResetAPIState();
-void GSRestoreAPIState();
+void GSSwitchRenderer(GSRendererType new_renderer, GSInterlaceMode new_interlace);
 bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();
 
-struct GSError
+namespace Host
 {
-};
-struct GSRecoverableError : GSError
-{
-};
+	/// Called when the GS is creating a render device.
+	/// This could also be fullscreen transition.
+	std::optional<WindowInfo> AcquireRenderWindow(bool recreate_window);
+
+	/// Called before drawing the OSD and other display elements.
+	void BeginPresentFrame();
+
+	/// Called when the GS is finished with a render window.
+	void ReleaseRenderWindow();
+
+	/// Returns true if the hosting application is currently fullscreen.
+	bool IsFullscreen();
+
+	/// Alters fullscreen state of hosting application.
+	void SetFullscreen(bool enabled);
+
+	/// Returns the desired vsync mode, depending on the runtime environment.
+	VsyncMode GetEffectiveVSyncMode();
+
+	/// Called when video capture starts or stops. Called on the MTGS thread.
+	void OnCaptureStarted(const std::string& filename);
+	void OnCaptureStopped();
+}

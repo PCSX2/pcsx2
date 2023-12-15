@@ -19,8 +19,9 @@
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
 
-#include "GSDump.h"
-#include "GSLzma.h"
+#include "GS/GSDump.h"
+#include "GS/GSLzma.h"
+#include "GS/GSExtra.h"
 
 using namespace GSDumpTypes;
 
@@ -268,13 +269,13 @@ void GSDumpLzma::Initialize()
 
 	if (ret != LZMA_OK)
 	{
-		fprintf(stderr, "Error initializing the decoder! (error code %u)\n", ret);
-		throw "BAD"; // Just exit the program
+		Console.Error("Error initializing the decoder! (error code %u)", ret);
+		pxFailRel("Failed to initialize LZMA decoder.");
 	}
 
 	m_buff_size = 1024*1024;
-	m_area      = (uint8_t*)_aligned_malloc(m_buff_size, 32);
-	m_inbuf     = (uint8_t*)_aligned_malloc(BUFSIZ, 32);
+	m_area      = (uint8_t*)_aligned_malloc(m_buff_size, VECTOR_ALIGNMENT);
+	m_inbuf     = (uint8_t*)_aligned_malloc(BUFSIZ, VECTOR_ALIGNMENT);
 	m_avail     = 0;
 	m_start     = 0;
 
@@ -300,8 +301,8 @@ void GSDumpLzma::Decompress()
 
 		if (ferror(m_fp))
 		{
-			fprintf(stderr, "Read error: %s\n", strerror(errno));
-			throw "BAD"; // Just exit the program
+			Console.Error("Read error: %s", strerror(errno));
+			pxFailRel("LZMA read error.");
 		}
 	}
 
@@ -309,12 +310,10 @@ void GSDumpLzma::Decompress()
 
 	if (ret != LZMA_OK)
 	{
-		if (ret == LZMA_STREAM_END)
-			fprintf(stderr, "LZMA decoder finished without error\n\n");
-		else
+		if (ret != LZMA_STREAM_END)
 		{
-			fprintf(stderr, "Decoder error: (error code %u)\n", ret);
-			throw "BAD"; // Just exit the program
+			Console.Error("Decoder error: (error code %u)", ret);
+			pxFailRel("LZMA decoder error.");
 		}
 	}
 
@@ -394,16 +393,16 @@ void GSDumpDecompressZst::Decompress()
 
 			if (ferror(m_fp))
 			{
-				fprintf(stderr, "Read error: %s\n", strerror(errno));
-				throw "BAD"; // Just exit the program
+				Console.Error("Zst read error: %s", strerror(errno));
+				pxFailRel("Zst read error.");
 			}
 		}
 
 		size_t ret = ZSTD_decompressStream(m_strm, &outbuf, &m_inbuf);
 		if (ZSTD_isError(ret))
 		{
-			fprintf(stderr, "Decoder error: (error code %s)\n", ZSTD_getErrorName(ret));
-			throw "BAD"; // Just exit the program
+			Console.Error("Decoder error: (error code %s)", ZSTD_getErrorName(ret));
+			pxFailRel("Zst decoder error.");
 		}
 	}
 

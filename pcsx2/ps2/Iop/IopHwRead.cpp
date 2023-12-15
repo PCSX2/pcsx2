@@ -17,7 +17,8 @@
 #include "PrecompiledHeader.h"
 #include "IopHw_Internal.h"
 #include "Sif.h"
-#include "Sio.h"
+#include "SIO/Sio2.h"
+#include "SIO/Sio0.h"
 #include "CDVD/Ps1CD.h"
 #include "FW.h"
 #include "SPU2/spu2.h"
@@ -52,7 +53,7 @@ mem8_t iopHwRead8_Page1( u32 addr )
 	switch( masked_addr )
 	{
 		case (HW_SIO_DATA & 0x0fff):
-			ret = sio0.GetRxData();
+			ret = g_Sio0.GetRxData();
 			break;
 		case (HW_SIO_STAT & 0x0fff):
 			Sio0Log.Error("%s(%08X) Unexpected SIO0 STAT 8 bit read", __FUNCTION__, addr);
@@ -134,7 +135,7 @@ mem8_t iopHwRead8_Page8( u32 addr )
 
 	if (addr == HW_SIO2_FIFO)
 	{
-		ret = sio2.Read();
+		ret = g_Sio2.Read();
 	}
 	else
 	{
@@ -275,19 +276,19 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			// ------------------------------------------------------------------------
 			case (HW_SIO_DATA & 0x0fff):
 				Console.Warning("%s(%08X) Unexpected 16 or 32 bit access to SIO0 data register!", __FUNCTION__, addr);
-				ret = sio0.GetRxData();
-				ret |= sio0.GetRxData() << 8;
+				ret = g_Sio0.GetRxData();
+				ret |= g_Sio0.GetRxData() << 8;
 				if (sizeof(T) == 4)
 				{
-					ret |= sio0.GetRxData() << 16;
-					ret |= sio0.GetRxData() << 24;
+					ret |= g_Sio0.GetRxData() << 16;
+					ret |= g_Sio0.GetRxData() << 24;
 				}
 				break;
 			case (HW_SIO_STAT & 0x0fff):
-				ret = sio0.GetStat();
+				ret = g_Sio0.GetStat();
 				break;
 			case (HW_SIO_MODE & 0x0fff):
-				ret = sio0.GetMode();
+				ret = g_Sio0.GetMode();
 				
 				if (sizeof(T) == 4)
 				{
@@ -296,10 +297,10 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				
 				break;
 			case (HW_SIO_CTRL & 0x0fff):
-				ret = sio0.GetCtrl();
+				ret = g_Sio0.GetCtrl();
 				break;
 			case (HW_SIO_BAUD & 0x0fff):
-				ret = sio0.GetBaud();
+				ret = g_Sio0.GetBaud();
 				break;
 
 			// ------------------------------------------------------------------------
@@ -435,7 +436,7 @@ mem32_t iopHwRead32_Page8( u32 addr )
 		if( masked_addr < 0x240 )
 		{
 			const int parm = (masked_addr-0x200) / 4;
-			ret = sio2.send3.at(parm);
+			ret = g_Sio2.send3[parm];
 			Sio2Log.WriteLn("%s(%08X) SIO2 SEND3 Read (%08X)", __FUNCTION__, addr, ret);
 		}
 		else if( masked_addr < 0x260 )
@@ -443,7 +444,7 @@ mem32_t iopHwRead32_Page8( u32 addr )
 			// SIO2 Send commands alternate registers.  First reg maps to Send1, second
 			// to Send2, third to Send1, etc.  And the following clever code does this:
 			const int parm = (masked_addr-0x240) / 8;
-			ret = (masked_addr & 4) ? sio2.send2.at(parm) : sio2.send1.at(parm);
+			ret = (masked_addr & 4) ? g_Sio2.send2[parm] : g_Sio2.send1[parm];
 			Sio2Log.WriteLn("%s(%08X) SIO2 SEND1/2 Read (%08X)", __FUNCTION__, addr, ret);
 		}
 		else if( masked_addr <= 0x280 )
@@ -459,31 +460,31 @@ mem32_t iopHwRead32_Page8( u32 addr )
 					Sio2Log.Warning("%s(%08X) Unexpected 32 bit read of HW_SIO2_FIFO (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (HW_SIO2_CTRL & 0x0fff):
-					ret = sio2.ctrl;
+					ret = g_Sio2.ctrl;
 					Sio2Log.WriteLn("%s(%08X) SIO2 CTRL Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (HW_SIO2_RECV1 & 0xfff):
-					ret = sio2.recv1;
+					ret = g_Sio2.recv1;
 					Sio2Log.WriteLn("%s(%08X) SIO2 RECV1 Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (HW_SIO2_RECV2 & 0x0fff):
-					ret = sio2.recv2;
+					ret = g_Sio2.recv2;
 					Sio2Log.WriteLn("%s(%08X) SIO2 RECV2 Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (HW_SIO2_RECV3 & 0x0fff):
-					ret = sio2.recv3;
+					ret = g_Sio2.recv3;
 					Sio2Log.WriteLn("%s(%08X) SIO2 RECV3 Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (0x1f808278 & 0x0fff):
-					ret = sio2.unknown1;
+					ret = g_Sio2.unknown1;
 					Sio2Log.WriteLn("%s(%08X) SIO2 UNK1 Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (0x1f80827C & 0x0fff):
-					ret = sio2.unknown2;
+					ret = g_Sio2.unknown2;
 					Sio2Log.WriteLn("%s(%08X) SIO2 UNK2 Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				case (HW_SIO2_INTR & 0x0fff):
-					ret = sio2.iStat;
+					ret = g_Sio2.iStat;
 					Sio2Log.WriteLn("%s(%08X) SIO2 ISTAT Read (%08X)", __FUNCTION__, addr, ret);
 					break;
 				default:

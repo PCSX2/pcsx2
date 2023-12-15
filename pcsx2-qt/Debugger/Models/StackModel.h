@@ -16,6 +16,7 @@
 #pragma once
 
 #include <QtCore/QAbstractTableModel>
+#include <QtWidgets/QHeaderView>
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/MipsStackWalk.h"
@@ -34,6 +35,16 @@ public:
 		SP,
 		SIZE,
 		COLUMN_COUNT
+	};
+
+	static constexpr QHeaderView::ResizeMode HeaderResizeModes[StackColumns::COLUMN_COUNT] =
+	{
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::Stretch,
+		QHeaderView::ResizeMode::ResizeToContents,
+		QHeaderView::ResizeMode::ResizeToContents,
 	};
 
 	explicit StackModel(DebugInterface& cpu, QObject* parent = nullptr);

@@ -17,7 +17,7 @@
 
 #include "MemoryTypes.h"
 #include "SingleRegisterTypes.h"
-#include "VirtualMemory.h"
+#include "System.h"
 
 static const uptr VTLB_AllocUpperBounds = _1gb * 2;
 
@@ -110,6 +110,11 @@ extern DataType vtlb_ramRead(u32 mem);
 template <typename DataType>
 extern bool vtlb_ramWrite(u32 mem, const DataType& value);
 
+// NOTE: Does not call MMIO handlers.
+extern int vtlb_memSafeCmpBytes(u32 mem, const void* src, u32 size);
+extern bool vtlb_memSafeReadBytes(u32 mem, void* dst, u32 size);
+extern bool vtlb_memSafeWriteBytes(u32 mem, const void* src, u32 size);
+
 using vtlb_ReadRegAllocCallback = int(*)();
 extern int vtlb_DynGenReadNonQuad(u32 bits, bool sign, bool xmm, int addr_reg, vtlb_ReadRegAllocCallback dest_reg_alloc = nullptr);
 extern int vtlb_DynGenReadNonQuad_Const(u32 bits, bool sign, bool xmm, u32 addr_const, vtlb_ReadRegAllocCallback dest_reg_alloc = nullptr);
@@ -119,69 +124,7 @@ extern int vtlb_DynGenReadQuad_Const(u32 bits, u32 addr_const, vtlb_ReadRegAlloc
 extern void vtlb_DynGenWrite(u32 sz, bool xmm, int addr_reg, int value_reg);
 extern void vtlb_DynGenWrite_Const(u32 bits, bool xmm, u32 addr_const, int value_reg);
 
-// --------------------------------------------------------------------------------------
-//  VtlbMemoryReserve
-// --------------------------------------------------------------------------------------
-class VtlbMemoryReserve : public VirtualMemoryReserve
-{
-public:
-	VtlbMemoryReserve(std::string name);
-
-	void Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size);
-
-	virtual void Reset();
-};
-
-// --------------------------------------------------------------------------------------
-//  eeMemoryReserve
-// --------------------------------------------------------------------------------------
-class eeMemoryReserve : public VtlbMemoryReserve
-{
-	typedef VtlbMemoryReserve _parent;
-
-public:
-	eeMemoryReserve();
-	~eeMemoryReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Release();
-
-	void Reset() override;
-};
-
-// --------------------------------------------------------------------------------------
-//  iopMemoryReserve
-// --------------------------------------------------------------------------------------
-class iopMemoryReserve : public VtlbMemoryReserve
-{
-	typedef VtlbMemoryReserve _parent;
-
-public:
-	iopMemoryReserve();
-	~iopMemoryReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Release();
-
-	void Reset() override;
-};
-
-// --------------------------------------------------------------------------------------
-//  vuMemoryReserve
-// --------------------------------------------------------------------------------------
-class vuMemoryReserve : public VtlbMemoryReserve
-{
-	typedef VtlbMemoryReserve _parent;
-
-public:
-	vuMemoryReserve();
-	~vuMemoryReserve();
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Release();
-
-	void Reset() override;
-};
+extern void vtlb_DynGenDispatchers();
 
 namespace vtlb_private
 {

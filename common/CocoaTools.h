@@ -33,8 +33,8 @@ namespace CocoaTools
 	std::optional<std::string> GetNonTranslocatedBundlePath();
 	/// Move the given file to the trash, and return the path to its new location
 	std::optional<std::string> MoveToTrash(std::string_view file);
-	/// Launch the given application
-	bool LaunchApplication(std::string_view file);
+	/// Launch the given application once this one quits
+	bool DelayedLaunch(std::string_view file);
 }
 
 #endif // __APPLE__

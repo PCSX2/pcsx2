@@ -14,15 +14,18 @@
  */
 
 #include "FileSystem.h"
+#include "Error.h"
 #include "Path.h"
 #include "Assertions.h"
 #include "Console.h"
 #include "StringUtil.h"
 #include "Path.h"
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <numeric>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -36,6 +39,7 @@
 
 #if defined(_WIN32)
 #include "RedtapeWindows.h"
+#include <io.h>
 #include <winioctl.h>
 #include <share.h>
 #include <shlobj.h>
@@ -188,6 +192,27 @@ void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 #endif
 }
 
+bool Path::IsValidFileName(const std::string_view& str, bool allow_slashes)
+{
+	const size_t len = str.length();
+	size_t pos = 0;
+	while (pos < len)
+	{
+		char32_t ch;
+		pos += StringUtil::DecodeUTF8(str.data() + pos, pos - len, &ch);
+		if (!FileSystemCharacterIsSane(ch, !allow_slashes))
+			return false;
+	}
+
+#ifdef _WIN32
+	// Windows: Can't end filename with a period.
+	if (len > 0 && str.back() == '.')
+		return false;
+#endif
+
+	return true;
+}
+
 bool Path::IsAbsolute(const std::string_view& path)
 {
 #ifdef _WIN32
@@ -197,6 +222,161 @@ bool Path::IsAbsolute(const std::string_view& path)
 #else
 	return (path.length() >= 1 && path[0] == '/');
 #endif
+}
+
+std::string Path::RealPath(const std::string_view& path)
+{
+	// Resolve non-absolute paths first.
+	std::vector<std::string_view> components;
+	if (!IsAbsolute(path))
+		components = Path::SplitNativePath(Path::Combine(FileSystem::GetWorkingDirectory(), path));
+	else
+		components = Path::SplitNativePath(path);
+
+	std::string realpath;
+	if (components.empty())
+		return realpath;
+
+	// Different to path because relative.
+	realpath.reserve(std::accumulate(components.begin(), components.end(), static_cast<size_t>(0),
+						 [](size_t l, const std::string_view& s) { return l + s.length(); }) +
+					 components.size() + 1);
+
+#ifdef _WIN32
+	std::wstring wrealpath;
+	std::vector<WCHAR> symlink_buf;
+	wrealpath.reserve(realpath.size());
+	symlink_buf.resize(path.size() + 1);
+
+	// Check for any symbolic links throughout the path while adding components.
+	bool test_symlink = true;
+	for (const std::string_view& comp : components)
+	{
+		if (!realpath.empty())
+			realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+		realpath.append(comp);
+		if (test_symlink)
+		{
+			DWORD attribs;
+			if (StringUtil::UTF8StringToWideString(wrealpath, realpath) &&
+				(attribs = GetFileAttributesW(wrealpath.c_str())) != INVALID_FILE_ATTRIBUTES)
+			{
+				// if not a link, go to the next component
+				if (attribs & FILE_ATTRIBUTE_REPARSE_POINT)
+				{
+					const HANDLE hFile =
+						CreateFileW(wrealpath.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+					if (hFile != INVALID_HANDLE_VALUE)
+					{
+						// is a link! resolve it.
+						DWORD ret = GetFinalPathNameByHandleW(hFile, symlink_buf.data(), static_cast<DWORD>(symlink_buf.size()),
+							FILE_NAME_NORMALIZED);
+						if (ret > symlink_buf.size())
+						{
+							symlink_buf.resize(ret);
+							ret = GetFinalPathNameByHandleW(hFile, symlink_buf.data(), static_cast<DWORD>(symlink_buf.size()),
+								FILE_NAME_NORMALIZED);
+						}
+						if (ret != 0)
+							StringUtil::WideStringToUTF8String(realpath, std::wstring_view(symlink_buf.data(), ret));
+						else
+							test_symlink = false;
+
+						CloseHandle(hFile);
+					}
+				}
+			}
+			else
+			{
+				// not a file or link
+				test_symlink = false;
+			}
+		}
+	}
+
+	// GetFinalPathNameByHandleW() adds a \\?\ prefix, so remove it.
+	if (realpath.starts_with("\\\\?\\") && IsAbsolute(std::string_view(realpath.data() + 4, realpath.size() - 4)))
+		realpath.erase(0, 4);
+
+#else
+	// Why this monstrosity instead of calling realpath()? realpath() only works on files that exist.
+	std::string basepath;
+	std::string symlink;
+
+	basepath.reserve(realpath.capacity());
+	symlink.resize(realpath.capacity());
+
+	// Check for any symbolic links throughout the path while adding components.
+	bool test_symlink = true;
+	for (const std::string_view& comp : components)
+	{
+		if (!test_symlink)
+		{
+			realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+			realpath.append(comp);
+			continue;
+		}
+
+		basepath = realpath;
+		if (realpath.empty() || realpath.back() != FS_OSPATH_SEPARATOR_CHARACTER)
+			realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+		realpath.append(comp);
+
+		// Check if the last component added is a symlink
+		struct stat sb;
+		if (lstat(realpath.c_str(), &sb) != 0)
+		{
+			// Don't bother checking any further components once we error out.
+			test_symlink = false;
+			continue;
+		}
+		else if (!S_ISLNK(sb.st_mode))
+		{
+			// Nope, keep going.
+			continue;
+		}
+
+		for (;;)
+		{
+			ssize_t sz = readlink(realpath.c_str(), symlink.data(), symlink.size());
+			if (sz < 0)
+			{
+				// shouldn't happen, due to the S_ISLNK check above.
+				test_symlink = false;
+				break;
+			}
+			else if (static_cast<size_t>(sz) == symlink.size())
+			{
+				// need a larger buffer
+				symlink.resize(symlink.size() * 2);
+				continue;
+			}
+			else
+			{
+				// is a link, and we resolved it. gotta check if the symlink itself is relative :(
+				symlink.resize(static_cast<size_t>(sz));
+				if (!Path::IsAbsolute(symlink))
+				{
+					// symlink is relative to the directory of the symlink
+					realpath = basepath;
+					if (realpath.empty() || realpath.back() != FS_OSPATH_SEPARATOR_CHARACTER)
+						realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+					realpath.append(symlink);
+				}
+				else
+				{
+					// Use the new, symlinked path.
+					realpath = symlink;
+				}
+
+				break;
+			}
+		}
+	}
+#endif
+
+	return realpath;
 }
 
 std::string Path::ToNativePath(const std::string_view& path)
@@ -596,7 +776,7 @@ std::string Path::Combine(const std::string_view& base, const std::string_view& 
 	return ret;
 }
 
-std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
+std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* error)
 {
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -604,23 +784,34 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode)
 	if (!wfilename.empty() && !wmode.empty())
 	{
 		std::FILE* fp;
-		if (_wfopen_s(&fp, wfilename.c_str(), wmode.c_str()) != 0)
+		const errno_t err = _wfopen_s(&fp, wfilename.c_str(), wmode.c_str());
+		if (err != 0)
+		{
+			Error::SetErrno(error, err);
 			return nullptr;
+		}
 
 		return fp;
 	}
 
 	std::FILE* fp;
-	if (fopen_s(&fp, filename, mode) != 0)
+	const errno_t err = fopen_s(&fp, filename, mode);
+	if (err != 0)
+	{
+		Error::SetErrno(error, err);
 		return nullptr;
+	}
 
 	return fp;
 #else
-	return std::fopen(filename, mode);
+	std::FILE* fp = std::fopen(filename, mode);
+	if (!fp)
+		Error::SetErrno(error, errno);
+	return fp;
 #endif
 }
 
-int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
+int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -629,16 +820,19 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode)
 
 	return -1;
 #else
-	return open(filename, flags, mode);
+	const int fd = open(filename, flags, mode);
+	if (fd < 0)
+		Error::SetErrno(error, errno);
+	return fd;
 #endif
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode)
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
-	return ManagedCFilePtr(OpenCFile(filename, mode), [](std::FILE* fp) { std::fclose(fp); });
+	return ManagedCFilePtr(OpenCFile(filename, mode, error));
 }
 
-std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode)
+std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
 #ifdef _WIN32
 	const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
@@ -668,15 +862,19 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 	if (fp)
 		return fp;
 
+	Error::SetErrno(error, errno);
 	return nullptr;
 #else
-	return std::fopen(filename, mode);
+	std::FILE* fp = std::fopen(filename, mode);
+	if (!fp)
+		Error::SetErrno(error, errno);
+	return fp;
 #endif
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode)
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
-	return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode), [](std::FILE* fp) { std::fclose(fp); });
+	return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode, error));
 }
 
 int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
@@ -684,13 +882,6 @@ int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
 #ifdef _WIN32
 	return _fseeki64(fp, offset, whence);
 #else
-	// Prevent truncation on platforms which don't have a 64-bit off_t.
-	if constexpr (sizeof(off_t) != sizeof(s64))
-	{
-		if (offset < std::numeric_limits<off_t>::min() || offset > std::numeric_limits<off_t>::max())
-			return -1;
-	}
-
 	return fseeko(fp, static_cast<off_t>(offset), whence);
 #endif
 }
@@ -729,6 +920,15 @@ s64 FileSystem::GetPathFileSize(const char* Path)
 	return sd.Size;
 }
 
+std::optional<std::time_t> FileSystem::GetFileTimestamp(const char* path)
+{
+	FILESYSTEM_STAT_DATA sd;
+	if (!StatFile(path, &sd))
+		return std::nullopt;
+
+	return sd.ModificationTime;
+}
+
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 {
 	ManagedCFilePtr fp = OpenManagedCFile(filename, "rb");
@@ -740,12 +940,11 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename)
 
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
 {
-	std::fseek(fp, 0, SEEK_END);
-	const long size = std::ftell(fp);
-	std::fseek(fp, 0, SEEK_SET);
+	const s64 size = FSize64(fp);
 	if (size < 0)
 		return std::nullopt;
 
+	std::fseek(fp, 0, SEEK_SET);
 	std::vector<u8> res(static_cast<size_t>(size));
 	if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
 		return std::nullopt;
@@ -764,12 +963,11 @@ std::optional<std::string> FileSystem::ReadFileToString(const char* filename)
 
 std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
 {
-	std::fseek(fp, 0, SEEK_END);
-	const long size = std::ftell(fp);
-	std::fseek(fp, 0, SEEK_SET);
+	const s64 size = FSize64(fp);
 	if (size < 0)
 		return std::nullopt;
 
+	std::fseek(fp, 0, SEEK_SET);
 	std::string res;
 	res.resize(static_cast<size_t>(size));
 	// NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
@@ -1369,6 +1567,7 @@ std::string FileSystem::GetProgramPath()
 		break;
 	}
 
+	// Windows symlinks don't behave silly like Linux, so no need to RealPath() it.
 	return StringUtil::WideStringToUTF8String(buffer);
 }
 
@@ -1434,6 +1633,9 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 
 #else
 
+// No 32-bit file offsets breaking stuff please.
+static_assert(sizeof(off_t) == sizeof(s64));
+
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
 	u32 Flags, FileSystem::FindResultsArray* pResults)
 {
@@ -1488,16 +1690,9 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 		FILESYSTEM_FIND_DATA outData;
 		outData.Attributes = 0;
 
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
 		struct stat sDir;
 		if (stat(full_path.c_str(), &sDir) < 0)
 			continue;
-
-#else
-		struct stat64 sDir;
-		if (stat64(full_path.c_str(), &sDir) < 0)
-			continue;
-#endif
 
 		if (S_ISDIR(sDir.st_mode))
 		{
@@ -1600,14 +1795,9 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 	if (path[0] == '\0')
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (stat64(path, &sysStatData) < 0)
-#endif
 		return false;
 
 	// parse attributes
@@ -1633,14 +1823,9 @@ bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
 	if (fd < 0)
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (fstat(fd, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (fstat64(fd, &sysStatData) < 0)
-#endif
 		return false;
 
 	// parse attributes
@@ -1666,14 +1851,9 @@ bool FileSystem::FileExists(const char* path)
 	if (path[0] == '\0')
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (stat64(path, &sysStatData) < 0)
-#endif
 		return false;
 
 	if (S_ISDIR(sysStatData.st_mode))
@@ -1688,14 +1868,9 @@ bool FileSystem::DirectoryExists(const char* path)
 	if (path[0] == '\0')
 		return false;
 
-		// stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	// stat file
 	struct stat sysStatData;
 	if (stat(path, &sysStatData) < 0)
-#else
-	struct stat64 sysStatData;
-	if (stat64(path, &sysStatData) < 0)
-#endif
 		return false;
 
 	if (S_ISDIR(sysStatData.st_mode))
@@ -1832,7 +2007,7 @@ bool FileSystem::DeleteDirectory(const char* path)
 	if (stat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
 		return false;
 
-	return (unlink(path) == 0);
+	return (rmdir(path) == 0);
 }
 
 std::string FileSystem::GetProgramPath()

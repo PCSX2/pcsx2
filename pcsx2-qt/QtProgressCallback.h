@@ -29,7 +29,7 @@ public:
 	QtModalProgressCallback(QWidget* parent_widget, float show_delay = 0.0f);
 	~QtModalProgressCallback();
 
-	bool IsCancelled() const override;
+	QProgressDialog& GetDialog() { return m_dialog; }
 
 	void SetCancellable(bool cancellable) override;
 	void SetTitle(const char* title) override;
@@ -45,6 +45,9 @@ public:
 	void ModalError(const char* message) override;
 	bool ModalConfirmation(const char* message) override;
 	void ModalInformation(const char* message) override;
+
+private Q_SLOTS:
+	void dialogCancelled();
 
 private:
 	void checkForDelayedShow();

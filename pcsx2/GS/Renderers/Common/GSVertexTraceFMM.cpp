@@ -22,7 +22,7 @@ class CURRENT_ISA::GSVertexTraceFMM
 	static constexpr GSVector4 s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
-	static void FindMinMax(GSVertexTrace& vt, const void* vertex, const u32* index, int count);
+	static void FindMinMax(GSVertexTrace& vt, const void* vertex, const u16* index, int count);
 
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
 	static constexpr GSVertexTrace::FindMinMaxPtr GetFMM(bool provoking_vertex_first);
@@ -76,7 +76,7 @@ void GSVertexTraceFMM::Populate(GSVertexTrace& vt, bool provoking_vertex_first)
 }
 
 template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
-void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u32* index, int count)
+void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u16* index, int count)
 {
 	const GSDrawingContext* context = vt.m_state->m_context;
 

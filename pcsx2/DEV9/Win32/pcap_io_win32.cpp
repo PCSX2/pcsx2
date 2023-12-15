@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -77,12 +77,11 @@ bool load_pcap()
 		return true;
 
 	//Store old Search Dir
-	wchar_t* oldDllDir;
 	int len = GetDllDirectory(0, nullptr);
 	if (len == 0)
 		return false;
 
-	oldDllDir = new wchar_t[len];
+	wchar_t* oldDllDir = new wchar_t[len];
 
 	if (len == 1)
 		oldDllDir[0] = 0;

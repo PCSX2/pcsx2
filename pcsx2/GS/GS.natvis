@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="FastList&lt;*&gt;">
+		<DisplayString>{{ size={m_free_indexes_stack_top} }}</DisplayString>
+		<Expand>
+			<Item Name="[size]" ExcludeView="simple">m_free_indexes_stack_top</Item>
+			<Item Name="[capacity]" ExcludeView="simple">m_capacity - 1</Item>
+
+			<CustomListItems MaxItemsPerView="5000" ExcludeView="simple">
+				<Variable Name="index" InitialValue="m_buffer[0].next_index" />
+
+				<Size>m_free_indexes_stack_top</Size>
+				<Loop>
+					<Item>m_buffer[index].data,na</Item>
+					<Exec>index = m_buffer[index].next_index</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
+
+	<Type Name="GSVector2T&lt;*&gt;">
+		<DisplayString>{{ {x}, {y} }}</DisplayString>
+	</Type>
+
+	<Type Name="GSVector4">
+		<DisplayString>{{ {F32[0]}, {F32[1]}, {F32[2]}, {F32[3]} }}</DisplayString>
+	</Type>
+	<Type Name="GSVector4i">
+		<DisplayString>{{ {I32[0]}, {I32[1]}, {I32[2]}, {I32[3]} }}</DisplayString>
+	</Type>
+
+	<Type Name="GSTextureCache::Target">
+		<DisplayString Condition="m_type == 0">{{ RT @ BP={m_TEX0.TBP0,X}-{m_end_block,X} BW={m_TEX0.TBW} PSM={m_TEX0.PSM,X} {m_unscaled_size.x}x{m_unscaled_size.y} {m_valid.z},{m_valid.w} }}</DisplayString>
+		<DisplayString Condition="m_type == 1">{{ Depth @ BP={m_TEX0.TBP0,X}-{m_end_block,X} BW={m_TEX0.TBW} PSM={m_TEX0.PSM,X} {m_unscaled_size.x}x{m_unscaled_size.y} {m_valid.z},{m_valid.w} }}</DisplayString>
+	</Type>
+
+	<Type Name="GSTextureCache::SourceRegion">
+		<DisplayString>{{ Min=({(s16)(bits &amp; 0xFFFF)},{(s16)((bits >> 32) &amp; 0xFFFF)}} Max={(s16)((bits >> 16) &amp; 0xFFFF)},{(s16)((bits >> 48) &amp; 0xFFFF)}) }}</DisplayString>
+	</Type>
+</AutoVisualizer>

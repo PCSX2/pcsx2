@@ -86,6 +86,6 @@ private:
 	s32 m_selected128Field = 0; // Values are from 0 to 3
 
 	// TODO: Save this configuration ??
-	bool m_showVU0FFloat;
-	bool m_showFPRFloat;
+	bool m_showVU0FFloat = false;
+	bool m_showFPRFloat = false;
 };

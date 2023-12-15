@@ -7,11 +7,8 @@
     <x>0</x>
     <y>0</y>
     <width>809</width>
-    <height>647</height>
+    <height>725</height>
    </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="leftMargin">
@@ -37,7 +34,7 @@
         <x>0</x>
         <y>0</y>
         <width>807</width>
-        <height>645</height>
+        <height>723</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -63,13 +60,13 @@
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string>EmotionEngine (MIPS-IV)</string>
+          <string extracomment="Emotion Engine = Commercial name of one of PS2's processors. Leave as-is unless there's an official name (like for Japanese).">EmotionEngine (MIPS-IV)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
            <widget class="QLabel" name="label_11">
             <property name="text">
-             <string>Rounding Mode:</string>
+             <string extracomment="Rounding refers here to the mathematical term.">Rounding Mode:</string>
             </property>
            </widget>
           </item>
@@ -92,7 +89,7 @@
             </item>
             <item>
              <property name="text">
-              <string>Chop / Zero (Default)</string>
+              <string>Chop/Zero (Default)</string>
              </property>
             </item>
            </widget>
@@ -100,7 +97,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_12">
             <property name="text">
-             <string>Clamping Mode:</string>
+             <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
             </property>
            </widget>
           </item>
@@ -108,7 +105,7 @@
            <widget class="QComboBox" name="eeClampMode">
             <item>
              <property name="text">
-              <string>None</string>
+              <string comment="ClampMode">None</string>
              </property>
             </item>
             <item>
@@ -118,7 +115,7 @@
             </item>
             <item>
              <property name="text">
-              <string>Extra + Preserve Sign</string>
+              <string extracomment="Sign: refers here to the mathematical meaning (plus/minus).">Extra + Preserve Sign</string>
              </property>
             </item>
             <item>
@@ -180,7 +177,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>Vector Units (VU)</string>
+          <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="2" column="0">
@@ -209,7 +206,7 @@
             </item>
             <item>
              <property name="text">
-              <string>Chop / Zero (Default)</string>
+              <string>Chop/Zero (Default)</string>
              </property>
             </item>
            </widget>
@@ -303,7 +300,7 @@
             </item>
             <item>
              <property name="text">
-              <string>Chop / Zero (Default)</string>
+              <string>Chop/Zero (Default)</string>
              </property>
             </item>
            </widget>
@@ -383,7 +380,7 @@
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="palFrameRate">
             <property name="suffix">
-             <string> hz</string>
+             <string extracomment="hz=Hertz, as in the measuring unit. Shown after the corresponding number. Those languages who'd need to remove the space or do something in between should do so."> hz</string>
             </property>
             <property name="singleStep">
              <double>0.010000000000000</double>
@@ -411,6 +408,45 @@
            <widget class="QLabel" name="label">
             <property name="text">
              <string>NTSC Frame Rate:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>PINE Settings</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="pineSlot">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Slot:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="pineEnable">
+            <property name="text">
+             <string>Enable</string>
             </property>
            </widget>
           </item>

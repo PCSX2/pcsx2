@@ -26,14 +26,14 @@
 #include "ui_ControllerLEDSettingsDialog.h"
 #include "ui_ControllerMouseSettingsDialog.h"
 
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 
 class ControllerGlobalSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsDialog* dialog);
+	ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog);
 	~ControllerGlobalSettingsWidget();
 
 	void addDeviceToList(const QString& identifier, const QString& name);
@@ -49,7 +49,7 @@ private Q_SLOTS:
 
 private:
 	Ui::ControllerGlobalSettingsWidget m_ui;
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 };
 
 class ControllerLEDSettingsDialog : public QDialog
@@ -57,14 +57,14 @@ class ControllerLEDSettingsDialog : public QDialog
 	Q_OBJECT
 
 public:
-	ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog);
+	ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog);
 	~ControllerLEDSettingsDialog();
 
 private:
 	void linkButton(ColorPickerButton* button, u32 player_id);
 
 	Ui::ControllerLEDSettingsDialog m_ui;
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 };
 
 class ControllerMouseSettingsDialog : public QDialog
@@ -72,7 +72,7 @@ class ControllerMouseSettingsDialog : public QDialog
 	Q_OBJECT
 
 public:
-	ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsDialog* dialog);
+	ControllerMouseSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog);
 	~ControllerMouseSettingsDialog();
 
 private:

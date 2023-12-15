@@ -19,14 +19,14 @@
 
 #include "ui_EmulationSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class EmulationSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	EmulationSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~EmulationSettingsWidget();
 
 private Q_SLOTS:
@@ -37,7 +37,7 @@ private:
 	void handleSpeedComboChange(QComboBox* cb, const char* section, const char* key);
 	void updateOptimalFramePacing();
 
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 
 	Ui::EmulationSettingsWidget m_ui;
 };

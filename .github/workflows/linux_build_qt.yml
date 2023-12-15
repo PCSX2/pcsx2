@@ -9,7 +9,7 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-20.04
+        default: ubuntu-22.04
       platform:
         required: false
         type: string
@@ -28,17 +28,21 @@ on:
         required: false
         type: string
         default: ""
-      cheats_url:
+      patchesUrl:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_linux:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -47,17 +51,29 @@ jobs:
       CCACHE_MAXSIZE: 100M
 
     steps:
+      # Work around https://github.com/actions/runner-images/issues/8659
+      - name: Remove GCC 13 from runner image
+        shell: bash
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
+          sudo apt-get update
+          sudo apt-get install -y --allow-downgrades libc6=2.35-0ubuntu3.5 libc6-dev=2.35-0ubuntu3.5 libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
+
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         env:
           OS: linux
-          GUI_FRAMEWORK: QT
           ARCH: ${{ inputs.platform }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -87,22 +103,25 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/deps
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.gui }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-qt.sh') }}
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-qt.sh') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: .github/workflows/scripts/linux/build-dependencies-qt.sh
 
-      - name: Download cheats
+      - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.cheats_url }}/cheats_ni.zip" "${{ inputs.cheats_url }}/cheats_ws.zip"
+          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Generate CMake
         env:
           COMPILER: ${{ inputs.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
-        run: .github/workflows/scripts/linux/generate-cmake-qt.sh
+          CLANG_PATH: /usr/bin/clang-17
+          CLANGXX_PATH: /usr/bin/clang++-17
+        run: |
+          DEPS_PREFIX="$HOME/deps" .github/workflows/scripts/linux/generate-cmake-qt.sh
 
       - name: Build PCSX2
         working-directory: build
@@ -117,9 +136,9 @@ jobs:
         env:
           NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: |
-                .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
-                mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
-                mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
+          .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
+          mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
+          mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
 
       - name: Upload artifact
         if: inputs.buildAppImage == true

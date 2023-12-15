@@ -16,6 +16,11 @@
   <property name="windowTitle">
    <string>PCSX2</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
+  </property>
   <widget class="QStackedWidget" name="mainContainer"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -35,7 +40,7 @@
       <string>Change Disc</string>
      </property>
      <property name="icon">
-      <iconset theme="dvd-line">
+      <iconset theme="disc-eject-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
      <actiongroup name="actionGroupChangeDiscSubImages"/>
@@ -50,7 +55,7 @@
       <string>Load State</string>
      </property>
      <property name="icon">
-      <iconset theme="folder-open-line">
+      <iconset theme="floppy-out-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
@@ -59,7 +64,7 @@
       <string>Save State</string>
      </property>
      <property name="icon">
-      <iconset theme="save-3-line">
+      <iconset theme="floppy-in-line">
        <normaloff>.</normaloff>.</iconset>
      </property>
     </widget>
@@ -79,13 +84,15 @@
     <addaction name="menuLoadState"/>
     <addaction name="menuSaveState"/>
     <addaction name="separator"/>
-    <addaction name="actionSettings"/>
+    <addaction name="actionSettings"/> <!-- Please consult with macOS users before removing -->
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
+    <addaction name="actionViewGameProperties"/>
+    <addaction name="separator"/>
     <addaction name="actionInterfaceSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionBIOSSettings"/>
@@ -124,6 +131,10 @@
      <property name="title">
       <string>Switch Renderer</string>
      </property>
+     <property name="icon">
+      <iconset theme="brush-line">
+       <normaloff>.</normaloff>.</iconset>
+     </property>
     </widget>
     <addaction name="menuDebugSwitchRenderer"/>
     <addaction name="separator"/>
@@ -156,7 +167,6 @@
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
-    <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
@@ -174,6 +184,10 @@
      <property name="title">
       <string>Input Recording</string>
      </property>
+     <property name="icon">
+      <iconset theme="keyboard-line">
+       <normaloff>.</normaloff>.</iconset>
+     </property>
      <addaction name="actionInputRecNew"/>
      <addaction name="actionInputRecPlay"/>
      <addaction name="actionInputRecStop"/>
@@ -187,8 +201,11 @@
     <addaction name="actionOpenDataDirectory"/>
     <addaction name="actionCoverDownloader"/>
     <addaction name="separator"/>
-    <addaction name="actionToggleSoftwareRendering"/>
+    <addaction name="actionEditCheats"/>
+    <addaction name="actionEditPatches"/>
     <addaction name="actionReloadPatches"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggleSoftwareRendering"/>
     <addaction name="menuInput_Recording"/>
     <addaction name="actionToolsVideoCapture"/>
     <addaction name="separator"/>
@@ -229,24 +246,24 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionStartFile"/>
-   <addaction name="actionStartDisc"/>
-   <addaction name="actionStartBios"/>
-   <addaction name="actionStartFullscreenUI2"/>
+   <addaction name="actionToolbarStartFile"/>
+   <addaction name="actionToolbarStartDisc"/>
+   <addaction name="actionToolbarStartBios"/>
+   <addaction name="actionToolbarStartFullscreenUI"/>
    <addaction name="separator"/>
-   <addaction name="actionPowerOff"/>
-   <addaction name="actionReset"/>
-   <addaction name="actionPause"/>
-   <addaction name="actionChangeDisc"/>
-   <addaction name="actionScreenshot"/>
+   <addaction name="actionToolbarPowerOff"/>
+   <addaction name="actionToolbarReset"/>
+   <addaction name="actionToolbarPause"/>
+   <addaction name="actionToolbarChangeDisc"/>
+   <addaction name="actionToolbarScreenshot"/>
    <addaction name="separator"/>
-   <addaction name="actionLoadState"/>
-   <addaction name="actionSaveState"/>
+   <addaction name="actionToolbarLoadState"/>
+   <addaction name="actionToolbarSaveState"/>
    <addaction name="separator"/>
-   <addaction name="actionFullscreen"/>
+   <addaction name="actionToolbarFullscreen"/>
    <addaction name="separator"/>
-   <addaction name="actionSettings"/>
-   <addaction name="actionControllerSettings"/>
+   <addaction name="actionToolbarSettings"/>
+   <addaction name="actionToolbarControllerSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStartFile">
@@ -258,22 +275,49 @@
     <string>Start &amp;File...</string>
    </property>
   </action>
+  <action name="actionToolbarStartFile">
+   <property name="icon">
+    <iconset theme="file-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Start File</string>
+   </property>
+  </action>
   <action name="actionStartDisc">
    <property name="icon">
-    <iconset theme="disc-line">
+    <iconset theme="disc-2-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Start &amp;Disc...</string>
    </property>
   </action>
+  <action name="actionToolbarStartDisc">
+   <property name="icon">
+    <iconset theme="disc-2-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Start Disc</string>
+   </property>
+  </action>
   <action name="actionStartBios">
    <property name="icon">
-    <iconset theme="hard-drive-2-line">
+    <iconset theme="chip-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Start &amp;BIOS</string>
+   </property>
+  </action>
+  <action name="actionToolbarStartBios">
+   <property name="icon">
+    <iconset theme="chip-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Start BIOS</string>
    </property>
   </action>
   <action name="actionScanForNewGames">
@@ -303,6 +347,15 @@
     <string>Shut &amp;Down</string>
    </property>
   </action>
+  <action name="actionToolbarPowerOff">
+   <property name="icon">
+    <iconset theme="shut-down-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Shut Down</string>
+   </property>
+  </action>
   <action name="actionPowerOffWithoutSaving">
    <property name="icon">
     <iconset theme="close-line">
@@ -321,6 +374,15 @@
     <string>&amp;Reset</string>
    </property>
   </action>
+  <action name="actionToolbarReset">
+   <property name="icon">
+    <iconset theme="restart-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Reset</string>
+   </property>
+  </action>
   <action name="actionPause">
    <property name="checkable">
     <bool>true</bool>
@@ -333,22 +395,34 @@
     <string>&amp;Pause</string>
    </property>
   </action>
-  <action name="actionLoadState">
+  <action name="actionToolbarPause">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
-    <iconset theme="folder-open-line">
+    <iconset theme="pause-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Load State</string>
+    <string comment="In Toolbar">Pause</string>
    </property>
   </action>
-  <action name="actionSaveState">
+  <action name="actionToolbarLoadState">
    <property name="icon">
-    <iconset theme="save-3-line">
+    <iconset theme="floppy-out-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Save State</string>
+    <string comment="In Toolbar">Load State</string>
+   </property>
+  </action>
+  <action name="actionToolbarSaveState">
+   <property name="icon">
+    <iconset theme="floppy-in-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Save State</string>
    </property>
   </action>
   <action name="actionExit">
@@ -362,7 +436,7 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset theme="hard-drive-2-line">
+    <iconset theme="chip-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -371,7 +445,7 @@
   </action>
   <action name="actionEmulationSettings">
    <property name="icon">
-    <iconset theme="dashboard-line">
+    <iconset theme="emulation-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -380,11 +454,20 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset theme="gamepad-line">
+    <iconset theme="controller-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Controllers</string>
+   </property>
+  </action>
+  <action name="actionToolbarControllerSettings">
+   <property name="icon">
+    <iconset theme="controller-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Controllers</string>
    </property>
   </action>
   <action name="actionHotkeySettings">
@@ -398,7 +481,7 @@
   </action>
   <action name="actionGraphicsSettings">
    <property name="icon">
-    <iconset theme="brush-line">
+    <iconset theme="image-fill">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -428,22 +511,43 @@
     <string>Fullscreen</string>
    </property>
   </action>
+  <action name="actionToolbarFullscreen">
+   <property name="icon">
+    <iconset theme="fullscreen-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Fullscreen</string>
+   </property>
+  </action>
   <action name="actionResolution_Scale">
    <property name="text">
     <string>Resolution Scale</string>
    </property>
   </action>
   <action name="actionGitHubRepository">
+   <property name="icon">
+    <iconset theme="github">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;GitHub Repository...</string>
    </property>
   </action>
   <action name="actionSupportForums">
+   <property name="icon">
+    <iconset theme="at">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Support &amp;Forums...</string>
    </property>
   </action>
   <action name="actionDiscordServer">
+   <property name="icon">
+    <iconset theme="discord">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>&amp;Discord Server...</string>
    </property>
@@ -467,17 +571,21 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="resources/resources.qrc">
+     <normaloff>:/icons/AppIcon64.png</normaloff>:/icons/AppIcon64.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;About PCSX2...</string>
    </property>
   </action>
-  <action name="actionChangeDisc">
+  <action name="actionToolbarChangeDisc">
    <property name="icon">
-    <iconset theme="dvd-line">
+    <iconset theme="disc-eject-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Change Disc...</string>
+    <string comment="In Toolbar">Change Disc...</string>
    </property>
   </action>
   <action name="actionAudioSettings">
@@ -491,7 +599,7 @@
   </action>
   <action name="actionGameListSettings">
    <property name="icon">
-    <iconset theme="folder-settings-line">
+    <iconset theme="folder-open-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -500,7 +608,7 @@
   </action>
   <action name="actionInterfaceSettings">
    <property name="icon">
-    <iconset theme="settings-3-line">
+    <iconset theme="interface-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -522,7 +630,19 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Settings...</string>
+    <string>&amp;Settings</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="actionToolbarSettings">
+   <property name="icon">
+    <iconset theme="settings-3-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Settings</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
@@ -562,9 +682,18 @@
     <string>&amp;Screenshot</string>
    </property>
   </action>
+  <action name="actionToolbarScreenshot">
+   <property name="icon">
+    <iconset theme="screenshot-2-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string comment="In Toolbar">Screenshot</string>
+   </property>
+  </action>
   <action name="actionMemoryCardSettings">
    <property name="icon">
-    <iconset theme="sd-card-line">
+    <iconset theme="memcard-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -573,7 +702,7 @@
   </action>
   <action name="actionDEV9Settings">
    <property name="icon">
-    <iconset theme="dashboard-line">
+    <iconset theme="global-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -582,7 +711,7 @@
   </action>
   <action name="actionFolderSettings">
    <property name="icon">
-    <iconset theme="folder-open-line">
+    <iconset theme="folder-settings-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
@@ -651,7 +780,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>System &amp;Display</string>
+    <string extracomment="This grayed-out at first option will become available while there is a game emulated and the game list is displayed over the actual emulation, to let users display the system emulation once more.">System &amp;Display</string>
    </property>
   </action>
   <action name="actionViewGameProperties">
@@ -687,6 +816,10 @@
    </property>
   </action>
   <action name="actionGridViewZoomIn">
+   <property name="icon">
+    <iconset theme="zoom-in-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Zoom &amp;In (Grid View)</string>
    </property>
@@ -695,6 +828,10 @@
    </property>
   </action>
   <action name="actionGridViewZoomOut">
+   <property name="icon">
+    <iconset theme="zoom-out-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Zoom &amp;Out (Grid View)</string>
    </property>
@@ -703,31 +840,55 @@
    </property>
   </action>
   <action name="actionGridViewRefreshCovers">
+   <property name="icon">
+    <iconset theme="refresh-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Refresh &amp;Covers (Grid View)</string>
    </property>
   </action>
   <action name="actionOpen_Memory_Card_Directory">
+   <property name="icon">
+    <iconset theme="memcard-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Open Memory Card Directory...</string>
    </property>
   </action>
   <action name="actionOpenDataDirectory">
+   <property name="icon">
+    <iconset theme="folder-open-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Open Data Directory...</string>
    </property>
   </action>
   <action name="actionToggleSoftwareRendering">
+   <property name="icon">
+    <iconset theme="brush-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Toggle Software Rendering</string>
    </property>
   </action>
   <action name="actionDebugger">
+   <property name="icon">
+    <iconset theme="heart-circle-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Open Debugger</string>
    </property>
   </action>
   <action name="actionReloadPatches">
+   <property name="icon">
+    <iconset theme="refresh-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Reload Cheats/Patches</string>
    </property>
@@ -765,6 +926,10 @@
    </property>
   </action>
   <action name="actionSaveGSDump">
+   <property name="icon">
+    <iconset theme="save-3-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Save Single Frame GS Dump</string>
    </property>
@@ -774,7 +939,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>New</string>
+    <string extracomment="This section refers to the Input Recording submenu.">New</string>
    </property>
   </action>
   <action name="actionInputRecPlay">
@@ -782,7 +947,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Play</string>
+    <string extracomment="This section refers to the Input Recording submenu.">Play</string>
    </property>
   </action>
   <action name="actionInputRecStop">
@@ -790,7 +955,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Stop</string>
+    <string extracomment="This section refers to the Input Recording submenu.">Stop</string>
    </property>
   </action>
   <action name="actionInputRecOpenSettings">
@@ -798,7 +963,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Settings</string>
+    <string extracomment="This section refers to the Input Recording submenu.">Settings</string>
    </property>
   </action>
   <action name="actionRecording_Console_Logs">
@@ -863,16 +1028,20 @@
     <string>Start Big Picture Mode</string>
    </property>
   </action>
-  <action name="actionStartFullscreenUI2">
+  <action name="actionToolbarStartFullscreenUI">
    <property name="icon">
     <iconset theme="tv-2-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Big Picture</string>
+    <string comment="In Toolbar">Big Picture</string>
    </property>
   </action>
   <action name="actionCoverDownloader">
+   <property name="icon">
+    <iconset theme="artboard-2-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
    <property name="text">
     <string>Cover Downloader...</string>
    </property>
@@ -896,6 +1065,16 @@
    </property>
    <property name="text">
     <string>Video Capture</string>
+   </property>
+  </action>
+  <action name="actionEditCheats">
+   <property name="text">
+    <string>Edit Cheats...</string>
+   </property>
+  </action>
+  <action name="actionEditPatches">
+   <property name="text">
+    <string>Edit Patches...</string>
    </property>
   </action>
  </widget>

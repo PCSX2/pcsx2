@@ -66,7 +66,7 @@
    <item>
     <widget class="QLabel" name="scmversion">
      <property name="text">
-      <string>SCM Version</string>
+      <string extracomment="SCM= Source Code Management">SCM Version</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -128,7 +128,7 @@
    <item>
     <widget class="QLabel" name="links">
      <property name="text">
-      <string>TextLabel</string>
+      <string notr="true">TextLabel</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

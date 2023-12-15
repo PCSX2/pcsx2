@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,6 +17,8 @@
 #include "CDVD/CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
 
+#include "common/Error.h"
+
 #ifdef __APPLE__
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
@@ -29,11 +31,9 @@
 #include <cerrno>
 #include <cstring>
 
-IOCtlSrc::IOCtlSrc(decltype(m_filename) filename)
-	: m_filename(filename)
+IOCtlSrc::IOCtlSrc(std::string filename)
+	: m_filename(std::move(filename))
 {
-	if (!Reopen())
-		throw std::runtime_error(" * CDVD: Error opening source.\n");
 }
 
 IOCtlSrc::~IOCtlSrc()
@@ -45,7 +45,7 @@ IOCtlSrc::~IOCtlSrc()
 	}
 }
 
-bool IOCtlSrc::Reopen()
+bool IOCtlSrc::Reopen(Error* error)
 {
 	if (m_device != -1)
 		close(m_device);
@@ -54,7 +54,10 @@ bool IOCtlSrc::Reopen()
 	// drive is empty. Probably does other things too.
 	m_device = open(m_filename.c_str(), O_RDONLY | O_NONBLOCK);
 	if (m_device == -1)
+	{
+		Error::SetErrno(error, errno);
 		return false;
+	}
 
 	// DVD detection MUST be first on Linux - The TOC ioctls work for both
 	// CDs and DVDs.
@@ -258,7 +261,7 @@ bool IOCtlSrc::DiscReady()
 
 	if (!m_sectors)
 	{
-		Reopen();
+		Reopen(nullptr);
 	}
 
 	return !!m_sectors;

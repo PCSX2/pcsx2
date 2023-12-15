@@ -16,6 +16,7 @@
 #pragma once
 
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <map>
@@ -23,7 +24,6 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
-#include "gsl/span"
 
 #include "qemu-usb/USBinternal.h"
 
@@ -50,7 +50,8 @@ enum DeviceType : s32
 	DEVTYPE_SEGA_SEAMIC,
 	DEVTYPE_PRINTER,
 	DEVTYPE_KEYBOARDMANIA,
-	DEVTYPE_GUNCON2
+	DEVTYPE_GUNCON2,
+	DEVTYPE_DJ
 };
 
 class DeviceProxy
@@ -60,9 +61,9 @@ public:
 
 	virtual const char* Name() const = 0;
 	virtual const char* TypeName() const = 0;
-	virtual gsl::span<const char*> SubTypes() const;
-	virtual gsl::span<const InputBindingInfo> Bindings(u32 subtype) const;
-	virtual gsl::span<const SettingInfo> Settings(u32 subtype) const;
+	virtual std::span<const char*> SubTypes() const;
+	virtual std::span<const InputBindingInfo> Bindings(u32 subtype) const;
+	virtual std::span<const SettingInfo> Settings(u32 subtype) const;
 
 	virtual USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const = 0;
 

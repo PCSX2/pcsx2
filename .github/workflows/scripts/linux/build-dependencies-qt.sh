@@ -4,24 +4,29 @@ set -e
 
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SDL=SDL2-2.26.0
-QT=6.3.1
+SDL=SDL2-2.28.5
+QT=6.6.1
+LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 
 mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
-8000d7169febce93c84b6bdf376631f8179132fd69f7015d4dadb8b9c2bdb295  $SDL.tar.gz
-0a64421d9c2469c2c48490a032ab91d547017c9cc171f3f8070bc31888f24e03  qtbase-everywhere-src-$QT.tar.xz
-7b19f418e6f7b8e23344082dd04440aacf5da23c5a73980ba22ae4eba4f87df7  qtsvg-everywhere-src-$QT.tar.xz
-c412750f2aa3beb93fce5f30517c607f55daaeb7d0407af206a8adf917e126c1  qttools-everywhere-src-$QT.tar.xz
-d7bdd55e2908ded901dcc262157100af2a490bf04d31e32995f6d91d78dfdb97  qttranslations-everywhere-src-$QT.tar.xz
-6f14fea2d172a5b4170be3efcb0e58535f6605b61bcd823f6d5c9d165bb8c0f0  qtwayland-everywhere-src-$QT.tar.xz
+332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4  $SDL.tar.gz
+fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
+450c5b4677b2fe40ed07954d7f0f40690068e80a94c9df86c2c905ccd59d02f7  qtbase-everywhere-src-$QT.tar.xz
+ac4ed08950072e375be662cfa64fdb447dd6e935cf29c56a4128d1500492188f  qtimageformats-everywhere-src-$QT.tar.xz
+248deb56d26a463cf3162f530358ccf90cfb654bbf518bb35ddf81b205e09228  qtsvg-everywhere-src-$QT.tar.xz
+4939105a7345ab4e19e7caee8654a836e65bd41910359623e0f233f3aff0914a  qttools-everywhere-src-$QT.tar.xz
+668702e822ad7150b27e7caa2158595fd9b3b77ffbc8262e6509872a3920ee88  qttranslations-everywhere-src-$QT.tar.xz
+66cc2d632dc07fc6cc4e35247f48b7c1753276ccbf86e86d7b24d799725568b1  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
+	-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
@@ -32,8 +37,16 @@ shasum -a 256 --check SHASUMS
 echo "Building SDL..."
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-./configure --prefix "$INSTALLDIR" --disable-dbus --without-x --disable-video-opengl --disable-video-opengles --disable-video-vulkan --disable-wayland-shared --disable-ime --disable-oss --disable-alsa --disable-jack --disable-esd --disable-pipewire --disable-pulseaudio --disable-arts --disable-nas --disable-sndio --disable-fusionsound --disable-diskaudio
+./configure --prefix "$INSTALLDIR" --enable-dbus --without-x --disable-video-opengl --disable-video-opengles --disable-video-vulkan --disable-wayland-shared --disable-ime --disable-oss --disable-alsa --disable-jack --disable-esd --disable-pipewire --disable-pulseaudio --disable-arts --disable-nas --disable-sndio --disable-fusionsound --disable-diskaudio
 make "-j$NPROCS"
+make install
+cd ..
+
+echo "Building libbacktrace..."
+unzip "$LIBBACKTRACE.zip"
+cd "libbacktrace-$LIBBACKTRACE"
+./configure --prefix="$HOME/deps"
+make
 make install
 cd ..
 
@@ -47,7 +60,7 @@ tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -release -no-dbus -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -- -DFEATURE_dbus=OFF -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF
+../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -- -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF
 cmake --build . --parallel
 cmake --install .
 cd ../../
@@ -62,22 +75,19 @@ cmake --build . --parallel
 cmake --install .
 cd ../../
 
+echo "Building Qt Image Formats..."
+tar xf "qtimageformats-everywhere-src-$QT.tar.xz"
+cd "qtimageformats-everywhere-src-$QT"
+mkdir build
+cd build
+cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --parallel
+cmake --install .
+cd ../../
+
 echo "Building Qt Wayland..."
 tar xf "qtwayland-everywhere-src-$QT.tar.xz"
 cd "qtwayland-everywhere-src-$QT"
-# qtwayland does not build without qml/qtdeclarative in 6.3.1. Work around it.
-patch -u src/compositor/CMakeLists.txt <<EOF
---- src/compositor/CMakeLists.txt	2022-06-08 13:44:30.000000000 +1000
-+++ src/compositor/CMakeLists.txt	2022-07-17 20:05:25.461881785 +1000
-@@ -46,7 +46,6 @@
-         global/qtwaylandcompositorglobal.h
-         global/qtwaylandqmlinclude.h
-         global/qwaylandcompositorextension.cpp global/qwaylandcompositorextension.h global/qwaylandcompositorextension_p.h
--        global/qwaylandquickextension.cpp global/qwaylandquickextension.h
-         global/qwaylandutils_p.h
-         hardware_integration/qwlclientbufferintegration.cpp hardware_integration/qwlclientbufferintegration_p.h
-         wayland_wrapper/qwlbuffermanager.cpp wayland_wrapper/qwlbuffermanager_p.h
-EOF
 mkdir build
 cd build
 cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release ..
@@ -103,6 +113,30 @@ patch -u src/linguist/CMakeLists.txt <<EOF
      add_subdirectory(linguist)
  endif()
 EOF
+
+# Also force disable clang scanning, it gets very confused.
+patch -u configure.cmake <<EOF
+--- configure.cmake
++++ configure.cmake
+@@ -14,12 +14,12 @@
+ # Presumably because 6.0 ClangConfig.cmake files are not good enough?
+ # In any case explicitly request a minimum version of 8.x for now, otherwise
+ # building with CMake will fail at compilation time.
+-qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
++#qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
+ # special case end
+
+-if(TARGET WrapLibClang::WrapLibClang)
+-    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
+-endif()
++#if(TARGET WrapLibClang::WrapLibClang)
++#    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
++#endif()
+
+
+
+EOF
+
 mkdir build
 cd build
 cmake -G Ninja -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF ..

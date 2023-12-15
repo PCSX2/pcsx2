@@ -18,7 +18,7 @@
 #include "R3000A.h"
 #include "Common.h"
 
-#include "Sio.h"
+#include "SIO/Sio0.h"
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
@@ -42,16 +42,18 @@ u32 g_psxHasConstReg, g_psxFlushedConstReg;
 // is true, even if it's already running ahead a bit.
 bool iopEventAction = false;
 
+static constexpr uint iopWaitCycles = 384; // Keep inline with EE wait cycle max.
+
 bool iopEventTestIsActive = false;
 
 alignas(16) psxRegisters psxRegs;
 
 void psxReset()
 {
-	memzero(psxRegs);
+	std::memset(&psxRegs, 0, sizeof(psxRegs));
 
 	psxRegs.pc = 0xbfc00000; // Start in bootstrap
-	psxRegs.CP0.n.Status = 0x10900000; // COP0 enabled | BEV = 1 | TS = 1
+	psxRegs.CP0.n.Status = 0x00400000; // BEV = 1
 	psxRegs.CP0.n.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
 
 	psxRegs.iopBreak = 0;
@@ -127,6 +129,14 @@ __fi int psxTestCycle( u32 startCycle, s32 delta )
 	return (int)(psxRegs.cycle - startCycle) >= delta;
 }
 
+__fi int psxRemainingCycles(IopEventId n)
+{
+	if (psxRegs.interrupt & (1 << n))
+		return ((psxRegs.cycle - psxRegs.sCycle[n]) + psxRegs.eCycle[n]);
+	else
+		return 0;
+}
+
 __fi void PSX_INT( IopEventId n, s32 ecycle )
 {
 	// 19 is CDVD read int, it's supposed to be high.
@@ -140,13 +150,13 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 
 	psxSetNextBranchDelta(ecycle);
 
-	if (psxRegs.iopCycleEE < 0)
+	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * 8;
+
+	if (psxRegs.iopCycleEE < iopDelta)
 	{
 		// The EE called this int, so inform it to branch as needed:
-		// fixme - this doesn't take into account EE/IOP sync (the IOP may be running
-		// ahead or behind the EE as per the EEsCycles value)
-		const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * 8;
-		cpuSetNextEventDelta(iopDelta);
+		
+		cpuSetNextEventDelta(iopDelta - psxRegs.iopCycleEE);
 	}
 }
 
@@ -173,7 +183,7 @@ static __fi void Sio0TestEvent(IopEventId n)
 	if (psxTestCycle(psxRegs.sCycle[n], psxRegs.eCycle[n]))
 	{
 		psxRegs.interrupt &= ~(1 << n);
-		sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
+		g_Sio0.Interrupt(Sio0Interrupt::TEST_EVENT);
 	}
 	else
 	{
@@ -187,8 +197,8 @@ static __fi void _psxTestInterrupts()
 	IopTestEvent(IopEvt_SIF1,		sif1Interrupt);	// SIF1
 	IopTestEvent(IopEvt_SIF2,		sif2Interrupt);	// SIF2
 	Sio0TestEvent(IopEvt_SIO);
-	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 	IopTestEvent(IopEvt_CdvdSectorReady, cdvdSectorReady);
+	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
 
 	// Profile-guided Optimization (sorta)
 	// The following ints are rarely called.  Encasing them in a conditional
@@ -209,6 +219,8 @@ static __fi void _psxTestInterrupts()
 
 __ri void iopEventTest()
 {
+	psxRegs.iopNextEventCycle = psxRegs.cycle + iopWaitCycles;
+
 	if (psxTestCycle(psxNextsCounter, psxNextCounter))
 	{
 		psxRcntUpdate();
@@ -218,7 +230,8 @@ __ri void iopEventTest()
 	{
 		// start the next branch at the next counter event by default
 		// the interrupt code below will assign nearer branches if needed.
-		psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
+		if (psxNextCounter < static_cast<s32>(psxRegs.iopNextEventCycle - psxNextsCounter))
+			psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
 	}
 
 	if (psxRegs.interrupt)

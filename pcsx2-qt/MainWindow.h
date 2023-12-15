@@ -19,12 +19,13 @@
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <functional>
 #include <optional>
 
 #include "Tools/InputRecording/InputRecordingViewer.h"
-#include "Settings/ControllerSettingsDialog.h"
-#include "Settings/SettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
+#include "Settings/SettingsWindow.h"
 #include "Debugger/DebuggerWindow.h"
 #include "ui_MainWindow.h"
 
@@ -34,9 +35,14 @@ class AutoUpdaterDialog;
 class DisplayWidget;
 class DisplayContainer;
 class GameListWidget;
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 
 class EmuThread;
+
+namespace Achievements
+{
+	enum class LoginRequestReason;
+}
 
 namespace GameList
 {
@@ -68,16 +74,13 @@ public:
 		void cancelResume();
 
 	private:
-		VMLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen);
+		VMLock(QWidget* dialog_parent, bool was_paused, bool was_exclusive_fullscreen);
 		friend MainWindow;
 
 		QWidget* m_dialog_parent;
 		bool m_was_paused;
 		bool m_was_fullscreen;
 	};
-
-	/// Default theme name for the platform.
-	static const char* DEFAULT_THEME_NAME;
 
 	/// Default filter for opening a file.
 	static const char* OPEN_FILE_FILTER;
@@ -88,9 +91,6 @@ public:
 public:
 	MainWindow();
 	~MainWindow();
-
-	/// Sets application theme according to settings.
-	static void updateApplicationTheme();
 
 	void initialize();
 	void connectVMThreadSignals(EmuThread* thread);
@@ -119,6 +119,7 @@ public Q_SLOTS:
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void runOnUIThread(const std::function<void()>& func);
+	void requestReset();
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true);
 	void requestExit(bool allow_confirm = true);
 	void checkForSettingChanges();
@@ -127,11 +128,10 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void onUpdateCheckComplete();
 
-	DisplayWidget* createDisplay(bool fullscreen, bool render_to_main);
-	DisplayWidget* updateDisplay(bool fullscreen, bool render_to_main, bool surfaceless);
+	std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void displayResizeRequested(qint32 width, qint32 height);
-	void relativeMouseModeRequested(bool enabled);
-	void destroyDisplay();
+	void mouseModeRequested(bool relative_mode, bool hide_cursor);
+	void releaseRenderWindow();
 	void focusDisplayWidget();
 
 	void onGameListRefreshComplete();
@@ -151,6 +151,8 @@ private Q_SLOTS:
 	void onChangeDiscMenuAboutToHide();
 	void onLoadStateMenuAboutToShow();
 	void onSaveStateMenuAboutToShow();
+	void onStartFullscreenUITriggered();
+	void onFullscreenUIStateChange(bool running);
 	void onViewToolbarActionToggled(bool checked);
 	void onViewLockToolbarActionToggled(bool checked);
 	void onViewStatusBarActionToggled(bool checked);
@@ -164,12 +166,16 @@ private Q_SLOTS:
 	void onAboutActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
 	void onToolsCoverDownloaderTriggered();
+	void onToolsEditCheatsPatchesTriggered(bool cheats);
 	void updateTheme();
+	void reloadThemeSpecificImages();
+	void updateLanguage();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
 	void onShowAdvancedSettingsToggled(bool checked);
 	void onToolsVideoCaptureToggled(bool checked);
+	void onSettingsTriggeredFromToolbar();
 
 	// Input Recording
 	void onInputRecNewActionTriggered();
@@ -184,11 +190,20 @@ private Q_SLOTS:
 	void onVMResumed();
 	void onVMStopped();
 
-	void onGameChanged(const QString& path, const QString& elf_override, const QString& serial, const QString& name, quint32 crc);
+	void onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
+		const QString& serial, quint32 disc_crc, quint32 crc);
+
+	void onCaptureStarted(const QString& filename);
+	void onCaptureStopped();
+
+	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
+	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
+	void onAchievementsHardcoreModeChanged(bool enabled);
 
 protected:
 	void showEvent(QShowEvent* event) override;
 	void closeEvent(QCloseEvent* event) override;
+	void changeEvent(QEvent* event) override;
 	void dragEnterEvent(QDragEnterEvent* event) override;
 	void dropEvent(QDropEvent* event) override;
 
@@ -204,6 +219,7 @@ private:
 	void connectSignals();
 	void recreate();
 	void recreateSettings();
+	void destroySubWindows();
 
 	void registerForDeviceNotifications();
 	void unregisterForDeviceNotifications();
@@ -211,8 +227,9 @@ private:
 	void saveStateToConfig();
 	void restoreStateFromConfig();
 
-	void updateEmulationActions(bool starting, bool running);
+	void updateEmulationActions(bool starting, bool running, bool stopping);
 	void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
+	void updateGameDependentActions();
 	void updateStatusBarWidgetVisibility();
 	void updateWindowTitle();
 	void updateWindowState(bool force_visible = false);
@@ -227,16 +244,17 @@ private:
 	void switchToGameListView();
 	void switchToEmulationView();
 
+	bool shouldAbortForMemcardBusy(const VMLock& lock);
+
 	QWidget* getContentParent();
 	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
 	void restoreDisplayWindowGeometryFromConfig();
-	void createDisplayWidget(bool fullscreen, bool render_to_main, bool is_exclusive_fullscreen);
+	void createDisplayWidget(bool fullscreen, bool render_to_main);
 	void destroyDisplayWidget(bool show_game_list);
 	void updateDisplayWidgetCursor();
-	void setDisplayFullscreen(const std::string& fullscreen_mode);
 
-	SettingsDialog* getSettingsDialog();
+	SettingsWindow* getSettingsWindow();
 	void doSettings(const char* category = nullptr);
 
 	InputRecordingViewer* getInputRecordingViewer();
@@ -244,8 +262,7 @@ private:
 
 	DebuggerWindow* getDebuggerWindow();
 
-	ControllerSettingsDialog* getControllerSettingsDialog();
-	void doControllerSettings(ControllerSettingsDialog::Category category = ControllerSettingsDialog::Category::Count);
+	void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
 	QString getDiscDevicePath(const QString& title);
 
@@ -259,7 +276,6 @@ private:
 	void loadSaveStateFile(const QString& filename, const QString& state_filename);
 	void populateLoadStateMenu(QMenu* menu, const QString& filename, const QString& serial, quint32 crc);
 	void populateSaveStateMenu(QMenu* menu, const QString& serial, quint32 crc);
-	void updateSaveStateMenusEnableState(bool enable);
 	void doStartFile(std::optional<CDVD_SourceType> source, const QString& path);
 	void doDiscChange(CDVD_SourceType source, const QString& path);
 
@@ -269,9 +285,9 @@ private:
 	DisplayWidget* m_display_widget = nullptr;
 	DisplayContainer* m_display_container = nullptr;
 
-	SettingsDialog* m_settings_dialog = nullptr;
+	SettingsWindow* m_settings_window = nullptr;
+	ControllerSettingsWindow* m_controller_settings_window = nullptr;
 	InputRecordingViewer* m_input_recording_viewer = nullptr;
-	ControllerSettingsDialog* m_controller_settings_dialog = nullptr;
 	AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
 
 	DebuggerWindow* m_debugger_window = nullptr;
@@ -283,17 +299,22 @@ private:
 	QLabel* m_status_vps_widget = nullptr;
 	QLabel* m_status_resolution_widget = nullptr;
 
-	QString m_current_disc_path;
+	QMenu* m_settings_toolbar_menu = nullptr;
+
+	QString m_current_title;
 	QString m_current_elf_override;
-	QString m_current_game_serial;
-	QString m_current_game_name;
-	quint32 m_current_game_crc;
+	QString m_current_disc_path;
+	QString m_current_disc_serial;
+	quint32 m_current_disc_crc;
+	quint32 m_current_running_crc;
 
 	bool m_display_created = false;
 	bool m_relative_mouse_mode = false;
+	bool m_hide_mouse_cursor = false;
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;
 	bool m_is_closing = false;
+	bool m_is_temporarily_windowed = false;
 
 	QString m_last_fps_status;
 

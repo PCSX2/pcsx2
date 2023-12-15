@@ -38,6 +38,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - GIFFIFOHack
     - GoemonTlbHack
     - IbitHack
+    - FullVU0SyncHack
     - VUSyncHack
     - VUOverflowHack
     - SoftwareRendererFMVHack
@@ -169,6 +170,7 @@ The clamp modes are also numerically based.
 *   alignSprite              [`0` or `1`]                      {Off or On}       Default: Off (`0`)
 *   mergeSprite              [`0` or `1`]                      {Off or On}       Default: Off (`0`)
 *   wildArmsHack             [`0` or `1`]                      {Off or On}       Default: Off (`0`)
+*   bilinearUpscale          [`0` or `1`]                      {Off or On}       Default: Off (`0`)
 *   skipDrawStart            [Value between `0` to `10000`]    {0-10000}         Default: Off (`0`)
 *   skipDrawEnd              [Value between `0` to `10000`]    {0-10000}         Default: Off (`0`)
 *   halfPixelOffset          [`0` or `1` or `2` or `3`]   {Off, Normal Vertex, Special Texture or Special Texture Aggressive}    Default: Off (`0`)
@@ -218,6 +220,9 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 
 *   `IbitHack`
     *   VU I bit Hack avoid constant recompilation in some games (Scarface The World Is Yours, Crash Tag Team Racing).
+
+*   `FullVU0SyncHack`
+    *   Increase the synchronisation points between COP2 and VU0.
 
 *   `VUSyncHack`
     *   Make the VU's run behind/in sync with the EE to fix some timing issues.

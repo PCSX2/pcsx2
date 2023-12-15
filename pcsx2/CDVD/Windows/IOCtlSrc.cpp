@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,7 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "CDVD/CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
+
 #include "common/Console.h"
+#include "common/Error.h"
 
 #include <winioctl.h>
 #include <ntddcdvd.h>
@@ -36,8 +38,6 @@
 IOCtlSrc::IOCtlSrc(std::string filename)
 	: m_filename(std::move(filename))
 {
-	if (!Reopen())
-		throw std::runtime_error(" * CDVD: Error opening source.\n");
 }
 
 IOCtlSrc::~IOCtlSrc()
@@ -51,7 +51,7 @@ IOCtlSrc::~IOCtlSrc()
 
 // If a new disc is inserted, ReadFile will fail unless the device is closed
 // and reopened.
-bool IOCtlSrc::Reopen()
+bool IOCtlSrc::Reopen(Error* error)
 {
 	if (m_device != INVALID_HANDLE_VALUE)
 		CloseHandle(m_device);
@@ -61,7 +61,10 @@ bool IOCtlSrc::Reopen()
 						  FILE_SHARE_READ, nullptr, OPEN_EXISTING,
 						  FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
 	if (m_device == INVALID_HANDLE_VALUE)
+	{
+		Error::SetWin32(error, GetLastError());
 		return false;
+	}
 
 	DWORD unused;
 	// Required to read from layer 1 of Dual layer DVDs
@@ -323,7 +326,7 @@ bool IOCtlSrc::DiscReady()
 						nullptr, 0, &unused, nullptr))
 	{
 		if (!m_sectors)
-			Reopen();
+			Reopen(nullptr);
 	}
 	else
 	{

@@ -32,10 +32,10 @@ struct BASEBLOCK
 // extra block info (only valid for start of fn)
 struct BASEBLOCKEX
 {
-	u32 startpc;
 	uptr fnptr;
-	u16 size;    // The size in dwords (equivalent to the number of instructions)
-	u16 x86size; // The size in byte of the translated x86 instructions
+	u32 startpc;
+	u32 size;    // The size in dwords (equivalent to the number of instructions)
+	u32 x86size; // The size in byte of the translated x86 instructions
 
 #ifdef PCSX2_DEVBUILD
 	// Could be useful to instrument the block
@@ -165,9 +165,9 @@ public:
 	{
 	}
 
-	void SetJITCompile(void (*recompiler_)())
+	void SetJITCompile(const void *recompiler_)
 	{
-		recompiler = (uptr)recompiler_;
+		recompiler = reinterpret_cast<uptr>(recompiler_);
 	}
 
 	BASEBLOCKEX* New(u32 startpc, uptr fnptr);

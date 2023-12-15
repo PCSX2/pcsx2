@@ -1,0 +1,68 @@
+{
+  "app-id": "net.pcsx2.PCSX2",
+  "runtime": "org.kde.Platform",
+  "runtime-version": "6.6",
+  "sdk": "org.kde.Sdk",
+  "sdk-extensions": [
+    "org.freedesktop.Sdk.Extension.llvm17"
+  ],
+  "add-extensions": {
+    "org.freedesktop.Platform.ffmpeg-full": {
+      "directory": "lib/ffmpeg",
+      "version": "22.08",
+      "add-ld-path": ".",
+      "autodownload": true
+    }
+  },
+  "command": "pcsx2-qt",
+  "finish-args": [
+    "--device=all",
+    "--share=network",
+    "--share=ipc",
+    "--socket=x11",
+    "--socket=pulseaudio",
+    "--talk-name=org.freedesktop.ScreenSaver",
+    "--env=QT_QPA_PLATFORM=xcb"
+  ],
+  "modules": [
+    "modules/10-libpcap.json",
+    "modules/11-libaio.json",
+    "modules/20-sdl2.json",
+    "modules/21-libbacktrace.json",
+    {
+      "name": "pcsx2",
+      "buildsystem": "simple",
+      "build-options": {
+        "strip": false,
+        "no-debuginfo": true,
+        "env": {
+          "DEPS_PREFIX": "/app",
+          "COMPILER": "clang",
+          "CLANG_PATH": "/usr/lib/sdk/llvm17/bin/clang",
+          "CLANGXX_PATH": "/usr/lib/sdk/llvm17/bin/clang++",
+          "ADDITIONAL_CMAKE_ARGS": "-DUSE_LINKED_FFMPEG=ON"
+        }
+      },
+      "sources": [
+        {
+          "type": "dir",
+          "path": "../../../../.."
+        }
+      ],
+      "build-commands": [
+        ".github/workflows/scripts/linux/generate-cmake-qt.sh",
+        "cd build && ../.github/workflows/scripts/linux/compile.sh && cd ..",
+        "cp -a build/bin ${FLATPAK_DEST}",
+        "cd build && ninja unittests && cd .."
+      ],
+      "post-install": [
+        "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png",
+        "install -Dm644 .github/workflows/scripts/linux/pcsx2-qt.desktop ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
+        "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
+        "install -Dm644 .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml ${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml",
+        "mkdir -p ${FLATPAK_DEST}/lib/ffmpeg"
+      ]
+    }
+  ]
+}
+

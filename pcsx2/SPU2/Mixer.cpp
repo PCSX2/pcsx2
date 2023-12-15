@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -27,34 +27,6 @@ static const s32 tbl_XA_Factor[16][2] =
 		{115, -52},
 		{98, -55},
 		{122, -60}};
-
-// Performs a 64-bit multiplication between two values and returns the
-// high 32 bits as a result (discarding the fractional 32 bits).
-// The combined fractional bits of both inputs must be 32 bits for this
-// to work properly.
-//
-// This is meant to be a drop-in replacement for times when the 'div' part
-// of a MulDiv is a constant.  (example: 1<<8, or 4096, etc)
-//
-// [Air] Performance breakdown: This is over 10 times faster than MulDiv in
-//   a *worst case* scenario.  It's also more accurate since it forces the
-//   caller to  extend the inputs so that they make use of all 32 bits of
-//   precision.
-//
-static __forceinline s32 MulShr32(s32 srcval, s32 mulval)
-{
-	return (s64)srcval * mulval >> 32;
-}
-
-__forceinline s32 clamp_mix(s32 x)
-{
-	return std::clamp(x, -0x8000, 0x7fff);
-}
-
-__forceinline StereoOut32 clamp_mix(StereoOut32 sample)
-{
-	return StereoOut32(clamp_mix(sample.Left), clamp_mix(sample.Right));
-}
 
 static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
@@ -113,7 +85,7 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 // decoded pcm data, used to cache the decoded data so that it needn't be decoded
 // multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
 // invalided when DMA transfers and memory writes are performed.
-PcmCacheEntry* pcm_cache_data = nullptr;
+PcmCacheEntry pcm_cache_data[pcm_BlockCount];
 
 int g_counter_cache_hits = 0;
 int g_counter_cache_misses = 0;
@@ -278,13 +250,9 @@ static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
 /////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                     //
 
-// Data is expected to be 16 bit signed (typical stuff!).
-// volume is expected to be 32 bit signed (31 bits with reverse phase)
-// Data is shifted up by 1 bit to give the output an effective 16 bit range.
 static __forceinline s32 ApplyVolume(s32 data, s32 volume)
 {
-	//return (volume * data) >> 15;
-	return MulShr32(data << 1, volume);
+	return (volume * data) >> 15;
 }
 
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeLR& volume)
@@ -323,13 +291,13 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	if (vc.ADSR.Phase == 0)
+	if (vc.ADSR.Phase == V_ADSR::PHASE_STOPPED)
 	{
 		vc.ADSR.Value = 0;
 		return;
 	}
 
-	if (!vc.ADSR.Calculate())
+	if (!vc.ADSR.Calculate(thiscore.Index | (voiceidx << 1)))
 	{
 		if (IsDevBuild)
 		{
@@ -345,10 +313,10 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 __forceinline static s32 GaussianInterpolate(s32 pv4, s32 pv3, s32 pv2, s32 pv1, s32 i)
 {
 	s32 out = 0;
-	out =  (interpTable[0x0FF - i] * pv4) >> 15;
-	out += (interpTable[0x1FF - i] * pv3) >> 15;
-	out += (interpTable[0x100 + i] * pv2) >> 15;
-	out += (interpTable[0x000 + i] * pv1) >> 15;
+	out =  (interpTable[i][0] * pv4) >> 15;
+	out += (interpTable[i][1] * pv3) >> 15;
+	out += (interpTable[i][2] * pv2) >> 15;
+	out += (interpTable[i][3] * pv1) >> 15;
 
 	return out;
 }
@@ -465,7 +433,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	StereoOut32 voiceOut(0, 0);
 	s32 Value = 0;
 
-	if (vc.ADSR.Phase > 0)
+	if (vc.ADSR.Phase > V_ADSR::PHASE_STOPPED)
 	{
 		if (vc.Noise)
 			Value = GetNoiseValues(thiscore);
@@ -473,11 +441,6 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 			Value = GetVoiceValues(thiscore, voiceidx);
 
 		// Update and Apply ADSR  (applies to normal and noise sources)
-		//
-		// Note!  It's very important that ADSR stay as accurate as possible.  By the way
-		// it is used, various sound effects can end prematurely if we truncate more than
-		// one or two bits.  Best result comes from no truncation at all, which is why we
-		// use a full 64-bit multiply/result here.
 
 		CalculateADSR(thiscore, voiceidx);
 		Value = ApplyVolume(Value, vc.ADSR.Value);
@@ -527,7 +490,6 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	MasterVol.Update();
 	UpdateNoise(*this);
 
-
 	// Saturate final result to standard 16 bit range.
 	const VoiceMixSet Voices(clamp_mix(inVoices.Dry), clamp_mix(inVoices.Wet));
 
@@ -576,14 +538,6 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	//
 	// On the other hand, updating the buffer is cheap and easy, so might as well. ;)
 
-	Reverb_AdvanceBuffer(); // Updates the reverb work area as well, if needed.
-
-	// ToDo:
-	// Bad EndA causes memory corruption. Bad for us, unknown on PS2!
-	// According to no$psx, effects always run but don't always write back, so the FxEnable check may be wrong
-	if (!FxEnable || EffectsEndA >= 0x100000)
-		return TD;
-
 	StereoOut32 TW;
 
 	// Mix Input, Voice, and External data:
@@ -609,6 +563,19 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	// Mix Dry + Wet
 	// (master volume is applied later to the result of both outputs added together).
 	return TD + ApplyVolume(RV, FxVol);
+}
+
+static StereoOut32 DCFilter(StereoOut32 input) {
+	// A simple DC blocking high-pass filter
+	// Implementation from http://peabody.sapp.org/class/dmp2/lab/dcblock/
+	// The magic number 0x7f5c is ceil(INT16_MAX * 0.995)
+	StereoOut32 output;
+	output.Left = (input.Left - DCFilterIn.Left + clamp_mix((0x7f5c * DCFilterOut.Left) >> 15));
+	output.Right = (input.Right - DCFilterIn.Right + clamp_mix((0x7f5c * DCFilterOut.Right) >> 15));
+
+	DCFilterIn = input;
+	DCFilterOut = output;
+	return output;
 }
 
 // used to throttle the output rate of cache stat reports
@@ -650,7 +617,7 @@ __forceinline
 		Ext = StereoOut32::Empty;
 	else
 	{
-		Ext = clamp_mix(ApplyVolume(Ext, Cores[0].MasterVol));
+		Ext = ApplyVolume(clamp_mix(Ext), Cores[0].MasterVol);
 	}
 
 	// Commit Core 0 output to ram before mixing Core 1:
@@ -674,20 +641,18 @@ __forceinline
 	}
 	else
 	{
-		Out.Left = MulShr32(Out.Left, Cores[1].MasterVol.Left.Value);
-		Out.Right = MulShr32(Out.Right, Cores[1].MasterVol.Right.Value);
+		Out = ApplyVolume(clamp_mix(Out), Cores[1].MasterVol);
 	}
 
-	// Final Clamp!
-	// Like any good audio system, the PS2 pumps the volume and incurs some distortion in its
-	// output, giving us a nice thumpy sound at times.  So we add 1 above (2x volume pump) and
-	// then clamp it all here.
+	// For a long time PCSX2 has had its output volume halved by
+	// an incorrect function for applying the master volume above.
+	//
+	// Adjust volume here so it matches what people have come to expect.
+	Out = ApplyVolume(Out, {0x4fff, 0x4fff});
+	Out = DCFilter(Out);
 
-	// Edit: I'm sorry Jake, but I know of no good audio system that arbitrary distorts and clips
-	// output by design.
-	// Good thing though that this code gets the volume exactly right, as per tests :)
+	// Final clamp, take care not to exceed 16 bits from here on
 	Out = clamp_mix(Out);
-
 	SndBuffer::Write(StereoOut16(Out));
 
 	// Update AutoDMA output positioning

@@ -165,7 +165,7 @@ namespace
 
 void resetCache()
 {
-	memzero(cache);
+	std::memset(&cache, 0, sizeof(cache));
 }
 
 static bool findInCache(const CacheSet& set, uptr ppf, int* way)

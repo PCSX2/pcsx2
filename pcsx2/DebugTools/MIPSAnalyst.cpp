@@ -59,7 +59,7 @@ namespace MIPSAnalyst
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
-		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1))
+		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1 || branchType == BRANCHTYPE_BC0))
 			return addr + 4 + ((signed short)(op&0xFFFF)<<2);
 		else
 			return INVALIDTARGET;
@@ -71,7 +71,7 @@ namespace MIPSAnalyst
 		const R5900::OPCODE& opcode = R5900::GetInstruction(op);
 
 		int branchType = (opcode.flags & BRANCHTYPE_MASK);
-		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1))
+		if ((opcode.flags & IS_BRANCH) && (branchType == BRANCHTYPE_BRANCH || branchType == BRANCHTYPE_BC1 || branchType == BRANCHTYPE_BC0))
 		{
 			if (!(opcode.flags & IS_LINKED))
 				return addr + 4 + ((signed short)(op&0xFFFF)<<2);
@@ -131,7 +131,7 @@ namespace MIPSAnalyst
 	}
 
 	static const char *DefaultFunctionName(char buffer[256], u32 startAddr) {
-		sprintf(buffer, "z_un_%08x", startAddr);
+		std::snprintf(buffer, 256, "z_un_%08x", startAddr);
 		return buffer;
 	}
 
@@ -342,7 +342,7 @@ namespace MIPSAnalyst
 			info.isLinkedBranch = (opcode.flags & IS_LINKED) != 0;
 			info.isLikelyBranch = (opcode.flags & IS_LIKELY) != 0;
 
-			u64 rs,rt;
+			s64 rs,rt;
 			u32 value;
 			switch (opcode.flags & BRANCHTYPE_MASK)
 			{
@@ -354,8 +354,15 @@ namespace MIPSAnalyst
 				info.isConditional = true;
 				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
 
-				rs = info.cpu->getRegister(0,MIPS_GET_RS(op))._u64[0];
-				rt = info.cpu->getRegister(0,MIPS_GET_RT(op))._u64[0];
+				// Sign extend from 32bit for IOP regs
+				if (info.cpu->getRegisterSize(0) == 32) {
+					rs = (s32)info.cpu->getRegister(0,MIPS_GET_RS(op))._u32[0];
+					rt = (s32)info.cpu->getRegister(0,MIPS_GET_RT(op))._u32[0];
+				} else {
+					rs = (s64)info.cpu->getRegister(0,MIPS_GET_RS(op))._u64[0];
+					rt = (s64)info.cpu->getRegister(0,MIPS_GET_RT(op))._u64[0];
+				}
+
 				switch (opcode.flags & CONDTYPE_MASK)
 				{
 				case CONDTYPE_EQ:
@@ -369,16 +376,16 @@ namespace MIPSAnalyst
 						info.isConditional = false;
 					break;
 				case CONDTYPE_LEZ:
-					info.conditionMet = (((s64)rs) <= 0);
+					info.conditionMet = (rs <= 0);
 					break;
 				case CONDTYPE_GTZ:
-					info.conditionMet = (((s64)rs) > 0);
+					info.conditionMet = (rs > 0);
 					break;
 				case CONDTYPE_LTZ:
-					info.conditionMet = (((s64)rs) < 0);
+					info.conditionMet = (rs < 0);
 					break;
 				case CONDTYPE_GEZ:
-					info.conditionMet = (((s64)rs) >= 0);
+					info.conditionMet = (rs >= 0);
 					break;
 				}
 
@@ -409,6 +416,20 @@ namespace MIPSAnalyst
 				value = info.cpu->getRegister(EECAT_FCR,31)._u32[0] & 0x00800000;
 				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
 
+				switch (opcode.flags & CONDTYPE_MASK)
+				{
+				case CONDTYPE_EQ:
+					info.conditionMet = value == 0;
+					break;
+				case CONDTYPE_NE:
+					info.conditionMet = value != 0;
+					break;
+				}
+				break;
+			case BRANCHTYPE_BC0:
+				info.isConditional = true;
+				value = info.cpu->getCPCOND0();
+				info.branchTarget = info.opcodeAddress + 4 + ((s16)(op&0xFFFF)<<2);
 				switch (opcode.flags & CONDTYPE_MASK)
 				{
 				case CONDTYPE_EQ:

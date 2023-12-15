@@ -71,6 +71,7 @@ typedef void (*irxDEBUG)();
 
 namespace R3000A
 {
+	u32 irxFindLoadcore(u32 entrypc);
 	u32 irxImportTableAddr(u32 entrypc);
 	const char* irxImportFuncname(const std::string& libname, u16 index);
 	irxHLE irxImportHLE(const std::string& libnam, u16 index);
@@ -85,6 +86,6 @@ namespace R3000A
 	}
 } // namespace R3000A
 
-extern void Hle_SetElfPath(const char* elfFileName);
-extern void Hle_ClearElfPath();
+extern void Hle_SetHostRoot(const char* bootFilename);
+extern void Hle_ClearHostRoot();
 

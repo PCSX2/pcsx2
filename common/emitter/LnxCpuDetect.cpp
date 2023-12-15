@@ -14,7 +14,7 @@
  */
 
 #ifndef _WIN32
-#include "common/emitter/cpudetect_internal.h"
+#include "common/emitter/tools.h"
 
 #include <unistd.h>
 
@@ -32,7 +32,4 @@ void x86capabilities::CountLogicalCores()
 #endif
 }
 
-// Not implemented yet for linux (see cpudetect_internal.h for details)
-SingleCoreAffinity::SingleCoreAffinity() = default;
-SingleCoreAffinity::~SingleCoreAffinity() = default;
 #endif

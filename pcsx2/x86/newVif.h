@@ -17,7 +17,6 @@
 
 #include "Vif.h"
 #include "VU.h"
-#include "VirtualMemory.h"
 
 #include "common/emitter/x86emitter.h"
 
@@ -30,13 +29,12 @@ typedef void (*nVifrecCall)(uptr dest, uptr src);
 #include "newVif_HashBucket.h"
 
 extern void  mVUmergeRegs(const xRegisterSSE& dest, const xRegisterSSE& src,  int xyzw, bool modXYZW = 0);
+extern void  mVUsaveReg(const xRegisterSSE& reg, xAddressVoid ptr, int xyzw, bool modXYZW);
 extern void _nVifUnpack  (int idx, const u8* data, uint mode, bool isFill);
-extern void  dVifReserve (int idx);
 extern void  dVifReset   (int idx);
 extern void  dVifClose   (int idx);
 extern void  dVifRelease (int idx);
 extern void  VifUnpackSSE_Init();
-extern void  VifUnpackSSE_Destroy();
 
 _vifT extern void dVifUnpack(const u8* data, bool isFill);
 
@@ -63,8 +61,8 @@ struct nVifStruct
 	// (templates are used for most or all VIF indexing)
 	u32                     idx;
 
-	RecompiledCodeReserve*  recReserve;
 	u8*                     recWritePtr; // current write pos into the reserve
+	u8*                     recEndPtr;
 
 	HashBucket              vifBlocks;   // Vif Blocks
 

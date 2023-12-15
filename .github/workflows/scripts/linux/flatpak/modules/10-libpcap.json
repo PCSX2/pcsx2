@@ -1,0 +1,24 @@
+{
+  "name": "libpcap",
+  "buildsystem": "cmake-ninja",
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://github.com/the-tcpdump-group/libpcap.git",
+      "tag": "libpcap-1.10.4",
+      "commit": "104271ba4a14de6743e43bcf87536786d8fddea4"
+    }
+  ],
+  "cleanup": [
+    "/bin",
+    "/include",
+    "/lib/*.a",
+    "/lib/*.la",
+    "/lib/pkgconfig",
+    "/share/man"
+  ]
+}
+

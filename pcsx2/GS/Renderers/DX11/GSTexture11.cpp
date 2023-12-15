@@ -18,7 +18,7 @@
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 #include "GS/GSPerfMon.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 
 GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
 	GSTexture::Type type, GSTexture::Format format)
@@ -67,6 +67,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 	if (layer >= m_mipmap_levels)
 		return false;
 
+	GSDevice11::GetInstance()->CommitClear(this);
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 
 	const u32 bs = GetCompressedBlockSize();
@@ -82,132 +83,13 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 {
-	if (r != NULL)
-	{
-		// ASSERT(0); // not implemented
-		return false;
-	}
-
-	if (layer >= m_mipmap_levels)
-		return false;
-
-	if (m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
-	{
-		D3D11_MAPPED_SUBRESOURCE map;
-		UINT subresource = layer;
-
-		if (SUCCEEDED(GSDevice11::GetInstance()->GetD3DContext()->Map(m_texture.get(), subresource, D3D11_MAP_READ_WRITE, 0, &map)))
-		{
-			m.bits = (u8*)map.pData;
-			m.pitch = (int)map.RowPitch;
-			m_mapped_subresource = layer;
-			return true;
-		}
-	}
-
+	// Not supported
 	return false;
 }
 
 void GSTexture11::Unmap()
 {
-	const UINT subresource = m_mapped_subresource;
-	m_needs_mipmaps_generated |= (m_mapped_subresource == 0);
-	GSDevice11::GetInstance()->GetD3DContext()->Unmap(m_texture.get(), subresource);
-}
-
-bool GSTexture11::Save(const std::string& fn)
-{
-	D3D11_TEXTURE2D_DESC desc = m_desc;
-	desc.Usage = D3D11_USAGE_STAGING;
-	desc.BindFlags = 0;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-
-	wil::com_ptr_nothrow<ID3D11Texture2D> res;
-	HRESULT hr = GSDevice11::GetInstance()->GetD3DDevice()->CreateTexture2D(&desc, nullptr, res.put());
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	GSDevice11::GetInstance()->GetD3DContext()->CopyResource(res.get(), m_texture.get());
-
-	if (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
-	{
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.CPUAccessFlags |= D3D11_CPU_ACCESS_WRITE;
-
-		wil::com_ptr_nothrow<ID3D11Texture2D> dst;
-		hr = GSDevice11::GetInstance()->GetD3DDevice()->CreateTexture2D(&desc, nullptr, dst.put());
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		D3D11_MAPPED_SUBRESOURCE sm, dm;
-
-		hr = GSDevice11::GetInstance()->GetD3DContext()->Map(res.get(), 0, D3D11_MAP_READ, 0, &sm);
-		if (FAILED(hr))
-		{
-			return false;
-		}
-		auto unmap_res = wil::scope_exit([res]{ // Capture by value to preserve the original pointer
-			GSDevice11::GetInstance()->GetD3DContext()->Unmap(res.get(), 0);
-		});
-
-		hr = GSDevice11::GetInstance()->GetD3DContext()->Map(dst.get(), 0, D3D11_MAP_WRITE, 0, &dm);
-		if (FAILED(hr))
-		{
-			return false;
-		}
-		auto unmap_dst = wil::scope_exit([dst]{ // Capture by value to preserve the original pointer
-			GSDevice11::GetInstance()->GetD3DContext()->Unmap(dst.get(), 0);
-		});
-
-		const u8* s = static_cast<const u8*>(sm.pData);
-		u8* d = static_cast<u8*>(dm.pData);
-
-		for (u32 y = 0; y < desc.Height; y++, s += sm.RowPitch, d += dm.RowPitch)
-		{
-			for (u32 x = 0; x < desc.Width; x++)
-			{
-				reinterpret_cast<u32*>(d)[x] = static_cast<u32>(ldexpf(reinterpret_cast<const float*>(s)[x * 2], 32));
-			}
-		}
-
-		res = std::move(dst);
-	}
-
-	res->GetDesc(&desc);
-
-#ifdef PCSX2_DEVBUILD
-	GSPng::Format format = GSPng::RGB_A_PNG;
-#else
-	GSPng::Format format = GSPng::RGB_PNG;
-#endif
-	switch (desc.Format)
-	{
-		case DXGI_FORMAT_A8_UNORM:
-			format = GSPng::R8I_PNG;
-			break;
-		case DXGI_FORMAT_R8G8B8A8_UNORM:
-			break;
-		default:
-			fprintf(stderr, "DXGI_FORMAT %d not saved to image\n", desc.Format);
-			return false;
-	}
-
-	D3D11_MAPPED_SUBRESOURCE sm;
-	hr = GSDevice11::GetInstance()->GetD3DContext()->Map(res.get(), 0, D3D11_MAP_READ, 0, &sm);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	bool success = GSPng::Save(format, fn, static_cast<u8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch, GSConfig.PNGCompressionLevel);
-
-	GSDevice11::GetInstance()->GetD3DContext()->Unmap(res.get(), 0);
-
-	return success;
+	pxFailRel("Should not be called.");
 }
 
 void GSTexture11::GenerateMipmap()
@@ -342,6 +224,9 @@ void GSDownloadTexture11::CopyFromTexture(
 	pxAssert(src.z <= stex->GetWidth() && src.w <= stex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
 	pxAssert(src_level < static_cast<u32>(stex->GetMipmapLevels()));
+
+	GSDevice11::GetInstance()->CommitClear(stex);
+
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
 
 	if (IsMapped())

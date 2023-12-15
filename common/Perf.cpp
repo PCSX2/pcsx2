@@ -15,197 +15,207 @@
 
 #include "common/Perf.h"
 #include "common/Pcsx2Defs.h"
-#ifdef __unix__
-#include <unistd.h>
-#endif
+#include "common/Assertions.h"
+#include "common/StringUtil.h"
+
 #ifdef ENABLE_VTUNE
 #include "jitprofiling.h"
+#endif
 
-#include <string> // std::string
-#include <cstring> // strncpy
-#include <algorithm> // std::remove_if
+#include <array>
+#include <cstring>
+
+#ifdef __linux__
+#include <atomic>
+#include <ctime>
+#include <mutex>
+#include <elf.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/syscall.h>
 #endif
 
 //#define ProfileWithPerf
-#define MERGE_BLOCK_RESULT
+//#define ProfileWithPerfJitDump
 
-#ifdef ENABLE_VTUNE
-#ifdef _WIN32
+#if defined(ENABLE_VTUNE) && defined(_WIN32)
 #pragma comment(lib, "jitprofiling.lib")
-#endif
 #endif
 
 namespace Perf
 {
-	// Warning object aren't thread safe
-	InfoVector any("");
-	InfoVector ee("EE");
-	InfoVector iop("IOP");
-	InfoVector vu("VU");
-	InfoVector vif("VIF");
+	Group any("");
+	Group ee("EE");
+	Group iop("IOP");
+	Group vu0("VU0");
+	Group vu1("VU1");
+	Group vif("VIF");
 
 // Perf is only supported on linux
-#if defined(__linux__) && (defined(ProfileWithPerf) || defined(ENABLE_VTUNE))
-
-	////////////////////////////////////////////////////////////////////////////////
-	// Implementation of the Info object
-	////////////////////////////////////////////////////////////////////////////////
-
-	Info::Info(uptr x86, u32 size, const char* symbol)
-		: m_x86(x86)
-		, m_size(size)
-		, m_dynamic(false)
+#if defined(__linux__) && defined(ProfileWithPerf)
+	static std::FILE* s_map_file = nullptr;
+	static bool s_map_file_opened = false;
+	static std::mutex s_mutex;
+	static void RegisterMethod(const void* ptr, size_t size, const char* symbol)
 	{
-		strncpy(m_symbol, symbol, sizeof(m_symbol));
-	}
+		std::unique_lock lock(s_mutex);
 
-	Info::Info(uptr x86, u32 size, const char* symbol, u32 pc)
-		: m_x86(x86)
-		, m_size(size)
-		, m_dynamic(true)
-	{
-		snprintf(m_symbol, sizeof(m_symbol), "%s_0x%08x", symbol, pc);
-	}
-
-	void Info::Print(FILE* fp)
-	{
-		fprintf(fp, "%x %x %s\n", m_x86, m_size, m_symbol);
-	}
-
-	////////////////////////////////////////////////////////////////////////////////
-	// Implementation of the InfoVector object
-	////////////////////////////////////////////////////////////////////////////////
-
-	InfoVector::InfoVector(const char* prefix)
-	{
-		strncpy(m_prefix, prefix, sizeof(m_prefix));
-#ifdef ENABLE_VTUNE
-		m_vtune_id = iJIT_GetNewMethodID();
-#else
-		m_vtune_id = 0;
-#endif
-	}
-
-	void InfoVector::print(FILE* fp)
-	{
-		for (auto&& it : m_v)
-			it.Print(fp);
-	}
-
-	void InfoVector::map(uptr x86, u32 size, const char* symbol)
-	{
-// This function is typically used for dispatcher and recompiler.
-// Dispatchers are on a page and must always be kept.
-// Recompilers are much bigger (TODO check VIF) and are only
-// useful when MERGE_BLOCK_RESULT is defined
-#if defined(ENABLE_VTUNE) || !defined(MERGE_BLOCK_RESULT)
-		u32 max_code_size = 16 * _1kb;
-#else
-		u32 max_code_size = _1gb;
-#endif
-
-		if (size < max_code_size)
+		if (!s_map_file)
 		{
-			m_v.emplace_back(x86, size, symbol);
+			if (s_map_file_opened)
+				return;
 
-#ifdef ENABLE_VTUNE
-			std::string name = std::string(symbol);
-
-			iJIT_Method_Load ml;
-
-			memset(&ml, 0, sizeof(ml));
-
-			ml.method_id = iJIT_GetNewMethodID();
-			ml.method_name = (char*)name.c_str();
-			ml.method_load_address = (void*)x86;
-			ml.method_size = size;
-
-			iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
-
-//fprintf(stderr, "mapF %s: %p size %dKB\n", ml.method_name, ml.method_load_address, ml.method_size / 1024u);
-#endif
+			char file[256];
+			snprintf(file, std::size(file), "/tmp/perf-%d.map", getpid());
+			s_map_file = std::fopen(file, "wb");
+			s_map_file_opened = true;
+			if (!s_map_file)
+				return;
 		}
+
+		std::fprintf(s_map_file, "%" PRIx64 " %zx %s\n", static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)), size, symbol);
+		std::fflush(s_map_file);
+	}
+#elif defined(__linux__) && defined(ProfileWithPerfJitDump)
+	enum : u32
+	{
+		JIT_CODE_LOAD = 0,
+		JIT_CODE_MOVE = 1,
+		JIT_CODE_DEBUG_INFO = 2,
+		JIT_CODE_CLOSE = 3,
+		JIT_CODE_UNWINDING_INFO = 4
+	};
+
+#pragma pack(push, 1)
+	struct JITDUMP_HEADER
+	{
+		u32 magic = 0x4A695444; // JiTD
+		u32 version = 1;
+		u32 header_size = sizeof(JITDUMP_HEADER);
+		u32 elf_mach;
+		u32 pad1 = 0;
+		u32 pid;
+		u64 timestamp;
+		u64 flags = 0;
+	};
+	struct JITDUMP_RECORD_HEADER
+	{
+		u32 id;
+		u32 total_size;
+		u64 timestamp;
+	};
+	struct JITDUMP_CODE_LOAD
+	{
+		JITDUMP_RECORD_HEADER header;
+		u32 pid;
+		u32 tid;
+		u64 vma;
+		u64 code_addr;
+		u64 code_size;
+		u64 code_index;
+		// name
+	};
+#pragma pack(pop)
+
+	static u64 JitDumpTimestamp()
+	{
+		struct timespec ts = {};
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		return (static_cast<u64>(ts.tv_sec) * 1000000000ULL) + static_cast<u64>(ts.tv_nsec);
 	}
 
-	void InfoVector::map(uptr x86, u32 size, u32 pc)
+	static FILE* s_jitdump_file = nullptr;
+	static bool s_jitdump_file_opened = false;
+	static std::mutex s_jitdump_mutex;
+	static u32 s_jitdump_record_id;
+
+	static void RegisterMethod(const void* ptr, size_t size, const char* symbol)
 	{
-#ifndef MERGE_BLOCK_RESULT
-		m_v.emplace_back(x86, size, m_prefix, pc);
-#endif
+		const u32 namelen = std::strlen(symbol) + 1;
 
-#ifdef ENABLE_VTUNE
-		iJIT_Method_Load_V2 ml;
+		std::unique_lock lock(s_jitdump_mutex);
+		if (!s_jitdump_file)
+		{
+			if (!s_jitdump_file_opened)
+			{
+				char file[256];
+				snprintf(file, std::size(file), "jit-%d.dump", getpid());
+				s_jitdump_file = fopen(file, "w+b");
+				s_jitdump_file_opened = true;
+				if (!s_jitdump_file)
+					return;
+			}
 
-		memset(&ml, 0, sizeof(ml));
+			void* perf_marker = mmap(nullptr, 4096, PROT_READ | PROT_EXEC, MAP_PRIVATE, fileno(s_jitdump_file), 0);
+			pxAssertRel(perf_marker != MAP_FAILED, "Map perf marker");
 
-#ifdef MERGE_BLOCK_RESULT
-		ml.method_id = m_vtune_id;
-		ml.method_name = m_prefix;
-#else
-		std::string name = std::string(m_prefix) + "_" + std::to_string(pc);
+			JITDUMP_HEADER jh = {};
+			jh.elf_mach = EM_X86_64;
+			jh.pid = getpid();
+			jh.timestamp = JitDumpTimestamp();
+			std::fwrite(&jh, sizeof(jh), 1, s_jitdump_file);
+		}
+
+		JITDUMP_CODE_LOAD cl = {};
+		cl.header.id = JIT_CODE_LOAD;
+		cl.header.total_size = sizeof(cl) + namelen + static_cast<u32>(size);
+		cl.header.timestamp = JitDumpTimestamp();
+		cl.pid = getpid();
+		cl.tid = syscall(SYS_gettid);
+		cl.vma = 0;
+		cl.code_addr = static_cast<u64>(reinterpret_cast<uintptr_t>(ptr));
+		cl.code_size = static_cast<u64>(size);
+		cl.code_index = s_jitdump_record_id++;
+		std::fwrite(&cl, sizeof(cl), 1, s_jitdump_file);
+		std::fwrite(symbol, namelen, 1, s_jitdump_file);
+		std::fwrite(ptr, size, 1, s_jitdump_file);
+		std::fflush(s_jitdump_file);
+	}
+#elif defined(ENABLE_VTUNE)
+	static void RegisterMethod(const void* ptr, size_t size, const char* symbol)
+	{
+		iJIT_Method_Load_V2 ml = {};
 		ml.method_id = iJIT_GetNewMethodID();
-		ml.method_name = (char*)name.c_str();
-#endif
-		ml.method_load_address = (void*)x86;
-		ml.method_size = size;
-
+		ml.method_name = const_cast<char*>(symbol);
+		ml.method_load_address = const_cast<void*>(ptr);
+		ml.method_size = static_cast<unsigned int>(size);
 		iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED_V2, &ml);
-
-//fprintf(stderr, "mapB %s: %p size %d\n", ml.method_name, ml.method_load_address, ml.method_size);
+	}
 #endif
-	}
 
-	void InfoVector::reset()
+#if (defined(__linux__) && (defined(ProfileWithPerf) || defined(ProfileWithPerfJitDump))) || defined(ENABLE_VTUNE)
+	void Group::Register(const void* ptr, size_t size, const char* symbol)
 	{
-		auto dynamic = std::remove_if(m_v.begin(), m_v.end(), [](Info i) { return i.m_dynamic; });
-		m_v.erase(dynamic, m_v.end());
+		char full_symbol[128];
+		if (HasPrefix())
+			std::snprintf(full_symbol, std::size(full_symbol), "%s_%s", m_prefix, symbol);
+		else
+			StringUtil::Strlcpy(full_symbol, symbol, std::size(full_symbol));
+		RegisterMethod(ptr, size, full_symbol);
 	}
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Global function
-	////////////////////////////////////////////////////////////////////////////////
-
-	void dump()
+	void Group::RegisterPC(const void* ptr, size_t size, u32 pc)
 	{
-		char file[256];
-		snprintf(file, 250, "/tmp/perf-%d.map", getpid());
-		FILE* fp = fopen(file, "w");
-
-		any.print(fp);
-		ee.print(fp);
-		iop.print(fp);
-		vu.print(fp);
-
-		if (fp)
-			fclose(fp);
+		char full_symbol[128];
+		if (HasPrefix())
+			std::snprintf(full_symbol, std::size(full_symbol), "%s_%08X", m_prefix, pc);
+		else
+			std::snprintf(full_symbol, std::size(full_symbol), "%08X", pc);
+		RegisterMethod(ptr, size, full_symbol);
 	}
 
-	void dump_and_reset()
+	void Group::RegisterKey(const void* ptr, size_t size, const char* prefix, u64 key)
 	{
-		dump();
-
-		any.reset();
-		ee.reset();
-		iop.reset();
-		vu.reset();
+		char full_symbol[128];
+		if (HasPrefix())
+			std::snprintf(full_symbol, std::size(full_symbol), "%s_%s%016" PRIX64, m_prefix, prefix, key);
+		else
+			std::snprintf(full_symbol, std::size(full_symbol), "%s%016" PRIX64, prefix, key);
+		RegisterMethod(ptr, size, full_symbol);
 	}
-
 #else
-
-	////////////////////////////////////////////////////////////////////////////////
-	// Dummy implementation
-	////////////////////////////////////////////////////////////////////////////////
-
-	InfoVector::InfoVector(const char* prefix)
-		: m_vtune_id(0)
-	{
-	}
-	void InfoVector::map(uptr x86, u32 size, const char* symbol) {}
-	void InfoVector::map(uptr x86, u32 size, u32 pc) {}
-	void InfoVector::reset() {}
-
-	void dump() {}
-	void dump_and_reset() {}
-
+	void Group::Register(const void* ptr, size_t size, const char* symbol) {}
+	void Group::RegisterPC(const void* ptr, size_t size, u32 pc) {}
+	void Group::RegisterKey(const void* ptr, size_t size, const char* prefix, u64 key) {}
 #endif
 } // namespace Perf

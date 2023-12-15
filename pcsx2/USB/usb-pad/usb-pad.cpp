@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,12 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "usb-pad.h"
 #include "USB/qemu-usb/USBinternal.h"
-#include "USB/USB.h"
-#include "StateWrapper.h"
-
-#ifdef SDL_BUILD
 #include "USB/usb-pad/usb-pad-sdl-ff.h"
-#endif
+#include "USB/USB.h"
+#include "Host.h"
+#include "StateWrapper.h"
 
 namespace usb_pad
 {
@@ -81,32 +79,32 @@ namespace usb_pad
 		return exponent;
 	}
 
-	static gsl::span<const InputBindingInfo> GetWheelBindings(PS2WheelTypes wt)
+	static std::span<const InputBindingInfo> GetWheelBindings(PS2WheelTypes wt)
 	{
 		switch (wt)
 		{
 			case WT_GENERIC:
 			{
 				static constexpr const InputBindingInfo bindings[] = {
-					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
-					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
-					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
-					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
-					{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
-					{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
-					{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
-					{"DPadRight", "D-Pad Right", InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
-					{"Cross", "Cross", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
-					{"Square", "Square", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
-					{"Circle", "Circle", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
-					{"Triangle", "Triangle", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
-					{"L1", "L1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
-					{"R1", "R1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
-					{"L2", "L2", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
-					{"R2", "R2", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
-					{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
-					{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
-					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
+					{"SteeringLeft", TRANSLATE_NOOP("USB", "Steering Left"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+					{"SteeringRight", TRANSLATE_NOOP("USB", "Steering Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+					{"Throttle", TRANSLATE_NOOP("USB", "Throttle"), nullptr, InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
+					{"Brake", TRANSLATE_NOOP("USB", "Brake"), nullptr, InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
+					{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
+					{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+					{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
+					{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
+					{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
+					{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+					{"Triangle", TRANSLATE_NOOP("USB", "Triangle"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
+					{"L1", TRANSLATE_NOOP("USB", "L1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
+					{"R1", TRANSLATE_NOOP("USB", "R1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
+					{"L2", TRANSLATE_NOOP("USB", "L2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
+					{"R2", TRANSLATE_NOOP("USB", "R2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
+					{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+					{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+					{"FFDevice", TRANSLATE_NOOP("USB", "Force Feedback"), nullptr, InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
 				};
 
 				return bindings;
@@ -116,27 +114,27 @@ namespace usb_pad
 			case WT_DRIVING_FORCE_PRO_1102:
 			{
 				static constexpr const InputBindingInfo bindings[] = {
-					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
-					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
-					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
-					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
-					{"DPadUp", "D-Pad Up", InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
-					{"DPadDown", "D-Pad Down", InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
-					{"DPadLeft", "D-Pad Left", InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
-					{"DPadRight", "D-Pad Right", InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
-					{"Cross", "Cross", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
-					{"Square", "Square", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
-					{"Circle", "Circle", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
-					{"Triangle", "Triangle", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
-					{"R1", "Shift Up / R1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
-					{"L1", "Shift Down / L1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
-					{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
-					{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
-					{"L2", "L2", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
-					{"R2", "R2", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
-					{"L3", "L3", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::L3},
-					{"R3", "R3", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::R3},
-					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
+					{"SteeringLeft", TRANSLATE_NOOP("USB", "Steering Left"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+					{"SteeringRight", TRANSLATE_NOOP("USB", "Steering Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+					{"Throttle", TRANSLATE_NOOP("USB", "Throttle"), nullptr, InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
+					{"Brake", TRANSLATE_NOOP("USB", "Brake"), nullptr, InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
+					{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
+					{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+					{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
+					{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
+					{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
+					{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+					{"Triangle", TRANSLATE_NOOP("USB", "Triangle"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
+					{"R1", TRANSLATE_NOOP("USB", "Shift Up / R1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
+					{"L1", TRANSLATE_NOOP("USB", "Shift Down / L1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L1},
+					{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+					{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+					{"L2", TRANSLATE_NOOP("USB", "L2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown}, // used L2 for brake
+					{"R2", TRANSLATE_NOOP("USB", "R2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown}, // used R2 for throttle
+					{"L3", TRANSLATE_NOOP("USB", "L3"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::L3},
+					{"R3", TRANSLATE_NOOP("USB", "R3"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::R3},
+					{"FFDevice", "Force Feedback", nullptr, InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
 				};
 
 				return bindings;
@@ -145,17 +143,17 @@ namespace usb_pad
 			case WT_GT_FORCE:
 			{
 				static constexpr const InputBindingInfo bindings[] = {
-					{"SteeringLeft", "Steering Left", InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
-					{"SteeringRight", "Steering Right", InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
-					{"Throttle", "Throttle", InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
-					{"Brake", "Brake", InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
-					{"MenuUp", "Menu Up", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::DPadUp},
-					{"MenuDown", "Menu Down", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::DPadDown},
-					{"X", "X", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Square},
-					{"Y", "Y", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
-					{"A", "A", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
-					{"B", "B", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Circle},
-					{"FFDevice", "Force Feedback", InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
+					{"SteeringLeft", TRANSLATE_NOOP("USB", "Steering Left"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
+					{"SteeringRight", TRANSLATE_NOOP("USB", "Steering Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
+					{"Throttle", TRANSLATE_NOOP("USB", "Throttle"), nullptr, InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::R2},
+					{"Brake", TRANSLATE_NOOP("USB", "Brake"), nullptr, InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::L2},
+					{"MenuUp", TRANSLATE_NOOP("USB", "Menu Up"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::DPadUp},
+					{"MenuDown", TRANSLATE_NOOP("USB", "Menu Down"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::DPadDown},
+					{"X", TRANSLATE_NOOP("USB", "X"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Square},
+					{"Y", TRANSLATE_NOOP("USB", "Y"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Triangle},
+					{"A", TRANSLATE_NOOP("USB", "A"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
+					{"B", TRANSLATE_NOOP("USB", "B"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Circle},
+					{"FFDevice", TRANSLATE_NOOP("USB", "Force Feedback"), nullptr, InputBindingInfo::Type::Device, 0, GenericInputBinding::Unknown},
 				};
 
 				return bindings;
@@ -168,20 +166,20 @@ namespace usb_pad
 		}
 	}
 
-	static gsl::span<const SettingInfo> GetWheelSettings(PS2WheelTypes wt)
+	static std::span<const SettingInfo> GetWheelSettings(PS2WheelTypes wt)
 	{
 		if (wt <= WT_GT_FORCE)
 		{
-			static constexpr const char* SteeringCurveExponentOptions[] = {"Off", "Low", "Medium", "High", nullptr};
+			static constexpr const char* SteeringCurveExponentOptions[] = {TRANSLATE_NOOP("USB", "Off"), TRANSLATE_NOOP("USB", "Low"), TRANSLATE_NOOP("USB", "Medium"), TRANSLATE_NOOP("USB", "High"), nullptr};
 			static constexpr const SettingInfo info[] = {
-				{SettingInfo::Type::Integer, "SteeringSmoothing", "Steering Smoothing",
-					"Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards.",
-					"0", "0", "100", "1", "%d%%", nullptr, nullptr, 1.0f},
-				{SettingInfo::Type::Integer, "SteeringDeadzone", "Steering Deadzone",
-					"Steering axis deadzone for pads or non self centering wheels.",
-					"0", "0", "100", "1", "%d%%", nullptr, nullptr, 1.0f},
-				{SettingInfo::Type::StringList, "SteeringCurveExponent", "Steering Damping",
-					"Applies power curve filter to steering axis values. Dampens small inputs.",
+				{SettingInfo::Type::Integer, "SteeringSmoothing", TRANSLATE_NOOP("USB", "Steering Smoothing"),
+					TRANSLATE_NOOP("USB", "Smooths out changes in steering to the specified percentage per poll. Needed for using keyboards."),
+					"0", "0", "100", "1", TRANSLATE_NOOP("USB", "%d%%"), nullptr, nullptr, 1.0f},
+				{SettingInfo::Type::Integer, "SteeringDeadzone", TRANSLATE_NOOP("USB", "Steering Deadzone"),
+					TRANSLATE_NOOP("USB", "Steering axis deadzone for pads or non self centering wheels."),
+					"0", "0", "100", "1", TRANSLATE_NOOP("USB", "%d%%"), nullptr, nullptr, 1.0f},
+				{SettingInfo::Type::StringList, "SteeringCurveExponent", TRANSLATE_NOOP("USB", "Steering Damping"),
+					TRANSLATE_NOOP("USB", "Applies power curve filter to steering axis values. Dampens small inputs."),
 					"Off", nullptr, nullptr, nullptr, nullptr, SteeringCurveExponentOptions}
 			};
 
@@ -626,10 +624,7 @@ namespace usb_pad
 			return;
 
 		mFFdev.reset();
-
-#ifdef SDL_BUILD
 		mFFdev = SDLFFDevice::Create(mFFdevName);
-#endif
 	}
 
 	static void pad_handle_data(USBDevice* dev, USBPacket* p)
@@ -836,7 +831,7 @@ namespace usb_pad
 
 	const char* PadDevice::Name() const
 	{
-		return "Wheel Device";
+		return TRANSLATE_NOOP("USB", "Wheel Device");
 	}
 
 	const char* PadDevice::TypeName() const
@@ -873,18 +868,20 @@ namespace usb_pad
 		s->SetBindValue(bind_index, value);
 	}
 
-	gsl::span<const char*> PadDevice::SubTypes() const
+	std::span<const char*> PadDevice::SubTypes() const
 	{
-		static const char* subtypes[] = {"Driving Force", "Driving Force Pro", "Driving Force Pro (rev11.02)", "GT Force"};
+		static const char* subtypes[] = {TRANSLATE_NOOP("USB", "Driving Force"),
+			TRANSLATE_NOOP("USB", "Driving Force Pro"), TRANSLATE_NOOP("USB", "Driving Force Pro (rev11.02)"),
+			TRANSLATE_NOOP("USB", "GT Force")};
 		return subtypes;
 	}
 
-	gsl::span<const InputBindingInfo> PadDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> PadDevice::Bindings(u32 subtype) const
 	{
 		return GetWheelBindings(static_cast<PS2WheelTypes>(subtype));
 	}
 
-	gsl::span<const SettingInfo> PadDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> PadDevice::Settings(u32 subtype) const
 	{
 		return GetWheelSettings(static_cast<PS2WheelTypes>(subtype));
 	}
@@ -892,7 +889,7 @@ namespace usb_pad
 	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
-		if (s->mFFdevName == identifier)
+		if (s->mFFdevName == identifier && s->HasFF())
 			s->OpenFFDevice();
 	}
 
@@ -907,7 +904,7 @@ namespace usb_pad
 
 	const char* RBDrumKitDevice::Name() const
 	{
-		return "Rock Band Drum Kit";
+		return TRANSLATE_NOOP("USB", "Rock Band Drum Kit");
 	}
 
 	const char* RBDrumKitDevice::TypeName() const
@@ -936,27 +933,27 @@ namespace usb_pad
 		return nullptr;
 	}
 
-	gsl::span<const char*> RBDrumKitDevice::SubTypes() const
+	std::span<const char*> RBDrumKitDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> RBDrumKitDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> RBDrumKitDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			{"Blue", "Blue", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::R1},
-			{"Green", "Green", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Triangle},
-			{"Red", "Red", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
-			{"Yellow", "Yellow", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
-			{"Orange", "Orange", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
-			{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
-			{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
+			{"Blue", TRANSLATE_NOOP("USB", "Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::R1},
+			{"Green", TRANSLATE_NOOP("USB", "Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Triangle},
+			{"Red", TRANSLATE_NOOP("USB", "Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Circle},
+			{"Yellow", TRANSLATE_NOOP("USB", "Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
+			{"Orange", TRANSLATE_NOOP("USB", "Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Cross},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
 		};
 
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> RBDrumKitDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> RBDrumKitDevice::Settings(u32 subtype) const
 	{
 		return {};
 	}
@@ -965,7 +962,7 @@ namespace usb_pad
 
 	const char* BuzzDevice::Name() const
 	{
-		return "Buzz Controller";
+		return TRANSLATE_NOOP("USB", "Buzz Controller");
 	}
 
 	const char* BuzzDevice::TypeName() const
@@ -973,43 +970,43 @@ namespace usb_pad
 		return "BuzzDevice";
 	}
 
-	gsl::span<const char*> BuzzDevice::SubTypes() const
+	std::span<const char*> BuzzDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> BuzzDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			{"Red1", "Player 1 Red", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Circle},
-			{"Blue1", "Player 1 Blue", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
-			{"Orange1", "Player 1 Orange", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Cross},
-			{"Green1", "Player 1 Green", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Triangle},
-			{"Yellow1", "Player 1 Yellow", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
+			{"Red1", TRANSLATE_NOOP("USB", "Player 1 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Circle},
+			{"Blue1", TRANSLATE_NOOP("USB", "Player 1 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::R1},
+			{"Orange1", TRANSLATE_NOOP("USB", "Player 1 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Cross},
+			{"Green1", TRANSLATE_NOOP("USB", "Player 1 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Triangle},
+			{"Yellow1", TRANSLATE_NOOP("USB", "Player 1 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Square},
 
-			{"Red2", "Player 2 Red", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
-			{"Blue2", "Player 2 Blue", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
-			{"Orange2", "Player 2 Orange", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
-			{"Green2", "Player 2 Green", InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown},
-			{"Yellow2", "Player 2 Yellow", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
+			{"Red2", TRANSLATE_NOOP("USB", "Player 2 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
+			{"Blue2", TRANSLATE_NOOP("USB", "Player 2 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
+			{"Orange2", TRANSLATE_NOOP("USB", "Player 2 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
+			{"Green2", TRANSLATE_NOOP("USB", "Player 2 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::Unknown},
+			{"Yellow2", TRANSLATE_NOOP("USB", "Player 2 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
 
-			{"Red3", "Player 3 Red", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
-			{"Blue3", "Player 3 Blue", InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
-			{"Orange3", "Player 3 Orange", InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
-			{"Green3", "Player 3 Green", InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
-			{"Yellow3", "Player 3 Yellow", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
+			{"Red3", TRANSLATE_NOOP("USB", "Player 3 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
+			{"Blue3", TRANSLATE_NOOP("USB", "Player 3 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
+			{"Orange3", TRANSLATE_NOOP("USB", "Player 3 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
+			{"Green3", TRANSLATE_NOOP("USB", "Player 3 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
+			{"Yellow3", TRANSLATE_NOOP("USB", "Player 3 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
 
-			{"Red4", "Player 4 Red", InputBindingInfo::Type::Button, CID_BUTTON15, GenericInputBinding::Unknown},
-			{"Blue4", "Player 4 Blue", InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
-			{"Orange4", "Player 4 Orange", InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
-			{"Green4", "Player 4 Green", InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
-			{"Yellow4", "Player 4 Yellow", InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
+			{"Red4", TRANSLATE_NOOP("USB", "Player 4 Red"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON15, GenericInputBinding::Unknown},
+			{"Blue4", TRANSLATE_NOOP("USB", "Player 4 Blue"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
+			{"Orange4", TRANSLATE_NOOP("USB", "Player 4 Orange"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
+			{"Green4", TRANSLATE_NOOP("USB", "Player 4 Green"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
+			{"Yellow4", TRANSLATE_NOOP("USB", "Player 4 Yellow"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
 		};
 
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> BuzzDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> BuzzDevice::Settings(u32 subtype) const
 	{
 		return {};
 	}
@@ -1039,7 +1036,7 @@ namespace usb_pad
 
 	const char* KeyboardmaniaDevice::Name() const
 	{
-		return "Keyboardmania";
+		return TRANSLATE_NOOP("USB", "KeyboardMania");
 	}
 
 	const char* KeyboardmaniaDevice::TypeName() const
@@ -1047,49 +1044,49 @@ namespace usb_pad
 		return "Keyboardmania";
 	}
 
-	gsl::span<const char*> KeyboardmaniaDevice::SubTypes() const
+	std::span<const char*> KeyboardmaniaDevice::SubTypes() const
 	{
 		return {};
 	}
 
-	gsl::span<const InputBindingInfo> KeyboardmaniaDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> KeyboardmaniaDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
-			{"C1", "C 1", InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Unknown},
-			{"CSharp1", "C# 1", InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Unknown},
-			{"D1", "D 1", InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Unknown},
-			{"DSharp1", "D# 1", InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Unknown},
-			{"E1", "E 1", InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Unknown},
-			{"F1", "F 1", InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
-			{"FSharp1", "F# 1", InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
-			{"G1", "G 1", InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
-			{"GSharp1", "G# 1", InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
-			{"A1", "A 1", InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
-			{"ASharp1", "A# 1", InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
-			{"B1", "B 1", InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
-			{"C2", "C 2", InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
-			{"CSharp2", "C# 2", InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
-			{"D2", "D 2", InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
-			{"DSharp2", "D# 2", InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
-			{"E2", "E 2", InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
-			{"F2", "F 2", InputBindingInfo::Type::Button, CID_BUTTON20, GenericInputBinding::Unknown},
-			{"FSharp2", "F# 2", InputBindingInfo::Type::Button, CID_BUTTON21, GenericInputBinding::Unknown},
-			{"G2", "G 2", InputBindingInfo::Type::Button, CID_BUTTON24, GenericInputBinding::Unknown},
-			{"GSharp2", "G# 2", InputBindingInfo::Type::Button, CID_BUTTON25, GenericInputBinding::Unknown},
-			{"A2", "A 2", InputBindingInfo::Type::Button, CID_BUTTON26, GenericInputBinding::Unknown},
-			{"ASharp2", "A# 2", InputBindingInfo::Type::Button, CID_BUTTON27, GenericInputBinding::Unknown},
-			{"B2", "B 2", InputBindingInfo::Type::Button, CID_BUTTON28, GenericInputBinding::Unknown},
+			{"C1", TRANSLATE_NOOP("USB", "C 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Unknown},
+			{"CSharp1", TRANSLATE_NOOP("USB", "C# 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Unknown},
+			{"D1", TRANSLATE_NOOP("USB", "D 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::Unknown},
+			{"DSharp1", TRANSLATE_NOOP("USB", "D# 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Unknown},
+			{"E1", TRANSLATE_NOOP("USB", "E 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Unknown},
+			{"F1", TRANSLATE_NOOP("USB", "F 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::Unknown},
+			{"FSharp1", TRANSLATE_NOOP("USB", "F# 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::Unknown},
+			{"G1", TRANSLATE_NOOP("USB", "G 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Unknown},
+			{"GSharp1", TRANSLATE_NOOP("USB", "G# 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Unknown},
+			{"A1", TRANSLATE_NOOP("USB", "A 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON10, GenericInputBinding::Unknown},
+			{"ASharp1", TRANSLATE_NOOP("USB", "A# 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON11, GenericInputBinding::Unknown},
+			{"B1", TRANSLATE_NOOP("USB", "B 1"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON12, GenericInputBinding::Unknown},
+			{"C2", TRANSLATE_NOOP("USB", "C 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON13, GenericInputBinding::Unknown},
+			{"CSharp2", TRANSLATE_NOOP("USB", "C# 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON16, GenericInputBinding::Unknown},
+			{"D2", TRANSLATE_NOOP("USB", "D 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON17, GenericInputBinding::Unknown},
+			{"DSharp2", TRANSLATE_NOOP("USB", "D# 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON18, GenericInputBinding::Unknown},
+			{"E2", TRANSLATE_NOOP("USB", "E 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON19, GenericInputBinding::Unknown},
+			{"F2", TRANSLATE_NOOP("USB", "F 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON20, GenericInputBinding::Unknown},
+			{"FSharp2", TRANSLATE_NOOP("USB", "F# 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON21, GenericInputBinding::Unknown},
+			{"G2", TRANSLATE_NOOP("USB", "G 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON24, GenericInputBinding::Unknown},
+			{"GSharp2", TRANSLATE_NOOP("USB", "G# 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON25, GenericInputBinding::Unknown},
+			{"A2", TRANSLATE_NOOP("USB", "A 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON26, GenericInputBinding::Unknown},
+			{"ASharp2", TRANSLATE_NOOP("USB", "A# 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON27, GenericInputBinding::Unknown},
+			{"B2", TRANSLATE_NOOP("USB", "B 2"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON28, GenericInputBinding::Unknown},
 
-			{"Start", "Start", InputBindingInfo::Type::Button, CID_BUTTON22, GenericInputBinding::Unknown},
-			{"Select", "Select", InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
-			{"WheelUp", "Wheel Up", InputBindingInfo::Type::Button, CID_BUTTON29, GenericInputBinding::Unknown},
-			{"WheelDown", "Wheel Down", InputBindingInfo::Type::Button, CID_BUTTON30, GenericInputBinding::Unknown},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON22, GenericInputBinding::Unknown},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON14, GenericInputBinding::Unknown},
+			{"WheelUp", TRANSLATE_NOOP("USB", "Wheel Up"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON29, GenericInputBinding::Unknown},
+			{"WheelDown", TRANSLATE_NOOP("USB", "Wheel Down"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON30, GenericInputBinding::Unknown},
 		};
 
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> KeyboardmaniaDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> KeyboardmaniaDevice::Settings(u32 subtype) const
 	{
 		return {};
 	}

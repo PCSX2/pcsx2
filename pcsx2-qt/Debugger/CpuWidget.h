@@ -29,6 +29,8 @@
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QTableWidget>
+#include <QtCore/QSortFilterProxyModel>
+#include <QtCore/QTimer>
 
 #include <vector>
 
@@ -59,6 +61,7 @@ public slots:
 	void contextBPListDelete();
 	void contextBPListNew();
 	void contextBPListEdit();
+	void contextBPListPasteCSV();
 
 	void updateThreads();
 	void onThreadListDoubleClick(const QModelIndex& index);
@@ -71,7 +74,9 @@ public slots:
 	void updateFunctionList(bool whenEmpty = false);
 	void onFuncListContextMenu(QPoint pos);
 	void onFuncListDoubleClick(QListWidgetItem* item);
-
+	bool getDemangleFunctions() const { return m_demangleFunctions; }
+	void onModuleTreeContextMenu(QPoint pos);
+	void onModuleTreeDoubleClick(QTreeWidgetItem* item);
 	void reloadCPUWidgets()
 	{
 		if (!QtHost::IsOnUIThread())
@@ -90,12 +95,19 @@ public slots:
 	};
 
 	void onSearchButtonClicked();
+	void onSearchResultsListScroll(u32 value);
+	void loadSearchResults();
+	void contextSearchResultGoToDisassembly();
+	void contextRemoveSearchResult();
+	void onListSearchResultsContextMenu(QPoint pos);
 
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
+	std::vector<u32> m_searchResults;
 
 	QMenu* m_stacklistContextMenu = 0;
 	QMenu* m_funclistContextMenu = 0;
+	QMenu* m_moduleTreeContextMenu = 0;
 
 	Ui::CpuWidget m_ui;
 
@@ -103,7 +115,12 @@ private:
 
 	BreakpointModel m_bpModel;
 	ThreadModel m_threadModel;
+	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
+	QTimer m_resultsLoadTimer;
 
 	bool m_demangleFunctions = true;
+	bool m_moduleView = true;
+	u32 m_initialResultsLoadLimit = 20000;
+	u32 m_numResultsAddedPerLoad = 10000;
 };

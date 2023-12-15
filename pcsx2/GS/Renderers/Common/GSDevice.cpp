@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,11 +14,20 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSDevice.h"
+
+#include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "Host.h"
+
+#include "common/BitUtils.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
+
+#include "imgui.h"
+
+#include <algorithm>
 
 const char* shaderName(ShaderConvert value)
 {
@@ -35,6 +44,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::FLOAT32_TO_16_BITS:     return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_32_BITS:     return "ps_convert_float32_32bits";
 		case ShaderConvert::FLOAT32_TO_RGBA8:       return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT32_TO_RGB8:        return "ps_convert_float32_rgba8";
 		case ShaderConvert::FLOAT16_TO_RGB5A1:      return "ps_convert_float16_rgb5a1";
 		case ShaderConvert::RGBA8_TO_FLOAT32:       return "ps_convert_rgba8_float32";
 		case ShaderConvert::RGBA8_TO_FLOAT24:       return "ps_convert_rgba8_float24";
@@ -61,12 +71,14 @@ const char* shaderName(PresentShader value)
 	switch (value)
 	{
 			// clang-format off
-		case PresentShader::COPY:              return "ps_copy";
-		case PresentShader::SCANLINE:          return "ps_filter_scanlines";
-		case PresentShader::DIAGONAL_FILTER:   return "ps_filter_diagonal";
-		case PresentShader::TRIANGULAR_FILTER: return "ps_filter_triangular";
-		case PresentShader::COMPLEX_FILTER:    return "ps_filter_complex";
-		case PresentShader::LOTTES_FILTER:     return "ps_filter_lottes";
+		case PresentShader::COPY:               return "ps_copy";
+		case PresentShader::SCANLINE:           return "ps_filter_scanlines";
+		case PresentShader::DIAGONAL_FILTER:    return "ps_filter_diagonal";
+		case PresentShader::TRIANGULAR_FILTER:  return "ps_filter_triangular";
+		case PresentShader::COMPLEX_FILTER:     return "ps_filter_complex";
+		case PresentShader::LOTTES_FILTER:      return "ps_filter_lottes";
+		case PresentShader::SUPERSAMPLE_4xRGSS: return "ps_4x_rgss";
+		case PresentShader::SUPERSAMPLE_AUTO:   return "ps_automagical_supersampling";
 			// clang-format on
 		default:
 			ASSERT(0);
@@ -86,37 +98,204 @@ GSDevice::GSDevice() = default;
 GSDevice::~GSDevice()
 {
 	// should've been cleaned up in Destroy()
-	pxAssert(m_pool.empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
+	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
+}
+
+const char* GSDevice::RenderAPIToString(RenderAPI api)
+{
+	switch (api)
+	{
+		// clang-format off
+#define CASE(x) case RenderAPI::x: return #x
+		CASE(None);
+		CASE(D3D11);
+		CASE(D3D12);
+		CASE(Metal);
+		CASE(Vulkan);
+		CASE(OpenGL);
+#undef CASE
+		// clang-format on
+	default:
+		return "Unknown";
+	}
+}
+
+bool GSDevice::GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate)
+{
+	const std::string mode = Host::GetBaseStringSettingValue("EmuCore/GS", "FullscreenMode", "");
+	if (!mode.empty())
+	{
+		const std::string_view mode_view = mode;
+		std::string_view::size_type sep1 = mode.find('x');
+		if (sep1 != std::string_view::npos)
+		{
+			std::optional<u32> owidth = StringUtil::FromChars<u32>(mode_view.substr(0, sep1));
+			sep1++;
+
+			while (sep1 < mode.length() && std::isspace(mode[sep1]))
+				sep1++;
+
+			if (owidth.has_value() && sep1 < mode.length())
+			{
+				std::string_view::size_type sep2 = mode.find('@', sep1);
+				if (sep2 != std::string_view::npos)
+				{
+					std::optional<u32> oheight = StringUtil::FromChars<u32>(mode_view.substr(sep1, sep2 - sep1));
+					sep2++;
+
+					while (sep2 < mode.length() && std::isspace(mode[sep2]))
+						sep2++;
+
+					if (oheight.has_value() && sep2 < mode.length())
+					{
+						std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode_view.substr(sep2));
+						if (orefresh_rate.has_value())
+						{
+							*width = owidth.value();
+							*height = oheight.value();
+							*refresh_rate = orefresh_rate.value();
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	*width = 0;
+	*height = 0;
+	*refresh_rate = 0;
+	return false;
+}
+
+std::string GSDevice::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
+{
+	return StringUtil::StdStringFromFormat("%u x %u @ %f hz", width, height, refresh_rate);
+}
+
+void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
+{
+	static constexpr u32 MAX_INDEX = EXPAND_BUFFER_SIZE / 6 / sizeof(u16);
+
+	u16* idx_buffer = static_cast<u16*>(buffer);
+	for (u32 i = 0; i < MAX_INDEX; i++)
+	{
+		const u32 base = i * 4;
+		*(idx_buffer++) = base + 0;
+		*(idx_buffer++) = base + 1;
+		*(idx_buffer++) = base + 2;
+		*(idx_buffer++) = base + 1;
+		*(idx_buffer++) = base + 2;
+		*(idx_buffer++) = base + 3;
+	}
+}
+
+std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
+{
+	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());
 }
 
 bool GSDevice::Create()
 {
+	m_vsync_mode = Host::GetEffectiveVSyncMode();
 	return true;
 }
 
 void GSDevice::Destroy()
 {
+	if (m_imgui_font)
+	{
+		Recycle(m_imgui_font);
+		m_imgui_font = nullptr;
+	}
+
 	ClearCurrent();
 	PurgePool();
 }
 
-void GSDevice::ResetAPIState()
+bool GSDevice::AcquireWindow(bool recreate_window)
 {
+	std::optional<WindowInfo> wi = Host::AcquireRenderWindow(recreate_window);
+	if (!wi.has_value())
+	{
+		Console.Error("Failed to acquire render window.");
+		Host::ReportErrorAsync("Error", "Failed to acquire render window. The log may have more information.");
+		return false;
+	}
+
+	m_window_info = std::move(wi.value());
+	return true;
 }
 
-void GSDevice::RestoreAPIState()
+bool GSDevice::GetHostRefreshRate(float* refresh_rate)
 {
+	if (m_window_info.surface_refresh_rate > 0.0f)
+	{
+		*refresh_rate = m_window_info.surface_refresh_rate;
+		return true;
+	}
+
+	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
+}
+
+void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
+{
+	t->SetClearColor(c);
+}
+
+void GSDevice::ClearDepth(GSTexture* t, float d)
+{
+	t->SetClearDepth(d);
+}
+
+void GSDevice::InvalidateRenderTarget(GSTexture* t)
+{
+	t->SetState(GSTexture::State::Invalidated);
+}
+
+bool GSDevice::UpdateImGuiFontTexture()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	unsigned char* pixels;
+	int width, height;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+	const GSVector4i r(0, 0, width, height);
+	const int pitch = sizeof(u32) * width;
+
+	if (m_imgui_font && m_imgui_font->GetWidth() == width && m_imgui_font->GetHeight() == height &&
+		m_imgui_font->Update(r, pixels, pitch))
+	{
+		io.Fonts->SetTexID(m_imgui_font->GetNativeHandle());
+		return true;
+	}
+
+	GSTexture* new_font = CreateTexture(width, height, 1, GSTexture::Format::Color);
+	if (!new_font || !new_font->Update(r, pixels, pitch))
+	{
+		io.Fonts->SetTexID(m_imgui_font ? m_imgui_font->GetNativeHandle() : nullptr);
+		return false;
+	}
+
+	// Don't bother recycling, it's unlikely we're going to reuse the same size as imgui for rendering.
+	delete m_imgui_font;
+
+	m_imgui_font = new_font;
+	ImGui::GetIO().Fonts->SetTexID(new_font->GetNativeHandle());
+	return true;
 }
 
 GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse)
 {
 	const GSVector2i size(width, height);
 	const bool prefer_new_texture = (m_features.prefer_new_textures && type == GSTexture::Type::Texture && !prefer_reuse);
+	FastList<GSTexture*>& pool = m_pool[type != GSTexture::Type::Texture];
 
 	GSTexture* t = nullptr;
-	auto fallback = m_pool.end();
+	auto fallback = pool.end();
 
-	for (auto i = m_pool.begin(); i != m_pool.end(); ++i)
+	for (auto i = pool.begin(); i != pool.end(); ++i)
 	{
 		t = *i;
 
@@ -124,13 +303,13 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->GetMipmapLevels() == levels)
 		{
-			if (!prefer_new_texture || t->last_frame_used != m_frame)
+			if (!prefer_new_texture || t->GetLastFrameUsed() != m_frame)
 			{
 				m_pool_memory_usage -= t->GetMemUsage();
-				m_pool.erase(i);
+				pool.erase(i);
 				break;
 			}
-			else if (fallback == m_pool.end())
+			else if (fallback == pool.end())
 			{
 				fallback = i;
 			}
@@ -141,21 +320,28 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 	if (!t)
 	{
-		if (m_pool.size() >= MAX_POOLED_TEXTURES && fallback != m_pool.end())
+		if (pool.size() >= ((type == GSTexture::Type::Texture) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS) &&
+			fallback != pool.end())
 		{
 			t = *fallback;
 			m_pool_memory_usage -= t->GetMemUsage();
-			m_pool.erase(fallback);
+			pool.erase(fallback);
 		}
 		else
 		{
 			t = CreateSurface(type, width, height, levels, format);
 			if (!t)
-				throw std::bad_alloc();
+			{
+				Console.Error("GS: Memory allocation failure for %dx%d texture. Purging pool and retrying.", width, height);
+				PurgePool();
+				if (!t)
+				{
+					Console.Error("GS: Memory allocation failure for %dx%d texture after purging pool.", width, height);
+					return nullptr;
+				}
+			}
 		}
 	}
-
-	t->SetScale(GSVector2(1, 1)); // Things seem to assume that all textures come out of here with scale 1...
 
 	switch (type)
 	{
@@ -170,7 +356,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	case GSTexture::Type::DepthStencil:
 		{
 			if (clear)
-				ClearDepth(t);
+				ClearDepth(t, 0.0f);
 			else
 				InvalidateRenderTarget(t);
 		}
@@ -182,55 +368,72 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	return t;
 }
 
-std::unique_ptr<GSDownloadTexture> GSDevice::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
-{
-	return {};
-}
-
 void GSDevice::Recycle(GSTexture* t)
 {
 	if (!t)
 		return;
 
-	t->last_frame_used = m_frame;
+	t->SetLastFrameUsed(m_frame);
 
-	m_pool.push_front(t);
+	FastList<GSTexture*>& pool = m_pool[!t->IsTexture()];
+	pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
 
-	//printf("%d\n",m_pool.size());
-
-	while (m_pool.size() > MAX_POOLED_TEXTURES)
+	const u32 max_size = t->IsTexture() ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
+	const u32 max_age = t->IsTexture() ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+	while (pool.size() > max_size)
 	{
-		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
-		delete m_pool.back();
+		// Don't toss when the texture was last used in this frame.
+		// Because we're going to need to keep it alive anyway.
+		GSTexture* back = pool.back();
+		if ((m_frame - back->GetLastFrameUsed()) < max_age)
+			break;
 
-		m_pool.pop_back();
+		m_pool_memory_usage -= back->GetMemUsage();
+		delete back;
+
+		pool.pop_back();
 	}
+}
+
+bool GSDevice::UsesLowerLeftOrigin() const
+{
+	const RenderAPI api = GetRenderAPI();
+	return (api == RenderAPI::OpenGL);
 }
 
 void GSDevice::AgePool()
 {
 	m_frame++;
 
-	while (m_pool.size() > 40 && m_frame - m_pool.back()->last_frame_used > 10)
+	// Toss out textures when they're not too-recently used.
+	for (u32 pool_idx = 0; pool_idx < m_pool.size(); pool_idx++)
 	{
-		m_pool_memory_usage -= m_pool.back()->GetMemUsage();
-		delete m_pool.back();
+		const u32 max_age = (pool_idx == 0) ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+		FastList<GSTexture*>& pool = m_pool[pool_idx];
+		while (!pool.empty())
+		{
+			GSTexture* back = pool.back();
+			if ((m_frame - back->GetLastFrameUsed()) < max_age)
+				break;
 
-		m_pool.pop_back();
+			m_pool_memory_usage -= back->GetMemUsage();
+			delete back;
+
+			pool.pop_back();
+		}
 	}
 }
 
 void GSDevice::PurgePool()
 {
-	for (auto t : m_pool)
-		delete t;
-	m_pool.clear();
+	for (FastList<GSTexture*>& pool : m_pool)
+	{
+		for (GSTexture* t : pool)
+			delete t;
+		pool.clear();
+	}
 	m_pool_memory_usage = 0;
-}
-
-void GSDevice::ClearSamplerCache()
-{
 }
 
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
@@ -249,17 +452,36 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
 }
 
-GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
-{
-	if (type == GSTexture::Type::DepthStencil)
-		return GSTexture::Format::DepthStencil;
-	else
-		return GSTexture::Format::Color;
-}
-
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
+}
+
+void GSDevice::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+{
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const MultiStretchRect& sr = rects[i];
+		pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+		if (rects[0].wmask.wrgba != 0xf)
+		{
+			g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect, rects[0].wmask.wr,
+				rects[0].wmask.wg, rects[0].wmask.wb, rects[0].wmask.wa);
+		}
+		else
+		{
+			g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect, shader, sr.linear);
+		}
+	}
+}
+
+void GSDevice::SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects)
+{
+	// Depending on num_rects, insertion sort may be better here.
+	std::sort(rects, rects + num_rects, [](const MultiStretchRect& lhs, const MultiStretchRect& rhs) {
+		return lhs.src < rhs.src || lhs.linear < rhs.linear;
+	});
 }
 
 void GSDevice::ClearCurrent()
@@ -281,38 +503,10 @@ void GSDevice::ClearCurrent()
 	m_cas = nullptr;
 }
 
-void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
+void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
 {
-	// KH:COM crashes at startup when booting *through the bios* due to m_merge being NULL.
-	// (texture appears to be non-null, and is being re-created at a size around like 1700x340,
-	// dunno if that's relevant) -- air
-
-	if (ResizeTarget(&m_merge, fs.x, fs.y))
-	{
-		GSTexture* tex[3] = {NULL, NULL, NULL};
-
-		for (size_t i = 0; i < std::size(tex); i++)
-		{
-			if (sTex[i] != NULL)
-			{
-				tex[i] = sTex[i];
-			}
-		}
-
-		DoMerge(tex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
-
-		for (size_t i = 0; i < std::size(tex); i++)
-		{
-			if (tex[i] != sTex[i])
-			{
-				Recycle(tex[i]);
-			}
-		}
-	}
-	else
-	{
-		printf("GS: m_merge is NULL!\n");
-	}
+	if (ResizeRenderTarget(&m_merge, fs.x, fs.y, false, false))
+		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
 
 	m_current = m_merge;
 }
@@ -323,24 +517,49 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	float offset = yoffset * static_cast<float>(field);
 	offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
 
+	auto do_interlace = [this](GSTexture* sTex, GSTexture* dTex, ShaderInterlace shader, bool linear, float yoffset, int bufIdx) {
+		const GSVector2i ds_i = dTex->GetSize();
+		const GSVector2 ds = GSVector2(static_cast<float>(ds_i.x), static_cast<float>(ds_i.y));
+
+		GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+		GSVector4 dRect = GSVector4(0.0f, yoffset, ds.x, ds.y + yoffset);
+
+		// Select the top or bottom half for MAD buffering.
+		if (shader == ShaderInterlace::MAD_BUFFER)
+		{
+			const float half_size = ds.y * 0.5f;
+			if ((bufIdx >> 1) == 1)
+				dRect.y += half_size;
+			else
+				dRect.w -= half_size;
+		}
+
+		const InterlaceConstantBuffer cb = {
+			GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY)
+		};
+
+		GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", ds_i.x, ds_i.y, static_cast<int>(shader), linear);
+		DoInterlace(sTex, sRect, dTex, dRect, shader, linear, cb);
+	};
+
 	switch (mode)
 	{
 		case 0: // Weave
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_merge, m_weavebob, 0, false, offset, field);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
 			m_current = m_weavebob;
 			break;
 		case 1: // Bob
 			// Field is reversed here as we are countering the bounce.
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_merge, m_weavebob, 1, true, yoffset * (1 - field), 0);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, true, yoffset * (1 - field), 0);
 			m_current = m_weavebob;
 			break;
 		case 2: // Blend
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_merge, m_weavebob, 0, false, offset, field);
-			ResizeTarget(&m_blend, ds.x, ds.y);
-			DoInterlace(m_weavebob, m_blend, 2, false, 0, 0);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
+			ResizeRenderTarget(&m_blend, ds.x, ds.y, true, false);
+			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, false, 0, 0);
 			m_current = m_blend;
 			break;
 		case 3: // FastMAD Motion Adaptive Deinterlacing
@@ -348,10 +567,10 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			bufIdx &= ~1;
 			bufIdx |= field;
 			bufIdx &= 3;
-			ResizeTarget(&m_mad, ds.x, ds.y * 2.0f);
-			DoInterlace(m_merge, m_mad, 3, false, offset, bufIdx);
-			ResizeTarget(&m_weavebob, ds.x, ds.y);
-			DoInterlace(m_mad, m_weavebob, 4, false, 0, bufIdx);
+			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false);
+			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx);
+			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
+			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx);
 			m_current = m_weavebob;
 			break;
 		default:
@@ -364,9 +583,8 @@ void GSDevice::FXAA()
 {
 	// Combining FXAA+ShadeBoost can't share the same target.
 	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
-	if (ResizeTexture(&dTex, GSTexture::Type::RenderTarget, m_current->GetWidth(), m_current->GetHeight(), false, true))
+	if (ResizeRenderTarget(&dTex, m_current->GetWidth(), m_current->GetHeight(), false, false))
 	{
-		InvalidateRenderTarget(dTex);
 		DoFXAA(m_current, dTex);
 		m_current = dTex;
 	}
@@ -374,10 +592,8 @@ void GSDevice::FXAA()
 
 void GSDevice::ShadeBoost()
 {
-	if (ResizeTexture(&m_target_tmp, GSTexture::Type::RenderTarget, m_current->GetWidth(), m_current->GetHeight(), false, true))
+	if (ResizeRenderTarget(&m_target_tmp, m_current->GetWidth(), m_current->GetHeight(), false, false))
 	{
-		InvalidateRenderTarget(m_target_tmp);
-
 		// predivide to avoid the divide (multiply) in the shader
 		const float params[4] = {
 			static_cast<float>(GSConfig.ShadeBoost_Brightness) * (1.0f / 50.0f),
@@ -402,7 +618,7 @@ void GSDevice::Resize(int width, int height)
 		s = m_current->GetSize() * GSVector2i(++multiplier);
 	}
 
-	if (ResizeTexture(&dTex, GSTexture::Type::RenderTarget, s.x, s.y, false))
+	if (ResizeRenderTarget(&dTex, s.x, s.y, false, false))
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
@@ -411,44 +627,45 @@ void GSDevice::Resize(int width, int height)
 	}
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear, bool prefer_reuse)
+bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle)
 {
-	if (t == NULL)
+	pxAssert(t);
+
+	GSTexture* orig_tex = *t;
+	if (orig_tex && orig_tex->GetWidth() == w && orig_tex->GetHeight() == h)
 	{
-		ASSERT(0);
+		if (!preserve_contents)
+			InvalidateRenderTarget(orig_tex);
+
+		return true;
+	}
+
+	const GSTexture::Format fmt = orig_tex ? orig_tex->GetFormat() : GSTexture::Format::Color;
+	const bool really_preserve_contents = (preserve_contents && orig_tex);
+	GSTexture* new_tex = FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, fmt, !really_preserve_contents, true);
+	if (!new_tex)
+	{
+		Console.WriteLn("%dx%d texture allocation failed in ResizeTexture()", w, h);
 		return false;
 	}
 
-	GSTexture* t2 = *t;
-
-	if (t2 == NULL || t2->GetWidth() != w || t2->GetHeight() != h)
+	if (really_preserve_contents)
 	{
-		const GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
-		const int levels = t2 ? (t2->IsMipmap() ? MipmapLevelsForSize(w, h) : 1) : 1;
-		delete t2;
-
-		t2 = FetchSurface(type, w, h, levels, fmt, clear, prefer_reuse);
-
-		*t = t2;
+		constexpr GSVector4 sRect = GSVector4::cxpr(0, 0, 1, 1);
+		const GSVector4 dRect = GSVector4(orig_tex->GetRect());
+		StretchRect(orig_tex, sRect, new_tex, dRect, ShaderConvert::COPY, true);
 	}
 
-	return t2 != NULL;
-}
+	if (orig_tex)
+	{
+		if (recycle)
+			Recycle(orig_tex);
+		else
+			delete orig_tex;
+	}
 
-bool GSDevice::ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse)
-{
-	return ResizeTexture(t, GSTexture::Type::Texture, w, h, false, prefer_reuse);
-}
-
-bool GSDevice::ResizeTarget(GSTexture** t, int w, int h)
-{
-	return ResizeTexture(t, GSTexture::Type::RenderTarget, w, h);
-}
-
-bool GSDevice::ResizeTarget(GSTexture** t)
-{
-	GSVector2i s = m_current->GetSize();
-	return ResizeTexture(t, GSTexture::Type::RenderTarget, s.x, s.y);
+	*t = new_tex;
+	return true;
 }
 
 void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
@@ -500,8 +717,8 @@ void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
 
 bool GSDevice::GetCASShaderSource(std::string* source)
 {
-	std::optional<std::string> ffx_a_source(Host::ReadResourceFileToString("shaders/common/ffx_a.h"));
-	std::optional<std::string> ffx_cas_source(Host::ReadResourceFileToString("shaders/common/ffx_cas.h"));
+	std::optional<std::string> ffx_a_source = ReadShaderSource("shaders/common/ffx_a.h");
+	std::optional<std::string> ffx_cas_source = ReadShaderSource("shaders/common/ffx_cas.h");
 	if (!ffx_a_source.has_value() || !ffx_cas_source.has_value())
 		return false;
 
@@ -573,85 +790,85 @@ const std::array<u8, 16> GSDevice::m_replaceDualSrcBlendMap =
 
 const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 {{
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0000: (Cs - Cs)*As + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0001: (Cs - Cs)*As + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0002: (Cs - Cs)*As +  0 ==> 0
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0012: (Cs - Cs)*Ad +  0 ==> 0
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0020: (Cs - Cs)*F  + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0021: (Cs - Cs)*F  + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0022: (Cs - Cs)*F  +  0 ==> 0
-	{ BLEND_A_MAX | BLEND_MIX2   , OP_SUBTRACT     , CONST_ONE       , SRC1_ALPHA}      , //*0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
-	{ BLEND_MIX1                 , OP_ADD          , SRC1_ALPHA      , INV_SRC1_ALPHA}  , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
-	{ BLEND_MIX1                 , OP_SUBTRACT     , SRC1_ALPHA      , SRC1_ALPHA}      , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
-	{ BLEND_A_MAX                , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , //*0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
-	{ 0                          , OP_ADD          , DST_ALPHA       , INV_DST_ALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
-	{ 0                          , OP_SUBTRACT     , DST_ALPHA       , DST_ALPHA}       , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
-	{ BLEND_A_MAX | BLEND_MIX2   , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , //*0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
-	{ BLEND_MIX1                 , OP_ADD          , CONST_COLOR     , INV_CONST_COLOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
-	{ BLEND_MIX1                 , OP_SUBTRACT     , CONST_COLOR     , CONST_COLOR}     , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
-	{ BLEND_NO_REC | BLEND_A_MAX , OP_ADD          , CONST_ONE       , CONST_ZERO}      , //*0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
-	{ BLEND_ACCU                 , OP_ADD          , SRC1_ALPHA      , CONST_ONE}       , //?0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
-	{ BLEND_NO_REC               , OP_ADD          , SRC1_ALPHA      , CONST_ZERO}      , // 0202: (Cs -  0)*As +  0 ==> Cs*As
-	{ BLEND_A_MAX                , OP_ADD          , CONST_ONE       , CONST_ZERO}      , //*0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
-	{ BLEND_C_CLR3               , OP_ADD          , DST_ALPHA       , CONST_ONE}       , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
-	{ BLEND_C_CLR3               , OP_ADD          , DST_ALPHA       , CONST_ZERO}      , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
-	{ BLEND_NO_REC | BLEND_A_MAX , OP_ADD          , CONST_ONE       , CONST_ZERO}      , //*0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
-	{ BLEND_ACCU                 , OP_ADD          , CONST_COLOR     , CONST_ONE}       , //?0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_COLOR     , CONST_ZERO}      , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
-	{ BLEND_MIX3                 , OP_ADD          , INV_SRC1_ALPHA  , SRC1_ALPHA}      , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
-	{ BLEND_A_MAX | BLEND_MIX1   , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , //*1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
-	{ BLEND_MIX1                 , OP_REV_SUBTRACT , SRC1_ALPHA      , SRC1_ALPHA}      , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
-	{ 0                          , OP_ADD          , INV_DST_ALPHA   , DST_ALPHA}       , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
-	{ BLEND_A_MAX                , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , //*1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
-	{ 0                          , OP_REV_SUBTRACT , DST_ALPHA       , DST_ALPHA}       , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
-	{ BLEND_MIX3                 , OP_ADD          , INV_CONST_COLOR , CONST_COLOR}     , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
-	{ BLEND_A_MAX | BLEND_MIX1   , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , //*1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
-	{ BLEND_MIX1                 , OP_REV_SUBTRACT , CONST_COLOR     , CONST_COLOR}     , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1100: (Cd - Cd)*As + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1101: (Cd - Cd)*As + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1102: (Cd - Cd)*As +  0 ==> 0
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1112: (Cd - Cd)*Ad +  0 ==> 0
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1120: (Cd - Cd)*F  + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1121: (Cd - Cd)*F  + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1122: (Cd - Cd)*F  +  0 ==> 0
-	{ 0                          , OP_ADD          , CONST_ONE       , SRC1_ALPHA}      , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
-	{ BLEND_C_CLR1               , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , //#1201: (Cd -  0)*As + Cd ==> Cd*(1 + As)
-	{ BLEND_C_CLR2_AS            , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , // 1202: (Cd -  0)*As +  0 ==> Cd*As
-	{ 0                          , OP_ADD          , CONST_ONE       , DST_ALPHA}       , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
-	{ BLEND_C_CLR1               , OP_ADD          , DST_COLOR       , DST_ALPHA}       , //#1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
-	{ 0                          , OP_ADD          , CONST_ZERO      , DST_ALPHA}       , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
-	{ 0                          , OP_ADD          , CONST_ONE       , CONST_COLOR}     , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
-	{ BLEND_C_CLR1               , OP_ADD          , DST_COLOR       , CONST_COLOR}     , //#1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
-	{ BLEND_C_CLR2_AF            , OP_ADD          , DST_COLOR       , CONST_COLOR}     , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
-	{ BLEND_NO_REC               , OP_ADD          , INV_SRC1_ALPHA  , CONST_ZERO}      , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
-	{ BLEND_ACCU                 , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , //?2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
-	{ BLEND_NO_REC               , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ZERO}      , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
-	{ 0                          , OP_ADD          , INV_DST_ALPHA	 , CONST_ZERO}      , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
-	{ BLEND_C_CLR3               , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
-	{ 0                          , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ZERO}      , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
-	{ BLEND_NO_REC               , OP_ADD          , INV_CONST_COLOR , CONST_ZERO}      , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
-	{ BLEND_ACCU                 , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , //?2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
-	{ BLEND_NO_REC               , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ZERO}      , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
-	{ 0                          , OP_SUBTRACT     , CONST_ONE       , SRC1_ALPHA}      , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
-	{ 0                          , OP_ADD          , CONST_ZERO      , INV_SRC1_ALPHA}  , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
-	{ 0                          , OP_SUBTRACT     , CONST_ZERO      , SRC1_ALPHA}      , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
-	{ 0                          , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
-	{ 0                          , OP_ADD          , CONST_ZERO      , INV_DST_ALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
-	{ 0                          , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
-	{ 0                          , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
-	{ 0                          , OP_ADD          , CONST_ZERO      , INV_CONST_COLOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
-	{ 0                          , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2200: (0  -  0)*As + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2201: (0  -  0)*As + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2202: (0  -  0)*As +  0 ==> 0
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2210: (0  -  0)*Ad + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2211: (0  -  0)*Ad + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2212: (0  -  0)*Ad +  0 ==> 0
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2220: (0  -  0)*F  + Cs ==> Cs
-	{ BLEND_CD                   , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2221: (0  -  0)*F  + Cd ==> Cd
-	{ BLEND_NO_REC               , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2222: (0  -  0)*F  +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0000: (Cs - Cs)*As + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0001: (Cs - Cs)*As + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0002: (Cs - Cs)*As +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0010: (Cs - Cs)*Ad + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0011: (Cs - Cs)*Ad + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0012: (Cs - Cs)*Ad +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0020: (Cs - Cs)*F  + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 0021: (Cs - Cs)*F  + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 0022: (Cs - Cs)*F  +  0 ==> 0
+	{ BLEND_A_MAX | BLEND_MIX2 , OP_SUBTRACT     , CONST_ONE       , SRC1_ALPHA}      , // 0100: (Cs - Cd)*As + Cs ==> Cs*(As + 1) - Cd*As
+	{ BLEND_MIX1               , OP_ADD          , SRC1_ALPHA      , INV_SRC1_ALPHA}  , // 0101: (Cs - Cd)*As + Cd ==> Cs*As + Cd*(1 - As)
+	{ BLEND_MIX1               , OP_SUBTRACT     , SRC1_ALPHA      , SRC1_ALPHA}      , // 0102: (Cs - Cd)*As +  0 ==> Cs*As - Cd*As
+	{ BLEND_A_MAX              , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 0110: (Cs - Cd)*Ad + Cs ==> Cs*(Ad + 1) - Cd*Ad
+	{ 0                        , OP_ADD          , DST_ALPHA       , INV_DST_ALPHA}   , // 0111: (Cs - Cd)*Ad + Cd ==> Cs*Ad + Cd*(1 - Ad)
+	{ 0                        , OP_SUBTRACT     , DST_ALPHA       , DST_ALPHA}       , // 0112: (Cs - Cd)*Ad +  0 ==> Cs*Ad - Cd*Ad
+	{ BLEND_A_MAX | BLEND_MIX2 , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 0120: (Cs - Cd)*F  + Cs ==> Cs*(F + 1) - Cd*F
+	{ BLEND_MIX1               , OP_ADD          , CONST_COLOR     , INV_CONST_COLOR} , // 0121: (Cs - Cd)*F  + Cd ==> Cs*F + Cd*(1 - F)
+	{ BLEND_MIX1               , OP_SUBTRACT     , CONST_COLOR     , CONST_COLOR}     , // 0122: (Cs - Cd)*F  +  0 ==> Cs*F - Cd*F
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0200: (Cs -  0)*As + Cs ==> Cs*(As + 1)
+	{ BLEND_ACCU               , OP_ADD          , SRC1_ALPHA      , CONST_ONE}       , // 0201: (Cs -  0)*As + Cd ==> Cs*As + Cd
+	{ BLEND_NO_REC             , OP_ADD          , SRC1_ALPHA      , CONST_ZERO}      , // 0202: (Cs -  0)*As +  0 ==> Cs*As
+	{ BLEND_A_MAX              , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0210: (Cs -  0)*Ad + Cs ==> Cs*(Ad + 1)
+	{ BLEND_HW_CLR3            , OP_ADD          , DST_ALPHA       , CONST_ONE}       , // 0211: (Cs -  0)*Ad + Cd ==> Cs*Ad + Cd
+	{ BLEND_HW_CLR3            , OP_ADD          , DST_ALPHA       , CONST_ZERO}      , // 0212: (Cs -  0)*Ad +  0 ==> Cs*Ad
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0220: (Cs -  0)*F  + Cs ==> Cs*(F + 1)
+	{ BLEND_ACCU               , OP_ADD          , CONST_COLOR     , CONST_ONE}       , // 0221: (Cs -  0)*F  + Cd ==> Cs*F + Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_COLOR     , CONST_ZERO}      , // 0222: (Cs -  0)*F  +  0 ==> Cs*F
+	{ BLEND_MIX3               , OP_ADD          , INV_SRC1_ALPHA  , SRC1_ALPHA}      , // 1000: (Cd - Cs)*As + Cs ==> Cd*As + Cs*(1 - As)
+	{ BLEND_A_MAX | BLEND_MIX1 , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , // 1001: (Cd - Cs)*As + Cd ==> Cd*(As + 1) - Cs*As
+	{ BLEND_MIX1               , OP_REV_SUBTRACT , SRC1_ALPHA      , SRC1_ALPHA}      , // 1002: (Cd - Cs)*As +  0 ==> Cd*As - Cs*As
+	{ 0                        , OP_ADD          , INV_DST_ALPHA   , DST_ALPHA}       , // 1010: (Cd - Cs)*Ad + Cs ==> Cd*Ad + Cs*(1 - Ad)
+	{ BLEND_A_MAX              , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , // 1011: (Cd - Cs)*Ad + Cd ==> Cd*(Ad + 1) - Cs*Ad
+	{ 0                        , OP_REV_SUBTRACT , DST_ALPHA       , DST_ALPHA}       , // 1012: (Cd - Cs)*Ad +  0 ==> Cd*Ad - Cs*Ad
+	{ BLEND_MIX3               , OP_ADD          , INV_CONST_COLOR , CONST_COLOR}     , // 1020: (Cd - Cs)*F  + Cs ==> Cd*F + Cs*(1 - F)
+	{ BLEND_A_MAX | BLEND_MIX1 , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , // 1021: (Cd - Cs)*F  + Cd ==> Cd*(F + 1) - Cs*F
+	{ BLEND_MIX1               , OP_REV_SUBTRACT , CONST_COLOR     , CONST_COLOR}     , // 1022: (Cd - Cs)*F  +  0 ==> Cd*F - Cs*F
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1100: (Cd - Cd)*As + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1101: (Cd - Cd)*As + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1102: (Cd - Cd)*As +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1110: (Cd - Cd)*Ad + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1111: (Cd - Cd)*Ad + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1112: (Cd - Cd)*Ad +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 1120: (Cd - Cd)*F  + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 1121: (Cd - Cd)*F  + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 1122: (Cd - Cd)*F  +  0 ==> 0
+	{ 0                        , OP_ADD          , CONST_ONE       , SRC1_ALPHA}      , // 1200: (Cd -  0)*As + Cs ==> Cs + Cd*As
+	{ BLEND_HW_CLR1            , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , // 1201: (Cd -  0)*As + Cd ==> Cd*(1 + As)
+	{ BLEND_HW_CLR2            , OP_ADD          , DST_COLOR       , SRC1_ALPHA}      , // 1202: (Cd -  0)*As +  0 ==> Cd*As
+	{ 0                        , OP_ADD          , CONST_ONE       , DST_ALPHA}       , // 1210: (Cd -  0)*Ad + Cs ==> Cs + Cd*Ad
+	{ BLEND_HW_CLR1            , OP_ADD          , DST_COLOR       , DST_ALPHA}       , // 1211: (Cd -  0)*Ad + Cd ==> Cd*(1 + Ad)
+	{ 0                        , OP_ADD          , CONST_ZERO      , DST_ALPHA}       , // 1212: (Cd -  0)*Ad +  0 ==> Cd*Ad
+	{ 0                        , OP_ADD          , CONST_ONE       , CONST_COLOR}     , // 1220: (Cd -  0)*F  + Cs ==> Cs + Cd*F
+	{ BLEND_HW_CLR1            , OP_ADD          , DST_COLOR       , CONST_COLOR}     , // 1221: (Cd -  0)*F  + Cd ==> Cd*(1 + F)
+	{ BLEND_HW_CLR2            , OP_ADD          , DST_COLOR       , CONST_COLOR}     , // 1222: (Cd -  0)*F  +  0 ==> Cd*F
+	{ BLEND_NO_REC             , OP_ADD          , INV_SRC1_ALPHA  , CONST_ZERO}      , // 2000: (0  - Cs)*As + Cs ==> Cs*(1 - As)
+	{ BLEND_ACCU               , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ONE}       , // 2001: (0  - Cs)*As + Cd ==> Cd - Cs*As
+	{ BLEND_NO_REC             , OP_REV_SUBTRACT , SRC1_ALPHA      , CONST_ZERO}      , // 2002: (0  - Cs)*As +  0 ==> 0 - Cs*As
+	{ 0                        , OP_ADD          , INV_DST_ALPHA   , CONST_ZERO}      , // 2010: (0  - Cs)*Ad + Cs ==> Cs*(1 - Ad)
+	{ BLEND_HW_CLR3            , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ONE}       , // 2011: (0  - Cs)*Ad + Cd ==> Cd - Cs*Ad
+	{ 0                        , OP_REV_SUBTRACT , DST_ALPHA       , CONST_ZERO}      , // 2012: (0  - Cs)*Ad +  0 ==> 0 - Cs*Ad
+	{ BLEND_NO_REC             , OP_ADD          , INV_CONST_COLOR , CONST_ZERO}      , // 2020: (0  - Cs)*F  + Cs ==> Cs*(1 - F)
+	{ BLEND_ACCU               , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ONE}       , // 2021: (0  - Cs)*F  + Cd ==> Cd - Cs*F
+	{ BLEND_NO_REC             , OP_REV_SUBTRACT , CONST_COLOR     , CONST_ZERO}      , // 2022: (0  - Cs)*F  +  0 ==> 0 - Cs*F
+	{ 0                        , OP_SUBTRACT     , CONST_ONE       , SRC1_ALPHA}      , // 2100: (0  - Cd)*As + Cs ==> Cs - Cd*As
+	{ 0                        , OP_ADD          , CONST_ZERO      , INV_SRC1_ALPHA}  , // 2101: (0  - Cd)*As + Cd ==> Cd*(1 - As)
+	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , SRC1_ALPHA}      , // 2102: (0  - Cd)*As +  0 ==> 0 - Cd*As
+	{ 0                        , OP_SUBTRACT     , CONST_ONE       , DST_ALPHA}       , // 2110: (0  - Cd)*Ad + Cs ==> Cs - Cd*Ad
+	{ 0                        , OP_ADD          , CONST_ZERO      , INV_DST_ALPHA}   , // 2111: (0  - Cd)*Ad + Cd ==> Cd*(1 - Ad)
+	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , DST_ALPHA}       , // 2112: (0  - Cd)*Ad +  0 ==> 0 - Cd*Ad
+	{ 0                        , OP_SUBTRACT     , CONST_ONE       , CONST_COLOR}     , // 2120: (0  - Cd)*F  + Cs ==> Cs - Cd*F
+	{ 0                        , OP_ADD          , CONST_ZERO      , INV_CONST_COLOR} , // 2121: (0  - Cd)*F  + Cd ==> Cd*(1 - F)
+	{ 0                        , OP_SUBTRACT     , CONST_ZERO      , CONST_COLOR}     , // 2122: (0  - Cd)*F  +  0 ==> 0 - Cd*F
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2200: (0  -  0)*As + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2201: (0  -  0)*As + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2202: (0  -  0)*As +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2210: (0  -  0)*Ad + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2211: (0  -  0)*Ad + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2212: (0  -  0)*Ad +  0 ==> 0
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 2220: (0  -  0)*F  + Cs ==> Cs
+	{ BLEND_CD                 , OP_ADD          , CONST_ZERO      , CONST_ONE}       , // 2221: (0  -  0)*F  + Cd ==> Cd
+	{ BLEND_NO_REC             , OP_ADD          , CONST_ZERO      , CONST_ZERO}      , // 2222: (0  -  0)*F  +  0 ==> 0
 }};

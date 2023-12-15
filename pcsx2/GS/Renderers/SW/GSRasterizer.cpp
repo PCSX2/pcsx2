@@ -21,6 +21,7 @@
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
 #include "common/AlignedMalloc.h"
+#include "common/General.h"
 #include "common/StringUtil.h"
 #include "VMManager.h"
 
@@ -55,10 +56,10 @@ GSRasterizer::GSRasterizer(GSDrawScanline* ds, int id, int threads)
 
 	m_thread_height = compute_best_thread_height(threads);
 
-	m_edge.buff = static_cast<GSVertexSW*>(_aligned_malloc(sizeof(GSVertexSW) * 2048, 32));
+	m_edge.buff = static_cast<GSVertexSW*>(_aligned_malloc(sizeof(GSVertexSW) * 2048, VECTOR_ALIGNMENT));
 	m_edge.count = 0;
 	if (!m_edge.buff)
-		throw std::bad_alloc();
+		pxFailRel("failed to allocate storage for m_edge.buff");
 
 	int rows = (2048 >> m_thread_height) + 16;
 	m_scanline = (u8*)_aligned_malloc(rows, 64);
@@ -144,7 +145,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 	m_primcount = 0;
 
 	if constexpr (ENABLE_DRAW_STATS)
-		data.start = __rdtsc();
+		data.start = GetCPUTicks();
 
 	m_setup_prim = data.setup_prim;
 	m_draw_scanline = data.draw_scanline;
@@ -154,10 +155,10 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 	const GSVertexSW* vertex = data.vertex;
 	const GSVertexSW* vertex_end = data.vertex + data.vertex_count;
 
-	const u32* index = data.index;
-	const u32* index_end = data.index + data.index_count;
+	const u16* index = data.index;
+	const u16* index_end = data.index + data.index_count;
 
-	u32 tmp_index[] = {0, 1, 2};
+	static constexpr u16 tmp_index[] = {0, 1, 2};
 
 	bool scissor_test = !data.bbox.eq(data.bbox.rintersect(data.scissor));
 
@@ -257,11 +258,11 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 	m_pixels.sum += m_pixels.actual;
 
 	if constexpr (ENABLE_DRAW_STATS)
-		m_ds->UpdateDrawStats(data.frame, __rdtsc() - data.start, m_pixels.actual, m_pixels.total, m_primcount);
+		m_ds->UpdateDrawStats(data.frame, GetCPUTicks() - data.start, m_pixels.actual, m_pixels.total, m_primcount);
 }
 
 template <bool scissor_test>
-void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u32* index, int index_count)
+void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u16* index, int index_count)
 {
 	m_primcount++;
 
@@ -286,7 +287,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 	}
 	else
 	{
-		u32 tmp_index[1] = {0};
+		static constexpr u16 tmp_index[1] = {0};
 
 		for (int i = 0; i < vertex_count; i++, vertex++)
 		{
@@ -307,7 +308,7 @@ void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const u
 	}
 }
 
-void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawLine(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -425,7 +426,7 @@ static const u8 s_ysort[8][4] =
 
 #if _M_SSE >= 0x501
 
-void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -606,7 +607,7 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRIC
 
 #else
 
-void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -784,7 +785,7 @@ void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT
 
 #endif
 
-void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u32* index)
+void GSRasterizer::DrawSprite(const GSVertexSW* vertex, const u16* index)
 {
 	m_primcount++;
 
@@ -1082,7 +1083,7 @@ void GSRasterizer::AddScanline(GSVertexSW* e, int pixels, int left, int top, con
 	AddScanlineInfo(e, pixels, left, top);
 }
 
-void GSRasterizer::Flush(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, bool edge /* = false */)
+void GSRasterizer::Flush(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, bool edge /* = false */)
 {
 	// TODO: on win64 this could be the place where xmm6-15 are preserved (not by each DrawScanline)
 
@@ -1192,7 +1193,9 @@ int GSSingleRasterizer::GetPixels(bool reset /*= true*/)
 
 void GSSingleRasterizer::PrintStats()
 {
+#ifdef ENABLE_DRAW_STATS
 	m_ds.PrintStats();
+#endif
 }
 
 //

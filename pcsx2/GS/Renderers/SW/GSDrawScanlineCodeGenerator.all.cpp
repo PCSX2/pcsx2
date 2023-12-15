@@ -17,6 +17,7 @@
 #include "GSDrawScanlineCodeGenerator.all.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GSVertexSW.h"
+#include "common/Perf.h"
 
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
@@ -590,6 +591,8 @@ L("exit");
 	if (isYmm)
 		vzeroupper();
 	ret();
+
+	Perf::any.RegisterKey(actual.getCode(), actual.getSize(), "GSDrawScanline_", m_sel.key);
 }
 
 /// Inputs: a0=pixels, a1=left, a2[x64]=top, a3[x64]=v
@@ -600,7 +603,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 		// int skip = left & 3;
 
 		mov(ebx, a1.cvt32());
-		and(a1.cvt32(), vecints - 1);
+		and_(a1.cvt32(), vecints - 1);
 
 		// left -= skip;
 
@@ -614,7 +617,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 
 		mov(eax, a0.cvt32());
 		sar(eax, 31); // GH: 31 to extract the sign of the register
-		and(eax, a0.cvt32());
+		and_(eax, a0.cvt32());
 		if (isXmm)
 			shl(eax, 4); // * sizeof(m_test[0])
 		cdqe();
@@ -638,7 +641,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 	else
 	{
 		mov(ebx, a1.cvt32()); // left
-		xor(a1.cvt32(), a1.cvt32()); // skip
+		xor_(a1.cvt32(), a1.cvt32()); // skip
 		lea(a0.cvt32(), ptr[a0 - vecints]); // steps
 	}
 
@@ -1003,7 +1006,7 @@ void GSDrawScanlineCodeGenerator2::Step()
 
 		mov(eax, a0.cvt32());
 		sar(eax, 31); // GH: 31 to extract the sign of the register
-		and(eax, a0.cvt32());
+		and_(eax, a0.cvt32());
 		if (isXmm)
 			shl(eax, 4);
 		cdqe();
@@ -1032,7 +1035,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 
 	mov(t2.cvt32(), dword[t1 + 4]);
 	add(t2.cvt32(), dword[t0 + 4]);
-	and(t2.cvt32(), HALF_VM_SIZE - 1);
+	and_(t2.cvt32(), HALF_VM_SIZE - 1);
 
 	// GSVector4i zs = zi;
 
@@ -2408,7 +2411,7 @@ void GSDrawScanlineCodeGenerator2::ReadFrame()
 
 	mov(ebx, dword[t1]);
 	add(ebx, dword[t0]);
-	and(ebx, HALF_VM_SIZE - 1);
+	and_(ebx, HALF_VM_SIZE - 1);
 
 	if (!m_sel.rfb)
 	{
@@ -2510,7 +2513,7 @@ void GSDrawScanlineCodeGenerator2::WriteMask()
 
 	pmovmskb(edx, xym1);
 
-	not(edx);
+	not_(edx);
 }
 
 /// Inputs: t2=za, edx=fzm, _zm
@@ -2837,7 +2840,7 @@ void GSDrawScanlineCodeGenerator2::WriteFrame()
 		// y = (top & 3) << 5
 
 		mov(eax, ptr[rsp + _top]);
-		and(eax, 3);
+		and_(eax, 3);
 		shl(eax, 5);
 
 		// rb = rb.add16(m_global.dimx[0 + y]);
@@ -3086,9 +3089,9 @@ void GSDrawScanlineCodeGenerator2::WritePixel(const Xmm& src, const AddressReg& 
 				movd(eax, src);
 			else
 				pextrd(eax, src, j);
-			xor(eax, dst);
-			and(eax, 0xffffff);
-			xor(dst, eax);
+			xor_(eax, dst);
+			and_(eax, 0xffffff);
+			xor_(dst, eax);
 			break;
 		case 2:
 			if (j == 0)

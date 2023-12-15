@@ -1,0 +1,885 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\ProjectConfigAVX2.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6C7986C4-3E4D-4DCC-B3C6-6BB12B238995}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset Condition="!$(Configuration.Contains(Clang))">$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset Condition="$(Configuration.Contains(Clang))">ClangCL</PlatformToolset>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)common\vsprops\common.props" />
+    <Import Project="$(SolutionDir)common\vsprops\GenerateSCMVersion.props" />
+    <Import Project="$(SolutionDir)common\vsprops\SDL2Compile.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\fmt\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\wil\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\xz\xz\src\liblzma\api</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zlib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\lz4\lz4\lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libpng</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libchdr\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\cubeb\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\imgui\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\simpleini\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\sdl2\include;$(SolutionDir)3rdparty\sdl2\SDL\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libzip\msvc;$(SolutionDir)3rdparty\libzip\lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zstd\zstd\lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\cpuinfo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rcheevos\rcheevos\include;$(SolutionDir)3rdparty\rainterface</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\soundtouch\soundtouch</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\discord-rpc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\glad\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\glslang\glslang</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\vulkan-headers\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\d3d12memalloc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\xbyak</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\des</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zydis\include;$(SolutionDir)3rdparty\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PreprocessorDefinitions>LZMA_API_STATIC;LZ4LIB_VISIBILITY=;ST_NO_EXCEPTION_HANDLING;ENABLE_RAINTEGRATION;ENABLE_OPENGL;ENABLE_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">XBYAK_NO_EXCEPTION;ZYCORE_STATIC_DEFINE;ZYDIS_STATIC_DEFINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\bin\resources\shaders\opengl\imgui.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\present.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\imgui.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\interlace.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\merge.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\present.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl" />
+    <None Include="..\bin\resources\shaders\vulkan\tfx.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\convert.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\interlace.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\merge.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl" />
+    <None Include="..\bin\resources\shaders\dx11\convert.fx" />
+    <None Include="..\bin\resources\shaders\common\fxaa.fx" />
+    <None Include="..\bin\resources\shaders\dx11\interlace.fx" />
+    <None Include="..\bin\resources\shaders\dx11\merge.fx" />
+    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx" />
+    <None Include="..\bin\resources\shaders\dx11\tfx.fx" />
+    <None Include="..\bin\resources\shaders\dx11\imgui.fx" />
+    <None Include="..\bin\resources\shaders\dx11\present.fx" />
+    <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl" />
+    <None Include="Docs\License.txt" />
+    <None Include="ps2\eeHwTraceLog.inl" />
+    <None Include="x86\microVU_Alloc.inl" />
+    <None Include="x86\microVU_Analyze.inl" />
+    <None Include="x86\microVU_Branch.inl" />
+    <None Include="x86\microVU_Clamp.inl" />
+    <None Include="x86\microVU_Compile.inl" />
+    <None Include="x86\microVU_Execute.inl" />
+    <None Include="x86\microVU_Flags.inl" />
+    <None Include="x86\microVU_Log.inl" />
+    <None Include="x86\microVU_Lower.inl" />
+    <None Include="x86\microVU_Macro.inl" />
+    <None Include="x86\microVU_Misc.inl" />
+    <None Include="x86\microVU_Tables.inl" />
+    <None Include="x86\microVU_Upper.inl" />
+    <!-- Generate Recording GUI Image Headers -->
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Achievements.cpp" />
+    <ClCompile Include="CDVD\BlockdumpFileReader.cpp" />
+    <ClCompile Include="CDVD\CDVDdiscReader.cpp" />
+    <ClCompile Include="CDVD\CDVDdiscThread.cpp" />
+    <ClCompile Include="CDVD\ChdFileReader.cpp" />
+    <ClCompile Include="CDVD\ChunksCache.cpp" />
+    <ClCompile Include="CDVD\CompressedFileReader.cpp" />
+    <ClCompile Include="CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="CDVD\GzippedFileReader.cpp" />
+    <ClCompile Include="CDVD\IsoReader.cpp" />
+    <ClCompile Include="CDVD\IsoHasher.cpp" />
+    <ClCompile Include="CDVD\OutputIsoFile.cpp" />
+    <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
+    <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="CDVD\Linux\IOCtlSrc.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="CDVD\Windows\DriveUtility.cpp" />
+    <ClCompile Include="CDVD\Windows\IOCtlSrc.cpp" />
+    <ClCompile Include="DebugTools\Breakpoints.cpp" />
+    <ClCompile Include="DebugTools\DebugInterface.cpp" />
+    <ClCompile Include="DebugTools\DisassemblyManager.cpp" />
+    <ClCompile Include="DebugTools\BiosDebugData.cpp" />
+    <ClCompile Include="DebugTools\ExpressionParser.cpp" />
+    <ClCompile Include="DebugTools\MIPSAnalyst.cpp" />
+    <ClCompile Include="DebugTools\MipsAssembler.cpp" />
+    <ClCompile Include="DebugTools\MipsAssemblerTables.cpp" />
+    <ClCompile Include="DebugTools\MipsStackWalk.cpp" />
+    <ClCompile Include="DebugTools\SymbolMap.cpp" />
+    <ClCompile Include="DEV9\AdapterUtils.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdDMA.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdExecuteDeviceDiag.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdNoData.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdPIOData.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdSMART.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_SCE.cpp" />
+    <ClCompile Include="DEV9\ATA\ATA_Info.cpp" />
+    <ClCompile Include="DEV9\ATA\ATA_State.cpp" />
+    <ClCompile Include="DEV9\ATA\ATA_Transfer.cpp" />
+    <ClCompile Include="DEV9\ATA\HddCreate.cpp" />
+    <ClCompile Include="DEV9\DEV9.cpp" />
+    <ClCompile Include="DEV9\flash.cpp" />
+    <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp" />
+    <ClCompile Include="DEV9\InternalServers\DNS_Logger.cpp" />
+    <ClCompile Include="DEV9\InternalServers\DNS_Server.cpp" />
+    <ClCompile Include="DEV9\PacketReader\ARP\ARP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\ARP\ARP_PacketEditor.cpp" />
+    <ClCompile Include="DEV9\PacketReader\EthernetFrameEditor.cpp" />
+    <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\TCP\TCP_Options.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\TCP\TCP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Classes.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\UDP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\IP_Options.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\IP_Packet.cpp" />
+    <ClCompile Include="DEV9\pcap_io.cpp" />
+    <ClCompile Include="DEV9\Sessions\ICMP_Session\ICMP_Session.cpp" />
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session.cpp" />
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session_In.cpp" />
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session_Out.cpp" />
+    <ClCompile Include="DEV9\Win32\pcap_io_win32.cpp" />
+    <ClCompile Include="DEV9\Sessions\BaseSession.cpp" />
+    <ClCompile Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.cpp" />
+    <ClCompile Include="DEV9\Sessions\UDP_Session\UDP_Session.cpp" />
+    <ClCompile Include="DEV9\smap.cpp" />
+    <ClCompile Include="DEV9\sockets.cpp" />
+    <ClCompile Include="DEV9\net.cpp" />
+    <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
+    <ClCompile Include="GameList.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\D3D12ShaderCache.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\D3D12StreamBuffer.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLContext.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLContextWGL.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLProgram.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLShaderCache.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\VKBuilders.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\VKLoader.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\VKShaderCache.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\VKStreamBuffer.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\VKSwapChain.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\vk_mem_alloc.cpp" />
+    <ClCompile Include="Hotkeys.cpp" />
+    <ClCompile Include="ImGui\FullscreenUI.cpp" />
+    <ClCompile Include="ImGui\ImGuiFullscreen.cpp" />
+    <ClCompile Include="ImGui\ImGuiManager.cpp" />
+    <ClCompile Include="ImGui\ImGuiOverlays.cpp" />
+    <ClCompile Include="INISettingsInterface.cpp" />
+    <ClCompile Include="GameDatabase.cpp" />
+    <ClCompile Include="Gif_Logger.cpp" />
+    <ClCompile Include="Gif_Unit.cpp" />
+    <ClCompile Include="GSDumpReplayer.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp" />
+    <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp" />
+    <ClCompile Include="Host.cpp" />
+    <ClCompile Include="Input\DInputSource.cpp" />
+    <ClCompile Include="Input\InputManager.cpp" />
+    <ClCompile Include="Input\InputSource.cpp" />
+    <ClCompile Include="Input\SDLInputSource.cpp" />
+    <ClCompile Include="Input\XInputSource.cpp" />
+    <ClCompile Include="IopGte.cpp" />
+    <ClCompile Include="LayeredSettingsInterface.cpp" />
+    <ClCompile Include="LogSink.cpp" />
+    <ClCompile Include="PINE.cpp" />
+    <ClCompile Include="FW.cpp" />
+    <ClCompile Include="PerformanceMetrics.cpp" />
+    <ClCompile Include="Recording\InputRecording.cpp" />
+    <ClCompile Include="Recording\InputRecordingControls.cpp" />
+    <ClCompile Include="Recording\InputRecordingFile.cpp" />
+    <ClCompile Include="Recording\PadData.cpp" />
+    <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardFolder.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp" />
+    <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp" />
+    <ClCompile Include="SIO\Pad\PadBase.cpp" />
+    <ClCompile Include="SIO\Pad\Pad.cpp" />
+    <ClCompile Include="SIO\Pad\PadDualshock2.cpp" />
+    <ClCompile Include="SIO\Pad\PadGuitar.cpp" />
+    <ClCompile Include="SIO\Pad\PadNotConnected.cpp" />
+    <ClCompile Include="SIO\Sio.cpp" />
+    <ClCompile Include="SIO\Sio0.cpp" />
+    <ClCompile Include="SIO\Sio2.cpp" />
+    <ClCompile Include="SPU2\Debug.cpp" />
+    <ClCompile Include="SPU2\Dma.cpp" />
+    <ClCompile Include="SPU2\DplIIdecoder.cpp" />
+    <ClCompile Include="SPU2\SndOut_Cubeb.cpp" />
+    <ClCompile Include="SPU2\SndOut_XAudio2.cpp" />
+    <ClCompile Include="SPU2\wavedump_wav.cpp" />
+    <ClCompile Include="SPU2\SndOut.cpp" />
+    <ClCompile Include="SPU2\RegTable.cpp" />
+    <ClCompile Include="SPU2\spu2freeze.cpp" />
+    <ClCompile Include="SPU2\spu2sys.cpp" />
+    <ClCompile Include="SPU2\ADSR.cpp" />
+    <ClCompile Include="SPU2\Mixer.cpp" />
+    <ClCompile Include="SPU2\ReadInput.cpp" />
+    <ClCompile Include="SPU2\Reverb.cpp" />
+    <ClCompile Include="SPU2\ReverbResample.cpp" />
+    <ClCompile Include="SPU2\spu2.cpp" />
+    <ClCompile Include="IPU\IPUdma.cpp" />
+    <ClCompile Include="IPU\IPUdither.cpp" />
+    <ClCompile Include="Mdec.cpp" />
+    <ClCompile Include="MultipartFileReader.cpp" />
+    <ClCompile Include="Patch.cpp" />
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ps2\Iop\PsxBios.cpp" />
+    <ClCompile Include="ps2\pgif.cpp" />
+    <ClCompile Include="Dmac.cpp" />
+    <ClCompile Include="ShiftJisToUnicode.cpp" />
+    <ClCompile Include="sif2.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp" />
+    <ClCompile Include="GS\GS.cpp" />
+    <ClCompile Include="GS\GSAlignedClass.cpp" />
+    <ClCompile Include="GS\GSBlock.cpp" />
+    <ClCompile Include="GS\GSCapture.cpp" />
+    <ClCompile Include="GS\GSClut.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSDevice.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
+    <ClCompile Include="GS\GSDrawingContext.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSNewCodeGenerator.cpp" />
+    <ClCompile Include="GS\GSDump.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSHwHack.cpp" />
+    <ClCompile Include="GS\GSLocalMemory.cpp" />
+    <ClCompile Include="GS\GSLocalMemoryMultiISA.cpp" />
+    <ClCompile Include="GS\GSLzma.cpp" />
+    <ClCompile Include="GS\GSPerfMon.cpp" />
+    <ClCompile Include="GS\GSPng.cpp" />
+    <ClCompile Include="GS\GSRingHeap.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSRenderer.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSRendererHWMultiISA.cpp" />
+    <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp" />
+    <ClCompile Include="GS\GSState.cpp" />
+    <ClCompile Include="GS\GSTables.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSTexture.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSTexture11.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSTextureOGL.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSTextureCache.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp" />
+    <ClCompile Include="GS\GSUtil.cpp" />
+    <ClCompile Include="GS\GSVector.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSVertexTraceFMM.cpp" />
+    <ClCompile Include="GS\GSXXH.cpp" />
+    <ClCompile Include="GS\MultiISA.cpp" />
+    <ClCompile Include="StateWrapper.cpp" />
+    <ClCompile Include="USB\deviceproxy.cpp" />
+    <ClCompile Include="USB\qemu-usb\bus.cpp" />
+    <ClCompile Include="USB\qemu-usb\core.cpp" />
+    <ClCompile Include="USB\qemu-usb\desc.cpp" />
+    <ClCompile Include="USB\qemu-usb\hid.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
+    <ClCompile Include="USB\qemu-usb\usb-ohci.cpp" />
+    <ClCompile Include="USB\shared\ringbuffer.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp" />
+    <ClCompile Include="USB\usb-hid\usb-hid.cpp" />
+    <ClCompile Include="USB\usb-lightgun\guncon2.cpp" />
+    <ClCompile Include="USB\usb-mic\audiodev-cubeb.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-headset.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-mic-logitech.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp" />
+    <ClCompile Include="USB\usb-msd\usb-msd.cpp" />
+    <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-turntable.cpp" />
+    <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
+    <ClCompile Include="USB\USB.cpp" />
+    <ClCompile Include="VMManager.cpp" />
+    <ClCompile Include="windows\Optimus.cpp" />
+    <ClCompile Include="Pcsx2Config.cpp" />
+    <ClCompile Include="windows\FlatFileReaderWindows.cpp" />
+    <ClCompile Include="Darwin\DarwinFlatFileReader.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="SaveState.cpp" />
+    <ClCompile Include="SourceLog.cpp" />
+    <ClCompile Include="System.cpp" />
+    <ClCompile Include="Elfheader.cpp" />
+    <ClCompile Include="CDVD\InputIsoFile.cpp" />
+    <ClCompile Include="x86\BaseblockEx.cpp" />
+    <ClCompile Include="ps2\BiosTools.cpp" />
+    <ClCompile Include="Counters.cpp" />
+    <ClCompile Include="FiFo.cpp" />
+    <ClCompile Include="Hw.cpp" />
+    <ClCompile Include="HwRead.cpp" />
+    <ClCompile Include="HwWrite.cpp" />
+    <ClCompile Include="Cache.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="x86\iR5900Analysis.cpp" />
+    <ClCompile Include="x86\ix86-32\recVTLB.cpp" />
+    <ClCompile Include="vtlb.cpp" />
+    <ClCompile Include="MTVU.cpp" />
+    <ClCompile Include="VUmicro.cpp" />
+    <ClCompile Include="VUmicroMem.cpp" />
+    <ClCompile Include="x86\microVU.cpp" />
+    <ClCompile Include="VU0.cpp" />
+    <ClCompile Include="VU0micro.cpp" />
+    <ClCompile Include="VU0microInterp.cpp" />
+    <ClCompile Include="VU1micro.cpp" />
+    <ClCompile Include="VU1microInterp.cpp" />
+    <ClCompile Include="VUflags.cpp" />
+    <ClCompile Include="VUops.cpp" />
+    <ClCompile Include="Sif.cpp" />
+    <ClCompile Include="Sif0.cpp" />
+    <ClCompile Include="Sif1.cpp" />
+    <ClCompile Include="Vif.cpp" />
+    <ClCompile Include="Vif0_Dma.cpp" />
+    <ClCompile Include="Vif1_Dma.cpp" />
+    <ClCompile Include="Vif1_MFIFO.cpp" />
+    <ClCompile Include="Vif_Codes.cpp" />
+    <ClCompile Include="Vif_Transfer.cpp" />
+    <ClCompile Include="Vif_Unpack.cpp" />
+    <ClCompile Include="x86\newVif_Unpack.cpp" />
+    <ClCompile Include="x86\newVif_Dynarec.cpp" />
+    <ClCompile Include="x86\newVif_UnpackSSE.cpp" />
+    <ClCompile Include="SPR.cpp" />
+    <ClCompile Include="Gif.cpp" />
+    <ClCompile Include="R5900OpcodeTables.cpp" />
+    <ClCompile Include="x86\iCOP0.cpp" />
+    <ClCompile Include="x86\iFPU.cpp" />
+    <ClCompile Include="x86\iFPUd.cpp" />
+    <ClCompile Include="x86\iMMI.cpp" />
+    <ClCompile Include="x86\iR5900Misc.cpp" />
+    <ClCompile Include="x86\ir5900tables.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Arit.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900AritImm.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Branch.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Jump.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900LoadStore.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Move.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900MultDiv.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Shift.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Templates.cpp" />
+    <ClCompile Include="COP0.cpp" />
+    <ClCompile Include="COP2.cpp" />
+    <ClCompile Include="FPU.cpp" />
+    <ClCompile Include="Interpreter.cpp" />
+    <ClCompile Include="MMI.cpp" />
+    <ClCompile Include="R5900.cpp" />
+    <ClCompile Include="R5900OpcodeImpl.cpp" />
+    <ClCompile Include="IopBios.cpp" />
+    <ClCompile Include="IopCounters.cpp" />
+    <ClCompile Include="IopDma.cpp" />
+    <ClCompile Include="IopIrq.cpp" />
+    <ClCompile Include="IopMem.cpp" />
+    <ClCompile Include="R3000A.cpp" />
+    <ClCompile Include="R3000AInterpreter.cpp" />
+    <ClCompile Include="R3000AOpcodeTables.cpp" />
+    <ClCompile Include="x86\iR3000A.cpp" />
+    <ClCompile Include="x86\iR3000Atables.cpp" />
+    <ClCompile Include="IopHw.cpp" />
+    <ClCompile Include="ps2\Iop\IopHwRead.cpp" />
+    <ClCompile Include="ps2\Iop\IopHwWrite.cpp" />
+    <ClCompile Include="CDVD\Ps1CD.cpp" />
+    <ClCompile Include="CDVD\CDVD.cpp" />
+    <ClCompile Include="CDVD\CDVDcommon.cpp" />
+    <ClCompile Include="CDVD\CDVDisoReader.cpp" />
+    <ClCompile Include="Ipu\IPU.cpp" />
+    <ClCompile Include="Ipu\IPU_Fifo.cpp" />
+    <ClCompile Include="Ipu\IPU_MultiISA.cpp" />
+    <ClCompile Include="Ipu\yuv2rgb.cpp" />
+    <ClCompile Include="GS.cpp" />
+    <ClCompile Include="MTGS.cpp" />
+    <ClCompile Include="DebugTools\DisR3000A.cpp" />
+    <ClCompile Include="DebugTools\DisR5900asm.cpp" />
+    <ClCompile Include="DebugTools\DisVU0Micro.cpp" />
+    <ClCompile Include="DebugTools\DisVU1Micro.cpp" />
+    <ClCompile Include="rdebug\deci2.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_dbgp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_dcmp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_iloadp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_netmp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_ttyp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iCore.cpp" />
+    <ClCompile Include="x86\iCore.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Achievements.h" />
+    <ClInclude Include="AsyncFileReader.h" />
+    <ClInclude Include="CDVD\CDVDdiscReader.h" />
+    <ClInclude Include="CDVD\ChunksCache.h" />
+    <ClInclude Include="CDVD\CompressedFileReader.h" />
+    <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
+    <ClInclude Include="CDVD\CsoFileReader.h" />
+    <ClInclude Include="CDVD\ChdFileReader.h" />
+    <ClInclude Include="CDVD\GzippedFileReader.h" />
+    <ClInclude Include="CDVD\IsoReader.h" />
+    <ClInclude Include="CDVD\IsoHasher.h" />
+    <ClInclude Include="CDVD\ThreadedFileReader.h" />
+    <ClInclude Include="CDVD\zlib_indexed.h" />
+    <ClInclude Include="DebugTools\Breakpoints.h" />
+    <ClInclude Include="DebugTools\DebugInterface.h" />
+    <ClInclude Include="DebugTools\DisassemblyManager.h" />
+    <ClInclude Include="DebugTools\BiosDebugData.h" />
+    <ClInclude Include="DebugTools\ExpressionParser.h" />
+    <ClInclude Include="DebugTools\MIPSAnalyst.h" />
+    <ClInclude Include="DebugTools\MipsAssembler.h" />
+    <ClInclude Include="DebugTools\MipsAssemblerTables.h" />
+    <ClInclude Include="DebugTools\MipsStackWalk.h" />
+    <ClInclude Include="DebugTools\SymbolMap.h" />
+    <ClInclude Include="DEV9\AdapterUtils.h" />
+    <ClInclude Include="DEV9\ATA\ATA.h" />
+    <ClInclude Include="DEV9\ATA\HddCreate.h" />
+    <ClInclude Include="DEV9\DEV9.h" />
+    <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />
+    <ClInclude Include="DEV9\InternalServers\DNS_Logger.h" />
+    <ClInclude Include="DEV9\InternalServers\DNS_Server.h" />
+    <ClInclude Include="DEV9\net.h" />
+    <ClInclude Include="DEV9\PacketReader\ARP\ARP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\ARP\ARP_PacketEditor.h" />
+    <ClInclude Include="DEV9\PacketReader\EthernetFrameEditor.h" />
+    <ClInclude Include="DEV9\PacketReader\EthernetFrame.h" />
+    <ClInclude Include="DEV9\PacketReader\MAC_Address.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Options.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Classes.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Enums.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\UDP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Address.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Options.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Payload.h" />
+    <ClInclude Include="DEV9\PacketReader\NetLib.h" />
+    <ClInclude Include="DEV9\PacketReader\Payload.h" />
+    <ClInclude Include="DEV9\pcap_io.h" />
+    <ClInclude Include="DEV9\Sessions\BaseSession.h" />
+    <ClInclude Include="DEV9\Sessions\ICMP_Session\ICMP_Session.h" />
+    <ClInclude Include="DEV9\Sessions\TCP_Session\TCP_Session.h" />
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.h" />
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_BaseSession.h" />
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_Session.h" />
+    <ClInclude Include="DEV9\SimpleQueue.h" />
+    <ClInclude Include="DEV9\smap.h" />
+    <ClInclude Include="DEV9\sockets.h" />
+    <ClInclude Include="DEV9\ThreadSafeMap.h" />
+    <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
+    <ClInclude Include="DEV9\Win32\tap.h" />
+    <ClInclude Include="GameList.h" />
+    <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h" />
+    <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h" />
+    <ClInclude Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.h" />
+    <ClInclude Include="GS\Renderers\DX12\D3D12ShaderCache.h" />
+    <ClInclude Include="GS\Renderers\DX12\D3D12StreamBuffer.h" />
+    <ClInclude Include="GS\Renderers\HW\GSHwHack.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLContext.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLContextWGL.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLProgram.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLShaderCache.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\VKBuilders.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\VKEntryPoints.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\VKLoader.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\VKShaderCache.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\VKStreamBuffer.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h" />
+    <ClInclude Include="ImGui\FullscreenUI.h" />
+    <ClInclude Include="ImGui\ImGuiAnimated.h" />
+    <ClInclude Include="ImGui\ImGuiFullscreen.h" />
+    <ClInclude Include="ImGui\ImGuiManager.h" />
+    <ClInclude Include="ImGui\ImGuiOverlays.h" />
+    <ClInclude Include="INISettingsInterface.h" />
+    <ClInclude Include="GameDatabase.h" />
+    <ClInclude Include="Gif_Unit.h" />
+    <ClInclude Include="GSDumpReplayer.h" />
+    <ClInclude Include="GS\Renderers\DX11\D3D.h" />
+    <ClInclude Include="GS\Renderers\DX12\GSDevice12.h" />
+    <ClInclude Include="GS\Renderers\DX12\GSTexture12.h" />
+    <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h" />
+    <ClInclude Include="Host.h" />
+    <ClInclude Include="Input\DInputSource.h" />
+    <ClInclude Include="Input\InputManager.h" />
+    <ClInclude Include="Input\InputSource.h" />
+    <ClInclude Include="Input\SDLInputSource.h" />
+    <ClInclude Include="Input\XInputSource.h" />
+    <ClInclude Include="IopGte.h" />
+    <ClInclude Include="IPU\mpeg2_vlc.h" />
+    <ClInclude Include="LayeredSettingsInterface.h" />
+    <ClInclude Include="LogSink.h" />
+    <ClInclude Include="PINE.h" />
+    <ClInclude Include="FW.h" />
+    <ClInclude Include="PerformanceMetrics.h" />
+    <ClInclude Include="Recording\InputRecording.h" />
+    <ClInclude Include="Recording\InputRecordingControls.h" />
+    <ClInclude Include="Recording\InputRecordingFile.h" />
+    <ClInclude Include="Recording\PadData.h" />
+    <ClInclude Include="Recording\Utilities\InputRecordingLogger.h" />
+    <ClInclude Include="ShaderCacheVersion.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardFile.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardFolder.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h" />
+    <ClInclude Include="SIO\Multitap\MultitapProtocol.h" />
+    <ClInclude Include="SIO\Pad\PadBase.h" />
+    <ClInclude Include="SIO\Pad\Pad.h" />
+    <ClInclude Include="SIO\Pad\PadDualshock2.h" />
+    <ClInclude Include="SIO\Pad\PadGuitar.h" />
+    <ClInclude Include="SIO\Pad\PadNotConnected.h" />
+    <ClInclude Include="SIO\Pad\PadTypes.h" />
+    <ClInclude Include="SIO\Sio.h" />
+    <ClInclude Include="SIO\Sio0.h" />
+    <ClInclude Include="SIO\Sio2.h" />
+    <ClInclude Include="SIO\SioTypes.h" />
+    <ClInclude Include="SPU2\Debug.h" />
+    <ClInclude Include="SPU2\Dma.h" />
+    <ClInclude Include="SPU2\Global.h" />
+    <ClInclude Include="SPU2\interpolate_table.h" />
+    <ClInclude Include="SPU2\SndOut.h" />
+    <ClInclude Include="SPU2\spdif.h" />
+    <ClInclude Include="SPU2\defs.h" />
+    <ClInclude Include="SPU2\regs.h" />
+    <ClInclude Include="SPU2\Mixer.h" />
+    <ClInclude Include="SPU2\spu2.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
+    <ClInclude Include="GS\GS.h" />
+    <ClInclude Include="GS\GSExtra.h" />
+    <ClInclude Include="GS\GSGL.h" />
+    <ClInclude Include="GS\GSRegs.h" />
+    <ClInclude Include="GS\GSAlignedClass.h" />
+    <ClInclude Include="GS\GSBlock.h" />
+    <ClInclude Include="GS\GSCapture.h" />
+    <ClInclude Include="GS\GSClut.h" />
+    <ClInclude Include="GS\Renderers\Common\GSDevice.h" />
+    <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h" />
+    <ClInclude Include="GS\Renderers\Common\GSDirtyRect.h" />
+    <ClInclude Include="GS\GSDrawingContext.h" />
+    <ClInclude Include="GS\GSDrawingEnvironment.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h" />
+    <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h" />
+    <ClInclude Include="GS\GSDump.h" />
+    <ClInclude Include="GS\Renderers\Common\GSFastList.h" />
+    <ClInclude Include="GS\Renderers\Common\GSFunctionMap.h" />
+    <ClInclude Include="GS\GSLocalMemory.h" />
+    <ClInclude Include="GS\GSLzma.h" />
+    <ClInclude Include="GS\GSPerfMon.h" />
+    <ClInclude Include="GS\GSPng.h" />
+    <ClInclude Include="GS\GSRingHeap.h" />
+    <ClInclude Include="GS\Renderers\SW\GSRasterizer.h" />
+    <ClInclude Include="GS\Renderers\Common\GSRenderer.h" />
+    <ClInclude Include="GS\Renderers\HW\GSRendererHW.h" />
+    <ClInclude Include="GS\Renderers\Null\GSRendererNull.h" />
+    <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
+    <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h" />
+    <ClInclude Include="GS\GSState.h" />
+    <ClInclude Include="GS\GSTables.h" />
+    <ClInclude Include="GS\Renderers\Common\GSTexture.h" />
+    <ClInclude Include="GS\Renderers\DX11\GSTexture11.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSTextureOGL.h" />
+    <ClInclude Include="GS\Renderers\HW\GSTextureCache.h" />
+    <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h" />
+    <ClInclude Include="GS\Renderers\SW\GSTextureSW.h" />
+    <ClInclude Include="GS\GSThread.h" />
+    <ClInclude Include="GS\GSThread_CXX11.h" />
+    <ClInclude Include="GS\GSUtil.h" />
+    <ClInclude Include="GS\GSVector.h" />
+    <ClInclude Include="GS\GSVector4i.h" />
+    <ClInclude Include="GS\GSVector4.h" />
+    <ClInclude Include="GS\GSVector8i.h" />
+    <ClInclude Include="GS\GSVector8.h" />
+    <ClInclude Include="GS\Renderers\Common\GSVertex.h" />
+    <ClInclude Include="GS\Renderers\HW\GSVertexHW.h" />
+    <ClInclude Include="GS\Renderers\SW\GSVertexSW.h" />
+    <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h" />
+    <ClInclude Include="GS\GSXXH.h" />
+    <ClInclude Include="GS\MultiISA.h" />
+    <ClInclude Include="IPU\IPUdma.h" />
+    <ClInclude Include="Mdec.h" />
+    <ClInclude Include="Patch.h" />
+    <ClInclude Include="PCSX2Base.h" />
+    <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="ps2\pgif.h" />
+    <ClInclude Include="StateWrapper.h" />
+    <ClInclude Include="USB\deviceproxy.h" />
+    <ClInclude Include="USB\qemu-usb\desc.h" />
+    <ClInclude Include="USB\qemu-usb\hid.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap.h" />
+    <ClInclude Include="USB\qemu-usb\queue.h" />
+    <ClInclude Include="USB\qemu-usb\qusb.h" />
+    <ClInclude Include="USB\qemu-usb\USBinternal.h" />
+    <ClInclude Include="USB\shared\ringbuffer.h" />
+    <ClInclude Include="USB\usb-eyetoy\cam-windows.h" />
+    <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h" />
+    <ClInclude Include="USB\usb-eyetoy\ov519.h" />
+    <ClInclude Include="USB\usb-eyetoy\usb-eyetoy-webcam.h" />
+    <ClInclude Include="USB\usb-eyetoy\videodev.h" />
+    <ClInclude Include="USB\usb-hid\usb-hid.h" />
+    <ClInclude Include="USB\usb-lightgun\guncon2.h" />
+    <ClInclude Include="USB\usb-mic\audio.h" />
+    <ClInclude Include="USB\usb-mic\audiodev-cubeb.h" />
+    <ClInclude Include="USB\usb-mic\audiodev-noop.h" />
+    <ClInclude Include="USB\usb-mic\audiodev.h" />
+    <ClInclude Include="USB\usb-mic\usb-headset.h" />
+    <ClInclude Include="USB\usb-mic\usb-mic-singstar.h" />
+    <ClInclude Include="USB\usb-msd\usb-msd.h" />
+    <ClInclude Include="USB\usb-pad\lg\lg_ff.h" />
+    <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h" />
+    <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\usb-pad\usb-turntable.h" />
+    <ClInclude Include="USB\usb-printer\usb-printer.h" />
+    <ClInclude Include="USB\USB.h" />
+    <ClInclude Include="Utilities\AsciiFile.h" />
+    <ClInclude Include="Elfheader.h" />
+    <ClInclude Include="CDVD\IsoFileFormats.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="SaveState.h" />
+    <ClInclude Include="SingleRegisterTypes.h" />
+    <ClInclude Include="System.h" />
+    <ClInclude Include="Counters.h" />
+    <ClInclude Include="Dmac.h" />
+    <ClInclude Include="Hardware.h" />
+    <ClInclude Include="Hw.h" />
+    <ClInclude Include="ps2\HwInternal.h" />
+    <ClInclude Include="Cache.h" />
+    <ClInclude Include="Memory.h" />
+    <ClInclude Include="VMManager.h" />
+    <ClInclude Include="vtlb.h" />
+    <ClInclude Include="MTVU.h" />
+    <ClInclude Include="VU.h" />
+    <ClInclude Include="VUmicro.h" />
+    <ClInclude Include="x86\iR5900Analysis.h" />
+    <ClInclude Include="x86\microVU.h" />
+    <ClInclude Include="x86\microVU_IR.h" />
+    <ClInclude Include="x86\microVU_Misc.h" />
+    <ClInclude Include="x86\microVU_Profiler.h" />
+    <ClInclude Include="x86\R5900_Profiler.h" />
+    <ClInclude Include="VUflags.h" />
+    <ClInclude Include="VUops.h" />
+    <ClInclude Include="Sif.h" />
+    <ClInclude Include="Sifcmd.h" />
+    <ClInclude Include="Vif.h" />
+    <ClInclude Include="Vif_Dma.h" />
+    <ClInclude Include="Vif_Unpack.h" />
+    <ClInclude Include="x86\newVif.h" />
+    <ClInclude Include="x86\newVif_HashBucket.h" />
+    <ClInclude Include="x86\newVif_UnpackSSE.h" />
+    <ClInclude Include="SPR.h" />
+    <ClInclude Include="Gif.h" />
+    <ClInclude Include="R5900.h" />
+    <ClInclude Include="R5900OpcodeTables.h" />
+    <ClInclude Include="COP0.h" />
+    <ClInclude Include="x86\iCOP0.h" />
+    <ClInclude Include="x86\iFPU.h" />
+    <ClInclude Include="x86\iMMI.h" />
+    <ClInclude Include="x86\iR5900.h" />
+    <ClInclude Include="x86\iR5900Arit.h" />
+    <ClInclude Include="x86\iR5900AritImm.h" />
+    <ClInclude Include="x86\iR5900Branch.h" />
+    <ClInclude Include="x86\iR5900Jump.h" />
+    <ClInclude Include="x86\iR5900LoadStore.h" />
+    <ClInclude Include="x86\iR5900Move.h" />
+    <ClInclude Include="x86\iR5900MultDiv.h" />
+    <ClInclude Include="x86\iR5900Shift.h" />
+    <ClInclude Include="IopBios.h" />
+    <ClInclude Include="IopCounters.h" />
+    <ClInclude Include="IopDma.h" />
+    <ClInclude Include="IopMem.h" />
+    <ClInclude Include="R3000A.h" />
+    <ClInclude Include="x86\iR3000A.h" />
+    <ClInclude Include="IopHw.h" />
+    <ClInclude Include="ps2\Iop\IopHw_Internal.h" />
+    <ClInclude Include="CDVD\Ps1CD.h" />
+    <ClInclude Include="CDVD\CDVD.h" />
+    <ClInclude Include="CDVD\CDVD_internal.h" />
+    <ClInclude Include="CDVD\CDVDcommon.h" />
+    <ClInclude Include="Ipu\IPU.h" />
+    <ClInclude Include="Ipu\IPU_Fifo.h" />
+    <ClInclude Include="Ipu\IPU_MultiISA.h" />
+    <ClInclude Include="Ipu\yuv2rgb.h" />
+    <ClInclude Include="GS.h" />
+    <ClInclude Include="DebugTools\Debug.h" />
+    <ClInclude Include="DebugTools\DisASM.h" />
+    <ClInclude Include="DebugTools\DisVUmicro.h" />
+    <ClInclude Include="DebugTools\DisVUops.h" />
+    <CustomBuildStep Include="rdebug\deci2.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_dbgp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_dcmp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_drfp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_iloadp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_netmp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_ttyp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="x86\BaseblockEx.h" />
+    <ClInclude Include="ps2\BiosTools.h" />
+    <ClInclude Include="MemoryTypes.h" />
+    <ClInclude Include="x86\iCore.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)3rdparty\des\des.vcxproj">
+      <Project>{eb12076d-4cef-4d9d-8f34-5d0043798051}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">
+      <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libpng\libpng.vcxproj">
+      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
+      <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
+      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libchdr\libchdr.vcxproj">
+      <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\zlib\zlib.vcxproj">
+      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\jpgd\jpgd.vcxproj">
+      <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\cubeb\cubeb.vcxproj">
+      <Project>{bf74c473-dc04-44b3-92e8-4145f4e77342}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\rapidyaml\ryml.vcxproj">
+      <Project>{de9653b6-17dd-356a-9ee0-28a731772587}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
+      <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\d3d12memalloc\d3d12memalloc.vcxproj">
+      <Project>{d45cec7a-3171-40dd-975d-e1544cf16139}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\discord-rpc\discord-rpc.vcxproj">
+      <Project>{e960dfdf-1bd3-4c29-b251-d1a0919c9b09}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\glslang\glslang.vcxproj">
+      <Project>{ef6834a9-11f3-4331-bc34-21b325abb180}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\libzip\libzip.vcxproj">
+      <Project>{20b2e9fe-f020-42a0-b324-956f5b06ea68}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\cpuinfo\cpuinfo.vcxproj">
+      <Project>{7e183337-a7e9-460c-9d3d-568bc9f9bcc1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\lz4\lz4.vcxproj">
+      <Project>{39098635-446a-4fc3-9b1c-8609d94598a8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\rainterface\rainterface.vcxproj">
+      <Project>{95dd0a0c-d14d-4cff-a593-820ef26efcc8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\rcheevos\rcheevos.vcxproj">
+      <Project>{6d5b5ad9-1525-459b-939f-a5e1082af6b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">
+      <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="GS\GS.natvis" />
+  </ItemGroup>
+  <Import Condition="$(Configuration.Contains(Debug)) Or $(Configuration.Contains(Devel))" Project="$(SolutionDir)3rdparty\winpixeventruntime\WinPixEventRuntime.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

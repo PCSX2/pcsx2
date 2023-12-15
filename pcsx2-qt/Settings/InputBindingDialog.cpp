@@ -27,8 +27,7 @@
 
 #include "fmt/format.h"
 
-// _BitScanForward()
-#include "pcsx2/GS/GSIntrin.h"
+#include <bit>
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
 	std::string key_name, std::vector<std::string> bindings, QWidget* parent)
@@ -67,6 +66,8 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
 	else
 	{
 		m_ui.verticalLayout->removeWidget(m_ui.sensitivityWidget);
+		delete m_ui.sensitivityWidget;
+		m_ui.sensitivityWidget = nullptr;
 	}
 }
 
@@ -95,9 +96,8 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 	else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
 	{
 		// double clicks get triggered if we click bind, then click again quickly.
-		unsigned long button_index;
-		if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
-			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+		if (const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()))
+			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, std::countr_zero(button_mask)));
 		return true;
 	}
 	else if (event_type == QEvent::Wheel)
@@ -177,7 +177,7 @@ void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 {
 	m_value_ranges.clear();
 	m_new_bindings.clear();
-	m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled();
+	m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled(m_sif);
 	m_input_listen_start_position = QCursor::pos();
 	m_input_listen_timer = new QTimer(this);
 	m_input_listen_timer->setSingleShot(false);

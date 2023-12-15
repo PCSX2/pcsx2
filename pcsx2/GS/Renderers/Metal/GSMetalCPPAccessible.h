@@ -14,15 +14,16 @@
  */
 
 #pragma once
+
+#include <string>
+#include <vector>
+
 // Header with all metal stuff available for use with C++ (rather than Objective-C++)
 
 #ifdef __APPLE__
 
-#include "HostDisplay.h"
-
 class GSDevice;
 GSDevice* MakeGSDeviceMTL();
-HostDisplay* MakeMetalHostDisplay();
-HostDisplay::AdapterAndModeList GetMetalAdapterAndModeList();
+std::vector<std::string> GetMetalAdapterList();
 
 #endif

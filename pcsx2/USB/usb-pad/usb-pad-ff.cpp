@@ -98,11 +98,11 @@ namespace usb_pad
 	{
 		if (!mFFdev)
 			return;
-
+#if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
 		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X",
 			ffdata->cmdslot, ffdata->type, ffdata->u.params[0], ffdata->u.params[1],
 			ffdata->u.params[2], ffdata->u.params[3], ffdata->u.params[4], ffdata->padd0);
-
+#endif
 		if (ffdata->cmdslot != CMD_EXTENDED_CMD)
 		{
 			uint8_t slots = (ffdata->cmdslot & 0xF0) >> 4;

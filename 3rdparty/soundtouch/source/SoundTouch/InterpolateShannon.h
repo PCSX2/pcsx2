@@ -43,27 +43,27 @@
 namespace soundtouch
 {
 
-class InterpolateShannon : public TransposerBase
+class InterpolateShannon final : public TransposerBase
 {
 protected:
     int transposeMono(SAMPLETYPE *dest, 
                         const SAMPLETYPE *src, 
-                        int &srcSamples);
+                        int &srcSamples) override;
     int transposeStereo(SAMPLETYPE *dest, 
                         const SAMPLETYPE *src, 
-                        int &srcSamples);
+                        int &srcSamples) override;
     int transposeMulti(SAMPLETYPE *dest, 
                         const SAMPLETYPE *src, 
-                        int &srcSamples);
+                        int &srcSamples) override;
 
     double fract;
 
 public:
     InterpolateShannon();
 
-    void resetRegisters();
+    void resetRegisters() override;
 
-    int getLatency() const
+    int getLatency() const override
     {
         return 3;
     }

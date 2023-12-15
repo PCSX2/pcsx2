@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -19,6 +19,7 @@
 
 #include "Gif.h"
 #include "Gif_Unit.h"
+#include "MTGS.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
 
@@ -51,7 +52,7 @@ void ReadFIFO_VIF1(mem128_t* out)
 		}
 		if (vif1Regs.stat.FQC > 0)
 		{
-			GetMTGS().InitAndReadFIFO(reinterpret_cast<u8*>(out), 1);
+			MTGS::InitAndReadFIFO(reinterpret_cast<u8*>(out), 1);
 			vif1.GSLastDownloadSize--;
 			GUNIT_LOG("ReadFIFO_VIF1");
 			if (vif1.GSLastDownloadSize <= 16)

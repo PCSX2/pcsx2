@@ -24,42 +24,19 @@
 #include "common/StringUtil.h"
 #include "fmt/core.h"
 
-static void recReset(int idx)
+void dVifReset(int idx)
 {
 	nVif[idx].vifBlocks.reset();
 
-	nVif[idx].recReserve->Reset();
-
-	nVif[idx].recWritePtr = nVif[idx].recReserve->GetPtr();
-}
-
-void dVifReserve(int idx)
-{
-	if (nVif[idx].recReserve)
-		return;
-	
 	const size_t offset = idx ? HostMemoryMap::VIF1recOffset : HostMemoryMap::VIF0recOffset;
-	nVif[idx].recReserve = new RecompiledCodeReserve(StringUtil::StdStringFromFormat("VIF%u Unpack Recompiler Cache", idx));
-	nVif[idx].recReserve->Assign(GetVmMemory().CodeMemory(), offset, 8 * _1mb);
-}
-
-void dVifReset(int idx)
-{
-	pxAssertDev(nVif[idx].recReserve, "Dynamic VIF recompiler reserve must be created prior to VIF use or reset!");
-
-	recReset(idx);
-}
-
-void dVifClose(int idx)
-{
-	if (nVif[idx].recReserve)
-		nVif[idx].recReserve->Reset();
+	const size_t size = idx ? HostMemoryMap::VIF1recSize : HostMemoryMap::VIF0recSize;
+	nVif[idx].recWritePtr = SysMemory::GetCodePtr(offset);
+	nVif[idx].recEndPtr = nVif[idx].recWritePtr + (size - _256kb);
 }
 
 void dVifRelease(int idx)
 {
-	dVifClose(idx);
-	safe_delete(nVif[idx].recReserve);
+	nVif[idx].vifBlocks.clear();
 }
 
 VifUnpackSSE_Dynarec::VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlock& vifBlock_)
@@ -90,14 +67,15 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 	u32 m3 = ((m0 & 0xaaaaaaaa) >> 1) & ~m0; //all the upper bits, so our example 0x01010000 & 0xFCFDFEFF = 0x00010000 just the cols (shifted right for maskmerge)
 	u32 m2 = (m0 & 0x55555555) & (~m0 >> 1); // 0x1000100 & 0xFE7EFF7F = 0x00000100 Just the row
 
-	if ((m2 && doMask) || doMode)
+	if ((doMask && m2) || doMode)
 	{
 		xMOVAPS(xmmRow, ptr128[&vif.MaskRow]);
 		MSKPATH3_LOG("Moving row");
 	}
-	if (m3 && doMask)
+
+	if (doMask && m3)
 	{
-		MSKPATH3_LOG("Merging Cols");
+		VIF_LOG("Merging Cols");
 		xMOVAPS(xmmCol0, ptr128[&vif.MaskCol]);
 		if ((cS >= 2) && (m3 & 0x0000ff00)) xPSHUF.D(xmmCol1, xmmCol0, _v1);
 		if ((cS >= 3) && (m3 & 0x00ff0000)) xPSHUF.D(xmmCol2, xmmCol0, _v2);
@@ -111,7 +89,7 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 {
 	pxAssertDev(regX.Id <= 1, "Reg Overflow! XMM2 thru XMM6 are reserved for masking.");
 
-	int cc = std::min(vCL, 3);
+	const int cc = std::min(vCL, 3);
 	u32 m0 = (vB.mask >> (cc * 8)) & 0xff; //The actual mask example 0xE4 (protect, col, row, clear)
 	u32 m3 = ((m0 & 0xaa) >> 1) & ~m0; //all the upper bits (cols shifted right) cancelling out any write protects 0x10
 	u32 m2 = (m0 & 0x55) & (~m0 >> 1); // all the lower bits (rows)cancelling out any write protects 0x04
@@ -123,17 +101,14 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 
 	if (doMask && m2) // Merge MaskRow
 	{
-		mergeVectors(regX, xmmRow, xmmTemp, m2);
+		mVUmergeRegs(regX, xmmRow, m2);
 	}
+
 	if (doMask && m3) // Merge MaskCol
 	{
-		mergeVectors(regX, xRegisterSSE(xmmCol0.Id + cc), xmmTemp, m3);
+		mVUmergeRegs(regX, xRegisterSSE(xmmCol0.Id + cc), m3);
 	}
-	if (doMask && m4) // Merge Write Protect
-	{
-		xMOVAPS(xmmTemp, ptr[dstIndirect]);
-		mergeVectors(regX, xmmTemp, xmmTemp, m4);
-	}
+	
 	if (doMode)
 	{
 		u32 m5 = ~(m2 | m3 | m4) & 0xf;
@@ -146,14 +121,14 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 			xPXOR(xmmTemp, xmmTemp);
 			if (doMode == 3)
 			{
-				mergeVectors(xmmRow, regX, xmmTemp, m5);
+				mVUmergeRegs(xmmRow, regX, m5);
 			}
 			else
 			{
-				mergeVectors(xmmTemp, xmmRow, xmmTemp, m5);
+				mVUmergeRegs(xmmTemp, xmmRow, m5);
 				xPADD.D(regX, xmmTemp);
 				if (doMode == 2)
-					mergeVectors(xmmRow, regX, xmmTemp, m5);
+					mVUmergeRegs(xmmRow, regX, m5);
 			}
 		}
 		else
@@ -170,7 +145,11 @@ void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 			}
 		}
 	}
-	xMOVAPS(ptr32[dstIndirect], regX);
+
+	if (doMask && m4) // Merge Write Protect
+		mVUsaveReg(regX, ptr32[dstIndirect], m4 ^ 0xf, false);
+	else
+		xMOVAPS(ptr32[dstIndirect], regX);
 }
 
 void VifUnpackSSE_Dynarec::writeBackRow() const
@@ -178,8 +157,7 @@ void VifUnpackSSE_Dynarec::writeBackRow() const
 	const int idx = v.idx;
 	xMOVAPS(ptr128[&(MTVU_VifX.MaskRow)], xmmRow);
 
-	DevCon.WriteLn("nVif: writing back row reg! [doMode = %d]", doMode);
-	// ToDo: Do we need to write back to vifregs.rX too!? :/
+	VIF_LOG("nVif: writing back row reg! [doMode = %d]", doMode);
 }
 
 static void ShiftDisplacementWindow(xAddressVoid& addr, const xRegisterLong& modReg)
@@ -252,9 +230,28 @@ void VifUnpackSSE_Dynarec::ModUnpack(int upknum, bool PostOp)
 		case 3:
 		case 7:
 		case 11:
-			pxFailRel(fmt::format("Vpu/Vif - Invalid Unpack! [%d]", upknum).c_str());
+			pxFailRel(fmt::format("Vpu/Vif - Invalid Unpack! [{}]", upknum).c_str());
 			break;
 	}
+}
+
+void VifUnpackSSE_Dynarec::ProcessMasks()
+{
+	skipProcessing = false;
+	inputMasked = false;
+
+	if (!doMask)
+		return;
+
+	const int cc = std::min(vCL, 3);
+	const u32 full_mask = (vB.mask >> (cc * 8)) & 0xff;
+	const u32 rowcol_mask = ((full_mask >> 1) | full_mask) & 0x55; // Rows or Cols being written instead of data, or protected.
+
+	// Every channel is write protected for this cycle, no need to process anything.
+	skipProcessing = full_mask == 0xff;
+
+	// All channels are masked, no reason to process anything here.
+	inputMasked = rowcol_mask == 0x55;
 }
 
 void VifUnpackSSE_Dynarec::CompileRoutine()
@@ -269,22 +266,26 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 	uint vNum = vB.num ? vB.num : 256;
 	doMode    = (upkNum == 0xf) ? 0 : doMode; // V4_5 has no mode feature.
 	UnpkNoOfIterations = 0;
-	MSKPATH3_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
+	VIF_LOG("Compiling new block, unpack number %x, mode %x, masking %x, vNum %x", upkNum, doMode, doMask, vNum);
 
 	pxAssume(vCL == 0);
 
 	// Value passed determines # of col regs we need to load
 	SetMasks(isFill ? blockSize : cycleSize);
 
+	// Need a zero register for V2_32/V3 unpacks.
+	if ((upkNum >= 8 && upkNum <= 10) || upkNum == 4)
+		xXOR.PS(zeroReg, zeroReg);
+
 	while (vNum)
 	{
-
-
 		ShiftDisplacementWindow(dstIndirect, arg1reg);
 
 		if (UnpkNoOfIterations == 0)
 			ShiftDisplacementWindow(srcIndirect, arg2reg); //Don't need to do this otherwise as we arent reading the source.
 
+		// Determine if reads/processing can be skipped.
+		ProcessMasks();
 
 		if (vCL < cycleSize)
 		{
@@ -292,7 +293,6 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 			xUnpack(upkNum);
 			xMovDest();
 			ModUnpack(upkNum, true);
-
 
 			dstIndirect += 16;
 			srcIndirect += vift;
@@ -303,8 +303,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 		}
 		else if (isFill)
 		{
-			//Filling doesn't need anything fancy, it's pretty much a normal write, just doesnt increment the source.
-			//DevCon.WriteLn("filling mode!");
+			// Filling doesn't need anything fancy, it's pretty much a normal write, just doesnt increment the source.
 			xUnpack(upkNum);
 			xMovDest();
 
@@ -323,6 +322,7 @@ void VifUnpackSSE_Dynarec::CompileRoutine()
 
 	if (doMode >= 2)
 		writeBackRow();
+
 	xRET();
 }
 
@@ -345,11 +345,11 @@ _vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill)
 	nVifStruct& v = nVif[idx];
 
 	// Check size before the compilation
-	if (v.recWritePtr > (v.recReserve->GetPtrEnd() - _256kb))
+	if (v.recWritePtr >= v.recEndPtr)
 	{
 		DevCon.WriteLn("nVif Recompiler Cache Reset! [0x%016" PRIXPTR " > 0x%016" PRIXPTR "]",
-			v.recWritePtr, v.recReserve->GetPtrEnd());
-		recReset(idx);
+			v.recWritePtr, v.recEndPtr);
+		dVifReset(idx);
 	}
 
 	// Compile the block now
@@ -361,7 +361,7 @@ _vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill)
 
 	VifUnpackSSE_Dynarec(v, block).CompileRoutine();
 
-	Perf::vif.map((uptr)v.recWritePtr, xGetPtr() - v.recWritePtr, block.upkType /* FIXME ideally a key*/);
+	Perf::vif.RegisterPC(v.recWritePtr, xGetPtr() - v.recWritePtr, block.upkType /* FIXME ideally a key*/);
 	v.recWritePtr = xGetPtr();
 
 	return &block;

@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"

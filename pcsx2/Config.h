@@ -19,12 +19,18 @@
 #include "common/General.h"
 #include <array>
 #include <string>
+#include <optional>
 #include <vector>
 
 class SettingsInterface;
 class SettingsWrapper;
 
 enum class CDVD_SourceType : uint8_t;
+
+namespace Pad
+{
+enum class ControllerType : u8;
+}
 
 /// Generic setting information which can be reused in multiple components.
 struct SettingInfo
@@ -65,6 +71,10 @@ struct SettingInfo
 	float FloatMinValue() const;
 	float FloatMaxValue() const;
 	float FloatStepValue() const;
+
+	void SetDefaultValue(SettingsInterface* si, const char* section, const char* key) const;
+	void CopyValue(SettingsInterface* dest_si, const SettingsInterface& src_si,
+		const char* section, const char* key) const;
 };
 
 enum class GenericInputBinding : u8;
@@ -87,6 +97,7 @@ struct InputBindingInfo
 
 	const char* name;
 	const char* display_name;
+	const char* icon_name;
 	Type bind_type;
 	u16 bind_index;
 	GenericInputBinding generic_mapping;
@@ -165,15 +176,13 @@ enum GamefixId
 // TODO - config - not a fan of the excessive use of enums and macros to make them work
 // a proper object would likely make more sense (if possible).
 
-enum SpeedhackId
+enum class SpeedHack
 {
-	SpeedhackId_FIRST = 0,
-
-	Speedhack_mvuFlag = SpeedhackId_FIRST,
-	Speedhack_InstantVU1,
-	Speedhack_MTVU,
-
-	SpeedhackId_COUNT
+	MVUFlag,
+	InstantVU1,
+	MTVU,
+	EECycleRate,
+	MaxCount,
 };
 
 enum class VsyncMode
@@ -287,16 +296,6 @@ enum class HWMipmapLevel : s8
 	Full
 };
 
-enum class CRCHackLevel : s8
-{
-	Automatic = -1,
-	Off,
-	Minimum,
-	Partial,
-	Full,
-	Aggressive
-};
-
 enum class AccBlendLevel : u8
 {
 	Minimum,
@@ -350,11 +349,43 @@ enum class GSCASMode : u8
 	SharpenAndResize,
 };
 
+enum class GSHWAutoFlushLevel : u8
+{
+	Disabled,
+	SpritesOnly,
+	Enabled,
+};
+
 enum class GSGPUTargetCLUTMode : u8
 {
 	Disabled,
 	Enabled,
 	InsideTarget,
+};
+
+enum class GSTextureInRtMode : u8
+{
+	Disabled,
+	InsideTargets,
+	MergeTargets,
+};
+
+enum class GSBilinearDirtyMode : u8
+{
+	Automatic,
+	ForceBilinear,
+	ForceNearest,
+	MaxCount
+};
+
+enum class GSHalfPixelOffset : u8
+{
+	Off,
+	Normal,
+	Special,
+	SpecialAggressive,
+	Native,
+	MaxCount
 };
 
 // Template function for casting enumerations to their underlying type
@@ -365,7 +396,6 @@ typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
 }
 
 ImplementEnumOperators(GamefixId);
-ImplementEnumOperators(SpeedhackId);
 
 //------------ DEFAULT sseMXCSR VALUES ---------------
 #define DEFAULT_sseMXCSR 0xffc0 //FPU rounding > DaZ, FtZ, "chop"
@@ -607,12 +637,19 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
+		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
 
 		static const char* GetRendererName(GSRendererType type);
 
+		/// Converts a tri-state option to an optional boolean value.
+		static std::optional<bool> TriStateToOptionalBoolean(int value);
+
 		static constexpr float DEFAULT_FRAME_RATE_NTSC = 59.94f;
 		static constexpr float DEFAULT_FRAME_RATE_PAL = 50.00f;
+
+		static constexpr AspectRatioType DEFAULT_ASPECT_RATIO = AspectRatioType::RAuto4_3_3_2;
+		static constexpr GSInterlaceMode DEFAULT_INTERLACE_MODE = GSInterlaceMode::Automatic;
 
 		static constexpr int DEFAULT_VIDEO_CAPTURE_BITRATE = 6000;
 		static constexpr int DEFAULT_VIDEO_CAPTURE_WIDTH = 640;
@@ -632,12 +669,12 @@ struct Pcsx2Config
 					PCRTCOffsets : 1,
 					PCRTCOverscan : 1,
 					IntegerScaling : 1,
-					SyncToHostRefreshRate : 1,
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
 					DisableDualSourceBlend : 1,
 					DisableFramebufferFetch : 1,
+					DisableVertexShaderExpand : 1,
 					DisableThreadedPresentation : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowMessages : 1,
@@ -658,18 +695,19 @@ struct Pcsx2Config
 					GPUPaletteConversion : 1,
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
-					WrapGSMem : 1,
 					Mipmap : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
-					UserHacks_AutoFlush : 1,
 					UserHacks_CPUFBConversion : 1,
+					UserHacks_ReadTCOnClose : 1,
 					UserHacks_DisableDepthSupport : 1,
 					UserHacks_DisablePartialInvalidation : 1,
 					UserHacks_DisableSafeFeatures : 1,
+					UserHacks_DisableRenderFixes : 1,
 					UserHacks_MergePPSprite : 1,
 					UserHacks_WildHack : 1,
-					UserHacks_TextureInsideRt : 1,
+					UserHacks_NativePaletteDraw : 1,
+					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
 					DumpGSData : 1,
@@ -693,84 +731,86 @@ struct Pcsx2Config
 			};
 		};
 
-		int VsyncQueueSize{2};
+		int VsyncQueueSize = 2;
 
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style. Useful for debugging potential bugs in the MTGS pipeline.
-		bool SynchronousMTGS{false};
-		bool FrameLimitEnable{true};
+		bool SynchronousMTGS = false;
 
-		VsyncMode VsyncEnable{VsyncMode::Off};
+		VsyncMode VsyncEnable = VsyncMode::Off;
 
-		float LimitScalar{1.0f};
-		float FramerateNTSC{DEFAULT_FRAME_RATE_NTSC};
-		float FrameratePAL{DEFAULT_FRAME_RATE_PAL};
+		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
+		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;
 
-		AspectRatioType AspectRatio{AspectRatioType::RAuto4_3_3_2};
-		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
-		GSInterlaceMode InterlaceMode{GSInterlaceMode::Automatic};
-		GSPostBilinearMode LinearPresent{ GSPostBilinearMode::BilinearSmooth };
+		AspectRatioType AspectRatio = DEFAULT_ASPECT_RATIO;
+		FMVAspectRatioSwitchType FMVAspectRatioSwitch = FMVAspectRatioSwitchType::Off;
+		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
+		GSPostBilinearMode LinearPresent = GSPostBilinearMode::BilinearSmooth;
 
-		float StretchY{100.0f};
-		int Crop[4]{};
+		float StretchY = 100.0f;
+		int Crop[4] = {};
 
-		float OsdScale{100.0};
+		float OsdScale = 100.0;
 
-		GSRendererType Renderer{GSRendererType::Auto};
-		float UpscaleMultiplier{1.0f};
+		GSRendererType Renderer = GSRendererType::Auto;
+		float UpscaleMultiplier = 1.0f;
 
-		HWMipmapLevel HWMipmap{HWMipmapLevel::Automatic};
-		AccBlendLevel AccurateBlendingUnit{AccBlendLevel::Basic};
-		CRCHackLevel CRCHack{CRCHackLevel::Automatic};
-		BiFiltering TextureFiltering{BiFiltering::PS2};
-		TexturePreloadingLevel TexturePreloading{TexturePreloadingLevel::Full};
-		GSDumpCompressionMethod GSDumpCompression{GSDumpCompressionMethod::Zstandard};
-		GSHardwareDownloadMode HWDownloadMode{GSHardwareDownloadMode::Enabled};
-		GSCASMode CASMode{GSCASMode::Disabled};
-		int Dithering{2};
-		int MaxAnisotropy{0};
-		int SWExtraThreads{2};
-		int SWExtraThreadsHeight{4};
-		int TVShader{0};
-		s16 GetSkipCountFunctionId{-1};
-		s16 BeforeDrawFunctionId{-1};
-		int SkipDrawStart{0};
-		int SkipDrawEnd{0};
+		HWMipmapLevel HWMipmap = HWMipmapLevel::Automatic;
+		AccBlendLevel AccurateBlendingUnit = AccBlendLevel::Basic;
+		BiFiltering TextureFiltering = BiFiltering::PS2;
+		TexturePreloadingLevel TexturePreloading = TexturePreloadingLevel::Full;
+		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
+		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
+		GSCASMode CASMode = GSCASMode::Disabled;
+		u8 Dithering = 2;
+		u8 MaxAnisotropy = 0;
+		u8 TVShader = 0;
+		s16 GetSkipCountFunctionId = -1;
+		s16 BeforeDrawFunctionId = -1;
+		s16 MoveHandlerFunctionId = -1;
+		int SkipDrawStart = 0;
+		int SkipDrawEnd = 0;
 
-		int UserHacks_HalfBottomOverride{-1};
-		int UserHacks_HalfPixelOffset{0};
-		int UserHacks_RoundSprite{0};
-		int UserHacks_TCOffsetX{0};
-		int UserHacks_TCOffsetY{0};
-		int UserHacks_CPUSpriteRenderBW{0};
-		int UserHacks_CPUCLUTRender{ 0 };
-		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode{GSGPUTargetCLUTMode::Disabled};
-		TriFiltering TriFilter{TriFiltering::Automatic};
-		int OverrideTextureBarriers{-1};
-		int OverrideGeometryShaders{-1};
+		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
+		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
+		s8 UserHacks_RoundSprite = 0;
+		s32 UserHacks_TCOffsetX = 0;
+		s32 UserHacks_TCOffsetY = 0;
+		u8 UserHacks_CPUSpriteRenderBW = 0;
+		u8 UserHacks_CPUSpriteRenderLevel = 0;
+		u8 UserHacks_CPUCLUTRender = 0;
+		GSGPUTargetCLUTMode UserHacks_GPUTargetCLUTMode = GSGPUTargetCLUTMode::Disabled;
+		GSTextureInRtMode UserHacks_TextureInsideRt = GSTextureInRtMode::Disabled;
+		GSBilinearDirtyMode UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
+		TriFiltering TriFilter = TriFiltering::Automatic;
+		s8 OverrideTextureBarriers = -1;
 
-		int CAS_Sharpness{50};
-		int ShadeBoost_Brightness{50};
-		int ShadeBoost_Contrast{50};
-		int ShadeBoost_Saturation{50};
-		int PNGCompressionLevel{1};
+		u8 CAS_Sharpness = 50;
+		u8 ShadeBoost_Brightness = 50;
+		u8 ShadeBoost_Contrast = 50;
+		u8 ShadeBoost_Saturation = 50;
+		u8 PNGCompressionLevel = 1;
 
-		int SaveN{0};
-		int SaveL{5000};
+		u16 SWExtraThreads = 2;
+		u16 SWExtraThreadsHeight = 4;
 
-		GSScreenshotSize ScreenshotSize{GSScreenshotSize::WindowResolution};
-		GSScreenshotFormat ScreenshotFormat{GSScreenshotFormat::PNG};
-		int ScreenshotQuality{50};
+		int SaveN = 0;
+		int SaveL = 5000;
 
-		std::string CaptureContainer{DEFAULT_CAPTURE_CONTAINER};
+		s8 ExclusiveFullscreenControl = -1;
+		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;
+		GSScreenshotFormat ScreenshotFormat = GSScreenshotFormat::PNG;
+		int ScreenshotQuality = 50;
+
+		std::string CaptureContainer = DEFAULT_CAPTURE_CONTAINER;
 		std::string VideoCaptureCodec;
 		std::string VideoCaptureParameters;
 		std::string AudioCaptureCodec;
 		std::string AudioCaptureParameters;
-		int VideoCaptureBitrate{DEFAULT_VIDEO_CAPTURE_BITRATE};
-		int VideoCaptureWidth{DEFAULT_VIDEO_CAPTURE_WIDTH};
-		int VideoCaptureHeight{DEFAULT_VIDEO_CAPTURE_HEIGHT};
-		int AudioCaptureBitrate{DEFAULT_AUDIO_CAPTURE_BITRATE};
+		int VideoCaptureBitrate = DEFAULT_VIDEO_CAPTURE_BITRATE;
+		int VideoCaptureWidth = DEFAULT_VIDEO_CAPTURE_WIDTH;
+		int VideoCaptureHeight = DEFAULT_VIDEO_CAPTURE_HEIGHT;
+		int AudioCaptureBitrate = DEFAULT_AUDIO_CAPTURE_BITRATE;
 
 		std::string Adapter;
 		std::string HWDumpDirectory;
@@ -951,12 +991,6 @@ struct Pcsx2Config
 		bool HddEnable{false};
 		std::string HddFile;
 
-		/* The PS2's HDD max size is 2TB
-		 * which is 2^32 * 512 byte sectors
-		 * Note that we don't yet support
-		 * 48bit LBA, so our limit is lower */
-		uint HddSizeSectors{40 * (1024 * 1024 * 1024 / 512)};
-
 		DEV9Options();
 
 		void LoadSave(SettingsWrapper& wrap);
@@ -982,8 +1016,7 @@ struct Pcsx2Config
 				   OpEqu(EthHosts) &&
 
 				   OpEqu(HddEnable) &&
-				   OpEqu(HddFile) &&
-				   OpEqu(HddSizeSectors);
+				   OpEqu(HddFile);
 		}
 
 		bool operator!=(const DEV9Options& right) const
@@ -1045,6 +1078,10 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct SpeedhackOptions
 	{
+		static constexpr s8 MIN_EE_CYCLE_RATE = -3;
+		static constexpr s8 MAX_EE_CYCLE_RATE = 3;
+		static constexpr u8 MAX_EE_CYCLE_SKIP = 3;
+
 		BITFIELD32()
 		bool
 			fastCDVD : 1, // enables fast CDVD access
@@ -1062,17 +1099,13 @@ struct Pcsx2Config
 		void LoadSave(SettingsWrapper& conf);
 		SpeedhackOptions& DisableAll();
 
-		void Set(SpeedhackId id, bool enabled = true);
+		void Set(SpeedHack id, int value);
 
-		bool operator==(const SpeedhackOptions& right) const
-		{
-			return OpEqu(bitset) && OpEqu(EECycleRate) && OpEqu(EECycleSkip);
-		}
+		bool operator==(const SpeedhackOptions& right) const;
+		bool operator!=(const SpeedhackOptions& right) const;
 
-		bool operator!=(const SpeedhackOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		static const char* GetSpeedHackName(SpeedHack id);
+		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view& name);
 	};
 
 	struct DebugOptions
@@ -1105,24 +1138,24 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
-	struct FramerateOptions
+	struct EmulationSpeedOptions
 	{
+		BITFIELD32()
+		bool FrameLimitEnable : 1;
+		bool SyncToHostRefreshRate : 1;
+		BITFIELD_END
+
 		float NominalScalar{1.0f};
 		float TurboScalar{2.0f};
 		float SlomoScalar{0.5f};
 
+		EmulationSpeedOptions();
+
 		void LoadSave(SettingsWrapper& wrap);
 		void SanityCheck();
 
-		bool operator==(const FramerateOptions& right) const
-		{
-			return OpEqu(NominalScalar) && OpEqu(TurboScalar) && OpEqu(SlomoScalar);
-		}
-
-		bool operator!=(const FramerateOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const EmulationSpeedOptions& right) const;
+		bool operator!=(const EmulationSpeedOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1147,10 +1180,7 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct USBOptions
 	{
-		enum : u32
-		{
-			NUM_PORTS = 2
-		};
+		static constexpr u32 NUM_PORTS = 2;
 
 		struct Port
 		{
@@ -1171,6 +1201,39 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
+	struct PadOptions
+	{
+		static constexpr u32 NUM_PORTS = 8;
+
+		struct Port
+		{
+			Pad::ControllerType Type;
+
+			bool operator==(const PadOptions::Port& right) const;
+			bool operator!=(const PadOptions::Port& right) const;
+		};
+
+		std::array<Port, NUM_PORTS> Ports;
+
+		BITFIELD32()
+		bool
+			MultitapPort0_Enabled : 1,
+			MultitapPort1_Enabled;
+		BITFIELD_END
+
+		PadOptions();
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool IsMultitapPortEnabled(u32 port) const
+		{
+			return (port == 0) ? MultitapPort0_Enabled : MultitapPort1_Enabled;
+		}
+
+		bool operator==(const PadOptions& right) const;
+		bool operator!=(const PadOptions& right) const;
+	};
+
+	// ------------------------------------------------------------------------
 	// Options struct for each memory card.
 	//
 	struct McdOptions
@@ -1182,36 +1245,35 @@ struct Pcsx2Config
 
 	// ------------------------------------------------------------------------
 
-#ifdef ENABLE_ACHIEVEMENTS
 	struct AchievementsOptions
 	{
+		static constexpr u32 MINIMUM_NOTIFICATION_DURATION = 3;
+		static constexpr u32 MAXIMUM_NOTIFICATION_DURATION = 30;
+		static constexpr u32 DEFAULT_NOTIFICATION_DURATION = 5;
+		static constexpr u32 DEFAULT_LEADERBOARD_DURATION = 10;
+
 		BITFIELD32()
 		bool
 			Enabled : 1,
-			TestMode : 1,
+			HardcoreMode : 1,
+			EncoreMode : 1,
+			SpectatorMode : 1,
 			UnofficialTestMode : 1,
-			RichPresence : 1,
-			ChallengeMode : 1,
-			Leaderboards : 1,
 			Notifications : 1,
+			LeaderboardNotifications : 1,
 			SoundEffects : 1,
-			PrimedIndicators : 1;
+			Overlays : 1;
 		BITFIELD_END
+
+		u32 NotificationsDuration = DEFAULT_NOTIFICATION_DURATION;
+		u32 LeaderboardsDuration = DEFAULT_LEADERBOARD_DURATION;
 
 		AchievementsOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const AchievementsOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
-
-		bool operator!=(const AchievementsOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const AchievementsOptions& right) const;
+		bool operator!=(const AchievementsOptions& right) const;
 	};
-#endif
 
 	// ------------------------------------------------------------------------
 
@@ -1225,24 +1287,21 @@ struct Pcsx2Config
 		EnablePINE : 1, // enables inter-process communication
 		EnableWideScreenPatches : 1,
 		EnableNoInterlacingPatches : 1,
+		EnableFastBoot : 1,
+		EnableFastBootFastForward : 1,
+		EnablePerGameSettings : 1,
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 		EnableGameFixes : 1, // enables automatic game fixes
 		SaveStateOnShutdown : 1, // default value for saving state on shutdown
 		EnableDiscordPresence : 1, // enables discord rich presence integration
 		InhibitScreensaver : 1,
-		// when enabled uses BOOT2 injection, skipping sony bios splashes
-		UseBOOT2Injection : 1,
 		BackupSavestate : 1,
 		SavestateZstdCompression : 1,
 		// enables simulated ejection of memory cards when loading savestates
 		McdEnableEjection : 1,
 		McdFolderAutoManage : 1,
 
-		MultitapPort0_Enabled : 1,
-		MultitapPort1_Enabled : 1,
-
-		ConsoleToStdio : 1,
 		HostFs : 1,
 
 		WarnAboutUnsafeSettings : 1;
@@ -1259,48 +1318,53 @@ struct Pcsx2Config
 	GamefixOptions Gamefixes;
 	ProfilerOptions Profiler;
 	DebugOptions Debugger;
-	FramerateOptions Framerate;
+	EmulationSpeedOptions EmulationSpeed;
 	SPU2Options SPU2;
 	DEV9Options DEV9;
 	USBOptions USB;
+	PadOptions Pad;
 
 	TraceLogFilters Trace;
 
 	FilenameOptions BaseFilenames;
 
-#ifdef ENABLE_ACHIEVEMENTS
 	AchievementsOptions Achievements;
-#endif
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
 	McdOptions Mcd[8];
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
+	int PINESlot;
+
 	// Set at runtime, not loaded from config.
 	std::string CurrentBlockdump;
 	std::string CurrentIRX;
 	std::string CurrentGameArgs;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
-	LimiterModeType LimiterMode = LimiterModeType::Nominal;
 
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);
+	void LoadSaveCore(SettingsWrapper& wrap);
 	void LoadSaveMemcards(SettingsWrapper& wrap);
+
+	/// Reloads options affected by patches.
+	void ReloadPatchAffectingOptions();
 
 	std::string FullpathToBios() const;
 	std::string FullpathToMcd(uint slot) const;
 
-	bool MultitapEnabled(uint port) const;
-
-	bool operator==(const Pcsx2Config& right) const;
-	bool operator!=(const Pcsx2Config& right) const
-	{
-		return !this->operator==(right);
-	}
+	bool operator==(const Pcsx2Config& right) const = delete;
+	bool operator!=(const Pcsx2Config& right) const = delete;
 
 	/// Copies runtime configuration settings (e.g. frame limiter state).
 	void CopyRuntimeConfig(Pcsx2Config& cfg);
+
+	/// Copies configuration from one file to another. Does not copy controller settings.
+	static void CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si);
+
+	/// Clears all core keys from the specified interface.
+	static void ClearConfiguration(SettingsInterface* dest_si);
 };
 
 extern Pcsx2Config EmuConfig;
@@ -1317,8 +1381,7 @@ namespace EmuFolders
 	extern std::string Langs;
 	extern std::string Logs;
 	extern std::string Cheats;
-	extern std::string CheatsWS;
-	extern std::string CheatsNI;
+	extern std::string Patches;
 	extern std::string Resources;
 	extern std::string Cache;
 	extern std::string Covers;
@@ -1326,6 +1389,9 @@ namespace EmuFolders
 	extern std::string Textures;
 	extern std::string InputProfiles;
 	extern std::string Videos;
+
+	/// Initializes critical folders (AppRoot, DataRoot, Settings). Call once on startup.
+	bool InitializeCriticalFolders();
 
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults(SettingsInterface& si);

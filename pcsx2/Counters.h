@@ -145,6 +145,5 @@ extern u32	rcntRcount(int index);
 template< uint page > extern bool rcntWrite32( u32 mem, mem32_t& value );
 template< uint page > extern u16 rcntRead32( u32 mem );		// returns u16 by design! (see implementation for details)
 
-extern u32 UpdateVSyncRate();
-extern void frameLimitReset();
+extern void UpdateVSyncRate(bool force);
 

@@ -84,7 +84,7 @@ bool MemoryCardConvertWorker::ConvertToFile(const std::string& srcFolderName, co
 
 	if (!writeResult)
 	{
-		Console.Error("%s(%s, %s, %d) Failed to write memory card contents to file", __FUNCTION__, srcPath.c_str(), destPath.c_str(), type);
+		Console.Error("%s(%s, %s, %d) Failed to write Memory Card contents to file", __FUNCTION__, srcPath.c_str(), destPath.c_str(), type);
 		return false;
 	}
 #ifdef _WIN32
@@ -112,7 +112,7 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 
 	if (!sourceBufferOpt.has_value())
 	{
-		Console.Error("%s(%s, %s, %d) Failed to open file memory card!", __FUNCTION__, srcFileName.c_str(), destFolderName.c_str(), type);
+		Console.Error("%s(%s, %s, %d) Failed to open file Memory Card!", __FUNCTION__, srcFileName.c_str(), destFolderName.c_str(), type);
 		return false;
 	}
 
@@ -147,8 +147,8 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 
 		targetFolderMemoryCard.Close();
 
-		// If the source file memory card was larger than 8 MB, the raw copy will have also made the superblock of
-		// the destination folder memory card larger than 8 MB. For compatibility, we always want folder memory cards
+		// If the source file Memory Card was larger than 8 MB, the raw copy will have also made the superblock of
+		// the destination folder Memory Card larger than 8 MB. For compatibility, we always want folder Memory Cards
 		// to report 8 MB, so we'll override that here. Don't do this on the simulated run, only the actual.
 		if (!simulateWrites && sourceBuffer.size() != FolderMemoryCard::TotalSizeRaw)
 		{

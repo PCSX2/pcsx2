@@ -2,8 +2,8 @@ name: 🍎 MacOS Builds
 
 on:
   push:
-    branches:
-      - '*'
+    branches-ignore:
+      - "l10n_master"
   pull_request:
     branches:
       - master
@@ -11,8 +11,8 @@ on:
 jobs:
   build_macos_qt:
     name: "Defaults"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/macos_build.yml
     with:
-      jobName: "Qt"
-      gui: "Qt"
+      jobName: "MacOS Build"
     secrets: inherit

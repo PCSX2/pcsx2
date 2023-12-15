@@ -14,16 +14,15 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "Counters.h"
 #include "Common.h"
+#include "Config.h"
+#include "Gif_Unit.h"
+#include "MTGS.h"
+#include "VMManager.h"
 
 #include <list>
-
-#include "Gif_Unit.h"
-#include "Counters.h"
-#include "Config.h"
-
-using namespace Threading;
-using namespace R5900;
 
 alignas(16) u8 g_RealGSMem[Ps2MemSize::GSregs];
 static bool s_GSRegistersWritten = false;
@@ -31,47 +30,16 @@ static bool s_GSRegistersWritten = false;
 void gsSetVideoMode(GS_VideoMode mode)
 {
 	gsVideoMode = mode;
-	UpdateVSyncRate();
+	UpdateVSyncRate(false);
 }
 
 // Make sure framelimiter options are in sync with GS capabilities.
 void gsReset()
 {
-	GetMTGS().ResetGS(true);
+	MTGS::ResetGS(true);
 	gsVideoMode = GS_VideoMode::Uninitialized;
-	memzero(g_RealGSMem);
-	UpdateVSyncRate();
-}
-
-void gsUpdateFrequency(Pcsx2Config& config)
-{
-	if (config.GS.FrameLimitEnable)
-	{
-		switch (config.LimiterMode)
-		{
-		case LimiterModeType::Nominal:
-			config.GS.LimitScalar = config.Framerate.NominalScalar;
-			break;
-		case LimiterModeType::Slomo:
-			config.GS.LimitScalar = config.Framerate.SlomoScalar;
-			break;
-		case LimiterModeType::Turbo:
-			config.GS.LimitScalar = config.Framerate.TurboScalar;
-			break;
-		case LimiterModeType::Unlimited:
-			config.GS.LimitScalar = 0.0f;
-			break;
-		default:
-			pxAssert("Unknown framelimiter mode!");
-		}
-	}
-	else
-	{
-		config.GS.LimitScalar = 0.0f;
-	}
-
-	GetMTGS().UpdateVSyncMode();
-	UpdateVSyncRate();
+	std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
+	UpdateVSyncRate(true);
 }
 
 static __fi void gsCSRwrite( const tGS_CSR& csr )
@@ -82,13 +50,12 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
 		gifUnit.gsFINISH.gsFINISHFired = true;
+		gifUnit.gsFINISH.gsFINISHPending = false;
 		// Privilage registers also reset.
-		memzero(g_RealGSMem);
+		std::memset(g_RealGSMem, 0, sizeof(g_RealGSMem));
 		GSIMR.reset();
 		CSRreg.Reset();
-		gsVideoMode = GS_VideoMode::Uninitialized;
-		UpdateVSyncRate();
-		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
+		MTGS::ResetGS(false);
 	}
 
 	if(csr.FLUSH)
@@ -118,6 +85,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 	if (csr.FINISH)	{
 		CSRreg.FINISH = false;
 		gifUnit.gsFINISH.gsFINISHFired = false; //Clear the previously fired FINISH (YS, Indiecar 2005, MGS3)
+		gifUnit.gsFINISH.gsFINISHPending = false;
 	}
 	if(csr.HSINT)	CSRreg.HSINT	= false;
 	if(csr.VSINT)	CSRreg.VSINT	= false;
@@ -225,6 +193,12 @@ void gsWrite64_generic( u32 mem, u64 value )
 void gsWrite64_page_00( u32 mem, u64 value )
 {
 	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
+
+	if (mem == GS_SMODE1 || mem == GS_SMODE2)
+	{
+		if (value != *(u64*)PS2GS_BASE(mem))
+			UpdateVSyncRate(false);
+	}
 
 	gsWrite64_generic( mem, value );
 }
@@ -365,12 +339,13 @@ void gsPostVsyncStart()
 
 	const bool registers_written = s_GSRegistersWritten;
 	s_GSRegistersWritten = false;
-	GetMTGS().PostVsyncStart(registers_written);
+	MTGS::PostVsyncStart(registers_written);
 }
 
-void SaveStateBase::gsFreeze()
+bool SaveStateBase::gsFreeze()
 {
 	FreezeMem(PS2MEM_GS, 0x2000);
 	Freeze(gsVideoMode);
+	return IsOkay();
 }
 

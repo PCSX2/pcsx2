@@ -16,14 +16,13 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS/Renderers/OpenGL/GLLoader.h"
+
+#include "glad.h"
 
 class GSTextureOGL final : public GSTexture
 {
 private:
 	GLuint m_texture_id = 0; // the texture id
-	GLuint m_fbo_read = 0;
-	bool m_clean = false;
 
 	// Avoid alignment constrain
 	//GSVector4i m_r;
@@ -53,10 +52,8 @@ public:
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
 	void Unmap() final;
 	void GenerateMipmap() final;
-	bool Save(const std::string& fn) final;
 	void Swap(GSTexture* tex) final;
 
-	GSMap Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer);
 	bool IsIntegerFormat() const
 	{
 		return (m_int_format == GL_RED_INTEGER || m_int_format == GL_RGBA_INTEGER);
@@ -66,13 +63,7 @@ public:
 		return (m_int_type == GL_UNSIGNED_BYTE || m_int_type == GL_UNSIGNED_SHORT || m_int_type == GL_UNSIGNED_INT);
 	}
 
-	u32 GetID() final { return m_texture_id; }
-	bool HasBeenCleaned() { return m_clean; }
-	void WasAttached() { m_clean = false; }
-	void WasCleaned() { m_clean = true; }
-
-	void Clear(const void* data);
-	void Clear(const void* data, const GSVector4i& area);
+	__fi u32 GetID() { return m_texture_id; }
 };
 
 class GSDownloadTextureOGL final : public GSDownloadTexture

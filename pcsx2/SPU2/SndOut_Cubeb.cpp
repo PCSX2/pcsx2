@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -20,6 +20,7 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 
+#include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/RedtapeWindows.h"
@@ -30,8 +31,6 @@
 #ifdef _WIN32
 #include <objbase.h>
 #endif
-
-#include "HostSettings.h"
 
 class Cubeb : public SndOutModule
 {
@@ -138,8 +137,11 @@ public:
 
 	bool Init() override
 	{
+		if (stream)
+			pxFailRel("Cubeb stream already open in Init()");
+
 #ifdef _WIN32
-		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		const HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 		m_COMInitializedByUs = SUCCEEDED(hr);
 		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
@@ -152,8 +154,7 @@ public:
 		cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 #endif
 
-		const std::string backend(Host::GetStringSettingValue("SPU2/Output", "BackendName", ""));
-		int rv = cubeb_init(&m_context, "PCSX2", backend.empty() ? nullptr : backend.c_str());
+		int rv = cubeb_init(&m_context, "PCSX2", EmuConfig.SPU2.BackendName.empty() ? nullptr : EmuConfig.SPU2.BackendName.c_str());
 		if (rv != CUBEB_OK)
 		{
 			Host::ReportFormattedErrorAsync("Cubeb Error", "Could not initialize cubeb context: %d", rv);
@@ -162,9 +163,6 @@ public:
 
 		switch (EmuConfig.SPU2.SpeakerConfiguration) // speakers = (numSpeakers + 1) *2; ?
 		{
-			case 0:
-				channels = 2;
-				break; // Stereo
 			case 1:
 				channels = 4;
 				break; // Quadrafonic
@@ -176,7 +174,7 @@ public:
 				break; // Surround 7.1
 			default:
 				channels = 2;
-				break;
+				break; // Stereo
 		}
 
 		cubeb_channel_layout layout = CUBEB_LAYOUT_UNDEFINED;
@@ -209,10 +207,6 @@ public:
 			case 7:
 				switch (EmuConfig.SPU2.DplDecodingLevel)
 				{
-					case 0:
-						Console.WriteLn("(Cubeb) 5.1 speaker expansion enabled.");
-						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16>>(&writtenSoFar); //"normal" stereo upmix
-						break;
 					case 1:
 						Console.WriteLn("(Cubeb) 5.1 speaker expansion with basic ProLogic dematrixing enabled.");
 						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16Dpl>>(&writtenSoFar); // basic Dpl decoder without rear stereo balancing
@@ -220,6 +214,10 @@ public:
 					case 2:
 						Console.WriteLn("(Cubeb) 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.");
 						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16DplII>>(&writtenSoFar); //gigas PLII
+						break;
+					default:
+						Console.WriteLn("(Cubeb) 5.1 speaker expansion enabled.");
+						ActualReader = std::make_unique<ConvertedSampleReader<Stereo51Out16>>(&writtenSoFar); //"normal" stereo upmix
 						break;
 				}
 				channels = 6; // we do not support 7.0 or 6.2 configurations, downgrade to 5.1
@@ -297,7 +295,9 @@ public:
 				if (!selected_device)
 				{
 					Host::AddIconOSDMessage("CubebDeviceNotFound", ICON_FA_VOLUME_MUTE,
-						fmt::format("Requested audio output device '{}' not found, using default.", selected_device_name),
+						fmt::format(
+							TRANSLATE_FS("SPU2", "Requested audio output device '{}' not found, using default."),
+							selected_device_name),
 						Host::OSD_WARNING_DURATION);
 				}
 			}
@@ -378,9 +378,10 @@ public:
 		return "cubeb";
 	}
 
-	const char* GetLongName() const override
+	const char* GetDisplayName() const override
 	{
-		return "Cubeb (Cross-platform)";
+		//: Cubeb is an audio engine name. Leave as-is.
+		return TRANSLATE_NOOP("SPU2", "Cubeb (Cross-platform)");
 	}
 
 	const char* const* GetBackendNames() const override

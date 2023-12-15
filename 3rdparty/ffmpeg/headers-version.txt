@@ -1,1 +1,1 @@
-ffmpeg-4.4.3 from https://ffmpeg.org/releases/ffmpeg-4.4.3.tar.xz
+ffmpeg-6.0.0 from https://ffmpeg.org/releases/ffmpeg-6.0.tar.xz

@@ -190,18 +190,6 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 #define opCase3 if (opCase == 3) // I  Opcodes
 #define opCase4 if (opCase == 4) // Q  Opcodes
 
-//------------------------------------------------------------------
-// Define mVUquickSearch
-//------------------------------------------------------------------
-alignas(__pagesize) extern u8 mVUsearchXMM[__pagesize];
-typedef u32 (*mVUCall)(void*, void*);
-#define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0)
-#define mVUemitSearch() \
-	{ \
-		mVUcustomSearch(); \
-	}
-//------------------------------------------------------------------
-
 // Misc Macros...
 #define mVUcurProg   mVU.prog.cur[0]
 #define mVUblocks    mVU.prog.cur->block

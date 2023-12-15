@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -35,7 +35,7 @@ StereoOut32 V_Core::ReadInput_HiFi()
 	if (SPU2::IsRunningPSXMode() && SPU2::MsgToConsole())
 		SPU2::ConLog("ReadInput_HiFi!!!!!\n");
 
-	u16 ReadIndex = (OutPos * 2) & 0x1FF;
+	const u16 ReadIndex = (OutPos * 2) & 0x1FF;
 
 	StereoOut32 retval(
 		(s32&)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
@@ -43,12 +43,8 @@ StereoOut32 V_Core::ReadInput_HiFi()
 
 	if (Index == 1)
 	{
-		// CDDA Mode:
-		// give 30 bit data (SndOut downsamples the rest of the way)
-		// HACKFIX: 28 bits seems better according to rama.  I should take some time and do some
-		//    bitcounting on this one.  --air
-		retval.Left >>= 4;
-		retval.Right >>= 4;
+		retval.Left >>= 16;
+		retval.Right >>= 16;
 	}
 
 	// Simulate MADR increase, GTA VC tracks the MADR address for calculating a certain point in the buffer

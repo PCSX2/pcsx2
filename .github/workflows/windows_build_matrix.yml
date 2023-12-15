@@ -2,8 +2,8 @@ name: 🖥️ Windows Builds
 
 on:
   push:
-    branches:
-      - '*'
+    branches-ignore:
+      - "l10n_master"
   pull_request:
     branches:
       - master
@@ -12,19 +12,21 @@ jobs:
   # MSBUILD
   lint_vs_proj_files:
     name: Lint VS Project Files
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     runs-on: windows-2019
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Verify VS Project Files
         run: .github\workflows\scripts\windows\validate-vs-filters.ps1
 
   build_qt_sse4:
     needs: lint_vs_proj_files
     name: "SSE4"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "MSVC SSE4"
       configuration: Release
       simd: "SSE4"
     secrets: inherit
@@ -32,17 +34,19 @@ jobs:
   build_qt_avx2:
     needs: lint_vs_proj_files
     name: "AVX2"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "MSVC AVX2"
       configuration: Release AVX2
     secrets: inherit
 
-  build_qt_sse4_cmake:
-    name: "CMake SSE4"
+  build_qt_cmake:
+    name: "CMake"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt
+      jobName: "CMake MSVC"
       configuration: CMake
       buildSystem: cmake
     secrets: inherit
@@ -50,9 +54,10 @@ jobs:
   build_qt_clang_sse4:
     needs: lint_vs_proj_files
     name: "SSE4"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt Clang
+      jobName: "Clang SSE4"
       configuration: Release Clang
       simd: "SSE4"
     secrets: inherit
@@ -60,8 +65,20 @@ jobs:
   build_qt_clang_avx2:
     needs: lint_vs_proj_files
     name: "AVX2"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
     uses: ./.github/workflows/windows_build_qt.yml
     with:
-      jobName: Qt Clang
+      jobName: "Clang AVX2"
       configuration: Release Clang AVX2
+    secrets: inherit
+
+  build_qt_cmake_clang:
+    name: "CMake"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: "CMake Clang"
+      configuration: CMake
+      buildSystem: cmake
+      cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DPCSX2_EXE_NAME=pcsx2-qt-clang
     secrets: inherit

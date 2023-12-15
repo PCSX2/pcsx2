@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -53,7 +53,7 @@ void ATA::HDD_InitDevParameters()
 	DevCon.WriteLn("DEV9: HDD_InitDevParameters");
 
 	curSectors = regNsector;
-	curHeads = (u8)((regSelect & 0x7) + 1);
+	curHeads = static_cast<u8>((regSelect & 0x7) + 1);
 	PostCmdNoData();
 }
 
@@ -106,7 +106,7 @@ void ATA::HDD_SetFeatures()
 			return;
 		case 0x03: //Set transfer mode
 		{
-			const u16 xferMode = (u16)regNsector; //Set Transfer mode
+			const u16 xferMode = static_cast<u16>(regNsector); //Set Transfer mode
 
 			const int mode = xferMode & 0x07;
 			switch ((xferMode) >> 3)

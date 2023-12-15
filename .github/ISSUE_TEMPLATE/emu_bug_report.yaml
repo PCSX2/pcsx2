@@ -12,19 +12,24 @@ body:
         ## Important: Read First
 
         Please do not make support requests on GitHub. Our issue tracker is for tracking bugs and feature requests only
-        If you need help configuring the emulator please make a request on our forums or contact us on discord
+        If you need help configuring the emulator please make a request on our forums or contact us on discord.
 
-        If you are unsure, start with [discord](https://discord.com/invite/TCz3t9k) or the [forums](https://forums.pcsx2.net/index.php)
+        If you are unsure, start with [discord](https://discord.com/invite/TCz3t9k) or the [forums](https://forums.pcsx2.net/index.php).
 
-        Please make an effort to make sure your issue isn't already reported
+        Please make an effort to make sure your issue isn't already reported.
+
+        Do not create issues involving software piracy of BIOS or ISO files, our rules specifically prohibit this and your issue will be closed.
 
         ### Please Avoid Issues Pertaining to the Following:
-        - We are **not** accepting bug reports for **PSX mode** at this time
-          - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use a [proper PSX emulator](https://emulation.gametechwiki.com/index.php/PlayStation_emulators)
-        - We do **not** accept issues relating to **upscaling** at this time
-          - We are aware of the various problems with upscaling. The issue spans many games and having hundreds of issues for the same fundamental issues isn't particularly helpful. There are several workarounds for graphical problems that come as a result of upscaling
-          - Please try your game at native resolution before creating an issue
-          - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues
+        - We are **not** accepting bug reports for **PSX mode** at this time.
+          - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use  [Duckstation](https://github.com/stenzek/duckstation/releases/tag/latest).
+        - We do **not** accept issues relating to **upscaling** at this time.
+          - We are aware of the various problems with upscaling. The issue spans many games and having hundreds of issues for the same fundamental issues isn't particularly helpful. There are several workarounds for graphical problems that come as a result of upscaling.
+          - Please try your game at native resolution before creating an issue.
+          - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues.
+        - We do **not** accept issues relating to Widescreen/no-interlace patches at this time.
+          - Any issues pertaining to Widescreen/no-interlace patches please forward them to the [patches repository](https://github.com/PCSX2/pcsx2_patches). 
+
   - type: textarea
     id: desc
     attributes:
@@ -52,13 +57,13 @@ body:
         ## System Info
 
         Please make sure your system meets our requirements for OS version, CPU and GPU
-        - [System Requirements](https://github.com/PCSX2/pcsx2#system-requirements)
+        - [System Requirements](https://github.com/PCSX2/pcsx2#system-requirements).
 
-        Performance issues as a result of not meeting our hardware requirements are not valid
+        Performance issues as a result of not meeting our hardware requirements are not valid.
 
         Please read our known issues pages for AMD and Intel drivers.
-        - [Intel Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know)
-        - [AMD Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know)
+        - [Intel Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know).
+        - [AMD Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know).
 
         We are **not** accepting issues related to the **libretro** core. The libretro core is being maintained separately at this time
   - type: input
@@ -117,11 +122,11 @@ body:
     attributes:
       label: Emulation Settings
       description: |
-        Any non-default core settings. If you don't want to list them out, please provide screenshots of your configuration window
+        Any non-default core settings. If you don't want to list them out, please provide screenshots of your configuration window.
 
-        Please note that the safe preset works for most games. MTVU can have some compatibility issues so please disable it before making a report
+        Please note that the safe preset works for most games. MTVU can have some compatibility issues so please disable it before making a report.
 
-        If you need to modify the settings manually because a game requires you to do so to work, please state that explicitly
+        If you need to modify the settings manually because a game requires you to do so to work, please state that explicitly.
     validations:
       required: false
   - type: textarea
@@ -136,8 +141,8 @@ body:
     attributes:
       label: "Logs & Dumps"
       description: |
-        Please feel free to attach any logs, block dumps, GSdump, etc here
-
+        Please feel free to attach any logs, block dumps, GSdump, etc here.
+        If PCSX2 crashed, please post crash logs and the .dmp file (in a zip file) if appropriate.
         If your problem is graphical in nature it is highly recommended that you provide a GSdump. [GSdump Guide](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump)
     validations:
       required: false

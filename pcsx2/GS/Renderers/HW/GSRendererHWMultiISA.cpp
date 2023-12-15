@@ -21,7 +21,7 @@
 class CURRENT_ISA::GSRendererHWFunctions
 {
 public:
-	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc);
+	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer);
 
 	static void Populate(GSRendererHW& renderer)
 	{
@@ -36,19 +36,20 @@ void CURRENT_ISA::GSRendererHWPopulateFunctions(GSRendererHW& renderer)
 	GSRendererHWFunctions::Populate(renderer);
 }
 
-bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
+// since there's no overlapping draws, we can just keep this intact
+static GSVector4i s_dimx_storage[8];
+static GIFRegDIMX s_last_dimx;
+
+bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer)
 {
 	GSVertexTrace& vt = hw.m_vt;
 	const GIFRegPRIM* PRIM = hw.PRIM;
 	const GSDrawingContext* context = hw.m_context;
-	const GSDrawingEnvironment& env = hw.m_env;
+	const GSDrawingEnvironment& env = *hw.m_draw_env;
 	const GS_PRIM_CLASS primclass = vt.m_primclass;
 
 	GSRasterizerData data;
 	GSScanlineGlobalData& gd = data.global;
-
-	u32 clut_storage[256];
-	GSVector4i dimx_storage[8];
 
 	hw.m_sw_vertex_buffer.resize(((hw.m_vertex.next + 1) & ~1));
 
@@ -58,7 +59,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	data.vertex_count = hw.m_vertex.next;
 	data.index = hw.m_index.buff;
 	data.index_count = hw.m_index.tail;
-	data.scanmsk_value = hw.m_env.SCANMSK.MSK;
+	data.scanmsk_value = env.SCANMSK.MSK;
 
 	// Skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !vt.m_eq.q.
@@ -66,8 +67,8 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	const u32 q_div = !hw.IsMipMapActive() && ((vt.m_eq.q && vt.m_min.t.z != 1.0f) || (!vt.m_eq.q && vt.m_primclass == GS_SPRITE_CLASS));
 	GSVertexSW::s_cvb[vt.m_primclass][PRIM->TME][PRIM->FST][q_div](context, data.vertex, hw.m_vertex.buff, hw.m_vertex.next);
 
-	GSVector4i scissor = GSVector4i(context->scissor.in);
-	GSVector4i bbox = GSVector4i(vt.m_min.p.floor().xyxy(vt.m_max.p.ceil()));
+	GSVector4i scissor = context->scissor.in;
+	GSVector4i bbox = GSVector4i(vt.m_min.p.floor().xyxy(vt.m_max.p.ceil())).rintersect(scissor);
 
 	// Points and lines may have zero area bbox (single line: 0, 0 - 256, 0)
 
@@ -106,7 +107,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
 	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
-	if ((context->FRAME.PSM & 0xF) == PSM_PSMCT24 && context->TEST.DATE)
+	if ((context->FRAME.PSM & 0xF) == PSMCT24 && context->TEST.DATE)
 	{
 		//DevCon.Warning("DATE on a 24bit format, Frame PSM %x", context->FRAME.PSM);
 		return false;
@@ -128,10 +129,10 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 
 	if (context->TEST.ATE)
 	{
-		if (!hw.TryAlphaTest(fm, fm_mask, zm))
+		if (!hw.TryAlphaTest(fm, zm))
 		{
 			gd.sel.atst = context->TEST.ATST;
-			gd.sel.afail = context->TEST.AFAIL;
+			gd.sel.afail = context->TEST.GetAFAIL(context->FRAME.PSM);
 
 			gd.aref = GSVector4i((int)context->TEST.AREF);
 
@@ -150,7 +151,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	}
 
 	const bool fwrite = (fm & fm_mask) != fm_mask;
-	const bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSM_PSMCT24);
+	const bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSMCT24);
 
 	const bool zwrite = zm != 0xffffffff;
 	const bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
@@ -180,9 +181,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 			{
 				gd.sel.tlu = 1;
 
-				gd.clut = clut_storage; // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
-
-				memcpy(gd.clut, (const u32*)hw.m_mem.m_clut, sizeof(u32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
+				gd.clut = const_cast<u32*>(static_cast<const u32*>(hw.m_mem.m_clut));
 			}
 
 			gd.sel.wms = context->CLAMP.WMS;
@@ -199,7 +198,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 
 			GIFRegTEX0 TEX0 = context->GetSizeFixedTEX0(vt.m_min.t.xyxy(vt.m_max.t), vt.IsLinear(), mipmap);
 
-			const GSVector4i r = hw.GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf).coverage;
+			const GSVector4i r = hw.GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
 
 			if (!hw.m_sw_texture[0])
 				hw.m_sw_texture[0] = std::make_unique<GSTextureCacheSW::Texture>(0, TEX0, env.TEXA);
@@ -300,7 +299,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 					else
 						hw.m_sw_texture[i]->Reset(gd.sel.tw + 3, MIP_TEX0, env.TEXA);
 
-					GSVector4i r = hw.GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf).coverage;
+					GSVector4i r = hw.GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true).coverage;
 					hw.m_sw_texture[i]->Update(r);
 					gd.tex[i] = hw.m_sw_texture[i]->m_buff;
 				}
@@ -411,7 +410,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 			gd.fga = (env.FOGCOL.U32[0] >> 8) & 0x00ff00ff;
 		}
 
-		if (context->FRAME.PSM != PSM_PSMCT24)
+		if (context->FRAME.PSM != PSMCT24)
 		{
 			gd.sel.date = context->TEST.DATE;
 			gd.sel.datm = context->TEST.DATM;
@@ -452,10 +451,12 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 		if (env.DTHE.DTHE)
 		{
 			gd.sel.dthe = 1;
-
-			gd.dimx = dimx_storage;
-
-			memcpy(gd.dimx, env.dimx, sizeof(env.dimx));
+			gd.dimx = s_dimx_storage;
+			if (s_last_dimx != env.DIMX)
+			{
+				s_last_dimx = env.DIMX;
+				GSState::ExpandDIMX(s_dimx_storage, env.DIMX);
+			}
 		}
 	}
 
@@ -554,7 +555,21 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc)
 	static_cast<GSSingleRasterizer*>(hw.m_sw_rasterizer.get())->Draw(data);
 
 	if (invalidate_tc)
-		hw.m_tc->InvalidateVideoMem(context->offset.fb, bbox);
+		g_texture_cache->InvalidateVideoMem(context->offset.fb, bbox);
+
+	// Jak does sw prim render, then draws to the same target, and it needs to be uploaded.
+	if (add_ee_transfer)
+	{
+		GSRendererHW::GSUploadQueue uq;
+		uq.blit.U64 = 0;
+		uq.blit.DBP = hw.m_cached_ctx.FRAME.Block();
+		uq.blit.DBW = hw.m_cached_ctx.FRAME.FBW;
+		uq.blit.DPSM = hw.m_cached_ctx.FRAME.PSM;
+		uq.draw = GSState::s_n;
+		uq.rect = bbox;
+		uq.zero_clear = false;
+		hw.m_draw_transfers.push_back(uq);
+	}
 
 	return true;
 }

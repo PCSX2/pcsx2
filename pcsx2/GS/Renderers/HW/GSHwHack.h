@@ -18,65 +18,54 @@
 class GSHwHack
 {
 public:
-	static bool GSC_BigMuthaTruckers(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_DeathByDegreesTekkenNinaWilliams(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_GiTS(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Manhunt2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_CrashBandicootWoC(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_SacredBlaze(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Oneechanbara2Special(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_SakuraTaisen(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_SFEX3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Tekken5(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_TombRaiderAnniversary(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_TombRaiderLegend(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_TombRaiderUnderWorld(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_BurnoutGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_BlackAndBurnoutSky(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_MidnightClub3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_TalesOfLegendia(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Kunoichi(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_GodHand(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_KnightsOfTheTemple2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_TalesofSymphonia(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Simple2000Vol114(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_UrbanReign(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_SteambotChronicles(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_YakuzaGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_GetawayGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_AceCombat4(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_FFXGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Okami(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_RedDeadRevolver(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_ShinOnimusha(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_XenosagaE3(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_BlueTongueGames(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
-	static bool GSC_Battlefield2(GSRendererHW& r, const GSFrameInfo& fi, int& skip);
+	static bool GSC_DeathByDegreesTekkenNinaWilliams(GSRendererHW& r, int& skip);
+	static bool GSC_GiTS(GSRendererHW& r, int& skip);
+	static bool GSC_Manhunt2(GSRendererHW& r, int& skip);
+	static bool GSC_SacredBlaze(GSRendererHW& r, int& skip);
+	static bool GSC_SFEX3(GSRendererHW& r, int& skip);
+	static bool GSC_Tekken5(GSRendererHW& r, int& skip);
+	static bool GSC_BurnoutGames(GSRendererHW& r, int& skip);
+	static bool GSC_BlackAndBurnoutSky(GSRendererHW& r, int& skip);
+	static bool GSC_MidnightClub3(GSRendererHW& r, int& skip);
+	static bool GSC_TalesOfLegendia(GSRendererHW& r, int& skip);
+	static bool GSC_Kunoichi(GSRendererHW& r, int& skip);
+	static bool GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip);
+	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip);
+	static bool GSC_KnightsOfTheTemple2(GSRendererHW& r, int& skip);
+	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip);
+	static bool GSC_TalesofSymphonia(GSRendererHW& r, int& skip);
+	static bool GSC_Simple2000Vol114(GSRendererHW& r, int& skip);
+	static bool GSC_UrbanReign(GSRendererHW& r, int& skip);
+	static bool GSC_SteambotChronicles(GSRendererHW& r, int& skip);
+	static bool GSC_GetawayGames(GSRendererHW& r, int& skip);
+	static bool GSC_BlueTongueGames(GSRendererHW& r, int& skip);
+	static bool GSC_Battlefield2(GSRendererHW& r, int& skip);
+	static bool GSC_NFSUndercover(GSRendererHW& r, int& skip);
+	static bool GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip);
+	static bool GSC_MetalGearSolid3(GSRendererHW& r, int& skip);
+	static bool GSC_BigMuthaTruckers(GSRendererHW& r, int& skip);
+	static bool GSC_HitmanBloodMoney(GSRendererHW& r, int& skip);
 
 	static bool OI_PointListPalette(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	static bool OI_BigMuthaTruckers(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_DBZBTGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	static bool OI_FFXII(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	static bool OI_FFX(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_ArTonelico2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	static bool OI_JakGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	static bool OI_BurnoutGames(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-
 	static bool OI_Battlefield2(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+	static bool OI_HauntingGround(GSRendererHW& r, GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+
+	static bool MV_Growlanser(GSRendererHW& r);
+	static bool MV_Ico(GSRendererHW& r);
 
 	template <typename F>
 	struct Entry
 	{
 		const char* name;
 		F ptr;
-		CRCHackLevel level;
 	};
 
 	static const Entry<GSRendererHW::GSC_Ptr> s_get_skip_count_functions[];
 	static const Entry<GSRendererHW::OI_Ptr> s_before_draw_functions[];
+	static const Entry<GSRendererHW::MV_Ptr> s_move_handler_functions[];
 };

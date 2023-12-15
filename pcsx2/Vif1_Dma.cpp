@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,13 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
-#include "Vif_Dma.h"
 #include "GS.h"
 #include "Gif_Unit.h"
-#include "VUmicro.h"
-#include "newVif.h"
 #include "MTVU.h"
+#include "VUmicro.h"
+#include "Vif_Dma.h"
+#include "x86/newVif.h"
 
 u32 g_vif1Cycles = 0;
 
@@ -71,7 +72,7 @@ void vif1TransferToMemory()
 		pxAssert(p3.isDone() || !p3.gifTag.isValid);
 	}
 
-	GetMTGS().InitAndReadFIFO(reinterpret_cast<u8*>(pMem), size);
+	MTGS::InitAndReadFIFO(reinterpret_cast<u8*>(pMem), size);
 	//	pMem += size;
 
 	//Some games such as Alex Ferguson's Player Manager 2001 reads less than GSLastDownloadSize by VIF then reads the remainder by FIFO
@@ -169,6 +170,7 @@ __fi void vif1SetupTransfer()
 			//DevCon.Warning("VIF1 DMA Stall");
 			// stalled
 			hwDmacIrq(DMAC_STALL_SIS);
+			CPU_SET_DMASTALL(DMAC_VIF1, true);
 			return;
 		}
 	}
@@ -230,8 +232,15 @@ __fi void vif1SetupTransfer()
 __fi void vif1VUFinish()
 {
 	// Sync up VU1 so we don't errantly wait.
-	while (!THREAD_VU1 && static_cast<int>(cpuRegs.cycle - VU1.cycle) > 0 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+	while (!THREAD_VU1 && (VU0.VI[REG_VPU_STAT].UL & 0x100))
+	{
+		const int cycle_diff = static_cast<int>(cpuRegs.cycle - VU1.cycle);
+
+		if ((EmuConfig.Gamefixes.VUSyncHack && cycle_diff < VU1.nextBlockCycles) || cycle_diff <= 0)
+			break;
+
 		CpuVU1->ExecuteBlock();
+	}
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
@@ -316,6 +325,7 @@ __fi void vif1Interrupt()
 			CPU_INT(DMAC_VIF1, 128);
 			if (gifRegs.stat.APATH == 3)
 				vif1Regs.stat.VGW = 1; //We're waiting for path 3. Gunslinger II
+			CPU_SET_DMASTALL(DMAC_VIF1, true);
 			return;
 		}
 		vif1Regs.stat.VGW = 0; //Path 3 isn't busy so we don't need to wait for it.
@@ -339,7 +349,10 @@ __fi void vif1Interrupt()
 	}
 
 	if (!vif1ch.chcr.STR)
+	{
 		Console.WriteLn("Vif1 running when CHCR == %x", vif1ch.chcr._u32);
+		return;
+	}
 
 	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)
 	{

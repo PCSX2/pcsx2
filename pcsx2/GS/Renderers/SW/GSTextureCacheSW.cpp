@@ -14,7 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSTextureCacheSW.h"
+#include "GS/Renderers/SW/GSTextureCacheSW.h"
+#include "GS/GSExtra.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
 
 GSTextureCacheSW::GSTextureCacheSW() = default;
 
@@ -233,14 +236,11 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	if (m_buff == NULL)
 	{
-		u32 pitch = (1 << m_tw) << shift;
+		const u32 pitch = (1 << m_tw) << shift;
 
-		m_buff = _aligned_malloc(pitch * th * 4, 32);
-
-		if (m_buff == NULL)
-		{
+		m_buff = _aligned_malloc(pitch * th * 4, VECTOR_ALIGNMENT);
+		if (!m_buff)
 			return false;
-		}
 	}
 
 	GSLocalMemory& mem = g_gs_renderer->m_mem;

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,20 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
-#include "R3000A.h"
+
 #include "Common.h"
-
-#include "iR5900.h"
-#include "Sio.h"
-#include "Mdec.h"
-#include "IopCounters.h"
-#include "IopHw.h"
-#include "IopDma.h"
-#include "CDVD/Ps1CD.h"
+#include "SIO/Sio2.h"
+#include "SIO/Sio0.h"
 #include "CDVD/CDVD.h"
-
+#include "CDVD/Ps1CD.h"
+#include "IopCounters.h"
+#include "IopDma.h"
+#include "IopHw.h"
+#include "Mdec.h"
+#include "R3000A.h"
+#include "x86/iR5900.h"
 
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
 // found in iPsxHw.cpp.
@@ -41,8 +40,6 @@ void psxHwReset() {
 	cdrReset();
 	cdvdReset();
 	psxRcntInit();
-	sio0.FullReset();
-	sio2.FullReset();
 }
 
 __fi u8 psxHw4Read8(u32 add)

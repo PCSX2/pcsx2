@@ -19,6 +19,7 @@
 #include "Vif.h"
 #include "GS.h"
 #include "GS/GSRegs.h"
+#include "MTGS.h"
 
 // FIXME common path ?
 #include "common/boost_spsc_queue.hpp"
@@ -65,7 +66,7 @@ struct Gif_Tag
 		setTag(pMem, analyze);
 	}
 
-	__ri void Reset() { memzero(*this); }
+	__ri void Reset() { std::memset(this, 0, sizeof(*this)); }
 	__ri u8 curReg() { return regs[nRegIdx & 0xf]; }
 
 	__ri void packedStep()
@@ -163,21 +164,22 @@ struct GS_Packet
 	s32 cycles;     // EE Cycles taken to process this GS packet
 	s32 readAmount; // Dummy read-amount data needed for proper buffer calculations
 	GS_Packet() { Reset(); }
-	void Reset() { memzero(*this); }
+	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 struct GS_SIGNAL
 {
 	u32 data[2];
 	bool queued;
-	void Reset() { memzero(*this); }
+	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 struct GS_FINISH
 {
 	bool gsFINISHFired;
+	bool gsFINISHPending;
 
-	void Reset() { memzero(*this); }
+	void Reset() { std::memset(this, 0, sizeof(*this)); }
 };
 
 static __fi void incTag(u32& offset, u32& size, u32 incAmount)
@@ -193,7 +195,7 @@ struct Gif_Path_MTVU
 	// Set a size based on MTGS but keep a factor 2 to avoid too waste to much
 	// memory overhead. Note the struct is instantied 3 times (for each gif
 	// path)
-	ringbuffer_base<GS_Packet, RingBufferSize / 2> gsPackQueue;
+	ringbuffer_base<GS_Packet, MTGS::RingBufferSize / 2> gsPackQueue;
 	Gif_Path_MTVU() { Reset(); }
 	void Reset()
 	{
@@ -837,7 +839,8 @@ struct Gif_Unit
 			FlushToMTGS();
 		}
 
-		Gif_FinishIRQ();
+		if(!checkPaths(stat.APATH != 1, stat.APATH != 2, stat.APATH != 3, true))
+			Gif_FinishIRQ();
 
 		//Path3 can rewind the DMA, so we send back the amount we go back!
 		if (isPath3)

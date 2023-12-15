@@ -7,8 +7,8 @@
 
 #include "QtProgressCallback.h"
 
-#include "pcsx2/MemoryCardFile.h"
-#include "pcsx2/MemoryCardFolder.h"
+#include "pcsx2/SIO/Memcard/MemoryCardFile.h"
+#include "pcsx2/SIO/Memcard/MemoryCardFolder.h"
 
 class MemoryCardConvertWorker : public QtAsyncProgressThread
 {

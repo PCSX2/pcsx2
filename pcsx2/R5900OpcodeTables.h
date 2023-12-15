@@ -61,13 +61,14 @@ void COP2_Unknown();
 #define CONDTYPE_LTZ         (0x05 << 0)
 #define CONDTYPE_GEZ         (0x06 << 0)
 
-#define BRANCHTYPE_MASK      (0x07 << 3)
+#define BRANCHTYPE_MASK      (0x0F << 3)
 #define BRANCHTYPE_JUMP      (0x01 << 3)
 #define BRANCHTYPE_BRANCH    (0x02 << 3)
 #define BRANCHTYPE_SYSCALL   (0x03 << 3)
 #define BRANCHTYPE_ERET      (0x04 << 3)
 #define BRANCHTYPE_REGISTER  (0x05 << 3)
 #define BRANCHTYPE_BC1       (0x06 << 3)
+#define BRANCHTYPE_BC0       (0x08 << 3)
 
 #define ALUTYPE_MASK         (0x07 << 3)
 #define ALUTYPE_ADD          (0x01 << 3)

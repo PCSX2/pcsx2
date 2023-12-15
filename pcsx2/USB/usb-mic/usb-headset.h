@@ -26,7 +26,7 @@ namespace usb_mic
 
 		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
-		gsl::span<const SettingInfo> Settings(u32 subtype) const override;
+		std::span<const SettingInfo> Settings(u32 subtype) const override;
 	};
 
 } // namespace usb_mic

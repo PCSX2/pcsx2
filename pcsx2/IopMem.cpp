@@ -30,35 +30,20 @@ IopVM_MemoryAllocMess* iopMem = NULL;
 
 alignas(__pagesize) u8 iopHw[Ps2MemSize::IopHardware];
 
-// --------------------------------------------------------------------------------------
-//  iopMemoryReserve
-// --------------------------------------------------------------------------------------
-iopMemoryReserve::iopMemoryReserve()
-	: _parent("IOP Main Memory (2mb)")
+void iopMemAlloc()
 {
-}
-
-iopMemoryReserve::~iopMemoryReserve()
-{
-	Release();
-}
-
-void iopMemoryReserve::Assign(VirtualMemoryManagerPtr allocator)
-{
+	// TODO: Move to memmap
 	psxMemWLUT = (uptr*)_aligned_malloc(0x2000 * sizeof(uptr) * 2, 16);
 	if (!psxMemWLUT)
 		pxFailRel("Failed to allocate IOP memory lookup table");
 
 	psxMemRLUT = psxMemWLUT + 0x2000; //(uptr*)_aligned_malloc(0x10000 * sizeof(uptr),16);
 
-	VtlbMemoryReserve::Assign(std::move(allocator), HostMemoryMap::IOPmemOffset, sizeof(*iopMem));
-	iopMem = reinterpret_cast<IopVM_MemoryAllocMess*>(GetPtr());
+	iopMem = reinterpret_cast<IopVM_MemoryAllocMess*>(SysMemory::GetIOPMem());
 }
 
-void iopMemoryReserve::Release()
+void iopMemRelease()
 {
-	_parent::Release();
-
 	safe_aligned_free(psxMemWLUT);
 	psxMemRLUT = nullptr;
 	iopMem = nullptr;
@@ -66,10 +51,8 @@ void iopMemoryReserve::Release()
 
 // Note!  Resetting the IOP's memory state is dependent on having *all* psx memory allocated,
 // which is performed by MemInit and PsxMemInit()
-void iopMemoryReserve::Reset()
+void iopMemReset()
 {
-	_parent::Reset();
-
 	pxAssert( iopMem );
 
 	DbgCon.WriteLn("IOP resetting main memory...");
@@ -491,6 +474,69 @@ void iopMemWrite32(u32 mem, u32 value)
 			}
 		}
 	}
+}
+
+int iopMemSafeCmpBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		u8* dst = iopVirtMemW<u8>(mem);
+		if (!dst)
+			return -1;
+
+		const u32 remaining_in_page = std::min(0x1000 - (mem & 0xfff), static_cast<u32>(sptr_end - sptr));
+		const int res = std::memcmp(sptr, dst, remaining_in_page);
+		if (res != 0)
+			return res;
+
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return 0;
+}
+
+bool iopMemSafeReadBytes(u32 mem, void* dst, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	u8* dptr = static_cast<u8*>(dst);
+	u8* const dptr_end = dptr + size;
+	while (dptr != dptr_end)
+	{
+		const u8* src = iopVirtMemR<u8>(mem);
+		if (!src)
+			return false;
+
+		const u32 remaining_in_page = std::min(0x1000 - (mem & 0xfff), static_cast<u32>(dptr_end - dptr));
+		std::memcpy(dptr, src, remaining_in_page);
+		dptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
+bool iopMemSafeWriteBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		u8* dst = iopVirtMemW<u8>(mem);
+		if (!dst)
+			return false;
+
+		const u32 remaining_in_page = std::min(0x1000 - (mem & 0xfff), static_cast<u32>(sptr_end - sptr));
+		std::memcpy(dst, sptr, remaining_in_page);
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
 }
 
 std::string iopMemReadString(u32 mem, int maxlen)

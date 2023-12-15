@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <atomic>
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
@@ -28,7 +29,6 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
-#include "common/Exceptions.h"
 #include "common/FileSystem.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/Path.h"
@@ -37,30 +37,30 @@
 
 #include "pcsx2/PrecompiledHeader.h"
 
+#include "pcsx2/Achievements.h"
 #include "pcsx2/CDVD/CDVD.h"
-#include "pcsx2/Frontend/CommonHost.h"
-#include "pcsx2/Frontend/InputManager.h"
-#include "pcsx2/Frontend/ImGuiManager.h"
-#include "pcsx2/Frontend/LogSink.h"
 #include "pcsx2/GS.h"
-#include "pcsx2/GS/GS.h"
+#include "pcsx2/GS/GSPerfMon.h"
 #include "pcsx2/GSDumpReplayer.h"
-#include "pcsx2/HostDisplay.h"
-#include "pcsx2/HostSettings.h"
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
-#include "pcsx2/PAD/Host/PAD.h"
+#include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/Input/InputManager.h"
+#include "pcsx2/LogSink.h"
+#include "pcsx2/MTGS.h"
+#include "pcsx2/SIO/Pad/Pad.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/VMManager.h"
-
-#ifdef ENABLE_ACHIEVEMENTS
-#include "pcsx2/Frontend/Achievements.h"
-#endif
 
 #include "svnrev.h"
 
 namespace GSRunner
 {
+	static void InitializeConsole();
 	static bool InitializeConfig();
+	static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params);
+	static void DumpStats();
 
 	static bool CreatePlatformWindow();
 	static void DestroyPlatformWindow();
@@ -72,26 +72,39 @@ static constexpr u32 WINDOW_WIDTH = 640;
 static constexpr u32 WINDOW_HEIGHT = 480;
 
 static MemorySettingsInterface s_settings_interface;
-alignas(16) static SysMtgsThread s_mtgs_thread;
 
 static std::string s_output_prefix;
 static s32 s_loop_count = 1;
 static std::optional<bool> s_use_window;
+static bool s_no_console = false;
 
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
 static u32 s_loop_number = s_loop_count;
+static double s_last_draws = 0;
+static double s_last_render_passes = 0;
+static double s_last_barriers = 0;
+static double s_last_copies = 0;
+static double s_last_uploads = 0;
+static double s_last_readbacks = 0;
+static u64 s_total_draws = 0;
+static u64 s_total_render_passes = 0;
+static u64 s_total_barriers = 0;
+static u64 s_total_copies = 0;
+static u64 s_total_uploads = 0;
+static u64 s_total_readbacks = 0;
+static u32 s_total_frames = 0;
 
 bool GSRunner::InitializeConfig()
 {
-	if (!CommonHost::InitializeCriticalFolders())
+	if (!EmuFolders::InitializeCriticalFolders())
 		return false;
 
 	// don't provide an ini path, or bother loading. we'll store everything in memory.
 	MemorySettingsInterface& si = s_settings_interface;
 	Host::Internal::SetBaseSettingsLayer(&si);
 
-	CommonHost::SetDefaultSettings(si, true, true, true, true, true);
+	VMManager::SetDefaultSettings(si, true, true, true, true, true);
 
 	// complete as quickly as possible
 	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
@@ -105,14 +118,14 @@ bool GSRunner::InitializeConfig()
 	si.SetStringValue("SPU2/Output", "OutputModule", "nullout");
 
 	// none of the bindings are going to resolve to anything
-	PAD::ClearPortBindings(si, 0);
+	Pad::ClearPortBindings(si, 0);
 	si.ClearSection("Hotkeys");
 
 	// make sure any gamesettings inis in your tree don't get loaded
 	si.SetBoolValue("EmuCore", "EnablePerGameSettings", false);
 
 	// force logging
-	si.SetBoolValue("Logging", "EnableSystemConsole", true);
+	si.SetBoolValue("Logging", "EnableSystemConsole", !s_no_console);
 	si.SetBoolValue("Logging", "EnableTimestamps", true);
 	si.SetBoolValue("Logging", "EnableVerbose", true);
 
@@ -128,7 +141,7 @@ bool GSRunner::InitializeConfig()
 		si.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
 	}
 
-	CommonHost::LoadStartupSettings();
+	VMManager::Internal::LoadStartupSettings();
 	return true;
 }
 
@@ -139,12 +152,10 @@ void Host::CommitBaseSettingChanges()
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-	CommonHost::LoadSettings(si, lock);
 }
 
 void Host::CheckForSettingsChanges(const Pcsx2Config& old_config)
 {
-	CommonHost::CheckForSettingsChanges(old_config);
 }
 
 bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui)
@@ -156,34 +167,6 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 void Host::SetDefaultUISettings(SettingsInterface& si)
 {
 	// nothing
-}
-
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file '%s'", filename);
-	return ret;
-}
-
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
-	if (!ret.has_value())
-		Console.Error("Failed to read resource file to string '%s'", filename);
-	return ret;
-}
-
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
-{
-	const std::string path(Path::Combine(EmuFolders::Resources, filename));
-	FILESYSTEM_STAT_DATA sd;
-	if (!FileSystem::StatFile(filename, &sd))
-		return std::nullopt;
-
-	return sd.ModificationTime;
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
@@ -247,42 +230,22 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 {
 }
 
-void Host::SetRelativeMouseMode(bool enabled)
+void Host::SetMouseMode(bool relative_mode, bool hide_cursor)
 {
 }
 
-bool Host::AcquireHostDisplay(RenderAPI api, bool clear_state_on_fail)
+std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
 {
-	const std::optional<WindowInfo> wi(GSRunner::GetPlatformWindowInfo());
-	if (!wi.has_value())
-		return false;
-
-	g_host_display = HostDisplay::CreateForAPI(api);
-	if (!g_host_display)
-		return false;
-
-	if (!g_host_display->CreateDevice(wi.value(), Host::GetEffectiveVSyncMode()) ||
-		!g_host_display->MakeCurrent() || !g_host_display->SetupDevice() || !ImGuiManager::Initialize())
-	{
-		ReleaseHostDisplay(clear_state_on_fail);
-		return false;
-	}
-
-	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", HostDisplay::RenderAPIToString(g_host_display->GetRenderAPI()));
-	Console.Indent().WriteLn(g_host_display->GetDriverInfo());
-
-	return g_host_display.get();
+	return GSRunner::GetPlatformWindowInfo();
 }
 
-void Host::ReleaseHostDisplay(bool clear_state)
+void Host::ReleaseRenderWindow()
 {
-	ImGuiManager::Shutdown(clear_state);
-	g_host_display.reset();
 }
 
-HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
+void Host::BeginPresentFrame()
 {
-	if (s_loop_number == 0)
+	if (s_loop_number == 0 && !s_output_prefix.empty())
 	{
 		// when we wrap around, don't race other files
 		GSJoinSnapshotThreads();
@@ -292,32 +255,23 @@ HostDisplay::PresentResult Host::BeginPresentFrame(bool frame_skip)
 		GSQueueSnapshot(dump_path);
 	}
 
-	const HostDisplay::PresentResult result = g_host_display->BeginPresent(frame_skip);
-	if (result != HostDisplay::PresentResult::OK)
+	if (GSConfig.UseHardwareRenderer())
 	{
-		// don't render imgui
-		ImGuiManager::SkipFrame();
+		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) {
+			// perfmon resets every 30 frames to zero
+			const double val = g_perfmon.GetCounter(counter);
+			dst += static_cast<u64>((val < last) ? val : (val - last));
+			last = val;
+		};
+		update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
+		update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
+		update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
+		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
+		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
+		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
+		s_total_frames++;
+		std::atomic_thread_fence(std::memory_order_release);
 	}
-
-	return result;
-}
-
-void Host::EndPresentFrame()
-{
-	if (GSDumpReplayer::IsReplayingDump())
-		GSDumpReplayer::RenderUI();
-
-	ImGuiManager::RenderOSD();
-	g_host_display->EndPresent();
-	ImGuiManager::NewFrame();
-}
-
-void Host::ResizeHostDisplay(u32 new_window_width, u32 new_window_height, float new_window_scale)
-{
-}
-
-void Host::UpdateHostDisplay()
-{
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -344,8 +298,8 @@ void Host::OnVMResumed()
 {
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
-	const std::string& game_name, u32 game_crc)
+void Host::OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
+	const std::string& disc_serial, u32 disc_crc, u32 current_crc)
 {
 }
 
@@ -387,6 +341,14 @@ void Host::SetFullscreen(bool enabled)
 {
 }
 
+void Host::OnCaptureStarted(const std::string& filename)
+{
+}
+
+void Host::OnCaptureStopped()
+{
+}
+
 void Host::RequestExit(bool allow_confirm)
 {
 }
@@ -396,12 +358,30 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 	VMManager::SetState(VMState::Stopping);
 }
 
-#ifdef ENABLE_ACHIEVEMENTS
+void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
+{
+	// noop
+}
+
+void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
+{
+	// noop
+}
+
+void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+	// noop
+}
+
 void Host::OnAchievementsRefreshed()
 {
 	// noop
 }
-#endif
+
+void Host::OnCoverDownloaderOpenRequested()
+{
+	// noop
+}
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
@@ -413,16 +393,11 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
 	return std::nullopt;
 }
 
-SysMtgsThread& GetMTGS()
+const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
 {
-	return s_mtgs_thread;
+	return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Interface Stuff
-//////////////////////////////////////////////////////////////////////////
-
-const IConsoleWriter* PatchesCon = &Console;
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()
 
@@ -453,7 +428,15 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "\n");
 }
 
-static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params)
+void GSRunner::InitializeConsole()
+{
+	const char* var = std::getenv("PCSX2_NOCONSOLE");
+	s_no_console = (var && StringUtil::FromChars<bool>(var).value_or(false));
+	if (!s_no_console)
+		LogSink::InitializeEarlyConsole();
+}
+
+bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params)
 {
 	bool no_more_args = false;
 	for (int i = 1; i < argc; i++)
@@ -556,6 +539,19 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-upscale"))
+			{
+				const float upscale = StringUtil::FromChars<float>(argv[++i]).value_or(0.0f);
+				if (upscale < 0.5f)
+				{
+					Console.WriteLn("Invalid upscale multiplier");
+					return false;
+				}
+
+				Console.WriteLn(fmt::format("Setting upscale multiplier to {}", upscale));
+				s_settings_interface.SetFloatValue("EmuCore/GS", "upscale_multiplier", upscale);
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("-logfile"))
 			{
 				const char* logfile = argv[++i];
@@ -563,7 +559,7 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 				{
 					// disable timestamps, since we want to be able to diff the logs
 					Console.WriteLn("Logging to %s...", logfile);
-					CommonHost::SetFileLogPath(logfile);
+					LogSink::SetFileLogPath(logfile);
 					s_settings_interface.SetBoolValue("Logging", "EnableFileLogging", true);
 					s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", false);
 				}
@@ -573,7 +569,7 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 			else if (CHECK_ARG("-noshadercache"))
 			{
 				Console.WriteLn("Disabling shader cache");
-				s_settings_interface.SetBoolValue("EmuCore/GS", "disable_shader_cache", false);
+				s_settings_interface.SetBoolValue("EmuCore/GS", "disable_shader_cache", true);
 				continue;
 			}
 			else if (CHECK_ARG("-window"))
@@ -635,9 +631,27 @@ static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& param
 	return true;
 }
 
+void GSRunner::DumpStats()
+{
+	std::atomic_thread_fence(std::memory_order_acquire);
+	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} FRAMES ========", s_total_frames));
+	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_frames)))));
+	Console.WriteLn("============================================");
+}
+
+#ifdef _WIN32
+// We can't handle unicode in filenames if we don't use wmain on Win32.
+#define main real_main
+#endif
+
 int main(int argc, char* argv[])
 {
-	CommonHost::InitializeEarlyConsole();
+	GSRunner::InitializeConsole();
 
 	if (!GSRunner::InitializeConfig())
 	{
@@ -646,17 +660,13 @@ int main(int argc, char* argv[])
 	}
 
 	VMBootParameters params;
-	if (!ParseCommandLineArgs(argc, argv, params))
+	if (!GSRunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
-	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
-	if (!VMManager::Internal::InitializeGlobals() || !VMManager::Internal::InitializeMemory())
-	{
-		Console.Error("Failed to allocate globals/memory.");
+	if (!VMManager::Internal::CPUThreadInitialize())
 		return EXIT_FAILURE;
-	}
 
-	if (s_use_window.value_or(false) && !GSRunner::CreatePlatformWindow())
+	if (s_use_window.value_or(true) && !GSRunner::CreatePlatformWindow())
 	{
 		Console.Error("Failed to create window.");
 		return EXIT_FAILURE;
@@ -674,25 +684,36 @@ int main(int argc, char* argv[])
 		while (VMManager::GetState() == VMState::Running)
 			VMManager::Execute();
 		VMManager::Shutdown(false);
+		GSRunner::DumpStats();
 	}
 
-	InputManager::CloseSources();
-	VMManager::Internal::ReleaseMemory();
-	VMManager::Internal::ReleaseGlobals();
-	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
+	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
+	LogSink::CloseFileLog();
 
 	return EXIT_SUCCESS;
 }
 
-void Host::CPUThreadVSync()
+void Host::VSyncOnCPUThread()
 {
 	// update GS thread copy of frame number
-	GetMTGS().RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
-	GetMTGS().RunOnGSThread([loop_number = GSDumpReplayer::GetLoopCount()]() { s_loop_number = loop_number; });
+	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
+	MTGS::RunOnGSThread([loop_number = GSDumpReplayer::GetLoopCount()]() { s_loop_number = loop_number; });
 
 	// process any window messages (but we shouldn't really have any)
 	GSRunner::PumpPlatformMessages();
+}
+
+s32 Host::Internal::GetTranslatedStringImpl(
+	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+{
+	if (msg.size() > tbuf_space)
+		return -1;
+	else if (msg.empty())
+		return 0;
+
+	std::memcpy(tbuf, msg.data(), msg.size());
+	return static_cast<s32>(msg.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -790,6 +811,22 @@ void GSRunner::PumpPlatformMessages()
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+int wmain(int argc, wchar_t** argv)
+{
+	std::vector<std::string> u8_args;
+	u8_args.reserve(static_cast<size_t>(argc));
+	for (int i = 0; i < argc; i++)
+		u8_args.push_back(StringUtil::WideStringToUTF8String(argv[i]));
+	
+	std::vector<char*> u8_argptrs;
+	u8_argptrs.reserve(u8_args.size());
+	for (int i = 0; i < argc; i++)
+		u8_argptrs.push_back(u8_args[i].data());
+	u8_argptrs.push_back(nullptr);
+
+	return real_main(argc, u8_argptrs.data());
 }
 
 #endif // _WIN32

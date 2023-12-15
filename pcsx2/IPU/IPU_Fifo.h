@@ -27,7 +27,7 @@ struct IPU_Fifo_Input
 	alignas(16) u32 data[32];
 	int readpos, writepos;
 
-	int write(u32* pMem, int size);
+	int write(const u32* pMem, int size);
 	int read(void *value);
 	void clear();
 	std::string desc() const;

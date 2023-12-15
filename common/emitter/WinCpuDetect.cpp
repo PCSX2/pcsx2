@@ -16,7 +16,8 @@
 #if defined(_WIN32)
 
 #include "common/Console.h"
-#include "common/emitter/cpudetect_internal.h"
+#include "common/emitter/tools.h"
+#include "common/RedtapeWindows.h"
 
 void x86capabilities::CountLogicalCores()
 {
@@ -36,50 +37,4 @@ void x86capabilities::CountLogicalCores()
 	LogicalCores = CPUs;
 }
 
-SingleCoreAffinity::SingleCoreAffinity()
-{
-	s_threadId = nullptr;
-	s_oldmask = ERROR_INVALID_PARAMETER;
-
-	DWORD_PTR availProcCpus;
-	DWORD_PTR availSysCpus;
-	if (!GetProcessAffinityMask(GetCurrentProcess(), &availProcCpus, &availSysCpus))
-		return;
-
-	int cpu = 0;
-	DWORD_PTR affinityMask;
-	for (affinityMask = 1; affinityMask != 0; affinityMask <<= 1, ++cpu)
-		if (availProcCpus & affinityMask)
-			break;
-
-	s_threadId = GetCurrentThread();
-	s_oldmask = SetThreadAffinityMask(s_threadId, affinityMask);
-
-	if (s_oldmask == ERROR_INVALID_PARAMETER)
-	{
-		const int hexWidth = 2 * sizeof(DWORD_PTR);
-		Console.Warning(
-			"CpuDetect: SetThreadAffinityMask failed...\n"
-			"\tSystem Affinity : 0x%0*x\n"
-			"\tProcess Affinity: 0x%0*x\n"
-			"\tAttempted Thread Affinity CPU: %i",
-			hexWidth, availProcCpus, hexWidth, availSysCpus, cpu);
-	}
-
-	Sleep(2);
-
-	// Sleep Explained: I arbitrarily pick Core 0 to lock to for running the CPU test.  This
-	// means that the current thread will need to be switched to Core 0 if it's currently
-	// scheduled on a difference cpu/core.  However, Windows does not necessarily perform
-	// that scheduling immediately upon the call to SetThreadAffinityMask (seems dependent
-	// on version: XP does, Win7 does not).  So by issuing a Sleep here we give Win7 time
-	// to issue a timeslice and move our thread to Core 0.  Without this, it tends to move
-	// the thread during the cpuSpeed test instead, causing totally wacky results.
-};
-
-SingleCoreAffinity::~SingleCoreAffinity()
-{
-	if (s_oldmask != ERROR_INVALID_PARAMETER)
-		SetThreadAffinityMask(s_threadId, s_oldmask);
-}
 #endif

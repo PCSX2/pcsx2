@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -20,34 +20,33 @@
 
 #include <winhttp.h>
 
-namespace Common
+class HTTPDownloaderWinHttp final : public HTTPDownloader
 {
-	class HTTPDownloaderWinHttp final : public HTTPDownloader
+public:
+	HTTPDownloaderWinHttp();
+	~HTTPDownloaderWinHttp() override;
+
+	bool Initialize(std::string user_agent);
+
+protected:
+	Request* InternalCreateRequest() override;
+	void InternalPollRequests() override;
+	bool StartRequest(HTTPDownloader::Request* request) override;
+	void CloseRequest(HTTPDownloader::Request* request) override;
+
+private:
+	struct Request : HTTPDownloader::Request
 	{
-	public:
-		HTTPDownloaderWinHttp();
-		~HTTPDownloaderWinHttp() override;
-
-		bool Initialize(const char* user_agent);
-
-	protected:
-		Request* InternalCreateRequest() override;
-		void InternalPollRequests() override;
-		bool StartRequest(HTTPDownloader::Request* request) override;
-		void CloseRequest(HTTPDownloader::Request* request) override;
-
-	private:
-		struct Request : HTTPDownloader::Request
-		{
-			std::wstring object_name;
-			HINTERNET hConnection = NULL;
-			HINTERNET hRequest = NULL;
-			u32 io_position = 0;
-		};
-
-		static void CALLBACK HTTPStatusCallback(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus,
-			LPVOID lpvStatusInformation, DWORD dwStatusInformationLength);
-
-		HINTERNET m_hSession = NULL;
+		std::wstring object_name;
+		HINTERNET hConnection = NULL;
+		HINTERNET hRequest = NULL;
+		u32 io_position = 0;
 	};
-} // namespace Common
+
+	static void CALLBACK HTTPStatusCallback(HINTERNET hInternet, DWORD_PTR dwContext, DWORD dwInternetStatus,
+		LPVOID lpvStatusInformation, DWORD dwStatusInformationLength);
+
+	static bool CheckCancelled(Request* request);
+
+	HINTERNET m_hSession = NULL;
+};

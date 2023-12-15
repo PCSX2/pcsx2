@@ -14,6 +14,16 @@
  */
 
 #if !defined(_WIN32) && !defined(__APPLE__)
+
+#include "common/Pcsx2Types.h"
+#include "common/General.h"
+#include "common/ScopedGuard.h"
+#include "common/StringUtil.h"
+#include "common/Threading.h"
+#include "common/WindowInfo.h"
+
+#include "fmt/core.h"
+
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
@@ -22,14 +32,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-#include "fmt/core.h"
-
-#include "common/Pcsx2Types.h"
-#include "common/General.h"
-#include "common/StringUtil.h"
-#include "common/Threading.h"
-#include "common/WindowInfo.h"
+#include <dbus/dbus.h>
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
@@ -41,11 +44,6 @@ u64 GetPhysicalMemory()
 #endif
 
 	return pages * getpagesize();
-}
-
-
-void InitCPUTicks()
-{
 }
 
 u64 GetTickFrequency()
@@ -69,69 +67,77 @@ std::string GetOSVersionString()
 #endif
 }
 
-#ifdef X11_API
-
-static bool SetScreensaverInhibitX11(const WindowInfo& wi, bool inhibit)
+static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
-	extern char **environ;
+	static dbus_uint32_t s_cookie;
+	const char* bus_method = (inhibit_requested) ? "Inhibit" : "UnInhibit";
+	DBusError error_dbus;
+	DBusConnection* connection = nullptr;
+	static DBusConnection* s_comparison_connection;
+	DBusMessage* message = nullptr;
+	DBusMessage* response = nullptr;
+	DBusMessageIter message_itr;
 
-	const char* command = "xdg-screensaver";
-	const char* operation = inhibit ? "suspend" : "resume";
-	std::string id = fmt::format("0x{:X}", static_cast<u64>(reinterpret_cast<uintptr_t>(wi.window_handle)));
+	ScopedGuard cleanup = [&]() {
+		if (dbus_error_is_set(&error_dbus))
+			dbus_error_free(&error_dbus);
+		if (message)
+			dbus_message_unref(message);
+		if (response)
+			dbus_message_unref(response);
+	};
 
-	char* argv[4] = {const_cast<char*>(command), const_cast<char*>(operation), const_cast<char*>(id.c_str()),
-		nullptr};
-
-	// Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
-	pid_t pid;
-	int res = posix_spawnp(&pid, "xdg-screensaver", nullptr, nullptr, argv, environ);
-	return (res == 0);
-}
-
-#endif
-
-static bool SetScreensaverInhibit(const WindowInfo& wi, bool inhibit)
-{
-	switch (wi.type)
+	dbus_error_init(&error_dbus);
+	// Calling dbus_bus_get() after the first time returns a pointer to the existing connection.
+	connection = dbus_bus_get(DBUS_BUS_SESSION, &error_dbus);
+	if (!connection || (dbus_error_is_set(&error_dbus)))
+		return false;
+	if (s_comparison_connection != connection)
 	{
-#ifdef X11_API
-		case WindowInfo::Type::X11:
-			return SetScreensaverInhibitX11(wi, inhibit);
-#endif
-
-		default:
+		dbus_connection_set_exit_on_disconnect(connection, false);
+		s_cookie = 0;
+		s_comparison_connection = connection;
+	}
+	message = dbus_message_new_method_call("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", bus_method);
+	if (!message)
+		return false;
+	// Initialize an append iterator for the message, gets freed with the message.
+	dbus_message_iter_init_append(message, &message_itr);
+	if (inhibit_requested)
+	{
+		// Guard against repeat inhibitions which would add extra inhibitors each generating a different cookie.
+		if (s_cookie)
+			return false;
+		// Append process/window name.
+		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_STRING, &program_name))
+			return false;
+		// Append reason for inhibiting the screensaver.
+		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_STRING, &reason))
 			return false;
 	}
+	else
+	{
+		// Only Append the cookie.
+		if (!dbus_message_iter_append_basic(&message_itr, DBUS_TYPE_UINT32, &s_cookie))
+			return false;
+	}
+	// Send message and get response.
+	response = dbus_connection_send_with_reply_and_block(connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error_dbus);
+	if (!response || dbus_error_is_set(&error_dbus))
+		return false;
+	s_cookie = 0;
+	if (inhibit_requested)
+	{
+		// Get the cookie from the response message.
+		if (!dbus_message_get_args(response, &error_dbus, DBUS_TYPE_UINT32, &s_cookie, DBUS_TYPE_INVALID) || dbus_error_is_set(&error_dbus))
+			return false;
+	}
+	return true;
 }
-
-static std::optional<WindowInfo> s_inhibit_window_info;
 
 bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 {
-	if (s_inhibit_window_info.has_value())
-	{
-		// Bit of extra logic here, because wx spams it and we don't want to
-		// spawn processes unnecessarily.
-		if (s_inhibit_window_info->type == wi.type &&
-			s_inhibit_window_info->window_handle == wi.window_handle &&
-			s_inhibit_window_info->surface_handle == wi.surface_handle)
-		{
-			return true;
-		}
-		// Clear the old.
-		SetScreensaverInhibit(s_inhibit_window_info.value(), false);
-		s_inhibit_window_info.reset();
-	}
-
-	if (!inhibit)
-		return true;
-
-	// New window.
-	if (!SetScreensaverInhibit(wi, true))
-		return false;
-
-	s_inhibit_window_info = wi;
-	return true;
+	return SetScreensaverInhibitDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
 }
 
 bool Common::PlaySoundAsync(const char* path)

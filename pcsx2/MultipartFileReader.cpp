@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,8 +15,10 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
+#include "common/Error.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
@@ -120,7 +122,7 @@ void MultipartFileReader::FindParts()
 		Part* thispart = m_parts + m_numparts;
 		AsyncFileReader* thisreader = new FlatFileReader();
 
-		if (!thisreader->Open(nameparts))
+		if (!thisreader->Open(nameparts, nullptr))
 		{
 			delete thisreader;
 			break;
@@ -147,8 +149,9 @@ void MultipartFileReader::FindParts()
 	//Console.WriteLn( Color_Blue, "isoFile: multi-part ISO loaded (%u parts found)", m_numparts );
 }
 
-bool MultipartFileReader::Open(std::string fileName)
+bool MultipartFileReader::Open(std::string filename, Error* error)
 {
+	Error::SetString(error, "Cannot open a MultipartFileReader directly.");
 	// Cannot open a MultipartFileReader directly,
 	// use DetectMultipart to convert a FlatFileReader
 	return false;

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,7 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "SPU2/Global.h"
+#include "Host.h"
+
 #include "common/Console.h"
 #include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
@@ -242,9 +245,6 @@ public:
 		// speakers = (numSpeakers + 1) *2; ?
 		switch (EmuConfig.SPU2.SpeakerConfiguration)
 		{
-			case 0: // Stereo
-				speakers = 2;
-				break;
 			case 1: // Quadrafonic
 				speakers = 4;
 				break;
@@ -254,7 +254,7 @@ public:
 			case 3: // Surround 7.1
 				speakers = 8;
 				break;
-			default:
+			default: // Stereo
 				speakers = 2;
 				break;
 		}
@@ -289,10 +289,6 @@ public:
 			case 7:
 				switch (EmuConfig.SPU2.DplDecodingLevel)
 				{
-					case 0: // "normal" stereo upmix
-						Console.WriteLn("* SPU2 > 5.1 speaker expansion enabled.");
-						m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16>>();
-						break;
 					case 1: // basic Dpl decoder without rear stereo balancing
 						Console.WriteLn("* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.");
 						m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16Dpl>>();
@@ -300,6 +296,10 @@ public:
 					case 2: // gigas PLII
 						Console.WriteLn("* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.");
 						m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16DplII>>();
+						break;
+					default: // "normal" stereo upmix
+						Console.WriteLn("* SPU2 > 5.1 speaker expansion enabled.");
+						m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16>>();
 						break;
 				}
 				break;
@@ -359,9 +359,10 @@ public:
 		return "xaudio2";
 	}
 
-	const char* GetLongName() const override
+	const char* GetDisplayName() const override
 	{
-		return "XAudio 2 (Recommended)";
+		//: XAudio2 is an audio engine name. Leave as-is.
+		return TRANSLATE_NOOP("SPU2", "XAudio2");
 	}
 
 	const char* const* GetBackendNames() const override

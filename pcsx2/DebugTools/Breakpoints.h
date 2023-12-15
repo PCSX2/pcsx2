@@ -69,6 +69,7 @@ enum MemCheckCondition
 	MEMCHECK_WRITE_ONCHANGE = 0x04,
 
 	MEMCHECK_READWRITE = 0x03,
+	MEMCHECK_INVALID = 0x08, // Invalid condition, used by the CSV parser to know if the line is for a memcheck
 };
 
 enum MemCheckResult
@@ -119,7 +120,7 @@ public:
 	static bool IsAddressBreakPoint(BreakPointCpu cpu, u32 addr);
 	static bool IsAddressBreakPoint(BreakPointCpu cpu, u32 addr, bool* enabled);
 	static bool IsTempBreakPoint(BreakPointCpu cpu, u32 addr);
-	static void AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp = false);
+	static void AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp = false, bool enabled = true);
 	static void RemoveBreakPoint(BreakPointCpu cpu, u32 addr);
 	static void ChangeBreakPoint(BreakPointCpu cpu, u32 addr, bool enable);
 	static void ClearAllBreakPoints();
@@ -137,6 +138,7 @@ public:
 
 	static void SetSkipFirst(BreakPointCpu cpu, u32 pc);
 	static u32 CheckSkipFirst(BreakPointCpu cpu, u32 pc);
+	static void ClearSkipFirst();
 
 	// Includes uncached addresses.
 	static const std::vector<MemCheck> GetMemCheckRanges();
@@ -152,8 +154,9 @@ public:
 
 	static void Update(BreakPointCpu cpu = BREAKPOINT_IOP_AND_EE, u32 addr = 0);
 
-	static void SetBreakpointTriggered(bool b) { breakpointTriggered_ = b; };
+	static void SetBreakpointTriggered(bool triggered, BreakPointCpu cpu = BreakPointCpu::BREAKPOINT_IOP_AND_EE) { breakpointTriggered_ = triggered; breakpointTriggeredCpu_ = cpu; };
 	static bool GetBreakpointTriggered() { return breakpointTriggered_; };
+	static BreakPointCpu GetBreakpointTriggeredCpu() { return breakpointTriggeredCpu_; };
 
 	static bool GetCorePaused() { return corePaused; };
 	static void SetCorePaused(bool b) { corePaused = b; };
@@ -174,6 +177,7 @@ private:
 	static u64 breakSkipFirstTicksIop_;
 
 	static bool breakpointTriggered_;
+	static BreakPointCpu breakpointTriggeredCpu_;
 	static bool corePaused;
 
 	static std::function<void()> cb_bpUpdated_;

@@ -39,7 +39,7 @@ namespace soundtouch
 {
 
 /// Linear transposer class that uses integer arithmetic
-class InterpolateLinearInteger : public TransposerBase
+class InterpolateLinearInteger final : public TransposerBase
 {
 protected:
     int iFract;
@@ -47,21 +47,21 @@ protected:
 
     virtual int transposeMono(SAMPLETYPE *dest, 
                        const SAMPLETYPE *src, 
-                       int &srcSamples);
+                       int &srcSamples) override;
     virtual int transposeStereo(SAMPLETYPE *dest, 
                          const SAMPLETYPE *src, 
-                         int &srcSamples);
-    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, int &srcSamples);
+                         int &srcSamples) override;
+    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, int &srcSamples) override;
 public:
     InterpolateLinearInteger();
 
     /// Sets new target rate. Normal rate = 1.0, smaller values represent slower 
     /// rate, larger faster rates.
-    virtual void setRate(double newRate);
+    virtual void setRate(double newRate) override;
 
-    virtual void resetRegisters();
+    virtual void resetRegisters() override;
 
-    int getLatency() const
+    int getLatency() const override
     {
         return 0;
     }
@@ -69,25 +69,25 @@ public:
 
 
 /// Linear transposer class that uses floating point arithmetic
-class InterpolateLinearFloat : public TransposerBase
+class InterpolateLinearFloat final : public TransposerBase
 {
 protected:
     double fract;
 
     virtual int transposeMono(SAMPLETYPE *dest, 
                        const SAMPLETYPE *src, 
-                       int &srcSamples);
+                       int &srcSamples) override;
     virtual int transposeStereo(SAMPLETYPE *dest, 
                          const SAMPLETYPE *src, 
-                         int &srcSamples);
-    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, int &srcSamples);
+                         int &srcSamples) override;
+    virtual int transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE *src, int &srcSamples) override;
 
 public:
     InterpolateLinearFloat();
 
-    virtual void resetRegisters();
+    void resetRegisters() override;
 
-    int getLatency() const
+    int getLatency() const override
     {
         return 0;
     }

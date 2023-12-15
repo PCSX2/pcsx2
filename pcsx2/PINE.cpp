@@ -15,15 +15,12 @@
 
 #include "PrecompiledHeader.h"
 
-#ifdef PCSX2_LEFTOVER_FROM_WX
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <thread>
 #include <sys/types.h>
 #if _WIN32
-#define read_portable(a, b, c) (recv(a, b, c, 0))
-#define write_portable(a, b, c) (send(a, b, c, 0))
+#define read_portable(a, b, c) (recv(a, (char*)b, c, 0))
+#define write_portable(a, b, c) (send(a, (const char*)b, c, 0))
 #define close_portable(a) (closesocket(a))
 #define bzero(b, len) (memset((b), '\0', (len)), (void)0)
 #include <WinSock2.h>
@@ -34,35 +31,45 @@
 #define close_portable(a) (close(a))
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <unistd.h>
 #endif
 
 #include "Common.h"
 #include "Memory.h"
-#include "gui/AppSaveStates.h"
-#include "gui/AppCoreThread.h"
-#include "gui/SysThreads.h"
+#include "Elfheader.h"
+#include "pcsx2/VMManager.h"
 #include "svnrev.h"
+#include "SysForwardDefs.h"
 #include "PINE.h"
 
-PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
-	: pxThread("PINE_Server")
+PINEServer::PINEServer() {}
+
+PINEServer::~PINEServer()
 {
+	Deinitialize();
+}
+
+bool PINEServer::Initialize(int slot)
+{
+	m_end.store(false, std::memory_order_release);
+	m_slot = slot;
 #ifdef _WIN32
 	WSADATA wsa;
 	struct sockaddr_in server;
 
-
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
 		Console.WriteLn(Color_Red, "PINE: Cannot initialize winsock! Shutting down...");
-		return;
+		Deinitialize();
+		return false;
 	}
 
 	m_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if ((m_sock == INVALID_SOCKET) || slot > 65536)
 	{
 		Console.WriteLn(Color_Red, "PINE: Cannot open socket! Shutting down...");
-		return;
+		Deinitialize();
+		return false;
 	}
 
 	// yes very good windows s/sun/sin/g sure is fine
@@ -74,7 +81,8 @@ PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
 		Console.WriteLn(Color_Red, "PINE: Error while binding to socket! Shutting down...");
-		return;
+		Deinitialize();
+		return false;
 	}
 
 #else
@@ -103,7 +111,8 @@ PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
 	if (m_sock < 0)
 	{
 		Console.WriteLn(Color_Red, "PINE: Cannot open socket! Shutting down...");
-		return;
+		Deinitialize();
+		return false;
 	}
 	server.sun_family = AF_UNIX;
 	strcpy(server.sun_path, m_socket_name.c_str());
@@ -114,32 +123,42 @@ PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
 		Console.WriteLn(Color_Red, "PINE: Error while binding to socket! Shutting down...");
-		return;
+		Deinitialize();
+		return false;
 	}
 #endif
 
 	// maximum queue of 4096 commands before refusing, approximated to the
 	// nearest legal value. We do not use SOMAXCONN as windows have this idea
 	// that a "reasonable" value is 5, which is not.
-	listen(m_sock, 4096);
+	if (listen(m_sock, 4096))
+	{
+		Console.WriteLn(Color_Red, "PINE: Cannot listen for connections! Shutting down...");
+		Deinitialize();
+		return false;
+	}
 
-	// we save a handle of the main vm object
-	m_vm = vm;
+	// we allocate once buffers to not have to do mallocs for each IPC
+	// request, as malloc is expansive when we optimize for µs.
+	m_ret_buffer.resize(MAX_IPC_RETURN_SIZE);
+	m_ipc_buffer.resize(MAX_IPC_SIZE);
 
 	// we start the thread
-	Start();
+	m_thread = std::thread(&PINEServer::MainLoop, this);
+
+	return true;
 }
 
-char* PINEServer::MakeOkIPC(char* ret_buffer, uint32_t size = 5)
+std::vector<u8>& PINEServer::MakeOkIPC(std::vector<u8>& ret_buffer, uint32_t size = 5)
 {
-	ToArray<uint32_t>(ret_buffer, size, 0);
+	ToResultVector<uint32_t>(ret_buffer, size, 0);
 	ret_buffer[4] = IPC_OK;
 	return ret_buffer;
 }
 
-char* PINEServer::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
+std::vector<u8>& PINEServer::MakeFailIPC(std::vector<u8>& ret_buffer, uint32_t size = 5)
 {
-	ToArray<uint32_t>(ret_buffer, size, 0);
+	ToResultVector<uint32_t>(ret_buffer, size, 0);
 	ret_buffer[4] = IPC_FAIL;
 	return ret_buffer;
 }
@@ -170,30 +189,24 @@ int PINEServer::StartSocket()
 	return 0;
 }
 
-void PINEServer::ExecuteTaskInThread()
+void PINEServer::MainLoop()
 {
-	m_end = false;
-
-	// we allocate once buffers to not have to do mallocs for each IPC
-	// request, as malloc is expansive when we optimize for µs.
-	m_ret_buffer = new char[MAX_IPC_RETURN_SIZE];
-	m_ipc_buffer = new char[MAX_IPC_SIZE];
-
 	if (StartSocket() < 0)
 		return;
 
-	while (true)
+	while (!m_end.load(std::memory_order_acquire))
 	{
 		// either int or ssize_t depending on the platform, so we have to
 		// use a bunch of auto
 		auto receive_length = 0;
 		auto end_length = 4;
+		const std::span<u8> ipc_buffer_span(m_ipc_buffer);
 
 		// while we haven't received the entire packet, maybe due to
 		// socket datagram splittage, we continue to read
 		while (receive_length < end_length)
 		{
-			auto tmp_length = read_portable(m_msgsock, &m_ipc_buffer[receive_length], MAX_IPC_SIZE - receive_length);
+			const auto tmp_length = read_portable(m_msgsock, &ipc_buffer_span[receive_length], MAX_IPC_SIZE - receive_length);
 
 			// we recreate the socket if an error happens
 			if (tmp_length <= 0)
@@ -209,7 +222,7 @@ void PINEServer::ExecuteTaskInThread()
 			// if we got at least the final size then update
 			if (end_length == 4 && receive_length >= 4)
 			{
-				end_length = FromArray<u32>(m_ipc_buffer, 0);
+				end_length = FromSpan<u32>(ipc_buffer_span, 0);
 				// we'd like to avoid a client trying to do OOB
 				if (end_length > MAX_IPC_SIZE || end_length < 4)
 				{
@@ -227,10 +240,10 @@ void PINEServer::ExecuteTaskInThread()
 		// disconnects
 		if (receive_length != 0)
 		{
-			res = ParseCommand(&m_ipc_buffer[4], m_ret_buffer, (u32)end_length - 4);
+			res = ParseCommand(ipc_buffer_span.subspan(4), m_ret_buffer, (u32)end_length - 4);
 
 			// if we cannot send back our answer restart the socket
-			if (write_portable(m_msgsock, res.buffer, res.size) < 0)
+			if (write_portable(m_msgsock, res.buffer.data(), res.size) < 0)
 			{
 				if (StartSocket() < 0)
 					return;
@@ -240,9 +253,10 @@ void PINEServer::ExecuteTaskInThread()
 	return;
 }
 
-PINEServer::~PINEServer()
+void PINEServer::Deinitialize()
 {
-	m_end = true;
+	m_end.store(true, std::memory_order_release);
+
 #ifdef _WIN32
 	WSACleanup();
 #else
@@ -250,17 +264,14 @@ PINEServer::~PINEServer()
 #endif
 	close_portable(m_sock);
 	close_portable(m_msgsock);
-	delete[] m_ret_buffer;
-	delete[] m_ipc_buffer;
-	// destroy the thread
-	try
+
+	if (m_thread.joinable())
 	{
-		pxThread::Cancel();
+		m_thread.join();
 	}
-	DESTRUCTOR_CATCHALL
 }
 
-PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 buf_size)
+PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size)
 {
 	u32 ret_cnt = 5;
 	u32 buf_cnt = 0;
@@ -285,211 +296,199 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 		{
 			case MsgRead8:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u8 res = memRead8(a);
-				ToArray(ret_buffer, res, ret_cnt);
+				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 1;
 				buf_cnt += 4;
 				break;
 			}
 			case MsgRead16:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u16 res = memRead16(a);
-				ToArray(ret_buffer, res, ret_cnt);
+				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 2;
 				buf_cnt += 4;
 				break;
 			}
 			case MsgRead32:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u32 res = memRead32(a);
-				ToArray(ret_buffer, res, ret_cnt);
+				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 4;
 				buf_cnt += 4;
 				break;
 			}
 			case MsgRead64:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u64 res = memRead64(a);
-				ToArray(ret_buffer, res, ret_cnt);
+				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 8;
 				buf_cnt += 4;
 				break;
 			}
 			case MsgWrite8:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite8(a, FromArray<u8>(&buf[buf_cnt], 4));
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite8(a, FromSpan<u8>(buf, buf_cnt + 4));
 				buf_cnt += 5;
 				break;
 			}
 			case MsgWrite16:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite16(a, FromArray<u16>(&buf[buf_cnt], 4));
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite16(a, FromSpan<u16>(buf, buf_cnt + 4));
 				buf_cnt += 6;
 				break;
 			}
 			case MsgWrite32:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite32(a, FromArray<u32>(&buf[buf_cnt], 4));
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite32(a, FromSpan<u32>(buf, buf_cnt + 4));
 				buf_cnt += 8;
 				break;
 			}
 			case MsgWrite64:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
 					goto error;
-				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
-				memWrite64(a, FromArray<u64>(&buf[buf_cnt], 4));
+				const u32 a = FromSpan<u32>(buf, buf_cnt);
+				memWrite64(a, FromSpan<u64>(buf, buf_cnt + 4));
 				buf_cnt += 12;
 				break;
 			}
 			case MsgVersion:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
-				char version[256] = {};
+				std::string version;
 				if (GIT_TAGGED_COMMIT) // Nightly builds
 				{
 					// tagged commit - more modern implementation of dev build versioning
 					// - there is no need to include the commit - that is associated with the tag, git is implied
-					sprintf(version, "PCSX2 Nightly - %s", GIT_TAG);
+					version = fmt::format("PCSX2 Nightly - {}", GIT_TAG);
 				}
 				else
 				{
-					sprintf(version, "PCSX2 %u.%u.%u-%lld", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
+					version = fmt::format("PCSX2 {}.{}.{}-{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
 				}
-				const u32 size = strlen(version) + 1;
-				version[size] = 0x00;
+				const u32 size = version.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
+				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], version, size);
+				memcpy(&ret_buffer[ret_cnt], version.c_str(), size);
 				ret_cnt += size;
 				break;
 			}
 			case MsgSaveState:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
 					goto error;
-				StateCopy_SaveToSlot(FromArray<u8>(&buf[buf_cnt], 0));
+				VMManager::SaveStateToSlot(FromSpan<u8>(buf, buf_cnt));
 				buf_cnt += 1;
 				break;
 			}
 			case MsgLoadState:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
 					goto error;
-				StateCopy_LoadFromSlot(FromArray<u8>(&buf[buf_cnt], 0), false);
+				VMManager::LoadStateFromSlot(FromSpan<u8>(buf, buf_cnt));
 				buf_cnt += 1;
 				break;
 			}
 			case MsgTitle:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
-				char* title = new char[GameInfo::gameName.size() + 1];
-				sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
+				const std::string gameName = VMManager::GetTitle(false);
+				const u32 size = gameName.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
+				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
+				memcpy(&ret_buffer[ret_cnt], gameName.c_str(), size);
 				ret_cnt += size;
-				delete[] title;
 				break;
 			}
 			case MsgID:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
-				char* title = new char[GameInfo::gameSerial.size() + 1];
-				sprintf(title, "%s", GameInfo::gameSerial.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
+				const std::string gameSerial = VMManager::GetDiscSerial();
+				const u32 size = gameSerial.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
+				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
+				memcpy(&ret_buffer[ret_cnt], gameSerial.c_str(), size);
 				ret_cnt += size;
-				delete[] title;
 				break;
 			}
 			case MsgUUID:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
-				char* title = new char[GameInfo::gameCRC.size() + 1];
-				sprintf(title, "%s", GameInfo::gameCRC.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
+				const std::string crc = fmt::format("{:08x}", VMManager::GetDiscCRC());
+				const u32 size = crc.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
+				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
+				memcpy(&ret_buffer[ret_cnt], crc.c_str(), size);
 				ret_cnt += size;
-				delete[] title;
 				break;
 			}
 			case MsgGameVersion:
 			{
-				if (!m_vm->HasActiveMachine())
+				if (!VMManager::HasValidVM())
 					goto error;
-				char* title = new char[GameInfo::gameVersion.size() + 1];
-				sprintf(title, "%s", GameInfo::gameVersion.ToUTF8().data());
-				const u32 size = strlen(title) + 1;
-				title[size] = 0x00;
+
+				const std::string ElfVersion = VMManager::GetDiscVersion();
+				const u32 size = ElfVersion.size() + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				ToArray(ret_buffer, size, ret_cnt);
+				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], title, size);
+				memcpy(&ret_buffer[ret_cnt], ElfVersion.c_str(), size);
 				ret_cnt += size;
-				delete[] title;
 				break;
 			}
 			case MsgStatus:
@@ -497,18 +496,20 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size))
 					goto error;
 				EmuStatus status;
-				if (m_vm->HasActiveMachine())
-				{
-					if (GetCoreThread().IsClosing())
-						status = Paused;
-					else
-						status = Running;
+
+				switch (VMManager::GetState()) {
+				case VMState::Running:
+					status = EmuStatus::Running;
+					break;
+				case VMState::Paused:
+					status = EmuStatus::Paused;
+					break;
+				default:
+					status = EmuStatus::Shutdown;
+					break;
 				}
-				else
-				{
-					status = Shutdown;
-				}
-				ToArray(ret_buffer, status, ret_cnt);
+
+				ToResultVector(ret_buffer, status, ret_cnt);
 				ret_cnt += 4;
 				break;
 			}
@@ -521,5 +522,3 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 	}
 	return IPCBuffer{(int)ret_cnt, MakeOkIPC(ret_buffer, ret_cnt)};
 }
-
-#endif

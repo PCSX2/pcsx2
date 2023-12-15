@@ -3,7 +3,7 @@ Name=Black Icon Theme
 Comment=Black Icon Theme
 
 [svg]
-Size=64
+Size=128
 Type=Scalable
 MinSize=64
 MaxSize=1024

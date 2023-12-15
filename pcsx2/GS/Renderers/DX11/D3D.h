@@ -18,26 +18,47 @@
 #include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
 
-#include <dxgi1_3.h>
-#include <vector>
+#include "pcsx2/Config.h"
+
+#include <d3d11_1.h>
+#include <dxgi1_5.h>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace D3D
 {
 	// create a dxgi factory
-	wil::com_ptr_nothrow<IDXGIFactory2> CreateFactory(bool debug);
+	wil::com_ptr_nothrow<IDXGIFactory5> CreateFactory(bool debug);
 
-	// get an adapter based on position
-	// assuming no one removes/moves it, it should always have the same id
-	// however in the event that the adapter is not found due to the above, use the default
-	wil::com_ptr_nothrow<IDXGIAdapter1> GetAdapterFromIndex(IDXGIFactory2* factory, int index);
+	// returns a list of all adapter names
+	std::vector<std::string> GetAdapterNames(IDXGIFactory5* factory);
+
+	// returns a list of fullscreen modes for the specified adapter
+	std::vector<std::string> GetFullscreenModes(IDXGIFactory5* factory, const std::string_view& adapter_name);
+
+	// returns the fullscreen mode to use for the specified dimensions
+	bool GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width, u32 height,
+		float refresh_rate, DXGI_FORMAT format, DXGI_MODE_DESC* fullscreen_mode, IDXGIOutput** output);
+
+	// get an adapter based on name
+	wil::com_ptr_nothrow<IDXGIAdapter1> GetAdapterByName(IDXGIFactory5* factory, const std::string_view& name);
+
+	// returns the first adapter in the system
+	wil::com_ptr_nothrow<IDXGIAdapter1> GetFirstAdapter(IDXGIFactory5* factory);
+
+	// returns the adapter specified in the configuration, or the default
+	wil::com_ptr_nothrow<IDXGIAdapter1> GetChosenOrFirstAdapter(IDXGIFactory5* factory, const std::string_view& name);
+
+	// returns a utf-8 string of the specified adapter's name
+	std::string GetAdapterName(IDXGIAdapter1* adapter);
 
 	// returns the driver version from the registry as a string
 	std::string GetDriverVersionFromLUID(const LUID& luid);
 
 	// this is sort of a legacy thing that doesn't have much to do with d3d (just the easiest way)
 	// checks to see if the adapter at 0 is NV and thus we should prefer OpenGL
-	enum VendorID
+	enum class VendorID
 	{
 		Unknown,
 		Nvidia,
@@ -45,15 +66,17 @@ namespace D3D
 		Intel
 	};
 
-	enum Renderer
+	VendorID GetVendorID(IDXGIAdapter1* adapter);
+	GSRendererType GetPreferredRenderer();
+
+	// D3DCompiler wrapper.
+	enum class ShaderType
 	{
-		Default,
-		OpenGL,
-		Vulkan,
-		Direct3D11,
-		Direct3D12
+		Vertex,
+		Pixel,
+		Compute
 	};
 
-	u8 Vendor();
-	u8 ShouldPreferRenderer();
-};
+	wil::com_ptr_nothrow<ID3DBlob> CompileShader(ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
+		const std::string_view& code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
+}; // namespace D3D

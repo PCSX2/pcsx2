@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,14 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "vtlb.h"
+#include "x86/iCore.h"
+#include "x86/iR5900.h"
 
-#include "iCore.h"
-#include "iR5900.h"
 #include "common/Perf.h"
 
 using namespace vtlb_private;
@@ -240,13 +239,9 @@ namespace vtlb_private
 	}
 } // namespace vtlb_private
 
-// ------------------------------------------------------------------------
-// allocate one page for our naked indirect dispatcher function.
-// this *must* be a full page, since we'll give it execution permission later.
-// If it were smaller than a page we'd end up allowing execution rights on some
-// other vars additionally (bad!).
-//
-alignas(__pagesize) static u8 m_IndirectDispatchers[__pagesize];
+static constexpr u32 INDIRECT_DISPATCHER_SIZE = 32;
+static constexpr u32 INDIRECT_DISPATCHERS_SIZE = 2 * 5 * 2 * INDIRECT_DISPATCHER_SIZE;
+static u8* m_IndirectDispatchers = nullptr;
 
 // ------------------------------------------------------------------------
 // mode        - 0 for read, 1 for write!
@@ -256,16 +251,8 @@ static u8* GetIndirectDispatcherPtr(int mode, int operandsize, int sign = 0)
 {
 	assert(mode || operandsize >= 3 ? !sign : true);
 
-	// Each dispatcher is aligned to 64 bytes.  The actual dispatchers are only like
-	// 20-some bytes each, but 64 byte alignment on functions that are called
-	// more frequently than a hot sex hotline at 1:15am is probably a good thing.
-
-	// 7*64? 5 widths with two sign extension modes for 8 and 16 bit reads
-
-	// Gregory: a 32 bytes alignment is likely enough and more cache friendly
-	const int A = 32;
-
-	return &m_IndirectDispatchers[(mode * (8 * A)) + (sign * 5 * A) + (operandsize * A)];
+	return &m_IndirectDispatchers[(mode * (8 * INDIRECT_DISPATCHER_SIZE)) + (sign * 5 * INDIRECT_DISPATCHER_SIZE) +
+								  (operandsize * INDIRECT_DISPATCHER_SIZE)];
 }
 
 // ------------------------------------------------------------------------
@@ -360,18 +347,12 @@ static void DynGen_IndirectTlbDispatcher(int mode, int bits, bool sign)
 // One-time initialization procedure.  Multiple subsequent calls during the lifespan of the
 // process will be ignored.
 //
-void vtlb_dynarec_init()
+void vtlb_DynGenDispatchers()
 {
-	static bool hasBeenCalled = false;
-	if (hasBeenCalled)
-		return;
-	hasBeenCalled = true;
-
-	// In case init gets called multiple times:
-	HostSys::MemProtectStatic(m_IndirectDispatchers, PageAccess_ReadWrite());
+	m_IndirectDispatchers = xGetAlignedCallTarget();
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset(m_IndirectDispatchers, 0xcc, __pagesize);
+	std::memset(m_IndirectDispatchers, 0xcc, INDIRECT_DISPATCHERS_SIZE);
 
 	for (int mode = 0; mode < 2; ++mode)
 	{
@@ -386,9 +367,9 @@ void vtlb_dynarec_init()
 		}
 	}
 
-	HostSys::MemProtectStatic(m_IndirectDispatchers, PageAccess_ExecOnly());
+	Perf::any.Register(m_IndirectDispatchers, INDIRECT_DISPATCHERS_SIZE, "TLB Dispatcher");
 
-	Perf::any.map((uptr)m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
+	xSetPtr(m_IndirectDispatchers + INDIRECT_DISPATCHERS_SIZE);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

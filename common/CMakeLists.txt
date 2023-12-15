@@ -10,11 +10,11 @@ add_library(common)
 # x86emitter sources
 target_sources(common PRIVATE
 	AlignedMalloc.cpp
-	SafeArray.inl
+	Assertions.cpp
 	Console.cpp
 	CrashHandler.cpp
 	DynamicLibrary.cpp
-	Exceptions.cpp
+	Error.cpp
 	FastJmp.cpp
 	FileSystem.cpp
 	General.cpp
@@ -29,9 +29,10 @@ target_sources(common PRIVATE
 	ReadbackSpinManager.cpp
 	Semaphore.cpp
 	SettingsWrapper.cpp
+	SmallString.cpp
 	StringUtil.cpp
+	TextureDecompress.cpp
 	Timer.cpp
-	ThreadPool.cpp
 	WAVWriter.cpp
 	WindowInfo.cpp
 	emitter/avx.cpp
@@ -60,16 +61,17 @@ target_sources(common PRIVATE
 
 # x86emitter headers
 target_sources(common PRIVATE
-	Align.h
 	AlignedMalloc.h
 	Assertions.h
 	boost_spsc_queue.hpp
+	BitUtils.h
+	ByteSwap.h
 	Console.h
 	CrashHandler.h
 	DynamicLibrary.h
 	Easing.h
 	EnumOps.h
-	Exceptions.h
+	Error.h
 	FastJmp.h
 	FileSystem.h
 	General.h
@@ -79,9 +81,7 @@ target_sources(common PRIVATE
 	LRUCache.h
 	HeapArray.h
 	HTTPDownloader.h
-	MemcpyFast.h
 	MemorySettingsInterface.h
-	MemsetFast.inl
 	MD5Digest.h
 	MRCHelpers.h
 	Path.h
@@ -90,18 +90,18 @@ target_sources(common PRIVATE
 	ReadbackSpinManager.h
 	RedtapeWilCom.h
 	RedtapeWindows.h
-	SafeArray.h
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
+	SmallString.h
 	StringUtil.h
 	Timer.h
+	TextureDecompress.h
 	Threading.h
-	ThreadPool.h
 	TraceLog.h
 	WAVWriter.h
 	WindowInfo.h
-	emitter/cpudetect_internal.h
+	WrappedMemCopy.h
 	emitter/implement/dwshift.h
 	emitter/implement/group1.h
 	emitter/implement/group2.h
@@ -126,51 +126,8 @@ target_sources(common PRIVATE
 	emitter/tools.h
 	emitter/x86emitter.h
 	emitter/x86types.h
+	Darwin/DarwinMisc.h
 )
-
-if(USE_OPENGL)
-	target_sources(common PRIVATE
-		GL/Context.cpp
-		GL/Program.cpp
-		GL/ShaderCache.cpp
-		GL/StreamBuffer.cpp
-	)
-	target_sources(common PRIVATE
-		GL/Context.h
-		GL/Program.h
-		GL/ShaderCache.h
-		GL/StreamBuffer.h
-	)
-	target_link_libraries(common PUBLIC glad)
-endif()
-
-if(USE_VULKAN)
-	target_link_libraries(common PUBLIC
-		Vulkan-Headers glslang
-	)
-	target_sources(common PRIVATE
-		Vulkan/ShaderCache.cpp
-		Vulkan/Texture.cpp
-		Vulkan/Loader.cpp
-		Vulkan/ShaderCompiler.cpp
-		Vulkan/Util.cpp
-		Vulkan/SwapChain.cpp
-		Vulkan/StreamBuffer.cpp
-		Vulkan/Context.cpp
-		Vulkan/Builders.cpp
-		Vulkan/vk_mem_alloc.cpp
-		Vulkan/Context.h
-		Vulkan/Texture.h
-		Vulkan/ShaderCompiler.h
-		Vulkan/SwapChain.h
-		Vulkan/Builders.h
-		Vulkan/StreamBuffer.h
-		Vulkan/ShaderCache.h
-		Vulkan/EntryPoints.h
-		Vulkan/Loader.h
-		Vulkan/Util.h
-	)
-endif()
 
 if(USE_VTUNE)
 	target_link_libraries(common PUBLIC Vtune::Vtune)
@@ -179,7 +136,7 @@ endif()
 if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC WIL::WIL D3D12MemAlloc winmm)
+	target_link_libraries(common PUBLIC WIL::WIL winmm)
 	target_sources(common PRIVATE
 		CrashHandler.cpp
 		CrashHandler.h
@@ -188,24 +145,6 @@ if(WIN32)
 		HTTPDownloaderWinHTTP.h
 		StackWalker.cpp
 		StackWalker.h
-		D3D11/ShaderCache.cpp
-		D3D11/ShaderCache.h
-		D3D11/ShaderCompiler.cpp
-		D3D11/ShaderCompiler.h
-		D3D12/Builders.cpp
-		D3D12/Builders.h
-		D3D12/Context.cpp
-		D3D12/Context.h
-		D3D12/DescriptorHeapManager.cpp
-		D3D12/DescriptorHeapManager.h
-		D3D12/ShaderCache.cpp
-		D3D12/ShaderCache.h
-		D3D12/StreamBuffer.cpp
-		D3D12/StreamBuffer.h
-		D3D12/Texture.cpp
-		D3D12/Texture.h
-		D3D12/Util.cpp
-		D3D12/Util.h
 	)
 endif()
 
@@ -216,62 +155,19 @@ if(APPLE)
 	)
 	target_compile_options(common PRIVATE -fobjc-arc)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
+	target_link_libraries(common PRIVATE
+		"-framework Foundation"
+		"-framework IOKit"
+	)
 endif()
 
-if(USE_OPENGL)
-	if(WIN32)
-		target_sources(common PRIVATE
-			GL/ContextWGL.cpp
-			GL/ContextWGL.h
-		)
-		target_link_libraries(common PUBLIC opengl32.lib)
-	elseif(APPLE)
-		target_sources(common PRIVATE
-			GL/ContextAGL.mm
-			GL/ContextAGL.h
-		)
-	else()
-		if(X11_API OR WAYLAND_API)
-			target_sources(common PRIVATE
-				GL/ContextEGL.cpp
-				GL/ContextEGL.h
-			)
-			target_link_libraries(common PRIVATE PkgConfig::EGL)
-		endif()
-
-		if(X11_API)
-			target_sources(common PRIVATE
-				GL/ContextEGLX11.cpp
-				GL/ContextEGLX11.h
-			)
-			if(TARGET PkgConfig::XRANDR)
-				target_link_libraries(common PRIVATE PkgConfig::XRANDR)
-				target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
-			endif()
-		endif()
-
-		if(WAYLAND_API)
-			target_sources(common PRIVATE
-				GL/ContextEGLWayland.cpp
-				GL/ContextEGLWayland.h
-			)
-		endif()
-	endif()
-endif()
-
-if(USE_VULKAN)
-	if(APPLE)
-		# Needed for Metal surface creation.
-		target_compile_options(common PRIVATE -fobjc-arc)
-		target_link_options(common PRIVATE -fobjc-link-runtime)
-	elseif(NOT WIN32)
-		if(X11_API)
-			target_compile_definitions(common PUBLIC "VULKAN_USE_X11=1")
-		endif()
-		if(WAYLAND_API)
-			target_compile_definitions(common PUBLIC "VULKAN_USE_WAYLAND=1")
-		endif()
-	endif()
+if(UNIX AND NOT APPLE)
+	target_include_directories(common PRIVATE ${DBUS_INCLUDE_DIRS})
+	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES} X11::X11 X11::Xrandr)
+  if(TARGET libbacktrace::libbacktrace)
+		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
+		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
+  endif()
 endif()
 
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
@@ -279,7 +175,7 @@ if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
-if(NOT WIN32 AND (QT_BUILD OR NOGUI_BUILD))
+if(NOT WIN32)
 	# libcurl-based HTTPDownloader
 	target_sources(common PRIVATE
 		HTTPDownloaderCurl.cpp
@@ -292,6 +188,7 @@ target_link_libraries(common PRIVATE
 	${LIBC_LIBRARIES}
 	PNG::PNG
 	jpgd
+	WebP::libwebp
 )
 
 target_link_libraries(common PUBLIC

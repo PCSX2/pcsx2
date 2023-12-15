@@ -105,7 +105,7 @@ void GSLocalMemoryFunctions::PopulateFunctions(GSLocalMemory& mem)
 
 	for (GSLocalMemory::psm_t& psm : mem.m_psm)
 	{
-		psm.wi = WriteImage<PSM_PSMCT32, 8, 8, 32>;
+		psm.wi = WriteImage<PSMCT32, 8, 8, 32>;
 		psm.ri = ReadImageX; // TODO
 		psm.rtx = ReadTexture32;
 		psm.rtxP = ReadTexture32;
@@ -113,79 +113,79 @@ void GSLocalMemoryFunctions::PopulateFunctions(GSLocalMemory& mem)
 		psm.rtxbP = ReadTextureBlock32;
 	}
 
-	mem.m_psm[PSM_PSMCT24].wi = WriteImage24; // TODO
-	mem.m_psm[PSM_PSMCT16].wi = WriteImage<PSM_PSMCT16, 16, 8, 16>;
-	mem.m_psm[PSM_PSMCT16S].wi = WriteImage<PSM_PSMCT16S, 16, 8, 16>;
-	mem.m_psm[PSM_PSMT8].wi = WriteImage<PSM_PSMT8, 16, 16, 8>;
-	mem.m_psm[PSM_PSMT4].wi = WriteImage<PSM_PSMT4, 32, 16, 4>;
-	mem.m_psm[PSM_PSMT8H].wi = WriteImage8H; // TODO
-	mem.m_psm[PSM_PSMT4HL].wi = WriteImage4HL; // TODO
-	mem.m_psm[PSM_PSMT4HH].wi = WriteImage4HH; // TODO
-	mem.m_psm[PSM_PSMZ32].wi = WriteImage<PSM_PSMZ32, 8, 8, 32>;
-	mem.m_psm[PSM_PSMZ24].wi = WriteImage24Z; // TODO
-	mem.m_psm[PSM_PSMZ16].wi = WriteImage<PSM_PSMZ16, 16, 8, 16>;
-	mem.m_psm[PSM_PSMZ16S].wi = WriteImage<PSM_PSMZ16S, 16, 8, 16>;
+	mem.m_psm[PSMCT24].wi = WriteImage24; // TODO
+	mem.m_psm[PSMCT16].wi = WriteImage<PSMCT16, 16, 8, 16>;
+	mem.m_psm[PSMCT16S].wi = WriteImage<PSMCT16S, 16, 8, 16>;
+	mem.m_psm[PSMT8].wi = WriteImage<PSMT8, 16, 16, 8>;
+	mem.m_psm[PSMT4].wi = WriteImage<PSMT4, 32, 16, 4>;
+	mem.m_psm[PSMT8H].wi = WriteImage8H; // TODO
+	mem.m_psm[PSMT4HL].wi = WriteImage4HL; // TODO
+	mem.m_psm[PSMT4HH].wi = WriteImage4HH; // TODO
+	mem.m_psm[PSMZ32].wi = WriteImage<PSMZ32, 8, 8, 32>;
+	mem.m_psm[PSMZ24].wi = WriteImage24Z; // TODO
+	mem.m_psm[PSMZ16].wi = WriteImage<PSMZ16, 16, 8, 16>;
+	mem.m_psm[PSMZ16S].wi = WriteImage<PSMZ16S, 16, 8, 16>;
 
-	mem.m_psm[PSM_PSMCT24].rtx = ReadTexture24;
-	mem.m_psm[PSM_PSGPU24].rtx = ReadTextureGPU24;
-	mem.m_psm[PSM_PSMCT16].rtx = ReadTexture16;
-	mem.m_psm[PSM_PSMCT16S].rtx = ReadTexture16;
-	mem.m_psm[PSM_PSMT8].rtx = ReadTexture8;
-	mem.m_psm[PSM_PSMT4].rtx = ReadTexture4;
-	mem.m_psm[PSM_PSMT8H].rtx = ReadTexture8H;
-	mem.m_psm[PSM_PSMT4HL].rtx = ReadTexture4HL;
-	mem.m_psm[PSM_PSMT4HH].rtx = ReadTexture4HH;
-	mem.m_psm[PSM_PSMZ32].rtx = ReadTexture32;
-	mem.m_psm[PSM_PSMZ24].rtx = ReadTexture24;
-	mem.m_psm[PSM_PSMZ16].rtx = ReadTexture16;
-	mem.m_psm[PSM_PSMZ16S].rtx = ReadTexture16;
+	mem.m_psm[PSMCT24].rtx = ReadTexture24;
+	mem.m_psm[PSGPU24].rtx = ReadTextureGPU24;
+	mem.m_psm[PSMCT16].rtx = ReadTexture16;
+	mem.m_psm[PSMCT16S].rtx = ReadTexture16;
+	mem.m_psm[PSMT8].rtx = ReadTexture8;
+	mem.m_psm[PSMT4].rtx = ReadTexture4;
+	mem.m_psm[PSMT8H].rtx = ReadTexture8H;
+	mem.m_psm[PSMT4HL].rtx = ReadTexture4HL;
+	mem.m_psm[PSMT4HH].rtx = ReadTexture4HH;
+	mem.m_psm[PSMZ32].rtx = ReadTexture32;
+	mem.m_psm[PSMZ24].rtx = ReadTexture24;
+	mem.m_psm[PSMZ16].rtx = ReadTexture16;
+	mem.m_psm[PSMZ16S].rtx = ReadTexture16;
 
-	mem.m_psm[PSM_PSMCT24].rtxP = ReadTexture24;
-	mem.m_psm[PSM_PSMCT16].rtxP = ReadTexture16;
-	mem.m_psm[PSM_PSMCT16S].rtxP = ReadTexture16;
-	mem.m_psm[PSM_PSMT8].rtxP = ReadTexture8P;
-	mem.m_psm[PSM_PSMT4].rtxP = ReadTexture4P;
-	mem.m_psm[PSM_PSMT8H].rtxP = ReadTexture8HP;
-	mem.m_psm[PSM_PSMT4HL].rtxP = ReadTexture4HLP;
-	mem.m_psm[PSM_PSMT4HH].rtxP = ReadTexture4HHP;
-	mem.m_psm[PSM_PSMZ32].rtxP = ReadTexture32;
-	mem.m_psm[PSM_PSMZ24].rtxP = ReadTexture24;
-	mem.m_psm[PSM_PSMZ16].rtxP = ReadTexture16;
-	mem.m_psm[PSM_PSMZ16S].rtxP = ReadTexture16;
+	mem.m_psm[PSMCT24].rtxP = ReadTexture24;
+	mem.m_psm[PSMCT16].rtxP = ReadTexture16;
+	mem.m_psm[PSMCT16S].rtxP = ReadTexture16;
+	mem.m_psm[PSMT8].rtxP = ReadTexture8P;
+	mem.m_psm[PSMT4].rtxP = ReadTexture4P;
+	mem.m_psm[PSMT8H].rtxP = ReadTexture8HP;
+	mem.m_psm[PSMT4HL].rtxP = ReadTexture4HLP;
+	mem.m_psm[PSMT4HH].rtxP = ReadTexture4HHP;
+	mem.m_psm[PSMZ32].rtxP = ReadTexture32;
+	mem.m_psm[PSMZ24].rtxP = ReadTexture24;
+	mem.m_psm[PSMZ16].rtxP = ReadTexture16;
+	mem.m_psm[PSMZ16S].rtxP = ReadTexture16;
 
-	mem.m_psm[PSM_PSMCT24].rtxb = ReadTextureBlock24;
-	mem.m_psm[PSM_PSMCT16].rtxb = ReadTextureBlock16;
-	mem.m_psm[PSM_PSMCT16S].rtxb = ReadTextureBlock16;
-	mem.m_psm[PSM_PSMT8].rtxb = ReadTextureBlock8;
-	mem.m_psm[PSM_PSMT4].rtxb = ReadTextureBlock4;
-	mem.m_psm[PSM_PSMT8H].rtxb = ReadTextureBlock8H;
-	mem.m_psm[PSM_PSMT4HL].rtxb = ReadTextureBlock4HL;
-	mem.m_psm[PSM_PSMT4HH].rtxb = ReadTextureBlock4HH;
-	mem.m_psm[PSM_PSMZ32].rtxb = ReadTextureBlock32;
-	mem.m_psm[PSM_PSMZ24].rtxb = ReadTextureBlock24;
-	mem.m_psm[PSM_PSMZ16].rtxb = ReadTextureBlock16;
-	mem.m_psm[PSM_PSMZ16S].rtxb = ReadTextureBlock16;
+	mem.m_psm[PSMCT24].rtxb = ReadTextureBlock24;
+	mem.m_psm[PSMCT16].rtxb = ReadTextureBlock16;
+	mem.m_psm[PSMCT16S].rtxb = ReadTextureBlock16;
+	mem.m_psm[PSMT8].rtxb = ReadTextureBlock8;
+	mem.m_psm[PSMT4].rtxb = ReadTextureBlock4;
+	mem.m_psm[PSMT8H].rtxb = ReadTextureBlock8H;
+	mem.m_psm[PSMT4HL].rtxb = ReadTextureBlock4HL;
+	mem.m_psm[PSMT4HH].rtxb = ReadTextureBlock4HH;
+	mem.m_psm[PSMZ32].rtxb = ReadTextureBlock32;
+	mem.m_psm[PSMZ24].rtxb = ReadTextureBlock24;
+	mem.m_psm[PSMZ16].rtxb = ReadTextureBlock16;
+	mem.m_psm[PSMZ16S].rtxb = ReadTextureBlock16;
 
-	mem.m_psm[PSM_PSMCT24].rtxbP = ReadTextureBlock24;
-	mem.m_psm[PSM_PSMCT16].rtxbP = ReadTextureBlock16;
-	mem.m_psm[PSM_PSMCT16S].rtxbP = ReadTextureBlock16;
-	mem.m_psm[PSM_PSMT8].rtxbP = ReadTextureBlock8P;
-	mem.m_psm[PSM_PSMT4].rtxbP = ReadTextureBlock4P;
-	mem.m_psm[PSM_PSMT8H].rtxbP = ReadTextureBlock8HP;
-	mem.m_psm[PSM_PSMT4HL].rtxbP = ReadTextureBlock4HLP;
-	mem.m_psm[PSM_PSMT4HH].rtxbP = ReadTextureBlock4HHP;
-	mem.m_psm[PSM_PSMZ32].rtxbP = ReadTextureBlock32;
-	mem.m_psm[PSM_PSMZ24].rtxbP = ReadTextureBlock24;
-	mem.m_psm[PSM_PSMZ16].rtxbP = ReadTextureBlock16;
-	mem.m_psm[PSM_PSMZ16S].rtxbP = ReadTextureBlock16;
+	mem.m_psm[PSMCT24].rtxbP = ReadTextureBlock24;
+	mem.m_psm[PSMCT16].rtxbP = ReadTextureBlock16;
+	mem.m_psm[PSMCT16S].rtxbP = ReadTextureBlock16;
+	mem.m_psm[PSMT8].rtxbP = ReadTextureBlock8P;
+	mem.m_psm[PSMT4].rtxbP = ReadTextureBlock4P;
+	mem.m_psm[PSMT8H].rtxbP = ReadTextureBlock8HP;
+	mem.m_psm[PSMT4HL].rtxbP = ReadTextureBlock4HLP;
+	mem.m_psm[PSMT4HH].rtxbP = ReadTextureBlock4HHP;
+	mem.m_psm[PSMZ32].rtxbP = ReadTextureBlock32;
+	mem.m_psm[PSMZ24].rtxbP = ReadTextureBlock24;
+	mem.m_psm[PSMZ16].rtxbP = ReadTextureBlock16;
+	mem.m_psm[PSMZ16S].rtxbP = ReadTextureBlock16;
 
 #if _M_SSE == 0x501
 	if (g_cpu.hasSlowGather)
 	{
-		mem.m_psm[PSM_PSMT8].rtx = ReadTexture8HSW;
-		mem.m_psm[PSM_PSMT8H].rtx = ReadTexture8HHSW;
-		mem.m_psm[PSM_PSMT8].rtxb = ReadTextureBlock8HSW;
-		mem.m_psm[PSM_PSMT8H].rtxb = ReadTextureBlock8HHSW;
+		mem.m_psm[PSMT8].rtx = ReadTexture8HSW;
+		mem.m_psm[PSMT8H].rtx = ReadTexture8HHSW;
+		mem.m_psm[PSMT8].rtxb = ReadTextureBlock8HSW;
+		mem.m_psm[PSMT8H].rtxb = ReadTextureBlock8HHSW;
 	}
 #endif
 }
@@ -226,14 +226,14 @@ void GSLocalMemoryFunctions::WriteImageColumn(GSLocalMemory& mem, int l, int r, 
 		{
 			switch (psm)
 			{
-				case PSM_PSMCT32: GSBlock::WriteColumn32<alignment, 0xffffffff>(y, mem.BlockPtr32(x, y, bp, bw), &src[x * 4], srcpitch); break;
-				case PSM_PSMCT16: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16(x, y, bp, bw), &src[x * 2], srcpitch); break;
-				case PSM_PSMCT16S: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16S(x, y, bp, bw), &src[x * 2], srcpitch); break;
-				case PSM_PSMT8: GSBlock::WriteColumn8<alignment>(y, mem.BlockPtr8(x, y, bp, bw), &src[x], srcpitch); break;
-				case PSM_PSMT4: GSBlock::WriteColumn4<alignment>(y, mem.BlockPtr4(x, y, bp, bw), &src[x >> 1], srcpitch); break;
-				case PSM_PSMZ32: GSBlock::WriteColumn32<alignment, 0xffffffff>(y, mem.BlockPtr32Z(x, y, bp, bw), &src[x * 4], srcpitch); break;
-				case PSM_PSMZ16: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
-				case PSM_PSMZ16S: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMCT32: GSBlock::WriteColumn32<alignment, 0xffffffff>(y, mem.BlockPtr32(x, y, bp, bw), &src[x * 4], srcpitch); break;
+				case PSMCT16: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMCT16S: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16S(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMT8: GSBlock::WriteColumn8<alignment>(y, mem.BlockPtr8(x, y, bp, bw), &src[x], srcpitch); break;
+				case PSMT4: GSBlock::WriteColumn4<alignment>(y, mem.BlockPtr4(x, y, bp, bw), &src[x >> 1], srcpitch); break;
+				case PSMZ32: GSBlock::WriteColumn32<alignment, 0xffffffff>(y, mem.BlockPtr32Z(x, y, bp, bw), &src[x * 4], srcpitch); break;
+				case PSMZ16: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMZ16S: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				// TODO
 				default: __assume(0);
 			}
@@ -253,14 +253,14 @@ void GSLocalMemoryFunctions::WriteImageBlock(GSLocalMemory& mem, int l, int r, i
 		{
 			switch (psm)
 			{
-				case PSM_PSMCT32: GSBlock::WriteBlock32<alignment, 0xffffffff>(mem.BlockPtr32(x, y, bp, bw), &src[x * 4], srcpitch); break;
-				case PSM_PSMCT16: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16(x, y, bp, bw), &src[x * 2], srcpitch); break;
-				case PSM_PSMCT16S: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16S(x, y, bp, bw), &src[x * 2], srcpitch); break;
-				case PSM_PSMT8: GSBlock::WriteBlock8<alignment>(mem.BlockPtr8(x, y, bp, bw), &src[x], srcpitch); break;
-				case PSM_PSMT4: GSBlock::WriteBlock4<alignment>(mem.BlockPtr4(x, y, bp, bw), &src[x >> 1], srcpitch); break;
-				case PSM_PSMZ32: GSBlock::WriteBlock32<alignment, 0xffffffff>(mem.BlockPtr32Z(x, y, bp, bw), &src[x * 4], srcpitch); break;
-				case PSM_PSMZ16: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
-				case PSM_PSMZ16S: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMCT32: GSBlock::WriteBlock32<alignment, 0xffffffff>(mem.BlockPtr32(x, y, bp, bw), &src[x * 4], srcpitch); break;
+				case PSMCT16: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMCT16S: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16S(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMT8: GSBlock::WriteBlock8<alignment>(mem.BlockPtr8(x, y, bp, bw), &src[x], srcpitch); break;
+				case PSMT4: GSBlock::WriteBlock4<alignment>(mem.BlockPtr4(x, y, bp, bw), &src[x >> 1], srcpitch); break;
+				case PSMZ32: GSBlock::WriteBlock32<alignment, 0xffffffff>(mem.BlockPtr32Z(x, y, bp, bw), &src[x * 4], srcpitch); break;
+				case PSMZ16: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
+				case PSMZ16S: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				// TODO
 				default: __assume(0);
 			}
@@ -280,14 +280,14 @@ void GSLocalMemoryFunctions::WriteImageLeftRight(GSLocalMemory& mem, int l, int 
 		{
 			switch (psm)
 			{
-				case PSM_PSMCT32: mem.WritePixel32(x, y, *(u32*)&src[x * 4], bp, bw); break;
-				case PSM_PSMCT16: mem.WritePixel16(x, y, *(u16*)&src[x * 2], bp, bw); break;
-				case PSM_PSMCT16S: mem.WritePixel16S(x, y, *(u16*)&src[x * 2], bp, bw); break;
-				case PSM_PSMT8: mem.WritePixel8(x, y, src[x], bp, bw); break;
-				case PSM_PSMT4: mem.WritePixel4(x, y, src[x >> 1] >> ((x & 1) << 2), bp, bw); break;
-				case PSM_PSMZ32: mem.WritePixel32Z(x, y, *(u32*)&src[x * 4], bp, bw); break;
-				case PSM_PSMZ16: mem.WritePixel16Z(x, y, *(u16*)&src[x * 2], bp, bw); break;
-				case PSM_PSMZ16S: mem.WritePixel16SZ(x, y, *(u16*)&src[x * 2], bp, bw); break;
+				case PSMCT32: mem.WritePixel32(x, y, *(u32*)&src[x * 4], bp, bw); break;
+				case PSMCT16: mem.WritePixel16(x, y, *(u16*)&src[x * 2], bp, bw); break;
+				case PSMCT16S: mem.WritePixel16S(x, y, *(u16*)&src[x * 2], bp, bw); break;
+				case PSMT8: mem.WritePixel8(x, y, src[x], bp, bw); break;
+				case PSMT4: mem.WritePixel4(x, y, src[x >> 1] >> ((x & 1) << 2), bp, bw); break;
+				case PSMZ32: mem.WritePixel32Z(x, y, *(u32*)&src[x * 4], bp, bw); break;
+				case PSMZ16: mem.WritePixel16Z(x, y, *(u16*)&src[x * 2], bp, bw); break;
+				case PSMZ16S: mem.WritePixel16SZ(x, y, *(u16*)&src[x * 2], bp, bw); break;
 				// TODO
 				default: __assume(0);
 			}
@@ -319,41 +319,41 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 
 			switch (psm)
 			{
-				case PSM_PSMCT32: dst = mem.BlockPtr32(x, y, bp, bw); break;
-				case PSM_PSMCT16: dst = mem.BlockPtr16(x, y, bp, bw); break;
-				case PSM_PSMCT16S: dst = mem.BlockPtr16S(x, y, bp, bw); break;
-				case PSM_PSMT8: dst = mem.BlockPtr8(x, y, bp, bw); break;
-				case PSM_PSMT4: dst = mem.BlockPtr4(x, y, bp, bw); break;
-				case PSM_PSMZ32: dst = mem.BlockPtr32Z(x, y, bp, bw); break;
-				case PSM_PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
-				case PSM_PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
+				case PSMCT32: dst = mem.BlockPtr32(x, y, bp, bw); break;
+				case PSMCT16: dst = mem.BlockPtr16(x, y, bp, bw); break;
+				case PSMCT16S: dst = mem.BlockPtr16S(x, y, bp, bw); break;
+				case PSMT8: dst = mem.BlockPtr8(x, y, bp, bw); break;
+				case PSMT4: dst = mem.BlockPtr4(x, y, bp, bw); break;
+				case PSMZ32: dst = mem.BlockPtr32Z(x, y, bp, bw); break;
+				case PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
+				case PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
 				// TODO
 				default: __assume(0);
 			}
 
 			switch (psm)
 			{
-				case PSM_PSMCT32:
-				case PSM_PSMZ32:
+				case PSMCT32:
+				case PSMZ32:
 					GSBlock::ReadColumn32(y, dst, buff, 32);
 					memcpy(&buff[32], &src[x * 4], 32);
 					GSBlock::WriteColumn32<32, 0xffffffff>(y, dst, buff, 32);
 					break;
-				case PSM_PSMCT16:
-				case PSM_PSMCT16S:
-				case PSM_PSMZ16:
-				case PSM_PSMZ16S:
+				case PSMCT16:
+				case PSMCT16S:
+				case PSMZ16:
+				case PSMZ16S:
 					GSBlock::ReadColumn16(y, dst, buff, 32);
 					memcpy(&buff[32], &src[x * 2], 32);
 					GSBlock::WriteColumn16<32>(y, dst, buff, 32);
 					break;
-				case PSM_PSMT8:
+				case PSMT8:
 					GSBlock::ReadColumn8(y, dst, buff, 16);
 					for (int i = 0, j = y2; i < h2; i++, j++)
 						memcpy(&buff[j * 16], &src[i * srcpitch + x], 16);
 					GSBlock::WriteColumn8<32>(y, dst, buff, 16);
 					break;
-				case PSM_PSMT4:
+				case PSMT4:
 					GSBlock::ReadColumn4(y, dst, buff, 16);
 					for (int i = 0, j = y2; i < h2; i++, j++)
 						memcpy(&buff[j * 16], &src[i * srcpitch + (x >> 1)], 16);
@@ -412,41 +412,41 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 
 			switch (psm)
 			{
-			case PSM_PSMCT32: dst = mem.BlockPtr32(x, y, bp, bw); break;
-			case PSM_PSMCT16: dst = mem.BlockPtr16(x, y, bp, bw); break;
-			case PSM_PSMCT16S: dst = mem.BlockPtr16S(x, y, bp, bw); break;
-			case PSM_PSMT8: dst = mem.BlockPtr8(x, y, bp, bw); break;
-			case PSM_PSMT4: dst = mem.BlockPtr4(x, y, bp, bw); break;
-			case PSM_PSMZ32: dst = mem.BlockPtr32Z(x, y, bp, bw); break;
-			case PSM_PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
-			case PSM_PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
+			case PSMCT32: dst = mem.BlockPtr32(x, y, bp, bw); break;
+			case PSMCT16: dst = mem.BlockPtr16(x, y, bp, bw); break;
+			case PSMCT16S: dst = mem.BlockPtr16S(x, y, bp, bw); break;
+			case PSMT8: dst = mem.BlockPtr8(x, y, bp, bw); break;
+			case PSMT4: dst = mem.BlockPtr4(x, y, bp, bw); break;
+			case PSMZ32: dst = mem.BlockPtr32Z(x, y, bp, bw); break;
+			case PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
+			case PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
 			// TODO
 			default: __assume(0);
 			}
 
 			switch (psm)
 			{
-				case PSM_PSMCT32:
-				case PSM_PSMZ32:
+				case PSMCT32:
+				case PSMZ32:
 					GSBlock::ReadColumn32(y, dst, buff, 32);
 					memcpy(&buff[0], &src[x * 4], 32);
 					GSBlock::WriteColumn32<32, 0xffffffff>(y, dst, buff, 32);
 					break;
-				case PSM_PSMCT16:
-				case PSM_PSMCT16S:
-				case PSM_PSMZ16:
-				case PSM_PSMZ16S:
+				case PSMCT16:
+				case PSMCT16S:
+				case PSMZ16:
+				case PSMZ16S:
 					GSBlock::ReadColumn16(y, dst, buff, 32);
 					memcpy(&buff[0], &src[x * 2], 32);
 					GSBlock::WriteColumn16<32>(y, dst, buff, 32);
 					break;
-				case PSM_PSMT8:
+				case PSMT8:
 					GSBlock::ReadColumn8(y, dst, buff, 16);
 					for (int i = 0; i < h; i++)
 						memcpy(&buff[i * 16], &src[i * srcpitch + x], 16);
 					GSBlock::WriteColumn8<32>(y, dst, buff, 16);
 					break;
-				case PSM_PSMT4:
+				case PSMT4:
 					GSBlock::ReadColumn4(y, dst, buff, 16);
 					for (int i = 0; i < h; i++)
 						memcpy(&buff[i * 16], &src[i * srcpitch + (x >> 1)], 16);
@@ -782,10 +782,10 @@ void GSLocalMemoryFunctions::WriteImage24Z(GSLocalMemory& mem, int& tx, int& ty,
 /// Helper for WriteImageX and ReadImageX
 /// `len` is in pixels, unlike WriteImageX/ReadImageX where it's bytes
 /// `xinc` is the amount to increment `x` by per iteration
-/// Calls `paGetter` on a starting (x, y) to get some sort of pixel address helper for each line,
+/// Creates a GSOffset::PAHelper on a starting (x, y) to get the base address for each line,
 ///  then `fn` on the helper and an x offset once for every `xinc` pixels along that line
-template <typename PAGetter, typename Fn>
-static void readWriteHelperImpl(int& tx, int& ty, int len, int xinc, int sx, int w, PAGetter&& paGetter, Fn&& fn)
+template <typename Fn>
+static void readWriteHelper(int& tx, int& ty, int len, int xinc, int sx, int w, const GSOffset& off, Fn&& fn)
 {
 	int y = ty;
 	int ex = sx + w;
@@ -793,7 +793,7 @@ static void readWriteHelperImpl(int& tx, int& ty, int len, int xinc, int sx, int
 
 	ASSERT(remX >= 0);
 
-	auto pa = paGetter(tx, y);
+	GSOffset::PAHelper pa = off.paMulti(tx, y);
 
 	while (len > 0)
 	{
@@ -808,32 +808,12 @@ static void readWriteHelperImpl(int& tx, int& ty, int len, int xinc, int sx, int
 		{
 			y++;
 			remX = w;
-			pa = paGetter(sx, y);
+			pa = off.paMulti(sx, y);
 		}
 	}
 
 	tx = ex - remX;
 	ty = y;
-}
-
-/// Helper for WriteImageX and ReadImageX
-/// `len` is in pixels, unlike WriteImageX/ReadImageX where it's bytes
-/// `xinc` is the amount to increment `x` by per iteration
-/// Calls `fn` with a `PAHelper` representing the current line and an int representing the x offset in that line
-template <typename Fn>
-static void readWriteHelper(int& tx, int& ty, int len, int xinc, int sx, int w, const GSOffset& off, Fn&& fn)
-{
-	readWriteHelperImpl(tx, ty, len, xinc, sx, w, [&](int x, int y){ return off.paMulti(x, y); }, std::forward<Fn>(fn));
-}
-
-/// Helper for WriteImageX and ReadImageX
-/// `len` is in pixels, unlike WriteImageX/ReadImageX where it's bytes
-/// `xinc` is the amount to increment `x` by per iteration
-/// Calls `fn` with a `PAPtrHelper` representing the current line and an int representing the x offset in that line
-template <typename VM, typename Fn>
-static void readWriteHelper(VM* vm, int& tx, int& ty, int len, int xinc, int sx, int w, const GSOffset& off, Fn&& fn)
-{
-	readWriteHelperImpl(tx, ty, len, xinc, sx, w, [&](int x, int y){ return off.paMulti(vm, x, y); }, std::forward<Fn>(fn));
 }
 
 void GSLocalMemoryFunctions::WriteImageX(GSLocalMemory& mem, int& tx, int& ty, const u8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG)
@@ -844,6 +824,9 @@ void GSLocalMemoryFunctions::WriteImageX(GSLocalMemory& mem, int& tx, int& ty, c
 	const u8* pb = (u8*)src;
 	const u16* pw = (u16*)src;
 	const u32* pd = (u32*)src;
+	u8* vm8 = mem.vm8();
+	u16* vm16 = mem.vm16();
+	u32* vm32 = mem.vm32();
 
 	u32 bp = BITBLTBUF.DBP;
 	u32 bw = BITBLTBUF.DBW;
@@ -855,45 +838,45 @@ void GSLocalMemoryFunctions::WriteImageX(GSLocalMemory& mem, int& tx, int& ty, c
 
 	switch (BITBLTBUF.DPSM)
 	{
-		case PSM_PSMCT32:
-		case PSM_PSMZ32:
-			readWriteHelper(mem.vm32(), tx, ty, len / 4, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
+		case PSMCT32:
+		case PSMZ32:
+			readWriteHelper(tx, ty, len / 4, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](GSOffset::PAHelper& pa, int x)
 			{
-				*pa.value(x) = *pd;
+				vm32[pa.value(x)] = *pd;
 				pd++;
 			});
 			break;
 
-		case PSM_PSMCT24:
-		case PSM_PSMZ24:
-			readWriteHelper(mem.vm32(), tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
+		case PSMCT24:
+		case PSMZ24:
+			readWriteHelper(tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](GSOffset::PAHelper& pa, int x)
 			{
-				mem.WritePixel24(pa.value(x), *(u32*)pb);
+				mem.WritePixel24(&vm32[pa.value(x)], *(u32*)pb);
 				pb += 3;
 			});
 			break;
 
-		case PSM_PSMCT16:
-		case PSM_PSMCT16S:
-		case PSM_PSMZ16:
-		case PSM_PSMZ16S:
-			readWriteHelper(mem.vm16(), tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle16), [&](auto& pa, int x)
+		case PSMCT16:
+		case PSMCT16S:
+		case PSMZ16:
+		case PSMZ16S:
+			readWriteHelper(tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle16), [&](GSOffset::PAHelper& pa, int x)
 			{
-				*pa.value(x) = *pw;
+				vm16[pa.value(x)] = *pw;
 				pw++;
 			});
 			break;
 
-		case PSM_PSMT8:
-			readWriteHelper(mem.m_vm8, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](auto& pa, int x)
+		case PSMT8:
+			readWriteHelper(tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT8), [&](GSOffset::PAHelper& pa, int x)
 			{
-				*pa.value(x) = *pb;
+				vm8[pa.value(x)] = *pb;
 				pb++;
 			});
 			break;
 
-		case PSM_PSMT4:
-			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa, int x)
+		case PSMT4:
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT4), [&](GSOffset::PAHelper& pa, int x)
 			{
 				mem.WritePixel4(pa.value(x), *pb & 0xf);
 				mem.WritePixel4(pa.value(x + 1), *pb >> 4);
@@ -901,28 +884,28 @@ void GSLocalMemoryFunctions::WriteImageX(GSLocalMemory& mem, int& tx, int& ty, c
 			});
 			break;
 
-		case PSM_PSMT8H:
-			readWriteHelper(mem.vm32(), tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
+		case PSMT8H:
+			readWriteHelper(tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT8H), [&](GSOffset::PAHelper& pa, int x)
 			{
-				mem.WritePixel8H(pa.value(x), *pb);
+				mem.WritePixel8H(&vm32[pa.value(x)], *pb);
 				pb++;
 			});
 			break;
 
-		case PSM_PSMT4HL:
-			readWriteHelper(mem.vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
+		case PSMT4HL:
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT4HL), [&](GSOffset::PAHelper& pa, int x)
 			{
-				mem.WritePixel4HL(pa.value(x), *pb & 0xf);
-				mem.WritePixel4HL(pa.value(x + 1), *pb >> 4);
+				mem.WritePixel4HL(&vm32[pa.value(x)], *pb & 0xf);
+				mem.WritePixel4HL(&vm32[pa.value(x + 1)], *pb >> 4);
 				pb++;
 			});
 			break;
 
-		case PSM_PSMT4HH:
-			readWriteHelper(mem.vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
+		case PSMT4HH:
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT4HH), [&](GSOffset::PAHelper& pa, int x)
 			{
-				mem.WritePixel4HH(pa.value(x), *pb & 0xf);
-				mem.WritePixel4HH(pa.value(x + 1), *pb >> 4);
+				mem.WritePixel4HH(&vm32[pa.value(x)], *pb & 0xf);
+				mem.WritePixel4HH(&vm32[pa.value(x + 1)], *pb >> 4);
 				pb++;
 			});
 			break;
@@ -939,6 +922,9 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 	u8* RESTRICT pb = (u8*)dst;
 	u16* RESTRICT pw = (u16*)dst;
 	u32* RESTRICT pd = (u32*)dst;
+	const u32* vm32 = mem.vm32();
+	const u16* vm16 = mem.vm16();
+	const u8* vm8 = mem.vm8();
 
 	u32 bp = BITBLTBUF.SBP;
 	u32 bw = BITBLTBUF.SBW;
@@ -952,8 +938,8 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 
 	switch (BITBLTBUF.SPSM)
 	{
-		case PSM_PSMCT32:
-		case PSM_PSMZ32:
+		case PSMCT32:
+		case PSMZ32:
 		{
 			// MGS1 intro, fade effect between two scenes (airplane outside-inside transition)
 
@@ -963,38 +949,39 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 
 			len /= 4;
 
-			GSOffset::PAPtrHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(mem.vm32(), 0, y);
+			u32* vm = mem.vm32();
+			GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(0, y);
 
 			while (len > 0)
 			{
 				for (; len > 0 && x < ex && (x & 7); len--, x++, pd++)
 				{
-					*pd = *pa.value(x);
+					*pd = vm[pa.value(x)];
 				}
 
 				// aligned to a column
 
 				for (int ex8 = ex - 8; len >= 8 && x <= ex8; len -= 8, x += 8, pd += 8)
 				{
-					u32* ps = pa.value(x);
+					u32* ps = &vm[pa.value(x)];
 
 					GSVector4i::store<false>(&pd[0], GSVector4i::load(ps + 0, ps + 4));
 					GSVector4i::store<false>(&pd[4], GSVector4i::load(ps + 8, ps + 12));
 
 					for (int i = 0; i < 8; i++)
-						ASSERT(pd[i] == *pa.value(x + i));
+						ASSERT(pd[i] == vm[pa.value(x + i)]);
 				}
 
 				for (; len > 0 && x < ex; len--, x++, pd++)
 				{
-					*pd = *pa.value(x);
+					*pd = vm[pa.value(x)];
 				}
 
 				if (x == ex)
 				{
 					y++;
 					x = sx;
-					pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(mem.vm32(), 0, y);
+					pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(0, y);
 				}
 			}
 
@@ -1003,39 +990,38 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 		}
 		break;
 
-		case PSM_PSMCT24:
-		case PSM_PSMZ24:
-			readWriteHelper(mem.vm32(), tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](auto& pa, int x)
+		case PSMCT24:
+		case PSMZ24:
+			readWriteHelper(tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle32), [&](GSOffset::PAHelper& pa, int x)
 			{
-				u32 c = *pa.value(x);
+				u32 c = vm32[pa.value(x)];
 				pb[0] = (u8)(c);
 				pb[1] = (u8)(c >> 8);
 				pb[2] = (u8)(c >> 16);
 				pb += 3;
 			});
 			break;
-
-		case PSM_PSMCT16:
-		case PSM_PSMCT16S:
-		case PSM_PSMZ16:
-		case PSM_PSMZ16S:
-			readWriteHelper(mem.vm16(), tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle16), [&](auto& pa, int x)
+		case PSMCT16:
+		case PSMCT16S:
+		case PSMZ16:
+		case PSMZ16S:
+			readWriteHelper(tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(GSLocalMemory::swizzle16), [&](GSOffset::PAHelper& pa, int x)
 			{
-				*pw = *pa.value(x);
+				*pw = vm16[pa.value(x)];
 				pw++;
 			});
 			break;
 
-		case PSM_PSMT8:
-			readWriteHelper(mem.m_vm8, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](auto& pa, int x)
+		case PSMT8:
+			readWriteHelper(tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT8), [&](GSOffset::PAHelper& pa, int x)
 			{
-				*pb = *pa.value(x);
+				*pb = vm8[pa.value(x)];
 				pb++;
 			});
 			break;
 
-		case PSM_PSMT4:
-			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa, int x)
+		case PSMT4:
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT4), [&](GSOffset::PAHelper& pa, int x)
 			{
 				u8 low = mem.ReadPixel4(pa.value(x));
 				u8 high = mem.ReadPixel4(pa.value(x + 1));
@@ -1043,29 +1029,29 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 			});
 			break;
 
-		case PSM_PSMT8H:
-			readWriteHelper(mem.vm32(), tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
+		case PSMT8H:
+			readWriteHelper(tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT8H), [&](GSOffset::PAHelper& pa, int x)
 			{
-				*pb = (u8)(*pa.value(x) >> 24);
+				*pb = (u8)(vm32[pa.value(x)] >> 24);
 				pb++;
 			});
 			break;
 
-		case PSM_PSMT4HL:
-			readWriteHelper(mem.vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
+		case PSMT4HL:
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT4HL), [&](GSOffset::PAHelper& pa, int x)
 			{
-				u32 c0 = *pa.value(x) >> 24 & 0x0f;
-				u32 c1 = *pa.value(x + 1) >> 20 & 0xf0;
+				u32 c0 = vm32[pa.value(x)] >> 24 & 0x0f;
+				u32 c1 = vm32[pa.value(x + 1)] >> 20 & 0xf0;
 				*pb = (u8)(c0 | c1);
 				pb++;
 			});
 			break;
 
-		case PSM_PSMT4HH:
-			readWriteHelper(mem.vm32(), tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
+		case PSMT4HH:
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSMT4HH), [&](GSOffset::PAHelper& pa, int x)
 			{
-				u32 c0 = *pa.value(x) >> 28 & 0x0f;
-				u32 c1 = *pa.value(x + 1) >> 24 & 0xf0;
+				u32 c0 = vm32[pa.value(x)] >> 28 & 0x0f;
+				u32 c1 = vm32[pa.value(x + 1)] >> 24 & 0xf0;
 				*pb = (u8)(c0 | c1);
 				pb++;
 			});

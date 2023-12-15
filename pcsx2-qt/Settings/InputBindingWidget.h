@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,9 +14,10 @@
  */
 
 #pragma once
-#include "common/Pcsx2Defs.h"
-#include "pcsx2/Frontend/InputManager.h"
+
 #include "pcsx2/Config.h"
+#include "pcsx2/Input/InputManager.h"
+
 #include <QtWidgets/QPushButton>
 #include <optional>
 #include <utility>
@@ -24,7 +25,7 @@
 
 class QTimer;
 
-class ControllerSettingsDialog;
+class ControllerSettingsWindow;
 class SettingsInterface;
 
 class InputBindingWidget : public QPushButton
@@ -37,7 +38,7 @@ public:
 		QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name);
 	~InputBindingWidget();
 
-	static bool isMouseMappingEnabled();
+	static bool isMouseMappingEnabled(SettingsInterface* sif);
 
 	void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name, std::string key_name);
 
@@ -91,10 +92,10 @@ class InputVibrationBindingWidget : public QPushButton
 
 public:
 	InputVibrationBindingWidget(QWidget* parent);
-	InputVibrationBindingWidget(QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name);
+	InputVibrationBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
 	~InputVibrationBindingWidget();
 
-	void setKey(ControllerSettingsDialog* dialog, std::string section_name, std::string key_name);
+	void setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
 
 public Q_SLOTS:
 	void clearBinding();
@@ -110,5 +111,5 @@ private:
 	std::string m_key_name;
 	std::string m_binding;
 
-	ControllerSettingsDialog* m_dialog;
+	ControllerSettingsWindow* m_dialog;
 };

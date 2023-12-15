@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,23 +13,25 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdexcept>
-#include <cstdlib>
-#include <string>
-#include <cerrno>
-#include <cassert>
-
 #include "PrecompiledHeader.h"
+
+#include "Host.h"
+#include "StateWrapper.h"
+#include "USB/USB.h"
+#include "USB/deviceproxy.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/qemu-usb/desc.h"
+
 #include "common/SettingsInterface.h"
 #include "common/WindowInfo.h"
-#include "USB.h"
-#include "qemu-usb/USBinternal.h"
-#include "qemu-usb/desc.h"
-#include "deviceproxy.h"
 
-#include "HostSettings.h"
-#include "StateWrapper.h"
 #include "fmt/format.h"
+
+#include <cassert>
+#include <cerrno>
+#include <cstdlib>
+#include <stdexcept>
+#include <string>
 
 #define PSXCLK 36864000 /* 36.864 Mhz */
 
@@ -122,10 +124,9 @@ void USB::UpdateDevice(u32 port)
 	s_usb_device_proxy[port]->UpdateSettings(s_usb_device[port], *Host::GetSettingsInterface());
 }
 
-s32 USBinit()
+void USBinit()
 {
 	RegisterDevice::Register();
-	return 0;
 }
 
 void USBshutdown()
@@ -549,15 +550,15 @@ const char* USB::DeviceTypeIndexToName(s32 device)
 {
 	RegisterDevice& rd = RegisterDevice::instance();
 	const DeviceProxy* proxy = (device != DEVTYPE_NONE) ? rd.Device(device) : nullptr;
-	return proxy ? proxy->TypeName() : "None";
+	return proxy ? proxy->TypeName() : TRANSLATE_NOOP("USB", "None");
 }
 
-std::vector<std::pair<std::string, std::string>> USB::GetDeviceTypes()
+std::vector<std::pair<const char*, const char*>> USB::GetDeviceTypes()
 {
 	RegisterDevice& rd = RegisterDevice::instance();
-	std::vector<std::pair<std::string, std::string>> ret;
+	std::vector<std::pair<const char*, const char*>> ret;
 	ret.reserve(rd.Map().size() + 1);
-	ret.emplace_back("None", "Not Connected");
+	ret.emplace_back("None", TRANSLATE_NOOP("USB", "Not Connected"));
 	for (const auto& it : rd.Map())
 		ret.emplace_back(it.second->TypeName(), it.second->Name());
 	return ret;
@@ -566,7 +567,7 @@ std::vector<std::pair<std::string, std::string>> USB::GetDeviceTypes()
 const char* USB::GetDeviceName(const std::string_view& device)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->Name() : "Not Connected";
+	return dev ? dev->Name() : TRANSLATE_NOOP("USB", "Not Connected");
 }
 
 const char* USB::GetDeviceSubtypeName(const std::string_view& device, u32 subtype)
@@ -575,32 +576,32 @@ const char* USB::GetDeviceSubtypeName(const std::string_view& device, u32 subtyp
 	if (!dev)
 		return "Unknown";
 
-	const gsl::span<const char*> subtypes(dev->SubTypes());
+	const std::span<const char*> subtypes(dev->SubTypes());
 	if (subtypes.empty() || subtype >= subtypes.size())
 		return "";
 
 	return subtypes[subtype];
 }
 
-gsl::span<const char*> USB::GetDeviceSubtypes(const std::string_view& device)
+std::span<const char*> USB::GetDeviceSubtypes(const std::string_view& device)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->SubTypes() : gsl::span<const char*>();
+	return dev ? dev->SubTypes() : std::span<const char*>();
 }
 
-gsl::span<const InputBindingInfo> USB::GetDeviceBindings(const std::string_view& device, u32 subtype)
+std::span<const InputBindingInfo> USB::GetDeviceBindings(const std::string_view& device, u32 subtype)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->Bindings(subtype) : gsl::span<const InputBindingInfo>();
+	return dev ? dev->Bindings(subtype) : std::span<const InputBindingInfo>();
 }
 
-gsl::span<const SettingInfo> USB::GetDeviceSettings(const std::string_view& device, u32 subtype)
+std::span<const SettingInfo> USB::GetDeviceSettings(const std::string_view& device, u32 subtype)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
-	return dev ? dev->Settings(subtype) : gsl::span<const SettingInfo>();
+	return dev ? dev->Settings(subtype) : std::span<const SettingInfo>();
 }
 
-gsl::span<const InputBindingInfo> USB::GetDeviceBindings(u32 port)
+std::span<const InputBindingInfo> USB::GetDeviceBindings(u32 port)
 {
 	pxAssert(port < NUM_PORTS);
 	if (s_usb_device_proxy[port])
@@ -668,6 +669,12 @@ void USB::SetConfigSubType(SettingsInterface& si, u32 port, const std::string_vi
 std::string USB::GetConfigSubKey(const std::string_view& device, const std::string_view& bind_name)
 {
 	return fmt::format("{}_{}", device, bind_name);
+}
+
+bool USB::ConfigKeyExists(SettingsInterface& si, u32 port, const char* devname, const char* key)
+{
+	const std::string real_key(fmt::format("{}_{}", devname, key));
+	return si.ContainsValue(GetConfigSection(port).c_str(), real_key.c_str());
 }
 
 bool USB::GetConfigBool(SettingsInterface& si, u32 port, const char* devname, const char* key, bool default_value)
@@ -748,8 +755,8 @@ bool USB::MapDevice(SettingsInterface& si, u32 port, const std::vector<std::pair
 
 void USB::ClearPortBindings(SettingsInterface& si, u32 port)
 {
-	const std::string section(GetConfigSection(port));
-	const std::string type(GetConfigDevice(si, port));
+	const std::string section = GetConfigSection(port);
+	const std::string type = GetConfigDevice(si, port);
 	const u32 subtype = GetConfigSubType(si, port, type);
 	const DeviceProxy* dev = RegisterDevice::instance().Device(type);
 	if (!dev)
@@ -757,6 +764,47 @@ void USB::ClearPortBindings(SettingsInterface& si, u32 port)
 
 	for (const InputBindingInfo& bi : dev->Bindings(subtype))
 		si.DeleteValue(section.c_str(), GetConfigSubKey(type, bi.name).c_str());
+}
+
+void USB::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
+	bool copy_devices, bool copy_bindings)
+{
+	for (u32 port = 0; port < NUM_PORTS; port++)
+	{
+		const std::string section = GetConfigSection(port);
+		const std::string type = GetConfigDevice(src_si, port);
+		const u32 subtype = GetConfigSubType(src_si, port, type);
+		const DeviceProxy* dev = RegisterDevice::instance().Device(type);
+
+		if (copy_devices)
+		{
+			dest_si->CopyStringValue(src_si, section.c_str(), "Type");
+			if (dev)
+			{
+				dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("{}_subtype", type).c_str());
+
+				for (const SettingInfo& si : dev->Settings(subtype))
+					si.CopyValue(dest_si, src_si, section.c_str(), GetConfigSubKey(type, si.name).c_str());
+			}
+		}
+
+		if (copy_bindings && dev)
+		{
+			for (const InputBindingInfo& bi : dev->Bindings(subtype))
+				dest_si->CopyStringValue(src_si, section.c_str(), GetConfigSubKey(type, bi.name).c_str());
+		}
+	}
+}
+
+void USB::SetDefaultConfiguration(SettingsInterface* si)
+{
+	for (u32 port = 0; port < NUM_PORTS; port++)
+	{
+		const std::string section = GetConfigSection(port);
+
+		si->ClearSection(section.c_str());
+		si->SetStringValue(section.c_str(), "Type", "None");
+	}
 }
 
 void USB::CheckForConfigChanges(const Pcsx2Config& old_config)

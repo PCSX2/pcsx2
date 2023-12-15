@@ -33,21 +33,18 @@
     <ClCompile Include="rcheevos\src\rapi\rc_api_common.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\format.c">
-      <Filter>rcheevos</Filter>
+    <ClCompile Include="rcheevos\src\rhash\hash.c">
+      <Filter>rhash</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\lboard.c">
-      <Filter>rcheevos</Filter>
+    <ClCompile Include="rcheevos\src\rhash\md5.c">
+      <Filter>rhash</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\memref.c">
-      <Filter>rcheevos</Filter>
+    <ClCompile Include="rcheevos\src\rurl\url.c">
+      <Filter>rurl</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\operand.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\rc_validate.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
+    <ClCompile Include="rcheevos\src\rc_client.c" />
+    <ClCompile Include="rcheevos\src\rc_compat.c" />
+    <ClCompile Include="rcheevos\src\rc_util.c" />
     <ClCompile Include="rcheevos\src\rcheevos\richpresence.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
@@ -66,9 +63,6 @@
     <ClCompile Include="rcheevos\src\rcheevos\alloc.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\compat.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
     <ClCompile Include="rcheevos\src\rcheevos\condition.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
@@ -78,28 +72,25 @@
     <ClCompile Include="rcheevos\src\rcheevos\consoleinfo.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rhash\hash.c">
-      <Filter>rhash</Filter>
+    <ClCompile Include="rcheevos\src\rcheevos\format.c">
+      <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rhash\md5.c">
-      <Filter>rhash</Filter>
+    <ClCompile Include="rcheevos\src\rcheevos\lboard.c">
+      <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rurl\url.c">
-      <Filter>rurl</Filter>
+    <ClCompile Include="rcheevos\src\rcheevos\memref.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
+    <ClCompile Include="rcheevos\src\rcheevos\operand.c">
+      <Filter>rcheevos</Filter>
+    </ClCompile>
+    <ClCompile Include="rcheevos\src\rcheevos\rc_validate.c">
+      <Filter>rcheevos</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rcheevos\src\rapi\rc_api_common.h">
       <Filter>rapi</Filter>
-    </ClInclude>
-    <ClInclude Include="rcheevos\src\rcheevos\rc_compat.h">
-      <Filter>rcheevos</Filter>
-    </ClInclude>
-    <ClInclude Include="rcheevos\src\rcheevos\rc_internal.h">
-      <Filter>rcheevos</Filter>
-    </ClInclude>
-    <ClInclude Include="rcheevos\src\rcheevos\rc_validate.h">
-      <Filter>rcheevos</Filter>
     </ClInclude>
     <ClInclude Include="rcheevos\src\rhash\md5.h">
       <Filter>rhash</Filter>
@@ -139,6 +130,19 @@
     </ClInclude>
     <ClInclude Include="rcheevos\include\rc_api_request.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="rcheevos\include\rc_client.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="rcheevos\src\rc_client_internal.h" />
+    <ClInclude Include="rcheevos\src\rc_compat.h" />
+    <ClInclude Include="rcheevos\src\rc_util.h" />
+    <ClInclude Include="rcheevos\src\rc_version.h" />
+    <ClInclude Include="rcheevos\src\rcheevos\rc_validate.h">
+      <Filter>rcheevos</Filter>
+    </ClInclude>
+    <ClInclude Include="rcheevos\src\rcheevos\rc_internal.h">
+      <Filter>rcheevos</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

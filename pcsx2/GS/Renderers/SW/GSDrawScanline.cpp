@@ -38,16 +38,13 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim")
 	, m_ds_map("GSDrawScanline")
 {
-	GSCodeReserve::GetInstance().AllowModification();
-	GSCodeReserve::GetInstance().Reset();
+	GSCodeReserve::ResetMemory();
 }
 
 GSDrawScanline::~GSDrawScanline()
 {
-	if (const size_t used = GSCodeReserve::GetInstance().GetMemoryUsed(); used > 0)
+	if (const size_t used = GSCodeReserve::GetMemoryUsed(); used > 0)
 		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
-
-	GSCodeReserve::GetInstance().ForbidModification();
 }
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)
@@ -85,7 +82,7 @@ void GSDrawScanline::ResetCodeCache()
 	Console.Warning("GS Software JIT cache overflow, resetting.");
 	m_sp_map.Clear();
 	m_ds_map.Clear();
-	GSCodeReserve::GetInstance().Reset();
+	GSCodeReserve::ResetMemory();
 }
 
 bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
@@ -161,7 +158,7 @@ typedef GSVector4  VectorF;
 #define LOCAL_STEP local.d4
 #endif
 
-void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
+void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local)
 {
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
 	GSScanlineSelector sel = global.sel;
@@ -452,9 +449,13 @@ __ri static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScan
 
 void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
+	CDrawScanline(pixels, left, top, scan, local, GlobalFromLocal(local).sel);
+}
+
+__ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, GSScanlineSelector sel)
+{
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
 
-	GSScanlineSelector sel = global.sel;
 	constexpr int vlen = sizeof(VectorF) / sizeof(float);
 
 #if _M_SSE < 0x501
@@ -1729,17 +1730,10 @@ void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertex
 
 void GSDrawScanline::CDrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
-	// This sucks. But so does not jitting!
-	const GSScanlineGlobalData* old_gd = local.gd;
-	GSScanlineGlobalData gd;
-	std::memcpy(&gd, &local.gd, sizeof(gd));
-	gd.sel.zwrite = 0;
-	gd.sel.edge = 1;
-	local.gd = &gd;
-
-	CDrawScanline(pixels, left, top, scan, local);
-
-	local.gd = old_gd;
+	GSScanlineSelector sel = local.gd->sel;
+	sel.zwrite = 0;
+	sel.edge = 1;
+	CDrawScanline(pixels, left, top, scan, local, sel);
 }
 
 template <class T, bool masked>
@@ -1752,11 +1746,11 @@ __ri static void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m
 
 	for (int y = r.y; y < r.w; y++)
 	{
-		auto pa = off.paMulti(vm, 0, y);
+		GSOffset::PAHelper pa = off.paMulti(0, y);
 
 		for (int x = r.x; x < r.z; x++)
 		{
-			T& d = *pa.value(x);
+			T& d = vm[pa.value(x)];
 			d = (T)(!masked ? c : (c | (d & m)));
 		}
 	}
@@ -1802,11 +1796,11 @@ __ri static void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVec
 
 	for (int y = r.y; y < r.w; y += 8)
 	{
-		auto pa = off.paMulti(vm, 0, y);
+		GSOffset::PAHelper pa = off.paMulti(0, y);
 
 		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
 		{
-			GSVector4i* RESTRICT p = (GSVector4i*)pa.value(x);
+			GSVector4i* RESTRICT p = (GSVector4i*)&vm[pa.value(x)];
 
 			for (int i = 0; i < 16; i += 4)
 			{

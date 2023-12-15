@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,7 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "Assertions.h"
 #include "StringUtil.h"
+
 #include <cctype>
 #include <codecvt>
 #include <cstdio>
@@ -450,6 +453,47 @@ namespace StringUtil
 	size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch)
 	{
 		return DecodeUTF8(str.data() + offset, str.length() - offset, ch);
+	}
+
+	std::string Ellipsise(const std::string_view& str, u32 max_length, const char* ellipsis /*= "..."*/)
+	{
+		std::string ret;
+		ret.reserve(max_length);
+
+		const u32 str_length = static_cast<u32>(str.length());
+		const u32 ellipsis_len = static_cast<u32>(std::strlen(ellipsis));
+		pxAssert(ellipsis_len > 0 && ellipsis_len <= max_length);
+
+		if (str_length > max_length)
+		{
+			const u32 copy_size = std::min(str_length, max_length - ellipsis_len);
+			if (copy_size > 0)
+				ret.append(str.data(), copy_size);
+			if (copy_size != str_length)
+				ret.append(ellipsis);
+		}
+		else
+		{
+			ret.append(str);
+		}
+
+		return ret;
+	}
+
+	void EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis /*= "..."*/)
+	{
+		const u32 str_length = static_cast<u32>(str.length());
+		const u32 ellipsis_len = static_cast<u32>(std::strlen(ellipsis));
+		pxAssert(ellipsis_len > 0 && ellipsis_len <= max_length);
+
+		if (str_length > max_length)
+		{
+			const u32 keep_size = std::min(static_cast<u32>(str.length()), max_length - ellipsis_len);
+			if (keep_size != str_length)
+				str.erase(keep_size);
+
+			str.append(ellipsis);
+		}
 	}
 
 #ifdef _WIN32

@@ -1,8 +1,17 @@
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
-
-#ifndef PS_SCALE_FACTOR
-#define PS_SCALE_FACTOR 1
-#endif
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 struct VS_INPUT
 {
@@ -24,7 +33,6 @@ cbuffer cb0 : register(b0)
 	int EMODA;
 	int EMODC;
 	int DOFFSET;
-	int cb0_pad;
 };
 
 static const float3x3 rgb2yuv =
@@ -156,8 +164,7 @@ PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 
 	// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
 	uint d = uint(sample_c(input.t).r * exp2(32.0f));
-	output.c = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) / float4(32.0f, 32.0f, 32.0f, 1.0f);
-
+	output.c = float4(uint4(d << 3, d >> 2, d >> 7, d >> 8) & uint4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
 	return output;
 }
 
@@ -274,16 +281,25 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 	uint2 subblock = pos & uint2(7u, 1u);
 	uint2 coord = block | subblock;
 
+	// Compensate for potentially differing page pitch.
+	uint SBW = uint(EMODA);
+	uint DBW = uint(EMODC);
+	uint2 block_xy = coord / uint2(64, 32);
+	uint block_num = (block_xy.y * (DBW / 128)) + block_xy.x;
+	uint2 block_offset = uint2((block_num % (SBW / 64)) * 64, (block_num / (SBW / 64)) * 32);
+	coord = (coord % uint2(64, 32)) + block_offset;
+
 	// Apply offset to cols 1 and 2
 	uint is_col23 = pos.y & 4u;
 	uint is_col13 = pos.y & 2u;
 	uint is_col12 = is_col23 ^ (is_col13 << 1);
 	coord.x ^= is_col12; // If cols 1 or 2, flip bit 3 of x
 
-	if (floor(PS_SCALE_FACTOR) != PS_SCALE_FACTOR)
-		coord = uint2(float2(coord) * PS_SCALE_FACTOR);
+	float ScaleFactor = BGColor.x;
+	if (floor(ScaleFactor) != ScaleFactor)
+		coord = uint2(float2(coord) * ScaleFactor);
 	else
-		coord *= PS_SCALE_FACTOR;
+		coord *= uint(ScaleFactor);
 
 	float4 pixel = Texture.Load(int3(int2(coord), 0));
 	float2 sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
@@ -295,7 +311,7 @@ PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 PS_OUTPUT ps_convert_clut_4(PS_INPUT input)
 {
 	// Borrowing the YUV constant buffer.
-	float2 scale = BGColor.xy;
+	float scale = BGColor.x;
 	uint2 offset = uint2(uint(EMODA), uint(EMODC)) + uint(DOFFSET);
 
 	// CLUT4 is easy, just two rows of 8x8.
@@ -310,7 +326,7 @@ PS_OUTPUT ps_convert_clut_4(PS_INPUT input)
 
 PS_OUTPUT ps_convert_clut_8(PS_INPUT input)
 {
-	float2 scale = BGColor.xy;
+	float scale = BGColor.x;
 	uint2 offset = uint2(uint(EMODA), uint(EMODC));
 	uint index = min(uint(input.p.x) + uint(DOFFSET), 255u);
 
@@ -394,5 +410,3 @@ float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
 		c = float(0x7FFFFFFF);
 	return c;
 }
-
-#endif

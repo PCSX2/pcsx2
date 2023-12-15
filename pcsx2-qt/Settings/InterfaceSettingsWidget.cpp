@@ -19,39 +19,57 @@
 #include "AutoUpdaterDialog.h"
 #include "MainWindow.h"
 #include "SettingWidgetBinder.h"
-#include "SettingsDialog.h"
+#include "SettingsWindow.h"
+#include "QtHost.h"
 
-static const char* THEME_NAMES[] = {
+const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
-	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light/Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Gray) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Dark Fusion (Blue) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Untouched Lagoon (Grayish Green/-Blue ) [Light]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Baby Pastel (Pink) [Light]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Pizza Time! (Brown-ish/Creamy White) [Light]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "PCSX2 (White/Blue) [Light]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Scarlet Devil (Red/Purple) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Violet Angel (Blue/Purple) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Cobalt Sky (Blue) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Ruby (Black/Red) [Dark]"),
+	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Sapphire (Black/Blue) [Dark]"),
+	//: "Custom.qss" must be kept as-is.
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Custom.qss [Drop in PCSX2 Folder]"),
 	nullptr};
 
-static const char* THEME_VALUES[] = {
+const char* InterfaceSettingsWidget::THEME_VALUES[] = {
 	"",
 	"fusion",
 	"darkfusion",
 	"darkfusionblue",
 	"UntouchedLagoon",
 	"BabyPastel",
+	"PizzaBrown",
 	"PCSX2Blue",
 	"ScarletDevilRed",
 	"VioletAngelPurple",
+	"CobaltSky",
 	"Ruby",
 	"Sapphire",
 	"Custom",
 	nullptr};
 
-InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget* parent)
+InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
 {
 	SettingsInterface* sif = dialog->getSettingsInterface();
@@ -62,7 +80,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnShutdown, "EmuCore", "SaveStateOnShutdown", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backupSaveStates, "EmuCore", "BackupSavestate", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backupSaveStates, "EmuCore", "BackupSavestate", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "UI", "StartFullscreen", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen",
@@ -74,8 +93,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this, &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
-		MainWindow::DEFAULT_THEME_NAME);
+		QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
 	connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
+
+	populateLanguages();
+	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
+	connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit languageChanged(); });
 
 	// Per-game settings is special, we don't want to bind it if we're editing per-game settings.
 	m_ui.perGameSettings->setEnabled(!dialog->isPerGameSettings());
@@ -97,6 +120,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
 			AutoUpdaterDialog::getDefaultTag());
 
+		//: Variable %1 shows the version number and variable %2 shows a timestamp.
 		m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(AutoUpdaterDialog::getCurrentVersion()).arg(AutoUpdaterDialog::getCurrentVersionDate()));
 		connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true, true); });
 	}
@@ -105,12 +129,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.verticalLayout->removeWidget(m_ui.automaticUpdaterGroup);
 		m_ui.automaticUpdaterGroup->hide();
 	}
-
-#ifdef ENABLE_DISCORD_PRESENCE
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
-#else
-	m_ui.discordPresence->setEnabled(false);
-#endif
 
 	if (dialog->isPerGameSettings())
 	{
@@ -137,11 +155,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
 		tr("Pauses the emulator when you minimize the window or switch to another application, "
 		   "and unpauses when you switch back."));
-	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
+		//: Do not translate the ".backup" extension.
 		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
 	dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
-	dialog->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Checked"),
+	dialog->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
 		tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
 	dialog->registerWidgetHelp(
 		m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Unchecked"),
@@ -150,15 +169,16 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsDialog* dialog, QWidget
 		m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
 		tr("Hides the main window (with the game list) when a game is running, requires Render To Separate Window to be enabled."));
 	dialog->registerWidgetHelp(m_ui.perGameSettings, tr("Enable Per-Game Settings"), tr("Checked"),
-		tr("When enabled, custom per-game settings will be appled. Disable to always use the global configuration."));
+		tr("When enabled, custom per-game settings will be applied. Disable to always use the global configuration."));
 	dialog->registerWidgetHelp(
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
-	dialog->registerWidgetHelp(m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Unchecked"), tr(""));
-	dialog->registerWidgetHelp(m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"), tr(""));
-
-	// Not yet used, disable the options
-	m_ui.language->setDisabled(true);
+	dialog->registerWidgetHelp(
+		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"), 
+		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
+	dialog->registerWidgetHelp(
+		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"), 
+		tr("Prevents the main window from being resized."));
 
 	onRenderToSeparateWindowChanged();
 }
@@ -168,4 +188,10 @@ InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
 void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()
 {
 	m_ui.hideMainWindow->setEnabled(m_ui.renderToSeparateWindow->isChecked());
+}
+
+void InterfaceSettingsWidget::populateLanguages()
+{
+	for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
+		m_ui.language->addItem(it.first, it.second);
 }

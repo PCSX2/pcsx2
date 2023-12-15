@@ -30,7 +30,7 @@ bool IsRunner();
 void SetIsDumpRunner(bool is_runner);
 
 bool Initialize(const char* filename);
-void Reset();
+bool ChangeDump(const char* filename);
 void Shutdown();
 
 std::string GetDumpSerial();

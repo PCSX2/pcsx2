@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 //#version 420 // Keep it for editor detection
 
 
@@ -40,17 +55,23 @@ uniform vec2 u_rcp_target_resolution; // 1 / u_target_resolution
 uniform vec2 u_source_resolution;
 uniform vec2 u_rcp_source_resolution; // 1 / u_source_resolution
 uniform float u_time;
-uniform vec3 cb0_pad0;
 
 in vec4 PSin_p;
 in vec2 PSin_t;
 in vec4 PSin_c;
+
+layout(binding = 0) uniform sampler2D TextureSampler;
 
 layout(location = 0) out vec4 SV_Target0;
 
 vec4 sample_c()
 {
 	return texture(TextureSampler, PSin_t);
+}
+
+vec4 sample_c(vec2 uv)
+{
+	return texture(TextureSampler, uv);
 }
 
 vec4 ps_crt(uint i)
@@ -117,10 +138,10 @@ void ps_filter_triangular() // triangular
 #ifdef ps_filter_complex
 void ps_filter_complex()
 {
-    const float PI = 3.14159265359f;
-    vec2 texdim = vec2(textureSize(TextureSampler, 0));
-    float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
-    vec4 c =  factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
+	const float PI = 3.14159265359f;
+	vec2 texdim = vec2(textureSize(TextureSampler, 0));
+	float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
+	vec4 c = factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
 
 	SV_Target0 = c;
 }
@@ -381,6 +402,46 @@ void ps_filter_lottes()
 	SV_Target0 = LottesCRTPass();
 }
 
+#endif
+
+#ifdef ps_4x_rgss
+void ps_4x_rgss()
+{
+	vec2 dxy = vec2(dFdx(PSin_t.x), dFdy(PSin_t.y));
+	vec3 color = vec3(0);
+
+	float s = 1.0/8.0;
+	float l = 3.0/8.0;
+
+	color += sample_c(PSin_t + vec2( s, l) * dxy).rgb;
+	color += sample_c(PSin_t + vec2( l,-s) * dxy).rgb;
+	color += sample_c(PSin_t + vec2(-s,-l) * dxy).rgb;
+	color += sample_c(PSin_t + vec2(-l, s) * dxy).rgb;
+
+	SV_Target0 = vec4(color * 0.25,1);
+}
+#endif
+
+#ifdef ps_automagical_supersampling
+void ps_automagical_supersampling()
+{
+	vec2 ratio = (u_source_size / u_target_size) * 0.5;
+	vec2 steps = floor(ratio);
+	vec3 col = sample_c(PSin_t).rgb;
+	float div = 1;
+
+	for (float y = 0; y < steps.y; y++)
+	{
+		for (float x = 0; x < steps.x; x++)
+		{
+			vec2 offset = vec2(x,y) - ratio * 0.5;
+			col += sample_c(PSin_t + offset * u_rcp_source_resolution * 2.0).rgb;
+			div++;
+		}
+	}
+
+	SV_Target0 = vec4(col / div, 1);
+}
 #endif
 
 #endif

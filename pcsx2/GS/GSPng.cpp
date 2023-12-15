@@ -58,53 +58,41 @@ namespace GSPng
 		png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 		png_infop info_ptr = nullptr;
 
-		bool success;
-		try
+		if (png_ptr == nullptr)
+			return false;
+
+		info_ptr = png_create_info_struct(png_ptr);
+		if (info_ptr == nullptr)
+			return false;
+
+		if (setjmp(png_jmpbuf(png_ptr)))
+			return false;
+
+		png_init_io(png_ptr, fp);
+		png_set_compression_level(png_ptr, compression);
+		png_set_IHDR(png_ptr, info_ptr, width, height, channel_bit_depth, type,
+			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+		png_write_info(png_ptr, info_ptr);
+
+		if (channel_bit_depth > 8)
+			png_set_swap(png_ptr);
+		if (rb_swapped && type != PNG_COLOR_TYPE_GRAY)
+			png_set_bgr(png_ptr);
+
+		for (int y = 0; y < height; ++y)
 		{
-			if (png_ptr == nullptr)
-				throw GSRecoverableError();
-
-			info_ptr = png_create_info_struct(png_ptr);
-			if (info_ptr == nullptr)
-				throw GSRecoverableError();
-
-			if (setjmp(png_jmpbuf(png_ptr)))
-				throw GSRecoverableError();
-
-			png_init_io(png_ptr, fp);
-			png_set_compression_level(png_ptr, compression);
-			png_set_IHDR(png_ptr, info_ptr, width, height, channel_bit_depth, type,
-				PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-			png_write_info(png_ptr, info_ptr);
-
-			if (channel_bit_depth > 8)
-				png_set_swap(png_ptr);
-			if (rb_swapped && type != PNG_COLOR_TYPE_GRAY)
-				png_set_bgr(png_ptr);
-
-			for (int y = 0; y < height; ++y)
-			{
-				for (int x = 0; x < width; ++x)
-					for (int i = 0; i < bytes_per_pixel_out; ++i)
-						row[bytes_per_pixel_out * x + i] = image[y * pitch + bytes_per_pixel_in * x + i + offset];
-				png_write_row(png_ptr, row);
-			}
-			png_write_end(png_ptr, nullptr);
-
-			success = true;
+			for (int x = 0; x < width; ++x)
+				for (int i = 0; i < bytes_per_pixel_out; ++i)
+					row[bytes_per_pixel_out * x + i] = image[y * pitch + bytes_per_pixel_in * x + i + offset];
+			png_write_row(png_ptr, row);
 		}
-		catch (GSRecoverableError&)
-		{
-			fprintf(stderr, "Failed to write image %s\n", file.c_str());
-
-			success = false;
-		}
+		png_write_end(png_ptr, nullptr);
 
 		if (png_ptr)
 			png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : nullptr);
-		fclose(fp);
+		std::fclose(fp);
 
-		return success;
+		return true;
 	}
 
 	bool Save(GSPng::Format fmt, const std::string& file, const u8* image, int w, int h, int pitch, int compression, bool rb_swapped)

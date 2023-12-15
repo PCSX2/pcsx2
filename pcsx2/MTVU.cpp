@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,11 +14,13 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
-#include "MTVU.h"
-#include "newVif.h"
 #include "Gif_Unit.h"
-#include "common/Threading.h"
+#include "MTVU.h"
+#include "VMManager.h"
+#include "x86/newVif.h"
+
 #include <thread>
 
 VU_Thread vu1Thread;
@@ -55,9 +57,11 @@ static void MTVU_Unpack(void* data, VIFregisters& vifRegs)
 }
 
 // Called on Saving/Loading states...
-void SaveStateBase::mtvuFreeze()
+bool SaveStateBase::mtvuFreeze()
 {
-	FreezeTag("MTVU");
+	if (!FreezeTag("MTVU"))
+		return false;
+
 	pxAssert(vu1Thread.IsDone());
 	if (!IsSaving())
 	{
@@ -86,6 +90,7 @@ void SaveStateBase::mtvuFreeze()
 	vu1Thread.gsLabel.store(gsLabel);
 
 	Freeze(vu1Thread.vuCycleIdx);
+	return IsOkay();
 }
 
 VU_Thread::VU_Thread()
@@ -106,6 +111,7 @@ void VU_Thread::Open()
 	Reset();
 	semaEvent.Reset();
 	m_shutdown_flag.store(false, std::memory_order_release);
+	m_thread.SetStackSize(VMManager::EMU_THREAD_STACK_SIZE);
 	m_thread.Start([this]() { ExecuteRingBuffer(); });
 }
 
@@ -126,8 +132,8 @@ void VU_Thread::Reset()
 	m_write_pos = 0;
 	m_ato_read_pos = 0;
 	m_read_pos = 0;
-	memzero(vif);
-	memzero(vifRegs);
+	std::memset(&vif, 0, sizeof(vif));
+	std::memset(&vifRegs, 0, sizeof(vifRegs));
 	for (size_t i = 0; i < 4; ++i)
 		vu1Thread.vuCycles[i] = 0;
 	vu1Thread.mtvuInterrupts = 0;
@@ -394,10 +400,10 @@ void VU_Thread::Get_MTVUChanges()
 	{
 		mtvuInterrupts.fetch_and(~InterruptFlagFinish, std::memory_order_relaxed);
 		GUNIT_WARN("Finish firing");
-		CSRreg.FINISH = true;
 		gifUnit.gsFINISH.gsFINISHFired = false;
+		gifUnit.gsFINISH.gsFINISHPending = true;
 
-		if (!gifRegs.stat.APATH)
+		if (!gifUnit.checkPaths(false, true, true, true))
 			Gif_FinishIRQ();
 	}
 	if (interrupts & InterruptFlagLabel)

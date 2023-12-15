@@ -23,7 +23,7 @@
 
 #include "MemoryCardConvertWorker.h"
 
-#include "pcsx2/MemoryCardFile.h"
+#include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 
 class MemoryCardConvertDialog final : public QDialog
 {

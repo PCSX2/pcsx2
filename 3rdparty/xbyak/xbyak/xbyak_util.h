@@ -4,11 +4,17 @@
 #ifdef XBYAK_ONLY_CLASS_CPU
 #include <stdint.h>
 #include <stdlib.h>
-#include <algorithm>
 #include <assert.h>
 #ifndef XBYAK_THROW
 	#define XBYAK_THROW(x) ;
 	#define XBYAK_THROW_RET(x, y) return y;
+#endif
+#ifndef XBYAK_CONSTEXPR
+#if ((__cplusplus >= 201402L) && !(!defined(__clang__) && defined(__GNUC__) && (__GNUC__ <= 5))) || (defined(_MSC_VER) && _MSC_VER >= 1910)
+	#define XBYAK_CONSTEXPR constexpr
+#else
+	#define XBYAK_CONSTEXPR
+#endif
 #endif
 #else
 #include <string.h>
@@ -17,7 +23,6 @@
 	utility class and functions for Xbyak
 	Xbyak::util::Clock ; rdtsc timer
 	Xbyak::util::Cpu ; detect CPU
-	@note this header is UNDER CONSTRUCTION!
 */
 #include "xbyak.h"
 #endif // XBYAK_ONLY_CLASS_CPU
@@ -27,8 +32,8 @@
 #endif
 
 #ifdef XBYAK_INTEL_CPU_SPECIFIC
-#ifdef _MSC_VER
-	#if (_MSC_VER < 1400) && defined(XBYAK32)
+#ifdef _WIN32
+	#if defined(_MSC_VER) && (_MSC_VER < 1400) && defined(XBYAK32)
 		static inline __declspec(naked) void __cpuid(int[4], int)
 		{
 			__asm {
@@ -88,32 +93,69 @@ typedef enum {
    CoreLevel = 2
 } IntelCpuTopologyLevel;
 
+namespace local {
+
+template<uint64_t L, uint64_t H = 0>
+struct TypeT {
+};
+
+template<uint64_t L1, uint64_t H1, uint64_t L2, uint64_t H2>
+XBYAK_CONSTEXPR TypeT<L1 | L2, H1 | H2> operator|(TypeT<L1, H1>, TypeT<L2, H2>) { return TypeT<L1 | L2, H1 | H2>(); }
+
+template<typename T>
+inline T max_(T x, T y) { return x >= y ? x : y; }
+template<typename T>
+inline T min_(T x, T y) { return x < y ? x : y; }
+
+} // local
+
 /**
 	CPU detection class
+	@note static inline const member is supported by c++17 or later, so use template hack
 */
 class Cpu {
-	uint64_t type_;
+public:
+	class Type {
+		uint64_t L;
+		uint64_t H;
+	public:
+		Type(uint64_t L = 0, uint64_t H = 0) : L(L), H(H) { }
+		template<uint64_t L_, uint64_t H_>
+		Type(local::TypeT<L_, H_>) : L(L_), H(H_) {}
+		Type& operator&=(const Type& rhs) { L &= rhs.L; H &= rhs.H; return *this; }
+		Type& operator|=(const Type& rhs) { L |= rhs.L; H |= rhs.H; return *this; }
+		Type operator&(const Type& rhs) const { Type t = *this; t &= rhs; return t; }
+		Type operator|(const Type& rhs) const { Type t = *this; t |= rhs; return t; }
+		bool operator==(const Type& rhs) const { return H == rhs.H && L == rhs.L; }
+		bool operator!=(const Type& rhs) const { return !operator==(rhs); }
+		// without explicit because backward compatilibity
+		operator bool() const { return (H | L) != 0; }
+		uint64_t getL() const { return L; }
+		uint64_t getH() const { return H; }
+	};
+private:
+	Type type_;
 	//system topology
 	bool x2APIC_supported_;
 	static const size_t maxTopologyLevels = 2;
-	unsigned int numCores_[maxTopologyLevels];
+	uint32_t numCores_[maxTopologyLevels];
 
-	static const unsigned int maxNumberCacheLevels = 10;
-	unsigned int dataCacheSize_[maxNumberCacheLevels];
-	unsigned int coresSharignDataCache_[maxNumberCacheLevels];
-	unsigned int dataCacheLevels_;
+	static const uint32_t maxNumberCacheLevels = 10;
+	uint32_t dataCacheSize_[maxNumberCacheLevels];
+	uint32_t coresSharignDataCache_[maxNumberCacheLevels];
+	uint32_t dataCacheLevels_;
 
-	unsigned int get32bitAsBE(const char *x) const
+	uint32_t get32bitAsBE(const char *x) const
 	{
 		return x[0] | (x[1] << 8) | (x[2] << 16) | (x[3] << 24);
 	}
-	unsigned int mask(int n) const
+	uint32_t mask(int n) const
 	{
 		return (1U << n) - 1;
 	}
 	void setFamily()
 	{
-		unsigned int data[4] = {};
+		uint32_t data[4] = {};
 		getCpuid(1, data);
 		stepping = data[0] & mask(4);
 		model = (data[0] >> 4) & mask(4);
@@ -132,17 +174,15 @@ class Cpu {
 			displayModel = model;
 		}
 	}
-	unsigned int extractBit(unsigned int val, unsigned int base, unsigned int end)
+	uint32_t extractBit(uint32_t val, uint32_t base, uint32_t end)
 	{
 		return (val >> base) & ((1u << (end - base)) - 1);
 	}
 	void setNumCores()
 	{
-		if ((type_ & tINTEL) == 0) return;
+		if (!has(tINTEL) && !has(tAMD)) return;
 
-		unsigned int data[4] = {};
-
-		 /* CAUTION: These numbers are configuration as shipped by Intel. */
+		uint32_t data[4] = {};
 		getCpuidEx(0x0, 0, data);
 		if (data[0] >= 0xB) {
 			 /*
@@ -152,7 +192,7 @@ class Cpu {
 				leaf 0xB can be zeroed-out by a hypervisor
 			*/
 			x2APIC_supported_ = true;
-			for (unsigned int i = 0; i < maxTopologyLevels; i++) {
+			for (uint32_t i = 0; i < maxTopologyLevels; i++) {
 				getCpuidEx(0xB, i, data);
 				IntelCpuTopologyLevel level = (IntelCpuTopologyLevel)extractBit(data[2], 8, 15);
 				if (level == SmtLevel || level == CoreLevel) {
@@ -162,8 +202,8 @@ class Cpu {
 			/*
 				Fallback values in case a hypervisor has 0xB leaf zeroed-out.
 			*/
-			numCores_[SmtLevel - 1] = (std::max)(1u, numCores_[SmtLevel - 1]);
-			numCores_[CoreLevel - 1] = (std::max)(numCores_[SmtLevel - 1], numCores_[CoreLevel - 1]);
+			numCores_[SmtLevel - 1] = local::max_(1u, numCores_[SmtLevel - 1]);
+			numCores_[CoreLevel - 1] = local::max_(numCores_[SmtLevel - 1], numCores_[CoreLevel - 1]);
 		} else {
 			/*
 				Failed to deremine num of cores without x2APIC support.
@@ -176,14 +216,55 @@ class Cpu {
 	}
 	void setCacheHierarchy()
 	{
-		if ((type_ & tINTEL) == 0) return;
-		const unsigned int NO_CACHE = 0;
-		const unsigned int DATA_CACHE = 1;
-//		const unsigned int INSTRUCTION_CACHE = 2;
-		const unsigned int UNIFIED_CACHE = 3;
-		unsigned int smt_width = 0;
-		unsigned int logical_cores = 0;
-		unsigned int data[4] = {};
+		if (!has(tINTEL) && !has(tAMD)) return;
+
+		// https://github.com/amd/ZenDNN/blob/a08bf9a9efc160a69147cdecfb61cc85cc0d4928/src/cpu/x64/xbyak/xbyak_util.h#L236-L288
+		if (has(tAMD)) {
+			// There are 3 Data Cache Levels (L1, L2, L3)
+			dataCacheLevels_ = 3;
+			const uint32_t leaf = 0x8000001D; // for modern AMD CPus
+			// Sub leaf value ranges from 0 to 3
+			// Sub leaf value 0 refers to L1 Data Cache
+			// Sub leaf value 1 refers to L1 Instruction Cache
+			// Sub leaf value 2 refers to L2 Cache
+			// Sub leaf value 3 refers to L3 Cache
+			// For legacy AMD CPU, use leaf 0x80000005 for L1 cache
+			// and 0x80000006 for L2 and L3 cache
+			int cache_index = 0;
+			for (uint32_t sub_leaf = 0; sub_leaf <= dataCacheLevels_; sub_leaf++) {
+				// Skip sub_leaf = 1 as it refers to
+				// L1 Instruction Cache (not required)
+				if (sub_leaf == 1) {
+					continue;
+				}
+				uint32_t data[4] = {};
+				getCpuidEx(leaf, sub_leaf, data);
+				// Cache Size = Line Size * Partitions * Associativity * Cache Sets
+				dataCacheSize_[cache_index] =
+					(extractBit(data[1], 22, 31) + 1) // Associativity-1
+					* (extractBit(data[1], 12, 21) + 1) // Partitions-1
+					* (extractBit(data[1], 0, 11) + 1) // Line Size
+					* (data[2] + 1);
+				// Calculate the number of cores sharing the current data cache
+				int smt_width = numCores_[0];
+				int logical_cores = numCores_[1];
+				int actual_logical_cores = extractBit(data[0], 14, 25) /* # of cores * # of threads */ + 1;
+				if (logical_cores != 0) {
+					actual_logical_cores = local::min_(actual_logical_cores, logical_cores);
+				}
+				coresSharignDataCache_[cache_index] = local::max_(actual_logical_cores / smt_width, 1);
+				++cache_index;
+			}
+			return;
+		}
+		// intel
+		const uint32_t NO_CACHE = 0;
+		const uint32_t DATA_CACHE = 1;
+//		const uint32_t INSTRUCTION_CACHE = 2;
+		const uint32_t UNIFIED_CACHE = 3;
+		uint32_t smt_width = 0;
+		uint32_t logical_cores = 0;
+		uint32_t data[4] = {};
 
 		if (x2APIC_supported_) {
 			smt_width = numCores_[0];
@@ -201,12 +282,12 @@ class Cpu {
 		*/
 		for (int i = 0; dataCacheLevels_ < maxNumberCacheLevels; i++) {
 			getCpuidEx(0x4, i, data);
-			unsigned int cacheType = extractBit(data[0], 0, 4);
+			uint32_t cacheType = extractBit(data[0], 0, 4);
 			if (cacheType == NO_CACHE) break;
 			if (cacheType == DATA_CACHE || cacheType == UNIFIED_CACHE) {
-				unsigned int actual_logical_cores = extractBit(data[0], 14, 25) + 1;
+				uint32_t actual_logical_cores = extractBit(data[0], 14, 25) + 1;
 				if (logical_cores != 0) { // true only if leaf 0xB is supported and valid
-					actual_logical_cores = (std::min)(actual_logical_cores, logical_cores);
+					actual_logical_cores = local::min_(actual_logical_cores, logical_cores);
 				}
 				assert(actual_logical_cores != 0);
 				dataCacheSize_[dataCacheLevels_] =
@@ -216,7 +297,7 @@ class Cpu {
 					* (data[2] + 1);
 				if (cacheType == DATA_CACHE && smt_width == 0) smt_width = actual_logical_cores;
 				assert(smt_width != 0);
-				coresSharignDataCache_[dataCacheLevels_] = (std::max)(actual_logical_cores / smt_width, 1u);
+				coresSharignDataCache_[dataCacheLevels_] = local::max_(actual_logical_cores / smt_width, 1u);
 				dataCacheLevels_++;
 			}
 		}
@@ -231,7 +312,7 @@ public:
 	int displayFamily; // family + extFamily
 	int displayModel; // model + extModel
 
-	unsigned int getNumCores(IntelCpuTopologyLevel level) const {
+	uint32_t getNumCores(IntelCpuTopologyLevel level) const {
 		if (!x2APIC_supported_) XBYAK_THROW_RET(ERR_X2APIC_IS_NOT_SUPPORTED, 0)
 		switch (level) {
 		case SmtLevel: return numCores_[level - 1];
@@ -240,13 +321,13 @@ public:
 		}
 	}
 
-	unsigned int getDataCacheLevels() const { return dataCacheLevels_; }
-	unsigned int getCoresSharingDataCache(unsigned int i) const
+	uint32_t getDataCacheLevels() const { return dataCacheLevels_; }
+	uint32_t getCoresSharingDataCache(uint32_t i) const
 	{
 		if (i >= dataCacheLevels_) XBYAK_THROW_RET(ERR_BAD_PARAMETER, 0)
 		return coresSharignDataCache_[i];
 	}
-	unsigned int getDataCacheSize(unsigned int i) const
+	uint32_t getDataCacheSize(uint32_t i) const
 	{
 		if (i >= dataCacheLevels_) XBYAK_THROW_RET(ERR_BAD_PARAMETER, 0)
 		return dataCacheSize_[i];
@@ -255,10 +336,10 @@ public:
 	/*
 		data[] = { eax, ebx, ecx, edx }
 	*/
-	static inline void getCpuid(unsigned int eaxIn, unsigned int data[4])
+	static inline void getCpuid(uint32_t eaxIn, uint32_t data[4])
 	{
 #ifdef XBYAK_INTEL_CPU_SPECIFIC
-	#ifdef _MSC_VER
+	#ifdef _WIN32
 		__cpuid(reinterpret_cast<int*>(data), eaxIn);
 	#else
 		__cpuid(eaxIn, data[0], data[1], data[2], data[3]);
@@ -268,10 +349,10 @@ public:
 		(void)data;
 #endif
 	}
-	static inline void getCpuidEx(unsigned int eaxIn, unsigned int ecxIn, unsigned int data[4])
+	static inline void getCpuidEx(uint32_t eaxIn, uint32_t ecxIn, uint32_t data[4])
 	{
 #ifdef XBYAK_INTEL_CPU_SPECIFIC
-	#ifdef _MSC_VER
+	#ifdef _WIN32
 		__cpuidex(reinterpret_cast<int*>(data), eaxIn, ecxIn);
 	#else
 		__cpuid_count(eaxIn, ecxIn, data[0], data[1], data[2], data[3]);
@@ -288,7 +369,7 @@ public:
 	#ifdef _MSC_VER
 		return _xgetbv(0);
 	#else
-		unsigned int eax, edx;
+		uint32_t eax, edx;
 		// xgetvb is not support on gcc 4.2
 //		__asm__ volatile("xgetbv" : "=a"(eax), "=d"(edx) : "c"(0));
 		__asm__ volatile(".byte 0x0f, 0x01, 0xd0" : "=a"(eax), "=d"(edx) : "c"(0));
@@ -298,93 +379,116 @@ public:
 		return 0;
 #endif
 	}
-	typedef uint64_t Type;
 
-	static const Type NONE = 0;
-	static const Type tMMX = 1 << 0;
-	static const Type tMMX2 = 1 << 1;
-	static const Type tCMOV = 1 << 2;
-	static const Type tSSE = 1 << 3;
-	static const Type tSSE2 = 1 << 4;
-	static const Type tSSE3 = 1 << 5;
-	static const Type tSSSE3 = 1 << 6;
-	static const Type tSSE41 = 1 << 7;
-	static const Type tSSE42 = 1 << 8;
-	static const Type tPOPCNT = 1 << 9;
-	static const Type tAESNI = 1 << 10;
-	static const Type tOSXSAVE = 1 << 12;
-	static const Type tPCLMULQDQ = 1 << 13;
-	static const Type tAVX = 1 << 14;
-	static const Type tFMA = 1 << 15;
+#define XBYAK_SPLIT_ID(id) ((0 <= id && id < 64) ? (1ull << (id % 64)) : 0), (id >= 64 ? (1ull << (id % 64)) : 0)
+#if (__cplusplus >= 201103) || (defined(_MSC_VER) && (_MSC_VER >= 1700)) /* VS2012 */
+	#define XBYAK_DEFINE_TYPE(id, NAME) static const constexpr local::TypeT<XBYAK_SPLIT_ID(id)> NAME{}
+#else
+	#define XBYAK_DEFINE_TYPE(id, NAME) static const local::TypeT<XBYAK_SPLIT_ID(id)> NAME
+#endif
+	XBYAK_DEFINE_TYPE(0, tMMX);
+	XBYAK_DEFINE_TYPE(1, tMMX2);
+	XBYAK_DEFINE_TYPE(2, tCMOV);
+	XBYAK_DEFINE_TYPE(3, tSSE);
+	XBYAK_DEFINE_TYPE(4, tSSE2);
+	XBYAK_DEFINE_TYPE(5, tSSE3);
+	XBYAK_DEFINE_TYPE(6, tSSSE3);
+	XBYAK_DEFINE_TYPE(7, tSSE41);
+	XBYAK_DEFINE_TYPE(8, tSSE42);
+	XBYAK_DEFINE_TYPE(9, tPOPCNT);
+	XBYAK_DEFINE_TYPE(10, tAESNI);
+	XBYAK_DEFINE_TYPE(11, tAVX512_FP16);
+	XBYAK_DEFINE_TYPE(12, tOSXSAVE);
+	XBYAK_DEFINE_TYPE(13, tPCLMULQDQ);
+	XBYAK_DEFINE_TYPE(14, tAVX);
+	XBYAK_DEFINE_TYPE(15, tFMA);
+	XBYAK_DEFINE_TYPE(16, t3DN);
+	XBYAK_DEFINE_TYPE(17, tE3DN);
+	XBYAK_DEFINE_TYPE(18, tWAITPKG);
+	XBYAK_DEFINE_TYPE(19, tRDTSCP);
+	XBYAK_DEFINE_TYPE(20, tAVX2);
+	XBYAK_DEFINE_TYPE(21, tBMI1); // andn, bextr, blsi, blsmsk, blsr, tzcnt
+	XBYAK_DEFINE_TYPE(22, tBMI2); // bzhi, mulx, pdep, pext, rorx, sarx, shlx, shrx
+	XBYAK_DEFINE_TYPE(23, tLZCNT);
+	XBYAK_DEFINE_TYPE(24, tINTEL);
+	XBYAK_DEFINE_TYPE(25, tAMD);
+	XBYAK_DEFINE_TYPE(26, tENHANCED_REP); // enhanced rep movsb/stosb
+	XBYAK_DEFINE_TYPE(27, tRDRAND);
+	XBYAK_DEFINE_TYPE(28, tADX); // adcx, adox
+	XBYAK_DEFINE_TYPE(29, tRDSEED); // rdseed
+	XBYAK_DEFINE_TYPE(30, tSMAP); // stac
+	XBYAK_DEFINE_TYPE(31, tHLE); // xacquire, xrelease, xtest
+	XBYAK_DEFINE_TYPE(32, tRTM); // xbegin, xend, xabort
+	XBYAK_DEFINE_TYPE(33, tF16C); // vcvtph2ps, vcvtps2ph
+	XBYAK_DEFINE_TYPE(34, tMOVBE); // mobve
+	XBYAK_DEFINE_TYPE(35, tAVX512F);
+	XBYAK_DEFINE_TYPE(36, tAVX512DQ);
+	XBYAK_DEFINE_TYPE(37, tAVX512_IFMA);
+	XBYAK_DEFINE_TYPE(37, tAVX512IFMA);// = tAVX512_IFMA;
+	XBYAK_DEFINE_TYPE(38, tAVX512PF);
+	XBYAK_DEFINE_TYPE(39, tAVX512ER);
+	XBYAK_DEFINE_TYPE(40, tAVX512CD);
+	XBYAK_DEFINE_TYPE(41, tAVX512BW);
+	XBYAK_DEFINE_TYPE(42, tAVX512VL);
+	XBYAK_DEFINE_TYPE(43, tAVX512_VBMI);
+	XBYAK_DEFINE_TYPE(43, tAVX512VBMI); // = tAVX512_VBMI; // changed by Intel's manual
+	XBYAK_DEFINE_TYPE(44, tAVX512_4VNNIW);
+	XBYAK_DEFINE_TYPE(45, tAVX512_4FMAPS);
+	XBYAK_DEFINE_TYPE(46, tPREFETCHWT1);
+	XBYAK_DEFINE_TYPE(47, tPREFETCHW);
+	XBYAK_DEFINE_TYPE(48, tSHA);
+	XBYAK_DEFINE_TYPE(49, tMPX);
+	XBYAK_DEFINE_TYPE(50, tAVX512_VBMI2);
+	XBYAK_DEFINE_TYPE(51, tGFNI);
+	XBYAK_DEFINE_TYPE(52, tVAES);
+	XBYAK_DEFINE_TYPE(53, tVPCLMULQDQ);
+	XBYAK_DEFINE_TYPE(54, tAVX512_VNNI);
+	XBYAK_DEFINE_TYPE(55, tAVX512_BITALG);
+	XBYAK_DEFINE_TYPE(56, tAVX512_VPOPCNTDQ);
+	XBYAK_DEFINE_TYPE(57, tAVX512_BF16);
+	XBYAK_DEFINE_TYPE(58, tAVX512_VP2INTERSECT);
+	XBYAK_DEFINE_TYPE(59, tAMX_TILE);
+	XBYAK_DEFINE_TYPE(60, tAMX_INT8);
+	XBYAK_DEFINE_TYPE(61, tAMX_BF16);
+	XBYAK_DEFINE_TYPE(62, tAVX_VNNI);
+	XBYAK_DEFINE_TYPE(63, tCLFLUSHOPT);
+	XBYAK_DEFINE_TYPE(64, tCLDEMOTE);
+	XBYAK_DEFINE_TYPE(65, tMOVDIRI);
+	XBYAK_DEFINE_TYPE(66, tMOVDIR64B);
+	XBYAK_DEFINE_TYPE(67, tCLZERO); // AMD Zen
+	XBYAK_DEFINE_TYPE(68, tAMX_FP16);
+	XBYAK_DEFINE_TYPE(69, tAVX_VNNI_INT8);
+	XBYAK_DEFINE_TYPE(70, tAVX_NE_CONVERT);
+	XBYAK_DEFINE_TYPE(71, tAVX_IFMA);
+	XBYAK_DEFINE_TYPE(72, tRAO_INT);
+	XBYAK_DEFINE_TYPE(73, tCMPCCXADD);
+	XBYAK_DEFINE_TYPE(74, tPREFETCHITI);
+	XBYAK_DEFINE_TYPE(75, tSERIALIZE);
+	XBYAK_DEFINE_TYPE(76, tUINTR);
+	XBYAK_DEFINE_TYPE(77, tXSAVE);
+	XBYAK_DEFINE_TYPE(78, tSHA512);
+	XBYAK_DEFINE_TYPE(79, tSM3);
+	XBYAK_DEFINE_TYPE(80, tSM4);
+	XBYAK_DEFINE_TYPE(81, tAVX_VNNI_INT16);
 
-	static const Type t3DN = 1 << 16;
-	static const Type tE3DN = 1 << 17;
-	static const Type tRDTSCP = 1 << 19;
-	static const Type tAVX2 = 1 << 20;
-	static const Type tBMI1 = 1 << 21; // andn, bextr, blsi, blsmsk, blsr, tzcnt
-	static const Type tBMI2 = 1 << 22; // bzhi, mulx, pdep, pext, rorx, sarx, shlx, shrx
-	static const Type tLZCNT = 1 << 23;
-
-	static const Type tINTEL = 1 << 24;
-	static const Type tAMD = 1 << 25;
-
-	static const Type tENHANCED_REP = 1 << 26; // enhanced rep movsb/stosb
-	static const Type tRDRAND = 1 << 27;
-	static const Type tADX = 1 << 28; // adcx, adox
-	static const Type tRDSEED = 1 << 29; // rdseed
-	static const Type tSMAP = 1 << 30; // stac
-	static const Type tHLE = uint64_t(1) << 31; // xacquire, xrelease, xtest
-	static const Type tRTM = uint64_t(1) << 32; // xbegin, xend, xabort
-	static const Type tF16C = uint64_t(1) << 33; // vcvtph2ps, vcvtps2ph
-	static const Type tMOVBE = uint64_t(1) << 34; // mobve
-	static const Type tAVX512F = uint64_t(1) << 35;
-	static const Type tAVX512DQ = uint64_t(1) << 36;
-	static const Type tAVX512_IFMA = uint64_t(1) << 37;
-	static const Type tAVX512IFMA = tAVX512_IFMA;
-	static const Type tAVX512PF = uint64_t(1) << 38;
-	static const Type tAVX512ER = uint64_t(1) << 39;
-	static const Type tAVX512CD = uint64_t(1) << 40;
-	static const Type tAVX512BW = uint64_t(1) << 41;
-	static const Type tAVX512VL = uint64_t(1) << 42;
-	static const Type tAVX512_VBMI = uint64_t(1) << 43;
-	static const Type tAVX512VBMI = tAVX512_VBMI; // changed by Intel's manual
-	static const Type tAVX512_4VNNIW = uint64_t(1) << 44;
-	static const Type tAVX512_4FMAPS = uint64_t(1) << 45;
-	static const Type tPREFETCHWT1 = uint64_t(1) << 46;
-	static const Type tPREFETCHW = uint64_t(1) << 47;
-	static const Type tSHA = uint64_t(1) << 48;
-	static const Type tMPX = uint64_t(1) << 49;
-	static const Type tAVX512_VBMI2 = uint64_t(1) << 50;
-	static const Type tGFNI = uint64_t(1) << 51;
-	static const Type tVAES = uint64_t(1) << 52;
-	static const Type tVPCLMULQDQ = uint64_t(1) << 53;
-	static const Type tAVX512_VNNI = uint64_t(1) << 54;
-	static const Type tAVX512_BITALG = uint64_t(1) << 55;
-	static const Type tAVX512_VPOPCNTDQ = uint64_t(1) << 56;
-	static const Type tAVX512_BF16 = uint64_t(1) << 57;
-	static const Type tAVX512_VP2INTERSECT = uint64_t(1) << 58;
-	static const Type tAMX_TILE = uint64_t(1) << 59;
-	static const Type tAMX_INT8 = uint64_t(1) << 60;
-	static const Type tAMX_BF16 = uint64_t(1) << 61;
-	static const Type tAVX_VNNI = uint64_t(1) << 62;
-	static const Type tAVX512_FP16 = uint64_t(1) << 11;
-	// 18, 63
+#undef XBYAK_SPLIT_ID
+#undef XBYAK_DEFINE_TYPE
 
 	Cpu()
-		: type_(NONE)
+		: type_()
 		, x2APIC_supported_(false)
 		, numCores_()
 		, dataCacheSize_()
 		, coresSharignDataCache_()
 		, dataCacheLevels_(0)
 	{
-		unsigned int data[4] = {};
-		const unsigned int& EAX = data[0];
-		const unsigned int& EBX = data[1];
-		const unsigned int& ECX = data[2];
-		const unsigned int& EDX = data[3];
+		uint32_t data[4] = {};
+		const uint32_t& EAX = data[0];
+		const uint32_t& EBX = data[1];
+		const uint32_t& ECX = data[2];
+		const uint32_t& EDX = data[3];
 		getCpuid(0, data);
-		const unsigned int maxNum = EAX;
+		const uint32_t maxNum = EAX;
 		static const char intel[] = "ntel";
 		static const char amd[] = "cAMD";
 		if (ECX == get32bitAsBE(amd)) {
@@ -407,7 +511,8 @@ public:
 
 		// Extended flags information
 		getCpuid(0x80000000, data);
-		if (EAX >= 0x80000001) {
+		const uint32_t maxExtendedNum = EAX;
+		if (maxExtendedNum >= 0x80000001) {
 			getCpuid(0x80000001, data);
 
 			if (EDX & (1U << 31)) type_ |= t3DN;
@@ -419,15 +524,21 @@ public:
 			if (ECX & (1U << 8)) type_ |= tPREFETCHW;
 		}
 
+		if (maxExtendedNum >= 0x80000008) {
+			getCpuid(0x80000008, data);
+			if (EBX & (1U << 0)) type_ |= tCLZERO;
+		}
+
 		getCpuid(1, data);
 		if (ECX & (1U << 0)) type_ |= tSSE3;
+		if (ECX & (1U << 1)) type_ |= tPCLMULQDQ;
 		if (ECX & (1U << 9)) type_ |= tSSSE3;
 		if (ECX & (1U << 19)) type_ |= tSSE41;
 		if (ECX & (1U << 20)) type_ |= tSSE42;
 		if (ECX & (1U << 22)) type_ |= tMOVBE;
 		if (ECX & (1U << 23)) type_ |= tPOPCNT;
 		if (ECX & (1U << 25)) type_ |= tAESNI;
-		if (ECX & (1U << 1)) type_ |= tPCLMULQDQ;
+		if (ECX & (1U << 26)) type_ |= tXSAVE;
 		if (ECX & (1U << 27)) type_ |= tOSXSAVE;
 		if (ECX & (1U << 30)) type_ |= tRDRAND;
 		if (ECX & (1U << 29)) type_ |= tF16C;
@@ -460,9 +571,6 @@ public:
 						if (EBX & (1U << 31)) type_ |= tAVX512VL;
 						if (ECX & (1U << 1)) type_ |= tAVX512_VBMI;
 						if (ECX & (1U << 6)) type_ |= tAVX512_VBMI2;
-						if (ECX & (1U << 8)) type_ |= tGFNI;
-						if (ECX & (1U << 9)) type_ |= tVAES;
-						if (ECX & (1U << 10)) type_ |= tVPCLMULQDQ;
 						if (ECX & (1U << 11)) type_ |= tAVX512_VNNI;
 						if (ECX & (1U << 12)) type_ |= tAVX512_BITALG;
 						if (ECX & (1U << 14)) type_ |= tAVX512_VPOPCNTDQ;
@@ -484,20 +592,41 @@ public:
 			if (EBX & (1U << 18)) type_ |= tRDSEED;
 			if (EBX & (1U << 19)) type_ |= tADX;
 			if (EBX & (1U << 20)) type_ |= tSMAP;
+			if (EBX & (1U << 23)) type_ |= tCLFLUSHOPT;
 			if (EBX & (1U << 4)) type_ |= tHLE;
 			if (EBX & (1U << 11)) type_ |= tRTM;
 			if (EBX & (1U << 14)) type_ |= tMPX;
 			if (EBX & (1U << 29)) type_ |= tSHA;
 			if (ECX & (1U << 0)) type_ |= tPREFETCHWT1;
+			if (ECX & (1U << 5)) type_ |= tWAITPKG;
+			if (ECX & (1U << 8)) type_ |= tGFNI;
+			if (ECX & (1U << 9)) type_ |= tVAES;
+			if (ECX & (1U << 10)) type_ |= tVPCLMULQDQ;
+			if (ECX & (1U << 25)) type_ |= tCLDEMOTE;
+			if (ECX & (1U << 27)) type_ |= tMOVDIRI;
+			if (ECX & (1U << 28)) type_ |= tMOVDIR64B;
+			if (EDX & (1U << 5)) type_ |= tUINTR;
+			if (EDX & (1U << 14)) type_ |= tSERIALIZE;
+			if (EDX & (1U << 22)) type_ |= tAMX_BF16;
 			if (EDX & (1U << 24)) type_ |= tAMX_TILE;
 			if (EDX & (1U << 25)) type_ |= tAMX_INT8;
-			if (EDX & (1U << 22)) type_ |= tAMX_BF16;
 			if (maxNumSubLeaves >= 1) {
 				getCpuidEx(7, 1, data);
+				if (EAX & (1U << 0)) type_ |= tSHA512;
+				if (EAX & (1U << 1)) type_ |= tSM3;
+				if (EAX & (1U << 2)) type_ |= tSM4;
+				if (EAX & (1U << 3)) type_ |= tRAO_INT;
 				if (EAX & (1U << 4)) type_ |= tAVX_VNNI;
 				if (type_ & tAVX512F) {
 					if (EAX & (1U << 5)) type_ |= tAVX512_BF16;
 				}
+				if (EAX & (1U << 7)) type_ |= tCMPCCXADD;
+				if (EAX & (1U << 21)) type_ |= tAMX_FP16;
+				if (EAX & (1U << 23)) type_ |= tAVX_IFMA;
+				if (EDX & (1U << 4)) type_ |= tAVX_VNNI_INT8;
+				if (EDX & (1U << 5)) type_ |= tAVX_NE_CONVERT;
+				if (EDX & (1U << 10)) type_ |= tAVX_VNNI_INT16;
+				if (EDX & (1U << 14)) type_ |= tPREFETCHITI;
 			}
 		}
 		setFamily();
@@ -512,9 +641,9 @@ public:
 		printf("display:family=%X, model=%X\n", displayFamily, displayModel);
 #endif
 	}
-	bool has(Type type) const
+	bool has(const Type& type) const
 	{
-		return (type & type_) != 0;
+		return (type & type_) == type;
 	}
 };
 
@@ -527,7 +656,7 @@ public:
 	#ifdef _MSC_VER
 		return __rdtsc();
 	#else
-		unsigned int eax, edx;
+		uint32_t eax, edx;
 		__asm__ volatile("rdtsc" : "=a"(eax), "=d"(edx));
 		return ((uint64_t)edx << 32) | eax;
 	#endif
@@ -564,7 +693,7 @@ const int UseRDX = 1 << 7;
 
 class Pack {
 	static const size_t maxTblNum = 15;
-	const Xbyak::Reg64 *tbl_[maxTblNum];
+	Xbyak::Reg64 tbl_[maxTblNum];
 	size_t n_;
 public:
 	Pack() : tbl_(), n_(0) {}
@@ -581,32 +710,36 @@ public:
 		return *this;
 	}
 	Pack(const Xbyak::Reg64& t0)
-	{ n_ = 1; tbl_[0] = &t0; }
+	{ n_ = 1; tbl_[0] = t0; }
 	Pack(const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 2; tbl_[0] = &t0; tbl_[1] = &t1; }
+	{ n_ = 2; tbl_[0] = t0; tbl_[1] = t1; }
 	Pack(const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 3; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; }
+	{ n_ = 3; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; }
 	Pack(const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 4; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; }
+	{ n_ = 4; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; }
 	Pack(const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 5; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; tbl_[4] = &t4; }
+	{ n_ = 5; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; }
 	Pack(const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 6; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; tbl_[4] = &t4; tbl_[5] = &t5; }
+	{ n_ = 6; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; }
 	Pack(const Xbyak::Reg64& t6, const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 7; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; tbl_[4] = &t4; tbl_[5] = &t5; tbl_[6] = &t6; }
+	{ n_ = 7; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; tbl_[6] = t6; }
 	Pack(const Xbyak::Reg64& t7, const Xbyak::Reg64& t6, const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 8; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; tbl_[4] = &t4; tbl_[5] = &t5; tbl_[6] = &t6; tbl_[7] = &t7; }
+	{ n_ = 8; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; tbl_[6] = t6; tbl_[7] = t7; }
 	Pack(const Xbyak::Reg64& t8, const Xbyak::Reg64& t7, const Xbyak::Reg64& t6, const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 9; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; tbl_[4] = &t4; tbl_[5] = &t5; tbl_[6] = &t6; tbl_[7] = &t7; tbl_[8] = &t8; }
+	{ n_ = 9; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; tbl_[6] = t6; tbl_[7] = t7; tbl_[8] = t8; }
 	Pack(const Xbyak::Reg64& t9, const Xbyak::Reg64& t8, const Xbyak::Reg64& t7, const Xbyak::Reg64& t6, const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
-	{ n_ = 10; tbl_[0] = &t0; tbl_[1] = &t1; tbl_[2] = &t2; tbl_[3] = &t3; tbl_[4] = &t4; tbl_[5] = &t5; tbl_[6] = &t6; tbl_[7] = &t7; tbl_[8] = &t8; tbl_[9] = &t9; }
+	{ n_ = 10; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; tbl_[6] = t6; tbl_[7] = t7; tbl_[8] = t8; tbl_[9] = t9; }
+	Pack(const Xbyak::Reg64& ta, const Xbyak::Reg64& t9, const Xbyak::Reg64& t8, const Xbyak::Reg64& t7, const Xbyak::Reg64& t6, const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
+	{ n_ = 11; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; tbl_[6] = t6; tbl_[7] = t7; tbl_[8] = t8; tbl_[9] = t9; tbl_[10] = ta; }
+	Pack(const Xbyak::Reg64& tb, const Xbyak::Reg64& ta, const Xbyak::Reg64& t9, const Xbyak::Reg64& t8, const Xbyak::Reg64& t7, const Xbyak::Reg64& t6, const Xbyak::Reg64& t5, const Xbyak::Reg64& t4, const Xbyak::Reg64& t3, const Xbyak::Reg64& t2, const Xbyak::Reg64& t1, const Xbyak::Reg64& t0)
+	{ n_ = 12; tbl_[0] = t0; tbl_[1] = t1; tbl_[2] = t2; tbl_[3] = t3; tbl_[4] = t4; tbl_[5] = t5; tbl_[6] = t6; tbl_[7] = t7; tbl_[8] = t8; tbl_[9] = t9; tbl_[10] = ta; tbl_[11] = tb; }
 	Pack& append(const Xbyak::Reg64& t)
 	{
 		if (n_ == maxTblNum) {
 			fprintf(stderr, "ERR Pack::can't append\n");
 			XBYAK_THROW_RET(ERR_BAD_PARAMETER, *this)
 		}
-		tbl_[n_++] = &t;
+		tbl_[n_++] = t;
 		return *this;
 	}
 	void init(const Xbyak::Reg64 *tbl, size_t n)
@@ -617,7 +750,7 @@ public:
 		}
 		n_ = n;
 		for (size_t i = 0; i < n; i++) {
-			tbl_[i] = &tbl[i];
+			tbl_[i] = tbl[i];
 		}
 	}
 	const Xbyak::Reg64& operator[](size_t n) const
@@ -626,7 +759,7 @@ public:
 			fprintf(stderr, "ERR Pack bad n=%d(%d)\n", (int)n, (int)n_);
 			XBYAK_THROW_RET(ERR_BAD_PARAMETER, rax)
 		}
-		return *tbl_[n];
+		return tbl_[n];
 	}
 	size_t size() const { return n_; }
 	/*
@@ -649,7 +782,7 @@ public:
 	void put() const
 	{
 		for (size_t i = 0; i < n_; i++) {
-			printf("%s ", tbl_[i]->toString());
+			printf("%s ", tbl_[i].toString());
 		}
 		printf("\n");
 	}
@@ -716,7 +849,7 @@ public:
 		const int allRegNum = pNum + tNum_ + (useRcx_ ? 1 : 0) + (useRdx_ ? 1 : 0);
 		if (tNum_ < 0 || allRegNum > maxRegNum) XBYAK_THROW(ERR_BAD_TNUM)
 		const Reg64& _rsp = code->rsp;
-		saveNum_ = (std::max)(0, allRegNum - noSaveNum);
+		saveNum_ = local::max_(0, allRegNum - noSaveNum);
 		const int *tbl = getOrderTbl() + noSaveNum;
 		for (int i = 0; i < saveNum_; i++) {
 			code->push(Reg64(tbl[i]));

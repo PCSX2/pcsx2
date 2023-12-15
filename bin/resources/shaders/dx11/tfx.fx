@@ -1,4 +1,17 @@
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #define FMT_32 0
 #define FMT_24 1
@@ -30,22 +43,24 @@
 #define PS_ATST 1
 #define PS_FOG 0
 #define PS_IIP 0
-#define PS_CLR_HW 0
+#define PS_BLEND_HW 0
+#define PS_A_MASKED 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
+#define PS_REGION_RECT 0
 #define PS_SHUFFLE 0
+#define PS_SHUFFLE_SAME 0
 #define PS_READ_BA 0
 #define PS_READ16_SRC 0
-#define PS_DFMT 0
+#define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_SCALE_FACTOR 1.0
 #define PS_HDR 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0
@@ -53,6 +68,7 @@
 #define PS_BLEND_C 0
 #define PS_BLEND_D 0
 #define PS_BLEND_MIX 0
+#define PS_ROUND_INV 0
 #define PS_FIXED_ONE_A 0
 #define PS_PABE 0
 #define PS_DITHER 0
@@ -70,6 +86,7 @@
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
+#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
 struct VS_INPUT
 {
@@ -110,6 +127,8 @@ struct PS_INPUT
 #endif
 };
 
+#ifdef PIXEL_SHADER
+
 struct PS_OUTPUT
 {
 #if !PS_NO_COLOR
@@ -134,21 +153,6 @@ Texture2D<float> PrimMinTexture : register(t3);
 SamplerState TextureSampler : register(s0);
 
 #ifdef DX12
-cbuffer cb0 : register(b0)
-#else
-cbuffer cb0
-#endif
-{
-	float2 VertexScale;
-	float2 VertexOffset;
-	float2 TextureScale;
-	float2 TextureOffset;
-	float2 PointSize;
-	uint MaxDepth;
-	uint pad_cb0;
-};
-
-#ifdef DX12
 cbuffer cb1 : register(b1)
 #else
 cbuffer cb1
@@ -168,12 +172,16 @@ cbuffer cb1
 	float2 TC_OffsetHack;
 	float2 STScale;
 	float4x4 DitherMatrix;
+	float ScaledScaleFactor;
+	float RcpScaleFactor;
 };
 
 float4 sample_c(float2 uv, float uv_w)
 {
 #if PS_TEX_IS_FB == 1
 	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+#elif PS_REGION_RECT == 1
+	return Texture.Load(int3(int2(uv), 0));
 #else
 	if (PS_POINT_SAMPLER)
 	{
@@ -237,7 +245,15 @@ float4 clamp_wrap_uv(float4 uv)
 
 	if(PS_WMS == PS_WMT)
 	{
-		if(PS_WMS == 2)
+		if(PS_REGION_RECT != 0 && PS_WMS == 0)
+		{
+			uv = frac(uv);
+		}
+		else if(PS_REGION_RECT != 0 && PS_WMS == 1)
+		{
+			uv = saturate(uv);
+		}
+		else if(PS_WMS == 2)
 		{
 			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 		}
@@ -253,7 +269,15 @@ float4 clamp_wrap_uv(float4 uv)
 	}
 	else
 	{
-		if(PS_WMS == 2)
+		if(PS_REGION_RECT != 0 && PS_WMS == 0)
+		{
+			uv.xz = frac(uv.xz);
+		}
+		else if(PS_REGION_RECT != 0 && PS_WMS == 1)
+		{
+			uv.xz = saturate(uv.xz);
+		}
+		else if(PS_WMS == 2)
 		{
 			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 		}
@@ -264,7 +288,15 @@ float4 clamp_wrap_uv(float4 uv)
 			#endif
 			uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & asuint(MinMax.xx)) | asuint(MinMax.zz)) / tex_size.xx;
 		}
-		if(PS_WMT == 2)
+		if(PS_REGION_RECT != 0 && PS_WMT == 0)
+		{
+			uv.yw = frac(uv.yw);
+		}
+		else if(PS_REGION_RECT != 0 && PS_WMT == 1)
+		{
+			uv.yw = saturate(uv.yw);
+		}
+		else if(PS_WMT == 2)
 		{
 			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
 		}
@@ -275,6 +307,12 @@ float4 clamp_wrap_uv(float4 uv)
 			#endif
 			uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & asuint(MinMax.yy)) | asuint(MinMax.ww)) / tex_size.yy;
 		}
+	}
+
+	if(PS_REGION_RECT != 0)
+	{
+		// Normalized -> Integer Coordinates.
+		uv = clamp(uv * WH.zwzw + STRange.xyxy, STRange.xyxy, STRange.zwzw);
 	}
 
 	return uv;
@@ -399,9 +437,13 @@ int2 clamp_wrap_uv_depth(int2 uv)
 
 float4 sample_depth(float2 st, float2 pos)
 {
-	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)PS_SCALE_FACTOR * (float2)(1.0f / 16.0f);
-	int2 uv = (int2)uv_f;
+	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)ScaledScaleFactor;
 
+#if PS_REGION_RECT == 1
+	uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);
+#endif
+
+	int2 uv = (int2)uv_f;
 	float4 t = (float4)(0.0f);
 
 	if (PS_TALES_OF_ABYSS_HLE == 1)
@@ -560,7 +602,7 @@ float4 sample_color(float2 st, float uv_w)
 	float4x4 c;
 	float2 dd;
 
-	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
+	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
 		c[0] = sample_c(st, uv_w);
 	}
@@ -620,7 +662,7 @@ float4 sample_color(float2 st, float uv_w)
 float4 tfx(float4 T, float4 C)
 {
 	float4 C_out;
-	float4 FxT = trunc(trunc(C) * T / 128.0f);
+	float4 FxT = trunc((C * T) / 128.0f);
 
 #if (PS_TFX == 0)
 	C_out = FxT;
@@ -739,9 +781,13 @@ void ps_dither(inout float3 C, float2 pos_xy)
 		if (PS_DITHER == 2)
 			fpos = int2(pos_xy);
 		else
-			fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
+			fpos = int2(pos_xy * RcpScaleFactor);
 
-		C += DitherMatrix[fpos.x & 3][fpos.y & 3];
+		float value = DitherMatrix[fpos.x & 3][fpos.y & 3];
+		if (PS_ROUND_INV)
+			C -= value;
+		else
+			C += value;
 	}
 }
 
@@ -751,20 +797,25 @@ void ps_color_clamp_wrap(inout float3 C)
 	// so we need to limit the color depth on dithered items
 	if (SW_BLEND || PS_DITHER || PS_FBMASK)
 	{
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
+			C += 7.0f; // Need to round up, not down since the shader will invert
+
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
 			C = (float3)((int3)C & (int3)0xF8);
 		else if (PS_COLCLIP == 1 || PS_HDR == 1)
 			C = (float3)((int3)C & (int3)0xFF);
 	}
 }
 
-void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
+void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 {
+	float As = As_rgba.a;
+
 	if (SW_BLEND)
 	{
 		// PABE
@@ -788,9 +839,9 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		// As/Af clamp alpha for Blend mix
-		// We shouldn't clamp blend mix with clr1 as we want alpha higher
+		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
-		if (PS_BLEND_MIX > 0 && PS_CLR_HW != 1)
+		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1)
 			C_clamped = min(C_clamped, 1.0f);
 
 		if (PS_BLEND_A == PS_BLEND_B)
@@ -809,21 +860,19 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 		else
 			Color.rgb = trunc(((A - B) * C) + D);
 
-		if (PS_CLR_HW == 1)
+		if (PS_BLEND_HW == 1)
 		{
-			// Replace Af with As so we can do proper compensation for Alpha.
-			if (PS_BLEND_C == 2)
-				As = Af;
+			// As or Af
+			As_rgba.rgb = (float3)C;
 			// Subtract 1 for alpha to compensate for the changed equation,
 			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 			// we pick the lowest overflow from all colors because it's the safest,
 			// we divide by 255 the color because we don't know Cd value,
 			// changed alpha should only be done for hw blend.
-			float min_color = min(min(Color.r, Color.g), Color.b);
-			float alpha_compensate = max(1.0f, min_color / 255.0f);
-			As -= alpha_compensate;
+			float3 alpha_compensate = max((float3)1.0f, Color.rgb / (float3)255.0f);
+			As_rgba.rgb -= alpha_compensate;
 		}
-		else if (PS_CLR_HW == 2)
+		else if (PS_BLEND_HW == 2)
 		{
 			// Compensate slightly for Cd*(As + 1) - Cs*As.
 			// The initial factor we chose is 1 (0.00392)
@@ -833,16 +882,26 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 			float color_compensate = 1.0f * (C + 1.0f);
 			Color.rgb -= (float3)color_compensate;
 		}
+		else if (PS_BLEND_HW == 3)
+		{
+			// As, Ad or Af clamped.
+			As_rgba.rgb = (float3)C_clamped;
+			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+			// that is sent on second output to compensate.
+			float3 overflow_check = (Color.rgb - (float3)255.0f) / 255.0f;
+			float3 alpha_compensate = max((float3)0.0f, overflow_check);
+			As_rgba.rgb -= alpha_compensate;
+		}
 	}
 	else
 	{
-		if (PS_CLR_HW == 1 || PS_CLR_HW == 5)
+		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 
 			Color.rgb = (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 2 || PS_CLR_HW == 4)
+		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
 
@@ -851,12 +910,16 @@ void ps_blend(inout float4 Color, inout float As, float2 pos_xy)
 			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
 			Color.rgb *= (float3)255.0f;
 		}
-		else if (PS_CLR_HW == 3)
+		else if (PS_BLEND_HW == 3)
 		{
 			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-
-			Color.rgb *= (255.0f / 128.0f);
+			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+			// When any color channel is higher than 128 then adjust the compensation automatically
+			// to give us more accurate colors, otherwise they will be wrong.
+			// The higher the value (>128) the lower the compensation will be.
+			float max_color = max(max(Color.r, Color.g), Color.b);
+			float color_compensate = 255.0f / max(128.0f, max_color);
+			Color.rgb *= (float3)color_compensate;
 		}
 	}
 }
@@ -878,8 +941,17 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	{
 		uint4 denorm_c = uint4(C);
 		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
-		
-		if (PS_READ16_SRC)
+
+		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+		if (PS_SHUFFLE_SAME)
+		{
+			if (PS_READ_BA)
+				C = (float4)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+			else
+				C.ga = C.rg;
+		}
+		// Copy of a 16bit source in to this target
+		else if (PS_READ16_SRC)
 		{
 			C.rb = (float2)float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5));
 			if (denorm_c.a & 0x80u)
@@ -887,28 +959,23 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			else
 				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u));
 		}
+		// Write RB part. Mask will take care of the correct destination
+		else if (PS_READ_BA)
+		{
+			C.rb = C.bb;
+			if (denorm_c.a & 0x80u)
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+		}
 		else
 		{
-			// Mask will take care of the correct destination
-			if (PS_READ_BA)
-				C.rb = C.bb;
-			else
-				C.rb = C.rr;
+			C.rb = C.rr;
+			if (denorm_c.g & 0x80u)
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
 
-			if (PS_READ_BA)
-			{
-				if (denorm_c.a & 0x80u)
-					C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			}
 			else
-			{
-				if (denorm_c.g & 0x80u)
-					C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			}
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
 		}
 	}
 
@@ -920,24 +987,24 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		C.a = 128.0f;
 	}
 
-	float alpha_blend;
-	if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
+	float4 alpha_blend;
+	if (SW_AD_TO_HW)
 	{
 		float4 RT = trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
-		alpha_blend = RT.a / 128.0f;
+		alpha_blend = (float4)(RT.a / 128.0f);
 	}
 	else
 	{
-		alpha_blend = C.a / 128.0f;
+		alpha_blend = (float4)(C.a / 128.0f);
 	}
 
 	// Alpha correction
-	if (PS_DFMT == FMT_16)
+	if (PS_DST_FMT == FMT_16)
 	{
 		float A_one = 128.0f; // alpha output will be 0x80
 		C.a = PS_FBA ? A_one : step(A_one, C.a) * A_one;
 	}
-	else if ((PS_DFMT == FMT_32) && PS_FBA)
+	else if ((PS_DST_FMT == FMT_32) && PS_FBA)
 	{
 		float A_one = 128.0f;
 		if (C.a < A_one) C.a += A_one;
@@ -978,12 +1045,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if !PS_NO_COLOR
 	output.c0 = PS_HDR ? float4(C.rgb / 65535.0f, C.a / 255.0f) : C / 255.0f;
 #if !PS_NO_COLOR1
-	output.c1 = (float4)(alpha_blend);
+	output.c1 = alpha_blend;
 #endif
 
 #if PS_NO_ABLEND
 	// write alpha blend factor into col0
-	output.c0.a = alpha_blend;
+	output.c0.a = alpha_blend.a;
 #endif
 #if PS_ONLY_ALPHA
 	// rgb isn't used
@@ -1000,9 +1067,28 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	return output;
 }
 
+#endif // PIXEL_SHADER
+
 //////////////////////////////////////////////////////////////////////
 // Vertex Shader
 //////////////////////////////////////////////////////////////////////
+
+#ifdef VERTEX_SHADER
+
+#ifdef DX12
+cbuffer cb0 : register(b0)
+#else
+cbuffer cb0
+#endif
+{
+	float2 VertexScale;
+	float2 VertexOffset;
+	float2 TextureScale;
+	float2 TextureOffset;
+	float2 PointSize;
+	uint MaxDepth;
+	uint BaseVertex; // Only used in DX11.
+};
 
 VS_OUTPUT vs_main(VS_INPUT input)
 {
@@ -1056,156 +1142,101 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Geometry Shader
-//////////////////////////////////////////////////////////////////////
+#if VS_EXPAND != 0
 
-#if GS_FORWARD_PRIMID
-#define PRIMID_IN , uint primid : SV_PrimitiveID
-#define VS2PS(x) vs2ps_impl(x, primid)
-PS_INPUT vs2ps_impl(VS_OUTPUT vs, uint primid)
+struct VS_RAW_INPUT
 {
-	PS_INPUT o;
-	o.p = vs.p;
-	o.t = vs.t;
-	o.ti = vs.ti;
-	o.c = vs.c;
-	o.primid = primid;
-	return o;
-}
+	float2 ST;
+	uint RGBA;
+	float Q;
+	uint XY;
+	uint Z;
+	uint UV;
+	uint FOG;
+};
+
+StructuredBuffer<VS_RAW_INPUT> vertices : register(t0);
+
+VS_INPUT load_vertex(uint index)
+{
+#ifdef DX12
+	VS_RAW_INPUT raw = vertices.Load(index);
 #else
-#define PRIMID_IN
-#define VS2PS(x) vs2ps_impl(x)
-PS_INPUT vs2ps_impl(VS_OUTPUT vs)
-{
-	PS_INPUT o;
-	o.p = vs.p;
-	o.t = vs.t;
-	o.ti = vs.ti;
-	o.c = vs.c;
-	return o;
-}
+	VS_RAW_INPUT raw = vertices.Load(BaseVertex + index);
 #endif
 
-#if GS_PRIM == 0
-
-[maxvertexcount(6)]
-void gs_main(point VS_OUTPUT input[1], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
-{
-	// Transform a point to a NxN sprite
-	PS_INPUT Point = VS2PS(input[0]);
-
-	// Get new position
-	float4 lt_p = input[0].p;
-	float4 rb_p = input[0].p + float4(PointSize.x, PointSize.y, 0.0f, 0.0f);
-	float4 lb_p = rb_p;
-	float4 rt_p = rb_p;
-	lb_p.x = lt_p.x;
-	rt_p.y = lt_p.y;
-
-	// Triangle 1
-	Point.p = lt_p;
-	stream.Append(Point);
-
-	Point.p = lb_p;
-	stream.Append(Point);
-
-	Point.p = rt_p;
-	stream.Append(Point);
-
-	// Triangle 2
-	Point.p = lb_p;
-	stream.Append(Point);
-
-	Point.p = rt_p;
-	stream.Append(Point);
-
-	Point.p = rb_p;
-	stream.Append(Point);
+	VS_INPUT vert;
+	vert.st = raw.ST;
+	vert.c = uint4(raw.RGBA & 0xFFu, (raw.RGBA >> 8) & 0xFFu, (raw.RGBA >> 16) & 0xFFu, raw.RGBA >> 24);
+	vert.q = raw.Q;
+	vert.p = uint2(raw.XY & 0xFFFFu, raw.XY >> 16);
+	vert.z = raw.Z;
+	vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
+	vert.f = float4(float(raw.FOG & 0xFFu), float((raw.FOG >> 8) & 0xFFu), float((raw.FOG >> 16) & 0xFFu), float(raw.FOG >> 24)) / 255.0f;
+	return vert;
 }
 
-#elif GS_PRIM == 1
-
-[maxvertexcount(6)]
-void gs_main(line VS_OUTPUT input[2], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
+VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 {
-	// Transform a line to a thick line-sprite
-	PS_INPUT left = VS2PS(input[0]);
-	PS_INPUT right = VS2PS(input[1]);
-	float2 lt_p = input[0].p.xy;
-	float2 rt_p = input[1].p.xy;
+#if VS_EXPAND == 1 // Point
 
-	// Potentially there is faster math
-	float2 line_vector = normalize(rt_p.xy - lt_p.xy);
+	VS_OUTPUT vtx = vs_main(load_vertex(vid >> 2));
+
+	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f;
+	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
+
+	return vtx;
+
+#elif VS_EXPAND == 2 // Line
+
+	uint vid_base = vid >> 2;
+	bool is_bottom = vid & 2;
+	bool is_right = vid & 1;
+	// All lines will be a pair of vertices next to each other
+	// Since DirectX uses provoking vertex first, the bottom point will be the lower of the two
+	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
+	VS_OUTPUT other = vs_main(load_vertex(vid_other));
+
+	float2 line_vector = normalize(vtx.p.xy - other.p.xy);
 	float2 line_normal = float2(line_vector.y, -line_vector.x);
 	float2 line_width = (line_normal * PointSize) / 2;
+	// line_normal is inverted for bottom point
+	float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
+	vtx.p.xy += offset;
 
-	lt_p -= line_width;
-	rt_p -= line_width;
-	float2 lb_p = input[0].p.xy + line_width;
-	float2 rb_p = input[1].p.xy + line_width;
+	// Lines will be run as (0 1 2) (1 2 3)
+	// This means that both triangles will have a point based off the top line point as their first point
+	// So we don't have to do anything for !IIP
 
-	#if GS_IIP == 0
-	left.c = right.c;
-	#endif
+	return vtx;
 
-	// Triangle 1
-	left.p.xy = lt_p;
-	stream.Append(left);
+#elif VS_EXPAND == 3 // Sprite
 
-	left.p.xy = lb_p;
-	stream.Append(left);
+	// Sprite points are always in pairs
+	uint vid_base = vid >> 1;
+	uint vid_lt = vid_base & ~1u;
+	uint vid_rb = vid_base | 1u;
 
-	right.p.xy = rt_p;
-	stream.Append(right);
-	stream.RestartStrip();
+	VS_OUTPUT lt = vs_main(load_vertex(vid_lt));
+	VS_OUTPUT rb = vs_main(load_vertex(vid_rb));
+	VS_OUTPUT vtx = rb;
 
-	// Triangle 2
-	left.p.xy = lb_p;
-	stream.Append(left);
+	bool is_right = ((vid & 1u) != 0u);
+	vtx.p.x = is_right ? lt.p.x : vtx.p.x;
+	vtx.t.x = is_right ? lt.t.x : vtx.t.x;
+	vtx.ti.xz = is_right ? lt.ti.xz : vtx.ti.xz;
 
-	right.p.xy = rt_p;
-	stream.Append(right);
+	bool is_bottom = ((vid & 2u) != 0u);
+	vtx.p.y = is_bottom ? lt.p.y : vtx.p.y;
+	vtx.t.y = is_bottom ? lt.t.y : vtx.t.y;
+	vtx.ti.yw = is_bottom ? lt.ti.yw : vtx.ti.yw;
 
-	right.p.xy = rb_p;
-	stream.Append(right);
-	stream.RestartStrip();
-}
-
-#elif GS_PRIM == 3
-
-[maxvertexcount(4)]
-void gs_main(line VS_OUTPUT input[2], inout TriangleStream<PS_INPUT> stream PRIMID_IN)
-{
-	PS_INPUT lt = VS2PS(input[0]);
-	PS_INPUT rb = VS2PS(input[1]);
-
-	// flat depth
-	lt.p.z = rb.p.z;
-	// flat fog and texture perspective
-	lt.t.zw = rb.t.zw;
-
-	// flat color
-	lt.c = rb.c;
-
-	// Swap texture and position coordinate
-	PS_INPUT lb = rb;
-	lb.p.x = lt.p.x;
-	lb.t.x = lt.t.x;
-	lb.ti.x = lt.ti.x;
-	lb.ti.z = lt.ti.z;
-
-	PS_INPUT rt = rb;
-	rt.p.y = lt.p.y;
-	rt.t.y = lt.t.y;
-	rt.ti.y = lt.ti.y;
-	rt.ti.w = lt.ti.w;
-
-	stream.Append(lt);
-	stream.Append(lb);
-	stream.Append(rt);
-	stream.Append(rb);
-}
+	return vtx;
 
 #endif
-#endif
+}
+
+#endif // VS_EXPAND
+
+#endif // VERTEX_SHADER

@@ -17,7 +17,7 @@
 
 #include "GS/GSExtra.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
-#include "VirtualMemory.h"
+#include "System.h"
 #include "common/emitter/tools.h"
 
 template <class KEY, class VALUE>
@@ -96,7 +96,7 @@ public:
 		}
 	}
 
-	virtual void PrintStats()
+	void PrintStats()
 	{
 		u64 totalTicks = 0;
 
@@ -106,7 +106,7 @@ public:
 			totalTicks += p->ticks;
 		}
 
-		double tick_us = 1.0 / x86capabilities::CachedMHz();
+		double tick_us = 1.0 / GetTickFrequency();
 		double tick_ms = tick_us / 1000;
 		double tick_ns = tick_us * 1000;
 
@@ -147,25 +147,15 @@ public:
 // --------------------------------------------------------------------------------------
 // Stores code buffers for the GS software JIT.
 //
-class GSCodeReserve : public RecompiledCodeReserve
+namespace GSCodeReserve
 {
-public:
-	GSCodeReserve();
-	~GSCodeReserve();
+	void ResetMemory();
 
-	static GSCodeReserve& GetInstance();
+	size_t GetMemoryUsed();
 
-	size_t GetMemoryUsed() const { return m_memory_used; }
-
-	void Assign(VirtualMemoryManagerPtr allocator);
-	void Reset();
-
-	u8* Reserve(size_t size);
-	void Commit(size_t size);
-
-private:
-	size_t m_memory_used = 0;
-};
+	u8* ReserveMemory(size_t size);
+	void CommitMemory(size_t size);
+}
 
 template <class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
@@ -200,7 +190,7 @@ public:
 		}
 		else
 		{
-			u8* code_ptr = GSCodeReserve::GetInstance().Reserve(MAX_SIZE);
+			u8* code_ptr = GSCodeReserve::ReserveMemory(MAX_SIZE);
 			CG cg(key, code_ptr, MAX_SIZE);
 			ASSERT(cg.getSize() < MAX_SIZE);
 
@@ -210,51 +200,11 @@ public:
 			sel.Print();
 #endif
 
-			GSCodeReserve::GetInstance().Commit(cg.getSize());
+			GSCodeReserve::CommitMemory(cg.getSize());
 
 			ret = (VALUE)cg.getCode();
 
 			m_cgmap[key] = ret;
-
-#ifdef ENABLE_VTUNE
-
-			// vtune method registration
-
-			// if(iJIT_IsProfilingActive()) // always > 0
-			{
-				std::string name = fmt::format("%s<%016llx>()", m_name.c_str(), (u64)key);
-
-				iJIT_Method_Load ml;
-
-				memset(&ml, 0, sizeof(ml));
-
-				ml.method_id = iJIT_GetNewMethodID();
-				ml.method_name = (char*)name.c_str();
-				ml.method_load_address = (void*)cg.getCode();
-				ml.method_size = (unsigned int)cg.getSize();
-
-				iJIT_NotifyEvent(iJVM_EVENT_TYPE_METHOD_LOAD_FINISHED, &ml);
-/*
-				name = format("c:/temp1/%s_%016llx.bin", m_name.c_str(), (u64)key);
-
-				if(FILE* fp = fopen(name.c_str(), "wb"))
-				{
-					fputc(0x0F, fp); fputc(0x0B, fp);
-					fputc(0xBB, fp); fputc(0x6F, fp); fputc(0x00, fp); fputc(0x00, fp); fputc(0x00, fp);
-					fputc(0x64, fp); fputc(0x67, fp); fputc(0x90, fp);
-
-					fwrite(cg.getCode(), cg.getSize(), 1, fp);
-
-					fputc(0xBB, fp); fputc(0xDE, fp); fputc(0x00, fp); fputc(0x00, fp); fputc(0x00, fp);
-					fputc(0x64, fp); fputc(0x67, fp); fputc(0x90, fp);
-					fputc(0x0F, fp); fputc(0x0B, fp);
-
-					fclose(fp);
-				}
-*/
-			}
-
-#endif
 		}
 
 		return ret;

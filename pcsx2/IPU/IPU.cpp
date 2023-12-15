@@ -23,12 +23,11 @@
 #include <limits.h>
 #include "Config.h"
 
-#include "common/MemsetFast.inl"
-
 // the BP doesn't advance and returns -1 if there is no data to be read
 alignas(16) tIPU_cmd ipu_cmd;
 alignas(16) tIPU_BP g_BP;
 alignas(16) decoder_t decoder;
+IPUStatus IPUCoreStatus;
 
 static void (*IPUWorker)();
 
@@ -88,13 +87,13 @@ __ri static u8 getBits32(u8* address, bool advance)
 
 void tIPU_cmd::clear()
 {
-	memzero_sse_a(*this);
+	std::memset(this, 0, sizeof(*this));
 	current = 0xffffffff;
 }
 
 __fi void IPUProcessInterrupt()
 {
-	if (ipuRegs.ctrl.BUSY && !CommandExecuteQueued)
+	if (ipuRegs.ctrl.BUSY)
 		IPUWorker();
 }
 
@@ -104,9 +103,12 @@ __fi void IPUProcessInterrupt()
 void ipuReset()
 {
 	IPUWorker = MULTI_ISA_SELECT(IPUWorker);
-	memzero(ipuRegs);
-	memzero(g_BP);
-	memzero(decoder);
+	std::memset(&ipuRegs, 0, sizeof(ipuRegs));
+	std::memset(&g_BP, 0, sizeof(g_BP));
+	std::memset(&decoder, 0, sizeof(decoder));
+	IPUCoreStatus.DataRequested = false;
+	IPUCoreStatus.WaitingOnIPUFrom= false;
+	IPUCoreStatus.WaitingOnIPUTo = false;
 
 	decoder.picture_structure = FRAME_PICTURE;      //default: progressive...my guess:P
 
@@ -129,11 +131,13 @@ void ReportIPU()
 	Console.Newline();
 }
 
-void SaveStateBase::ipuFreeze()
+bool SaveStateBase::ipuFreeze()
 {
 	// Get a report of the status of the ipu variables when saving and loading savestates.
 	//ReportIPU();
-	FreezeTag("IPU");
+	if (!FreezeTag("IPU"))
+		return false;
+
 	Freeze(ipu_fifo);
 
 	Freeze(g_BP);
@@ -142,6 +146,9 @@ void SaveStateBase::ipuFreeze()
 	Freeze(coded_block_pattern);
 	Freeze(decoder);
 	Freeze(ipu_cmd);
+	Freeze(IPUCoreStatus);
+
+	return IsOkay();
 }
 
 void tIPU_CMD_IDEC::log() const
@@ -314,7 +321,7 @@ __fi u64 ipuRead64(u32 mem)
 void ipuSoftReset()
 {
 	ipu_fifo.clear();
-	memzero(g_BP);
+	std::memset(&g_BP, 0, sizeof(g_BP));
 
 	coded_block_pattern = 0;
 	g_ipu_thresh[0] = 0;
@@ -389,7 +396,7 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 static void ipuBCLR(u32 val)
 {
 	ipu_fifo.in.clear();
-	memzero(g_BP);
+	std::memset(&g_BP, 0, sizeof(g_BP));
 	g_BP.BP = val & 0x7F;
 
 	ipuRegs.cmd.BUSY = 0;
@@ -441,8 +448,8 @@ static __ri void ipuBDEC(tIPU_CMD_BDEC bdec)
 	decoder.dcr					= bdec.DCR;
 	decoder.macroblock_modes	|= bdec.MBI ? MACROBLOCK_INTRA : MACROBLOCK_PATTERN;
 
-	memzero_sse_a(decoder.mb8);
-	memzero_sse_a(decoder.mb16);
+	std::memset(&decoder.mb8, 0, sizeof(decoder.mb8));
+	std::memset(&decoder.mb16, 0, sizeof(decoder.mb16));
 }
 
 static void ipuSETTH(u32 val)
@@ -462,7 +469,6 @@ __fi void IPUCMD_WRITE(u32 val)
 {
 	// don't process anything if currently busy
 	//if (ipuRegs.ctrl.BUSY) Console.WriteLn("IPU BUSY!"); // wait for thread
-
 	ipuRegs.ctrl.ECD = 0;
 	ipuRegs.ctrl.SCD = 0;
 	ipu_cmd.clear();
@@ -529,10 +535,11 @@ __fi void IPUCMD_WRITE(u32 val)
 
 	// Have a short delay immitating the time it takes to run IDEC/BDEC, other commands are near instant.
 	// Mana Khemia/Metal Saga start IDEC then change IPU0 expecting there to be a delay before IDEC sends data.
-	if (!CommandExecuteQueued && (ipu_cmd.CMD == SCE_IPU_IDEC || ipu_cmd.CMD == SCE_IPU_BDEC))
+	if (ipu_cmd.CMD == SCE_IPU_IDEC || ipu_cmd.CMD == SCE_IPU_BDEC)
 	{
-		CommandExecuteQueued = true;
-		CPU_INT(IPU_PROCESS, 64);
+		IPUCoreStatus.WaitingOnIPUFrom = false;
+		IPUCoreStatus.WaitingOnIPUTo = false;
+		IPU_INT_PROCESS(64);
 	}
 	else
 		IPUWorker();

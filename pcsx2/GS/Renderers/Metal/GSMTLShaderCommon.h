@@ -19,8 +19,6 @@
 
 using namespace metal;
 
-constant float2 SCALING_FACTOR [[function_constant(GSMTLConstantIndex_SCALING_FACTOR)]];
-
 struct ConvertShaderData
 {
 	float4 p [[position]];
@@ -34,6 +32,10 @@ struct ConvertPSRes
 	float4 sample(float2 coord)
 	{
 		return texture.sample(s, coord);
+	}
+	float4 sample_level(float2 coord, float lod)
+	{
+		return texture.sample(s, coord, level(lod));
 	}
 };
 

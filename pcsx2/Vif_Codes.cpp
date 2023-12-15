@@ -14,13 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
+
 #include "Common.h"
 #include "GS.h"
 #include "Gif_Unit.h"
-#include "Vif_Dma.h"
-#include "newVif.h"
-#include "VUmicro.h"
 #include "MTVU.h"
+#include "VUmicro.h"
+#include "Vif_Dma.h"
+#include "x86/newVif.h"
 
 #define vifOp(vifCodeName) _vifT int vifCodeName(int pass, const u32* data)
 #define pass1 if (pass == 0)
@@ -65,6 +66,11 @@ __ri void vifExecQueue(int idx)
 	}*/
 }
 
+static __fi EE_EventType vif1InternalIrq()
+{
+	return dmacRegs.ctrl.is_mfifo(true) ? DMAC_MFIFO_VIF : DMAC_VIF1;
+}
+
 static __fi void vifFlush(int idx)
 {
 	vifExecQueue(idx);
@@ -83,7 +89,10 @@ static __fi void vuExecMicro(int idx, u32 addr, bool requires_wait)
 
 	vifFlush(idx);
 	if (GetVifX.waitforvu)
+	{
+		CPU_SET_DMASTALL(idx ? vif1InternalIrq() : DMAC_VIF0, true);
 		return;
+	}
 
 	if (vifRegs.itops > (idx ? 0x3ffu : 0xffu))
 	{
@@ -220,7 +229,10 @@ vifOp(vifCode_Flush)
 		}
 
 		if (vif1.waitforvu || vif1Regs.stat.VGW)
+		{
+			CPU_SET_DMASTALL(vif1InternalIrq(), true);
 			return 0;
+		}
 
 		vif1.cmd = 0;
 		vif1.pass = 0;
@@ -250,7 +262,10 @@ vifOp(vifCode_FlushA)
 		}
 
 		if (vif1.waitforvu || vif1Regs.stat.VGW)
+		{
+			CPU_SET_DMASTALL(vif1InternalIrq(), true);
 			return 0;
+		}
 
 		vif1.cmd = 0;
 		vif1.pass = 0;
@@ -268,7 +283,10 @@ vifOp(vifCode_FlushE)
 		vifFlush(idx);
 
 		if (vifX.waitforvu)
+		{
+			CPU_SET_DMASTALL(idx ? vif1InternalIrq() : DMAC_VIF0, true);
 			return 0;
+		}
 
 		vifX.cmd = 0;
 		vifX.pass = 0;
@@ -373,7 +391,10 @@ vifOp(vifCode_MPG)
 		vifFlush(idx);
 
 		if (vifX.waitforvu)
+		{
+			CPU_SET_DMASTALL(idx ? vif1InternalIrq() : DMAC_VIF0, true);
 			return 0;
+		}
 		else
 		{
 			vifX.pass = 1;
@@ -418,7 +439,10 @@ vifOp(vifCode_MSCAL)
 		vifFlush(idx);
 
 		if (vifX.waitforvu)
+		{
+			CPU_SET_DMASTALL(idx ? vif1InternalIrq() : DMAC_VIF0, true);
 			return 0;
+		}
 
 		vuExecMicro(idx, (u16)(vifXRegs.code), false);
 		vifX.cmd = 0;
@@ -454,7 +478,10 @@ vifOp(vifCode_MSCALF)
 		}
 
 		if (vifX.waitforvu || vif1Regs.stat.VGW)
+		{
+			CPU_SET_DMASTALL(idx ? vif1InternalIrq() : DMAC_VIF0, true);
 			return 0;
+		}
 
 		vuExecMicro(idx, (u16)(vifXRegs.code), true);
 		vifX.cmd = 0;
@@ -473,7 +500,10 @@ vifOp(vifCode_MSCNT)
 		vifFlush(idx);
 
 		if (vifX.waitforvu)
+		{
+			CPU_SET_DMASTALL(idx ? vif1InternalIrq() : DMAC_VIF0, true);
 			return 0;
+		}
 
 		vuExecMicro(idx, -1, false);
 		vifX.cmd = 0;

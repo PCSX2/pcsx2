@@ -15,17 +15,12 @@
 
 #pragma once
 
-#if defined(_MSC_VER) && defined(__clang__)
-#define and and_
-#define or or_
-#define xor xor_
-#define not not_
 #define XBYAK_NO_OP_NAMES
-#endif
 
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
 #include "GS/MultiISA.h"
+#include "common/Assertions.h"
 
 /// Code generator that automatically selects between SSE and AVX, x86 and x64 so you don't have to
 /// Should make combined SSE and AVX codegen much easier
@@ -44,45 +39,11 @@ public:
 	using Ymm = Xbyak::Ymm;
 	using Zmm = Xbyak::Zmm;
 
-	class Error : public std::exception
-	{
-	public:
-		enum Value
-		{
-			ERR_64_BIT_REG_IN_32,
-			ERR_64_INSTR_IN_32,
-			ERR_SSE_INSTR_IN_AVX,
-			ERR_AVX_INSTR_IN_SSE,
-		};
-
-		Value value;
-
-		Error(Value value) : value(value) {}
-
-		const char* what() const noexcept
-		{
-			static const char* tbl[] = {
-				"used 64-bit register in 32-bit code",
-				"used 64-bit only instruction in 32-bit code",
-				"used SSE instruction in AVX code",
-				"used AVX instruction in SSE code",
-			};
-			if (static_cast<u32>(value) < (sizeof(tbl) / sizeof(*tbl)))
-			{
-				return tbl[value];
-			}
-			else
-			{
-				return "GSNewCodeGenerator Unknown Error";
-			}
-		}
-	};
-
 private:
 	void requireAVX()
 	{
 		if (!hasAVX)
-			throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+			pxFailRel("used AVX instruction in SSE code");
 	}
 
 public:
@@ -147,7 +108,7 @@ public:
 
 #define ACTUAL_FORWARD_SSEONLY(name, ...) \
 	if (hasAVX) \
-		throw Error(Error::ERR_SSE_INSTR_IN_AVX); \
+		pxFailRel("used SSE instruction in AVX code"); \
 	else \
 		actual.name(__VA_ARGS__);
 
@@ -155,19 +116,19 @@ public:
 	if (hasAVX) \
 		actual.name(__VA_ARGS__); \
 	else \
-		throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+		pxFailRel("used AVX instruction in SSE code");
 
 #define ACTUAL_FORWARD_AVX2(name, ...) \
 	if (hasAVX2) \
 		actual.name(__VA_ARGS__); \
 	else \
-		throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+		pxFailRel("used AVX instruction in SSE code");
 
 #define ACTUAL_FORWARD_FMA(name, ...) \
 	if (hasFMA) \
 		actual.name(__VA_ARGS__); \
 	else \
-		throw Error(Error::ERR_AVX_INSTR_IN_SSE);
+		pxFailRel("used AVX instruction in SSE code");
 
 #define FORWARD1(category, name, type) \
 	void name(type a) \
@@ -259,16 +220,16 @@ public:
 	void vzeroall() { requireAVX(); actual.vzeroall(); }
 
 	FORWARD_OO_OI(add)
-	FORWARD_OO_OI(and)
+	FORWARD_OO_OI(and_)
 	FORWARD_OO_OI(cmp)
-	FORWARD_OO_OI(or)
+	FORWARD_OO_OI(or_)
 	FORWARD_OO_OI(sub)
-	FORWARD_OO_OI(xor)
+	FORWARD_OO_OI(xor_)
 	FORWARD(2, BASE, lea,   const Reg&, const Address&)
 	FORWARD(2, BASE, mov,   const Operand&, size_t)
 	FORWARD(2, BASE, mov,   ARGS_OO)
 	FORWARD(2, BASE, movzx, const Reg&, const Operand&)
-	FORWARD(1, BASE, not,   const Operand&)
+	FORWARD(1, BASE, not_,  const Operand&)
 	FORWARD(1, BASE, pop,   const Operand&)
 	FORWARD(1, BASE, push,  const Operand&)
 	FORWARD(2, BASE, sar,   const Operand&, const Reg8&)

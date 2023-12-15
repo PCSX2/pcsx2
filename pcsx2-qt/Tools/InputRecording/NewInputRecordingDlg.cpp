@@ -79,22 +79,14 @@ void NewInputRecordingDlg::onRecordingTypeSaveStateChecked(bool checked)
 
 void NewInputRecordingDlg::onBrowseForPathClicked()
 {
-	QFileDialog dialog(this);
-	dialog.setFileMode(QFileDialog::AnyFile);
-	dialog.setWindowTitle("Select a File");
-	dialog.setNameFilter(tr("Input Recording Files (*.p2m2)"));
-	dialog.setDefaultSuffix("p2m2");
-	QStringList fileNames;
-	if (dialog.exec())
-	{
-		fileNames = dialog.selectedFiles();
-	}
-	if (fileNames.length() > 0)
-	{
-		m_filePath = fileNames.first();
-		m_ui.m_filePathInput->setText(m_filePath);
-		updateFormStatus();
-	}
+	QString filter = tr("Input Recording Files (*.p2m2)");
+	QString filename = QFileDialog::getSaveFileName(this, tr("Select a File"), QString(), filter, &filter);
+	if (filename.isEmpty())
+		return;
+
+	m_filePath = std::move(filename);
+	m_ui.m_filePathInput->setText(m_filePath);
+	updateFormStatus();
 }
 
 void NewInputRecordingDlg::onAuthorNameChanged(const QString& text)

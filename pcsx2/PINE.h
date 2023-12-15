@@ -18,8 +18,6 @@
 
 #pragma once
 
-#ifdef PCSX2_LEFTOVER_FROM_WX
-
 // PINE uses a concept of "slot" to be able to communicate with multiple
 // emulators at the same time, each slot should be unique to each emulator to
 // allow PnP and configurable by the end user so that several runs don't
@@ -27,22 +25,20 @@
 #define PINE_DEFAULT_SLOT 28011
 #define PINE_EMULATOR_NAME "pcsx2"
 
-#include "gui/PersistentThread.h"
-#include "gui/SysThreads.h"
+#include <thread>
 #include <string>
+#include <vector>
+#include <atomic>
+#include <span>
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <windows.h>
 #endif
 
-using namespace Threading;
 
-class SysCoreThread;
-
-class PINEServer : public pxThread
+class PINEServer
 {
-	// parent thread
-	typedef pxThread _parent;
+	std::thread m_thread;
 
 protected:
 #ifdef _WIN32
@@ -77,13 +73,13 @@ protected:
 	 * A preallocated buffer used to store all IPC replies.
 	 * to the size of 50.000 MsgWrite64 IPC calls.
 	 */
-	char* m_ret_buffer;
+	std::vector<u8> m_ret_buffer{};
 
 	/**
 	 * IPC messages buffer.
 	 * A preallocated buffer used to store all IPC messages.
 	 */
-	char* m_ipc_buffer;
+	std::vector<u8> m_ipc_buffer{};
 
 	/**
 	 * IPC Command messages opcodes.
@@ -130,7 +126,7 @@ protected:
 	struct IPCBuffer
 	{
 		int size; /**< Size of the buffer. */
-		char* buffer; /**< Buffer. */
+		std::vector<u8> buffer; /**< Buffer. */
 	};
 
 	/**
@@ -145,11 +141,8 @@ protected:
 		IPC_FAIL = 0xFF /**< IPC command failed to complete. */
 	};
 
-	// handle to the main vm thread
-	SysCoreThread* m_vm;
-
 	// Thread used to relay IPC commands.
-	void ExecuteTaskInThread();
+	void MainLoop();
 
 	/**
 	 * Internal function, Parses an IPC command.
@@ -159,7 +152,7 @@ protected:
 	 * return value: IPCBuffer containing a buffer with the result
 	 *               of the command and its size.
 	 */
-	IPCBuffer ParseCommand(char* buf, char* ret_buffer, u32 buf_size);
+	IPCBuffer ParseCommand(std::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size);
 
 	/**
 	 * Formats an IPC buffer
@@ -167,8 +160,8 @@ protected:
 	 * size: size of the IPC buffer.
 	 * return value: buffer containing the status code allocated of size
 	 */
-	static inline char* MakeOkIPC(char* ret_buffer, uint32_t size);
-	static inline char* MakeFailIPC(char* ret_buffer, uint32_t size);
+	static inline std::vector<u8>& MakeOkIPC(std::vector<u8>& ret_buffer, uint32_t size);
+	static inline std::vector<u8>& MakeFailIPC(std::vector<u8>& ret_buffer, uint32_t size);
 
 	/**
 	 * Initializes an open socket for IPC communication.
@@ -177,31 +170,29 @@ protected:
 	int StartSocket();
 
 	/**
-	 * Converts an uint to an char* in little endian
-	 * res_array: the array to modify
+	 * Converts a primitive value to bytes in little endian
+	 * res_vector: the vector to modify
 	 * res: the value to convert
-	 * i: when to insert it into the array
-	 * return value: res_array
+	 * i: where to insert it into the vector
 	 * NB: implicitely inlined
 	 */
 	template <typename T>
-	static char* ToArray(char* res_array, T res, int i)
+	static void ToResultVector(std::vector<u8>& res_vector, T res, int i)
 	{
-		memcpy((res_array + i), (char*)&res, sizeof(T));
-		return res_array;
+		memcpy(&res_vector[i], (char*)&res, sizeof(T));
 	}
 
 	/**
-	 * Converts a char* to an uint in little endian
-	 * arr: the array to convert
-	 * i: when to load it from the array
+	 * Converts bytes in little endian to a primitive value
+	 * span: the span to convert
+	 * i: where to load it from the span
 	 * return value: the converted value
 	 * NB: implicitely inlined
 	 */
 	template <typename T>
-	static T FromArray(char* arr, int i)
+	static T FromSpan(std::span<u8> span, int i)
 	{
-		return *(T*)(arr + i);
+		return *(T*)(&span[i]);
 	}
 
 	/**
@@ -210,7 +201,7 @@ protected:
 	 */
 	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0, u32 buf_size = MAX_IPC_SIZE - 1)
 	{
-		bool res = ((command_len + command_size) > buf_size ||
+		const bool res = ((command_len + command_size) > buf_size ||
 					(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
 		if (unlikely(res))
 			return false;
@@ -219,12 +210,13 @@ protected:
 
 public:
 	// Whether the socket processing thread should stop executing/is stopped.
-	bool m_end = true;
+	std::atomic_bool m_end{ false };
+	int m_slot;
 
 	/* Initializers */
-	PINEServer(SysCoreThread* vm, unsigned int slot = PINE_DEFAULT_SLOT);
+	PINEServer();
 	virtual ~PINEServer();
+	bool Initialize(int slot = PINE_DEFAULT_SLOT);
+	void Deinitialize();
 
 }; // class SocketIPC
-
-#endif

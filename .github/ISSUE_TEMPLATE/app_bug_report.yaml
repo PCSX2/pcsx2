@@ -12,19 +12,24 @@ body:
         ## Important: Read First
 
         Please do not make support requests on GitHub. Our issue tracker is for tracking bugs and feature requests only
-        If you need help configuring the emulator please make a request on our forums or contact us on discord
+        If you need help configuring the emulator please make a request on our forums or contact us on discord.
 
-        If you are unsure, start with [discord](https://discord.com/invite/TCz3t9k) or the [forums](https://forums.pcsx2.net/index.php)
+        If you are unsure, start with [discord](https://discord.com/invite/TCz3t9k) or the [forums](https://forums.pcsx2.net/index.php).
 
-        Please make an effort to make sure your issue isn't already reported
+        Please make an effort to make sure your issue isn't already reported.
+
+        Do not create issues involving software piracy of BIOS or ISO files, our rules specifically prohibit this and your issue will be closed.
 
         ### Please Avoid Issues Pertaining to the Following:
-        - We are **not** accepting bug reports for **PSX mode** at this time
-          - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use a [proper PSX emulator](https://emulation.gametechwiki.com/index.php/PlayStation_emulators)
-        - We do **not** accept issues relating to **upscaling** at this time
-          - We are aware of the various problems with upscaling. The issue spans many games and having hundreds of issues for the same fundamental issues isn't particularly helpful. There are several workarounds for graphical problems that come as a result of upscaling
-          - Please try your game at native resolution before creating an issue
-          - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues
+        - We are **not** accepting bug reports for **PSX mode** at this time.
+          - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use  [Duckstation](https://github.com/stenzek/duckstation/releases/tag/latest).
+        - We do **not** accept issues relating to **upscaling** at this time.
+          - We are aware of the various problems with upscaling. The issue spans many games and having hundreds of issues for the same fundamental issues isn't particularly helpful. There are several workarounds for graphical problems that come as a result of upscaling.
+          - Please try your game at native resolution before creating an issue.
+          - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues.
+        - We do **not** accept issues relating to Widescreen/no-interlace patches at this time.
+          - Any issues pertaining to Widescreen/no-interlace patches please forward them to the [patches repository](https://github.com/PCSX2/pcsx2_patches). 
+
   - type: textarea
     id: desc
     attributes:
@@ -74,5 +79,14 @@ body:
     attributes:
       label: If Linux - Specify Distro
       placeholder: "Example: Arch"
+    validations:
+      required: false
+  - type: textarea
+    id: logsDumps
+    attributes:
+      label: "Logs & Dumps"
+      description: |
+        Please feel free to attach any logs here.
+        If PCSX2 crashed, please post crash logs and the .dmp file (in a zip file) if appropriate.
     validations:
       required: false

@@ -15,8 +15,10 @@
 
 #include "PrecompiledHeader.h"
 #include "GS/GSClut.h"
+#include "GS/GSExtra.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSGL.h"
+#include "GS/GSUtil.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "common/AlignedMalloc.h"
@@ -27,9 +29,9 @@ GSClut::GSClut(GSLocalMemory* mem)
 	static constexpr u32 CLUT_ALLOC_SIZE = 4096 * 2;
 
 	// 1k + 1k for mirrored area simulating wrapping memory
-	m_clut = static_cast<u16*>(_aligned_malloc(CLUT_ALLOC_SIZE, 32));
+	m_clut = static_cast<u16*>(_aligned_malloc(CLUT_ALLOC_SIZE, VECTOR_ALIGNMENT));
 	if (!m_clut)
-		throw std::bad_alloc();
+		pxFailRel("Failed to allocate CLUT storage.");
 
 	m_buff32 = reinterpret_cast<u32*>(reinterpret_cast<u8*>(m_clut) + 2048); // 1k
 	m_buff64 = reinterpret_cast<u64*>(reinterpret_cast<u8*>(m_clut) + 4096); // 2k
@@ -47,8 +49,8 @@ GSClut::GSClut(GSLocalMemory* mem)
 
 			switch (i)
 			{
-				case PSM_PSMCT32:
-				case PSM_PSMCT24: // undocumented (KH?)
+				case PSMCT32:
+				case PSMCT24: // undocumented (KH?)
 					if (eight_bit)
 						m_wc[0][i][j] = &GSClut::WriteCLUT32_I8_CSM1;
 					else if (four_bit)
@@ -56,7 +58,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 					else
 						m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
 					break;
-				case PSM_PSMCT16:
+				case PSMCT16:
 					if (eight_bit)
 						m_wc[0][i][j] = &GSClut::WriteCLUT16_I8_CSM1;
 					else if (four_bit)
@@ -64,7 +66,7 @@ GSClut::GSClut(GSLocalMemory* mem)
 					else
 						m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
 					break;
-				case PSM_PSMCT16S:
+				case PSMCT16S:
 					if (eight_bit)
 						m_wc[0][i][j] = &GSClut::WriteCLUT16S_I8_CSM1;
 					else if (four_bit)
@@ -81,26 +83,26 @@ GSClut::GSClut(GSLocalMemory* mem)
 		}
 	}
 
-	m_wc[1][PSM_PSMCT32][PSM_PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT32][PSM_PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT24][PSM_PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT8] = &GSClut::WriteCLUT16_CSM2<256>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT8H] = &GSClut::WriteCLUT16_CSM2<256>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT4] = &GSClut::WriteCLUT16_CSM2<16>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT4HL] = &GSClut::WriteCLUT16_CSM2<16>;
-	m_wc[1][PSM_PSMCT16][PSM_PSMT4HH] = &GSClut::WriteCLUT16_CSM2<16>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT8] = &GSClut::WriteCLUT16S_CSM2<256>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT8H] = &GSClut::WriteCLUT16S_CSM2<256>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT4] = &GSClut::WriteCLUT16S_CSM2<16>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT4HL] = &GSClut::WriteCLUT16S_CSM2<16>;
-	m_wc[1][PSM_PSMCT16S][PSM_PSMT4HH] = &GSClut::WriteCLUT16S_CSM2<16>;
+	m_wc[1][PSMCT32][PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT32][PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT32][PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT32][PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT32][PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT24][PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT24][PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
+	m_wc[1][PSMCT24][PSMT4] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT24][PSMT4HL] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT24][PSMT4HH] = &GSClut::WriteCLUT32_CSM2<16>;
+	m_wc[1][PSMCT16][PSMT8] = &GSClut::WriteCLUT16_CSM2<256>;
+	m_wc[1][PSMCT16][PSMT8H] = &GSClut::WriteCLUT16_CSM2<256>;
+	m_wc[1][PSMCT16][PSMT4] = &GSClut::WriteCLUT16_CSM2<16>;
+	m_wc[1][PSMCT16][PSMT4HL] = &GSClut::WriteCLUT16_CSM2<16>;
+	m_wc[1][PSMCT16][PSMT4HH] = &GSClut::WriteCLUT16_CSM2<16>;
+	m_wc[1][PSMCT16S][PSMT8] = &GSClut::WriteCLUT16S_CSM2<256>;
+	m_wc[1][PSMCT16S][PSMT8H] = &GSClut::WriteCLUT16S_CSM2<256>;
+	m_wc[1][PSMCT16S][PSMT4] = &GSClut::WriteCLUT16S_CSM2<16>;
+	m_wc[1][PSMCT16S][PSMT4HL] = &GSClut::WriteCLUT16S_CSM2<16>;
+	m_wc[1][PSMCT16S][PSMT4HH] = &GSClut::WriteCLUT16S_CSM2<16>;
 }
 
 GSClut::~GSClut()
@@ -166,6 +168,46 @@ bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)
 	return m_write.dirty;
 }
 
+bool GSClut::CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP)
+{
+	if ((TEX0.PSM & 0x7) < 3)
+		return false;
+
+	switch (TEX0.CLD)
+	{
+		case 0:
+		case 6: // FFX2 menu.
+		case 7: // Ford Mustang Racing, Bouken Jidai Katsugeki Goemon.
+			return false;
+		case 1:
+			break;
+		case 2:
+			if (update_CBP)
+				m_CBP[0] = TEX0.CBP;
+			break;
+		case 3:
+			if (update_CBP)
+				m_CBP[1] = TEX0.CBP;
+			break;
+		case 4:
+			if (m_CBP[0] == TEX0.CBP)
+				return false;
+			if(update_CBP)
+				m_CBP[0] = TEX0.CBP;
+			break;
+		case 5:
+			if (m_CBP[1] == TEX0.CBP)
+				return false;
+			if (update_CBP)
+				m_CBP[1] = TEX0.CBP;
+			break;
+		default:
+			__assume(0);
+	}
+
+	return true;
+}
+
 bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	// Check if PSM is an indexed format BEFORE the load condition, updating CBP0/1 on an invalid format is not allowed
@@ -173,35 +215,8 @@ bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 	if ((TEX0.PSM & 0x7) < 3)
 		return false;
 
-	switch (TEX0.CLD)
-	{
-		case 0:
-			return false;
-		case 1:
-			break;
-		case 2:
-			m_CBP[0] = TEX0.CBP;
-			break;
-		case 3:
-			m_CBP[1] = TEX0.CBP;
-			break;
-		case 4:
-			if (m_CBP[0] == TEX0.CBP)
-				return false;
-			m_CBP[0] = TEX0.CBP;
-			break;
-		case 5:
-			if (m_CBP[1] == TEX0.CBP)
-				return false;
-			m_CBP[1] = TEX0.CBP;
-			break;
-		case 6:
-			return false; // ffx2 menu.
-		case 7:
-			return false; // ford mustang racing // Bouken Jidai Katsugeki Goemon.
-		default:
-			__assume(0);
-	}
+	if (!CanLoadCLUT(TEX0, true))
+		return false;
 
 	// CLUT only reloads if PSM is a valid index type, avoid unnecessary flushes.
 	return m_write.IsDirty(TEX0, TEXCLUT);
@@ -253,14 +268,15 @@ void GSClut::WriteCLUT16S_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& T
 template <int n>
 void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
-	auto pa = off.paMulti(m_mem->vm32(), TEXCLUT.COU << 4, TEXCLUT.COV);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSMCT32);
+	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COU << 4, TEXCLUT.COV);
 
+	u32* vm = m_mem->vm32();
 	u16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		u32 c = *pa.value(i);
+		u32 c = vm[pa.value(i)];
 
 		clut[i] = (u16)(c & 0xffff);
 		clut[i + 256] = (u16)(c >> 16);
@@ -270,28 +286,30 @@ void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCL
 template <int n>
 void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
-	auto pa = off.paMulti(m_mem->vm16(), TEXCLUT.COU << 4, TEXCLUT.COV);
+	const GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSMCT16);
+	const GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COU << 4, TEXCLUT.COV);
 
+	u16* vm = m_mem->vm16();
 	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		clut[i] = *pa.value(i);
+		clut[i] = vm[pa.value(i)];
 	}
 }
 
 template <int n>
 void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
-	auto pa = off.paMulti(m_mem->vm16(), TEXCLUT.COU << 4, TEXCLUT.COV);
+	const GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSMCT16S);
+	const GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COU << 4, TEXCLUT.COV);
 
+	u16* vm = m_mem->vm16();
 	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		clut[i] = *pa.value(i);
+		clut[i] = vm[pa.value(i)];
 	}
 }
 
@@ -311,35 +329,35 @@ void GSClut::Read(const GIFRegTEX0& TEX0)
 
 		u16* clut = m_clut;
 
-		if(TEX0.CPSM == PSM_PSMCT32 || TEX0.CPSM == PSM_PSMCT24)
+		if(TEX0.CPSM == PSMCT32 || TEX0.CPSM == PSMCT24)
 		{
 			switch(TEX0.PSM)
 			{
-			case PSM_PSMT8:
-			case PSM_PSMT8H:
+			case PSMT8:
+			case PSMT8H:
 				clut += (TEX0.CSA & 15) << 4;
 				ReadCLUT_T32_I8(clut, m_buff32);
 				break;
-			case PSM_PSMT4:
-			case PSM_PSMT4HL:
-			case PSM_PSMT4HH:
+			case PSMT4:
+			case PSMT4HL:
+			case PSMT4HH:
 				clut += (TEX0.CSA & 15) << 4;
 				ReadCLUT_T32_I4(clut, m_buff32, m_buff64);
 				break;
 			}
 		}
-		else if(TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S)
+		else if(TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S)
 		{
 			switch(TEX0.PSM)
 			{
-			case PSM_PSMT8:
-			case PSM_PSMT8H:
+			case PSMT8:
+			case PSMT8H:
 				clut += TEX0.CSA << 4;
 				ReadCLUT_T16_I8(clut, m_buff32);
 				break;
-			case PSM_PSMT4:
-			case PSM_PSMT4HL:
-			case PSM_PSMT4HH:
+			case PSMT4:
+			case PSMT4HL:
+			case PSMT4HH:
 				clut += TEX0.CSA << 4;
 				ReadCLUT_T16_I4(clut, m_buff32, m_buff64);
 				break;
@@ -360,17 +378,17 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 
 		u16* clut = m_clut;
 
-		if (TEX0.CPSM == PSM_PSMCT32 || TEX0.CPSM == PSM_PSMCT24)
+		if (TEX0.CPSM == PSMCT32 || TEX0.CPSM == PSMCT24)
 		{
 			switch (TEX0.PSM)
 			{
-				case PSM_PSMT8:
-				case PSM_PSMT8H:
+				case PSMT8:
+				case PSMT8H:
 					ReadCLUT_T32_I8(clut, m_buff32, (TEX0.CSA & 15) << 4);
 					break;
-				case PSM_PSMT4:
-				case PSM_PSMT4HL:
-				case PSM_PSMT4HH:
+				case PSMT4:
+				case PSMT4HL:
+				case PSMT4HH:
 					clut += (TEX0.CSA & 15) << 4;
 					// TODO: merge these functions
 					ReadCLUT_T32_I4(clut, m_buff32);
@@ -378,18 +396,18 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 					break;
 			}
 		}
-		else if (TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S)
+		else if (TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S)
 		{
 			switch (TEX0.PSM)
 			{
-				case PSM_PSMT8:
-				case PSM_PSMT8H:
+				case PSMT8:
+				case PSMT8H:
 					clut += TEX0.CSA << 4;
 					Expand16(clut, m_buff32, 256, TEXA);
 					break;
-				case PSM_PSMT4:
-				case PSM_PSMT4HL:
-				case PSM_PSMT4HH:
+				case PSMT4:
+				case PSMT4HL:
+				case PSMT4HH:
 					clut += TEX0.CSA << 4;
 					// TODO: merge these functions
 					Expand16(clut, m_buff32, 16, TEXA);
@@ -401,11 +419,12 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 		m_current_gpu_clut = nullptr;
 		if (GSConfig.UserHacks_GPUTargetCLUTMode != GSGPUTargetCLUTMode::Disabled)
 		{
-			const bool is_4bit = (TEX0.PSM == PSM_PSMT4 || TEX0.PSM == PSM_PSMT4HL || TEX0.PSM == PSM_PSMT4HH);
+			const bool is_4bit = (TEX0.PSM == PSMT4 || TEX0.PSM == PSMT4HL || TEX0.PSM == PSMT4HH);
 
 			u32 CBW;
 			GSVector2i offset;
 			GSVector2i size;
+			float scale;
 			if (!TEX0.CSM)
 			{
 				CBW = 0; // don't care
@@ -422,12 +441,12 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				size.y = 1;
 			}
 
-			GSTexture* src = g_gs_renderer->LookupPaletteSource(TEX0.CBP, TEX0.CPSM, CBW, offset, size);
+			GSTexture* src = g_gs_renderer->LookupPaletteSource(TEX0.CBP, TEX0.CPSM, CBW, offset, &scale, size);
 			if (src)
 			{
 				GSTexture* dst = is_4bit ? m_gpu_clut4 : m_gpu_clut8;
-				u32 dst_size = is_4bit ? 16 : 256;
-				const u32 dOffset = (TEX0.CSA & ((TEX0.CPSM == PSM_PSMCT16 || TEX0.CPSM == PSM_PSMCT16S) ? 15u : 31u)) << 4;
+				const u32 dst_size = is_4bit ? 16 : 256;
+				const u32 dOffset = (TEX0.CSA & ((TEX0.CPSM == PSMCT16 || TEX0.CPSM == PSMCT16S) ? 15u : 31u)) << 4;
 				if (!dst)
 				{
 					// allocate texture lazily
@@ -438,7 +457,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				{
 					GL_PUSH("Update GPU CLUT [CBP=%04X, CPSM=%s, CBW=%u, CSA=%u, Offset=(%d,%d)]",
 						TEX0.CBP, psm_str(TEX0.CPSM), CBW, TEX0.CSA, offset.x, offset.y);
-					g_gs_device->UpdateCLUTTexture(src, offset.x, offset.y, dst, dOffset, dst_size);
+					g_gs_device->UpdateCLUTTexture(src, scale, offset.x, offset.y, dst, dOffset, dst_size);
 					m_current_gpu_clut = dst;
 				}
 			}
@@ -486,9 +505,9 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 			{
 				ASSERT(GSLocalMemory::m_psm[m_read.TEX0.PSM].pal == 16);
 
-				GSVector4i v0 = (p[0] >> 24).ps32(p[1] >> 24);
-				GSVector4i v1 = (p[2] >> 24).ps32(p[3] >> 24);
-				GSVector4i v2 = v0.pu16(v1);
+				const GSVector4i v0 = (p[0] >> 24).ps32(p[1] >> 24);
+				const GSVector4i v1 = (p[2] >> 24).ps32(p[3] >> 24);
+				const GSVector4i v2 = v0.pu16(v1);
 
 				amin = v2;
 				amax = v2;
@@ -501,8 +520,8 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 			amin = amin.min_u8(amin.yxwzl());
 			amax = amax.max_u8(amax.yxwzl());
 
-			GSVector4i v0 = amin.upl8(amax).u8to16();
-			GSVector4i v1 = v0.yxwz();
+			const GSVector4i v0 = amin.upl8(amax).u8to16();
+			const GSVector4i v1 = v0.yxwz();
 
 			m_read.amin = v0.min_i16(v1).extract16<0>();
 			m_read.amax = v0.max_i16(v1).extract16<1>();
@@ -721,10 +740,10 @@ void GSClut::ExpandCLUT64_T32_I8(const u32* RESTRICT src, u64* RESTRICT dst)
 	GSVector4i* s = (GSVector4i*)src;
 	GSVector4i* d = (GSVector4i*)dst;
 
-	GSVector4i s0 = s[0];
-	GSVector4i s1 = s[1];
-	GSVector4i s2 = s[2];
-	GSVector4i s3 = s[3];
+	const GSVector4i s0 = s[0];
+	const GSVector4i s1 = s[1];
+	const GSVector4i s2 = s[2];
+	const GSVector4i s3 = s[3];
 
 	ExpandCLUT64_T32(s0, s0, s1, s2, s3, &d[0]);
 	ExpandCLUT64_T32(s1, s0, s1, s2, s3, &d[32]);
@@ -816,8 +835,8 @@ void GSClut::Expand16(const u16* RESTRICT src, u32* RESTRICT dst, int w, const G
 	const GSVector4i gm = m_gm;
 	const GSVector4i bm = m_bm;
 
-	GSVector4i TA0(TEXA.TA0 << 24);
-	GSVector4i TA1(TEXA.TA1 << 24);
+	const GSVector4i TA0(TEXA.TA0 << 24);
+	const GSVector4i TA1(TEXA.TA1 << 24);
 
 	GSVector4i c, cl, ch;
 
@@ -898,10 +917,10 @@ bool GSClut::ReadState::IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 	else // Just to optimise the checks.
 	{
 		// Check TA0 and AEM in 24bit mode.
-		if (TEX0.CPSM == PSM_PSMCT24 && ((this->TEXA.U64 ^ TEXA.U64) & texa24_mask))
+		if (TEX0.CPSM == PSMCT24 && ((this->TEXA.U64 ^ TEXA.U64) & texa24_mask))
 			is_dirty |= true;
 		// Check all fields in 16bit mode.
-		else if (TEX0.CPSM >= PSM_PSMCT16 && ((this->TEXA.U64 ^ TEXA.U64) & texa16_mask))
+		else if (TEX0.CPSM >= PSMCT16 && ((this->TEXA.U64 ^ TEXA.U64) & texa16_mask))
 			is_dirty |= true;
 	}
 

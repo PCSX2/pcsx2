@@ -12,6 +12,14 @@
           "type": "string",
           "description": "The name of the game, an arbitrary string"
         },
+        "name-sort": {
+          "type": "string",
+          "description": "The name of the game for use in sorting, an arbitrary string"
+        },
+        "name-en": {
+          "type": "string",
+          "description": "The name of the game in ASCII, an arbitrary string"
+        },
         "region": {
           "type": "string",
           "description": "The region code for the game, for example NTSC-U",
@@ -101,6 +109,7 @@
               "VIFFIFOHack",
               "VuAddSubHack",
               "VUOverflowHack",
+              "FullVU0SyncHack",
               "VUSyncHack",
               "XGKickHack"
             ]
@@ -114,7 +123,7 @@
             "autoFlush": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 1
+              "maximum": 2
             },
             "conservativeFramebuffer": {
               "type": "integer",
@@ -126,12 +135,12 @@
               "minimum": 0,
               "maximum": 1
             },
-            "disableDepthSupport": {
+            "readTCOnClose": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
             },
-            "wrapGSMem": {
+            "disableDepthSupport": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
@@ -146,10 +155,15 @@
               "minimum": 0,
               "maximum": 1
             },
-            "textureInsideRT": {
+            "partialTargetInvalidation": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
+            },
+            "textureInsideRT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
             },
             "alignSprite": {
               "type": "integer",
@@ -162,6 +176,31 @@
               "maximum": 1
             },
             "wildArmsHack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "bilinearUpscale": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "nativePaletteDraw": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "estimateTextureRegion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOffsets": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOverscan": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
@@ -194,7 +233,7 @@
             "halfPixelOffset": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 3
+              "maximum": 4
             },
             "roundSprite": {
               "type": "integer",
@@ -216,6 +255,11 @@
               "minimum": 1,
               "maximum": 10
             },
+            "cpuSpriteRenderLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
             "cpuCLUTRender": {
               "type": "integer",
               "minimum": 1,
@@ -231,10 +275,28 @@
               "minimum": 0,
               "maximum": 2
             },
+            "minimumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "maximumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "recommendedBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
             "getSkipCount": {
               "type": "string"
             },
             "beforeDraw": {
+              "type": "string"
+            },
+            "moveHandler": {
               "type": "string"
             }
           },
@@ -252,20 +314,25 @@
         "speedHacks": {
           "type": "object",
           "properties": {
-            "mvuFlagSpeedHack": {
+            "mvuFlag": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
             },
-            "InstantVU1SpeedHack": {
+            "instantVU1": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
             },
-            "MTVUSpeedHack": {
+            "mtvu": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1
+            },
+            "eeCycleRate": {
+              "type": "integer",
+              "minimum": -3,
+              "maximum": 3
             }
           },
           "additionalProperties": false

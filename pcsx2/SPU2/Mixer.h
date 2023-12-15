@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,5 +16,3 @@
 #pragma once
 
 extern void Mix();
-extern s32 clamp_mix(s32 x);
-extern StereoOut32 clamp_mix(StereoOut32 sample);

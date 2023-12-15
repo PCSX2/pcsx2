@@ -18,10 +18,8 @@
 #include <functional>
 #include <optional>
 #include <string>
-#include <vector>
-#include <string>
 #include <string_view>
-#include <optional>
+#include <vector>
 
 #include "common/Pcsx2Defs.h"
 
@@ -49,12 +47,16 @@ struct VMBootParameters
 
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
+	bool disable_achievements_hardcore_mode = false;
 };
 
 namespace VMManager
 {
 	/// The number of usable save state slots.
 	static constexpr s32 NUM_SAVE_STATE_SLOTS = 10;
+
+	/// The stack size to use for threads running recompilers
+	static constexpr std::size_t EMU_THREAD_STACK_SIZE = 2 * 1024 * 1024; // µVU likes recursion
 
 	/// Makes sure that AVX2 is available if we were compiled with it.
 	bool PerformEarlyHardwareChecks(const char** error);
@@ -71,17 +73,26 @@ namespace VMManager
 	/// Returns the path of the disc currently running.
 	std::string GetDiscPath();
 
-	/// Returns the crc of the executable currently running.
-	u32 GetGameCRC();
+	/// Returns the serial of the disc currently running.
+	std::string GetDiscSerial();
 
-	/// Returns the serial of the disc/executable currently running.
-	std::string GetGameSerial();
+	/// Returns the path of the main ELF of the disc currently running.
+	std::string GetDiscELF();
 
 	/// Returns the name of the disc/executable currently running.
-	std::string GetGameName();
+	std::string GetTitle(bool prefer_en);
 
-	/// Loads global settings (i.e. EmuConfig).
-	void LoadSettings();
+	/// Returns the CRC for the main ELF of the disc currently running.
+	u32 GetDiscCRC();
+
+	/// Returns the version of the disc currently running.
+	std::string GetDiscVersion();
+
+	/// Returns the crc of the executable currently running.
+	u32 GetCurrentCRC();
+
+	/// Returns the path to the ELF which is currently running. Only safe to read on the EE thread.
+	const std::string& GetCurrentELF();
 
 	/// Initializes all system components.
 	bool Initialize(VMBootParameters boot_params);
@@ -95,6 +106,9 @@ namespace VMManager
 	/// Runs the VM until the CPU execution is canceled.
 	void Execute();
 
+	/// Polls input, updates subsystems which are present while paused/inactive.
+	void IdlePollUpdate();
+
 	/// Changes the pause state of the VM, resetting anything needed when unpausing.
 	void SetPaused(bool paused);
 
@@ -104,8 +118,8 @@ namespace VMManager
 	/// Reloads game specific settings, and applys any changes present.
 	bool ReloadGameSettings();
 
-	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
-	void ReloadPatches(bool verbose, bool show_messages_when_disabled);
+	/// Reloads game patches.
+	void ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
@@ -140,12 +154,28 @@ namespace VMManager
 	/// Updates the host vsync state, as well as timer frequencies. Call when the speed limiter is adjusted.
 	void SetLimiterMode(LimiterModeType type);
 
+	/// Returns the target speed, based on the limiter mode.
+	float GetTargetSpeed();
+
+	/// Ensures the target speed reflects the current configuration. Call if you change anything in
+	/// EmuConfig.EmulationSpeed without going through the usual config apply.
+	void UpdateTargetSpeed();
+
+	/// Returns the current frame rate of the virtual machine.
+	float GetFrameRate();
+
 	/// Runs the virtual machine for the specified number of video frames, and then automatically pauses.
 	void FrameAdvance(u32 num_frames = 1);
 
 	/// Changes the disc in the virtual CD/DVD drive. Passing an empty will remove any current disc.
 	/// Returns false if the new disc can't be opened.
 	bool ChangeDisc(CDVD_SourceType source, std::string path);
+
+	/// Changes the ELF to boot ("ELF override"). The VM will be reset.
+	bool SetELFOverride(std::string path);
+
+	/// Changes the current GS dump being played back.
+	bool ChangeGSDump(const std::string& path);
 
 	/// Returns true if the specified path is an ELF.
 	bool IsElfFileName(const std::string_view& path);
@@ -181,32 +211,62 @@ namespace VMManager
 	/// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 	void RequestDisplaySize(float scale = 0.0f);
 
-	/// Initializes default configuration in the specified file.
-	void SetDefaultSettings(SettingsInterface& si);
+	/// Initializes default configuration in the specified file for the specified categories.
+	void SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui);
 
 	/// Returns a list of processors in the system, and their corresponding affinity mask.
 	/// This list is ordered by most performant to least performant for pinning threads to.
 	const std::vector<u32>& GetSortedProcessorList();
 
+	/// Returns the time elapsed in the current play session.
+	u64 GetSessionPlayedTime();
+
+	/// Called when the rich presence string, provided by RetroAchievements, changes.
+	void UpdateDiscordPresence();
+
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal
 	{
-		/// Performs early global initialization.
-		bool InitializeGlobals();
+		/// Checks settings version. Call once on startup. If it returns false, you should prompt the user to reset.
+		bool CheckSettingsVersion();
 
-		/// Releases resources allocated in InitializeGlobals().
-		void ReleaseGlobals();
+		/// Loads early settings. Call once on startup.
+		void LoadStartupSettings();
 
-		/// Reserves memory for the virtual machines.
-		bool InitializeMemory();
+		/// Initializes common host state, called on the CPU thread.
+		bool CPUThreadInitialize();
 
-		/// Completely releases all memory for the virtual machine.
-		void ReleaseMemory();
+		/// Cleans up common host state, called on the CPU thread.
+		void CPUThreadShutdown();
 
-		const std::string& GetElfOverride();
+		/// Resets any state for hotkey-related VMs, called on VM startup.
+		void ResetVMHotkeyState();
+
+		/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
+		void UpdateEmuFolders();
+
+		/// Returns true if fast booting is active (requested but ELF not started).
+		bool IsFastBootInProgress();
+
+		/// Disables fast boot if it was requested, and found to be incompatible.
+		void DisableFastBoot();
+
+		/// Returns true if the current ELF has started executing.
+		bool HasBootedELF();
+
+		/// Returns the PC of the currently-executing ELF's entry point.
+		u32 GetCurrentELFEntryPoint();
+
+		/// Called when the internal frame rate changes.
+		void FrameRateChanged();
+
+		/// Throttles execution, or limits the frame rate.
+		void Throttle();
+
+		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();
+		void ELFLoadingOnCPUThread(std::string elf_path);
 		void EntryPointCompilingOnCPUThread();
-		void GameStartingOnCPUThread();
 		void VSyncOnCPUThread();
 	} // namespace Internal
 } // namespace VMManager
@@ -238,10 +298,6 @@ namespace Host
 	/// Called when performance metrics are updated, approximately once a second.
 	void OnPerformanceMetricsUpdated();
 
-	/// Looks up the serial and CRC for a game in the most efficient manner possible.
-	/// Implemented in the host because it may have a game list cache.
-	bool GetSerialAndCRCForFilename(const char* filename, std::string* serial, u32* crc);
-
 	/// Called when a save state is loading, before the file is processed.
 	void OnSaveStateLoading(const std::string_view& filename);
 
@@ -253,9 +309,9 @@ namespace Host
 	void OnSaveStateSaved(const std::string_view& filename);
 
 	/// Provided by the host; called when the running executable changes.
-	void OnGameChanged(const std::string& disc_path, const std::string& elf_override, const std::string& game_serial,
-		const std::string& game_name, u32 game_crc);
+	void OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
+		const std::string& disc_serial, u32 disc_crc, u32 current_crc);
 
 	/// Provided by the host; called once per frame at guest vsync.
-	void CPUThreadVSync();
+	void VSyncOnCPUThread();
 } // namespace Host

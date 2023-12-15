@@ -84,8 +84,8 @@ bool Gif_HandlerAD(u8* pMem)
 	else if (reg == GIF_A_D_REG_FINISH)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
-		CSRreg.FINISH = true;
 		gifUnit.gsFINISH.gsFINISHFired = false;
+		gifUnit.gsFINISH.gsFINISHPending = true;
 	}
 	else if (reg == GIF_A_D_REG_LABEL)
 	{ // LABEL
@@ -102,8 +102,8 @@ bool Gif_HandlerAD(u8* pMem)
 bool Gif_HandlerAD_MTVU(u8* pMem)
 {
 	// Note: Atomic communication is with MTVU.cpp Get_GSChanges
-	u32 reg = pMem[8];
-	u32* data = (u32*)pMem;
+	const u8 reg = pMem[8] & 0x7f;
+	const u32* data = (u32*)pMem;
 
 	if (reg == GIF_A_D_REG_SIGNAL)
 	{ // SIGNAL
@@ -148,7 +148,7 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 // Returns true if pcsx2 needed to process the packet...
 bool Gif_HandlerAD_Debug(u8* pMem)
 {
-	u32 reg = pMem[8];
+	const u8 reg = pMem[8] & 0x7f;
 	if (reg == 0x50)
 	{
 		Console.Error("GIF Handler Debug - BITBLTBUF");
@@ -188,6 +188,11 @@ bool Gif_HandlerAD_Debug(u8* pMem)
 
 void Gif_FinishIRQ()
 {
+	if (gifUnit.gsFINISH.gsFINISHPending)
+	{
+		CSRreg.FINISH = true;
+		gifUnit.gsFINISH.gsFINISHPending = false;
+	}
 	if (CSRreg.FINISH && !GSIMR.FINISHMSK && !gifUnit.gsFINISH.gsFINISHFired)
 	{
 		gsIrq();
@@ -195,43 +200,7 @@ void Gif_FinishIRQ()
 	}
 }
 
-// Used in MTVU mode... MTVU will later complete a real packet
-void Gif_AddGSPacketMTVU(GS_Packet& gsPack, GIF_PATH path)
-{
-	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_MTVU_GSPACKET, 0, 0, path);
-}
-
-void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path)
-{
-	//DevCon.WriteLn("Adding Completed Gif Packet [size=%x]", gsPack.size);
-	if (COPY_GS_PACKET_TO_MTGS)
-	{
-		GetMTGS().PrepDataPacket(path, gsPack.size / 16);
-		MemCopy_WrappedDest((u128*)&gifUnit.gifPath[path].buffer[gsPack.offset], RingBuffer.m_Ring,
-							GetMTGS().m_packet_writepos, RingBufferSize, gsPack.size / 16);
-		GetMTGS().SendDataPacket();
-	}
-	else
-	{
-		pxAssertDev(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
-		gifUnit.gifPath[path].readAmount.fetch_add(gsPack.size);
-		GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, gsPack.offset, gsPack.size, path);
-	}
-}
-
-void Gif_AddBlankGSPacket(u32 size, GIF_PATH path)
-{
-	//DevCon.WriteLn("Adding Blank Gif Packet [size=%x]", size);
-	gifUnit.gifPath[path].readAmount.fetch_add(size);
-	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, ~0u, size, path);
-}
-
-void Gif_MTGS_Wait(bool isMTVU)
-{
-	GetMTGS().WaitGS(false, true, isMTVU);
-}
-
-void SaveStateBase::gifPathFreeze(u32 path)
+bool SaveStateBase::gifPathFreeze(u32 path)
 {
 
 	Gif_Path& gifPath = gifUnit.gifPath[path];
@@ -256,14 +225,18 @@ void SaveStateBase::gifPathFreeze(u32 path)
 		gifPath.readAmount = 0;
 		gifPath.gsPack.readAmount = 0;
 	}
+
+	return IsOkay();
 }
 
-void SaveStateBase::gifFreeze()
+bool SaveStateBase::gifFreeze()
 {
 	bool mtvuMode = THREAD_VU1;
 	pxAssert(vu1Thread.IsDone());
-	GetMTGS().WaitGS();
-	FreezeTag("Gif Unit");
+	MTGS::WaitGS();
+	if (!FreezeTag("Gif Unit"))
+		return false;
+
 	Freeze(mtvuMode);
 	Freeze(gifUnit.stat);
 	Freeze(gifUnit.gsSIGNAL);
@@ -280,4 +253,6 @@ void SaveStateBase::gifFreeze()
 			// ToDo: gifUnit.SwitchMTVU(mtvuMode);
 		}
 	}
+
+	return true;
 }

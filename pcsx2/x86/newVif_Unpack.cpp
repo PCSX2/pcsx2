@@ -82,7 +82,7 @@ void resetNewVif(int idx)
 
 	nVif[idx].idx   = idx;
 	nVif[idx].bSize = 0;
-	memzero(nVif[idx].buffer);
+	std::memset(nVif[idx].buffer, 0, sizeof(nVif[idx].buffer));
 
 	if (newVifDynaRec)
 		dVifReset(idx);

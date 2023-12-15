@@ -6,16 +6,8 @@ set(PCSX2_DEFS "")
 #-------------------------------------------------------------------------------
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
-set(USE_SYSTEM_LIBS "AUTO" CACHE STRING "Use system libraries instead of bundled libraries.  ON - Always use system and fail if unavailable, OFF - Always use bundled, AUTO - Use system if available, otherwise use bundled.  Default is AUTO")
-optional_system_library(fmt)
-optional_system_library(ryml)
-optional_system_library(zstd)
-optional_system_library(libzip)
-optional_system_library(SDL2)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
-option(USE_ACHIEVEMENTS "Build with RetroAchievements support" ON)
-option(USE_DISCORD_PRESENCE "Enable support for Discord Rich Presence" ON)
 
 #-------------------------------------------------------------------------------
 # Graphical option
@@ -26,14 +18,14 @@ option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 #-------------------------------------------------------------------------------
 # Path and lib option
 #-------------------------------------------------------------------------------
-option(CUBEB_API "Build Cubeb support on SPU2" ON)
-option(QT_BUILD "Build Qt frontend" ON)
-
 if(UNIX AND NOT APPLE)
 	option(ENABLE_SETCAP "Enable networking capability for DEV9" OFF)
-	option(USE_LEGACY_USER_DIRECTORY "Use legacy home/PCSX2 user directory instead of XDG standard" OFF)
 	option(X11_API "Enable X11 support" ON)
 	option(WAYLAND_API "Enable Wayland support" ON)
+endif()
+
+if(UNIX)
+	option(USE_LINKED_FFMPEG "Links with ffmpeg instead of using dynamic loading" OFF)
 endif()
 
 if(APPLE)
@@ -46,12 +38,12 @@ endif()
 #-------------------------------------------------------------------------------
 option(USE_ASAN "Enable address sanitizer")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	set(USE_CLANG_CL TRUE)
+	message(STATUS "Building with Clang-CL.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 	set(USE_CLANG TRUE)
 	message(STATUS "Building with Clang/LLVM.")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
-	set(USE_ICC TRUE)
-	message(STATUS "Building with Intel's ICC.")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(USE_GCC TRUE)
 	message(STATUS "Building with GNU GCC")
@@ -103,33 +95,23 @@ include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
-else()
-	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
-endif()
 
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	# x86_64 requires -fPIC
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 	if(NOT DEFINED ARCH_FLAG AND NOT MSVC)
 		if (DISABLE_ADVANCE_SIMD)
-			if (USE_ICC)
-				set(ARCH_FLAG "-msse2 -msse4.1")
-			else()
-				set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr")
-			endif()
+			set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr")
 		else()
 			#set(ARCH_FLAG "-march=native -fabi-version=6")
 			set(ARCH_FLAG "-march=native")
 		endif()
+	elseif(NOT DEFINED ARCH_FLAG AND USE_CLANG_CL)
+		set(ARCH_FLAG "-msse4.1")
 	endif()
-	list(APPEND PCSX2_DEFS _ARCH_64=1 _M_X86=1)
-	set(_ARCH_64 1)
+	list(APPEND PCSX2_DEFS _M_X86=1)
 	set(_M_X86 1)
 else()
-	# All but i386 requires -fPIC
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
 string(REPLACE " " ";" ARCH_FLAG_LIST "${ARCH_FLAG}")
@@ -141,15 +123,32 @@ add_compile_options("${ARCH_FLAG_LIST}")
 option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
 option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
-# Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
-# Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
-if(MSVC)
-	add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>")
-else()
-	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
+# Require C++20.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-	# -fno-operator-names should only be for C++ files, not C files.
-	add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-operator-names>)
+if(MSVC AND NOT USE_CLANG_CL)
+	add_compile_options(
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>"
+		"$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
+		"/Zo"
+		"/utf-8"
+	)
+endif()
+
+if(MSVC)
+	# Disable RTTI
+	string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+	# Disable Exceptions
+	string(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+else()
+	add_compile_options(-pipe -fvisibility=hidden -pthread)
+	add_compile_options(
+		"$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>"
+		"$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>"
+	)
 endif()
 
 set(CONFIG_REL_NO_DEB $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>)
@@ -160,8 +159,15 @@ if(WIN32)
 		$<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=2>
 		$<$<CONFIG:Devel>:_ITERATOR_DEBUG_LEVEL=1>
 		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
+		_HAS_EXCEPTIONS=0
 	)
-	list(APPEND PCSX2_DEFS TIXML_USE_STL _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+	list(APPEND PCSX2_DEFS _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+endif()
+
+# Enable debug information in release builds for Linux.
+# Makes the backtrace actually meaningful.
+if(UNIX AND NOT APPLE)
+	add_compile_options($<$<CONFIG:Release>:-g1>)
 endif()
 
 if(MSVC)
@@ -209,22 +215,11 @@ endif()
 if (MSVC)
 	set(DEFAULT_WARNINGS)
 else()
-	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-format -Wno-format-security)
-	if (NOT USE_ICC)
-		list(APPEND DEFAULT_WARNINGS -Wno-unused-value)
-	endif()
+	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-format -Wno-format-security -Wno-unused-value)
 endif()
 
 if (USE_GCC)
 	list(APPEND DEFAULT_WARNINGS -Wno-stringop-truncation -Wno-stringop-overflow -Wno-maybe-uninitialized )
-endif()
-
-
-# -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
-if (USE_ICC)
-	set(AGGRESSIVE_WARNING -Wstrict-aliasing)
-elseif(NOT MSVC)
-	set(AGGRESSIVE_WARNING -Wstrict-aliasing -Wstrict-overflow=1)
 endif()
 
 if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
@@ -253,7 +248,7 @@ if(USE_CLANG AND TIMETRACE)
 	add_compile_options(-ftime-trace)
 endif()
 
-set(PCSX2_WARNINGS ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING})
+set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
 
 if(DISABLE_BUILD_DATE)
 	message(STATUS "Disabling the inclusion of the binary compile date.")
@@ -268,18 +263,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Xcode")
 	# Assume Xcode builds aren't being used for distribution
 	# Helpful because Xcode builds don't build multiple metallibs for different macOS versions
 	# Also helpful because Xcode's interactive shader debugger requires apps be built for the latest macOS
-	if (QT_BUILD)
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
-	else()
-		set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-	endif()
-endif()
-
-if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.14 AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9)
-	# Older versions of the macOS stdlib don't have operator new(size_t, align_val_t)
-	# Disable use of them with this flag
-	# Not great, but also no worse that what we were getting before we turned on C++17
-	add_compile_options(-fno-aligned-allocation)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
 endif()
 
 # CMake defaults the suffix for modules to .so on macOS but wx tells us that the

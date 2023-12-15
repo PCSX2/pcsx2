@@ -58,14 +58,25 @@ public:
 		Invalidated
 	};
 
+	union ClearValue
+	{
+		u32 color;
+		float depth;
+	};
+
 protected:
-	GSVector2 m_scale;
-	GSVector2i m_size;
-	int m_mipmap_levels;
-	Type m_type;
-	Format m_format;
-	State m_state;
-	bool m_needs_mipmaps_generated;
+	GSVector2i m_size{};
+	int m_mipmap_levels = 0;
+	Type m_type = Type::Invalid;
+	Format m_format = Format::Invalid;
+	State m_state = State::Dirty;
+
+	// frame number (arbitrary base) the texture was recycled on
+	// different purpose than texture cache ages, do not attempt to merge
+	u32 m_last_frame_used = 0;
+
+	bool m_needs_mipmaps_generated = true;
+	ClearValue m_clear_value = {};
 
 public:
 	GSTexture();
@@ -80,55 +91,71 @@ public:
 	virtual void GenerateMipmap() {}
 	virtual bool Save(const std::string& fn);
 	virtual void Swap(GSTexture* tex);
-	virtual u32 GetID() { return 0; }
 
-	GSVector2 GetScale() const { return m_scale; }
-	void SetScale(const GSVector2& scale) { m_scale = scale; }
+	__fi int GetWidth() const { return m_size.x; }
+	__fi int GetHeight() const { return m_size.y; }
+	__fi const GSVector2i& GetSize() const { return m_size; }
+	__fi GSVector4i GetRect() const { return GSVector4i::loadh(m_size); }
 
-	int GetWidth() const { return m_size.x; }
-	int GetHeight() const { return m_size.y; }
-	GSVector2i GetSize() const { return m_size; }
-	int GetMipmapLevels() const { return m_mipmap_levels; }
-	bool IsMipmap() const { return m_mipmap_levels > 1; }
+	__fi int GetMipmapLevels() const { return m_mipmap_levels; }
+	__fi bool IsMipmap() const { return m_mipmap_levels > 1; }
 
-	Type GetType() const { return m_type; }
-	Format GetFormat() const { return m_format; }
-	bool IsCompressedFormat() const { return IsCompressedFormat(m_format); }
+	__fi Type GetType() const { return m_type; }
+	__fi Format GetFormat() const { return m_format; }
+	__fi bool IsCompressedFormat() const { return IsCompressedFormat(m_format); }
 
 	static u32 GetCompressedBytesPerBlock(Format format);
 	static u32 GetCompressedBlockSize(Format format);
+	static u32 CalcUploadPitch(Format format, u32 width);
 	static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
 	static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
 
 	u32 GetCompressedBytesPerBlock() const;
 	u32 GetCompressedBlockSize() const;
+	u32 CalcUploadPitch(u32 width) const;
 	u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
 	u32 CalcUploadSize(u32 height, u32 pitch) const;
 
-	bool IsRenderTargetOrDepthStencil() const
+	__fi bool IsRenderTargetOrDepthStencil() const
 	{
 		return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil);
 	}
-	bool IsRenderTarget() const
+	__fi bool IsRenderTarget() const
 	{
 		return (m_type == Type::RenderTarget);
 	}
-	bool IsDepthStencil() const
+	__fi bool IsDepthStencil() const
 	{
 		return (m_type == Type::DepthStencil);
 	}
+	__fi bool IsTexture() const
+	{
+		return (m_type == Type::Texture);
+	}
 
-	State GetState() const { return m_state; }
-	void SetState(State state) { m_state = state; }
+	__fi State GetState() const { return m_state; }
+	__fi void SetState(State state) { m_state = state; }
+
+	__fi u32 GetLastFrameUsed() const { return m_last_frame_used; }
+	void SetLastFrameUsed(u32 frame) { m_last_frame_used = frame; }
+
+	__fi u32 GetClearColor() const { return m_clear_value.color; }
+	__fi float GetClearDepth() const { return m_clear_value.depth; }
+	__fi GSVector4 GetUNormClearColor() const { return GSVector4::unorm8(m_clear_value.color); }
+
+	__fi void SetClearColor(u32 color)
+	{
+		m_state = State::Cleared;
+		m_clear_value.color = color;
+	}
+	__fi void SetClearDepth(float depth)
+	{
+		m_state = State::Cleared;
+		m_clear_value.depth = depth;
+	}
 
 	void GenerateMipmapsIfNeeded();
 	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }
-
-	// frame number (arbitrary base) the texture was recycled on
-	// different purpose than texture cache ages, do not attempt to merge
-	unsigned last_frame_used;
-
-	float OffsetHack_modxy;
 
 	// Typical size of a RGBA texture
 	u32 GetMemUsage() const { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }

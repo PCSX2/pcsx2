@@ -16,12 +16,11 @@
 #pragma once
 
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-
-#include "gsl/span"
 
 #include "Config.h"
 
@@ -38,14 +37,14 @@ namespace USB
 	s32 DeviceTypeNameToIndex(const std::string_view& device);
 	const char* DeviceTypeIndexToName(s32 device);
 
-	std::vector<std::pair<std::string, std::string>> GetDeviceTypes();
+	std::vector<std::pair<const char*, const char*>> GetDeviceTypes();
 	const char* GetDeviceName(const std::string_view& device);
 	const char* GetDeviceSubtypeName(const std::string_view& device, u32 subtype);
-	gsl::span<const char*> GetDeviceSubtypes(const std::string_view& device);
-	gsl::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
-	gsl::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
+	std::span<const char*> GetDeviceSubtypes(const std::string_view& device);
+	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
+	std::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
 
-	gsl::span<const InputBindingInfo> GetDeviceBindings(u32 port);
+	std::span<const InputBindingInfo> GetDeviceBindings(u32 port);
 	float GetDeviceBindValue(u32 port, u32 bind_index);
 	void SetDeviceBindValue(u32 port, u32 bind_index, float value);
 
@@ -70,8 +69,18 @@ namespace USB
 	/// Clears all bindings for a given port.
 	void ClearPortBindings(SettingsInterface& si, u32 port);
 
+	/// Copies configuration between two profiles.
+	void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si, bool copy_devices = true,
+		bool copy_bindings = true);
+
+	/// Resets configuration for all ports.
+	void SetDefaultConfiguration(SettingsInterface* si);
+
 	/// Identifies any device/subtype changes and recreates devices.
 	void CheckForConfigChanges(const Pcsx2Config& old_config);
+
+	/// Returns true if a device-specific configuration key exists.
+	bool ConfigKeyExists(SettingsInterface& si, u32 port, const char* devname, const char* key);
 
 	/// Reads a device-specific configuration boolean.
 	bool GetConfigBool(SettingsInterface& si, u32 port, const char* devname, const char* key, bool default_value);
@@ -93,7 +102,7 @@ struct WindowInfo;
 
 // ---------------------------------------------------------------------
 
-s32 USBinit();
+void USBinit();
 void USBasync(u32 cycles);
 void USBshutdown();
 void USBclose();

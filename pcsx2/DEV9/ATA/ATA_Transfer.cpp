@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -105,7 +105,7 @@ bool ATA::IO_Write()
 		return false;
 	}
 
-	u64 imagePos = entry.sector * 512;
+	const u64 imagePos = entry.sector * 512;
 	if (FileSystem::FSeek64(hddImage, imagePos, SEEK_SET) != 0)
 	{
 		Console.Error("DEV9: ATA: File seek error");
@@ -209,11 +209,11 @@ void ATA::IO_SparseCacheLoad()
 		memset(&hddSparseBlock[readSize], 0, hddSparseBlockSize - readSize);
 	}
 
-	// Store file pointer.
-	const s64 orgPos = FileSystem::FTell64(hddImage);
-
 	// Flush so that we know what is allocated.
 	std::fflush(hddImage);
+
+	// Store file pointer.
+	const s64 orgPos = FileSystem::FTell64(hddImage);
 
 #ifdef _WIN32
 	// FlushFileBuffers is required, hddSparseBlock differs from actual file without it.
@@ -234,36 +234,7 @@ void ATA::IO_SparseCacheLoad()
 		memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 		hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-
-		// Store file pointer.
-		const s64 orgPos = FileSystem::FTell64(hddImage);
-		pxAssert(orgPos != -1);
-
-		//Load into check buffer.
-		FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
-
-		std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
-		memset(temp.get(), 0, hddSparseBlockSize);
-
-		if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
-			std::fread((char*)hddSparseBlock.get(), readSize, 1, hddImage) != 1)
-			pxAssert(false);
-
-		// Restore file pointer.
-		if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
-			pxAssert(false);
-
-		// Check if file is actully zeros.
-		if (memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) != 0)
-		{
-			Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
-				std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-		}
-		else
-			Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
-				std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-
-		pxAssert(memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0);
+		ATA::IO_SparseCacheAssertFileZeros(readSize);
 #endif
 		return;
 	}
@@ -281,36 +252,7 @@ void ATA::IO_SparseCacheLoad()
 			memset(hddSparseBlock.get(), 0, hddSparseBlockSize);
 			hddSparseBlockValid = true;
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-
-			// Store file pointer.
-			const s64 orgPos = FileSystem::FTell64(hddImage);
-			pxAssert(orgPos != -1);
-
-			// Load into check buffer.
-			FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
-
-			std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
-			memset(temp.get(), 0, hddSparseBlockSize);
-
-			if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
-				std::fread((char*)hddSparseBlock.get(), readSize, 1, hddImage) != 1)
-				pxAssert(false);
-
-			// Restore file pointer.
-			if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
-				pxAssert(false);
-
-			// Check if file is actully zeros.
-			if (memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) != 0)
-			{
-				Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
-					std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-			}
-			else
-				Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
-					std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
-
-			pxAssert(memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0);
+			ATA::IO_SparseCacheAssertFileZeros(readSize);
 #endif
 			return;
 		}
@@ -331,6 +273,44 @@ void ATA::IO_SparseCacheLoad()
 
 	hddSparseBlockValid = true;
 }
+
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+// Asserts that the region of file indicated by HddSparseStart & hddSparseBlockSizeReadable is all zeros
+// Used by IO_SparseCacheLoad to ensure the sparse/allocated apis and FileSystem apis are in sync
+void ATA::IO_SparseCacheAssertFileZeros(u64 hddSparseBlockSizeReadable)
+{
+	const s64 orgPos = FileSystem::FTell64(hddImage);
+	pxAssert(orgPos != -1);
+
+	// Load into check buffer.
+	FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET);
+
+	std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(hddSparseBlockSize);
+	memset(temp.get(), 0, hddSparseBlockSize);
+
+	if (FileSystem::FSeek64(hddImage, HddSparseStart, SEEK_SET) != 0 ||
+		std::fread((char*)hddSparseBlock.get(), hddSparseBlockSizeReadable, 1, hddImage) != 1)
+		pxAssert(false);
+
+	// Restore file pointer.
+	if (FileSystem::FSeek64(hddImage, orgPos, SEEK_SET) != 0)
+		pxAssert(false);
+
+	bool regionIsZeros = memcmp(hddSparseBlock.get(), temp.get(), hddSparseBlockSize) == 0;
+
+	// Check if file is actully zeros.
+	if (!regionIsZeros)
+	{
+		Console.WriteLn("DEV9: ATA: Sparse area not sparse, BlockStart: %s, BlockEnd: %s",
+			std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+	}
+	else
+		Console.WriteLn("DEV9: ATA: Sparse area is sparse (Yay), BlockStart: %s, BlockEnd: %s",
+			std::to_string(HddSparseStart).c_str(), std::to_string(HddSparseStart + hddSparseBlockSize).c_str());
+
+	pxAssert(regionIsZeros);
+}
+#endif
 
 void ATA::IO_SparseCacheUpdateLocation(u64 byteOffset)
 {
@@ -512,8 +492,8 @@ bool ATA::HDD_CanAssessOrSetError()
 	if (!HDD_CanAccess(&nsector))
 	{
 		//Read what we can
-		regStatus |= (u8)ATA_STAT_ERR;
-		regError |= (u8)ATA_ERR_ID;
+		regStatus |= static_cast<u8>(ATA_STAT_ERR);
+		regError |= static_cast<u8>(ATA_ERR_ID);
 		if (nsector == -1)
 		{
 			PostCmdNoData();
@@ -532,5 +512,6 @@ void ATA::HDD_SetErrorAtTransferEnd()
 		//Write errored sector to LBA
 		currSect++;
 		HDD_SetLBA(currSect);
+		Console.Error("DEV9: ATA: Transfer from invalid LBA %lu", currSect);
 	}
 }

@@ -110,16 +110,22 @@ QVariant ThreadModel::headerData(int section, Qt::Orientation orientation, int r
 		switch (section)
 		{
 			case ThreadColumns::ID:
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("ID");
 			case ThreadColumns::PC:
+				//: Warning: short space limit. Abbreviate if needed. PC = Program Counter (location where the CPU is executing).
 				return tr("PC");
 			case ThreadColumns::ENTRY:
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("ENTRY");
 			case ThreadColumns::PRIORITY:
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("PRIORITY");
 			case ThreadColumns::STATE:
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("STATE");
 			case ThreadColumns::WAIT_TYPE:
+				//: Warning: short space limit. Abbreviate if needed.
 				return tr("WAIT TYPE");
 			default:
 				return QVariant();

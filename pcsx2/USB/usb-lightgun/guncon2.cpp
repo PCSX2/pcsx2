@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,17 +14,20 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include "GS/GS.h"
+#include "Host.h"
+#include "ImGui/ImGuiManager.h"
+#include "Input/InputManager.h"
+#include "StateWrapper.h"
+#include "USB/USB.h"
 #include "USB/deviceproxy.h"
+#include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-lightgun/guncon2.h"
-#include "USB/qemu-usb/USBinternal.h"
-#include "USB/USB.h"
-#include "GS/GS.h"
-#include "HostDisplay.h"
-#include "StateWrapper.h"
 #include "VMManager.h"
 
-#include "Frontend/InputManager.h"
+#include "common/StringUtil.h"
 
 #include <tuple>
 
@@ -34,7 +37,8 @@ namespace usb_lightgun
 	{
 		GUNCON2_FLAG_PROGRESSIVE = 0x0100,
 
-		GUNCON2_CALIBRATION_DELAY = 9
+		GUNCON2_CALIBRATION_DELAY = 12,
+		GUNCON2_CALIBRATION_REPORT_DELAY = 5,
 	};
 
 	enum : u32
@@ -51,6 +55,10 @@ namespace usb_lightgun
 		BID_START = 15,
 		BID_SHOOT_OFFSCREEN = 16,
 		BID_RECALIBRATE = 17,
+		BID_RELATIVE_LEFT = 18,
+		BID_RELATIVE_RIGHT = 19,
+		BID_RELATIVE_UP = 20,
+		BID_RELATIVE_DOWN = 21,
 	};
 
 	// Right pain in the arse. Different games seem to have different scales..
@@ -132,6 +140,7 @@ namespace usb_lightgun
 		//////////////////////////////////////////////////////////////////////////
 		// Configuration
 		//////////////////////////////////////////////////////////////////////////
+		bool has_relative_binds = false;
 		bool custom_config = false;
 		u32 screen_width = 640;
 		u32 screen_height = 240;
@@ -144,6 +153,10 @@ namespace usb_lightgun
 		// Host State (Not Saved)
 		//////////////////////////////////////////////////////////////////////////
 		u32 button_state = 0;
+		std::string cursor_path;
+		float cursor_scale = 1.0f;
+		u32 cursor_color = 0xFFFFFFFF;
+		float relative_pos[4] = {};
 
 		//////////////////////////////////////////////////////////////////////////
 		// Device State (Saved)
@@ -161,6 +174,11 @@ namespace usb_lightgun
 		void AutoConfigure();
 
 		std::tuple<s16, s16> CalculatePosition();
+
+		// 0..1, not -1..1.
+		std::pair<float, float> GetAbsolutePositionFromRelativeAxes() const;
+		u32 GetSoftwarePointerIndex() const;
+		void UpdateSoftwarePointerPosition();
 	};
 
 	static const USBDescStrings desc_strings = {
@@ -289,7 +307,7 @@ namespace usb_lightgun
 						out.pos_y = us->calibration_pos_y;
 						us->calibration_timer--;
 
-						if (us->calibration_timer == 0)
+						if (us->calibration_timer < GUNCON2_CALIBRATION_REPORT_DELAY)
 						{
 							out.pos_x = 0;
 							out.pos_y = 0;
@@ -322,6 +340,10 @@ namespace usb_lightgun
 	static void usb_hid_unrealize(USBDevice* dev)
 	{
 		GunCon2State* us = USB_CONTAINER_OF(dev, GunCon2State, dev);
+
+		if (!us->cursor_path.empty())
+			ImGuiManager::ClearSoftwareCursor(us->GetSoftwarePointerIndex());
+
 		delete us;
 	}
 
@@ -332,7 +354,7 @@ namespace usb_lightgun
 
 	void GunCon2State::AutoConfigure()
 	{
-		const std::string serial(VMManager::GetGameSerial());
+		const std::string serial = VMManager::GetDiscSerial();
 		for (const GameConfig& gc : s_game_config)
 		{
 			if (serial != gc.serial)
@@ -358,8 +380,9 @@ namespace usb_lightgun
 	std::tuple<s16, s16> GunCon2State::CalculatePosition()
 	{
 		float pointer_x, pointer_y;
-		const std::pair<float, float> abs_pos(InputManager::GetPointerAbsolutePosition(0));
-		GSTranslateWindowToDisplayCoordinates(abs_pos.first, abs_pos.second, &pointer_x, &pointer_y);
+		const auto& [window_x, window_y] =
+			(has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(0);
+		GSTranslateWindowToDisplayCoordinates(window_x, window_y, &pointer_x, &pointer_y);
 
 		s16 pos_x, pos_y;
 		if (pointer_x < 0.0f || pointer_y < 0.0f)
@@ -402,9 +425,32 @@ namespace usb_lightgun
 		return std::tie(pos_x, pos_y);
 	}
 
+	std::pair<float, float> GunCon2State::GetAbsolutePositionFromRelativeAxes() const
+	{
+		const float screen_rel_x = (((relative_pos[1] > 0.0f) ? relative_pos[1] : -relative_pos[0]) + 1.0f) * 0.5f;
+		const float screen_rel_y = (((relative_pos[3] > 0.0f) ? relative_pos[3] : -relative_pos[2]) + 1.0f) * 0.5f;
+		return std::make_pair(
+			screen_rel_x * ImGuiManager::GetWindowWidth(), screen_rel_y * ImGuiManager::GetWindowHeight());
+	}
+
+	u32 GunCon2State::GetSoftwarePointerIndex() const
+	{
+		return has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + port) : 0;
+	}
+
+	void GunCon2State::UpdateSoftwarePointerPosition()
+	{
+		pxAssert(has_relative_binds);
+		if (cursor_path.empty())
+			return;
+
+		const auto& [window_x, window_y] = GetAbsolutePositionFromRelativeAxes();
+		ImGuiManager::SetSoftwareCursorPosition(GetSoftwarePointerIndex(), window_x, window_y);
+	}
+
 	const char* GunCon2Device::Name() const
 	{
-		return "GunCon 2";
+		return TRANSLATE_NOOP("USB", "GunCon 2");
 	}
 
 	const char* GunCon2Device::TypeName() const
@@ -434,6 +480,8 @@ namespace usb_lightgun
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
 
+		UpdateSettings(&s->dev, si);
+
 		return &s->dev;
 	fail:
 		usb_hid_unrealize(&s->dev);
@@ -456,6 +504,52 @@ namespace usb_lightgun
 			s->scale_x = USB::GetConfigFloat(si, s->port, TypeName(), "scale_x", DEFAULT_SCALE_X) / 100.0f;
 			s->scale_y = USB::GetConfigFloat(si, s->port, TypeName(), "scale_y", DEFAULT_SCALE_Y) / 100.0f;
 		}
+
+		// Pointer settings.
+		const std::string pointer_binding = USB::GetConfigString(si, s->port, TypeName(), "Pointer", "");
+		std::string cursor_path(USB::GetConfigString(si, s->port, TypeName(), "cursor_path"));
+		const float cursor_scale = USB::GetConfigFloat(si, s->port, TypeName(), "cursor_scale", 1.0f);
+		u32 cursor_color = 0xFFFFFF;
+		if (std::string cursor_color_str(USB::GetConfigString(si, s->port, TypeName(), "cursor_color")); !cursor_color_str.empty())
+		{
+			// Strip the leading hash, if it's a CSS style colour.
+			const std::optional<u32> cursor_color_opt(
+				StringUtil::FromChars<u32>(cursor_color_str[0] == '#' ?
+					std::string_view(cursor_color_str).substr(1) : std::string_view(cursor_color_str), 16));
+			if (cursor_color_opt.has_value())
+				cursor_color = cursor_color_opt.value();
+		}
+
+		const s32 prev_pointer_index = s->GetSoftwarePointerIndex();
+
+		s->has_relative_binds = (USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeLeft") ||
+			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeRight") ||
+			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeUp") ||
+			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeDown"));
+
+		const s32 new_pointer_index = s->GetSoftwarePointerIndex();
+
+		if (prev_pointer_index != new_pointer_index || s->cursor_path != cursor_path ||
+			s->cursor_scale != cursor_scale || s->cursor_color != cursor_color)
+		{
+			if (prev_pointer_index != new_pointer_index)
+				ImGuiManager::ClearSoftwareCursor(prev_pointer_index);
+
+			// Pointer changed, so need to update software cursor.
+			const bool had_software_cursor = !s->cursor_path.empty();
+			s->cursor_path = std::move(cursor_path);
+			s->cursor_scale = cursor_scale;
+			s->cursor_color = cursor_color;
+			if (!s->cursor_path.empty())
+			{
+				ImGuiManager::SetSoftwareCursor(new_pointer_index, s->cursor_path, s->cursor_scale, s->cursor_color);
+				s->UpdateSoftwarePointerPosition();
+			}
+			else if (had_software_cursor)
+			{
+				ImGuiManager::ClearSoftwareCursor(new_pointer_index);
+			}
+		}
 	}
 
 	float GunCon2Device::GetBindingValue(const USBDevice* dev, u32 bind_index) const
@@ -470,57 +564,89 @@ namespace usb_lightgun
 	{
 		GunCon2State* s = USB_CONTAINER_OF(dev, GunCon2State, dev);
 
-		const u32 bit = 1u << bind_index;
-		if (value >= 0.5f)
-			s->button_state |= bit;
-		else
-			s->button_state &= ~bit;
+		if (bind_index < BID_RELATIVE_LEFT)
+		{
+			const u32 bit = 1u << bind_index;
+			if (value >= 0.5f)
+				s->button_state |= bit;
+			else
+				s->button_state &= ~bit;
+		}
+		else if (bind_index <= BID_RELATIVE_DOWN)
+		{
+			const u32 rel_index = bind_index - BID_RELATIVE_LEFT;
+			if (s->relative_pos[rel_index] != value)
+			{
+				s->relative_pos[rel_index] = value;
+				s->UpdateSoftwarePointerPosition();
+			}
+		}
 	}
 
-	gsl::span<const InputBindingInfo> GunCon2Device::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> GunCon2Device::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo bindings[] = {
 			//{"pointer", "Pointer/Aiming", InputBindingInfo::Type::Pointer, BID_POINTER_X, GenericInputBinding::Unknown},
-			{"Up", "D-Pad Up", InputBindingInfo::Type::Button, BID_DPAD_UP, GenericInputBinding::DPadUp},
-			{"Down", "D-Pad Down", InputBindingInfo::Type::Button, BID_DPAD_DOWN, GenericInputBinding::DPadDown},
-			{"Left", "D-Pad Left", InputBindingInfo::Type::Button, BID_DPAD_LEFT, GenericInputBinding::DPadLeft},
-			{"Right", "D-Pad Right", InputBindingInfo::Type::Button, BID_DPAD_RIGHT,
+			{"Up", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, BID_DPAD_UP, GenericInputBinding::DPadUp},
+			{"Down", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, BID_DPAD_DOWN, GenericInputBinding::DPadDown},
+			{"Left", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, BID_DPAD_LEFT, GenericInputBinding::DPadLeft},
+			{"Right", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, BID_DPAD_RIGHT,
 				GenericInputBinding::DPadRight},
-			{"Trigger", "Trigger", InputBindingInfo::Type::Button, BID_TRIGGER, GenericInputBinding::R2},
-			{"ShootOffscreen", "Shoot Offscreen", InputBindingInfo::Type::Button, BID_SHOOT_OFFSCREEN,
+			{"Trigger", TRANSLATE_NOOP("USB", "Trigger"), nullptr, InputBindingInfo::Type::Button, BID_TRIGGER, GenericInputBinding::R2},
+			{"ShootOffscreen", TRANSLATE_NOOP("USB", "Shoot Offscreen"), nullptr, InputBindingInfo::Type::Button, BID_SHOOT_OFFSCREEN,
 				GenericInputBinding::R1},
-			{"Recalibrate", "Calibration Shot", InputBindingInfo::Type::Button, BID_RECALIBRATE,
+			{"Recalibrate", TRANSLATE_NOOP("USB", "Calibration Shot"), nullptr, InputBindingInfo::Type::Button, BID_RECALIBRATE,
 				GenericInputBinding::Unknown},
-			{"A", "A", InputBindingInfo::Type::Button, BID_A, GenericInputBinding::Cross},
-			{"B", "B", InputBindingInfo::Type::Button, BID_B, GenericInputBinding::Circle},
-			{"C", "C", InputBindingInfo::Type::Button, BID_C, GenericInputBinding::Triangle},
-			{"Select", "Select", InputBindingInfo::Type::Button, BID_SELECT, GenericInputBinding::Select},
-			{"Start", "Start", InputBindingInfo::Type::Button, BID_START, GenericInputBinding::Start},
+			{"A", TRANSLATE_NOOP("USB", "A"), nullptr, InputBindingInfo::Type::Button, BID_A, GenericInputBinding::Cross},
+			{"B", TRANSLATE_NOOP("USB", "B"), nullptr, InputBindingInfo::Type::Button, BID_B, GenericInputBinding::Circle},
+			{"C", TRANSLATE_NOOP("USB", "C"), nullptr, InputBindingInfo::Type::Button, BID_C, GenericInputBinding::Triangle},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, BID_SELECT, GenericInputBinding::Select},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, BID_START, GenericInputBinding::Start},
+			{"RelativeLeft", TRANSLATE_NOOP("USB", "Relative Left"), nullptr, InputBindingInfo::Type::HalfAxis, BID_RELATIVE_LEFT, GenericInputBinding::Unknown},
+			{"RelativeRight", TRANSLATE_NOOP("USB", "Relative Right"), nullptr, InputBindingInfo::Type::HalfAxis, BID_RELATIVE_RIGHT, GenericInputBinding::Unknown},
+			{"RelativeUp", TRANSLATE_NOOP("USB", "Relative Up"), nullptr, InputBindingInfo::Type::HalfAxis, BID_RELATIVE_UP, GenericInputBinding::Unknown},
+			{"RelativeDown", TRANSLATE_NOOP("USB", "Relative Down"), nullptr, InputBindingInfo::Type::HalfAxis, BID_RELATIVE_DOWN, GenericInputBinding::Unknown},
 		};
 
 		return bindings;
 	}
 
-	gsl::span<const SettingInfo> GunCon2Device::Settings(u32 subtype) const
+	std::span<const SettingInfo> GunCon2Device::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::Boolean, "custom_config", "Manual Screen Configuration",
-				"Forces the use of the screen parameters below, instead of automatic parameters if available.",
+			{SettingInfo::Type::Path, "cursor_path", "Cursor Path",
+				TRANSLATE_NOOP("USB", "Sets the crosshair image that this lightgun will use. Setting a crosshair image "
+									  "will disable the system cursor."),
+				""},
+			{SettingInfo::Type::Float, "cursor_scale", TRANSLATE_NOOP("USB", "Cursor Scale"),
+				TRANSLATE_NOOP("USB", "Scales the crosshair image set above."), "1", "0.01", "10", "0.01", TRANSLATE_NOOP("USB", "%.0f%%"),
+				nullptr, nullptr, 100.0f},
+			{SettingInfo::Type::String, "cursor_color", TRANSLATE_NOOP("USB", "Cursor Color"),
+				TRANSLATE_NOOP("USB", "Applies a color to the chosen crosshair images, can be used for multiple "
+									  "players. Specify in HTML/CSS format (e.g. #aabbcc)"),
+				"#ffffff"},
+			{SettingInfo::Type::Boolean, "custom_config", TRANSLATE_NOOP("USB", "Manual Screen Configuration"),
+				TRANSLATE_NOOP("USB",
+					"Forces the use of the screen parameters below, instead of automatic parameters if available."),
 				"false"},
-			{SettingInfo::Type::Float, "scale_x", "X Scale (Sensitivity)",
-				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
-				1.0f},
-			{SettingInfo::Type::Float, "scale_y", "Y Scale (Sensitivity)",
-				"Scales the position to simulate CRT curvature.", "100", "0", "200", "0.1", "%.2f%%", nullptr, nullptr,
-				1.0f},
-			{SettingInfo::Type::Float, "center_x", "Center X", "Sets the horizontal center position of the simulated screen.",
-				"320", "0", "1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Float, "center_y", "Center Y", "Sets the vertical center position of the simulated screen.",
-				"120", "0", "1024", "1", "%.0fpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Integer, "screen_width", "Screen Width", "Sets the width of the simulated screen.",
-				"640", "1", "1024", "1", "%dpx", nullptr, nullptr, 1.0f},
-			{SettingInfo::Type::Integer, "screen_height", "Screen Height", "Sets the height of the simulated screen.",
-				"240", "1", "1024", "1", "%dpx", nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "scale_x", TRANSLATE_NOOP("USB", "X Scale (Sensitivity)"),
+				TRANSLATE_NOOP("USB", "Scales the position to simulate CRT curvature."), "100", "0", "200", "0.1",
+				TRANSLATE_NOOP("USB", "%.2f%%"), nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "scale_y", TRANSLATE_NOOP("USB", "Y Scale (Sensitivity)"),
+				TRANSLATE_NOOP("USB", "Scales the position to simulate CRT curvature."), "100", "0", "200", "0.1",
+				TRANSLATE_NOOP("USB", "%.2f%%"), nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "center_x", TRANSLATE_NOOP("USB", "Center X"),
+				TRANSLATE_NOOP("USB", "Sets the horizontal center position of the simulated screen."), "320", "0",
+				"1024", "1", TRANSLATE_NOOP("USB", "%.0fpx"), nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "center_y", TRANSLATE_NOOP("USB", "Center Y"),
+				TRANSLATE_NOOP("USB", "Sets the vertical center position of the simulated screen."), "120", "0", "1024",
+				"1", TRANSLATE_NOOP("USB", "%.0fpx"), nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Integer, "screen_width", TRANSLATE_NOOP("USB", "Screen Width"),
+				TRANSLATE_NOOP("USB", "Sets the width of the simulated screen."), "640", "1", "1024", "1", TRANSLATE_NOOP("USB", "%dpx"),
+				nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Integer, "screen_height", TRANSLATE_NOOP("USB", "Screen Height"),
+				TRANSLATE_NOOP("USB", "Sets the height of the simulated screen."), "240", "1", "1024", "1", TRANSLATE_NOOP("USB", "%dpx"),
+				nullptr, nullptr, 1.0f},
 		};
 		return info;
 	}

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,31 +15,29 @@
 
 #include "PrecompiledHeader.h"
 
-#include <atomic>
+#include "GS.h"
+#include "GS/GSLzma.h"
+#include "GSDumpReplayer.h"
+#include "GameList.h"
+#include "Gif.h"
+#include "Gif_Unit.h"
+#include "Host.h"
+#include "ImGui/ImGuiManager.h"
+#include "R3000A.h"
+#include "R5900.h"
+#include "VMManager.h"
+#include "VUmicro.h"
+
+#include "imgui.h"
 
 #include "fmt/core.h"
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 #include "common/Timer.h"
 
-#include "imgui.h"
-
-// Has to come before Gif.h
-#include "MemoryTypes.h"
-
-#include "Frontend/ImGuiManager.h"
-#include "Frontend/GameList.h"
-#include "Gif.h"
-#include "Gif_Unit.h"
-#include "GSDumpReplayer.h"
-#include "GS/GSLzma.h"
-#include "GS.h"
-#include "Host.h"
-#include "R3000A.h"
-#include "R5900.h"
-#include "VMManager.h"
-#include "VUmicro.h"
+#include <atomic>
 
 static void GSDumpReplayerCpuReserve();
 static void GSDumpReplayerCpuShutdown();
@@ -101,7 +99,7 @@ int GSDumpReplayer::GetLoopCount()
 bool GSDumpReplayer::Initialize(const char* filename)
 {
 	Common::Timer timer;
-	Console.WriteLn("(GSDumpReplayer) Reading file...");
+	Console.WriteLn("(GSDumpReplayer) Reading file '%s'...", filename);
 
 	s_dump_file = GSDumpFile::OpenGSDump(filename);
 	if (!s_dump_file || !s_dump_file->ReadFile())
@@ -125,9 +123,29 @@ bool GSDumpReplayer::Initialize(const char* filename)
 	return true;
 }
 
-void GSDumpReplayer::Reset()
+bool GSDumpReplayer::ChangeDump(const char* filename)
 {
+	Console.WriteLn("(GSDumpReplayer) Switching to '%s'...", filename);
+
+	if (!VMManager::IsGSDumpFileName(filename))
+	{
+		Host::ReportFormattedErrorAsync("GSDumpReplayer", "'%s' is not a GS dump.", filename);
+		return false;
+	}
+
+	std::unique_ptr<GSDumpFile> new_dump(GSDumpFile::OpenGSDump(filename));
+	if (!new_dump || !new_dump->ReadFile())
+	{
+		Host::ReportFormattedErrorAsync("GSDumpReplayer", "Failed to open or read '%s'.", filename);
+		return false;
+	}
+
+	s_dump_file = std::move(new_dump);
+	s_current_packet = 0;
+
+	// Don't forget to reset the GS!
 	GSDumpReplayerCpuReset();
+	return true;
 }
 
 void GSDumpReplayer::Shutdown()
@@ -196,8 +214,8 @@ static void GSDumpReplayerLoadInitialState()
 	// load GS state
 	freezeData fd = {static_cast<int>(s_dump_file->GetStateData().size()),
 		const_cast<u8*>(s_dump_file->GetStateData().data())};
-	MTGS_FreezeData mfd = {&fd, 0};
-	GetMTGS().Freeze(FreezeAction::Load, mfd);
+	MTGS::FreezeData mfd = {&fd, 0};
+	MTGS::Freeze(FreezeAction::Load, mfd);
 	if (mfd.retval != 0)
 		Host::ReportFormattedErrorAsync("GSDumpReplayer", "Failed to load GS state.");
 }
@@ -219,7 +237,7 @@ static void GSDumpReplayerSendPacketToMTGS(GIF_PATH path, const u8* data, u32 le
 static void GSDumpReplayerUpdateFrameLimit()
 {
 	constexpr u32 default_frame_limit = 60;
-	const u32 frame_limit = static_cast<u32>(default_frame_limit * EmuConfig.GS.LimitScalar);
+	const u32 frame_limit = static_cast<u32>(default_frame_limit * VMManager::GetTargetSpeed());
 
 	if (frame_limit > 0)
 		s_frame_ticks = (GetTickFrequency() + (frame_limit / 2)) / frame_limit;
@@ -300,7 +318,7 @@ void GSDumpReplayerCpuStep()
 			s_dump_frame_number++;
 			GSDumpReplayerUpdateFrameLimit();
 			GSDumpReplayerFrameLimit();
-			GetMTGS().PostVsyncStart(false);
+			MTGS::PostVsyncStart(false);
 			VMManager::Internal::VSyncOnCPUThread();
 			if (VMManager::Internal::IsExecutionInterrupted())
 				GSDumpReplayerExitExecution();
@@ -312,8 +330,9 @@ void GSDumpReplayerCpuStep()
 			u32 size;
 			std::memcpy(&size, packet.data, sizeof(size));
 
-			std::unique_ptr<u8[]> arr(new u8[size * 16]);
-			GetMTGS().InitAndReadFIFO(arr.get(), size);
+			// Allocate an extra quadword, some transfers write too much (e.g. Lego Racers 2 with Z24 downloads).
+			std::unique_ptr<u8[]> arr(new u8[(size + 1) * 16]);
+			MTGS::InitAndReadFIFO(arr.get(), size);
 		}
 		break;
 

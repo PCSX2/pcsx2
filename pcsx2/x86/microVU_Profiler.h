@@ -108,7 +108,7 @@ struct microProfiler
 	int index;
 	void Reset(int _index)
 	{
-		memzero(*this);
+		std::memset(this, 0, sizeof(*this));
 		index = _index;
 	}
 	void EmitOp(microOpcode op)

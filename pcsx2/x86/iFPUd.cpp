@@ -63,8 +63,6 @@ namespace Dynarec {
 namespace OpcodeImpl {
 namespace COP1 {
 
-u32 FPU_MUL_HACK(u32 s, u32 t);
-
 namespace DOUBLE {
 
 //------------------------------------------------------------------
@@ -413,17 +411,28 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 
 void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 {
-	u32* endMul = nullptr;
+	u8* endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{
-		xMOVD(arg1regd, xRegisterSSE(sreg));
-		xMOVD(arg2regd, xRegisterSSE(treg));
-		xFastCall((void*)(uptr)&FPU_MUL_HACK, arg1regd, arg2regd); //returns the hacked result or 0
-		xTEST(eax, eax);
-		u8* noHack = JZ8(0);
-			xMOVDZX(xRegisterSSE(regd), eax);
-			endMul = JMP32(0);
+		// 	if ((s == 0x3e800000) && (t == 0x40490fdb))
+		// 		return 0x3f490fda; // needed for Tales of Destiny Remake (only in a very specific room late-game)
+		// 	else
+		// 		return 0;
+
+		alignas(16) static constexpr const u32 result[4] = { 0x3f490fda };
+
+		xMOVD(ecx, xRegisterSSE(sreg));
+		xMOVD(edx, xRegisterSSE(treg));
+
+		// if (((s ^ 0x3e800000) | (t ^ 0x40490fdb)) != 0) { hack; }
+		xXOR(ecx, 0x3e800000);
+		xXOR(edx, 0x40490fdb);
+		xOR(edx, ecx);
+
+		u8* noHack = JNZ8(0);
+			xMOVAPS(xRegisterSSE(regd), ptr128[result]);
+			endMul = JMP8(0);
 		x86SetJ8(noHack);
 	}
 
@@ -433,7 +442,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 	xMOVSS(xRegisterSSE(regd), xRegisterSSE(sreg));
 
 	if (CHECK_FPUMULHACK)
-		x86SetJ32(endMul);
+		x86SetJ8(endMul);
 }
 
 //------------------------------------------------------------------

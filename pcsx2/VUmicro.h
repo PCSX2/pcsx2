@@ -19,8 +19,6 @@
 #include "VUops.h"
 #include "R5900.h"
 
-#include "common/Exceptions.h"
-
 static const uint VU0_MEMSIZE	= 0x1000;		// 4kb
 static const uint VU0_PROGSIZE	= 0x1000;		// 4kb
 static const uint VU1_MEMSIZE	= 0x4000;		// 16kb

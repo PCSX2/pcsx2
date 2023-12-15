@@ -95,7 +95,7 @@ namespace InternalServers
 	private:
 		void LoadHostList();
 		bool CheckHostList(std::string url, DNS_State* state);
-		void GetHost(std::string url, DNS_State* state);
+		void GetHost(const std::string& url, DNS_State* state);
 		void FinaliseDNS(DNS_State* state);
 
 #ifdef _WIN32
@@ -111,7 +111,7 @@ namespace InternalServers
 
 		static void __stdcall GetAddrInfoExCallback(DWORD dwError, DWORD dwBytes, OVERLAPPED* lpOverlapped);
 #elif defined(__POSIX__)
-		void GetAddrInfoThread(std::string url, DNS_State* state);
+		void GetAddrInfoThread(const std::string& url, DNS_State* state);
 #endif
 	};
 } // namespace InternalServers

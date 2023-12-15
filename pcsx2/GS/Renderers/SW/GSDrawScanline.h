@@ -38,7 +38,7 @@ public:
 	~GSDrawScanline() override;
 
 	/// Function pointer types which we call back into.
-	using SetupPrimPtr = void(*)(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
+	using SetupPrimPtr = void(*)(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
 	using DrawScanlinePtr = void(*)(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 
 	/// Flushes the code cache, forcing everything to be recompiled.
@@ -60,9 +60,10 @@ private:
 	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
 	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
 
-	static void CSetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
+	static void CSetupPrim(const GSVertexSW* vertex, const u16* index, const GSVertexSW& dscan, GSScanlineLocalData& local);
 	static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
 	static void CDrawEdge(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local);
+	__ri static void CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local, GSScanlineSelector sel);
 };
 
 MULTI_ISA_UNSHARED_END

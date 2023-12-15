@@ -19,15 +19,6 @@
 *.VC.db
 *.VC.VC.opendb
 
-**/Win32/Release*
-**/Win32/Debug*
-**/Win32/Devel*
-**/x64/Release*
-**/x64/Debug*
-**/x64/Devel*
-
-**/bin/PCSX2-linux.sh
-
 _ReSharper.*
 pcsx2.snapshot_*
 svnrev.h
@@ -45,6 +36,7 @@ install_log.txt
 padLog.txt
 GS_opengl_debug.txt
 bad_shader_*
+crash-*.txt
 
 Debug
 Release
@@ -94,10 +86,6 @@ oprofile_data/
 /ipch
 
 !/3rdparty/libjpeg/change.log
-/3rdparty/**/include/wx/setup.h
-/3rdparty/**/wx/msw/rcdefs.h
-/pcsx2/gui/Resources/*.h
-!/pcsx2/gui/Resources/EmbeddedImage.h
 /tools/bin
 
 /out/build/x64-Debug (default)

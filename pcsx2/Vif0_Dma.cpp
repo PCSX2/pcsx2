@@ -17,7 +17,7 @@
 #include "Common.h"
 #include "Vif_Dma.h"
 #include "VUmicro.h"
-#include "newVif.h"
+#include "x86/newVif.h"
 
 u32 g_vif0Cycles = 0;
 
@@ -137,8 +137,15 @@ __fi void vif0SetupTransfer()
 __fi void vif0VUFinish()
 {
 	// Sync up VU0 so we don't errantly wait.
-	while (static_cast<int>(cpuRegs.cycle - VU0.cycle) > 0 && (VU0.VI[REG_VPU_STAT].UL & 0x1))
+	while (VU0.VI[REG_VPU_STAT].UL & 0x1)
+	{
+		const int cycle_diff = static_cast<int>(cpuRegs.cycle - VU0.cycle);
+
+		if ((EmuConfig.Gamefixes.VUSyncHack && cycle_diff < VU0.nextBlockCycles) || cycle_diff <= 0)
+			break;
+
 		CpuVU0->ExecuteBlock();
+	}
 
 	if (VU0.VI[REG_VPU_STAT].UL & 0x5)
 	{

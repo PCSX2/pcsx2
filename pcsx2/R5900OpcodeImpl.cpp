@@ -154,16 +154,19 @@ void Deci2Reset()
 {
 	deci2handler	= 0;
 	deci2addr		= 0;
-	memzero( deci2buffer );
+	std::memset(deci2buffer, 0, sizeof(deci2buffer));
 }
 
-void SaveStateBase::deci2Freeze()
+bool SaveStateBase::deci2Freeze()
 {
-	FreezeTag( "deci2" );
+	if (!FreezeTag("deci2"))
+		return false;
 
 	Freeze( deci2addr );
 	Freeze( deci2handler );
 	Freeze( deci2buffer );
+
+	return IsOkay();
 }
 
 /*
@@ -203,7 +206,7 @@ static int __Deci2Call(int call, u32 *addr)
 		{
 			char reqaddr[128];
 			if( addr != NULL )
-				sprintf( reqaddr, "%x %x %x %x", addr[3], addr[2], addr[1], addr[0] );
+				std::snprintf(reqaddr, std::size(reqaddr), "%x %x %x %x", addr[3], addr[2], addr[1], addr[0]);
 
 			if (!deci2addr) return 1;
 
@@ -969,7 +972,7 @@ void SYSCALL()
 			AllowParams1 = true;
 			break;
 		case Syscall::GetOsdConfigParam:
-			if(!NoOSD && g_SkipBiosHack && !AllowParams1)
+			if(!NoOSD && !AllowParams1)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
@@ -993,7 +996,7 @@ void SYSCALL()
 			AllowParams2 = true;
 			break;
 		case Syscall::GetOsdConfigParam2:
-			if (!NoOSD && g_SkipBiosHack && !AllowParams2)
+			if (!NoOSD && !AllowParams2)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
@@ -1175,9 +1178,6 @@ void PREF()
 
 static void trap(u16 code=0)
 {
-	// unimplemented?
-	// throw R5900Exception::Trap(code);
-
 	cpuRegs.pc -= 4;
 	Console.Warning("Trap exception at 0x%08x", cpuRegs.pc);
 	cpuException(0x34, cpuRegs.branch);

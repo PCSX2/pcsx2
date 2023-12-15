@@ -14,7 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSTextureSW.h"
+#include "GS/Renderers/SW/GSTextureSW.h"
+#include "GS/GSExtra.h"
 #include "GS/GSPng.h"
 
 GSTextureSW::GSTextureSW(Type type, int width, int height)
@@ -24,7 +25,7 @@ GSTextureSW::GSTextureSW(Type type, int width, int height)
 	m_type = type;
 	m_format = Format::Invalid;
 	m_pitch = ((width << 2) + 31) & ~31;
-	m_data = _aligned_malloc(m_pitch * height, 32);
+	m_data = _aligned_malloc(m_pitch * height, VECTOR_ALIGNMENT);
 }
 
 GSTextureSW::~GSTextureSW()

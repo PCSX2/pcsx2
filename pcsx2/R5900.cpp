@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -34,6 +34,7 @@
 #include "CDVD/CDVD.h"
 #include "Patch.h"
 #include "GameDatabase.h"
+#include "GSDumpReplayer.h"
 
 #include "DebugTools/Breakpoints.h"
 #include "DebugTools/MIPSAnalyst.h"
@@ -50,13 +51,10 @@ alignas(16) fpuRegisters fpuRegs;
 alignas(16) tlbs tlb[48];
 R5900cpu *Cpu = NULL;
 
-bool g_SkipBiosHack; // set at boot if the skip bios hack is on, reset before the game has started
-bool g_GameStarted; // set when we reach the game's entry point or earlier if the entry point cannot be determined
-bool g_GameLoading; // EELOAD has been called to load the game
-
-static const uint eeWaitCycles = 3072;
+static constexpr uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
+EE_intProcessStatus eeRunInterruptScan = INT_NOT_RUNNING;
 
 u32 g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
 
@@ -69,20 +67,11 @@ const int kMaxArgs = 16;
 uptr g_argPtrs[kMaxArgs];
 #define DEBUG_LAUNCHARG 0 // show lots of helpful console messages as the launch arguments are passed to the game
 
-extern SysMainMemory& GetVmMemory();
-
 void cpuReset()
 {
-	vu1Thread.WaitVU();
-	vu1Thread.Reset();
-	if (GetMTGS().IsOpen())
-		GetMTGS().WaitGS();		// GS better be done processing before we reset the EE, just in case.
-
-	GetVmMemory().Reset();
-
-	memzero(cpuRegs);
-	memzero(fpuRegs);
-	memzero(tlb);
+	std::memset(&cpuRegs, 0, sizeof(cpuRegs));
+	std::memset(&fpuRegs, 0, sizeof(fpuRegs));
+	std::memset(&tlb, 0, sizeof(tlb));
 
 	cpuRegs.pc				= 0xbfc00000; //set pc reg to stack
 	cpuRegs.CP0.n.Config	= 0x440;
@@ -98,29 +87,17 @@ void cpuReset()
 	psxReset();
 	pgifInit();
 
-	hwReset();
-
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
 
-	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
-	AllowParams1 = !g_SkipBiosHack;
-	AllowParams2 = !g_SkipBiosHack;
+	AllowParams1 = !VMManager::Internal::IsFastBootInProgress();
+	AllowParams2 = !VMManager::Internal::IsFastBootInProgress();
 
-	ElfCRC = 0;
-	DiscSerial.clear();
-	ElfEntry = -1;
-	g_GameStarted = false;
-	g_GameLoading = false;
+	g_eeloadMain = 0;
+	g_eeloadExec = 0;
+	g_osdsys_str = 0;
 
-	// FIXME: LastELF should be reset on media changes as well as on CPU resets, in
-	// the very unlikely case that a user swaps to another media source that "looks"
-	// the same (identical ELF names) but is actually different (devs actually could
-	// run into this while testing minor binary hacked changes to ISO images, which
-	// is why I found out about this) --air
-	LastELF.clear();
-
-	g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
+	CBreakPoints::ClearSkipFirst();
 }
 
 __ri void cpuException(u32 code, u32 bd)
@@ -278,7 +255,7 @@ static __fi void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
-	if(!g_GameStarted || CHECK_INSTANTDMAHACK || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
+	if(CHECK_INSTANTDMAHACK || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
 	{
 		cpuClearInt( n );
 		callback();
@@ -297,36 +274,49 @@ static __fi bool _cpuTestInterrupts()
 		//Console.Write("DMAC Disabled or suspended");
 		return false;
 	}
-	/* These are 'pcsx2 interrupts', they handle asynchronous stuff
-	   that depends on the cycle timings */
-	TESTINT(VU_MTVU_BUSY,	MTVUInterrupt);
-	TESTINT(DMAC_VIF1,		vif1Interrupt);
-	TESTINT(DMAC_GIF,		gifInterrupt);
-	TESTINT(DMAC_SIF0,		EEsif0Interrupt);
-	TESTINT(DMAC_SIF1,		EEsif1Interrupt);
-	// Profile-guided Optimization (sorta)
-	// The following ints are rarely called.  Encasing them in a conditional
-	// as follows helps speed up most games.
 
-	if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
-		| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
-		| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH) | (1 << IPU_PROCESS)))
+	eeRunInterruptScan = INT_RUNNING;
+
+	while (eeRunInterruptScan == INT_RUNNING)
 	{
-		TESTINT(DMAC_VIF0,		vif0Interrupt);
+		/* These are 'pcsx2 interrupts', they handle asynchronous stuff
+		   that depends on the cycle timings */
+		TESTINT(VU_MTVU_BUSY, MTVUInterrupt);
+		TESTINT(DMAC_VIF1, vif1Interrupt);
+		TESTINT(DMAC_GIF, gifInterrupt);
+		TESTINT(DMAC_SIF0, EEsif0Interrupt);
+		TESTINT(DMAC_SIF1, EEsif1Interrupt);
+		// Profile-guided Optimization (sorta)
+		// The following ints are rarely called.  Encasing them in a conditional
+		// as follows helps speed up most games.
 
-		TESTINT(DMAC_FROM_IPU,	ipu0Interrupt);
-		TESTINT(DMAC_TO_IPU,	ipu1Interrupt);
-		TESTINT(IPU_PROCESS,	ipuCMDProcess);
+		if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
+			| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
+			| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH) | (1 << IPU_PROCESS)))
+		{
+			TESTINT(DMAC_VIF0, vif0Interrupt);
 
-		TESTINT(DMAC_FROM_SPR,	SPRFROMinterrupt);
-		TESTINT(DMAC_TO_SPR,	SPRTOinterrupt);
+			TESTINT(DMAC_FROM_IPU, ipu0Interrupt);
+			TESTINT(DMAC_TO_IPU, ipu1Interrupt);
+			TESTINT(IPU_PROCESS, ipuCMDProcess);
 
-		TESTINT(DMAC_MFIFO_VIF, vifMFIFOInterrupt);
-		TESTINT(DMAC_MFIFO_GIF, gifMFIFOInterrupt);
+			TESTINT(DMAC_FROM_SPR, SPRFROMinterrupt);
+			TESTINT(DMAC_TO_SPR, SPRTOinterrupt);
 
-		TESTINT(VIF_VU0_FINISH, vif0VUFinish);
-		TESTINT(VIF_VU1_FINISH, vif1VUFinish);
+			TESTINT(DMAC_MFIFO_VIF, vifMFIFOInterrupt);
+			TESTINT(DMAC_MFIFO_GIF, gifMFIFOInterrupt);
+
+			TESTINT(VIF_VU0_FINISH, vif0VUFinish);
+			TESTINT(VIF_VU1_FINISH, vif1VUFinish);
+		}
+
+		if (eeRunInterruptScan == INT_REQ_LOOP)
+			eeRunInterruptScan = INT_RUNNING;
+		else
+			break;
 	}
+
+	eeRunInterruptScan = INT_NOT_RUNNING;
 
 	if ((cpuRegs.interrupt & 0x1FFFF) & ~cpuRegs.dmastall)
 		return true;
@@ -403,25 +393,26 @@ __fi void _cpuEventTest_Shared()
 		_cpuTestPERF();
 	}
 
-	rcntUpdate_hScanline();
-
 	_cpuTestTIMR();
 
 	// ---- Interrupts -------------
 	// These are basically just DMAC-related events, which also piggy-back the same bits as
 	// the PS2's own DMA channel IRQs and IRQ Masks.
 
-	// This is a BIOS hack because the coding in the BIOS is terrible but the bug is masked by Data Cache
-	// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
-	// so to fix it, we run all the DMA's instantly when in the BIOS.
-	// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
-	if ((!g_GameStarted || CHECK_INSTANTDMAHACK) && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+	if (cpuRegs.interrupt)
 	{
-		while ((cpuRegs.interrupt & 0x1FFFF) && _cpuTestInterrupts())
-			;
+		// This is a BIOS hack because the coding in the BIOS is terrible but the bug is masked by Data Cache
+		// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
+		// so to fix it, we run all the DMA's instantly when in the BIOS.
+		// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
+		if (CHECK_INSTANTDMAHACK && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+		{
+			while ((cpuRegs.interrupt & 0x1FFFF) && _cpuTestInterrupts())
+				;
+		}
+		else
+			_cpuTestInterrupts();
 	}
-	else
-		_cpuTestInterrupts();
 
 	// ---- IOP -------------
 	// * It's important to run a iopEventTest before calling ExecuteBlock. This
@@ -438,8 +429,6 @@ __fi void _cpuEventTest_Shared()
 	if (EEsCycle > 0)
 		iopEventAction = true;
 
-	iopEventTest();
-
 	if (iopEventAction)
 	{
 		//if( EEsCycle < -450 )
@@ -450,6 +439,8 @@ __fi void _cpuEventTest_Shared()
 		iopEventAction = false;
 	}
 
+	iopEventTest();
+
 	// ---- VU Sync -------------
 	// We're in a EventTest.  All dynarec registers are flushed
 	// so there is no need to freeze registers here.
@@ -458,7 +449,9 @@ __fi void _cpuEventTest_Shared()
 
 	// ---- Schedule Next Event Test --------------
 
-	if (EEsCycle > 192)
+	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8);
+	// 8 or more cycles behind and there's an event scheduled
+	if (EEsCycle >= nextIopEventDeta)
 	{
 		// EE's running way ahead of the IOP still, so we should branch quickly to give the
 		// IOP extra timeslices in short order.
@@ -466,13 +459,11 @@ __fi void _cpuEventTest_Shared()
 		cpuSetNextEventDelta(48);
 		//Console.Warning( "EE ahead of the IOP -- Rapid Event!  %d", EEsCycle );
 	}
-
-	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
-	// relative position to the EE (via EEsCycle)
-	cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8) - EEsCycle);
-
-	// Apply the hsync counter's nextCycle
-	cpuSetNextEvent(hsyncCounter.sCycle, hsyncCounter.CycleT);
+	else
+	{
+		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
+		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8) - EEsCycle);
+	}
 
 	// Apply vsync and other counter nextCycles
 	cpuSetNextEvent(nextsCounter, nextCounter);
@@ -543,6 +534,17 @@ __fi void CPU_SET_DMASTALL(EE_EventType n, bool set)
 
 __fi void CPU_INT( EE_EventType n, s32 ecycle)
 {
+	// If it's retunning too quick, just rerun the DMA, there's no point in running the EE for < 4 cycles.
+	// This causes a huge uplift in performance for ONI FMV's.
+	if (ecycle < 4 && !(cpuRegs.dmastall & (1 << n)) && eeRunInterruptScan != INT_NOT_RUNNING)
+	{
+		eeRunInterruptScan = INT_REQ_LOOP;
+		cpuRegs.interrupt |= 1 << n;
+		cpuRegs.sCycle[n] = cpuRegs.cycle;
+		cpuRegs.eCycle[n] = 0;
+		return;
+	}
+
 	// EE events happen 8 cycles in the future instead of whatever was requested.
 	// This can be used on games with PATH3 masking issues for example, or when
 	// some FMV look bad.
@@ -565,27 +567,6 @@ __fi void CPU_INT( EE_EventType n, s32 ecycle)
 	}
 
 	cpuSetNextEventDelta(cpuRegs.eCycle[n]);
-}
-
-// Called from recompilers; define is mandatory.
-void eeGameStarting()
-{
-	if (!g_GameStarted)
-	{
-		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
-		g_GameStarted = true;
-		g_GameLoading = false;
-
-		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
-		// handle such things here:
-		VMManager::Internal::GameStartingOnCPUThread();
-		if (VMManager::Internal::IsExecutionInterrupted())
-			Cpu->ExitExecution();
-	}
-	else
-	{
-		Console.WriteLn( Color_Green, "(R5900) Re-executed ELF Entry point (ignored) [addr=0x%08X]", ElfEntry );
-	}
 }
 
 // Count arguments, save their starting locations, and replace the space separators with null terminators so they're separate strings
@@ -634,16 +615,6 @@ int ParseArgumentString(u32 arg_block)
 // Called from recompilers; define is mandatory.
 void eeloadHook()
 {
-	const std::string& elf_override(VMManager::Internal::GetElfOverride());
-
-	if (!elf_override.empty())
-		cdvdReloadElfInfo(StringUtil::StdStringFromFormat("host:%s", elf_override.c_str()));
-	else
-		cdvdReloadElfInfo();
-
-	std::string discelf;
-	int disctype = GetPS2ElfName(discelf);
-
 	std::string elfname;
 	int argc = cpuRegs.GPR.n.a0.SD[0];
 	if (argc) // calls to EELOAD *after* the first one during the startup process will come here
@@ -663,7 +634,7 @@ void eeloadHook()
 		// mode). Then EELOAD is called with the argument "rom0:PS2LOGO". At this point, we do not need any additional tricks
 		// because EELOAD is now ready to accept launch arguments. So in full-boot mode, we simply wait for PS2LOGO to be called,
 		// then we add the desired launch arguments. PS2LOGO passes those on to the game itself as it calls EELOAD a third time.
-		if (!EmuConfig.CurrentGameArgs.empty() && !strcmp(elfname.c_str(), "rom0:PS2LOGO"))
+		if (!EmuConfig.CurrentGameArgs.empty() && elfname == "rom0:PS2LOGO")
 		{
 			const char *argString = EmuConfig.CurrentGameArgs.c_str();
 			Console.WriteLn("eeloadHook: Supplying launch argument(s) '%s' to module '%s'...", argString, elfname.c_str());
@@ -710,24 +681,32 @@ void eeloadHook()
 
 	// If "fast boot" was chosen, then on EELOAD's first call we won't yet know what the game's ELF is. Find the name and write it
 	// into EELOAD's memory.
-	if (g_SkipBiosHack && elfname.empty())
+	if (VMManager::Internal::IsFastBootInProgress() && elfname.empty())
 	{
-		std::string elftoload;
+		const std::string& elf_override = VMManager::Internal::GetELFOverride();
 		if (!elf_override.empty())
 		{
-			elftoload = StringUtil::StdStringFromFormat("host:%s", elf_override.c_str());
+			elfname = fmt::format("host:{}", elf_override);
 		}
 		else
 		{
-			if (disctype == 2)
-				elftoload = discelf;
+			CDVDDiscType disc_type;
+			std::string disc_elf;
+			cdvdGetDiscInfo(nullptr, &disc_elf, nullptr, nullptr, &disc_type);
+			if (disc_type == CDVDDiscType::PS2Disc)
+			{
+				// only allow fast boot for PS2 games
+				elfname = std::move(disc_elf);
+			}
 			else
-				g_SkipBiosHack = false; // We're not fast booting, so disable it (Fixes some weirdness with the BIOS)
+			{
+				Console.Warning(fmt::format("Not allowing fast boot for non-PS2 ELF {}", disc_elf));
+			}
 		}
 
 		// When fast-booting, we insert the game's ELF name into EELOAD so that the game is called instead of the default call of
 		// "rom0:OSDSYS"; any launch arguments supplied by the user will be inserted into EELOAD later by eeloadHook2()
-		if (!elftoload.empty())
+		if (!elfname.empty())
 		{
 			// Find and save location of default/fallback call "rom0:OSDSYS"; to be used later by eeloadHook2()
 			for (g_osdsys_str = EELOAD_START; g_osdsys_str < EELOAD_START + EELOAD_SIZE; g_osdsys_str += 8) // strings are 64-bit aligned
@@ -735,16 +714,20 @@ void eeloadHook()
 				if (!strcmp((char*)PSM(g_osdsys_str), "rom0:OSDSYS"))
 				{
 					// Overwrite OSDSYS with game's ELF name
-					strcpy((char*)PSM(g_osdsys_str), elftoload.c_str());
-					g_GameLoading = true;
-					return;
+					strcpy((char*)PSM(g_osdsys_str), elfname.c_str());
 				}
 			}
 		}
+		else
+		{
+			// Stop fast forwarding if we're doing that for boot.
+			VMManager::Internal::DisableFastBoot();
+			AllowParams1 = true;
+			AllowParams2 = true;
+		}
 	}
 
-	if (!g_GameStarted && ((disctype == 2 && elfname == discelf) || disctype == 1))
-		g_GameLoading = true;
+	VMManager::Internal::ELFLoadingOnCPUThread(std::move(elfname));
 }
 
 // Called from recompilers; define is mandatory.

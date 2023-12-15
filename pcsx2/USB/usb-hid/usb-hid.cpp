@@ -24,14 +24,15 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "USB/deviceproxy.h"
-#include "USB/qemu-usb/desc.h"
-#include "USB/qemu-usb/USBinternal.h"
-#include "usb-hid.h"
-#include "USB/USB.h"
-#include "StateWrapper.h"
 
-#include "Frontend/InputManager.h"
+#include "Host.h"
+#include "Input/InputManager.h"
+#include "StateWrapper.h"
+#include "USB/USB.h"
+#include "USB/deviceproxy.h"
+#include "USB/qemu-usb/USBinternal.h"
+#include "USB/qemu-usb/desc.h"
+#include "USB/usb-hid/usb-hid.h"
 
 namespace usb_hid
 {
@@ -857,7 +858,7 @@ namespace usb_hid
 		{
 			InputEvent evt;
 			evt.type = INPUT_EVENT_KIND_BTN;
-			evt.u.btn.button = (delta > 0.0f) ? INPUT_BUTTON_WHEEL_DOWN : INPUT_BUTTON_WHEEL_UP;
+			evt.u.btn.button = (delta > 0.0f) ? INPUT_BUTTON_WHEEL_UP : INPUT_BUTTON_WHEEL_DOWN;
 			evt.u.btn.down = true;
 			hid.ptr.eh_entry(&hid, &evt);
 			hid.ptr.eh_sync(&hid);
@@ -939,7 +940,7 @@ namespace usb_hid
 
 	const char* HIDKbdDevice::Name() const
 	{
-		return "HID Keyboard";
+		return TRANSLATE_NOOP("USB", "HID Keyboard");
 	}
 
 	const char* HIDKbdDevice::TypeName() const
@@ -947,10 +948,10 @@ namespace usb_hid
 		return "hidkbd";
 	}
 
-	gsl::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> HIDKbdDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
-			{"Keyboard", "Keyboard", InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
+			{"Keyboard", TRANSLATE_NOOP("USB", "Keyboard"), nullptr, InputBindingInfo::Type::Keyboard, 0, GenericInputBinding::Unknown},
 		};
 		return info;
 	}
@@ -1013,7 +1014,7 @@ namespace usb_hid
 
 	const char* HIDMouseDevice::Name() const
 	{
-		return "HID Mouse";
+		return TRANSLATE_NOOP("USB", "HID Mouse");
 	}
 
 	const char* HIDMouseDevice::TypeName() const
@@ -1040,13 +1041,13 @@ namespace usb_hid
 		return !sw.HasError();
 	}
 
-	gsl::span<const InputBindingInfo> HIDMouseDevice::Bindings(u32 subtype) const
+	std::span<const InputBindingInfo> HIDMouseDevice::Bindings(u32 subtype) const
 	{
 		static constexpr const InputBindingInfo info[] = {
-			{"Pointer", "Pointer", InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},
-			{"LeftButton", "Left Button", InputBindingInfo::Type::Button, INPUT_BUTTON_LEFT, GenericInputBinding::Unknown},
-			{"RightButton", "Right Button", InputBindingInfo::Type::Button, INPUT_BUTTON_RIGHT, GenericInputBinding::Unknown},
-			{"MiddleButton", "Middle Button", InputBindingInfo::Type::Button, INPUT_BUTTON_MIDDLE, GenericInputBinding::Unknown},
+			{"Pointer", TRANSLATE_NOOP("USB", "Pointer"), nullptr, InputBindingInfo::Type::Pointer, INPUT_BUTTON__MAX, GenericInputBinding::Unknown},
+			{"LeftButton", TRANSLATE_NOOP("USB", "Left Button"), nullptr, InputBindingInfo::Type::Button, INPUT_BUTTON_LEFT, GenericInputBinding::Unknown},
+			{"RightButton", TRANSLATE_NOOP("USB", "Right Button"), nullptr, InputBindingInfo::Type::Button, INPUT_BUTTON_RIGHT, GenericInputBinding::Unknown},
+			{"MiddleButton", TRANSLATE_NOOP("USB", "Middle Button"), nullptr, InputBindingInfo::Type::Button, INPUT_BUTTON_MIDDLE, GenericInputBinding::Unknown},
 		};
 		return info;
 	}
@@ -1124,7 +1125,7 @@ namespace usb_hid
 
 	const char* BeatManiaDevice::Name() const
 	{
-		return "BeatMania Da Da Da!! Keyboard";
+		return TRANSLATE_NOOP("USB", "Konami Keyboard");
 	}
 
 	const char* BeatManiaDevice::TypeName() const

@@ -75,7 +75,6 @@ namespace usb_msd
 			struct usb_msd_csw csw;
 			enum USBMSDMode mode;
 			uint32_t data_len;
-			uint32_t residue;
 			uint32_t tag;
 			uint32_t file_op_tag; // read from file or buf
 			int32_t result;
@@ -972,7 +971,8 @@ namespace usb_msd
 		std::string path(USB::GetConfigString(si, port, TypeName(), "ImagePath"));
 		if (path.empty() || !(s->file = FileSystem::OpenCFile(path.c_str(), "r+b")))
 		{
-			Host::AddOSDMessage(fmt::format("usb-msd: Could not open image file '{}'", path), Host::OSD_ERROR_DURATION);
+			Host::AddOSDMessage(fmt::format(TRANSLATE_FS("USB", "usb-msd: Could not open image file '{}'"), path),
+				Host::OSD_ERROR_DURATION);
 			goto fail;
 		}
 
@@ -1019,7 +1019,7 @@ namespace usb_msd
 
 	const char* MsdDevice::Name() const
 	{
-		return "Mass Storage Device";
+		return TRANSLATE_NOOP("USB", "Mass Storage Device");
 	}
 
 	bool MsdDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
@@ -1039,7 +1039,8 @@ namespace usb_msd
 		// resetting port to try to avoid possible data corruption
 		if (sw.IsReading() && old_mtime != s->f.mtime)
 		{
-			Host::AddOSDMessage("Modification time to USB mass storage image changed, reattaching.",
+			Host::AddOSDMessage(
+				TRANSLATE_STR("USB", "Modification time to USB mass storage image changed, reattaching."),
 				Host::OSD_ERROR_DURATION);
 			usb_reattach(dev->port);
 		}
@@ -1052,10 +1053,11 @@ namespace usb_msd
 		// TODO: Handle changes to path.
 	}
 
-	gsl::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
+	std::span<const SettingInfo> MsdDevice::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo settings[] = {
-			{SettingInfo::Type::Path, "ImagePath", "Image Path", "Sets the path to image which will back the virtual mass storage device."},
+			{SettingInfo::Type::Path, "ImagePath", TRANSLATE_NOOP("USB", "Image Path"),
+				TRANSLATE_NOOP("USB", "Sets the path to image which will back the virtual mass storage device.")},
 		};
 		return settings;
 	}

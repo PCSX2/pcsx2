@@ -24,7 +24,7 @@
 
 #include "ui_BIOSSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 class QThread;
 
 // TODO: Move to core.
@@ -43,8 +43,23 @@ class BIOSSettingsWidget : public QWidget
 	Q_OBJECT
 
 public:
-	BIOSSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~BIOSSettingsWidget();
+
+	class RefreshThread final : public QThread
+	{
+	public:
+		RefreshThread(QWidget* parent, const QString& directory);
+		~RefreshThread();
+
+	protected:
+		void run() override;
+
+	private:
+		QString m_directory;
+	};
+
+	static void populateList(QTreeWidget* list, const QVector<BIOSInfo>& items);
 
 private Q_SLOTS:
 	void refreshList();
@@ -52,22 +67,11 @@ private Q_SLOTS:
 	void listItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
 	void listRefreshed(const QVector<BIOSInfo>& items);
 
+	void fastBootChanged();
+
 private:
 	Ui::BIOSSettingsWidget m_ui;
-
-	class RefreshThread final : public QThread
-	{
-	public:
-		RefreshThread(BIOSSettingsWidget* parent, const QString& directory);
-		~RefreshThread();
-
-	protected:
-		void run() override;
-
-	private:
-		BIOSSettingsWidget* m_parent;
-		QString m_directory;
-	};
+	SettingsWindow* m_dialog;
 
 	RefreshThread* m_refresh_thread = nullptr;
 };

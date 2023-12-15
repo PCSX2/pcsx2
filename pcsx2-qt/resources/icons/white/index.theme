@@ -3,7 +3,7 @@ Name=White Icon Theme
 Comment=White Icon Theme
 
 [svg]
-Size=64
+Size=128
 Type=Scalable
 MinSize=64
 MaxSize=1024

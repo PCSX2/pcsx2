@@ -17,14 +17,13 @@
 
 #include "common/HashCombine.h"
 #include "common/WindowInfo.h"
-#include "GSFastList.h"
-#include "GSTexture.h"
-#include "GSVertex.h"
+#include "GS/GS.h"
+#include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSTexture.h"
+#include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
 #include <array>
-
-class HostDisplay;
 
 enum class ShaderConvert
 {
@@ -38,6 +37,7 @@ enum class ShaderConvert
 	FLOAT32_TO_16_BITS,
 	FLOAT32_TO_32_BITS,
 	FLOAT32_TO_RGBA8,
+	FLOAT32_TO_RGB8,
 	FLOAT16_TO_RGB5A1,
 	RGBA8_TO_FLOAT32,
 	RGBA8_TO_FLOAT24,
@@ -52,6 +52,16 @@ enum class ShaderConvert
 	CLUT_4,
 	CLUT_8,
 	YUV,
+	Count
+};
+
+enum class ShaderInterlace
+{
+	WEAVE = 0,
+	BOB = 1,
+	BLEND = 2,
+	MAD_BUFFER = 3,
+	MAD_RECONSTRUCT = 4,
 	Count
 };
 
@@ -114,6 +124,17 @@ static inline bool SupportsBilinear(ShaderConvert shader)
 	}
 }
 
+static inline u32 ShaderConvertWriteMask(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::FLOAT32_TO_RGB8:
+			return 0x7;
+		default:
+			return 0xf;
+	}
+}
+
 enum class PresentShader
 {
 	COPY = 0,
@@ -122,6 +143,8 @@ enum class PresentShader
 	TRIANGULAR_FILTER,
 	COMPLEX_FILTER,
 	LOTTES_FILTER,
+	SUPERSAMPLE_4xRGSS,
+	SUPERSAMPLE_AUTO,
 	Count
 };
 
@@ -141,11 +164,8 @@ enum ChannelFetch
 	ChannelFetch_GXBY  = 6,
 };
 
-#pragma pack(push, 1)
-
-class DisplayConstantBuffer
+struct alignas(16) DisplayConstantBuffer
 {
-public:
 	GSVector4 SourceRect; // +0,xyzw
 	GSVector4 TargetRect; // +16,xyzw
 	GSVector2 SourceSize; // +32,xy
@@ -177,39 +197,37 @@ public:
 		TimeAndPad = GSVector4(time);
 	}
 };
+static_assert(sizeof(DisplayConstantBuffer) == 96, "DisplayConstantBuffer is correct size");
 
-class MergeConstantBuffer
+struct alignas(16) MergeConstantBuffer
 {
-public:
 	GSVector4 BGColor;
 	u32 EMODA;
 	u32 EMODC;
-	u32 pad[2];
+	u32 DOFFSET;
+	float ScaleFactor;
 };
+static_assert(sizeof(MergeConstantBuffer) == 32, "MergeConstantBuffer is correct size");
 
-class InterlaceConstantBuffer
+struct alignas(16) InterlaceConstantBuffer
 {
-public:
 	GSVector4 ZrH; // data passed to the shader
-	InterlaceConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
-
-#pragma pack(pop)
+static_assert(sizeof(InterlaceConstantBuffer) == 16, "InterlaceConstantBuffer is correct size");
 
 enum HWBlendFlags
 {
-	// A couple of flag to determine the blending behavior
-	BLEND_CD        = 0x8,    // Output is Cd, hw blend can handle it
-	BLEND_MIX1      = 0x10,   // Mix of hw and sw, do Cs*F or Cs*As in shader
-	BLEND_MIX2      = 0x20,   // Mix of hw and sw, do Cs*(As + 1) or Cs*(F + 1) in shader
-	BLEND_MIX3      = 0x40,   // Mix of hw and sw, do Cs*(1 - As) or Cs*(1 - F) in shader
-	BLEND_A_MAX     = 0x80,   // Impossible blending uses coeff bigger than 1
-	BLEND_C_CLR1    = 0x100,  // Clear color blending (use directly the destination color as blending factor)
-	BLEND_C_CLR2_AF = 0x200,  // Clear color blending (use directly the destination color as blending factor)
-	BLEND_C_CLR2_AS = 0x400,  // Clear color blending (use directly the destination color as blending factor)
-	BLEND_C_CLR3    = 0x800,  // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
-	BLEND_NO_REC    = 0x1000, // Doesn't require sampling of the RT as a texture
-	BLEND_ACCU      = 0x2000, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
+	// Flags to determine blending behavior
+	BLEND_CD      = 0x1,   // Output is Cd, hw blend can handle it
+	BLEND_HW_CLR1 = 0x2,   // Clear color blending (use directly the destination color as blending factor)
+	BLEND_HW_CLR2 = 0x4,   // Clear color blending (use directly the destination color as blending factor)
+	BLEND_HW_CLR3 = 0x8,   // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
+	BLEND_MIX1    = 0x10,  // Mix of hw and sw, do Cs*F or Cs*As in shader
+	BLEND_MIX2    = 0x20,  // Mix of hw and sw, do Cs*(As + 1) or Cs*(F + 1) in shader
+	BLEND_MIX3    = 0x40,  // Mix of hw and sw, do Cs*(1 - As) or Cs*(1 - F) in shader
+	BLEND_ACCU    = 0x80,  // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
+	BLEND_NO_REC  = 0x100, // Doesn't require sampling of the RT as a texture
+	BLEND_A_MAX   = 0x200, // Impossible blending uses coeff bigger than 1
 };
 
 // Determines the HW blend function for DX11/OGL
@@ -227,13 +245,6 @@ struct alignas(16) GSHWDrawConfig
 		Line,
 		Triangle,
 	};
-	enum class GSTopology: u8
-	{
-		Point,
-		Line,
-		Triangle,
-		Sprite,
-	};
 	enum class VSExpand: u8
 	{
 		None,
@@ -242,22 +253,6 @@ struct alignas(16) GSHWDrawConfig
 		Sprite,
 	};
 #pragma pack(push, 1)
-	struct GSSelector
-	{
-		union
-		{
-			struct
-			{
-				GSTopology topology : 2;
-				bool expand : 1;
-				bool iip : 1;
-				bool forward_primid : 1;
-			};
-			u8 key;
-		};
-		GSSelector(): key(0) {}
-		GSSelector(u8 k): key(k) {}
-	};
 	struct VSSelector
 	{
 		union
@@ -267,7 +262,7 @@ struct alignas(16) GSHWDrawConfig
 				u8 fst : 1;
 				u8 tme : 1;
 				u8 iip : 1;
-				u8 point_size : 1;		///< Set when points need to be expanded without geometry shader.
+				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
 				VSExpand expand : 2;
 				u8 _free : 2;
 			};
@@ -275,7 +270,11 @@ struct alignas(16) GSHWDrawConfig
 		};
 		VSSelector(): key(0) {}
 		VSSelector(u8 k): key(k) {}
+
+		/// Returns true if the fixed index buffer should be used.
+		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 	};
+	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
 #pragma pack(pop)
 #pragma pack(push, 4)
 	struct PSSelector
@@ -287,11 +286,10 @@ struct alignas(16) GSHWDrawConfig
 		{
 			struct
 			{
-				// *** Word 1
 				// Format
 				u32 aem_fmt   : 2;
 				u32 pal_fmt   : 2;
-				u32 dfmt      : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
+				u32 dst_fmt   : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
 				u32 depth_fmt : 2; // 0 → None, 1 → 32-bit, 2 → 16-bit, 3 → RGBA
 				// Alpha extension/Correction
 				u32 aem : 1;
@@ -314,24 +312,24 @@ struct alignas(16) GSHWDrawConfig
 				u32 ltf : 1;
 				// Shuffle and fbmask effect
 				u32 shuffle  : 1;
+				u32 shuffle_same : 1;
 				u32 real16src: 1;
 				u32 read_ba  : 1;
 				u32 write_rg : 1;
 				u32 fbmask   : 1;
 
-				//u32 _free1:0;
-
-				// *** Word 2
 				// Blend and Colclip
 				u32 blend_a     : 2;
 				u32 blend_b     : 2;
 				u32 blend_c     : 2;
 				u32 blend_d     : 2;
 				u32 fixed_one_a : 1;
-				u32 clr_hw      : 3;
+				u32 blend_hw    : 2;
+				u32 a_masked    : 1;
 				u32 hdr         : 1;
 				u32 colclip     : 1;
 				u32 blend_mix   : 2;
+				u32 round_inv   : 1; // Blending will invert the value, so rounding needs to go the other way
 				u32 pabe        : 1;
 				u32 no_color    : 1; // disables color output entirely (depth only)
 				u32 no_color1   : 1; // disables second color output (when unnecessary)
@@ -355,6 +353,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 automatic_lod : 1;
 				u32 manual_lod : 1;
 				u32 point_sampler : 1;
+				u32 region_rect : 1;
 
 				// Scan mask
 				u32 scanmsk : 2;
@@ -395,6 +394,7 @@ struct alignas(16) GSHWDrawConfig
 			no_color = no_color1 = 1;
 		}
 	};
+	static_assert(sizeof(PSSelector) == 12, "PSSelector is 12 bytes");
 #pragma pack(pop)
 	struct PSSelectorHash
 	{
@@ -567,6 +567,8 @@ struct alignas(16) GSHWDrawConfig
 
 		GSVector4 DitherMatrix[4];
 
+		GSVector4 ScaleFactor;
+
 		__fi PSConstantBuffer()
 		{
 			memset(this, 0, sizeof(*this));
@@ -638,7 +640,7 @@ struct alignas(16) GSHWDrawConfig
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
 	const GSVertex* verts;///< Vertices to draw
-	const u32* indices;   ///< Indices to draw
+	const u16* indices;   ///< Indices to draw
 	u32 nverts;           ///< Number of vertices
 	u32 nindices;         ///< Number of indices
 	u32 indices_per_prim; ///< Number of indices that make up one primitive
@@ -648,7 +650,6 @@ struct alignas(16) GSHWDrawConfig
 	Topology topology;  ///< Draw topology
 
 	alignas(8) PSSelector ps;
-	GSSelector gs;
 	VSSelector vs;
 
 	BlendState blend;
@@ -684,17 +685,32 @@ struct alignas(16) GSHWDrawConfig
 class GSDevice : public GSAlignedClass<32>
 {
 public:
+	enum class PresentResult
+	{
+		OK,
+		FrameSkipped,
+		DeviceLost
+	};
+
+	enum class DebugMessageCategory
+	{
+		Cache,
+		Reg,
+		Debug,
+		Message,
+		Performance
+	};
+
 	// clang-format off
 	struct FeatureSupport
 	{
 		bool broken_point_sampler : 1; ///< Issue with AMD cards, see tfx shader for details
-		bool geometry_shader      : 1; ///< Supports geometry shader
 		bool vs_expand            : 1; ///< Supports expanding points/lines/sprites in the vertex shader
 		bool primitive_id         : 1; ///< Supports primitive ID for use with prim tracking destination alpha algorithm
 		bool texture_barrier      : 1; ///< Supports sampling rt and hopefully texture barrier
 		bool provoking_vertex_last: 1; ///< Supports using the last vertex in a primitive as the value for flat shading.
-		bool point_expand         : 1; ///< Supports point expansion in hardware without using geometry shaders.
-		bool line_expand          : 1; ///< Supports line expansion in hardware without using geometry shaders.
+		bool point_expand         : 1; ///< Supports point expansion in hardware.
+		bool line_expand          : 1; ///< Supports line expansion in hardware.
 		bool prefer_new_textures  : 1; ///< Allocate textures up to the pool size before reusing them, to avoid render pass restarts.
 		bool dxt_textures         : 1; ///< Supports DXTn texture compression, i.e. S3TC and BC1-3.
 		bool bptc_textures        : 1; ///< Supports BC6/7 texture compression.
@@ -703,10 +719,20 @@ public:
 		bool clip_control         : 1; ///< Can use 0..1 depth range instead of -1..1.
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
+		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
 		}
+	};
+
+	struct MultiStretchRect
+	{
+		GSVector4 src_rect;
+		GSVector4 dst_rect;
+		GSTexture* src;
+		bool linear;
+		GSHWDrawConfig::ColorMaskSelector wmask; // 0xf for all channels by default
 	};
 
 	enum BlendFactor : u8
@@ -725,16 +751,26 @@ public:
 	// clang-format on
 
 private:
-	FastList<GSTexture*> m_pool;
+	std::array<FastList<GSTexture*>, 2> m_pool; // [texture, target]
 	u64 m_pool_memory_usage = 0;
+
 	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
 	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
 protected:
-	static constexpr int   NUM_INTERLACE_SHADERS = 5;
+	static constexpr int NUM_INTERLACE_SHADERS = 5;
 	static constexpr float MAD_SENSITIVITY = 0.08f;
-	static constexpr u32   MAX_POOLED_TEXTURES = 300;
-	static constexpr u32   NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
+	static constexpr u32 MAX_POOLED_TARGETS = 300;
+	static constexpr u32 MAX_TARGET_AGE = 20;
+	static constexpr u32 MAX_POOLED_TEXTURES = 300;
+	static constexpr u32 MAX_TEXTURE_AGE = 10;
+	static constexpr u32 NUM_CAS_CONSTANTS = 12; // 8 plus src offset x/y, 16 byte alignment
+	static constexpr u32 EXPAND_BUFFER_SIZE = sizeof(u16) * 16383 * 6;
+
+	WindowInfo m_window_info;
+	VsyncMode m_vsync_mode = VsyncMode::Off;
+
+	GSTexture* m_imgui_font = nullptr;
 
 	GSTexture* m_merge = nullptr;
 	GSTexture* m_weavebob = nullptr;
@@ -756,13 +792,15 @@ protected:
 	bool m_rbswapped = false;
 	FeatureSupport m_features;
 
+	bool AcquireWindow(bool recreate_window);
+
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
 	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 
-	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c, const bool linear) = 0;
-	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset, int bufIdx) = 0;
-	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
-	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) {}
+	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) = 0;
+	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) = 0;
+	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) = 0;
+	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
 
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
@@ -774,69 +812,127 @@ public:
 	GSDevice();
 	virtual ~GSDevice();
 
-	__fi unsigned int GetFrameNumber() const { return m_frame; }
+	/// Returns a string representing the specified API.
+	static const char* RenderAPIToString(RenderAPI api);
+
+	/// Parses the configured fullscreen mode into its components (width * height @ refresh hz)
+	static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);
+
+	/// Converts a fullscreen mode to a string.
+	static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
+
+	/// Generates a fixed index buffer for expanding points and sprites. Buffer is assumed to be at least EXPAND_BUFFER_SIZE in size.
+	static void GenerateExpansionIndexBuffer(void* buffer);
+
+	/// Reads the specified shader source file.
+	static std::optional<std::string> ReadShaderSource(const char* filename);
+
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
+
+	__fi FeatureSupport Features() const { return m_features; }
+
+	__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
+	__fi s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
+	__fi s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
+	__fi GSVector2i GetWindowSize() const { return GSVector2i(static_cast<s32>(m_window_info.surface_width), static_cast<s32>(m_window_info.surface_height)); }
+	__fi float GetWindowScale() const { return m_window_info.surface_scale; }
+	__fi VsyncMode GetVsyncMode() const { return m_vsync_mode; }
+
+	__fi GSTexture* GetCurrent() const { return m_current; }
 
 	void Recycle(GSTexture* t);
 
-	enum
-	{
-		Windowed,
-		Fullscreen,
-		DontCare
-	};
+	/// Returns true if it's an OpenGL-based renderer.
+	bool UsesLowerLeftOrigin() const;
 
-	enum class DebugMessageCategory
-	{
-		Cache,
-		Reg,
-		Debug,
-		Message,
-		Performance
-	};
+	/// Recreates the font, call when the window scaling changes.
+	bool UpdateImGuiFontTexture();
 
 	virtual bool Create();
 	virtual void Destroy();
 
-	virtual void ResetAPIState();
-	virtual void RestoreAPIState();
+	/// Returns the graphics API used by this device.
+	virtual RenderAPI GetRenderAPI() const = 0;
 
-	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
-	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
-	virtual void InvalidateRenderTarget(GSTexture* t) {}
-	virtual void ClearDepth(GSTexture* t) {}
-	virtual void ClearStencil(GSTexture* t, u8 c) {}
+	/// Returns true if we have a window we're rendering into.
+	virtual bool HasSurface() const = 0;
 
-	virtual void PushDebugGroup(const char* fmt, ...) {}
-	virtual void PopDebugGroup() {}
-	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) {}
+	/// Destroys the surface we're currently drawing to.
+	virtual void DestroySurface() = 0;
+
+	/// Switches to a new window/surface.
+	virtual bool UpdateWindow() = 0;
+
+	/// Call when the window size changes externally to recreate any resources.
+	virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
+
+	/// Returns true if exclusive fullscreen is supported.
+	virtual bool SupportsExclusiveFullscreen() const = 0;
+
+	/// Returns false if the window was completely occluded. If frame_skip is set, the frame won't be
+	/// displayed, but the GPU command queue will still be flushed.
+	virtual PresentResult BeginPresent(bool frame_skip) = 0;
+
+	/// Presents the frame to the display.
+	virtual void EndPresent() = 0;
+
+	/// Changes vsync mode for this display.
+	virtual void SetVSync(VsyncMode mode) = 0;
+
+	/// Returns the effective refresh rate of this display.
+	virtual bool GetHostRefreshRate(float* refresh_rate);
+
+	/// Returns a string of information about the graphics driver being used.
+	virtual std::string GetDriverInfo() const = 0;
+
+	/// Enables/disables GPU frame timing.
+	virtual bool SetGPUTimingEnabled(bool enabled) = 0;
+
+	/// Returns the amount of GPU time utilized since the last time this method was called.
+	virtual float GetAndResetAccumulatedGPUTime() = 0;
+
+	void ClearRenderTarget(GSTexture* t, u32 c);
+	void ClearDepth(GSTexture* t, float d);
+	void InvalidateRenderTarget(GSTexture* t);
+
+	virtual void PushDebugGroup(const char* fmt, ...) = 0;
+	virtual void PopDebugGroup() = 0;
+	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) = 0;
 
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
-	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
-	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format);
+	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 
-	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) {}
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) {}
+	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) = 0;
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) = 0;
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) = 0;
 
 	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
 
 	/// Performs a screen blit for display. If dTex is null, it assumes you are writing to the system framebuffer/swap chain.
-	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) {}
+	virtual void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) = 0;
+
+	/// Same as doing StretchRect for each item, except tries to batch together rectangles in as few draws as possible.
+	/// The provided list should be sorted by texture, the implementations only check if it's the same as the last.
+	virtual void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader = ShaderConvert::COPY);
+
+	/// Sorts a MultiStretchRect list for optimal batching.
+	static void SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects);
 
 	/// Updates a GPU CLUT texture from a source texture.
-	virtual void UpdateCLUTTexture(GSTexture* sTex, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) {}
+	virtual void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) = 0;
 
-	virtual void RenderHW(GSHWDrawConfig& config) {}
+	/// Converts a colour format to an indexed format texture.
+	virtual void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) = 0;
 
-	__fi FeatureSupport Features() const { return m_features; }
-	__fi GSTexture* GetCurrent() const { return m_current; }
+	virtual void RenderHW(GSHWDrawConfig& config) = 0;
+
+	virtual void ClearSamplerCache() = 0;
 
 	void ClearCurrent();
-	void Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c);
+	void Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c);
 	void Interlace(const GSVector2i& ds, int field, int mode, float yoffset);
 	void FXAA();
 	void ShadeBoost();
@@ -844,22 +940,17 @@ public:
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
 
-	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear = true, bool prefer_reuse = false);
-	bool ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse = false);
-	bool ResizeTarget(GSTexture** t, int w, int h);
-	bool ResizeTarget(GSTexture** t);
+	bool ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle);
 
 	bool IsRBSwapped() { return m_rbswapped; }
 
 	void AgePool();
 	void PurgePool();
 
-	virtual void ClearSamplerCache();
-
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{
-		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA
-			/*|| factor == SRC1_COLOR || factor == INV_SRC1_COLOR*/); // not used
+		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR
+			/* || factor == INV_SRC1_COLOR*/); // not used
 	}
 	__fi static constexpr bool IsConstantBlendFactor(u16 factor)
 	{

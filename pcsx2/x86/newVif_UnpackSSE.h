@@ -23,8 +23,6 @@
 
 using namespace x86Emitter;
 
-extern void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp, int xyzw);
-
 // --------------------------------------------------------------------------------------
 //  VifUnpackSSE_Base
 // --------------------------------------------------------------------------------------
@@ -41,6 +39,7 @@ public:
 protected:
 	xAddressVoid dstIndirect;
 	xAddressVoid srcIndirect;
+	xRegisterSSE zeroReg;
 	xRegisterSSE workReg;
 	xRegisterSSE destReg;
 
@@ -49,6 +48,8 @@ public:
 	virtual ~VifUnpackSSE_Base() = default;
 
 	virtual void xUnpack(int upktype) const;
+	virtual bool IsWriteProtectedOp() const = 0;
+	virtual bool IsInputMasked() const = 0;
 	virtual bool IsUnmaskedOp() const = 0;
 	virtual void xMovDest() const;
 
@@ -91,6 +92,8 @@ public:
 	VifUnpackSSE_Simple(bool usn_, bool domask_, int curCycle_);
 	virtual ~VifUnpackSSE_Simple() = default;
 
+	virtual bool IsWriteProtectedOp() const { return false; }
+	virtual bool IsInputMasked() const { return false; }
 	virtual bool IsUnmaskedOp() const { return !doMask; }
 
 protected:
@@ -106,7 +109,9 @@ class VifUnpackSSE_Dynarec : public VifUnpackSSE_Base
 
 public:
 	bool isFill;
-	int  doMode; // two bit value representing... something!
+	int  doMode; // two bit value representing difference mode
+	bool skipProcessing;
+	bool inputMasked;
 
 protected:
 	const nVifStruct& v;   // vif0 or vif1
@@ -126,9 +131,12 @@ public:
 
 	virtual ~VifUnpackSSE_Dynarec() = default;
 
+	virtual bool IsWriteProtectedOp() const { return skipProcessing; }
+	virtual bool IsInputMasked() const { return inputMasked; }
 	virtual bool IsUnmaskedOp() const { return !doMode && !doMask; }
 
 	void ModUnpack(int upknum, bool PostOp);
+	void ProcessMasks();
 	void CompileRoutine();
 
 

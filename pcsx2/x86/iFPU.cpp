@@ -526,26 +526,29 @@ void FPU_SUB(int regd, int regt)
 // or SMALLER (by 0x1). (this means that x86's other rounding modes are only less similar to PS2's mul)
 //------------------------------------------------------------------
 
-u32 FPU_MUL_HACK(u32 s, u32 t)
-{
-	if ((s == 0x3e800000) && (t == 0x40490fdb))
-		return 0x3f490fda; // needed for Tales of Destiny Remake (only in a very specific room late-game)
-	else
-		return 0;
-}
-
 void FPU_MUL(int regd, int regt, bool reverseOperands)
 {
 	u8 *endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{
+		// 	if ((s == 0x3e800000) && (t == 0x40490fdb))
+		// 		return 0x3f490fda; // needed for Tales of Destiny Remake (only in a very specific room late-game)
+		// 	else
+		// 		return 0;
+
+		alignas(16) static constexpr const u32 result[4] = { 0x3f490fda };
+
 		xMOVD(ecx, xRegisterSSE(reverseOperands ? regt : regd));
 		xMOVD(edx, xRegisterSSE(reverseOperands ? regd : regt));
-		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
-		xTEST(eax, eax);
-		u8* noHack = JZ8(0);
-			xMOVDZX(xRegisterSSE(regd), eax);
+
+		// if (((s ^ 0x3e800000) | (t ^ 0x40490fdb)) != 0) { hack; }
+		xXOR(ecx, 0x3e800000);
+		xXOR(edx, 0x40490fdb);
+		xOR(edx, ecx);
+
+		u8* noHack = JNZ8(0);
+			xMOVAPS(xRegisterSSE(regd), ptr128[result]);
 			endMul = JMP8(0);
 		x86SetJ8(noHack);
 	}

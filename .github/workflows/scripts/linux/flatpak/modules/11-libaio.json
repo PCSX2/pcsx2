@@ -1,0 +1,24 @@
+{
+  "name": "libaio",
+  "no-autogen": true,
+  "make-install-args": [
+    "prefix=/app"
+  ],
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://pagure.io/libaio.git",
+      "tag": "libaio-0.3.113",
+      "commit": "1b18bfafc6a2f7b9fa2c6be77a95afed8b7be448"
+    }
+  ],
+  "cleanup": [
+    "/include",
+    "/lib/*.a",
+    "/lib/*.la"
+  ]
+}
+

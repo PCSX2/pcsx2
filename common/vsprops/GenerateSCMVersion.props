@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <!-- This sucks. Need a better solution. -->
+    <PreBuildEvent>
+      <Command>"$(SolutionDir)common\vsprops\preBuild.cmd"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+</Project>

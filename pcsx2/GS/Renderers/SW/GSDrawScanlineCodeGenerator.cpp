@@ -91,7 +91,8 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(u64 key, void* code, si
 
 	if (shouldUseCDrawScanline(key))
 	{
-		jmp(reinterpret_cast<const void*>(&GSDrawScanline::CDrawScanline));
+		jmp(reinterpret_cast<const void*>(static_cast<void (*)(int, int, int, const GSVertexSW&, GSScanlineLocalData&)>(
+			&GSDrawScanline::CDrawScanline)));
 		return;
 	}
 

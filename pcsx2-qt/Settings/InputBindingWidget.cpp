@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,16 +21,15 @@
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
+#include <bit>
 #include <cmath>
 #include <sstream>
 
-#include "pcsx2/HostSettings.h"
-
-#include "pcsx2/GS/GSIntrin.h" // _BitScanForward
+#include "pcsx2/Host.h"
 
 #include "QtHost.h"
 #include "QtUtils.h"
-#include "Settings/ControllerSettingsDialog.h"
+#include "Settings/ControllerSettingsWindow.h"
 #include "Settings/InputBindingDialog.h"
 #include "Settings/InputBindingWidget.h"
 
@@ -57,9 +56,9 @@ InputBindingWidget::~InputBindingWidget()
 	Q_ASSERT(!isListeningForInput());
 }
 
-bool InputBindingWidget::isMouseMappingEnabled()
+bool InputBindingWidget::isMouseMappingEnabled(SettingsInterface* sif)
 {
-	return Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
+	return sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) : Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
 }
 
 void InputBindingWidget::initialize(
@@ -74,9 +73,14 @@ void InputBindingWidget::initialize(
 
 void InputBindingWidget::updateText()
 {
+	const QString binding_tip(tr("\n\nLeft click to assign a new button\nShift + left click for additional bindings"));
+	const QString binding_clear_tip(tr("\nRight click to clear binding"));
+
 	if (m_bindings.empty())
 	{
 		setText(QString());
+
+		setToolTip(tr("No bindings registered") + binding_tip);
 	}
 	else if (m_bindings.size() > 1)
 	{
@@ -93,12 +97,12 @@ void InputBindingWidget::updateText()
 				ss << "\n";
 			ss << binding;
 		}
-		setToolTip(QString::fromStdString(ss.str()));
+		setToolTip(QString::fromStdString(ss.str()) + binding_tip + binding_clear_tip);
 	}
 	else
 	{
 		QString binding_text(QString::fromStdString(m_bindings[0]));
-		setToolTip(binding_text);
+		setToolTip(binding_text + binding_tip + binding_clear_tip);
 
 		// fix up accelerators, and if it's too long, ellipsise it
 		if (binding_text.contains('&'))
@@ -129,9 +133,8 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
 	else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
 	{
 		// double clicks get triggered if we click bind, then click again quickly.
-		unsigned long button_index;
-		if (_BitScanForward(&button_index, static_cast<u32>(static_cast<const QMouseEvent*>(event)->button())))
-			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, button_index));
+		if (const u32 button_mask = static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()))
+			m_new_bindings.push_back(InputManager::MakePointerButtonKey(0, std::countr_zero(button_mask)));
 		return true;
 	}
 	else if (event_type == QEvent::Wheel)
@@ -302,7 +305,7 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
 {
 	m_value_ranges.clear();
 	m_new_bindings.clear();
-	m_mouse_mapping_enabled = isMouseMappingEnabled();
+	m_mouse_mapping_enabled = isMouseMappingEnabled(m_sif);
 	m_input_listen_start_position = QCursor::pos();
 	m_input_listen_timer = new QTimer(this);
 	m_input_listen_timer->setSingleShot(false);
@@ -413,7 +416,7 @@ InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent)
 }
 
 InputVibrationBindingWidget::InputVibrationBindingWidget(
-	QWidget* parent, ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+	QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name, std::string key_name)
 {
 	setMinimumWidth(225);
 	setMaximumWidth(225);
@@ -427,7 +430,7 @@ InputVibrationBindingWidget::~InputVibrationBindingWidget()
 {
 }
 
-void InputVibrationBindingWidget::setKey(ControllerSettingsDialog* dialog, std::string section_name, std::string key_name)
+void InputVibrationBindingWidget::setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name)
 {
 	m_dialog = dialog;
 	m_section_name = std::move(section_name);

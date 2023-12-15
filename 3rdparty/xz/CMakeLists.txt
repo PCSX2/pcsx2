@@ -156,3 +156,5 @@ target_include_directories(xz-lzma
 		xz/src/liblzma/simple
 )
 add_library(LibLZMA::LibLZMA ALIAS xz-lzma)
+
+disable_compiler_warnings_for_target(xz-lzma)

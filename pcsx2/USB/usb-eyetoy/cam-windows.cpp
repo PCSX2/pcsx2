@@ -17,7 +17,7 @@
 
 #include "common/StringUtil.h"
 
-#include <jpgd/jpge.h>
+#include "jpge.h"
 #include "videodev.h"
 #include "cam-windows.h"
 #include "usb-eyetoy-webcam.h"
@@ -28,6 +28,9 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmicrosoft-goto"
 #endif
+
+#define safe_release(ptr) \
+	((void)((((ptr) != NULL) && ((ptr)->Release(), !!0)), (ptr) = NULL))
 
 namespace usb_eyetoy
 {
@@ -120,7 +123,7 @@ namespace usb_eyetoy
 			return devList;
 		}
 
-		int DirectShow::InitializeDevice(std::wstring selectedDevice)
+		int DirectShow::InitializeDevice(const std::wstring& selectedDevice)
 		{
 
 			// Create the Capture Graph Builder.
@@ -175,6 +178,8 @@ namespace usb_eyetoy
 			IMoniker* pMoniker = nullptr;
 			while (pEnum->Next(1, &pMoniker, NULL) == S_OK && sourcefilter == nullptr)
 			{
+				LONGLONG start = 0, stop = MAXLONGLONG;
+
 				IPropertyBag* pPropBag = nullptr;
 				hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
 				if (FAILED(hr))
@@ -315,7 +320,6 @@ namespace usb_eyetoy
 				}
 
 				// if the stream is started, start capturing immediatly
-				LONGLONG start = 0, stop = MAXLONGLONG;
 				hr = pGraphBuilder->ControlStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, sourcefilter, &start, &stop, 1, 2);
 				if (FAILED(hr))
 				{
@@ -338,34 +342,45 @@ namespace usb_eyetoy
 			return 0;
 		}
 
-		void DirectShow::Start()
+		bool DirectShow::Start()
 		{
 			HRESULT hr = nullrenderer->Run(0);
 			if (FAILED(hr))
-				throw hr;
+			{
+				Console.Error("nullrenderer->Run() failed: %08X", hr);
+				return false;
+			}
 
 			hr = samplegrabberfilter->Run(0);
 			if (FAILED(hr))
-				throw hr;
+			{
+				Console.Error("samplegrabberfilter->Run() failed: %08X", hr);
+				return false;
+			}
 
 			hr = sourcefilter->Run(0);
 			if (FAILED(hr))
-				throw hr;
+			{
+				Console.Error("sourcefilter->Run() failed: %08X", hr);
+				return false;
+			}
+
+			return true;
 		}
 
 		void DirectShow::Stop()
 		{
 			HRESULT hr = sourcefilter->Stop();
 			if (FAILED(hr))
-				throw hr;
+				Console.Error("sourcefilter->Stop() failed: %08X", hr);
 
 			hr = samplegrabberfilter->Stop();
 			if (FAILED(hr))
-				throw hr;
+				Console.Error("samplegrabberfilter->Stop() failed: %08X", hr);
 
 			hr = nullrenderer->Stop();
 			if (FAILED(hr))
-				throw hr;
+				Console.Error("nullrenderer->Stop() failed: %08X", hr);
 		}
 
 		void store_mpeg_frame(const unsigned char* data, const unsigned int len)
@@ -550,9 +565,14 @@ namespace usb_eyetoy
 			}
 
 			pControl->Run();
-			this->Stop();
-			this->SetCallback(dshow_callback);
-			this->Start();
+			Stop();
+			SetCallback(dshow_callback);
+			if (!Start())
+			{
+				Console.Error("Camera: Failed to start");
+				Stop();
+				return -1;
+			}
 
 			return 0;
 		};

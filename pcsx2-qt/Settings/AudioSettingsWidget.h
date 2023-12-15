@@ -19,14 +19,14 @@
 
 #include "ui_AudioSettingsWidget.h"
 
-class SettingsDialog;
+class SettingsWindow;
 
 class AudioSettingsWidget : public QWidget
 {
 	Q_OBJECT
 
 public:
-	AudioSettingsWidget(SettingsDialog* dialog, QWidget* parent);
+	AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent);
 	~AudioSettingsWidget();
 
 private Q_SLOTS:
@@ -42,9 +42,10 @@ private Q_SLOTS:
 	void resetTimestretchDefaults();
 
 private:
+	void populateOutputModules();
 	void updateVolumeLabel();
 
-	SettingsDialog* m_dialog;
+	SettingsWindow* m_dialog;
 	Ui::AudioSettingsWidget m_ui;
 	u32 m_output_device_latency = 0;
 };

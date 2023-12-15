@@ -38,8 +38,7 @@
 #include "Host.h"
 #include "VMManager.h"
 
-#include "common/Align.h"
-#include "common/MemsetFast.inl"
+#include "common/BitUtils.h"
 
 #include "fmt/core.h"
 
@@ -362,6 +361,72 @@ template bool vtlb_ramWrite<mem32_t>(u32 mem, const mem32_t& data);
 template bool vtlb_ramWrite<mem64_t>(u32 mem, const mem64_t& data);
 template bool vtlb_ramWrite<mem128_t>(u32 mem, const mem128_t& data);
 
+int vtlb_memSafeCmpBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		if (vmv.isHandler(mem))
+			return -1;
+
+		const size_t remaining_in_page =
+			std::min(VTLB_PAGE_SIZE - (mem & VTLB_PAGE_MASK), static_cast<u32>(sptr_end - sptr));
+		const int res = std::memcmp(sptr, reinterpret_cast<void*>(vmv.assumePtr(mem)), remaining_in_page);
+		if (res != 0)
+			return res;
+
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return 0;
+}
+
+bool vtlb_memSafeReadBytes(u32 mem, void* dst, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	u8* dptr = static_cast<u8*>(dst);
+	u8* const dptr_end = dptr + size;
+	while (dptr != dptr_end)
+	{
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		if (vmv.isHandler(mem))
+			return false;
+
+		const u32 remaining_in_page =
+			std::min(VTLB_PAGE_SIZE - (mem & VTLB_PAGE_MASK), static_cast<u32>(dptr_end - dptr));
+		std::memcpy(dptr, reinterpret_cast<void*>(vmv.assumePtr(mem)), remaining_in_page);
+		dptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
+bool vtlb_memSafeWriteBytes(u32 mem, const void* src, u32 size)
+{
+	// can memcpy so long as pages aren't crossed
+	const u8* sptr = static_cast<const u8*>(src);
+	const u8* const sptr_end = sptr + size;
+	while (sptr != sptr_end)
+	{
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		if (vmv.isHandler(mem))
+			return false;
+
+		const size_t remaining_in_page =
+			std::min(VTLB_PAGE_SIZE - (mem & VTLB_PAGE_MASK), static_cast<u32>(sptr_end - sptr));
+		std::memcpy(reinterpret_cast<void*>(vmv.assumePtr(mem)), sptr, remaining_in_page);
+		sptr += remaining_in_page;
+		mem += remaining_in_page;
+	}
+
+	return true;
+}
+
 // --------------------------------------------------------------------------------------
 //  TLB Miss / BusError Handlers
 // --------------------------------------------------------------------------------------
@@ -466,7 +531,7 @@ static __ri void vtlb_Miss(u32 addr, u32 mode)
 		return;
 	}
 
-	const std::string message(fmt::format("TLB Miss, addr=0x{:x} [{}]", addr, mode ? "store" : "load"));
+	const std::string message(fmt::format("TLB Miss, pc=0x{:x} addr=0x{:x} [{}]", cpuRegs.pc, addr, mode ? "store" : "load"));
 	if (EmuConfig.Cpu.Recompiler.PauseOnTLBMiss)
 	{
 		// Pause, let the user try to figure out what went wrong in the debugger.
@@ -647,7 +712,7 @@ void vtlb_MapHandler(vtlbHandler handler, u32 start, u32 size)
 	verify(0 == (size & VTLB_PAGE_MASK) && size > 0);
 
 	u32 end = start + (size - VTLB_PAGE_SIZE);
-	pxAssume((end >> VTLB_PAGE_BITS) < std::size(vtlbdata.pmap));
+	pxAssume((end >> VTLB_PAGE_BITS) < (sizeof(vtlbdata.pmap) / sizeof(vtlbdata.pmap[0])));
 
 	while (start <= end)
 	{
@@ -777,7 +842,6 @@ static bool vtlb_IsHostCoalesced(u32 page)
 static bool vtlb_GetMainMemoryOffsetFromPtr(uptr ptr, u32* mainmem_offset, u32* mainmem_size, PageProtectionMode* prot)
 {
 	const uptr page_end = ptr + VTLB_PAGE_SIZE;
-	SysMainMemory& vmmem = GetVmMemory();
 
 	// EE memory and ROMs.
 	if (ptr >= (uptr)eeMem->Main && page_end <= (uptr)eeMem->ZeroRead)
@@ -802,11 +866,11 @@ static bool vtlb_GetMainMemoryOffsetFromPtr(uptr ptr, u32* mainmem_offset, u32* 
 
 	// VU memory - this includes both data and code for VU0/VU1.
 	// Practically speaking, this is only data, because the code goes through a handler.
-	if (ptr >= (uptr)vmmem.VUMemory().GetPtr() && page_end <= (uptr)vmmem.VUMemory().GetPtrEnd())
+	if (ptr >= (uptr)SysMemory::GetVUMem() && page_end <= (uptr)SysMemory::GetVUMemEnd())
 	{
-		const u32 vumem_offset = static_cast<u32>(ptr - (uptr)vmmem.VUMemory().GetPtr());
+		const u32 vumem_offset = static_cast<u32>(ptr - (uptr)SysMemory::GetVUMem());
 		*mainmem_offset = vumem_offset + HostMemoryMap::VUmemOffset;
-		*mainmem_size = vmmem.VUMemory().GetSize() - vumem_offset;
+		*mainmem_size = HostMemoryMap::VUmemSize - vumem_offset;
 		*prot = PageProtectionMode().Read().Write();
 		return true;
 	}
@@ -867,7 +931,7 @@ static void vtlb_CreateFastmemMapping(u32 vaddr, u32 mainmem_offset, const PageP
 		const u32 host_page = vtlb_HostPage(page);
 		const u32 host_offset = vtlb_HostAlignOffset(mainmem_offset);
 
-		if (!s_fastmem_area->Map(GetVmMemory().MainMemory()->GetFileHandle(), host_offset,
+		if (!s_fastmem_area->Map(SysMemory::GetDataFileHandle(), host_offset,
 				s_fastmem_area->PagePointer(host_page), __pagesize, mode))
 		{
 			Console.Error("Failed to map vaddr %08X to mainmem offset %08X", vtlb_HostAlignOffset(vaddr), host_offset);
@@ -958,7 +1022,7 @@ bool vtlb_ResolveFastmemMapping(uptr* addr)
 
 	const u32 mainmem_offset = s_fastmem_virtual_mapping[vpage] + (vaddr & VTLB_PAGE_MASK);
 	FASTMEM_LOG("Resolved %p (vaddr %08X) to mainmem offset %08X", uaddr, vaddr, mainmem_offset);
-	*addr = ((uptr)GetVmMemory().MainMemory()->GetBase()) + mainmem_offset;
+	*addr = ((uptr)SysMemory::GetDataPtr(0)) + mainmem_offset;
 	return true;
 }
 
@@ -1149,7 +1213,7 @@ void vtlb_VMapUnmap(u32 vaddr, u32 size)
 void vtlb_Init()
 {
 	vtlbHandlerCount = 0;
-	memzero(vtlbdata.RWFT);
+	std::memset(vtlbdata.RWFT, 0, sizeof(vtlbdata.RWFT));
 
 #define VTLB_BuildUnmappedHandler(baseName) \
 	baseName##ReadSm<mem8_t>, baseName##ReadSm<mem16_t>, baseName##ReadSm<mem32_t>, \
@@ -1180,9 +1244,6 @@ void vtlb_Init()
 	// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 		vtlb_Alloc_Ppmap();
-
-	extern void vtlb_dynarec_init();
-	vtlb_dynarec_init();
 }
 
 // vtlb_Reset -- Performs a COP0-level reset of the PS2's TLB.
@@ -1231,47 +1292,31 @@ void vtlb_ResetFastmem()
 	}
 }
 
-static constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
-
 // Reserves the vtlb core allocation used by various emulation components!
 // [TODO] basemem - request allocating memory at the specified virtual location, which can allow
 //    for easier debugging and/or 3rd party cheat programs.  If 0, the operating system
 //    default is used.
 bool vtlb_Core_Alloc()
 {
-	// Can't return regions to the bump allocator
-	static VTLBVirtual* vmap = nullptr;
-	if (!vmap)
+	static constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
+	static_assert(HostMemoryMap::VTLBVirtualMapSize == VMAP_SIZE);
+
+	pxAssert(!vtlbdata.vmap && !vtlbdata.fastmem_base && !s_fastmem_area);
+
+	vtlbdata.vmap = reinterpret_cast<VTLBVirtual*>(SysMemory::GetVTLBVirtualMap());
+
+	pxAssert(!s_fastmem_area);
+	s_fastmem_area = SharedMemoryMappingArea::Create(FASTMEM_AREA_SIZE);
+	if (!s_fastmem_area)
 	{
-		vmap = (VTLBVirtual*)GetVmMemory().BumpAllocator().Alloc(VMAP_SIZE);
-		if (!vmap)
-		{
-			Host::ReportErrorAsync("Error", "Failed to allocate vtlb vmap");
-			return false;
-		}
+		Host::ReportErrorAsync("Error", "Failed to allocate fastmem area");
+		return false;
 	}
 
-	if (!vtlbdata.vmap)
-	{
-		HostSys::MemProtect(vmap, VMAP_SIZE, PageProtectionMode().Read().Write());
-		vtlbdata.vmap = vmap;
-	}
-
-	if (!vtlbdata.fastmem_base)
-	{
-		pxAssert(!s_fastmem_area);
-		s_fastmem_area = SharedMemoryMappingArea::Create(FASTMEM_AREA_SIZE);
-		if (!s_fastmem_area)
-		{
-			Host::ReportErrorAsync("Error", "Failed to allocate fastmem area");
-			return false;
-		}
-
-		s_fastmem_virtual_mapping.resize(FASTMEM_PAGE_COUNT, NO_FASTMEM_MAPPING);
-		vtlbdata.fastmem_base = (uptr)s_fastmem_area->BasePointer();
-		Console.WriteLn(Color_StrongGreen, "Fastmem area: %p - %p",
-			vtlbdata.fastmem_base, vtlbdata.fastmem_base + (FASTMEM_AREA_SIZE - 1));
-	}
+	s_fastmem_virtual_mapping.resize(FASTMEM_PAGE_COUNT, NO_FASTMEM_MAPPING);
+	vtlbdata.fastmem_base = (uptr)s_fastmem_area->BasePointer();
+	DevCon.WriteLn(Color_StrongGreen, "Fastmem area: %p - %p",
+		vtlbdata.fastmem_base, vtlbdata.fastmem_base + (FASTMEM_AREA_SIZE - 1));
 
 	if (!HostSys::InstallPageFaultHandler(&vtlb_private::PageFaultHandler))
 	{
@@ -1282,22 +1327,17 @@ bool vtlb_Core_Alloc()
 	return true;
 }
 
-static constexpr size_t PPMAP_SIZE = sizeof(*vtlbdata.ppmap) * VTLB_VMAP_ITEMS;
-
 // The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
 // However automatic gamefix is done after the standard init so a new init function was done.
 void vtlb_Alloc_Ppmap()
 {
+	static constexpr size_t PPMAP_SIZE = sizeof(*vtlbdata.ppmap) * VTLB_VMAP_ITEMS;
+	static_assert(HostMemoryMap::VTLBAddressMapSize == PPMAP_SIZE);
+
 	if (vtlbdata.ppmap)
 		return;
 
-	static u32* ppmap = nullptr;
-
-	if (!ppmap)
-		ppmap = (u32*)GetVmMemory().BumpAllocator().Alloc(PPMAP_SIZE);
-
-	HostSys::MemProtect(ppmap, PPMAP_SIZE, PageProtectionMode().Read().Write());
-	vtlbdata.ppmap = ppmap;
+	vtlbdata.ppmap = reinterpret_cast<u32*>(SysMemory::GetVTLBAddressMap());
 
 	// By default a 1:1 virtual to physical mapping
 	for (u32 i = 0; i < VTLB_VMAP_ITEMS; i++)
@@ -1308,16 +1348,8 @@ void vtlb_Core_Free()
 {
 	HostSys::RemovePageFaultHandler(&vtlb_private::PageFaultHandler);
 
-	if (vtlbdata.vmap)
-	{
-		HostSys::MemProtect(vtlbdata.vmap, VMAP_SIZE, PageProtectionMode());
-		vtlbdata.vmap = nullptr;
-	}
-	if (vtlbdata.ppmap)
-	{
-		HostSys::MemProtect(vtlbdata.ppmap, PPMAP_SIZE, PageProtectionMode());
-		vtlbdata.ppmap = nullptr;
-	}
+	vtlbdata.vmap = nullptr;
+	vtlbdata.ppmap = nullptr;
 
 	vtlb_RemoveFastmemMappings();
 	vtlb_ClearLoadStoreInfo();
@@ -1327,36 +1359,6 @@ void vtlb_Core_Free()
 	decltype(s_fastmem_virtual_mapping)().swap(s_fastmem_virtual_mapping);
 	s_fastmem_area.reset();
 }
-
-// --------------------------------------------------------------------------------------
-//  VtlbMemoryReserve  (implementations)
-// --------------------------------------------------------------------------------------
-VtlbMemoryReserve::VtlbMemoryReserve(std::string name)
-	: VirtualMemoryReserve(std::move(name))
-{
-}
-
-void VtlbMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, size_t offset, size_t size)
-{
-	// Anything passed to the memory allocator must be page aligned.
-	size = Common::PageAlign(size);
-
-	// Since the memory has already been allocated as part of the main memory map, this should never fail.
-	u8* base = allocator->Alloc(offset, size);
-	if (!base)
-	{
-		Console.WriteLn("(VtlbMemoryReserve) Failed to allocate %zu bytes for %s at offset %zu", size, m_name.c_str(), offset);
-		pxFailRel("VtlbMemoryReserve allocation failed.");
-	}
-
-	VirtualMemoryReserve::Assign(std::move(allocator), base, size);
-}
-
-void VtlbMemoryReserve::Reset()
-{
-	memzero_sse_a(GetPtr(), GetSize());
-}
-
 
 // ===========================================================================================
 //  Memory Protection and Block Checking, vtlb Style!
@@ -1511,7 +1513,7 @@ bool vtlb_private::PageFaultHandler(const PageFaultInfo& info)
 void mmap_ResetBlockTracking()
 {
 	//DbgCon.WriteLn( "vtlb/mmap: Block Tracking reset..." );
-	memzero(m_PageProtectInfo);
+	std::memset(m_PageProtectInfo, 0, sizeof(m_PageProtectInfo));
 	if (eeMem)
 		HostSys::MemProtect(eeMem->Main, Ps2MemSize::MainRam, PageAccess_ReadWrite());
 	vtlb_UpdateFastmemProtection(0, Ps2MemSize::MainRam, PageAccess_ReadWrite());

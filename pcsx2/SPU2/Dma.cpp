@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -258,7 +258,6 @@ void V_Core::FinishDMAwrite()
 #endif
 
 	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
-	u32 start = ActiveTSA;
 	u32 buff2end = 0;
 	if (buff1end > 0x100000)
 	{
@@ -298,6 +297,7 @@ void V_Core::FinishDMAwrite()
 		// memory below 0x2800 (registers and such)
 		//const u32 endpt2 = (buff2end + roundUp) / indexer_scalar;
 		//memset( pcm_cache_flags, 0, endpt2 );
+		const u32 start = ActiveTSA;
 		TDA = buff1end;
 
 		DMAPtr += TDA - ActiveTSA;
@@ -323,7 +323,7 @@ void V_Core::FinishDMAwrite()
 			// understanding would trigger the interrupt early causing it to switch buffers again immediately
 			// and an interrupt never fires again, leaving the voices looping the same samples forever.
 
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA < TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCallDMA(i);
@@ -341,7 +341,7 @@ void V_Core::FinishDMAwrite()
 		// Important: Test both core IRQ settings for either DMA!
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA < TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCallDMA(i);
@@ -373,7 +373,6 @@ void V_Core::FinishDMAwrite()
 void V_Core::FinishDMAread()
 {
 	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
-	u32 start = ActiveTSA;
 	u32 buff2end = 0;
 
 	if (buff1end > 0x100000)
@@ -396,7 +395,7 @@ void V_Core::FinishDMAread()
 
 	if (buff2end > 0)
 	{
-
+		const u32 start = ActiveTSA;
 		TDA = buff1end;
 
 		DMARPtr += TDA - ActiveTSA;
@@ -415,7 +414,7 @@ void V_Core::FinishDMAread()
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA < TDA))
 			{
 				SetIrqCallDMA(i);
 			}
@@ -433,7 +432,7 @@ void V_Core::FinishDMAread()
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA < TDA))
 			{
 				SetIrqCallDMA(i);
 			}
@@ -528,7 +527,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 
 	ActiveTSA = TSA & 0xfffff;
 
-	bool adma_enable = ((AutoDMACtrl & (Index + 1)) == (Index + 1));
+	const bool adma_enable = ((AutoDMACtrl & (Index + 1)) == (Index + 1));
 
 	if (adma_enable)
 	{

@@ -1,8 +1,23 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 //////////////////////////////////////////////////////////////////////
 // Vertex Shader
 //////////////////////////////////////////////////////////////////////
 
-#if defined(VERTEX_SHADER) || defined(GEOMETRY_SHADER)
+#if defined(VERTEX_SHADER)
 
 layout(std140, set = 0, binding = 0) uniform cb0
 {
@@ -14,18 +29,6 @@ layout(std140, set = 0, binding = 0) uniform cb0
 	uint MaxDepth;
 	uint pad_cb0;
 };
-
-#endif
-
-#ifdef VERTEX_SHADER
-
-layout(location = 0) in vec2 a_st;
-layout(location = 1) in uvec4 a_c;
-layout(location = 2) in float a_q;
-layout(location = 3) in uvec2 a_p;
-layout(location = 4) in uint a_z;
-layout(location = 5) in uvec2 a_uv;
-layout(location = 6) in vec4 a_f;
 
 layout(location = 0) out VSOutput
 {
@@ -39,17 +42,27 @@ layout(location = 0) out VSOutput
 	#endif
 } vsOut;
 
+#if VS_EXPAND == 0
+
+layout(location = 0) in vec2 a_st;
+layout(location = 1) in uvec4 a_c;
+layout(location = 2) in float a_q;
+layout(location = 3) in uvec2 a_p;
+layout(location = 4) in uint a_z;
+layout(location = 5) in uvec2 a_uv;
+layout(location = 6) in vec4 a_f;
+
 void main()
 {
 	// Clamp to max depth, gs doesn't wrap
-	float z = min(a_z, MaxDepth);
+	uint z = min(a_z, MaxDepth);
 
 	// pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
 	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
 	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
 
-	gl_Position = vec4(a_p, z, 1.0f) - vec4(0.05f, 0.05f, 0, 0);
+	gl_Position = vec4(a_p, float(z), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
 	gl_Position.xy = gl_Position.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	gl_Position.z *= exp2(-32.0f);		// integer->float depth
 	gl_Position.y = -gl_Position.y;
@@ -78,217 +91,153 @@ void main()
 	#endif
 
 	#if VS_POINT_SIZE
-		gl_PointSize = float(VS_POINT_SIZE_VALUE);
+		gl_PointSize = PointSize.x;
 	#endif
 
-	vsOut.c = a_c;
+	vsOut.c = vec4(a_c);
 	vsOut.t.z = a_f.r;
 }
 
-#endif
+#else // VS_EXPAND
 
-#ifdef GEOMETRY_SHADER
-
-layout(location = 0) in VSOutput
+struct RawVertex
 {
+	vec2 ST;
+	uint RGBA;
+	float Q;
+	uint XY;
+	uint Z;
+	uint UV;
+	uint FOG;
+};
+
+layout(std140, set = 0, binding = 2) readonly buffer VertexBuffer {
+	RawVertex vertex_buffer[];
+};
+
+struct ProcessedVertex
+{
+	vec4 p;
 	vec4 t;
 	vec4 ti;
-	#if GS_IIP != 0
-		vec4 c;
+	vec4 c;
+};
+
+ProcessedVertex load_vertex(uint index)
+{
+	RawVertex rvtx = vertex_buffer[gl_BaseVertexARB + index];
+
+	vec2 a_st = rvtx.ST;
+	uvec4 a_c = uvec4(bitfieldExtract(rvtx.RGBA, 0, 8), bitfieldExtract(rvtx.RGBA, 8, 8),
+	                  bitfieldExtract(rvtx.RGBA, 16, 8), bitfieldExtract(rvtx.RGBA, 24, 8));
+	float a_q = rvtx.Q;
+	uvec2 a_p = uvec2(bitfieldExtract(rvtx.XY, 0, 16), bitfieldExtract(rvtx.XY, 16, 16));
+	uint a_z = rvtx.Z;
+	uvec2 a_uv = uvec2(bitfieldExtract(rvtx.UV, 0, 16), bitfieldExtract(rvtx.UV, 16, 16));
+	vec4 a_f = unpackUnorm4x8(rvtx.FOG);
+
+	ProcessedVertex vtx;
+
+	uint z = min(a_z, MaxDepth);
+	vtx.p = vec4(a_p, float(z), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
+	vtx.p.xy = vtx.p.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
+	vtx.p.z *= exp2(-32.0f);		// integer->float depth
+	vtx.p.y = -vtx.p.y;
+
+	#if VS_TME
+		vec2 uv = a_uv - TextureOffset;
+		vec2 st = a_st - TextureOffset;
+		vtx.ti.xy = uv * TextureScale;
+
+		#if VS_FST
+			vtx.ti.zw = uv;
+		#else
+			vtx.ti.zw = st / TextureScale;
+		#endif
+
+		vtx.t.xy = st;
+		vtx.t.w = a_q;
 	#else
-		flat vec4 c;
+		vtx.t = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		vtx.ti = vec4(0.0f);
 	#endif
-} gsIn[];
 
-layout(location = 0) out GSOutput
-{
-	vec4 t;
-	vec4 ti;
-	#if GS_IIP != 0
-		vec4 c;
-	#else
-		flat vec4 c;
-	#endif
-} gsOut;
+	vtx.c = a_c;
+	vtx.t.z = a_f.r;
 
-void WriteVertex(vec4 pos, vec4 t, vec4 ti, vec4 c)
-{
-#if GS_FORWARD_PRIMID
-	gl_PrimitiveID = gl_PrimitiveIDIn;
-#endif
-	gl_Position = pos;
-	gsOut.t = t;
-	gsOut.ti = ti;
-	gsOut.c = c;
-	EmitVertex();
+	return vtx;
 }
-
-//////////////////////////////////////////////////////////////////////
-// Geometry Shader
-//////////////////////////////////////////////////////////////////////
-
-#if GS_PRIM == 0 && GS_POINT == 0
-
-layout(points) in;
-layout(points, max_vertices = 1) out;
-void main()
-{
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	EndPrimitive();
-}
-
-#elif GS_PRIM == 0 && GS_POINT == 1
-
-layout(points) in;
-layout(triangle_strip, max_vertices = 4) out;
 
 void main()
 {
-	// Transform a point to a NxN sprite
+	ProcessedVertex vtx;
+	uint vid = uint(gl_VertexIndex - gl_BaseVertexARB);
 
-	// Get new position
-	vec4 lt_p = gl_in[0].gl_Position;
-	vec4 rb_p = gl_in[0].gl_Position + vec4(PointSize.x, PointSize.y, 0.0f, 0.0f);
-	vec4 lb_p = rb_p;
-	vec4 rt_p = rb_p;
-	lb_p.x = lt_p.x;
-	rt_p.y = lt_p.y;
+#if VS_EXPAND == 1 // Point
 
-	WriteVertex(lt_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(lb_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(rt_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(rb_p, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
+	vtx = load_vertex(vid >> 2);
 
-	EndPrimitive();
-}
+	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f; 
+	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
 
-#elif GS_PRIM == 1 && GS_LINE == 0
+#elif VS_EXPAND == 2 // Line
 
-layout(lines) in;
-layout(line_strip, max_vertices = 2) out;
+	uint vid_base = vid >> 2;
 
-void main()
-{
-#if GS_IIP == 0
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[1].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[1].c);
+	bool is_bottom = (vid & 2u) != 0u;
+	bool is_right = (vid & 1u) != 0u;
+#ifdef VS_PROVOKING_VERTEX_LAST
+	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
 #else
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[1].c);
+	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
 #endif
-	EndPrimitive();
-}
+	
+	vtx = load_vertex(vid_base);
+	ProcessedVertex other = load_vertex(vid_other);
 
-#elif GS_PRIM == 1 && GS_LINE == 1
-
-layout(lines) in;
-layout(triangle_strip, max_vertices = 4) out;
-
-void main()
-{
-	// Transform a line to a thick line-sprite
-	vec4 left_t = gsIn[0].t;
-	vec4 left_ti = gsIn[0].ti;
-	vec4 left_c = gsIn[0].c;
-	vec4 right_t = gsIn[1].t;
-	vec4 right_ti = gsIn[1].ti;
-	vec4 right_c = gsIn[1].c;
-	vec4 lt_p = gl_in[0].gl_Position;
-	vec4 rt_p = gl_in[1].gl_Position;
-
-	// Potentially there is faster math
-	vec2 line_vector = normalize(rt_p.xy - lt_p.xy);
+	vec2 line_vector = normalize(vtx.p.xy - other.p.xy);
 	vec2 line_normal = vec2(line_vector.y, -line_vector.x);
-	vec2 line_width = (line_normal * PointSize) / 2.0;
+	vec2 line_width = (line_normal * PointSize) / 2;
+	// line_normal is inverted for bottom point
+	vec2 offset = ((uint(is_bottom) ^ uint(is_right)) != 0u) ? line_width : -line_width;
+	vtx.p.xy += offset;
 
-	lt_p.xy -= line_width;
-	rt_p.xy -= line_width;
-	vec4 lb_p = gl_in[0].gl_Position + vec4(line_width, 0.0, 0.0);
-	vec4 rb_p = gl_in[1].gl_Position + vec4(line_width, 0.0, 0.0);
+	// Lines will be run as (0 1 2) (1 2 3)
+	// This means that both triangles will have a point based off the top line point as their first point
+	// So we don't have to do anything for !IIP
 
-	#if GS_IIP == 0
-	left_c = right_c;
-	#endif
+#elif VS_EXPAND == 3 // Sprite
 
-	WriteVertex(lt_p, left_t, left_ti, left_c);
-	WriteVertex(lb_p, left_t, left_ti, left_c);
-	WriteVertex(rt_p, right_t, right_ti, right_c);
-	WriteVertex(rb_p, right_t, right_ti, right_c);
-	EndPrimitive();
-}
+	// Sprite points are always in pairs
+	uint vid_base = vid >> 1;
+	uint vid_lt = vid_base & ~1u;
+	uint vid_rb = vid_base | 1u;
 
-#elif GS_PRIM == 2
+	ProcessedVertex lt = load_vertex(vid_lt);
+	ProcessedVertex rb = load_vertex(vid_rb);
+	vtx = rb;
 
-layout(triangles) in;
-layout(triangle_strip, max_vertices = 3) out;
+	bool is_right = ((vid & 1u) != 0u);
+	vtx.p.x = is_right ? lt.p.x : vtx.p.x;
+	vtx.t.x = is_right ? lt.t.x : vtx.t.x;
+	vtx.ti.xz = is_right ? lt.ti.xz : vtx.ti.xz;
 
-void main()
-{
-	#if GS_IIP == 0
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[2].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[2].c);
-	WriteVertex(gl_in[2].gl_Position, gsIn[2].t, gsIn[2].ti, gsIn[2].c);
-	#else
-	WriteVertex(gl_in[0].gl_Position, gsIn[0].t, gsIn[0].ti, gsIn[0].c);
-	WriteVertex(gl_in[1].gl_Position, gsIn[1].t, gsIn[1].ti, gsIn[0].c);
-	WriteVertex(gl_in[2].gl_Position, gsIn[2].t, gsIn[2].ti, gsIn[0].c);
-	#endif
-
-	EndPrimitive();
-}
-
-#elif GS_PRIM == 3
-
-layout(lines) in;
-layout(triangle_strip, max_vertices = 4) out;
-
-void main()
-{
-	vec4 lt_p = gl_in[0].gl_Position;
-	vec4 lt_t = gsIn[0].t;
-	vec4 lt_ti = gsIn[0].ti;
-	vec4 lt_c = gsIn[0].c;
-	vec4 rb_p = gl_in[1].gl_Position;
-	vec4 rb_t = gsIn[1].t;
-	vec4 rb_ti = gsIn[1].ti;
-	vec4 rb_c = gsIn[1].c;
-
-	// flat depth
-	lt_p.z = rb_p.z;
-	// flat fog and texture perspective
-	lt_t.zw = rb_t.zw;
-
-	// flat color
-	lt_c = rb_c;
-
-	// Swap texture and position coordinate
-	vec4 lb_p = rb_p;
-	vec4 lb_t = rb_t;
-	vec4 lb_ti = rb_ti;
-	vec4 lb_c = rb_c;
-	lb_p.x = lt_p.x;
-	lb_t.x = lt_t.x;
-	lb_ti.x = lt_ti.x;
-	lb_ti.z = lt_ti.z;
-
-	vec4 rt_p = rb_p;
-	vec4 rt_t = rb_t;
-	vec4 rt_ti = rb_ti;
-	vec4 rt_c = rb_c;
-	rt_p.y = lt_p.y;
-	rt_t.y = lt_t.y;
-	rt_ti.y = lt_ti.y;
-	rt_ti.w = lt_ti.w;
-
-	WriteVertex(lt_p, lt_t, lt_ti, lt_c);
-	WriteVertex(lb_p, lb_t, lb_ti, lb_c);
-	WriteVertex(rt_p, rt_t, rt_ti, rt_c);
-	WriteVertex(rb_p, rb_t, rb_ti, rb_c);
-	EndPrimitive();
-}
+	bool is_bottom = ((vid & 2u) != 0u);
+	vtx.p.y = is_bottom ? lt.p.y : vtx.p.y;
+	vtx.t.y = is_bottom ? lt.t.y : vtx.t.y;
+	vtx.ti.yw = is_bottom ? lt.ti.yw : vtx.ti.yw;
 
 #endif
-#endif
+
+	gl_Position = vtx.p;
+	vsOut.t = vtx.t;
+	vsOut.ti = vtx.ti;
+	vsOut.c = vtx.c;
+}
+
+#endif // VS_EXPAND
+
+#endif // VERTEX_SHADER
 
 #ifdef FRAGMENT_SHADER
 
@@ -320,22 +269,24 @@ void main()
 #define PS_TCC 1
 #define PS_ATST 1
 #define PS_FOG 0
-#define PS_CLR_HW 0
+#define PS_BLEND_HW 0
+#define PS_A_MASKED 0
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
+#define PS_SHUFFLE_SAME 0
 #define PS_READ_BA 0
+#define PS_WRITE_RG 0
 #define PS_READ16_SRC 0
-#define PS_DFMT 0
+#define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
-#define PS_SCALE_FACTOR 1.0
 #define PS_HDR 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0
@@ -351,9 +302,12 @@ void main()
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
-#define SW_BLEND_NEEDS_RT (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1)
+#define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
+#define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
 
-#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || (PS_DATE >= 5))
+#define PS_FEEDBACK_LOOP_IS_NEEDED (PS_TEX_IS_FB == 1 || PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW || (PS_DATE >= 5))
+
+#define NEEDS_TEX (PS_TFX != 4)
 
 layout(std140, set = 0, binding = 1) uniform cb1
 {
@@ -371,6 +325,8 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	vec2 TC_OffsetHack;
 	vec2 STScale;
 	mat4 DitherMatrix;
+	float ScaledScaleFactor;
+	float RcpScaleFactor;
 };
 
 layout(location = 0) in VSOutput
@@ -387,31 +343,37 @@ layout(location = 0) in VSOutput
 #if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 layout(location = 0, index = 0) out vec4 o_col0;
 layout(location = 0, index = 1) out vec4 o_col1;
-#else
+#elif !PS_NO_COLOR
 layout(location = 0) out vec4 o_col0;
 #endif
 
+#if NEEDS_TEX
 layout(set = 1, binding = 0) uniform sampler2D Texture;
 layout(set = 1, binding = 1) uniform texture2D Palette;
+#endif
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
-	#ifndef DISABLE_TEXTURE_BARRIER
-		layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput RtSampler;
-		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
-	#else
-		layout(set = 2, binding = 0) uniform texture2D RtSampler;
+	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
+		layout(set = 1, binding = 2) uniform texture2D RtSampler;
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
+	#else
+		layout(input_attachment_index = 0, set = 1, binding = 2) uniform subpassInput RtSampler;
+		vec4 sample_from_rt() { return subpassLoad(RtSampler); }
 	#endif
 #endif
 
 #if PS_DATE > 0
-layout(set = 2, binding = 1) uniform texture2D PrimMinTexture;
+layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
+
+#if NEEDS_TEX
 
 vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB
 	return sample_from_rt();
+#elif PS_REGION_RECT
+	return texelFetch(Texture, ivec2(uv), 0);
 #else
 #if PS_POINT_SAMPLER
 		// Weird issue with ATI/AMD cards,
@@ -438,22 +400,22 @@ vec4 sample_c(vec2 uv)
 #endif
 
 #if PS_AUTOMATIC_LOD == 1
-    return texture(Texture, uv);
+	return texture(Texture, uv);
 #elif PS_MANUAL_LOD == 1
-    // FIXME add LOD: K - ( LOG2(Q) * (1 << L))
-    float K = MinMax.x;
-    float L = MinMax.y;
-    float bias = MinMax.z;
-    float max_lod = MinMax.w;
+	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
+	float K = MinMax.x;
+	float L = MinMax.y;
+	float bias = MinMax.z;
+	float max_lod = MinMax.w;
 
-    float gs_lod = K - log2(abs(vsIn.t.w)) * L;
-    // FIXME max useful ?
-    //float lod = max(min(gs_lod, max_lod) - bias, 0.0f);
-    float lod = min(gs_lod, max_lod) - bias;
+	float gs_lod = K - log2(abs(vsIn.t.w)) * L;
+	// FIXME max useful ?
+	//float lod = max(min(gs_lod, max_lod) - bias, 0.0f);
+	float lod = min(gs_lod, max_lod) - bias;
 
-    return textureLod(Texture, uv, lod);
+	return textureLod(Texture, uv, lod);
 #else
-    return textureLod(Texture, uv, 0); // No lod
+	return textureLod(Texture, uv, 0); // No lod
 #endif
 #endif
 }
@@ -474,7 +436,15 @@ vec4 clamp_wrap_uv(vec4 uv)
 
 	#if PS_WMS == PS_WMT
 	{
-		#if PS_WMS == 2
+		#if PS_REGION_RECT == 1 && PS_WMS == 0
+		{
+			uv = fract(uv);
+		}
+		#elif PS_REGION_RECT == 1 && PS_WMS == 1
+		{
+			uv = clamp(uv, vec4(0.0f), vec4(1.0f));
+		}
+		#elif PS_WMS == 2
 		{
 			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 		}
@@ -491,7 +461,15 @@ vec4 clamp_wrap_uv(vec4 uv)
 	}
 	#else
 	{
-		#if PS_WMS == 2
+		#if PS_REGION_RECT == 1 && PS_WMS == 0
+		{
+			uv.xz = fract(uv.xz);
+		}
+		#elif PS_REGION_RECT == 1 && PS_WMS == 1
+		{
+			uv.xz = clamp(uv.xz, vec2(0.0f), vec2(1.0f));
+		}
+		#elif PS_WMS == 2
 		{
 			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 		}
@@ -503,7 +481,15 @@ vec4 clamp_wrap_uv(vec4 uv)
 			uv.xz = vec2((uvec2(uv.xz * tex_size.xx) & floatBitsToUint(MinMax.xx)) | floatBitsToUint(MinMax.zz)) / tex_size.xx;
 		}
 		#endif
-		#if PS_WMT == 2
+		#if PS_REGION_RECT == 1 && PS_WMT == 0
+		{
+			uv.yw = fract(uv.yw);
+		}
+		#elif PS_REGION_RECT == 1 && PS_WMT == 1
+		{
+			uv.yw = clamp(uv.yw, vec2(0.0f), vec2(1.0f));
+		}
+		#elif PS_WMT == 2
 		{
 			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
 		}
@@ -516,6 +502,11 @@ vec4 clamp_wrap_uv(vec4 uv)
 		}
 		#endif
 	}
+	#endif
+
+	#if PS_REGION_RECT == 1
+		// Normalized -> Integer Coordinates.
+		uv = clamp(uv * WH.zwzw + STRange.xyxy, STRange.xyxy, STRange.zwzw);
 	#endif
 
 	return uv;
@@ -590,7 +581,11 @@ vec4 fetch_raw_color(ivec2 xy)
 
 vec4 fetch_c(ivec2 uv)
 {
+#if PS_TEX_IS_FB
+	return sample_from_rt();
+#else
 	return texelFetch(Texture, uv, 0);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -639,9 +634,13 @@ ivec2 clamp_wrap_uv_depth(ivec2 uv)
 
 vec4 sample_depth(vec2 st, ivec2 pos)
 {
-	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(PS_SCALE_FACTOR) * vec2(1.0f / 16.0f);
-	ivec2 uv = ivec2(uv_f);
+	vec2 uv_f = vec2(clamp_wrap_uv_depth(ivec2(st))) * vec2(ScaledScaleFactor);
 
+	#if PS_REGION_RECT == 1
+		uv_f = clamp(uv_f + STRange.xy, STRange.xy, STRange.zw);
+	#endif
+
+	ivec2 uv = ivec2(uv_f);
 	vec4 t = vec4(0.0f);
 
 	#if (PS_TALES_OF_ABYSS_HLE == 1)
@@ -790,7 +789,7 @@ vec4 sample_color(vec2 st)
 	mat4 c;
 	vec2 dd;
 
-	#if PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2
+	#if PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2
 	{
 		c[0] = sample_c(st);
 	}
@@ -847,10 +846,12 @@ vec4 sample_color(vec2 st)
 	return trunc(t * 255.0f + 0.05f);
 }
 
+#endif // NEEDS_TEX
+
 vec4 tfx(vec4 T, vec4 C)
 {
 	vec4 C_out;
-	vec4 FxT = trunc(trunc(C) * T / 128.0f);
+	vec4 FxT = trunc((C * T) / 128.0f);
 
 #if (PS_TFX == 0)
 	C_out = FxT;
@@ -924,7 +925,9 @@ vec4 ps_color()
 	vec2 st_int = vsIn.ti.zw;
 #endif
 
-#if PS_CHANNEL_FETCH == 1
+#if !NEEDS_TEX
+	vec4 T = vec4(0.0f);
+#elif PS_CHANNEL_FETCH == 1
 	vec4 T = fetch_red(ivec2(gl_FragCoord.xy));
 #elif PS_CHANNEL_FETCH == 2
 	vec4 T = fetch_green(ivec2(gl_FragCoord.xy));
@@ -967,108 +970,119 @@ void ps_dither(inout vec3 C)
 		#if PS_DITHER == 2
 			fpos = ivec2(gl_FragCoord.xy);
 		#else
-			fpos = ivec2(gl_FragCoord.xy / float(PS_SCALE_FACTOR));
+			fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
 		#endif
 
-		C += DitherMatrix[fpos.y & 3][fpos.x & 3];
+		float value = DitherMatrix[fpos.y & 3][fpos.x & 3];
+		#if PS_ROUND_INV
+			C -= value;
+		#else
+			C += value;
+		#endif
 	#endif
 }
 
 void ps_color_clamp_wrap(inout vec3 C)
 {
-    // When dithering the bottom 3 bits become meaningless and cause lines in the picture
-    // so we need to limit the color depth on dithered items
+	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+	// so we need to limit the color depth on dithered items
 #if SW_BLEND || PS_DITHER || PS_FBMASK
 
-    // Correct the Color value based on the output format
-#if PS_COLCLIP == 0 && PS_HDR == 0
-    // Standard Clamp
-    C = clamp(C, vec3(0.0f), vec3(255.0f));
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV
+	C += 7.0f; // Need to round up, not down since the shader will invert
 #endif
 
-    // FIXME rouding of negative float?
-    // compiler uses trunc but it might need floor
+	// Correct the Color value based on the output format
+#if PS_COLCLIP == 0 && PS_HDR == 0
+	// Standard Clamp
+	C = clamp(C, vec3(0.0f), vec3(255.0f));
+#endif
 
-    // Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
-    // GS: Color = 1, Alpha = 255 => output 1
-    // GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DFMT == FMT_16 && PS_BLEND_MIX == 0
-    // In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
-    C = vec3(ivec3(C) & ivec3(0xF8));
+	// FIXME rouding of negative float?
+	// compiler uses trunc but it might need floor
+
+	// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
+	// GS: Color = 1, Alpha = 255 => output 1
+	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
+#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0
+	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
+	C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 || PS_HDR == 1
-    C = vec3(ivec3(C) & ivec3(0xFF));
+	C = vec3(ivec3(C) & ivec3(0xFF));
 #endif
 
 #endif
 }
 
-void ps_blend(inout vec4 Color, inout float As)
+void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 {
+	float As = As_rgba.a;
+
 	#if SW_BLEND
 
 		// PABE
 		#if PS_PABE
-				// No blending so early exit
-				if (As < 1.0f)
-					return;
+			// No blending so early exit
+			if (As < 1.0f)
+				return;
 		#endif
 
 		#if PS_FEEDBACK_LOOP_IS_NEEDED
-				vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 		#else
-				// Not used, but we define it to make the selection below simpler.
-				vec4 RT = vec4(0.0f);
+			// Not used, but we define it to make the selection below simpler.
+			vec4 RT = vec4(0.0f);
 		#endif
 
-				// FIXME FMT_16 case
-				// FIXME Ad or Ad * 2?
-				float Ad = RT.a / 128.0f;
+			// FIXME FMT_16 case
+			// FIXME Ad or Ad * 2?
+			float Ad = RT.a / 128.0f;
 
-				// Let the compiler do its jobs !
-				vec3 Cd = RT.rgb;
-				vec3 Cs = Color.rgb;
+			// Let the compiler do its jobs !
+			vec3 Cd = RT.rgb;
+			vec3 Cs = Color.rgb;
 
 		#if PS_BLEND_A == 0
-				vec3 A = Cs;
+			vec3 A = Cs;
 		#elif PS_BLEND_A == 1
-				vec3 A = Cd;
+			vec3 A = Cd;
 		#else
-				vec3 A = vec3(0.0f);
+			vec3 A = vec3(0.0f);
 		#endif
 
 		#if PS_BLEND_B == 0
-				vec3 B = Cs;
+			vec3 B = Cs;
 		#elif PS_BLEND_B == 1
-				vec3 B = Cd;
+			vec3 B = Cd;
 		#else
-				vec3 B = vec3(0.0f);
+			vec3 B = vec3(0.0f);
 		#endif
 
 		#if PS_BLEND_C == 0
-				float C = As;
+			float C = As;
 		#elif PS_BLEND_C == 1
-				float C = Ad;
+			float C = Ad;
 		#else
-				float C = Af;
+			float C = Af;
 		#endif
 
 		#if PS_BLEND_D == 0
-				vec3 D = Cs;
+			vec3 D = Cs;
 		#elif PS_BLEND_D == 1
-				vec3 D = Cd;
+			vec3 D = Cd;
 		#else
-				vec3 D = vec3(0.0f);
+			vec3 D = vec3(0.0f);
 		#endif
 
 		// As/Af clamp alpha for Blend mix
-		// We shouldn't clamp blend mix with clr1 as we want alpha higher
+		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
-		#if PS_BLEND_MIX > 0 && PS_CLR_HW != 1
-				C_clamped = min(C_clamped, 1.0f);
+		#if PS_BLEND_MIX > 0 && PS_BLEND_HW != 1
+			C_clamped = min(C_clamped, 1.0f);
 		#endif
 
 		#if PS_BLEND_A == PS_BLEND_B
-				Color.rgb = D;
+			Color.rgb = D;
 		// In blend_mix, HW adds on some alpha factor * dst.
 		// Truncating here wouldn't quite get the right result because it prevents the <1 bit here from combining with a <1 bit in dst to form a ≥1 amount that pushes over the truncation.
 		// Instead, apply an offset to convert HW's round to a floor.
@@ -1084,34 +1098,39 @@ void ps_blend(inout vec4 Color, inout float As)
 				Color.rgb = trunc((A - B) * C + D);
 		#endif
 
-		#if PS_CLR_HW == 1
-				// Replace Af with As so we can do proper compensation for Alpha.
-				#if PS_BLEND_C == 2
-					As = Af;
-				#endif
-				// Subtract 1 for alpha to compensate for the changed equation,
-				// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
-				// we pick the lowest overflow from all colors because it's the safest,
-				// we divide by 255 the color because we don't know Cd value,
-				// changed alpha should only be done for hw blend.
-				float min_color = min(min(Color.r, Color.g), Color.b);
-				float alpha_compensate = max(1.0f, min_color / 255.0f);
-				As -= alpha_compensate;
-		#elif PS_CLR_HW == 2
-				// Compensate slightly for Cd*(As + 1) - Cs*As.
-				// The initial factor we chose is 1 (0.00392)
-				// as that is the minimum color Cd can be,
-				// then we multiply by alpha to get the minimum
-				// blended value it can be.
-				float color_compensate = 1.0f * (C + 1.0f);
-				Color.rgb -= vec3(color_compensate);
+		#if PS_BLEND_HW == 1
+			// As or Af
+			As_rgba.rgb = vec3(C);
+			// Subtract 1 for alpha to compensate for the changed equation,
+			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
+			// we pick the lowest overflow from all colors because it's the safest,
+			// we divide by 255 the color because we don't know Cd value,
+			// changed alpha should only be done for hw blend.
+			vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
+			As_rgba.rgb -= alpha_compensate;
+		#elif PS_BLEND_HW == 2
+			// Compensate slightly for Cd*(As + 1) - Cs*As.
+			// The initial factor we chose is 1 (0.00392)
+			// as that is the minimum color Cd can be,
+			// then we multiply by alpha to get the minimum
+			// blended value it can be.
+			float color_compensate = 1.0f * (C + 1.0f);
+			Color.rgb -= vec3(color_compensate);
+		#elif PS_BLEND_HW == 3
+			// As, Ad or Af clamped.
+			As_rgba.rgb = vec3(C_clamped);
+			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
+			// that is sent on second output to compensate.
+			vec3 overflow_check = (Color.rgb - vec3(255.0f)) / 255.0f;
+			vec3 alpha_compensate = max(vec3(0.0f), overflow_check);
+			As_rgba.rgb -= alpha_compensate;
 		#endif
 
 	#else
-		#if PS_CLR_HW == 1 || PS_CLR_HW == 5
+		#if PS_BLEND_HW == 1
 			// Needed for Cd * (As/Ad/F + 1) blending modes
 			Color.rgb = vec3(255.0f);
-		#elif PS_CLR_HW == 2 || PS_CLR_HW == 4
+		#elif PS_BLEND_HW == 2
 			// Cd*As,Cd*Ad or Cd*F
 
 			#if PS_BLEND_C == 2
@@ -1122,11 +1141,15 @@ void ps_blend(inout vec4 Color, inout float As)
 
 			Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
 			Color.rgb *= vec3(255.0f);
-		#elif PS_CLR_HW == 3
+		#elif PS_BLEND_HW == 3
 			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
-			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value
-
-			Color.rgb *= (255.0f / 128.0f);
+			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
+			// When any color channel is higher than 128 then adjust the compensation automatically
+			// to give us more accurate colors, otherwise they will be wrong.
+			// The higher the value (>128) the lower the compensation will be.
+			float max_color = max(max(Color.r, Color.g), Color.b);
+			float color_compensate = 255.0f / max(128.0f, max_color);
+			Color.rgb *= vec3(color_compensate);
 		#endif
 	#endif
 }
@@ -1135,40 +1158,40 @@ void main()
 {
 #if PS_SCANMSK & 2
 	// fail depth test on prohibited lines
- 	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
+	if ((int(gl_FragCoord.y) & 1) == (PS_SCANMSK & 1))
 		discard;
 #endif
 #if PS_DATE >= 5
 
 #if PS_WRITE_RG == 1
-  // Pseudo 16 bits access.
-  float rt_a = sample_from_rt().g;
+	// Pseudo 16 bits access.
+	float rt_a = sample_from_rt().g;
 #else
-  float rt_a = sample_from_rt().a;
+	float rt_a = sample_from_rt().a;
 #endif
 
 #if (PS_DATE & 3) == 1
-  // DATM == 0: Pixel with alpha equal to 1 will failed
-  bool bad = (127.5f / 255.0f) < rt_a;
+	// DATM == 0: Pixel with alpha equal to 1 will failed
+	bool bad = (127.5f / 255.0f) < rt_a;
 #elif (PS_DATE & 3) == 2
-  // DATM == 1: Pixel with alpha equal to 0 will failed
-  bool bad = rt_a < (127.5f / 255.0f);
+	// DATM == 1: Pixel with alpha equal to 0 will failed
+	bool bad = rt_a < (127.5f / 255.0f);
 #endif
 
-  if (bad) {
-    discard;
-  }
+	if (bad) {
+		discard;
+	}
 
 #endif		// PS_DATE >= 5
 
 #if PS_DATE == 3
-  int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(gl_FragCoord.xy), 0).r);
-  // Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
-  // the bad alpha value so we must keep it.
+	int stencil_ceil = int(texelFetch(PrimMinTexture, ivec2(gl_FragCoord.xy), 0).r);
+	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
+	// the bad alpha value so we must keep it.
 
-  if (gl_PrimitiveID > stencil_ceil) {
-    discard;
-  }
+	if (gl_PrimitiveID > stencil_ceil) {
+		discard;
+	}
 #endif
 
 	vec4 C = ps_color();
@@ -1176,105 +1199,108 @@ void main()
 	#if PS_SHUFFLE
 		uvec4 denorm_c = uvec4(C);
 		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-		#if PS_READ16_SRC
+		
+		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+		#if PS_SHUFFLE_SAME
+			#if (PS_READ_BA)
+				C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+			#else
+				C.ga = C.rg;
+			#endif
+		// Copy of a 16bit source in to this target
+		#elif PS_READ16_SRC
 			C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 			if ((denorm_c.a & 0x80u) != 0u)
 				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
 			else
 				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+		// Write RB part. Mask will take care of the correct destination
+		#elif PS_READ_BA
+			C.rb = C.bb;
+			if ((denorm_c.a & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
 		#else
-			// Mask will take care of the correct destination
-			#if PS_READ_BA
-				C.rb = C.bb;
-			#else
-				C.rb = C.rr;
-			#endif
+			C.rb = C.rr;
+			if ((denorm_c.g & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+		#endif // PS_SHUFFLE_SAME
+	#endif // PS_SHUFFLE
 
-			#if PS_READ_BA
-				if ((denorm_c.a & 0x80u) != 0u)
-					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			#else
-				if ((denorm_c.g & 0x80u) != 0u)
-					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
-			#endif
-		#endif
-	#endif
+	// Must be done before alpha correction
 
-  // Must be done before alpha correction
-
-  // AA (Fixed one) will output a coverage of 1.0 as alpha
+	// AA (Fixed one) will output a coverage of 1.0 as alpha
 #if PS_FIXED_ONE_A
-   C.a = 128.0f;
+	C.a = 128.0f;
 #endif
 
-#if (PS_BLEND_C == 1 && PS_CLR_HW > 3)
-  vec4 RT = trunc(subpassLoad(RtSampler) * 255.0f + 0.1f);
-  float alpha_blend = RT.a / 128.0f;
+#if (SW_AD_TO_HW)
+	vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
-  float alpha_blend = C.a / 128.0f;
+	vec4 alpha_blend = vec4(C.a / 128.0f);
 #endif
 
   // Correct the ALPHA value based on the output format
-#if (PS_DFMT == FMT_16)
-  float A_one = 128.0f; // alpha output will be 0x80
-  C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
-#elif (PS_DFMT == FMT_32) && (PS_FBA != 0)
-  if(C.a < 128.0f) C.a += 128.0f;
+#if (PS_DST_FMT == FMT_16)
+	float A_one = 128.0f; // alpha output will be 0x80
+	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
+#elif (PS_DST_FMT == FMT_32) && (PS_FBA != 0)
+	if(C.a < 128.0f) C.a += 128.0f;
 #endif
 
-  // Get first primitive that will write a failling alpha value
+	// Get first primitive that will write a failling alpha value
 #if PS_DATE == 1
 
-  // DATM == 0
-  // Pixel with alpha equal to 1 will failed (128-255)
+	// DATM == 0
+	// Pixel with alpha equal to 1 will failed (128-255)
 	o_col0 = (C.a > 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 
 #elif PS_DATE == 2
 
-  // DATM == 1
-  // Pixel with alpha equal to 0 will failed (0-127)
-  o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
+	// DATM == 1
+	// Pixel with alpha equal to 0 will failed (0-127)
+	o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 
 #else
 
 	ps_blend(C, alpha_blend);
 
-  ps_dither(C.rgb);
+	ps_dither(C.rgb);
 
-  // Color clamp/wrap needs to be done after sw blending and dithering
-  ps_color_clamp_wrap(C.rgb);
+	// Color clamp/wrap needs to be done after sw blending and dithering
+	ps_color_clamp_wrap(C.rgb);
 
-  ps_fbmask(C);
+	ps_fbmask(C);
 
-#if !PS_NO_COLOR
-#if PS_HDR == 1
-	o_col0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
-#else
-	o_col0 = C / 255.0f;
-#endif
-#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
-	o_col1 = vec4(alpha_blend);
-#endif
+	#if !PS_NO_COLOR
+		#if PS_HDR == 1
+			o_col0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
+		#else
+			o_col0 = C / 255.0f;
+		#endif
+		#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
+			o_col1 = alpha_blend;
+		#endif
 
-#if PS_NO_ABLEND
-	// write alpha blend factor into col0
-	o_col0.a = alpha_blend;
-#endif
-#if PS_ONLY_ALPHA
-	// rgb isn't used
-	o_col0.rgb = vec3(0.0f);
-#endif
-#endif
+		#if PS_NO_ABLEND
+			// write alpha blend factor into col0
+			o_col0.a = alpha_blend.a;
+		#endif
+		#if PS_ONLY_ALPHA
+			// rgb isn't used
+			o_col0.rgb = vec3(0.0f);
+		#endif
+	#endif
 
-#if PS_ZCLAMP
-	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
-#endif
+	#if PS_ZCLAMP
+		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+	#endif
 
-#endif		// PS_DATE
+#endif // PS_DATE
 }
 
 #endif

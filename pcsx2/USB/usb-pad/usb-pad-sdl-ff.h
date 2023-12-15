@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,10 +16,7 @@
 #pragma once
 
 #include "USB/usb-pad/usb-pad.h"
-
-#ifdef SDL_BUILD
-
-#include "Frontend/SDLInputSource.h"
+#include "Input/SDLInputSource.h"
 
 namespace usb_pad
 {
@@ -45,24 +42,22 @@ namespace usb_pad
 
 		SDL_Haptic* m_haptic = nullptr;
 
-		SDL_HapticEffect m_constant_effect = {};
+		SDL_HapticEffect m_constant_effect;
 		int m_constant_effect_id = -1;
 		bool m_constant_effect_running = false;
 
-		SDL_HapticEffect m_spring_effect = {};
+		SDL_HapticEffect m_spring_effect;
 		int m_spring_effect_id = -1;
 		bool m_spring_effect_running = false;
 
-		SDL_HapticEffect m_damper_effect = {};
+		SDL_HapticEffect m_damper_effect;
 		int m_damper_effect_id = -1;
 		bool m_damper_effect_running = false;
 
-		SDL_HapticEffect m_friction_effect = {};
+		SDL_HapticEffect m_friction_effect;
 		int m_friction_effect_id = -1;
 		bool m_friction_effect_running = false;
 
 		bool m_autocenter_supported = false;
 	};
 } // namespace usb_pad
-
-#endif

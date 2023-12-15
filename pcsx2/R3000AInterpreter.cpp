@@ -143,9 +143,9 @@ void psxBreakpoint(bool memcheck)
 			return;
 	}
 
-	CBreakPoints::SetBreakpointTriggered(true);
+	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
-	throw Exception::ExitCpuExecute();
+	Cpu->ExitExecution();
 }
 
 void psxMemcheck(u32 op, u32 bits, bool store)
@@ -249,6 +249,15 @@ static void doBranch(s32 tar) {
 	if (tar == 0x0)
 		DevCon.Warning("[R3000 Interpreter] Warning: Branch to 0x0!");
 
+	// When upgrading the IOP, there are two resets, the second of which is a 'fake' reset
+	// This second 'reset' involves UDNL calling SYSMEM and LOADCORE directly, resetting LOADCORE's modules
+	// This detects when SYSMEM is called and clears the modules then
+	if(tar == 0x890)
+	{
+		DevCon.WriteLn(Color_Gray, "[R3000 Debugger] Branch to 0x890 (SYSMEM). Clearing modules.");
+		R3000SymbolMap.ClearModules();
+	}
+
 	branch2 = iopIsDelaySlot = true;
 	branchPC = tar;
 	execI();
@@ -274,22 +283,14 @@ static s32 intExecuteBlock( s32 eeCycles )
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = eeCycles;
 
-	try
+	while (psxRegs.iopCycleEE > 0)
 	{
-		while (psxRegs.iopCycleEE > 0) {
-			if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
-				psxBiosCall();
+		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+			psxBiosCall();
 
-			branch2 = 0;
-			while (!branch2) {
-				execI();
-			}
-		}
-	}
-	catch (Exception::ExitCpuExecute&)
-	{
-		// Get out of the EE too, regardless of whether it's int or rec.
-		Cpu->ExitExecution();
+		branch2 = 0;
+		while (!branch2)
+			execI();
 	}
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;

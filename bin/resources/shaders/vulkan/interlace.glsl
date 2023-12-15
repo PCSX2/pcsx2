@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifdef VERTEX_SHADER
 
 layout(location = 0) in vec4 a_pos;
@@ -35,7 +50,7 @@ void ps_main0()
 	const int vpos  = int(gl_FragCoord.y); // vertical position of destination texture
 
 	if ((vpos & 1) == field)
-		o_col0 = texture(samp0, v_tex);
+		o_col0 = textureLod(samp0, v_tex, 0);
 	else
 		discard;
 }
@@ -46,7 +61,7 @@ void ps_main0()
 #ifdef ps_main1
 void ps_main1()
 {
-	o_col0 = texture(samp0, v_tex);
+	o_col0 = textureLod(samp0, v_tex, 0);
 }
 #endif
 
@@ -56,9 +71,9 @@ void ps_main1()
 void ps_main2()
 {
 	vec2 vstep = vec2(0.0f, ZrH.y);
-	vec4 c0 = texture(samp0, v_tex - vstep);
-	vec4 c1 = texture(samp0, v_tex);
-	vec4 c2 = texture(samp0, v_tex + vstep);
+	vec4 c0 = textureLod(samp0, v_tex - vstep, 0);
+	vec4 c1 = textureLod(samp0, v_tex, 0);
+	vec4 c2 = textureLod(samp0, v_tex + vstep, 0);
 
 	o_col0 = (c0 + c1 * 2.0f + c2) / 4.0f;
 }
@@ -82,15 +97,11 @@ void ps_main3()
 	const int  vres   = int(ZrH.z) >> 1;                          // vertical resolution of source texture
 	const int  lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank; // line alignment offset for bank 1
 	const int  vpos   = int(gl_FragCoord.y) + lofs;               // vertical position of destination texture
-	const vec2 bofs   = vec2(0.0f, 0.5f * bank);                  // vertical offset of the current bank relative to source texture size
-	const vec2 vscale = vec2(1.0f, 2.0f);                         // scaling factor from source to destination texture
-	const vec2 optr   = v_tex - bofs;                             // used to check if the current destination line is within the current bank
-	const vec2 iptr   = optr * vscale;                            // pointer to the current pixel in the source texture
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-		o_col0 = texture(samp0, iptr);
+	if ((vpos & 1) == field)
+		o_col0 = textureLod(samp0, v_tex, 0);
 	else
 		discard;
 }
@@ -150,13 +161,13 @@ void ps_main4()
 
 	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
-	vec4 hn = texture(samp0, p_t0 - lofs); // new high pixel
-	vec4 cn = texture(samp0, p_t1);        // new center pixel
-	vec4 ln = texture(samp0, p_t0 + lofs); // new low pixel
+	vec4 hn = textureLod(samp0, p_t0 - lofs, 0); // new high pixel
+	vec4 cn = textureLod(samp0, p_t1, 0);        // new center pixel
+	vec4 ln = textureLod(samp0, p_t0 + lofs, 0); // new low pixel
 
-	vec4 ho = texture(samp0, p_t2 - lofs); // old high pixel
-	vec4 co = texture(samp0, p_t3);        // old center pixel
-	vec4 lo = texture(samp0, p_t2 + lofs); // old low pixel
+	vec4 ho = textureLod(samp0, p_t2 - lofs, 0); // old high pixel
+	vec4 co = textureLod(samp0, p_t3, 0);        // old center pixel
+	vec4 lo = textureLod(samp0, p_t2 + lofs, 0); // old low pixel
 
 	vec3 mh = hn.rgb - ho.rgb; // high pixel motion
 	vec3 mc = cn.rgb - co.rgb; // center pixel motion
@@ -181,7 +192,7 @@ void ps_main4()
 	if ((vpos & 1) == field) // output coordinate present on current field
 	{
 		// output coordinate present on current field
-		o_col0 = texture(samp0, p_t0);
+		o_col0 = textureLod(samp0, p_t0, 0);
 	}
 	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
 	{

@@ -49,7 +49,7 @@ public:
 protected:
 	const GSState* m_state;
 
-	typedef void (*FindMinMaxPtr)(GSVertexTrace& vt, const void* vertex, const u32* index, int count);
+	typedef void (*FindMinMaxPtr)(GSVertexTrace& vt, const void* vertex, const u16* index, int count);
 
 	FindMinMaxPtr m_fmm[2][2][2][2][4];
 
@@ -77,7 +77,7 @@ public:
 public:
 	GSVertexTrace(const GSState* state, bool provoking_vertex_first);
 
-	void Update(const void* vertex, const u32* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
+	void Update(const void* vertex, const u16* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
 
 	bool IsLinear() const { return m_filter.opt_linear; }
 	bool IsRealLinear() const { return m_filter.linear; }

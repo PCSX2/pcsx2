@@ -27,9 +27,9 @@ public:
 		Swizzle,
 		Unswizzle,
 		Fillrate,
-		Quad,
 		SyncPoint,
 		Barriers,
+		RenderPasses,
 		CounterLast,
 
 		// Reused counters for HW.
@@ -55,6 +55,7 @@ public:
 	void EndFrame();
 
 	void Put(counter_t c, double val) { m_counters[c] += val; }
+	double GetCounter(counter_t c) { return m_counters[c]; }
 	double Get(counter_t c) { return m_stats[c]; }
 	void Update();
 

@@ -25,10 +25,9 @@
 
 #include "fmt/core.h"
 
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
-#include "common/Exceptions.h"
 #include "common/General.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
@@ -89,6 +88,7 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	// Prevent recursive exception filtering.
 	if (s_in_exception_handler)
 	{
+		lock.unlock();
 		CallExistingSignalHandler(signal, siginfo, ctx);
 		return;
 	}
@@ -108,7 +108,8 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	void* const exception_pc = nullptr;
 #endif
 
-	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)siginfo->si_addr & ~__pagemask};
+	const PageFaultInfo pfi{
+		reinterpret_cast<uptr>(exception_pc), reinterpret_cast<uptr>(siginfo->si_addr) & ~static_cast<uptr>(__pagemask)};
 
 	s_in_exception_handler = true;
 
@@ -121,6 +122,7 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 		return;
 
 	// Call old signal handler, which will likely dump core.
+	lock.unlock();
 	CallExistingSignalHandler(signal, siginfo, ctx);
 }
 
@@ -135,6 +137,10 @@ bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
 		sigemptyset(&sa.sa_mask);
 		sa.sa_flags = SA_SIGINFO;
 		sa.sa_sigaction = SysPageFaultSignalFilter;
+#ifdef __linux__
+		// Don't block the signal from executing recursively, we want to fire the original handler.
+		sa.sa_flags |= SA_NODEFER;
+#endif
 #ifdef __APPLE__
 		// MacOS uses SIGBUS for memory permission violations
 		if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
@@ -244,13 +250,9 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 	shm_unlink(name);
 
 	// ensure it's the correct size
-#if !defined(__APPLE__) && !defined(__FreeBSD__)
-	if (ftruncate64(fd, static_cast<off64_t>(size)) < 0)
-#else
 	if (ftruncate(fd, static_cast<off_t>(size)) < 0)
-#endif
 	{
-		std::fprintf(stderr, "ftruncate64(%zu) failed: %d\n", size, errno);
+		std::fprintf(stderr, "ftruncate(%zu) failed: %d\n", size, errno);
 		return nullptr;
 	}
 

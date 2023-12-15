@@ -445,7 +445,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (argc != 5)
 	{
 		progress.ModalError("Expected 4 arguments: parent process id, output directory, update zip, program to "
-							"launch.\n\nThis program is not intended to be run manually, please use the Qt frontend and "
+							"launch.\n\nThis program is not intended to be run manually, please use the main PCSX2 application and "
 							"click Help->Check for Updates.");
 		return 1;
 	}
@@ -521,8 +521,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		progress.ModalError("Couldn't find PCSX2 in update package, please re-download a fresh version from GitHub.");
 		return 1;
 	}
-
-	progress.ModalInformation("Update complete.");
 
 	progress.DisplayFormattedInformation("Launching '%s'...",
 		StringUtil::WideStringToUTF8String(program_to_launch).c_str());

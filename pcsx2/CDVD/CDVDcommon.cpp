@@ -16,30 +16,29 @@
 
 #include "PrecompiledHeader.h"
 
-#define ENABLE_TIMESTAMPS
-
-#include <ctype.h>
-#include <time.h>
-#include <exception>
-#include <memory>
-
-#include "fmt/core.h"
-
-#include "IsoFS/IsoFS.h"
-#include "IsoFS/IsoFSCDVD.h"
-#include "IsoFileFormats.h"
-
-#include "common/Assertions.h"
-#include "common/Exceptions.h"
-#include "common/FileSystem.h"
-#include "common/Path.h"
-#include "common/StringUtil.h"
+#include "CDVD/CDVDcommon.h"
+#include "CDVD/IsoReader.h"
+#include "CDVD/IsoFileFormats.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 
-CDVD_API* CDVD = NULL;
+#include "common/Assertions.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
+
+#include <ctype.h>
+#include <exception>
+#include <memory>
+#include <time.h>
+
+#include "fmt/core.h"
+
+#define ENABLE_TIMESTAMPS
+
+const CDVD_API* CDVD = nullptr;
 
 // ----------------------------------------------------------------------------
 // diskTypeCached
@@ -72,65 +71,36 @@ static void CheckNullCDVD()
 //
 static int CheckDiskTypeFS(int baseType)
 {
-	IsoFSCDVD isofs;
-	try
+	IsoReader isor;
+	if (isor.Open())
 	{
-		IsoDirectory rootdir(isofs);
-
-		try
+		std::vector<u8> data;
+		if (isor.ReadFile("SYSTEM.CNF", &data))
 		{
-			IsoFile file(rootdir, "SYSTEM.CNF;1");
-
-			const int size = file.getLength();
-			const std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size + 1);
-			file.read(buffer.get(), size);
-			buffer[size] = '\0';
-
-			char* pos = strstr(buffer.get(), "BOOT2");
-			if (pos == NULL)
+			if (StringUtil::ContainsSubString(data, "BOOT2"))
 			{
-				pos = strstr(buffer.get(), "BOOT");
-				if (pos == NULL)
-					return CDVD_TYPE_ILLEGAL;
+				// PS2 DVD/CD.
+				return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
+			}
+
+			if (StringUtil::ContainsSubString(data, "BOOT"))
+			{
+				// PSX CD.
 				return CDVD_TYPE_PSCD;
 			}
 
-			return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
-		}
-		catch (Exception::FileNotFound&)
-		{
+			return CDVD_TYPE_ILLEGAL;
 		}
 
 		// PS2 Linux disc 2, doesn't have a System.CNF or a normal ELF
-		try
-		{
-			IsoFile file(rootdir, "P2L_0100.02;1");
+		if (isor.FileExists("P2L_0100.02"))
 			return CDVD_TYPE_PS2DVD;
-		}
-		catch (Exception::FileNotFound&)
-		{
-		}
 
-		try
-		{
-			IsoFile file(rootdir, "PSX.EXE;1");
+		if (isor.FileExists("PSX.EXE"))
 			return CDVD_TYPE_PSCD;
-		}
-		catch (Exception::FileNotFound&)
-		{
-		}
 
-		try
-		{
-			IsoFile file(rootdir, "VIDEO_TS/VIDEO_TS.IFO;1");
+		if (isor.FileExists("VIDEO_TS/VIDEO_TS.IFO"))
 			return CDVD_TYPE_DVDV;
-		}
-		catch (Exception::FileNotFound&)
-		{
-		}
-	}
-	catch (Exception::FileNotFound&)
-	{
 	}
 
 #ifdef PCSX2_DEVBUILD
@@ -314,7 +284,10 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 		const auto driveType = GetDriveType(StringUtil::UTF8StringToWideString(root).c_str());
 		if (driveType == DRIVE_REMOVABLE)
 		{
-			Host::AddIconOSDMessage("RemovableDriveWarning", ICON_FA_EXCLAMATION_TRIANGLE, "Game disc location is on a removable drive, performance issues such as jittering and freezing may occur.", Host::OSD_WARNING_DURATION);
+			Host::AddIconOSDMessage("RemovableDriveWarning", ICON_FA_EXCLAMATION_TRIANGLE,
+				TRANSLATE_SV("CDVD", "Game disc location is on a removable drive, performance issues such as jittering "
+									 "and freezing may occur."),
+				Host::OSD_WARNING_DURATION);
 		}
 	}
 #endif
@@ -332,7 +305,7 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 			symName = m_SourceFilename[enum_cast(srctype)].substr(0, n) + ".sym";
 
 		R5900SymbolMap.LoadNocashSym(symName.c_str());
-		R5900SymbolMap.UpdateActiveSymbols();
+		R5900SymbolMap.SortSymbols();
 	}
 }
 
@@ -346,9 +319,15 @@ CDVD_SourceType CDVDsys_GetSourceType()
 	return m_CurrentSourceType;
 }
 
+void CDVDsys_ClearFiles()
+{
+	for (u32 i = 0; i < std::size(m_SourceFilename); i++)
+		m_SourceFilename[i] = {};
+}
+
 void CDVDsys_ChangeSource(CDVD_SourceType type)
 {
-	if (CDVD != NULL)
+	if (CDVD)
 		DoCDVDclose();
 
 	switch (m_CurrentSourceType = type)
@@ -369,23 +348,14 @@ void CDVDsys_ChangeSource(CDVD_SourceType type)
 	}
 }
 
-bool DoCDVDopen()
+bool DoCDVDopen(Error* error)
 {
 	CheckNullCDVD();
 
 	CDVD->newDiskCB(cdvdNewDiskCB);
 
-	// Win32 Fail: the old CDVD api expects MBCS on Win32 platforms, but generating a MBCS
-	// from unicode is problematic since we need to know the codepage of the text being
-	// converted (which isn't really practical knowledge).  A 'best guess' would be the
-	// default codepage of the user's Windows install, but even that will fail and return
-	// question marks if the filename is another language.
-
-	//TODO_CDVD check if ISO and Disc use UTF8
-
 	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
-	int ret = CDVD->open(!m_SourceFilename[CurrentSourceType].empty() ? m_SourceFilename[CurrentSourceType].c_str() : nullptr);
-	if (ret == -1)
+	if (!CDVD->open(m_SourceFilename[CurrentSourceType], error))
 		return false; // error! (handled by caller)
 
 	int cdtype = DoCDVDdetectDiskType();
@@ -396,19 +366,14 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	std::string somepick(Path::StripExtension(FileSystem::GetDisplayNameFromPath(m_SourceFilename[CurrentSourceType])));
-	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
-	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
-	//TODO: Add extra fallback case for CRC.
-	if (somepick.empty() && !DiscSerial.empty())
-		somepick = StringUtil::StdStringFromFormat("Untitled-%s", DiscSerial.c_str());
-	else if (somepick.empty())
-		somepick = "Untitled";
+	std::string dump_name(Path::StripExtension(FileSystem::GetDisplayNameFromPath(m_SourceFilename[CurrentSourceType])));
+	if (dump_name.empty())
+		dump_name = "Untitled";
 
 	if (EmuConfig.CurrentBlockdump.empty())
 		EmuConfig.CurrentBlockdump = FileSystem::GetWorkingDirectory();
 
-	std::string temp(Path::Combine(EmuConfig.CurrentBlockdump, somepick));
+	std::string temp(Path::Combine(EmuConfig.CurrentBlockdump, dump_name));
 
 #ifdef ENABLE_TIMESTAMPS
 	std::time_t curtime_t = std::time(nullptr);
@@ -428,7 +393,8 @@ bool DoCDVDopen()
 	cdvdTD td;
 	CDVD->getTD(0, &td);
 
-	Host::AddKeyedOSDMessage("BlockDumpCreate", fmt::format("Saving CDVD block dump to '{}'.", temp), Host::OSD_INFO_DURATION);
+	Host::AddKeyedOSDMessage("BlockDumpCreate",
+		fmt::format(TRANSLATE_FS("CDVD", "Saving CDVD block dump to '{}'."), temp), Host::OSD_INFO_DURATION);
 
 	if (blockDumpFile.Create(std::move(temp), 2))
 	{
@@ -461,8 +427,7 @@ void DoCDVDclose()
 
 	blockDumpFile.Close();
 
-	if (CDVD->close != NULL)
-		CDVD->close();
+	CDVD->close();
 
 	DoCDVDresetDiskTypeCache();
 }
@@ -563,75 +528,75 @@ void DoCDVDresetDiskTypeCache()
 
 
 
-s32 CALLBACK NODISCopen(const char* pTitle)
+static bool NODISCopen(std::string filename, Error* error)
 {
-	return 0;
+	return true;
 }
 
-void CALLBACK NODISCclose()
+static void NODISCclose()
 {
 }
 
-s32 CALLBACK NODISCreadTrack(u32 lsn, int mode)
-{
-	return -1;
-}
-
-s32 CALLBACK NODISCgetBuffer(u8* buffer)
+static s32 NODISCreadTrack(u32 lsn, int mode)
 {
 	return -1;
 }
 
-s32 CALLBACK NODISCreadSubQ(u32 lsn, cdvdSubQ* subq)
+static s32 NODISCgetBuffer(u8* buffer)
 {
 	return -1;
 }
 
-s32 CALLBACK NODISCgetTN(cdvdTN* Buffer)
+static s32 NODISCreadSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	return -1;
 }
 
-s32 CALLBACK NODISCgetTD(u8 Track, cdvdTD* Buffer)
+static s32 NODISCgetTN(cdvdTN* Buffer)
 {
 	return -1;
 }
 
-s32 CALLBACK NODISCgetTOC(void* toc)
+static s32 NODISCgetTD(u8 Track, cdvdTD* Buffer)
 {
 	return -1;
 }
 
-s32 CALLBACK NODISCgetDiskType()
+static s32 NODISCgetTOC(void* toc)
+{
+	return -1;
+}
+
+static s32 NODISCgetDiskType()
 {
 	return CDVD_TYPE_NODISC;
 }
 
-s32 CALLBACK NODISCgetTrayStatus()
+static s32 NODISCgetTrayStatus()
 {
 	return CDVD_TRAY_CLOSE;
 }
 
-s32 CALLBACK NODISCdummyS32()
+static s32 NODISCdummyS32()
 {
 	return 0;
 }
 
-void CALLBACK NODISCnewDiskCB(void (*/* callback */)())
+static void NODISCnewDiskCB(void (*/* callback */)())
 {
 }
 
-s32 CALLBACK NODISCreadSector(u8* tempbuffer, u32 lsn, int mode)
-{
-	return -1;
-}
-
-s32 CALLBACK NODISCgetDualInfo(s32* dualType, u32* _layer1start)
+static s32 NODISCreadSector(u8* tempbuffer, u32 lsn, int mode)
 {
 	return -1;
 }
 
-CDVD_API CDVDapi_NoDisc =
+static s32 NODISCgetDualInfo(s32* dualType, u32* _layer1start)
+{
+	return -1;
+}
+
+const CDVD_API CDVDapi_NoDisc =
 	{
 		NODISCclose,
 		NODISCopen,

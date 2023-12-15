@@ -19,6 +19,7 @@
 #include "SPU2/spu2.h"
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
+#include "Host.h"
 
 #include "common/Assertions.h"
 #include "common/Timer.h"
@@ -48,9 +49,9 @@ namespace
 			return "nullout";
 		}
 
-		const char* GetLongName() const override
+		const char* GetDisplayName() const override
 		{
-			return "No Sound (Emulate SPU2 only)";
+			return TRANSLATE_NOOP("SPU2", "No Sound (Emulate SPU2 only)");
 		}
 
 		const char* const* GetBackendNames() const override
@@ -67,19 +68,27 @@ namespace
 
 static NullOutModule s_NullOut;
 static SndOutModule* NullOut = &s_NullOut;
+extern SndOutModule* CubebOut;
+
+#ifdef _WIN32
+extern SndOutModule* XAudio2Out;
+#endif
 
 static SndOutModule* mods[] =
 	{
 		NullOut,
+		CubebOut,
 #ifdef _WIN32
 		XAudio2Out,
-#endif
-#if defined(SPU2X_CUBEB)
-		CubebOut,
 #endif
 };
 
 static SndOutModule* s_output_module;
+
+std::span<SndOutModule*> GetSndOutModules()
+{
+	return mods;
+}
 
 static SndOutModule* FindOutputModule(const char* name)
 {
@@ -436,6 +445,11 @@ bool SndBuffer::Init(const char* modname)
 	return true;
 }
 
+bool SndBuffer::IsOpen()
+{
+	return (s_output_module != nullptr);
+}
+
 void SndBuffer::Cleanup()
 {
 	if (s_output_module)
@@ -567,12 +581,12 @@ float SndBuffer::GetStatusPct()
 //  These params were tested to show good respond and stability, on all audio systems (dsound, wav, port audio, xaudio2),
 //    even at extreme small latency of 50ms which can handle 50%-100% variations without audible glitches.
 
-int targetIPS = 750;
+constexpr int targetIPS = 750;
 
 //Additional performance note: since MAX_STRETCH_AVERAGE_LEN = 128 (or any power of 2), the '%' below
 //could be replaced with a faster '&'. The compiler is highly likely to do it since all the values are unsigned.
 #define AVERAGING_BUFFER_SIZE 256U
-unsigned int AVERAGING_WINDOW = 50.0 * targetIPS / 750;
+unsigned int AVERAGING_WINDOW = 50 * targetIPS / 750;
 
 
 #define STRETCHER_RESET_THRESHOLD 5
@@ -959,8 +973,8 @@ static void ConvertPacketToInt(StereoOut16* dst, const float* src, uint size)
 
 		fv1 = _mm_mul_ps(fv1, FLOAT_TO_S16_V);
 		fv2 = _mm_mul_ps(fv2, FLOAT_TO_S16_V);
-		__m128i iv1 = _mm_cvtps_epi32(fv1);
-		__m128i iv2 = _mm_cvtps_epi32(fv2);
+		const __m128i iv1 = _mm_cvtps_epi32(fv1);
+		const __m128i iv2 = _mm_cvtps_epi32(fv2);
 
 		__m128i iv = _mm_packs_epi32(iv1, iv2);
 		_mm_store_si128(reinterpret_cast<__m128i*>(dst), iv);

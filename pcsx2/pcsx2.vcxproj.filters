@@ -1,0 +1,2388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Misc">
+      <UniqueIdentifier>{d1e5f218-107b-4e8c-9527-55cb9388b544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\Utilities">
+      <UniqueIdentifier>{acd41072-b36e-4653-a430-40ade53fb78a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Docs">
+      <UniqueIdentifier>{5dc872c1-db13-4c70-9d44-a3fc4b6fc241}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{3cda6808-a2bd-48a7-912e-161a7d0f5bce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\ISO">
+      <UniqueIdentifier>{a3f5cf44-2d2b-4822-b530-57286c85374a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Include">
+      <UniqueIdentifier>{a7187804-2892-4f90-9360-cf2bd6c31540}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2">
+      <UniqueIdentifier>{1c7a3f63-9285-4202-84c5-278a854db932}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine">
+      <UniqueIdentifier>{33efddb9-1e44-44dc-b857-45b49b22c750}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\Hardware">
+      <UniqueIdentifier>{c1691a12-a08a-4ca7-ba66-b4ff4c7f30a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\Memory">
+      <UniqueIdentifier>{57bf864f-d216-4d97-968d-4c0ff4f166ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\VU">
+      <UniqueIdentifier>{7865c84c-6431-4781-a016-45eeac5cad2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec">
+      <UniqueIdentifier>{c4ee1612-1ce9-4c74-8323-f98851014558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\microVU">
+      <UniqueIdentifier>{a210a307-e8bf-4bbc-8770-e720cc7fc953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\VU\Interpreter">
+      <UniqueIdentifier>{e14056ea-b126-4e5b-94e0-3ce09463970b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC">
+      <UniqueIdentifier>{4ba4f2e2-5195-471b-9a0d-d84fa3fb96aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\Sif">
+      <UniqueIdentifier>{088d96f1-2b69-4c53-9f14-026db3368905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\Vif">
+      <UniqueIdentifier>{259f9912-d495-45da-b894-8312fde18364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\Vif\Unpack">
+      <UniqueIdentifier>{5f98cd09-41cd-4c1e-ad7d-06a8859e770c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif">
+      <UniqueIdentifier>{620afa6f-3aea-4093-bed0-46fd37a5ad6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec">
+      <UniqueIdentifier>{f9de9bc0-4bc5-4fb5-8a1f-04bc31a82b07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\SPR">
+      <UniqueIdentifier>{a6b34a13-67af-45fd-a2fb-2c86a762dd39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\DMAC\Gif">
+      <UniqueIdentifier>{89c4908d-b0a1-4c69-9104-00e0af69a714}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\EE">
+      <UniqueIdentifier>{f5c8a322-8f48-44a8-97ad-4bd0017bdfe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\EE\Dynarec">
+      <UniqueIdentifier>{79aa85ae-b75b-421a-838c-8144d9dacd76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\EE\Dynarec\ix86-32">
+      <UniqueIdentifier>{094486fe-8ffc-4b98-81d6-6c381554fd8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\EE\Interpreter">
+      <UniqueIdentifier>{409f8654-a1cd-4624-9ede-3ae83a707876}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop">
+      <UniqueIdentifier>{e373743e-ee9f-421c-aa28-2d02a08bb252}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\Dynarec">
+      <UniqueIdentifier>{5a3ec813-4719-4ca1-9988-3587ea402a2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\Hardware">
+      <UniqueIdentifier>{a11bcdd7-008e-40aa-9376-d1cc2bf4e67c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD">
+      <UniqueIdentifier>{8aa116a4-8bae-4ec0-a919-be8a320491eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\IPU">
+      <UniqueIdentifier>{4dab2d06-69e0-4f3e-b6d3-45e5e85af940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS">
+      <UniqueIdentifier>{5602cc18-9d1c-49c8-9509-7e4cf9ecd91b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Debug">
+      <UniqueIdentifier>{ffa6c572-1615-4dad-80c3-333e3eb476f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Debug\rdebug">
+      <UniqueIdentifier>{bba4d866-e26f-49c8-83fb-fb970c33798b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Include">
+      <UniqueIdentifier>{96937113-fef0-4e63-92e5-a30edcc78dc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\iCore">
+      <UniqueIdentifier>{5e741f2d-9e0b-4e43-b2a2-44a8370e1546}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD\Windows">
+      <UniqueIdentifier>{be861049-a142-4650-85a5-a2fdd4eef011}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD\Linux">
+      <UniqueIdentifier>{a5904fb6-e846-4cbf-940c-ca1c604140a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\FW">
+      <UniqueIdentifier>{157740ae-b338-4d7f-81cb-cffa9d39a756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\SPU2">
+      <UniqueIdentifier>{bed493d6-96dc-4057-a1f2-31f88ec927d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9">
+      <UniqueIdentifier>{8d5454f9-590c-4c53-aae1-8391c6465e50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\ATA">
+      <UniqueIdentifier>{bc20f567-851d-4440-a3fd-ef470241962e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\ATA\Commands">
+      <UniqueIdentifier>{9e9b52d7-7b1c-44b2-82d8-1e0d8085e7e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\InternalServers">
+      <UniqueIdentifier>{93da3d51-9457-4fde-b374-c2fbe4780f59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader">
+      <UniqueIdentifier>{57c4be94-9a2c-469b-9b02-b3b324857fc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\ARP">
+      <UniqueIdentifier>{12c15e0b-4647-4ce2-9bc4-89e6e9e8f531}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP">
+      <UniqueIdentifier>{a0723e13-c839-464d-8cfa-6c440ae03537}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\ICMP">
+      <UniqueIdentifier>{928400ad-4db4-44ca-9a6d-c65e489c8ea0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\TCP">
+      <UniqueIdentifier>{7c01f24d-2141-4054-b3f9-1d9c67ae7ad6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\UDP">
+      <UniqueIdentifier>{db2fc75d-6552-4991-9155-885abd8796e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\UDP\DHCP">
+      <UniqueIdentifier>{d426ae2b-9ad6-473d-adba-57b7bdac87db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\UDP\DNS">
+      <UniqueIdentifier>{229bf045-e378-4ec5-bdf8-43938762511e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions">
+      <UniqueIdentifier>{64b05697-98cd-48ed-b5a5-cb0f6044ca15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions\ICMP_Session">
+      <UniqueIdentifier>{18d51d37-34bc-489c-b84f-31362bbb9243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions\TCP_Session">
+      <UniqueIdentifier>{7e1e6046-08a0-456e-8e03-47bb3813d9b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions\UDP_Session">
+      <UniqueIdentifier>{7b86e42b-816a-4d08-9de8-fa308d2b8d88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB">
+      <UniqueIdentifier>{df9de75c-2272-4f73-b2a0-4f9f492ba1e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders">
+      <UniqueIdentifier>{38f3b97b-eac6-4085-b6b0-567ec5081242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers">
+      <UniqueIdentifier>{f65f5552-af5b-47b0-9029-48d4dc33c2f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Hardware">
+      <UniqueIdentifier>{85d4539e-fc10-4369-98f0-0ee9a6a9cc00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Null">
+      <UniqueIdentifier>{5be27550-9ed4-4c27-9e69-e5933613c4e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Software">
+      <UniqueIdentifier>{8a0a142d-a4e0-4e8d-afbf-955fe1697eca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\OpenGL">
+      <UniqueIdentifier>{c140280a-87c6-4433-b877-f0bf8cca9345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Common">
+      <UniqueIdentifier>{81af12a1-9605-4dd8-a70e-fd4ae81fbdd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Window">
+      <UniqueIdentifier>{eaa22029-6839-4c09-93e1-faea8d8c0d7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\GIF">
+      <UniqueIdentifier>{78f5077b-255e-435e-9a51-352171dfaee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Vulkan">
+      <UniqueIdentifier>{98829aa9-bb81-4564-bd6e-128719c4faa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\OpenGL">
+      <UniqueIdentifier>{0ba8b3c9-0915-4228-a572-3526190efb00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Common">
+      <UniqueIdentifier>{7699b8f4-a217-4d8a-bf08-e28e58b3ae07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Vulkan">
+      <UniqueIdentifier>{8c7c08ed-6c87-4b10-82ca-c832e84828c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Direct3D12">
+      <UniqueIdentifier>{3951f622-8975-4d9a-9bc0-65e6646b9416}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Direct3D11">
+      <UniqueIdentifier>{6e0dc702-cb44-4a22-a595-4cbd335f31a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\Direct3D">
+      <UniqueIdentifier>{eb697f5b-85f5-424a-a7e4-8d8b73d3426e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{9153e32b-e1e3-49ac-b490-b56adfd1692f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools\Input Recording">
+      <UniqueIdentifier>{03ba2aa7-2cd9-48cb-93c6-fc93d5bdc938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools\Input Recording\Utilities">
+      <UniqueIdentifier>{78c9db9c-9c7c-4385-90e7-9fa71b922f60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\qemu-usb">
+      <UniqueIdentifier>{e068b724-9319-42e5-9ea7-63d80989ea1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\shared">
+      <UniqueIdentifier>{58074375-dbbe-4137-bbe5-54478d1a97c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-eyetoy">
+      <UniqueIdentifier>{b7da726d-4e91-48d4-a987-b624e87e4481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-hid">
+      <UniqueIdentifier>{48a0208f-5734-4e6c-bb4d-3c16e0333a81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-printer">
+      <UniqueIdentifier>{001fa220-df32-4da7-ba7e-2a7eca5cdb78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-msd">
+      <UniqueIdentifier>{20789ef3-7c0e-41ac-babd-03a9be9fe994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-mic">
+      <UniqueIdentifier>{c59653b3-87d6-4b11-b9e3-f0543117ca27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-pad">
+      <UniqueIdentifier>{cab6864f-999a-4002-bd85-e1452c62efb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-pad\lg">
+      <UniqueIdentifier>{72ca905b-3eaa-425a-b77a-3fe83869af72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\USB\usb-lightgun">
+      <UniqueIdentifier>{b8542664-8208-48ad-bd47-425a316f293c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\Input">
+      <UniqueIdentifier>{aa9a3402-0b59-4e60-8d53-b77f509bf081}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\ImGui">
+      <UniqueIdentifier>{8a23ff29-0a43-4d5b-8c6c-a7722871058a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO">
+      <UniqueIdentifier>{2fa4b100-51e1-4315-85b2-402a13136f8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\Multitap">
+      <UniqueIdentifier>{9cd399c0-6c75-4872-a785-83bcebd4bd0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\Memcard">
+      <UniqueIdentifier>{d37c74a9-5267-4eed-8356-86720df5beed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\SIO\PAD">
+      <UniqueIdentifier>{2ef3ebf7-d2a3-4b33-8059-a09b82c085ed}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Docs\License.txt">
+      <Filter>Docs</Filter>
+    </None>
+    <None Include="ps2\eeHwTraceLog.inl">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </None>
+    <None Include="x86\microVU_Alloc.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Analyze.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Branch.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Clamp.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Compile.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Execute.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Flags.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Log.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Lower.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Macro.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Misc.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Tables.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="x86\microVU_Upper.inl">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\fxaa.fx">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\convert.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\interlace.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\merge.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\imgui.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\opengl\present.glsl">
+      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\interlace.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\convert.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\merge.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\tfx.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\present.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\imgui.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\merge.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\interlace.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\convert.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\imgui.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\present.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Patch.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClInclude Include="resource.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClCompile Include="ShiftJisToUnicode.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveState.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceLog.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="System.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="Elfheader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\BaseblockEx.cpp">
+      <Filter>System\Ps2</Filter>
+    </ClCompile>
+    <ClCompile Include="FiFo.cpp">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="Hw.cpp">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="HwRead.cpp">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="HwWrite.cpp">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="Cache.cpp">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\recVTLB.cpp">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="vtlb.cpp">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="MTVU.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU</Filter>
+    </ClCompile>
+    <ClCompile Include="VUmicro.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU</Filter>
+    </ClCompile>
+    <ClCompile Include="VUmicroMem.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\microVU.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </ClCompile>
+    <ClCompile Include="VU0.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="VU0micro.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="VU0microInterp.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="VU1micro.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="VU1microInterp.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="VUflags.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="VUops.cpp">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="Sif.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
+    </ClCompile>
+    <ClCompile Include="Sif0.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
+    </ClCompile>
+    <ClCompile Include="Sif1.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif0_Dma.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif1_Dma.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif1_MFIFO.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif_Codes.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif_Transfer.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClCompile>
+    <ClCompile Include="Vif_Unpack.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\newVif_Unpack.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\newVif_Dynarec.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\newVif_UnpackSSE.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="SPR.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\SPR</Filter>
+    </ClCompile>
+    <ClCompile Include="Gif.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Gif</Filter>
+    </ClCompile>
+    <ClCompile Include="R5900OpcodeTables.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iCOP0.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iFPU.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iFPUd.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iMMI.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iR5900Misc.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ir5900tables.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900Arit.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900AritImm.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900Branch.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900Jump.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900LoadStore.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900Move.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900MultDiv.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900Shift.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iR5900Templates.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\ix86-32</Filter>
+    </ClCompile>
+    <ClCompile Include="COP0.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="COP2.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="FPU.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="Interpreter.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="MMI.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="R5900.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="R5900OpcodeImpl.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
+    </ClCompile>
+    <ClCompile Include="IopBios.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="IopCounters.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="IopDma.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="IopIrq.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="IopMem.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="R3000A.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="R3000AInterpreter.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="R3000AOpcodeTables.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iR3000A.cpp">
+      <Filter>System\Ps2\Iop\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iR3000Atables.cpp">
+      <Filter>System\Ps2\Iop\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="IopHw.cpp">
+      <Filter>System\Ps2\Iop\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="ps2\Iop\IopHwRead.cpp">
+      <Filter>System\Ps2\Iop\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="ps2\Iop\IopHwWrite.cpp">
+      <Filter>System\Ps2\Iop\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\Ps1CD.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CDVD.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CDVDcommon.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CDVDisoReader.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="IPU\IPU.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="IPU\IPU_Fifo.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="IPU\IPU_MultiISA.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="IPU\yuv2rgb.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="GS.cpp">
+      <Filter>System\Ps2\GS\GIF</Filter>
+    </ClCompile>
+    <ClCompile Include="MTGS.cpp">
+      <Filter>System\Ps2\GS\GIF</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\DisR3000A.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\DisR5900asm.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\DisVU0Micro.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\DisVU1Micro.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2.cpp">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_dbgp.cpp">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_dcmp.cpp">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_iloadp.cpp">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_netmp.cpp">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_ttyp.cpp">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iCore.cpp">
+      <Filter>System\Ps2\iCore</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iCore.cpp">
+      <Filter>System\Ps2\iCore</Filter>
+    </ClCompile>
+    <ClCompile Include="GameDatabase.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="IPU\IPUdma.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Gif_Unit.cpp">
+      <Filter>System\Ps2\GS\GIF</Filter>
+    </ClCompile>
+    <ClCompile Include="Gif_Logger.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\FlatFileReaderWindows.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="Darwin\DarwinFlatFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\InputIsoFile.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="MultipartFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\OutputIsoFile.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\BlockdumpFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\SymbolMap.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\DebugInterface.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\DisassemblyManager.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\MIPSAnalyst.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\Breakpoints.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ExpressionParser.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="sif2.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CompressedFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\MipsAssemblerTables.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\MipsAssembler.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\BiosDebugData.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\MipsStackWalk.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\ThreadedFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CsoFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\GzippedFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\ChunksCache.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="IopGte.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="Mdec.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="ps2\Iop\PsxBios.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="IPU\IPUdither.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CDVDdiscReader.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\CDVDdiscThread.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\Windows\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\Windows\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\Linux\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="PINE.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="FW.cpp">
+      <Filter>System\Ps2\Iop\FW</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\spu2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\spu2freeze.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\spu2sys.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Mixer.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\ADSR.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\DplIIdecoder.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\ReadInput.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\RegTable.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Reverb.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\SndOut.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Wavedump_wav.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\AdapterUtils.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdDMA.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdExecuteDeviceDiag.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdNoData.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdPIOData.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdSMART.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\Commands\ATA_SCE.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\ATA_Info.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\ATA_State.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\ATA_Transfer.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\ATA\HddCreate.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\DEV9.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\flash.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\InternalServers\DNS_Logger.cpp">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\InternalServers\DNS_Server.cpp">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\ARP\ARP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\ARP\ARP_PacketEditor.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\ICMP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\TCP\TCP_Options.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\TCP\TCP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Classes.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DNS</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DNS</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\UDP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\IP_Options.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\IP\IP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\PacketReader\EthernetFrameEditor.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\pcap_io.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\BaseSession.cpp">
+      <Filter>System\Ps2\DEV9\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\ICMP_Session\ICMP_Session.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\ICMP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session_In.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session_Out.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\UDP_Session\UDP_Session.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Win32\pcap_io_win32.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\smap.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\sockets.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\net.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Win32\tap-win32.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GS.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSAlignedClass.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSBlock.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSClut.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSDump.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSLocalMemory.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSLocalMemoryMultiISA.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSPerfMon.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSState.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSTables.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSUtil.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSVector.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSXXH.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\MultiISA.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSPng.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSRingHeap.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSLzma.cpp">
+      <Filter>System\Ps2\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\ChdFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX11\GSTexture11.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GSTextureOGL.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSDrawingContext.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSNewCodeGenerator.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp">
+      <Filter>System\Ps2\GS\Renderers\Null</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSRendererHWMultiISA.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSTextureCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSHwHack.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSRenderer.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSDevice.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSTexture.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSVertexTraceFMM.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\GSCapture.cpp">
+      <Filter>System\Ps2\GS\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX11\D3D.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="VMManager.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSTextureReplacements.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\HW\GSTextureReplacementLoaders.cpp">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="x86\iR5900Analysis.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\GSTexture12.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\GSDevice12.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\InputRecording.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\InputRecordingControls.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\InputRecordingFile.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\PadData.cpp">
+      <Filter>Tools\Input Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
+      <Filter>Tools\Input Recording\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\USB.cpp">
+      <Filter>System\Ps2\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\usb-ohci.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\bus.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\core.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\desc.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\qemu-usb\hid.cpp">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\shared\ringbuffer.cpp">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-printer\usb-printer.cpp">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-msd\usb-msd.cpp">
+      <Filter>System\Ps2\USB\usb-msd</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\usb-headset.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\usb-mic-logitech.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-hid\usb-hid.cpp">
+      <Filter>System\Ps2\USB\usb-hid</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-seamic.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-turntable.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad\lg</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-lightgun\guncon2.cpp">
+      <Filter>System\Ps2\USB\usb-lightgun</Filter>
+    </ClCompile>
+    <ClCompile Include="StateWrapper.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-mic\audiodev-cubeb.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\deviceproxy.cpp">
+      <Filter>System\Ps2\USB</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Debug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\Dma.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\SndOut_XAudio2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="GSDumpReplayer.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX11\D3D11ShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12ShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12StreamBuffer.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12Builders.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLContextWGL.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLProgram.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\OpenGL\GLContext.cpp">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\vk_mem_alloc.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKBuilders.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKLoader.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKShaderCache.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKStreamBuffer.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKSwapChain.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Dmac.cpp">
+      <Filter>System\Ps2\EmotionEngine\DMAC</Filter>
+    </ClCompile>
+    <ClCompile Include="ps2\pgif.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="Pcsx2Config.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Counters.cpp">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="ps2\BiosTools.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="PerformanceMetrics.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\SDLInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputManager.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\DInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\XInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Host.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="LogSink.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\Optimus.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="GameList.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Achievements.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Hotkeys.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="INISettingsInterface.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="LayeredSettingsInterface.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\ImGuiManager.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\ImGuiOverlays.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\FullscreenUI.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\ImGuiFullscreen.cpp">
+      <Filter>Misc\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\IsoHasher.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\IsoReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp">
+      <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardFolder.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadBase.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadDualshock2.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadGuitar.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\PadNotConnected.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio0.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Sio2.cpp">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClCompile>
+    <ClCompile Include="SIO\Pad\Pad.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="SPU2\ReverbResample.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Patch.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="PCSX2Base.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\AsciiFile.h">
+      <Filter>Misc\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Elfheader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\IsoFileFormats.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="SaveState.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleRegisterTypes.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="System.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Dmac.h">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="Hardware.h">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="Hw.h">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="ps2\HwInternal.h">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="Cache.h">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="vtlb.h">
+      <Filter>System\Ps2\EmotionEngine\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="MTVU.h">
+      <Filter>System\Ps2\EmotionEngine\VU</Filter>
+    </ClInclude>
+    <ClInclude Include="VU.h">
+      <Filter>System\Ps2\EmotionEngine\VU</Filter>
+    </ClInclude>
+    <ClInclude Include="VUmicro.h">
+      <Filter>System\Ps2\EmotionEngine\VU</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\microVU.h">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\microVU_IR.h">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\microVU_Misc.h">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </ClInclude>
+    <ClInclude Include="VUflags.h">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClInclude>
+    <ClInclude Include="VUops.h">
+      <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
+    </ClInclude>
+    <ClInclude Include="Sif.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
+    </ClInclude>
+    <ClInclude Include="Sifcmd.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
+    </ClInclude>
+    <ClInclude Include="Vif.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClInclude>
+    <ClInclude Include="Vif_Dma.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif</Filter>
+    </ClInclude>
+    <ClInclude Include="Vif_Unpack.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\newVif.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\newVif_HashBucket.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\newVif_UnpackSSE.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="SPR.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\SPR</Filter>
+    </ClInclude>
+    <ClInclude Include="Gif.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Gif</Filter>
+    </ClInclude>
+    <ClInclude Include="R5900.h">
+      <Filter>System\Ps2\EmotionEngine\EE</Filter>
+    </ClInclude>
+    <ClInclude Include="R5900OpcodeTables.h">
+      <Filter>System\Ps2\EmotionEngine\EE</Filter>
+    </ClInclude>
+    <ClInclude Include="COP0.h">
+      <Filter>System\Ps2\EmotionEngine\EE</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iCOP0.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iFPU.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iMMI.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Arit.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900AritImm.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Branch.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Jump.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900LoadStore.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Move.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900MultDiv.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Shift.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="IopBios.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="IopCounters.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="IopDma.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="IopMem.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="R3000A.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR3000A.h">
+      <Filter>System\Ps2\Iop\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="IopHw.h">
+      <Filter>System\Ps2\Iop\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="ps2\Iop\IopHw_Internal.h">
+      <Filter>System\Ps2\Iop\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\Ps1CD.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CDVD.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CDVD_internal.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CDVDcommon.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\IPU.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\IPU_Fifo.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\IPU_MultiISA.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\yuv2rgb.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\Debug.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\DisASM.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\DisVUmicro.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\DisVUops.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\BaseblockEx.h">
+      <Filter>System\Ps2\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="ps2\BiosTools.h">
+      <Filter>System\Ps2\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryTypes.h">
+      <Filter>System\Ps2\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iCore.h">
+      <Filter>System\Ps2\iCore</Filter>
+    </ClInclude>
+    <ClInclude Include="GameDatabase.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\IPUdma.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Gif_Unit.h">
+      <Filter>System\Ps2\GS\GIF</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\microVU_Profiler.h">
+      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\SymbolMap.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\DebugInterface.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\DisassemblyManager.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\MIPSAnalyst.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\Breakpoints.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ExpressionParser.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\zlib_indexed.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\MipsAssemblerTables.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\MipsAssembler.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\BiosDebugData.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\MipsStackWalk.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\ThreadedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\ChdFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CsoFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CompressedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\GzippedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\ChunksCache.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CompressedFileReaderUtils.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\R5900_Profiler.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="IopGte.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="Mdec.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\CDVDdiscReader.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="PINE.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="FW.h">
+      <Filter>System\Ps2\Iop\FW</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\spu2.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\Mixer.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\interpolate_table.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\defs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\Global.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\regs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\SndOut.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\spdif.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\AdapterUtils.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ATA\ATA.h">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ATA\HddCreate.h">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\DEV9.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\InternalServers\DHCP_Server.h">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\InternalServers\DNS_Logger.h">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\InternalServers\DNS_Server.h">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\net.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\ARP\ARP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\ARP\ARP_PacketEditor.h">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\ICMP\ICMP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\ICMP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Options.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\TCP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\TCP\TCP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\TCP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Classes.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DNS</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Enums.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DNS</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DNS</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\UDP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Address.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Options.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Payload.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\EthernetFrame.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\EthernetFrameEditor.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\MAC_Address.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\NetLib.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\PacketReader\Payload.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\pcap_io.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\BaseSession.h">
+      <Filter>System\Ps2\DEV9\Sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\ICMP_Session\ICMP_Session.h">
+      <Filter>System\Ps2\DEV9\Sessions\ICMP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\TCP_Session\TCP_Session.h">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_BaseSession.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_Session.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\SimpleQueue.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\smap.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\sockets.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ThreadSafeMap.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Win32\tap.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GS.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSExtra.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSGL.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSRegs.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSAlignedClass.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSBlock.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSClut.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSDump.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSLocalMemory.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSPerfMon.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSState.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSTables.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSThread.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSUtil.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSVector.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSVector4i.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSVector4.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSVector8i.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSVector8.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSXXH.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\MultiISA.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSPng.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSRingHeap.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSThread_CXX11.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSLzma.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSFastList.h">
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX11\GSDevice11.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX11\GSTexture11.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GSTextureOGL.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLState.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSDrawingContext.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSDrawingEnvironment.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSRendererSW.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSTextureSW.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSVertexSW.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSRasterizer.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Null\GSRendererNull.h">
+      <Filter>System\Ps2\GS\Renderers\Null</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\HW\GSRendererHW.h">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\HW\GSTextureCache.h">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\HW\GSVertexHW.h">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSRenderer.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSDirtyRect.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSDevice.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSTexture.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSVertex.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSFunctionMap.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\GSCapture.h">
+      <Filter>System\Ps2\GS\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX11\D3D.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="PerformanceMetrics.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS.h" />
+    <ClInclude Include="VMManager.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\HW\GSTextureReplacements.h">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="x86\iR5900Analysis.h">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\GSTexture12.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\GSDevice12.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\InputRecording.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\InputRecordingControls.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\InputRecordingFile.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\PadData.h">
+      <Filter>Tools\Input Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="Recording\Utilities\InputRecordingLogger.h">
+      <Filter>Tools\Input Recording\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderCacheVersion.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\deviceproxy.h">
+      <Filter>System\Ps2\USB</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\USB.h">
+      <Filter>System\Ps2\USB</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\queue.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\qusb.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\USBinternal.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\desc.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\hid.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\qemu-usb\input-keymap.h">
+      <Filter>System\Ps2\USB\qemu-usb</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\shared\ringbuffer.h">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\cam-windows.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\ov519.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\usb-eyetoy-webcam.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\videodev.h">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-printer\usb-printer.h">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-msd\usb-msd.h">
+      <Filter>System\Ps2\USB\usb-msd</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audiodev-noop.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\usb-headset.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\usb-mic-singstar.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audio.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audiodev.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-hid\usb-hid.h">
+      <Filter>System\Ps2\USB\usb-hid</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-turntable.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\lg\lg_ff.h">
+      <Filter>System\Ps2\USB\usb-pad\lg</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-lightgun\guncon2.h">
+      <Filter>System\Ps2\USB\usb-lightgun</Filter>
+    </ClInclude>
+    <ClInclude Include="StateWrapper.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-mic\audiodev-cubeb.h">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\Debug.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\Dma.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\HW\GSHwHack.h">
+      <Filter>System\Ps2\GS\Renderers\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="IPU\mpeg2_vlc.h">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClInclude>
+    <ClInclude Include="GSDumpReplayer.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GS.h">
+      <Filter>System\Ps2\GS\GIF</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12ShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12StreamBuffer.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLContextWGL.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLProgram.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\OpenGL\GLContext.h">
+      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKBuilders.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKEntryPoints.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKLoader.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKShaderCache.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKStreamBuffer.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="ps2\pgif.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="Counters.h">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="Achievements.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputManager.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\SDLInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\DInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\XInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Host.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="LogSink.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="GameList.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="INISettingsInterface.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="LayeredSettingsInterface.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiManager.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiOverlays.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\FullscreenUI.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiFullscreen.h">
+      <Filter>Misc\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\IsoHasher.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\IsoReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Multitap\MultitapProtocol.h">
+      <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardFile.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardFolder.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadBase.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadDualshock2.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadGuitar.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadNotConnected.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadTypes.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio0.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Sio2.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\SioTypes.h">
+      <Filter>System\Ps2\Iop\SIO</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\Pad.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\ImGuiAnimated.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="rdebug\deci2.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_dbgp.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_dcmp.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_drfp.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_iloadp.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_netmp.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_ttyp.h">
+      <Filter>System\Ps2\Debug\rdebug</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="GS\GS.natvis">
+      <Filter>System\Ps2\GS</Filter>
+    </Natvis>
+  </ItemGroup>
+</Project>

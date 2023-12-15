@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -21,6 +21,8 @@
 
 #include <mutex>
 #include <array>
+
+class Error;
 
 struct track
 {
@@ -64,11 +66,12 @@ class IOCtlSrc
 
 	bool ReadDVDInfo();
 	bool ReadCDInfo();
-	bool Reopen();
 
 public:
 	IOCtlSrc(std::string filename);
 	~IOCtlSrc();
+
+	bool Reopen(Error* error);
 
 	u32 GetSectorCount() const;
 	const std::vector<toc_entry>& ReadTOC() const;
@@ -90,11 +93,10 @@ extern bool weAreInNewDiskCB;
 
 extern void (*newDiscCB)();
 
-bool cdvdStartThread();
+void cdvdStartThread();
 void cdvdStopThread();
 void cdvdRequestSector(u32 sector, s32 mode);
 u8* cdvdGetSector(u32 sector, s32 mode);
 s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer);
-s32 cdvdGetMediaType();
-s32 cdvdRefreshData();
+void cdvdRefreshData();
 void cdvdParseTOC();

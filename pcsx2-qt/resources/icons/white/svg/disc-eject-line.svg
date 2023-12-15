@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="disc-eject-line.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="0.921875"
+     inkscape:cx="306.98305"
+     inkscape:cy="258.71186"
+     inkscape:window-width="1920"
+     inkscape:window-height="956"
+     inkscape:window-x="0"
+     inkscape:window-y="42"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <circle
+       style="fill:none;stroke:#ffffff;stroke-width:43.8472;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="path788"
+       cx="254.69832"
+       cy="256"
+       r="211.72192" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:31.4605;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="path1582"
+       inkscape:flatsided="false"
+       sodipodi:sides="3"
+       sodipodi:cx="256"
+       sodipodi:cy="101.09832"
+       sodipodi:r1="122.9679"
+       sodipodi:r2="61.483952"
+       sodipodi:arg1="2.6179939"
+       sodipodi:arg2="3.6651914"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 149.50667,162.58227 202.75334,70.356346 256,-21.869583 l 53.24666,92.225926 53.24667,92.225927 -106.49333,0 z"
+       inkscape:transform-center-y="-19.324427"
+       transform="matrix(0.77253244,0,0,0.62860054,56.930019,153.80068)"
+       inkscape:transform-center-x="-1.607738e-06" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:17.5612;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="rect1636"
+       width="169.33095"
+       height="28.414787"
+       x="170.03285"
+       y="315.31885" />
+  </g>
+</svg>

@@ -16,7 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "common/MathUtils.h"
+#include "common/BitUtils.h"
 
 namespace R5900 {
 namespace Interpreter {
@@ -151,8 +151,8 @@ void PLZCW() {
 		return;
 
 	// Return the leading sign bits, excluding the original bit
-	cpuRegs.GPR.r[_Rd_].UL[0] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[0]) - 1;
-	cpuRegs.GPR.r[_Rd_].UL[1] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[1]) - 1;
+	cpuRegs.GPR.r[_Rd_].UL[0] = Common::CountLeadingSignBits(cpuRegs.GPR.r[_Rs_].SL[0]) - 1;
+	cpuRegs.GPR.r[_Rd_].UL[1] = Common::CountLeadingSignBits(cpuRegs.GPR.r[_Rs_].SL[1]) - 1;
 }
 
 __fi void PMFHL_CLAMP(u16& dst, s32 src)

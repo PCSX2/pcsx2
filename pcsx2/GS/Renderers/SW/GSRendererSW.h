@@ -69,17 +69,18 @@ protected:
 	u32 m_fzb_cur_pages[16];
 	std::atomic<u32> m_fzb_pages[512]; // u16 frame/zbuf pages interleaved
 	std::atomic<u16> m_tex_pages[512];
+	GIFRegDIMX m_last_dimx = {};
+	GSVector4i m_dimx[8] = {};
 
 	void Reset(bool hardware_reset) override;
-	void VSync(u32 field, bool registers_written) override;
-	GSTexture* GetOutput(int i, int& y_offset) override;
-	GSTexture* GetFeedbackOutput() override;
+	void VSync(u32 field, bool registers_written, bool idle_frame) override;
+	GSTexture* GetOutput(int i, float& scale, int& y_offset) override;
+	GSTexture* GetFeedbackOutput(float& scale) override;
 
 	void Draw() override;
 	void Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item);
 	void Sync(int reason);
-	void ExpandTarget(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) override;
-	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool eewrite = false) override;
+	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r) override;
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) override;
 
 	void UsePages(const GSOffset::PageLooper& pages, const int type);

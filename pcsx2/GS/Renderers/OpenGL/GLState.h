@@ -15,11 +15,15 @@
 
 #pragma once
 
-#include "GS/Renderers/OpenGL/GLLoader.h"
 #include "GS/GSVector.h"
+
+#include "glad.h"
+
+class GSTextureOGL;
 
 namespace GLState
 {
+	extern GLuint vao; // vertex array object
 	extern GLuint fbo; // frame buffer object
 	extern GSVector2i viewport;
 	extern GSVector4i scissor;
@@ -44,12 +48,10 @@ namespace GLState
 
 	extern GLuint ps_ss; // sampler
 
-	extern GLuint rt; // render target
-	extern GLuint ds; // Depth-Stencil
+	extern GSTextureOGL* rt; // render target
+	extern GSTextureOGL* ds; // Depth-Stencil
 	extern GLuint tex_unit[8]; // shader input texture
 	extern GLuint64 tex_handle[8]; // shader input texture
-
-	extern s64 available_vram;
 
 	extern void Clear();
 } // namespace GLState

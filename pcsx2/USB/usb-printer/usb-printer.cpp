@@ -29,6 +29,10 @@
 
 namespace usb_printer
 {
+	static const char* sPrinterNames[] = {
+		"Sony DPP-MP1",
+	};
+
 	typedef struct PrinterState
 	{
 		USBDevice dev{};
@@ -97,12 +101,14 @@ namespace usb_printer
 		if (!s->print_file)
 		{
 			Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_EXCLAMATION_TRIANGLE,
-				fmt::format("Failed to open '{}' for printing.", s->print_filename), Host::OSD_ERROR_DURATION);
+				fmt::format(TRANSLATE_FS("USB", "Failed to open '{}' for printing."), s->print_filename),
+				Host::OSD_ERROR_DURATION);
 			return;
 		}
 
 		Host::AddIconOSDMessage("USBPrinterOpen", ICON_FA_SAVE,
-			fmt::format("Printer saving to '{}'...", Path::GetFileName(s->print_filename)), Host::OSD_INFO_DURATION);
+			fmt::format(TRANSLATE_FS("USB", "Printer saving to '{}'..."), Path::GetFileName(s->print_filename)),
+			Host::OSD_INFO_DURATION);
 
 		BMPHeader header = {0};
 		header.magic = 0x4D42;
@@ -329,7 +335,7 @@ namespace usb_printer
 
 	const char* PrinterDevice::Name() const
 	{
-		return "Printer";
+		return TRANSLATE_NOOP("USB", "Printer");
 	}
 
 	const char* PrinterDevice::TypeName() const
@@ -362,7 +368,7 @@ namespace usb_printer
 		return true;
 	}
 
-	gsl::span<const char*> PrinterDevice::SubTypes() const
+	std::span<const char*> PrinterDevice::SubTypes() const
 	{
 		return sPrinterNames;
 	}

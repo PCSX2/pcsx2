@@ -21,7 +21,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)common\vsprops\common.props" />
     <Import Project="$(SolutionDir)common\vsprops\BaseProperties.props" />
-    <Import Project="$(SolutionDir)common\vsprops\3rdpartyDeps.props" />
+    <Import Project="$(SolutionDir)common\vsprops\GenerateSCMVersion.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
     <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
@@ -34,83 +34,27 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\simpleini\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)pcsx2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <!-- Needed for moc pch -->
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList</AdditionalIncludeDirectories>
-      <ExceptionHandling>Async</ExceptionHandling>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\fmt\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\rapidyaml\rapidyaml\ext\c4core\src\c4\ext\fast_float\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\simpleini\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)pcsx2</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_DISCORD_PRESENCE;ENABLE_OPENGL;ENABLE_VULKAN;DIRECTINPUT_VERSION=0x0800;PCSX2_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="!$(Configuration.Contains(AVX2))">_M_SSE=0x401;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(Configuration.Contains(AVX2))">_M_SSE=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet Condition="!$(Configuration.Contains(AVX2)) Or $(Configuration.Contains(Clang))">NotSet</EnableEnhancedInstructionSet>
-      <EnableEnhancedInstructionSet Condition="$(Configuration.Contains(AVX2)) And !$(Configuration.Contains(Clang))">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And !$(Configuration.Contains(AVX2))"> -march=nehalem %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(AVX2))"> -march=haswell %(AdditionalOptions)</AdditionalOptions>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
-      <!-- SH 2/3 flashlight, explicitly set here don't change -->
-      <!-- https://github.com/PCSX2/pcsx2/commit/16431653e4d92fda4069031897e24fbe4688d36a -->
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/Zc:__cplusplus /Zo /utf-8%(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;ENABLE_RAINTEGRATION;ENABLE_ACHIEVEMENTS;ENABLE_DISCORD_PRESENCE;ENABLE_OPENGL;ENABLE_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <LargeAddressAware>Yes</LargeAddressAware>
-      <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;PowrProf.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;OneCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">
-      <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\libjpeg\libjpeg.vcxproj">
-      <Project>{bc236261-77e8-4567-8d09-45cd02965eb6}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
-      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
-      <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
-      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\libchdr\libchdr.vcxproj">
-      <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\jpgd\jpgd.vcxproj">
-      <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\imgui\imgui.vcxproj">
       <Project>{88fb34ec-845e-4f21-a552-f1573b9ed167}</Project>
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)pcsx2\pcsx2core.vcxproj">
+    <ProjectReference Include="$(SolutionDir)pcsx2\pcsx2.vcxproj">
       <Project>{6c7986c4-3e4d-4dcc-b3c6-6bb12b238995}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\glad\glad.vcxproj">
-      <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

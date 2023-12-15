@@ -1,4 +1,17 @@
-#ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 Texture2D Texture;
 SamplerState Sampler;
@@ -23,7 +36,7 @@ float4 ps_main0(PS_INPUT input) : SV_Target0
 	const int vpos  = int(input.p.y); // vertical position of destination texture
 
 	if ((vpos & 1) == field)
-		return Texture.Sample(Sampler, input.t);
+		return Texture.SampleLevel(Sampler, input.t, 0);
 	else
 		discard;
 
@@ -34,7 +47,7 @@ float4 ps_main0(PS_INPUT input) : SV_Target0
 // Bob shader
 float4 ps_main1(PS_INPUT input) : SV_Target0
 {
-	return Texture.Sample(Sampler, input.t);
+	return Texture.SampleLevel(Sampler, input.t, 0);
 }
 
 
@@ -42,9 +55,9 @@ float4 ps_main1(PS_INPUT input) : SV_Target0
 float4 ps_main2(PS_INPUT input) : SV_Target0
 {
 	float2 vstep = float2(0.0f, ZrH.y);
-	float4 c0 = Texture.Sample(Sampler, input.t - vstep);
-	float4 c1 = Texture.Sample(Sampler, input.t);
-	float4 c2 = Texture.Sample(Sampler, input.t + vstep);
+	float4 c0 = Texture.SampleLevel(Sampler, input.t - vstep, 0);
+	float4 c1 = Texture.SampleLevel(Sampler, input.t, 0);
+	float4 c2 = Texture.SampleLevel(Sampler, input.t + vstep, 0);
 
 	return (c0 + c1 * 2 + c2) / 4;
 }
@@ -66,15 +79,11 @@ float4 ps_main3(PS_INPUT input) : SV_Target0
 	const int    vres   = int(ZrH.z) >> 1;                           // vertical resolution of source texture
 	const int    lofs   = ((((vres + 1) >> 1) << 1) - vres) & bank;  // line alignment offset for bank 1
 	const int    vpos   = int(input.p.y) + lofs;                     // vertical position of destination texture
-	const float2 bofs   = float2(0.0f, 0.5f * bank);                 // vertical offset of the current bank relative to source texture size
-	const float2 vscale = float2(1.0f, 2.0f);                        // scaling factor from source to destination texture
-	const float2 optr   = input.t - bofs;                            // used to check if the current destination line is within the current bank
-	const float2 iptr   = optr * vscale;                             // pointer to the current pixel in the source texture
 
 	// if the index of current destination line belongs to the current fiels we update it, otherwise
 	// we leave the old line in the destination buffer
-	if ((optr.y >= 0.0f) && (optr.y < 0.5f) && ((vpos & 1) == field))
-		return Texture.Sample(Sampler, iptr);
+	if ((vpos & 1) == field)
+		return Texture.SampleLevel(Sampler, input.t, 0);
 	else
 		discard;
 
@@ -133,13 +142,13 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 
 	// calculating motion, only relevant for missing lines where the "center line" is pointed by p_t1
 
-	float4 hn = Texture.Sample(Sampler, p_t0 - lofs); // new high pixel
-	float4 cn = Texture.Sample(Sampler, p_t1);        // new center pixel
-	float4 ln = Texture.Sample(Sampler, p_t0 + lofs); // new low pixel
+	float4 hn = Texture.SampleLevel(Sampler, p_t0 - lofs, 0); // new high pixel
+	float4 cn = Texture.SampleLevel(Sampler, p_t1, 0);        // new center pixel
+	float4 ln = Texture.SampleLevel(Sampler, p_t0 + lofs, 0); // new low pixel
 
-	float4 ho = Texture.Sample(Sampler, p_t2 - lofs); // old high pixel
-	float4 co = Texture.Sample(Sampler, p_t3);        // old center pixel
-	float4 lo = Texture.Sample(Sampler, p_t2 + lofs); // old low pixel
+	float4 ho = Texture.SampleLevel(Sampler, p_t2 - lofs, 0); // old high pixel
+	float4 co = Texture.SampleLevel(Sampler, p_t3, 0);        // old center pixel
+	float4 lo = Texture.SampleLevel(Sampler, p_t2 + lofs, 0); // old low pixel
 
 	float3 mh = hn.rgb - ho.rgb; // high pixel motion
 	float3 mc = cn.rgb - co.rgb; // center pixel motion
@@ -164,7 +173,7 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 	if ((vpos & 1) == field)
 	{
 		// output coordinate present on current field
-		return Texture.Sample(Sampler, p_t0);
+		return Texture.SampleLevel(Sampler, p_t0, 0);
 	}
 	else if ((iptr.y > 0.5f - lofs.y) || (iptr.y < 0.0 + lofs.y))
 	{
@@ -184,5 +193,3 @@ float4 ps_main4(PS_INPUT input) : SV_Target0
 
 	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
-
-#endif

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,16 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
-#include "R3000A.h"
+
 #include "Common.h"
-#include "R5900.h" // for g_GameStarted
+#include "DebugTools/SymbolMap.h"
 #include "IopBios.h"
 #include "IopMem.h"
-#include "iR3000A.h"
+#include "R3000A.h"
+#include "R5900.h"
 #include "ps2/BiosTools.h"
-#include "DebugTools/SymbolMap.h"
+#include "x86/iR3000A.h"
+#include "VMManager.h"
 
 #include <ctype.h>
 #include <fmt/format.h>
@@ -30,6 +31,11 @@
 #include <sys/stat.h>
 #include "common/FileSystem.h"
 #include "common/Path.h"
+
+#include <cctype>
+#include <cstring>
+#include <fmt/format.h>
+#include <sys/stat.h>
 
 #include <fcntl.h>
 
@@ -40,10 +46,10 @@
 #endif
 
 #if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
-#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 #if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
-#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 #ifndef O_BINARY
@@ -89,14 +95,13 @@ typedef struct
 
 static std::string hostRoot;
 
-void Hle_SetElfPath(const char* elfFileName)
+void Hle_SetHostRoot(const char* bootFilename)
 {
-	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
-	hostRoot = Path::ToNativePath(Path::GetDirectory(elfFileName));
+	hostRoot = Path::ToNativePath(Path::GetDirectory(bootFilename));
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
-void Hle_ClearElfPath()
+void Hle_ClearHostRoot()
 {
 	hostRoot = {};
 }
@@ -168,6 +173,17 @@ namespace R3000A
 			new_path = std::move(native_path);
 		else if (!hostRoot.empty()) // relative paths
 			new_path = Path::Combine(hostRoot, native_path);
+
+		// Allow opening the ELF override.
+		if (new_path == VMManager::Internal::GetELFOverride())
+			return new_path;
+
+		// Allow nothing if hostfs isn't enabled.
+		if (!EmuConfig.HostFs)
+		{
+			new_path.clear();
+			return new_path;
+		}
 
 		// Double-check that it falls within the directory of the elf.
 		// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
@@ -561,7 +577,7 @@ namespace R3000A
 			if (not_number_pos == std::string::npos)
 				return false;
 
-			return ((!g_GameStarted || EmuConfig.HostFs) && 0 == path.compare(0, 4, "host") && path[not_number_pos] == ':');
+			return (path.compare(0, 4, "host") == 0 && path[not_number_pos] == ':');
 		}
 
 		int open_HLE()
@@ -879,6 +895,13 @@ namespace R3000A
 	{
 		int Kprintf_HLE()
 		{
+			// Using sprintf here is a bit nasty, but it has a large buffer..
+			// Don't feel like rewriting it.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 			// Emulate the expected Kprintf functionality:
 			iopMemWrite32(sp, a0);
 			iopMemWrite32(sp + 4, a1);
@@ -987,11 +1010,40 @@ namespace R3000A
 			iopConLog(ShiftJIS_ConvertString(tmp, 1023));
 
 			return 1;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 		}
 	} // namespace sysmem
 
 	namespace loadcore
 	{
+
+		u32 GetModList(u32 a0reg)
+		{
+			u32 lcptr = iopMemRead32(0x3f0);
+			u32 lcstring = irxFindLoadcore(lcptr);
+			u32 list = 0;
+
+			if (lcstring == 0)
+			{
+				list = lcptr - 0x20;
+			}
+			else
+			{
+				list = lcstring + 0x18;
+			}
+
+			u32 mod = iopMemRead32(list);
+
+			while (mod != 0)
+			{
+				mod = iopMemRead32(mod);
+			}
+
+			return list;
+		}
 
 		// Gets the thread list ptr from thbase
 		u32 GetThreadList(u32 a0reg, u32 version)
@@ -1011,8 +1063,49 @@ namespace R3000A
 			return list;
 		}
 
+		void LoadFuncs(u32 a0reg)
+		{
+			const std::string modname = iopMemReadString(a0reg + 12, 8);
+			ModuleVersion version = {iopMemRead8(a0 + 9), iopMemRead8(a0 + 8)};
+			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), version.major, version.minor);
+
+			if (R3000SymbolMap.AddModule(modname, version))
+			{
+				u32 func = a0reg + 20;
+				u32 funcptr = iopMemRead32(func);
+				u32 index = 0;
+				while (funcptr != 0)
+				{
+					const std::string funcname = std::string(irxImportFuncname(modname, index));
+					if (!funcname.empty())
+					{
+						R3000SymbolMap.AddModuleExport(modname, version, fmt::format("{}[{:02}]::{}", modname, index, funcname).c_str(), funcptr, 0);
+					}
+					else
+					{
+						R3000SymbolMap.AddModuleExport(modname, version, fmt::format("{}[{:02}]::unkn_{:02}", modname, index, index).c_str(), funcptr, 0);
+					}
+					index++;
+					func += 4;
+					funcptr = iopMemRead32(func);
+				}
+			}
+		}
+
+		void ReleaseFuncs(u32 a0reg)
+		{
+			const std::string modname = iopMemReadString(a0reg + 12, 8);
+			ModuleVersion version = {iopMemRead8(a0 + 9), iopMemRead8(a0 + 8)};
+
+			DevCon.WriteLn(Color_Gray, "ReleaseLibraryEntries: %8.8s version %x.%02x", modname.data(), version.major, version.minor);
+
+			R3000SymbolMap.RemoveModule(modname, version);
+		}
+
 		int RegisterLibraryEntries_HLE()
 		{
+			LoadFuncs(a0);
+
 			const std::string modname = iopMemReadString(a0 + 12);
 			if (modname == "thbase")
 			{
@@ -1020,13 +1113,14 @@ namespace R3000A
 				CurrentBiosInformation.iopThreadListAddr = GetThreadList(a0, version);
 			}
 
+			CurrentBiosInformation.iopModListAddr = GetModList(a0);
 			return 0;
 		}
 
-		void RegisterLibraryEntries_DEBUG()
+		int ReleaseLibraryEntries_HLE()
 		{
-			const std::string modname = iopMemReadString(a0 + 12);
-			DevCon.WriteLn(Color_Gray, "RegisterLibraryEntries: %8.8s version %x.%02x", modname.data(), (unsigned)iopMemRead8(a0 + 9), (unsigned)iopMemRead8(a0 + 8));
+			ReleaseFuncs(a0);
+			return 0;
 		}
 	} // namespace loadcore
 
@@ -1075,6 +1169,24 @@ namespace R3000A
 		}
 	} // namespace sifcmd
 
+	u32 irxFindLoadcore(u32 entrypc)
+	{
+		u32 i;
+
+		i = entrypc;
+		while (entrypc - i < 0x50)
+		{
+			// find loadcore string
+			if (iopMemRead32(i) == 0x49497350 && iopMemRead32(i + 4) == 0x64616F6C)
+			{
+				return i;
+			}
+			i -= 4;
+		}
+
+		return 0;
+	}
+
 	u32 irxImportTableAddr(u32 entrypc)
 	{
 		u32 i;
@@ -1104,10 +1216,10 @@ namespace R3000A
 				// case 3: ???
 		}
 
-		return 0;
+		return "";
 	}
 
-// clang-format off
+	// clang-format off
 #define MODULE(n)          \
 	if (#n == libname)     \
 	{                      \
@@ -1129,13 +1241,12 @@ namespace R3000A
 	{
 		// debugging output
 		// clang-format off
+		MODULE(loadcore)
+			EXPORT_H(  6, RegisterLibraryEntries)
+			EXPORT_H(  7, ReleaseLibraryEntries);
+		END_MODULE
 		MODULE(sysmem)
 			EXPORT_H( 14, Kprintf)
-		END_MODULE
-
-		// For grabbing the thread list from thbase
-		MODULE(loadcore)
-			EXPORT_H( 6, RegisterLibraryEntries)
 		END_MODULE
 
 		// Special case with ioman and iomanX
@@ -1175,9 +1286,6 @@ namespace R3000A
 	irxDEBUG irxImportDebug(const std::string& libname, u16 index)
 	{
 		// clang-format off
-		MODULE(loadcore)
-			EXPORT_D(  6, RegisterLibraryEntries)
-		END_MODULE
 		MODULE(intrman)
 			EXPORT_D(  4, RegisterIntrHandler)
 		END_MODULE

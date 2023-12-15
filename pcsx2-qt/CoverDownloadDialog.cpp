@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,17 +15,17 @@
 
 #include "PrecompiledHeader.h"
 
-#include "common/Assertions.h"
-
-#include "pcsx2/Frontend/GameList.h"
-
 #include "CoverDownloadDialog.h"
+
+#include "pcsx2/GameList.h"
+
+#include "common/Assertions.h"
 
 CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
-	m_ui.coverIcon->setPixmap(QIcon::fromTheme("image-fill").pixmap(32));
+	m_ui.coverIcon->setPixmap(QIcon::fromTheme("artboard-2-line").pixmap(32));
 	updateEnabled();
 
 	connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);

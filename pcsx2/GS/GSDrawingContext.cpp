@@ -79,6 +79,44 @@ static int extend(int uv, int size)
 	return size;
 }
 
+GSDrawingContext::GSDrawingContext()
+{
+	std::memset(&offset, 0, sizeof(offset));
+
+	Reset();
+}
+
+void GSDrawingContext::Reset()
+{
+	std::memset(&XYOFFSET, 0, sizeof(XYOFFSET));
+	std::memset(&TEX0, 0, sizeof(TEX0));
+	std::memset(&TEX1, 0, sizeof(TEX1));
+	std::memset(&CLAMP, 0, sizeof(CLAMP));
+	std::memset(&MIPTBP1, 0, sizeof(MIPTBP1));
+	std::memset(&MIPTBP2, 0, sizeof(MIPTBP2));
+	std::memset(&SCISSOR, 0, sizeof(SCISSOR));
+	std::memset(&ALPHA, 0, sizeof(ALPHA));
+	std::memset(&TEST, 0, sizeof(TEST));
+	std::memset(&FBA, 0, sizeof(FBA));
+	std::memset(&FRAME, 0, sizeof(FRAME));
+	std::memset(&ZBUF, 0, sizeof(ZBUF));
+}
+
+void GSDrawingContext::UpdateScissor()
+{
+	// Scissor registers are inclusive of the upper bounds.
+	const GSVector4i rscissor = GSVector4i(static_cast<int>(SCISSOR.SCAX0), static_cast<int>(SCISSOR.SCAY0),
+		static_cast<int>(SCISSOR.SCAX1), static_cast<int>(SCISSOR.SCAY1));
+	scissor.in = rscissor + GSVector4i::cxpr(0, 0, 1, 1);
+
+	// Fixed-point scissor min/max, used for rejecting primitives which are entirely outside.
+	scissor.cull = rscissor.sll32(4);
+
+	// Offset applied to vertices for culling, zw is for native resolution culling
+	// We want to round subpixels down, because at least one pixel gets filled per scanline.
+	scissor.xyof = GSVector4i::loadl(&XYOFFSET.U64).xyxy().sub32(GSVector4i::cxpr(0, 0, 15, 15));
+}
+
 GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap) const
 {
 	if (mipmap)
@@ -141,4 +179,133 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 	}
 
 	return res;
+}
+
+void GSDrawingContext::Dump(const std::string& filename)
+{
+	// Append on purpose so env + context are merged into a single file
+	FILE* fp = fopen(filename.c_str(), "at");
+	if (!fp)
+		return;
+
+	fprintf(fp,
+		"XYOFFSET\n"
+		"\tX:%u\n"
+		"\tY:%u\n\n",
+		XYOFFSET.OFX, XYOFFSET.OFY);
+
+	fprintf(fp,
+		"MIPTBP1\n"
+		"\tBP1:0x%x\n"
+		"\tBW1:%u\n"
+		"\tBP2:0x%x\n"
+		"\tBW2:%u\n"
+		"\tBP3:0x%x\n"
+		"\tBW3:%u\n\n",
+		static_cast<uint32_t>(MIPTBP1.TBP1), static_cast<uint32_t>(MIPTBP1.TBW1), static_cast<uint32_t>(MIPTBP1.TBP2),
+		static_cast<uint32_t>(MIPTBP1.TBW2), static_cast<uint32_t>(MIPTBP1.TBP3), static_cast<uint32_t>(MIPTBP1.TBW3));
+
+	fprintf(fp,
+		"MIPTBP2\n"
+		"\tBP4:0x%x\n"
+		"\tBW4:%u\n"
+		"\tBP5:0x%x\n"
+		"\tBW5:%u\n"
+		"\tBP6:0x%x\n"
+		"\tBW6:%u\n\n",
+		static_cast<uint32_t>(MIPTBP2.TBP4), static_cast<uint32_t>(MIPTBP2.TBW4), static_cast<uint32_t>(MIPTBP2.TBP5),
+		static_cast<uint32_t>(MIPTBP2.TBW5), static_cast<uint32_t>(MIPTBP2.TBP6), static_cast<uint32_t>(MIPTBP2.TBW6));
+
+	fprintf(fp,
+		"TEX0\n"
+		"\tTBP0:0x%x\n"
+		"\tTBW:%u\n"
+		"\tPSM:0x%x\n"
+		"\tTW:%u\n"
+		"\tTCC:%u\n"
+		"\tTFX:%u\n"
+		"\tCBP:0x%x\n"
+		"\tCPSM:0x%x\n"
+		"\tCSM:%u\n"
+		"\tCSA:%u\n"
+		"\tCLD:%u\n"
+		"\tTH:%u\n",
+		TEX0.TBP0, TEX0.TBW, TEX0.PSM, TEX0.TW, TEX0.TCC, TEX0.TFX, TEX0.CBP, TEX0.CPSM, TEX0.CSM, TEX0.CSA, TEX0.CLD,
+		static_cast<uint32_t>(TEX0.TH));
+
+	fprintf(fp,
+		"TEX1\n"
+		"\tLCM:%u\n"
+		"\tMXL:%u\n"
+		"\tMMAG:%u\n"
+		"\tMMIN:%u\n"
+		"\tMTBA:%u\n"
+		"\tL:%u\n"
+		"\tK:%d\n\n",
+		TEX1.LCM, TEX1.MXL, TEX1.MMAG, TEX1.MMIN, TEX1.MTBA, TEX1.L, TEX1.K);
+
+	fprintf(fp,
+		"CLAMP\n"
+		"\tWMS:%u\n"
+		"\tWMT:%u\n"
+		"\tMINU:%u\n"
+		"\tMAXU:%u\n"
+		"\tMAXV:%u\n"
+		"\tMINV:%u\n\n",
+		CLAMP.WMS, CLAMP.WMT, CLAMP.MINU, CLAMP.MAXU, CLAMP.MAXV, static_cast<uint32_t>(CLAMP.MINV));
+
+	// TODO mimmap? (yes I'm lazy)
+	fprintf(fp,
+		"SCISSOR\n"
+		"\tX0:%u\n"
+		"\tX1:%u\n"
+		"\tY0:%u\n"
+		"\tY1:%u\n\n",
+		SCISSOR.SCAX0, SCISSOR.SCAX1, SCISSOR.SCAY0, SCISSOR.SCAY1);
+
+	fprintf(fp,
+		"ALPHA\n"
+		"\tA:%u\n"
+		"\tB:%u\n"
+		"\tC:%u\n"
+		"\tD:%u\n"
+		"\tFIX:%u\n",
+		ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, ALPHA.FIX);
+	const char* col[3] = {"Cs", "Cd", "0"};
+	const char* alpha[3] = {"As", "Ad", "Af"};
+	fprintf(fp, "\t=> (%s - %s) * %s + %s\n\n", col[ALPHA.A], col[ALPHA.B], alpha[ALPHA.C], col[ALPHA.D]);
+
+	fprintf(fp,
+		"TEST\n"
+		"\tATE:%u\n"
+		"\tATST:%u\n"
+		"\tAREF:%u\n"
+		"\tAFAIL:%u\n"
+		"\tDATE:%u\n"
+		"\tDATM:%u\n"
+		"\tZTE:%u\n"
+		"\tZTST:%u\n\n",
+		TEST.ATE, TEST.ATST, TEST.AREF, TEST.AFAIL, TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
+
+	fprintf(fp,
+		"FBA\n"
+		"\tFBA:%u\n\n",
+		FBA.FBA);
+
+	fprintf(fp,
+		"FRAME\n"
+		"\tFBP (*32):0x%x\n"
+		"\tFBW:%u\n"
+		"\tPSM:0x%x\n"
+		"\tFBMSK:0x%x\n\n",
+		FRAME.FBP * 32, FRAME.FBW, FRAME.PSM, FRAME.FBMSK);
+
+	fprintf(fp,
+		"ZBUF\n"
+		"\tZBP (*32):0x%x\n"
+		"\tPSM:0x%x\n"
+		"\tZMSK:%u\n\n",
+		ZBUF.ZBP * 32, ZBUF.PSM, ZBUF.ZMSK);
+
+	fclose(fp);
 }

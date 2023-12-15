@@ -13,9 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/MemcpyFast.h"
 #include "common/General.h"
-#include "common/emitter/cpudetect_internal.h"
+#include "common/emitter/tools.h"
 #include "common/emitter/internal.h"
 #include "common/emitter/x86_intrin.h"
 #include <atomic>
@@ -67,8 +66,6 @@ x86capabilities::x86capabilities()
 	, PhysicalCores(0)
 	, LogicalCores(0)
 {
-	memzero(VendorName);
-	memzero(FamilyName);
 }
 #if defined(_MSC_VER)
 #pragma optimize("", on)
@@ -104,49 +101,6 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 	memcpy(&result, &targetFXSAVE[28], 4); // bytes 28->32 are the MXCSR_Mask.
 	if (result != 0)
 		MXCSR_Mask.bitmask = result;
-}
-
-// Counts the number of cpu cycles executed over the requested number of PerformanceCounter
-// ticks. Returns that exact count.
-// For best results you should pick a period of time long enough to get a reading that won't
-// be prone to rounding error; but short enough that it'll be highly unlikely to be interrupted
-// by the operating system task switches.
-s64 x86capabilities::_CPUSpeedHz(u64 time) const
-{
-	u64 timeStart, timeStop;
-	s64 startCycle, endCycle;
-
-	if (!hasTimeStampCounter)
-		return 0;
-
-	SingleCoreAffinity affinity_lock;
-
-	// Align the cpu execution to a cpuTick boundary.
-
-	do
-	{
-		timeStart = GetCPUTicks();
-		startCycle = __rdtsc();
-	} while (GetCPUTicks() == timeStart);
-
-	do
-	{
-		timeStop = GetCPUTicks();
-		endCycle = __rdtsc();
-	} while ((timeStop - timeStart) < time);
-
-	s64 cycleCount = endCycle - startCycle;
-	s64 timeCount = timeStop - timeStart;
-	s64 overrun = timeCount - time;
-	if (!overrun)
-		return cycleCount;
-
-	// interference could cause us to overshoot the target time, compensate:
-
-	double cyclesPerTick = (double)cycleCount / (double)timeCount;
-	double newCycleCount = (double)cycleCount - (cyclesPerTick * overrun);
-
-	return (s64)newCycleCount;
 }
 
 const char* x86capabilities::GetTypeName() const
@@ -192,7 +146,6 @@ void x86capabilities::Identify()
 	s32 regs[4];
 	u32 cmds;
 
-	memzero(VendorName);
 	cpuid(regs, 0);
 
 	cmds = regs[0];
@@ -245,7 +198,6 @@ void x86capabilities::Identify()
 		EFlags = regs[3];
 	}
 
-	memzero(FamilyName);
 	cpuid((int*)FamilyName, 0x80000002);
 	cpuid((int*)(FamilyName + 16), 0x80000003);
 	cpuid((int*)(FamilyName + 32), 0x80000004);
@@ -306,29 +258,4 @@ void x86capabilities::Identify()
 	hasStreamingSIMD4ExtensionsA = (EFlags2 >> 6) & 1; //INSERTQ / EXTRQ / MOVNT
 
 	isIdentified = true;
-}
-
-u32 x86capabilities::CalculateMHz() const
-{
-	InitCPUTicks();
-	u64 span = GetTickFrequency();
-
-	if ((span % 1000) < 400) // helps minimize rounding errors
-		return (u32)(_CPUSpeedHz(span / 1000) / 1000);
-	else
-		return (u32)(_CPUSpeedHz(span / 500) / 2000);
-}
-
-u32 x86capabilities::CachedMHz()
-{
-	static std::atomic<u32> cached{0};
-	u32 local = cached.load(std::memory_order_relaxed);
-	if (unlikely(local == 0))
-	{
-		x86capabilities caps;
-		caps.Identify();
-		local = caps.CalculateMHz();
-		cached.store(local, std::memory_order_relaxed);
-	}
-	return local;
 }

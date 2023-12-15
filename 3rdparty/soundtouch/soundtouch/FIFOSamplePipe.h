@@ -164,7 +164,7 @@ protected:
     }
 
     /// Destructor.
-    virtual ~FIFOProcessor()
+    virtual ~FIFOProcessor() override
     {
     }
 
@@ -175,7 +175,7 @@ protected:
     /// When using this function to output samples, also remember to 'remove' the
     /// output samples from the buffer by calling the 
     /// 'receiveSamples(numSamples)' function
-    virtual SAMPLETYPE *ptrBegin()
+    virtual SAMPLETYPE *ptrBegin() override
     {
         return output->ptrBegin();
     }
@@ -189,7 +189,7 @@ public:
     /// \return Number of samples returned.
     virtual uint receiveSamples(SAMPLETYPE *outBuffer, ///< Buffer where to copy output samples.
                                 uint maxSamples                    ///< How many samples to receive at max.
-                                )
+                                ) override
     {
         return output->receiveSamples(outBuffer, maxSamples);
     }
@@ -200,26 +200,26 @@ public:
     /// Used to reduce the number of samples in the buffer when accessing the sample buffer directly
     /// with 'ptrBegin' function.
     virtual uint receiveSamples(uint maxSamples   ///< Remove this many samples from the beginning of pipe.
-                                )
+                                ) override
     {
         return output->receiveSamples(maxSamples);
     }
 
     /// Returns number of samples currently available.
-    virtual uint numSamples() const
+    virtual uint numSamples() const override
     {
         return output->numSamples();
     }
 
     /// Returns nonzero if there aren't any samples available for outputting.
-    virtual int isEmpty() const
+    virtual int isEmpty() const override
     {
         return output->isEmpty();
     }
 
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
-    virtual uint adjustAmountOfSamples(uint numSamples)
+    virtual uint adjustAmountOfSamples(uint numSamples) override
     {
         return output->adjustAmountOfSamples(numSamples);
     }

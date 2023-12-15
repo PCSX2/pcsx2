@@ -28,6 +28,16 @@ class alignas(16) GSVector4i
 	{
 	}
 
+	constexpr GSVector4i(cxpr_init_tag, short s0, short s1, short s2, short s3, short s4, short s5, short s6, short s7)
+		: I16{s0, s1, s2, s3, s4, s5, s6, s7}
+	{
+	}
+
+	constexpr GSVector4i(cxpr_init_tag, char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
+		: I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+	{
+	}
+
 public:
 	union
 	{
@@ -60,6 +70,16 @@ public:
 	constexpr static GSVector4i cxpr(int x)
 	{
 		return GSVector4i(cxpr_init, x, x, x, x);
+	}
+
+	constexpr static GSVector4i cxpr16(short s0, short s1, short s2, short s3, short s4, short s5, short s6, short s7)
+	{
+		return GSVector4i(cxpr_init, s0, s1, s2, s3, s4, s5, s6, s7);
+	}
+
+	constexpr static GSVector4i cxpr8(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
+	{
+		return GSVector4i(cxpr_init, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15);
 	}
 
 	__forceinline GSVector4i(int x, int y, int z, int w)
@@ -372,6 +392,30 @@ public:
 	__forceinline GSVector4i max_u32(const GSVector4i& a) const
 	{
 		return GSVector4i(_mm_max_epu32(m, a));
+	}
+
+	__forceinline u32 minv_s32() const
+	{
+		const __m128i vmin = _mm_min_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::min<s32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+	}
+
+	__forceinline u32 minv_u32() const
+	{
+		const __m128i vmin = _mm_min_epu32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::min<u32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+	}
+
+	__forceinline u32 maxv_s32() const
+	{
+		const __m128i vmax = _mm_max_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::max<s32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
+	}
+
+	__forceinline u32 maxv_u32() const
+	{
+		const __m128i vmax = _mm_max_epu32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+		return std::max<u32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
 	}
 
 	__forceinline static int min_i16(int a, int b)
@@ -802,6 +846,11 @@ public:
 		return GSVector4i(_mm_adds_epi16(m, v.m));
 	}
 
+	__forceinline GSVector4i hadds16(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_hadds_epi16(m, v.m));
+	}
+
 	__forceinline GSVector4i addus8(const GSVector4i& v) const
 	{
 		return GSVector4i(_mm_adds_epu8(m, v.m));
@@ -947,6 +996,11 @@ public:
 	__forceinline GSVector4i eq32(const GSVector4i& v) const
 	{
 		return GSVector4i(_mm_cmpeq_epi32(m, v.m));
+	}
+
+	__forceinline GSVector4i eq64(const GSVector4i& v) const
+	{
+		return GSVector4i(_mm_cmpeq_epi64(m, v.m));
 	}
 
 	__forceinline GSVector4i neq8(const GSVector4i& v) const
@@ -1547,6 +1601,11 @@ public:
 		return GSVector4i(_mm_castps_si128(_mm_loadh_pi(_mm_castsi128_ps(v.m), (__m64*)p)));
 	}
 
+	__forceinline static GSVector4i loadh(const GSVector2i& v)
+	{
+		return loadh(&v);
+	}
+
 	__forceinline static GSVector4i load(const void* pl, const void* ph)
 	{
 		return loadh(ph, loadl(pl));
@@ -1996,6 +2055,10 @@ public:
 		return v;
 	}
 
+	__forceinline static GSVector4i broadcast16(u16 value)
+	{
+		return GSVector4i(_mm_set1_epi16(value));
+	}
 
 	__forceinline static GSVector4i zero() { return GSVector4i(_mm_setzero_si128()); }
 

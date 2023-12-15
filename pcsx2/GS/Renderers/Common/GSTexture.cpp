@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,25 +17,32 @@
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSPng.h"
-#include "common/Align.h"
+#include "common/BitUtils.h"
 #include "common/StringUtil.h"
+#include <bit>
 #include <bitset>
 
-GSTexture::GSTexture()
-	: m_scale(1, 1)
-	, m_size(0, 0)
-	, m_mipmap_levels(0)
-	, m_type(Type::Invalid)
-	, m_format(Format::Invalid)
-	, m_state(State::Dirty)
-	, m_needs_mipmaps_generated(true)
-	, last_frame_used(0)
-	, OffsetHack_modxy(0.0f)
-{
-}
+GSTexture::GSTexture() = default;
 
 bool GSTexture::Save(const std::string& fn)
 {
+	// Depth textures need special treatment - we have a stencil component.
+	// Just re-use the existing conversion shader instead.
+	if (m_format == Format::DepthStencil)
+	{
+		GSTexture* temp = g_gs_device->CreateRenderTarget(GetWidth(), GetHeight(), Format::Color, false);
+		if (!temp)
+		{
+			Console.Error("Failed to allocate %dx%d texture for depth conversion", GetWidth(), GetHeight());
+			return false;
+		}
+
+		g_gs_device->StretchRect(this, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), temp, GSVector4(GetRect()), ShaderConvert::FLOAT32_TO_RGBA8, false);
+		const bool res = temp->Save(fn);
+		g_gs_device->Recycle(temp);
+		return res;
+	}
+
 #ifdef PCSX2_DEVBUILD
 	GSPng::Format format = GSPng::RGB_A_PNG;
 #else
@@ -67,15 +74,13 @@ bool GSTexture::Save(const std::string& fn)
 
 void GSTexture::Swap(GSTexture* tex)
 {
-	std::swap(m_scale, tex->m_scale);
 	std::swap(m_size, tex->m_size);
 	std::swap(m_mipmap_levels, tex->m_mipmap_levels);
 	std::swap(m_type, tex->m_type);
 	std::swap(m_format, tex->m_format);
 	std::swap(m_state, tex->m_state);
 	std::swap(m_needs_mipmaps_generated, tex->m_needs_mipmaps_generated);
-	std::swap(last_frame_used, tex->last_frame_used);
-	std::swap(OffsetHack_modxy, tex->OffsetHack_modxy);
+	std::swap(m_last_frame_used, tex->m_last_frame_used);
 }
 
 u32 GSTexture::GetCompressedBytesPerBlock() const
@@ -89,7 +94,7 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		1, // Invalid
 		4, // Color/RGBA8
 		8, // HDRColor/RGBA16
-		32, // DepthStencil
+		4, // DepthStencil
 		1, // UNorm8/R8
 		2, // UInt16/R16UI
 		4, // UInt32/R32UI
@@ -114,6 +119,19 @@ u32 GSTexture::GetCompressedBlockSize(Format format)
 		return 4;
 	else
 		return 1;
+}
+
+u32 GSTexture::CalcUploadPitch(Format format, u32 width)
+{
+	if (format >= Format::BC1 && format <= Format::BC7)
+		width = Common::AlignUpPow2(width, 4) / 4;
+
+	return width * GetCompressedBytesPerBlock(format);
+}
+
+u32 GSTexture::CalcUploadPitch(u32 width) const
+{
+	return CalcUploadPitch(m_format, width);
 }
 
 u32 GSTexture::CalcUploadRowLengthFromPitch(u32 pitch) const
@@ -164,7 +182,7 @@ u32 GSDownloadTexture::GetBufferSize(u32 width, u32 height, GSTexture::Format fo
 	const u32 bw = (width + (block_size - 1)) / block_size;
 	const u32 bh = (height + (block_size - 1)) / block_size;
 
-	pxAssert(Common::IsPow2(pitch_align));
+	pxAssert(std::has_single_bit(pitch_align));
 	const u32 pitch = Common::AlignUpPow2(bw * bytes_per_block, pitch_align);
 	return (pitch * bh);
 }
@@ -175,7 +193,7 @@ u32 GSDownloadTexture::GetTransferPitch(u32 width, u32 pitch_align) const
 	const u32 bytes_per_block = GSTexture::GetCompressedBytesPerBlock(m_format);
 	const u32 bw = (width + (block_size - 1)) / block_size;
 
-	pxAssert(Common::IsPow2(pitch_align));
+	pxAssert(std::has_single_bit(pitch_align));
 	return Common::AlignUpPow2(bw * bytes_per_block, pitch_align);
 }
 

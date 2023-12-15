@@ -1,0 +1,201 @@
+# Whenever a commit is pushed to master (ideally via a pull-request!)
+# this action will create the next release, which means:
+# 1. tag master with the proper version
+# 2. create a new draft release (pre-released if a nightly build)
+# 3. add release notes
+
+name: 🏭 Create Release
+
+on:
+  push:
+    branches:
+      - master
+  # TODO - future work
+  # workflow_dispatch:
+  #   inputs:
+  #     isStable:
+  #       description: 'Should it be a stable release?'
+  #       required: true
+  #       default: 'false'
+  #     versionTag:
+  #       description: 'The version to tag with'
+  #       required: true
+
+permissions:
+  contents: write
+
+jobs:
+  cut-release:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "Create Tag and Release"
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Docs - https://github.com/mathieudutour/github-tag-action
+      - name: Bump Version and Push Tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ github.token }}
+          tag_prefix: v
+          default_bump: patch
+
+      # TODO - we could do this and remove the node.js script, but auto-generated notes only work
+      # with PRs -- not commits (determine how much we care).
+      # - name: Create Draft Release
+      #   run: |
+      #     echo "Creating release with tag - ${{ steps.tag_version.outputs.new_tag }}"
+      #     gh release create ${{ steps.tag_version.outputs.new_tag }} --draft --generate-notes -title ${{ steps.tag_version.outputs.new_tag }}
+
+      - name: Generate Release Notes
+        env:
+          OWNER: PCSX2
+          REPO: pcsx2
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ github.SHA }}
+        run: |
+          cd ./.github/workflows/scripts/releases/generate-release-notes
+          npm ci
+          node index.js
+          mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
+
+      - name: Create a GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: steps.tag_version.outputs.new_tag
+        with:
+          body_path: ./release-notes.md
+          draft: true
+          prerelease: true
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+
+  # Build Everything
+  # Linux
+  build_linux_qt:
+    if: github.repository == 'PCSX2/pcsx2'
+    needs:
+      - cut-release
+    name: "Linux"
+    uses: ./.github/workflows/linux_build_qt.yml
+    with:
+      jobName: "AppImage Build"
+      compiler: clang
+      cmakeflags: ""
+      buildAppImage: true
+      fetchTags: true
+    secrets: inherit
+
+  build_linux_flatpak:
+    if: github.repository == 'PCSX2/pcsx2'
+    needs:
+      - cut-release
+    name: "Linux"
+    uses: ./.github/workflows/linux_build_flatpak.yml
+    with:
+      jobName: "Flatpak Build"
+      compiler: clang
+      cmakeflags: ""
+      branch: "stable"
+      publish: false
+      fetchTags: true
+    secrets: inherit
+
+  # Windows
+  build_windows_qt:
+    if: github.repository == 'PCSX2/pcsx2'
+    needs:
+      - cut-release
+    name: "Windows"
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: "Windows Build"
+      configuration: CMake
+      buildSystem: cmake
+      cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+      fetchTags: true
+    secrets: inherit
+
+  # MacOS
+  build_macos_qt:
+    if: github.repository == 'PCSX2/pcsx2'
+    needs:
+      - cut-release
+    name: "MacOS"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "MacOS Build"
+      fetchTags: true
+    secrets: inherit
+
+  # Upload the Artifacts
+  upload_artifacts:
+    if: github.repository == 'PCSX2/pcsx2'
+    needs:
+      - cut-release
+      - build_linux_flatpak
+      - build_linux_qt
+      - build_windows_qt
+      - build_macos_qt
+    name: "Upload Artifacts"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare Artifact Folder
+        run: mkdir ./ci-artifacts/
+
+      - uses: actions/download-artifact@v3
+        name: Download all Artifacts
+        with:
+          path: ./ci-artifacts/
+
+      - name: Display structure of downloaded files
+        run: ls ./ci-artifacts/
+
+      # Prepare artifacts, they are all zips from github!
+      - name: Prepare Artifacts
+        working-directory: ./ci-artifacts/
+        run: for d in *windows*/; do 7z a "${d}asset.7z" ./$d/*; done
+
+      # Artifact Naming:
+      # MacOS: PCSX2-<tag>-macOS-[additional hyphen seperated tags]
+      # Windows|Linux: PCSX2-<tag>-<windows|linux>-<32bit|64bit>--[additional hyphen seperated tags]
+      - name: Name and Upload the Release Assets
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SCAN_DIR: ${{ github.WORKSPACE }}/ci-artifacts
+          OUT_DIR: ${{ github.WORKSPACE }}/ci-artifacts/out
+        run: |
+          TAG_VAL=${{needs.cut-release.outputs.new_tag}}
+          echo "TAG_VAL=${TAG_VAL}"
+          gh release list --repo PCSX2/pcsx2
+          mkdir -p ${{ github.WORKSPACE }}/ci-artifacts/out
+          TAG_VAL=${TAG_VAL} python ./.github/workflows/scripts/releases/rename-release-assets.py
+          ls ${{ github.WORKSPACE }}/ci-artifacts/out
+          gh release upload "${TAG_VAL}" ${{ github.WORKSPACE }}/ci-artifacts/out/*  --repo PCSX2/pcsx2 --clobber
+
+      - name: Publish Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          TAG_VAL=${{needs.cut-release.outputs.new_tag}}
+          echo "TAG_VAL=${TAG_VAL}"
+          gh release edit ${TAG_VAL} --draft=false --repo PCSX2/pcsx2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Announce Release
+        env:
+          OWNER: PCSX2
+          REPO: pcsx2
+          DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          TAG_VAL=${{needs.cut-release.outputs.new_tag}}
+          cd ./.github/workflows/scripts/releases/announce-release
+          npm ci
+          TAG_VAL=${TAG_VAL} node index.js

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,38 +15,7 @@
 
 #pragma once
 
-#include "common/Exceptions.h"
-
-class BaseR5900Exception;
-
-// --------------------------------------------------------------------------------------
-//  Recompiler Stuffs
-// --------------------------------------------------------------------------------------
-// This code section contains recompiler vars that are used in "shared" code. Placing
-// them in iR5900.h would mean having to include that into more files than I care to
-// right now, so we're sticking them here for now until a better solution comes along.
-
-extern bool g_SkipBiosHack;
-extern bool g_GameStarted;
-extern bool g_GameLoading;
-
-namespace Exception
-{
-	// Implementation Note: this exception has no meaningful type information and we don't
-	// care to have it be caught by any BaseException handlers lying about, so let's not
-	// derive from BaseException :D
-	class ExitCpuExecute
-	{
-	public:
-		explicit ExitCpuExecute() { }
-	};
-
-	class CancelInstruction
-	{
-	public:
-		explicit CancelInstruction() { }
-	};
-}
+#include "common/Pcsx2Defs.h"
 
 // --------------------------------------------------------------------------------------
 //  EE Bios function name tables.
@@ -218,18 +187,6 @@ struct tlbs
 
 #ifndef _PC_
 
-/*#define _i64(x) (s64)x
-#define _u64(x) (u64)x
-
-#define _i32(x) (s32)x
-#define _u32(x) (u32)x
-
-#define _i16(x) (s16)x
-#define _u16(x) (u16)x
-
-#define _i8(x) (s8)x
-#define _u8(x) (u8)x*/
-
 ////////////////////////////////////////////////////////////////////
 // R5900 Instruction Macros
 
@@ -263,6 +220,7 @@ alignas(16) extern tlbs tlb[48];
 
 extern bool eeEventTestIsActive;
 
+void intUpdateCPUCycles();
 void intSetBranch();
 
 // This is a special form of the interpreter's doBranch that is run from various
@@ -276,7 +234,6 @@ const u32 EELOAD_START		= 0x82000;
 const u32 EELOAD_SIZE		= 0x20000; // overestimate for searching
 extern u32 g_eeloadMain, g_eeloadExec;
 
-extern void eeGameStarting();
 extern void eeloadHook();
 extern void eeloadHook2();
 
@@ -292,48 +249,19 @@ struct R5900cpu
 	// the virtual cpu provider.  Allocating additional heap memory from this method is
 	// NOT recommended.  Heap allocations should be performed by Reset only.  This
 	// maximizes the likeliness of reservations claiming addresses they prefer.
-	//
-	// Thread Affinity:
-	//   Called from the main/UI thread only.  Cpu execution status is guaranteed to
-	//   be inactive.  No locking is necessary.
-	//
-	// Exception Throws:
-	//   HardwareDeficiency - The host machine's hardware does not support this CPU provider.
-	//   OutOfMemory - Not enough memory, or the memory areas required were already
-	//                 reserved.
 	void (*Reserve)();
 
 	// Deallocates ram allocated by Allocate, Reserve, and/or by runtime code execution.
-	//
-	// Thread Affinity:
-	//   Called from the main/UI thread only.  Cpu execution status is guaranteed to
-	//   be inactive.  No locking is necessary.
-	//
-	// Exception Throws:  None.  This function is a destructor, and should not throw.
-	//
 	void (*Shutdown)();
 
 	// Initializes / Resets code execution states. Typically implementation is only
 	// needed for recompilers, as interpreters have no internal execution states and
 	// rely on the CPU/VM states almost entirely.
-	//
-	// Thread Affinity:
-	//   Can be called from any thread.  CPU execution status is indeterminate and may
-	//   already be in progress.  Implementations should be sure to queue and execute
-	//   resets at the earliest safe convenience (typically right before recompiling a
-	//   new block of code, or after a vsync event).
-	//
-	// Exception Throws:  Emulator-defined.  Common exception types to expect are
-	//   OutOfMemory, Stream Exceptions
-	//
 	void (*Reset)();
 
 	// Steps a single instruction.  Meant to be used by debuggers.  Is currently unused
 	// and unimplemented.  Future note: recompiler "step" should *always* fall back
 	// on interpreters.
-	//
-	// Exception Throws:  [TODO] (possible execution-related throws to be added)
-	//
 	void (*Step)();
 
 	// Executes code until a break is signaled.  Execution can be paused or suspended
@@ -341,11 +269,6 @@ struct R5900cpu
 	// Execution Breakages are handled the same way, where-by a signal causes the Execute
 	// call to return at the nearest state check (typically handled internally using
 	// either C++ exceptions or setjmp/longjmp).
-	//
-	// Exception Throws:
-	//   Throws BaseR5900Exception and all derivatives.
-	//   Throws FileNotFound or other Streaming errors (typically related to BIOS MEC/NVM)
-	//
 	void (*Execute)();
 
 	// Immediately exits execution of recompiled code if we are in a state to do so, or
@@ -363,19 +286,19 @@ struct R5900cpu
 	// Also: the calls from COP0's TLB remap code should be replaced with full recompiler
 	// resets, since TLB remaps affect more than just the code they contain (code that
 	// may reference the remapped blocks via memory loads/stores, for example).
-	//
-	// Thread Affinity Rule:
-	//   Can be called from any thread (namely for being called from debugging threads)
-	//
-	// Exception Throws: [TODO] Emulator defined?  (probably shouldn't throw, probably
-	//   doesn't matter if we're stripping it out soon. ;)
-	//
 	void (*Clear)(u32 Addr, u32 Size);
 };
 
 extern R5900cpu *Cpu;
 extern R5900cpu intCpu;
 extern R5900cpu recCpu;
+
+enum EE_intProcessStatus
+{
+	INT_NOT_RUNNING = 0,
+	INT_RUNNING,
+	INT_REQ_LOOP
+};
 
 enum EE_EventType
 {
@@ -410,7 +333,7 @@ extern void CPU_SET_DMASTALL(EE_EventType n, bool set);
 extern uint intcInterrupt();
 extern uint dmacInterrupt();
 
-extern void cpuReset();		// can throw Exception::FileNotFound.
+extern void cpuReset();
 extern void cpuException(u32 code, u32 bd);
 extern void cpuTlbMissR(u32 addr, u32 bd);
 extern void cpuTlbMissW(u32 addr, u32 bd);
