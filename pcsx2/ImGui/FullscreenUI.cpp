@@ -278,10 +278,8 @@ namespace FullscreenUI
 	static void DoShutdown(bool save_state);
 	static void RequestReset();
 	static void DoReset();
-	static void RequestChangeDiscFromFile();
 	static void DoChangeDiscFromFile();
 	static void RequestChangeDisc();
-	static void DoChangeDisc();
 	static void DoRequestExit();
 	static void DoToggleFullscreen();
 
@@ -999,16 +997,6 @@ void FullscreenUI::DoReset()
 	});
 }
 
-void FullscreenUI::RequestChangeDiscFromFile()
-{
-	ConfirmShutdownIfMemcardBusy([](bool result) {
-		if (result)
-			DoChangeDiscFromFile();
-		else
-			ClosePauseMenu();
-	});
-}
-
 void FullscreenUI::DoChangeDiscFromFile()
 {
 	auto callback = [](const std::string& path) {
@@ -1038,15 +1026,10 @@ void FullscreenUI::RequestChangeDisc()
 {
 	ConfirmShutdownIfMemcardBusy([](bool result) {
 		if (result)
-			DoChangeDisc();
+			DoChangeDiscFromFile();
 		else
 			ClosePauseMenu();
 	});
-}
-
-void FullscreenUI::DoChangeDisc()
-{
-	DoChangeDiscFromFile();
 }
 
 void FullscreenUI::DoRequestExit()
