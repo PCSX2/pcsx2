@@ -74,7 +74,7 @@ bool Vulkan::LoadVulkanLibrary()
 	}
 
 	bool required_functions_missing = false;
-	auto LoadFunction = [&](FARPROC* func_ptr, const char* name, bool is_required) {
+	auto LoadFunction = [&required_functions_missing](FARPROC* func_ptr, const char* name, bool is_required) {
 		*func_ptr = GetProcAddress(s_vulkan_module, name);
 		if (!(*func_ptr) && is_required)
 		{
@@ -163,7 +163,7 @@ bool Vulkan::LoadVulkanLibrary()
 	}
 
 	bool required_functions_missing = false;
-	auto LoadFunction = [&](void** func_ptr, const char* name, bool is_required) {
+	auto LoadFunction = [&required_functions_missing](void** func_ptr, const char* name, bool is_required) {
 		*func_ptr = dlsym(s_vulkan_module, name);
 		if (!(*func_ptr) && is_required)
 		{
@@ -200,7 +200,7 @@ void Vulkan::UnloadVulkanLibrary()
 bool Vulkan::LoadVulkanInstanceFunctions(VkInstance instance)
 {
 	bool required_functions_missing = false;
-	auto LoadFunction = [&](PFN_vkVoidFunction* func_ptr, const char* name, bool is_required) {
+	auto LoadFunction = [&required_functions_missing, instance](PFN_vkVoidFunction* func_ptr, const char* name, bool is_required) {
 		*func_ptr = vkGetInstanceProcAddr(instance, name);
 		if (!(*func_ptr) && is_required)
 		{
@@ -220,7 +220,7 @@ bool Vulkan::LoadVulkanInstanceFunctions(VkInstance instance)
 bool Vulkan::LoadVulkanDeviceFunctions(VkDevice device)
 {
 	bool required_functions_missing = false;
-	auto LoadFunction = [&](PFN_vkVoidFunction* func_ptr, const char* name, bool is_required) {
+	auto LoadFunction = [&required_functions_missing, device](PFN_vkVoidFunction* func_ptr, const char* name, bool is_required) {
 		*func_ptr = vkGetDeviceProcAddr(device, name);
 		if (!(*func_ptr) && is_required)
 		{

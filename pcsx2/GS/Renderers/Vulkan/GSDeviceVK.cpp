@@ -168,9 +168,9 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 	res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, available_extension_list.data());
 	pxAssert(res == VK_SUCCESS);
 
-	auto SupportsExtension = [&](const char* name, bool required) {
+	auto SupportsExtension = [&available_extension_list, extension_list](const char* name, bool required) {
 		if (std::find_if(available_extension_list.begin(), available_extension_list.end(),
-				[&](const VkExtensionProperties& properties) { return !strcmp(name, properties.extensionName); }) !=
+				[name](const VkExtensionProperties& properties) { return !strcmp(name, properties.extensionName); }) !=
 			available_extension_list.end())
 		{
 			DevCon.WriteLn("Enabling extension: %s", name);
@@ -294,13 +294,13 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		m_physical_device, nullptr, &extension_count, available_extension_list.data());
 	pxAssert(res == VK_SUCCESS);
 
-	auto SupportsExtension = [&](const char* name, bool required) {
+	auto SupportsExtension = [&available_extension_list, extension_list](const char* name, bool required) {
 		if (std::find_if(available_extension_list.begin(), available_extension_list.end(),
-				[&](const VkExtensionProperties& properties) { return !strcmp(name, properties.extensionName); }) !=
+				[name](const VkExtensionProperties& properties) { return !strcmp(name, properties.extensionName); }) !=
 			available_extension_list.end())
 		{
 			if (std::none_of(extension_list->begin(), extension_list->end(),
-					[&](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
+					[name](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
 			{
 				DevCon.WriteLn("Enabling extension: %s", name);
 				extension_list->push_back(name);

@@ -153,7 +153,7 @@ std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
 	int pass_source_code_length = static_cast<int>(source.size());
 	shader->setStringsWithLengths(&pass_source_code, &pass_source_code_length, 1);
 
-	auto DumpBadShader = [&](const char* msg) {
+	auto DumpBadShader = [&shader, &source, &program](const char* msg) {
 		const std::string filename =
 			Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++));
 		Console.Error("CompileShaderToSPV: %s, writing to %s", msg, filename.c_str());
