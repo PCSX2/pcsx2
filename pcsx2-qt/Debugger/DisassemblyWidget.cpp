@@ -837,7 +837,7 @@ QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
 	return infoBlock;
 }
 
-void DisassemblyWidget::gotoAddress(u32 address)
+void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)
 {
 	const u32 destAddress = address & ~3;
 	// Center the address
@@ -846,7 +846,8 @@ void DisassemblyWidget::gotoAddress(u32 address)
 	m_selectedAddressEnd = destAddress;
 
 	this->repaint();
-	this->setFocus();
+	if(should_set_focus)
+		this->setFocus();
 }
 
 bool DisassemblyWidget::AddressCanRestore(u32 start, u32 end)

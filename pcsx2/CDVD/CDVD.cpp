@@ -1364,23 +1364,24 @@ int cdvdReadSector()
 // inlined due to being referenced in only one place.
 __fi void cdvdActionInterrupt()
 {
+	u8 ready_status = CDVD_DRIVE_READY;
 	if (cdvd.AbortRequested)
 	{
-		Console.Warning("Action Abort");
+		Console.Warning("Action Abort %d", cdvd.Action);
 		cdvd.Error = 0x1; // Abort Error
-		cdvdUpdateReady(CDVD_DRIVE_READY | CDVD_DRIVE_ERROR);
+		ready_status |= CDVD_DRIVE_ERROR;
+		cdvdUpdateReady(ready_status);
 		cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 		cdvd.WaitingDMA = false;
 		CDVDCancelReadAhead();
-		cdvdSetIrq();
-		return;
+		psxRegs.interrupt &= ~(1 << IopEvt_Cdvd); // Stop any current reads
 	}
 
 	switch (cdvd.Action)
 	{
 		case cdvdAction_Seek:
 			cdvd.Spinning = true;
-			cdvdUpdateReady(CDVD_DRIVE_READY);
+			cdvdUpdateReady(ready_status);
 			cdvd.CurrentSector = cdvd.SeekToSector;
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			CDVDSECTORREADY_INT(cdvd.ReadTime);
@@ -1389,7 +1390,7 @@ __fi void cdvdActionInterrupt()
 		case cdvdAction_Standby:
 			DevCon.Warning("CDVD Standby Call");
 			cdvd.Spinning = true; //check (rama)
-			cdvdUpdateReady(CDVD_DRIVE_READY);
+			cdvdUpdateReady(ready_status);
 			cdvd.CurrentSector = cdvd.SeekToSector;
 			cdvdUpdateStatus(CDVD_STATUS_PAUSE);
 			cdvd.nextSectorsBuffered = 0;
@@ -1398,7 +1399,7 @@ __fi void cdvdActionInterrupt()
 
 		case cdvdAction_Stop:
 			cdvd.Spinning = false;
-			cdvdUpdateReady(CDVD_DRIVE_READY);
+			cdvdUpdateReady(ready_status);
 			cdvd.CurrentSector = 0;
 			cdvdUpdateStatus(CDVD_STATUS_STOP);
 			break;
