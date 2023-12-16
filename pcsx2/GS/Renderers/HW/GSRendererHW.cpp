@@ -804,7 +804,20 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 
 	const int mask = (((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(64.0f)).mask() & 0x3);
 	if (mask == 0x3) // single_page
-		return true;
+	{
+		const GSVertex* v = &m_vertex.buff[0];
+
+		const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
+		const int draw_height = std::abs(v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
+
+		const bool mask_clamp = (m_cached_ctx.CLAMP.WMS | m_cached_ctx.CLAMP.WMT) & 0x2;
+		const bool draw_match = (draw_height == 2) || (draw_width == 8);
+
+		if (draw_match || mask_clamp)
+			return true;
+		else
+			return false;
+	}
 	else if (mask != 0x1) // Not a single page in width.
 		return false;
 
@@ -813,7 +826,18 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 	if (m_cached_ctx.TEX0.TBW == (m_cached_ctx.FRAME.FBW * 2) &&
 		GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p))))
 	{
-		return true;
+		const GSVertex* v = &m_vertex.buff[0];
+
+		const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
+		const int draw_height = std::abs(v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
+
+		const bool mask_clamp = (m_cached_ctx.CLAMP.WMS | m_cached_ctx.CLAMP.WMT) & 0x2;
+		const bool draw_match = (draw_height == 2) || (draw_width == 8);
+
+		if (draw_match || mask_clamp)
+			return true;
+		else
+			return false;
 	}
 
 	return false;
@@ -2195,7 +2219,7 @@ void GSRendererHW::Draw()
 		}
 
 		GIFRegTEX0 FRAME_TEX0;
-		bool rt_32bit = false;
+		bool shuffle_target = false;
 		if (!no_rt && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16)
 		{
 			// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
@@ -2208,11 +2232,24 @@ void GSRendererHW::Draw()
 				fm);
 
 			if (tgt)
-				rt_32bit = tgt->m_32_bits_fmt;
+				shuffle_target = tgt->m_32_bits_fmt;
+			else
+			{
+				const GSVertex* v = &m_vertex.buff[0];
+
+				const int first_x = ((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8) >> 4;
+				const int first_u = PRIM->FST ? ((v[0].U + 8) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[0].ST.S / v[1].RGBAQ.Q)) + 0.5f);
+				const int second_u = PRIM->FST ? ((v[1].U + 8) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[1].ST.S / v[1].RGBAQ.Q)) + 0.5f);
+				const bool shuffle_coords = (first_x ^ first_u) & 8;
+				const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
+				const int read_width = std::abs(second_u - first_u);
+
+				shuffle_target = shuffle_coords && draw_width == 8 && draw_width == read_width;
+			}
 
 			tgt = nullptr;
 		}
-		const bool possible_shuffle = ((rt_32bit && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0) || IsPossibleChannelShuffle();
+		const bool possible_shuffle = ((shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0) || IsPossibleChannelShuffle();
 		const bool need_aem_color = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 24 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal == 0 && m_context->ALPHA.C == 0 && m_env.TEXA.AEM;
 		const bool req_color = (!PRIM->ABE || (PRIM->ABE && (m_context->ALPHA.IsUsingCs() || need_aem_color))) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF));
 		const bool alpha_used = m_context->TEX0.TCC && ((PRIM->ABE && m_context->ALPHA.IsUsingAs()) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
@@ -2224,8 +2261,8 @@ void GSRendererHW::Draw()
 			m_process_texture = false;
 		else
 		{
-			src = tex_psm.depth ? g_texture_cache->LookupDepthSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha) :
-				g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
+			src = tex_psm.depth ? g_texture_cache->LookupDepthSource(true, TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha) :
+				g_texture_cache->LookupSource(true, TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
 					possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha);
 
 			if (!src) [[unlikely]]
@@ -2631,9 +2668,19 @@ void GSRendererHW::Draw()
 		ds->UpdateValidChannels(ZBUF_TEX0.PSM, zm);
 
 	if (rt)
-		rt->Update();
+	{
+		if (m_texture_shuffle || m_channel_shuffle || (!rt->m_dirty.empty() && !rt->m_dirty.GetTotalRect(rt->m_TEX0, rt->m_unscaled_size).rintersect(m_r).rempty()))
+			rt->Update();
+		else
+			rt->m_age = 0;
+	}
 	if (ds)
-		ds->Update();
+	{
+		if (m_texture_shuffle || m_channel_shuffle || (!ds->m_dirty.empty() && !ds->m_dirty.GetTotalRect(ds->m_TEX0, ds->m_unscaled_size).rintersect(m_r).rempty()))
+			ds->Update();
+		else
+			ds->m_age = 0;
+	}
 
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
 	GSTextureCache::Target* old_rt = nullptr;
