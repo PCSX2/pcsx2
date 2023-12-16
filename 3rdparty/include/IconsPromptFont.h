@@ -185,6 +185,7 @@
 #define ICON_PF_KEYBOARD "\xE2\x90\xBD"
 #define ICON_PF_MOUSE "\xE2\x90\xBE"
 #define ICON_PF_MOUSE_AND_KEYBOARD "\xE2\x90\xBF"
+#define ICON_PF_GUITAR "\xE2\x91\x83"
 #define ICON_PF_F1 "\xE2\x91\xA0"
 #define ICON_PF_F2 "\xE2\x91\xA1"
 #define ICON_PF_F3 "\xE2\x91\xA2"

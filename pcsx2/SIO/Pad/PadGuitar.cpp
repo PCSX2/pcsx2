@@ -21,6 +21,8 @@
 
 #include "Host.h"
 
+#include "IconsPromptFont.h"
+
 // The generic input bindings on this might seem bizarre, but they are intended to match what DS2 buttons
 // would do what actions, if you played Guitar Hero on a PS2 with a DS2 instead of a controller.
 static const InputBindingInfo s_bindings[] = {
@@ -49,7 +51,7 @@ static const SettingInfo s_settings[] = {
 };
 
 const Pad::ControllerInfo PadGuitar::ControllerInfo = {Pad::ControllerType::Guitar, "Guitar",
-	TRANSLATE_NOOP("Pad", "Guitar"), nullptr, s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
+	TRANSLATE_NOOP("Pad", "Guitar"), ICON_PF_GUITAR, s_bindings, s_settings, Pad::VibrationCapabilities::NoVibration};
 
 void PadGuitar::ConfigLog()
 {
