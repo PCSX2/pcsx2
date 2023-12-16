@@ -26,6 +26,7 @@
 
 #include <array>
 #include <d3d11.h>
+#include <d3d12.h>
 #include <d3dcompiler.h>
 #include <fstream>
 
@@ -351,34 +352,48 @@ D3D::VendorID D3D::GetVendorID(IDXGIAdapter1* adapter)
 
 GSRendererType D3D::GetPreferredRenderer()
 {
-	auto factory = CreateFactory(false);
-	auto adapter = GetChosenOrFirstAdapter(factory.get(), GSConfig.Adapter);
+	const auto factory = CreateFactory(false);
+	const auto adapter = GetChosenOrFirstAdapter(factory.get(), GSConfig.Adapter);
 
 	// If we somehow can't get a D3D11 device, it's unlikely any of the renderers are going to work.
 	if (!adapter)
 		return GSRendererType::DX11;
 
-	D3D_FEATURE_LEVEL feature_level;
+	const auto get_d3d11_feature_level = [&factory, &adapter]() -> std::optional<D3D_FEATURE_LEVEL> {
+		static const D3D_FEATURE_LEVEL check[] = {
+			D3D_FEATURE_LEVEL_12_0,
+			D3D_FEATURE_LEVEL_11_0,
+		};
 
-	static const D3D_FEATURE_LEVEL check[] = {
-		D3D_FEATURE_LEVEL_12_0,
-		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL feature_level;
+		const HRESULT hr = D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, std::data(check),
+			std::size(check), D3D11_SDK_VERSION, nullptr, &feature_level, nullptr);
+
+		if (FAILED(hr))
+		{
+			Console.Error("D3D11CreateDevice() for automatic renderer failed: %08X", hr);
+			return std::nullopt;
+		}
+
+		Console.WriteLn("D3D11 feature level for autodetection: %x", static_cast<unsigned>(feature_level));
+		return feature_level;
 	};
-
-	const HRESULT hr = D3D11CreateDevice(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, 0, std::data(check),
-		std::size(check), D3D11_SDK_VERSION, nullptr, &feature_level, nullptr);
-
-	if (FAILED(hr))
-	{
-		// See note above.
-		return GSRendererType::DX11;
-	}
+	const auto get_d3d12_device = [&factory, &adapter]() {
+		wil::com_ptr_nothrow<ID3D12Device> device;
+		const HRESULT hr = D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.put()));
+		if (FAILED(hr))
+			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
+		return device;
+	};
 
 	switch (GetVendorID(adapter.get()))
 	{
 		case VendorID::Nvidia:
 		{
-			if (feature_level == D3D_FEATURE_LEVEL_12_0)
+			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
+			if (!feature_level.has_value())
+				return GSRendererType::DX11;
+			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
 				return GSRendererType::VK;
 			else if (feature_level == D3D_FEATURE_LEVEL_11_0)
 				return GSRendererType::OGL;
@@ -388,7 +403,10 @@ GSRendererType D3D::GetPreferredRenderer()
 
 		case VendorID::AMD:
 		{
-			if (feature_level == D3D_FEATURE_LEVEL_12_0)
+			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
+			if (!feature_level.has_value())
+				return GSRendererType::DX11;
+			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
 				return GSRendererType::VK;
 			else
 				return GSRendererType::DX11;
@@ -398,13 +416,26 @@ GSRendererType D3D::GetPreferredRenderer()
 		{
 			// Older Intel GPUs prior to Xe seem to have broken OpenGL drivers which choke
 			// on some of our shaders, causing what appears to be GPU timeouts+device removals.
-			// Vulkan has broken barriers, also prior to Xe. So just fall back to DX11 everywhere,
-			// unless we have Arc, which is easy to identify.
-			if (StringUtil::StartsWith(GetAdapterName(adapter.get()), "Intel(R) Arc(TM) "))
-				return GSRendererType::VK;
-			else
-				return GSRendererType::DX11;
+			// Vulkan has broken barriers, also prior to Xe.
+
+			// Sampler feedback Tier 0.9 is only present in Tiger Lake/Xe/Arc, so we can use that to
+			// differentiate between them. Unfortunately, that requires a D3D12 device.
+			const auto device12 = get_d3d12_device();
+			if (device12)
+			{
+				D3D12_FEATURE_DATA_D3D12_OPTIONS7 opts = {};
+				if (SUCCEEDED(device12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &opts, sizeof(opts))) &&
+					opts.SamplerFeedbackTier >= D3D12_SAMPLER_FEEDBACK_TIER_0_9)
+				{
+					Console.WriteLn("Sampler feedback tier 0.9 found for Intel GPU, defaulting to Vulkan.");
+					return GSRendererType::VK;
+				}
+			}
+
+			Console.WriteLn("Sampler feedback tier 0.9 or Direct3D 12 not found for Intel GPU, using Direct3D 11.");
+			return GSRendererType::DX11;
 		}
+		break;
 
 		default:
 		{
