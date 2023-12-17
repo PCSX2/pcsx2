@@ -56,6 +56,12 @@ BIOS
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
 static int s_ba6 = 0;
 
+static u16 s_ba[0xff];
+static u16 s_dve_regs[0xff];
+static bool s_ba_command_executing = false;
+static bool s_ba_error_detected = false;
+static u16 s_ba_current_reg = 0;
+
 void memSetKernelMode() {
 	//Do something here
 	MemMode = 0;
@@ -68,18 +74,87 @@ void memSetUserMode() {
 
 }
 
+// These regs are related to DEV9 and DVE stuff, we don't have to go crazy with this, but this sucks less than the original code
+void ba0W16(u32 mem, u16 value)
+{
+	//MEM_LOG("ba000000 Memory write16 address %x value %x", mem, value);
+	u32 masked_mem = (mem & 0xFF);
+
+	if (masked_mem == 0x6) // Status Reg
+	{
+		s_ba[0x6] &= ~3;
+	}
+	else
+		s_ba[masked_mem] = value;
+
+	if (masked_mem == 0x00) // Command Execute Reg
+	{
+		if (s_ba[0x2] == 0x4F || s_ba[0x2] == 0x41)
+		{
+			DevCon.Warning("Error running DVE command, Control Reg value set to %x", value);
+			s_ba_error_detected = true;
+		}
+		else if (s_ba[masked_mem] & 0x80) // Start executing
+		{
+			if (s_ba[0x2] == 0x43) // Write Mode
+			{
+				int size = (s_ba[masked_mem] & 0xF);
+				s_ba_current_reg = s_ba[0x10];
+				size--;
+
+				// 0x10->0x22 seems to be some sort of FIFO, with 0x10 generally being the register to read/write
+				for (int i = 0; i < size; i++)
+				{
+					s_dve_regs[s_ba_current_reg] = s_ba[0x12 + i];
+				}
+
+				s_ba_command_executing = true;
+				s_ba_error_detected = false;
+			}
+			else if(s_ba[0x2] == 0x42) // Read Mode
+			{
+				int size = (s_ba[masked_mem] & 0xF);
+
+				for (int i = 0; i < size; i++)
+					s_ba[0x10 + i] = s_dve_regs[s_ba_current_reg]; // Probably not right but we don't access the real regs, will be enough for now.
+				s_ba_command_executing = true;
+				s_ba_error_detected = false;
+			}
+		}
+	}
+	else if (masked_mem == 0xA) // Power/Standby (?) Reg
+	{
+		if (value == 0)
+			s_ba_error_detected = true;
+		else
+			s_ba_error_detected = false;
+
+		DevCon.Warning("DVE powered %s", value == 0 ? "off" : "on");
+	}
+}
+
 u16 ba0R16(u32 mem)
 {
-	//MEM_LOG("ba00000 Memory read16 address %x", mem);
+	//MEM_LOG("ba000000 Memory read16 address %x", mem);
 
 	if (mem == 0x1a000006)
 	{
-		s_ba6++;
-		if (s_ba6 == 3)
-			s_ba6 = 0;
-		return s_ba6;
+		// 0xba00000A bit 0 is kind of an "on" switch. bit 0 of ba000006 seems to be the powered off/error bit.
+		// bit 1 in ba000006 seems to be "ready".
+		u16 return_val = (s_ba[0x6] & 2);
+
+		if (s_ba_error_detected)
+			return_val |= 1;
+
+		if (s_ba[0x6] < 3 && s_ba_command_executing)
+			s_ba[0x6]++;
+		else
+			s_ba_command_executing = false;
+
+		return return_val;
 	}
-	return 0;
+
+	return s_ba[mem & 0x1F];
 }
 
 #define CHECK_MEM(mem) //MyMemCheck(mem)
@@ -282,6 +357,7 @@ static mem16_t _ext_memRead16(u32 mem)
 			MEM_LOG("b800000 Memory read16 address %x", mem);
 			return 0;
 		case 5: // ba0
+			MEM_LOG("ba000000 Memory read16 address %x", mem);
 			return ba0R16(mem);
 		case 6: // gsm
 			return gsRead16(mem);
@@ -380,7 +456,8 @@ static void _ext_memWrite16(u32 mem, mem16_t value)
 {
 	switch (p) {
 		case 5: // ba0
-			MEM_LOG("ba00000 Memory write16 to  address %x with data %x", mem, value);
+			MEM_LOG("ba000000 Memory write16 address %x value %x", mem, value);
+			ba0W16(mem, value);
 			return;
 		case 6: // gsm
 			gsWrite16(mem, value); return;
@@ -827,7 +904,16 @@ void memReset()
 	vtlb_VMap(0x00000000,0x00000000,0x20000000);
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 
-	s_ba6 = 0;
+	std::memset(s_ba, 0, sizeof(s_ba));
+
+	s_ba[0xA] = 1; // Power on
+	s_ba_command_executing = false;
+	s_ba_error_detected = false;
+	s_ba_current_reg = 0;
+
+	std::memset(s_dve_regs, 0, sizeof(s_dve_regs));
+
+	s_dve_regs[0x7e] = 0x1C; // Status register. 0x1C seems to be the value it's expecting for everything being OK.
 
 	// BIOS is included in eeMem, so it needs to be copied after zeroing.
 	std::memset(eeMem, 0, sizeof(*eeMem));
@@ -841,6 +927,11 @@ void memRelease()
 
 bool SaveStateBase::memFreeze()
 {
-	Freeze(s_ba6);
+	Freeze(s_ba);
+	Freeze(s_dve_regs);
+	Freeze(s_ba_command_executing);
+	Freeze(s_ba_error_detected);
+	Freeze(s_ba_current_reg);
+
 	return IsOkay();
 }
