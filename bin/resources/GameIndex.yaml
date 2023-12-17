@@ -8832,6 +8832,8 @@ SCPS-51006:
 SCPS-51008:
   name: "Wave Rally"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 2 # Fixes water reflection.
 SCPS-51009:
   name: "Underwater Unit"
   region: "NTSC-J"
@@ -34703,6 +34705,8 @@ SLPM-64504:
 SLPM-64507:
   name: "Wave Rally"
   region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 2 # Fixes water reflection.
 SLPM-64509:
   name: "Crash Bandicoot - Return of the Demon King [English Dub Edition]" # Wrath of Cortex
   region: "NTSC-K"
@@ -47791,6 +47795,8 @@ SLPS-20169:
 SLPS-20170:
   name: "Wave Rally"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 2 # Fixes water reflection.
 SLPS-20171:
   name: スマッシュコート プロトーナメント
   name-sort: すまっしゅこーと ぷろとーなめんと
@@ -56807,6 +56813,8 @@ SLUS-20313:
   name: "Wave Rally"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 2 # Fixes water reflection.
 SLUS-20314:
   name: "TimeSplitters 2"
   region: "NTSC-U"
