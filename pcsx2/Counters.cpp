@@ -162,6 +162,24 @@ static __fi void cpuRcntSet()
 	cpuSetNextEvent(nextsCounter, nextCounter); // Need to update on counter resets/target changes
 }
 
+
+struct vSyncTimingInfo
+{
+	double Framerate;       // frames per second (8 bit fixed)
+	GS_VideoMode VideoMode; // used to detect change (interlaced/progressive)
+	u32 Render;             // time from vblank end to vblank start (cycles)
+	u32 Blank;              // time from vblank start to vblank end (cycles)
+
+	u32 GSBlank;            // GS CSR is swapped roughly 3.5 hblank's after vblank start
+
+	u32 hSyncError;         // rounding error after the duration of a rendered frame (cycles)
+	u32 hRender;            // time from hblank end to hblank start (cycles)
+	u32 hBlank;             // time from hblank start to hblank end (cycles)
+	u32 hScanlinesPerFrame; // number of scanlines per frame (525/625 for NTSC/PAL)
+};
+
+static vSyncTimingInfo vSyncInfo;
+
 void rcntInit()
 {
 	int i;
@@ -180,32 +198,22 @@ void rcntInit()
 	counters[2].interrupt = 11;
 	counters[3].interrupt = 12;
 
+	std::memset(&vSyncInfo, 0, sizeof(vSyncInfo));
+
+	gsVideoMode = GS_VideoMode::Uninitialized;
+	gsIsInterlaced = VMManager::Internal::IsFastBootInProgress();
+
 	hsyncCounter.Mode = MODE_HRENDER;
 	hsyncCounter.sCycle = cpuRegs.cycle;
+	vsyncCounter.CycleT = vSyncInfo.hRender;
 	vsyncCounter.Mode = MODE_VRENDER;
+	vsyncCounter.CycleT = vSyncInfo.Render;
 	vsyncCounter.sCycle = cpuRegs.cycle;
 
 	for (i = 0; i < 4; i++)
 		rcntReset(i);
 	cpuRcntSet();
 }
-
-struct vSyncTimingInfo
-{
-	double Framerate;       // frames per second (8 bit fixed)
-	GS_VideoMode VideoMode; // used to detect change (interlaced/progressive)
-	u32 Render;             // time from vblank end to vblank start (cycles)
-	u32 Blank;              // time from vblank start to vblank end (cycles)
-
-	u32 GSBlank;            // GS CSR is swapped roughly 3.5 hblank's after vblank start
-
-	u32 hSyncError;         // rounding error after the duration of a rendered frame (cycles)
-	u32 hRender;            // time from hblank end to hblank start (cycles)
-	u32 hBlank;             // time from hblank start to hblank end (cycles)
-	u32 hScanlinesPerFrame; // number of scanlines per frame (525/625 for NTSC/PAL)
-};
-
-static vSyncTimingInfo vSyncInfo;
 
 static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 scansPerFrame)
 {
