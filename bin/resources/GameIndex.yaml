@@ -7449,6 +7449,8 @@ SCPS-15026:
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん
   name-en: "Boku no Natsuyasumi 2 - Umi no Bouken-hen"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes menu text.
 SCPS-15027:
   name: ポポロクロイス〜はじまりの冒険〜 通常版 [初回生産]
   name-sort: ぽぽろくろいす〜はじまりのぼうけん〜 つうじょうばん [しょかいせいさん]
@@ -8501,6 +8503,8 @@ SCPS-19303:
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん PS2 the Best
   name-en: "Boku no Natsuyasumi 2 [PS2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes menu text.
 SCPS-19304:
   name: グランツーリスモ 4 “プロローグ版” PS2 the Best
   name-sort: ぐらんつーりすも 4 “ぷろろーぐばん” PS2 the Best
