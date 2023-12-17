@@ -41,6 +41,7 @@ BIOS
 #include "VUmicro.h"
 #include "MTVU.h"
 #include "DEV9/DEV9.h"
+#include "SaveState.h"
 
 #include "ps2/HwInternal.h"
 #include "ps2/BiosTools.h"
@@ -53,6 +54,7 @@ BIOS
 #endif
 
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
+static int s_ba6 = 0;
 
 void memSetKernelMode() {
 	//Do something here
@@ -70,11 +72,12 @@ u16 ba0R16(u32 mem)
 {
 	//MEM_LOG("ba00000 Memory read16 address %x", mem);
 
-	if (mem == 0x1a000006) {
-		static int ba6;
-		ba6++;
-		if (ba6 == 3) ba6 = 0;
-		return ba6;
+	if (mem == 0x1a000006)
+	{
+		s_ba6++;
+		if (s_ba6 == 3)
+			s_ba6 = 0;
+		return s_ba6;
 	}
 	return 0;
 }
@@ -824,10 +827,20 @@ void memReset()
 	vtlb_VMap(0x00000000,0x00000000,0x20000000);
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 
+	s_ba6 = 0;
+
+	// BIOS is included in eeMem, so it needs to be copied after zeroing.
+	std::memset(eeMem, 0, sizeof(*eeMem));
 	CopyBIOSToMemory();
 }
 
 void memRelease()
 {
 	eeMem = nullptr;
+}
+
+bool SaveStateBase::memFreeze()
+{
+	Freeze(s_ba6);
+	return IsOkay();
 }

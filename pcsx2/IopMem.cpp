@@ -23,10 +23,10 @@
 #include "DEV9/DEV9.h"
 #include "IopHw.h"
 
-uptr *psxMemWLUT = NULL;
-const uptr *psxMemRLUT = NULL;
+uptr *psxMemWLUT = nullptr;
+const uptr *psxMemRLUT = nullptr;
 
-IopVM_MemoryAllocMess* iopMem = NULL;
+IopVM_MemoryAllocMess* iopMem = nullptr;
 
 alignas(__pagesize) u8 iopHw[Ps2MemSize::IopHardware];
 
@@ -104,6 +104,8 @@ void iopMemReset()
 	// this one looks like an old hack for some special write-only memory area,
 	// but leaving it in for reference (air)
 	//for (i=0; i<0x0008; i++) psxMemWLUT[i + 0xbfc0] = (uptr)&psR[i << 16];
+
+	std::memset(iopMem, 0, sizeof(*iopMem));
 }
 
 u8 iopMemRead8(u32 mem)
