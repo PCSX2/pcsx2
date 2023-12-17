@@ -218,6 +218,7 @@ bool SaveStateBase::FreezeInternals()
 		return false;
 
 	bool okay = rcntFreeze();
+	okay = okay && memFreeze();
 	okay = okay && gsFreeze();
 	okay = okay && vuMicroFreeze();
 	okay = okay && vuJITFreeze();
