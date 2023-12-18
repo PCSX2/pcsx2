@@ -645,3 +645,11 @@ void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const
 	dialog->show();
 }
 
+void SettingsWindow::closeGamePropertiesDialogs()
+{
+	for (SettingsWindow* dialog : s_open_game_properties_dialogs)
+	{
+		dialog->close();
+		dialog->deleteLater();
+	}
+}
