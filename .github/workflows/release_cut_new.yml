@@ -146,7 +146,7 @@ jobs:
       - name: Prepare Artifact Folder
         run: mkdir ./ci-artifacts/
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         name: Download all Artifacts
         with:
           path: ./ci-artifacts/
