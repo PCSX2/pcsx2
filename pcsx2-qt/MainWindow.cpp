@@ -552,6 +552,8 @@ void MainWindow::destroySubWindows()
 		m_settings_window->deleteLater();
 		m_settings_window = nullptr;
 	}
+
+	SettingsWindow::closeGamePropertiesDialogs();
 }
 
 void MainWindow::onScreenshotActionTriggered()
