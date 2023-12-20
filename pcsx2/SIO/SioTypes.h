@@ -170,5 +170,6 @@ namespace Recv3
 
 namespace Terminator
 {
-	static constexpr u32 DEFAULT = 0x55;
+	static constexpr u32 NOT_READY = 0x66;
+	static constexpr u32 READY = 0x55;
 } // namespace Terminator

@@ -265,12 +265,12 @@ void Sio2::Memcard()
 	if (mcd->autoEjectTicks)
 	{
 		SetRecv1(Recv1::DISCONNECTED);
-		g_Sio2FifoOut.push_back(0x00); // Because Sio2::Write pops the first g_Sio2FifoIn member
+		g_Sio2FifoOut.push_back(0xff); // Because Sio2::Write pops the first g_Sio2FifoIn member
 
 		while (!g_Sio2FifoIn.empty())
 		{
 			g_Sio2FifoIn.pop_front();
-			g_Sio2FifoOut.push_back(0x00);
+			g_Sio2FifoOut.push_back(0xff);
 		}
 
 		return;
