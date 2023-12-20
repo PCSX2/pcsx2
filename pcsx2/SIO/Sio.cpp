@@ -101,7 +101,7 @@ void AutoEject::Set(size_t port, size_t slot)
 	if (mcds[port][slot].autoEjectTicks == 0)
 	{
 		mcds[port][slot].autoEjectTicks = 60; // 60 frames is enough.
-		mcds[port][slot].term = 0x55; // Reset terminator to default (0x55), forces the PS2 to recheck the memcard.
+		mcds[port][slot].term = Terminator::NOT_READY; // Reset terminator to NOT_READY (0x66), forces the PS2 to recheck the memcard.
 	}
 }
 

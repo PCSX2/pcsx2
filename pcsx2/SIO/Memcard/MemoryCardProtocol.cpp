@@ -191,22 +191,27 @@ void MemoryCardProtocol::SetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 newTerminator = g_Sio2FifoIn.front();
+	mcd->term = g_Sio2FifoIn.front();
 	g_Sio2FifoIn.pop_front();
-	const u8 oldTerminator = mcd->term;
-	mcd->term = newTerminator;
 	g_Sio2FifoOut.push_back(0x00);
 	g_Sio2FifoOut.push_back(0x2b);
-	g_Sio2FifoOut.push_back(oldTerminator);
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
+// This one is a bit unusual. Old and new versions of MCMAN seem to handle this differently.
+// Some commands may check [4] for the terminator. Others may check [3]. Typically, older
+// MCMAN revisions will exclusively check [4], and newer revisions will check both [3] and [4]
+// for different values. In all cases, they expect to see a valid terminator value.
+//
+// Also worth noting old revisions of MCMAN will not set anything other than 0x55 for the terminator,
+// while newer revisions will set the terminator to another value (most commonly 0x5a).
 void MemoryCardProtocol::GetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
 	g_Sio2FifoOut.push_back(0x2b);
 	g_Sio2FifoOut.push_back(mcd->term);
-	g_Sio2FifoOut.push_back(static_cast<u8>(Terminator::DEFAULT));
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
 void MemoryCardProtocol::WriteData()
@@ -521,6 +526,7 @@ void MemoryCardProtocol::AuthF3()
 	}
 	else
 	{
+		mcd->term = Terminator::READY;
 		The2bTerminator(5);
 	}
 }
