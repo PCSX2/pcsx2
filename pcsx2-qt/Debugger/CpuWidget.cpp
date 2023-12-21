@@ -1107,9 +1107,9 @@ void CpuWidget::onSearchButtonClicked()
 	unsigned long long value;
 
 	const bool isVariableSize = searchType == SearchType::ArrayType || searchType == SearchType::StringType;
-	if (isVariableSize && searchComparison != SearchComparison::Equals && searchComparison != SearchComparison::NotEquals)
+	if (isVariableSize && searchComparison != SearchComparison::Equals)
 	{
-		QMessageBox::critical(this, tr("Debugger"), tr("Search types Array and String can only be used with Equals and Not Equals search comparisons."));
+		QMessageBox::critical(this, tr("Debugger"), tr("Search types Array and String can only be used with Equals search comparisons."));
 		return;
 	}
 
