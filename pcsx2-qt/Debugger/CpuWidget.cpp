@@ -907,14 +907,14 @@ static bool memoryValueComparator(SearchComparison searchComparison, T searchVal
 		case SearchComparison::NotEquals:
 		{
 			bool areValuesEqual = false;
-			if (std::is_same_v<T, float>)
+			if constexpr (std::is_same_v<T, float>)
 			{
 				const T fTop = searchValue + 0.00001f;
 				const T fBottom = searchValue - 0.00001f;
 				const T memValue = std::bit_cast<float, u32>(readValue);
 				areValuesEqual = (fBottom < memValue && memValue < fTop);
 			}
-			else if (std::is_same_v<T, double>)
+			else if constexpr (std::is_same_v<T, double>)
 			{
 				const double dTop = searchValue + 0.00001f;
 				const double dBottom = searchValue - 0.00001f;
@@ -957,9 +957,7 @@ static bool memoryValueComparator(SearchComparison searchComparison, T searchVal
 				return isGreaterOperator ? isGreater : isLesser;
 			}
 
-			const bool isGreater = readValue > searchValue;
-			return isGreaterOperator ? isGreater : !isGreater;
-			break;
+			return isGreaterOperator ? (readValue > searchValue) : (readValue < searchValue);
 		}
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
@@ -1102,8 +1100,7 @@ void CpuWidget::onSearchButtonClicked()
 
 	const QString searchValue = m_ui.txtSearchValue->text();
 	const SearchComparison searchComparison = static_cast<SearchComparison>(m_ui.cmbSearchComparison->currentIndex());
-	const QPushButton* senderButton = qobject_cast<QPushButton*>(sender());
-	const bool isFilterSearch = senderButton == m_ui.btnFilterSearch;
+	const bool isFilterSearch = sender() == m_ui.btnFilterSearch;
 	unsigned long long value;
 
 	const bool isVariableSize = searchType == SearchType::ArrayType || searchType == SearchType::StringType;
