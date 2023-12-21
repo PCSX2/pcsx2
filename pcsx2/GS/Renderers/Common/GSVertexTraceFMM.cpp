@@ -22,7 +22,7 @@ class CURRENT_ISA::GSVertexTraceFMM
 	static constexpr GSVector4 s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
-	static void FindMinMax(GSVertexTrace& vt, const void* vertex, const u16* index, int count);
+	static void FindMinMax(GSVertexTrace& vt, void* vertex, const u16* index, int count);
 
 	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
 	static constexpr GSVertexTrace::FindMinMaxPtr GetFMM(bool provoking_vertex_first);
@@ -76,7 +76,7 @@ void GSVertexTraceFMM::Populate(GSVertexTrace& vt, bool provoking_vertex_first)
 }
 
 template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color, bool flat_swapped>
-void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u16* index, int count)
+void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, void* vertex, const u16* index, int count)
 {
 	const GSDrawingContext* context = vt.m_state->m_context;
 
@@ -104,10 +104,10 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 	GSVector4i pmin = GSVector4i::xffffffff();
 	GSVector4i pmax = GSVector4i::zero();
 
-	const GSVertex* RESTRICT v = (GSVertex*)vertex;
+	GSVertex* RESTRICT v = static_cast<GSVertex*>(vertex);
 
 	// Process 2 vertices at a time for increased efficiency
-	auto processVertices = [&tmin, &tmax, &cmin, &cmax, &pmin, &pmax, n](const GSVertex& v0, const GSVertex& v1, bool finalVertex)
+	auto processVertices = [&tmin, &tmax, &cmin, &cmax, &pmin, &pmax, n](GSVertex& v0, GSVertex& v1, bool finalVertex)
 	{
 		if (color)
 		{
@@ -132,8 +132,8 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 		{
 			if (!fst)
 			{
-				GSVector4 stq0 = GSVector4::cast(GSVector4i(v0.m[0]));
-				GSVector4 stq1 = GSVector4::cast(GSVector4i(v1.m[0]));
+				GSVector4 stq0 = GSVector4::load<true>(&v0.m[0]);
+				GSVector4 stq1 = GSVector4::load<true>(&v1.m[0]);
 
 				GSVector4 q;
 				// Sprites always have indices == vertices, so we don't have to look at the index table here
@@ -146,7 +146,50 @@ void GSVertexTraceFMM::FindMinMax(GSVertexTrace& vt, const void* vertex, const u
 				//       make sure to remove the z (rgba) field as it's often denormal.
 				//       Then, use GSVector4::noopt() to prevent clang from optimizing out your "useless" shuffle
 				//       e.g. stq = (stq.xyww() / stq.wwww()).noopt().xyww(stq);
-				GSVector4 st = stq0.xyxy(stq1) / q;
+				GSVector4 st = stq0.xyxy(stq1);
+
+				// Texel coordinate rounding
+				// Helps Manhunt (lights shining through objects).
+				// Can help with some alignment issues when upscaling too, and is for both Software and Hardware renderers.
+				// Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
+				//
+				// Why are we doing it here? Because it's the only time we loop over all the vertices, and the altered S/T change
+				// the min/max in the vertex trace. Better than doing a separate loop.
+				// TODO: Is it worth using AVX2 here for twice the throughput?
+				const GSVector4i hexff = GSVector4i::cxpr(0xff);
+
+				// expST = (st >> 23) & 0xff
+				const GSVector4i expST = GSVector4i::cast(st).srl32(23) & hexff;
+
+				// expQ = (q >> 23) & 0xff
+				const GSVector4i expQ = GSVector4i::cast(q).srl32(23) & hexff;
+
+				// maxExp = max(expST, expQ)
+				const GSVector4i maxExp = expST.max_u32(expQ);
+
+				// amount = min(9 + (maxExp - expST), 23)
+				const GSVector4i amount = maxExp.sub32(expST).add32(GSVector4i::cxpr(9)).min_u32(GSVector4i::cxpr(23));
+
+				// mask = (1 << amount) - 1
+				const GSVector4i mask = GSVector4i::cxpr(1).sllv32(amount).sub32(GSVector4i::cxpr(1));
+
+				// st = st & ~mask
+				st = st.andnot(GSVector4::cast(mask));
+
+				// q = q & ~0xff
+				q = GSVector4::cast(GSVector4i::cast(q) & ~hexff);
+
+				// Since we're going through the vertices anyway, may as well write it back, rather than doing it on the GPU.
+				// These shuffles preserve the original RGBA value, only changing ST and Q. We could do it as two stores per,
+				// vertex, but a single store will be better for store->load forwarding.
+
+				// v0.m[0] = (st.x, st.y, v0.m[0].z, q0)
+				GSVector4::store<true>(&v0.m[0], st.xyzw(stq0).insert32<0, 3>(q));
+
+				// v1.m[0] = (st.z, st.w, v1.m[0].z, q1)
+				GSVector4::store<true>(&v1.m[0], st.zwzw(stq1).blend32<8>(q));
+
+				st /= q;
 
 				stq0 = st.xyww(primclass == GS_SPRITE_CLASS ? stq1 : stq0);
 				stq1 = st.zwww(stq1);

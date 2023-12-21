@@ -24,7 +24,7 @@ GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
 	MULTI_ISA_SELECT(GSVertexTracePopulateFunctions)(*this, provoking_vertex_first);
 }
 
-void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
+void GSVertexTrace::Update(void* vertex, const u16* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
 {
 	if (i_count == 0)
 		return;

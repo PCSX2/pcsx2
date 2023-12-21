@@ -383,7 +383,6 @@ public:
 	virtual void UpdateSettings(const Pcsx2Config::GSOptions& old_config);
 
 	void Flush(GSFlushReason reason);
-	u32 CalcMask(int exp, int max_exp);
 	void FlushPrim();
 	bool TestDrawChanged();
 	void FlushWrite();
