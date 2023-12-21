@@ -265,12 +265,6 @@ void GzippedFileReader::AsyncPrefetchCancel()
 };
 #endif /* _WIN32 */
 
-// TODO: do better than just checking existance and extension
-bool GzippedFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
-{
-	return StringUtil::EndsWith(fileName, ".gz");
-}
-
 bool GzippedFileReader::OkIndex(Error* error)
 {
 	if (m_pIndex)

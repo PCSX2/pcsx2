@@ -33,7 +33,6 @@ public:
 	GzippedFileReader();
 	~GzippedFileReader();;
 
-	static bool CanHandle(const std::string& fileName, const std::string& displayName);
 	bool Open(std::string filename, Error* error) override;
 
 	int ReadSync(void* pBuffer, u32 sector, u32 count) override;

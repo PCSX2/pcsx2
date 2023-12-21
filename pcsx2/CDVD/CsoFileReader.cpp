@@ -50,25 +50,6 @@ CsoFileReader::~CsoFileReader()
 	Close();
 }
 
-bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
-{
-	bool supported = false;
-	if (displayName.ends_with(".cso") || displayName.ends_with(".zso"))
-	{
-		FILE* fp = FileSystem::OpenCFile(fileName.c_str(), "rb");
-		CsoHeader hdr;
-		if (fp)
-		{
-			if (fread(&hdr, 1, sizeof(hdr), fp) == sizeof(hdr))
-			{
-				supported = ValidateHeader(hdr, nullptr);
-			}
-			fclose(fp);
-		}
-	}
-	return supported;
-}
-
 bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
 {
 	if ((hdr.magic[0] != 'C' && hdr.magic[0] != 'Z') || hdr.magic[1] != 'I' || hdr.magic[2] != 'S' || hdr.magic[3] != 'O')

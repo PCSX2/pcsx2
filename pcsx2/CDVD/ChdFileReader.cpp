@@ -41,14 +41,6 @@ ChdFileReader::~ChdFileReader()
 	Close();
 }
 
-bool ChdFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
-{
-	if (!StringUtil::EndsWith(displayName, ".chd"))
-		return false;
-
-	return true;
-}
-
 static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)
 {
 	chd_file* chd;
