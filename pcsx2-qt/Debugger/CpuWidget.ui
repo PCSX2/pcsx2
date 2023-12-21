@@ -306,6 +306,40 @@
                </property>
               </widget>
              </item>
+             <item row="1" column="1">
+              <widget class="QComboBox" name="cmbSearchComparison">
+               <item>
+                <property name="text">
+                 <string>Equals</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Not Equals</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Greater Than</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Greater Than Or Equal</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Less Than</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Less Than Or Equal</string>
+                </property>
+               </item>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>

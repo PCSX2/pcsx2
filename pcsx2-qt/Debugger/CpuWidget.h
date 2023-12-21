@@ -56,6 +56,17 @@ public:
 		ArrayType
 	};
 
+	// Note: The order of these enum values must reflect the order in thee Search Comparison combobox.
+	enum class SearchComparison
+	{
+		Equals,
+		NotEquals,
+		GreaterThan,
+		GreaterThanOrEqual,
+		LessThan,
+		LessThanOrEqual
+	};
+
 public slots:
 	void paintEvent(QPaintEvent* event);
 

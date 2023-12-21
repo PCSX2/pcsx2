@@ -39,6 +39,7 @@
 using namespace QtUtils;
 using namespace MipsStackWalk;
 
+using SearchComparison = CpuWidget::SearchComparison;
 using SearchType = CpuWidget::SearchType;
 
 CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
@@ -871,7 +872,7 @@ void CpuWidget::onStackListDoubleClick(const QModelIndex& index)
 }
 
 template <typename T>
-static bool checkAddressValueMatches(DebugInterface* cpu, u32 addr, T value)
+static T readValueAtAddress(DebugInterface* cpu, u32 addr)
 {
 	T val = 0;
 	switch (sizeof(T))
@@ -884,42 +885,90 @@ static bool checkAddressValueMatches(DebugInterface* cpu, u32 addr, T value)
 			break;
 		case sizeof(u32):
 		{
-			if (std::is_same_v<T, float>)
-			{
-				const float fTop = value + 0.00001f;
-				const float fBottom = value - 0.00001f;
-				const float memValue = std::bit_cast<float, u32>(cpu->read32(addr));
-				return (fBottom < memValue && memValue < fTop);
-			}
-
 			val = cpu->read32(addr);
 			break;
 		}
 		case sizeof(u64):
 		{
-			if (std::is_same_v<T, double>)
-			{
-				const double dTop = value + 0.00001f;
-				const double dBottom = value - 0.00001f;
-				const double memValue = std::bit_cast<double, u64>(cpu->read64(addr));
-				return (dBottom < memValue && memValue < dTop);
-			}
-
 			val = cpu->read64(addr);
 			break;
 		}
-
-		default:
-			Console.Error("Debugger: Unknown type when doing memory search!");
-			return false;
-			break;
 	}
-	
-	return val == value;
+	return val;
 }
 
 template <typename T>
-static std::vector<u32> searchWorker(DebugInterface* cpu, std::vector<u32> searchAddresses, u32 start, u32 end, T value)
+static bool memoryValueComparator(SearchComparison searchComparison, T searchValue, T readValue)
+{
+	const bool isNotOperator = searchComparison == SearchComparison::NotEquals;
+	switch (searchComparison)
+	{
+		case SearchComparison::Equals:
+		case SearchComparison::NotEquals:
+		{
+			bool areValuesEqual = false;
+			if (std::is_same_v<T, float>)
+			{
+				const T fTop = searchValue + 0.00001f;
+				const T fBottom = searchValue - 0.00001f;
+				const T memValue = std::bit_cast<float, u32>(readValue);
+				areValuesEqual = (fBottom < memValue && memValue < fTop);
+			}
+			else if (std::is_same_v<T, double>)
+			{
+				const double dTop = searchValue + 0.00001f;
+				const double dBottom = searchValue - 0.00001f;
+				const double memValue = std::bit_cast<double, u64>(readValue);
+				areValuesEqual = (dBottom < memValue && memValue < dTop);
+			}
+			else
+			{
+				areValuesEqual = searchValue == readValue;
+			}
+			return isNotOperator ? !areValuesEqual : areValuesEqual;
+			break;
+		}
+		case SearchComparison::GreaterThan:
+		case SearchComparison::GreaterThanOrEqual:
+		case SearchComparison::LessThan:
+		case SearchComparison::LessThanOrEqual:
+		{
+			const bool hasEqualsCheck = searchComparison == SearchComparison::GreaterThanOrEqual || searchComparison == SearchComparison::LessThanOrEqual;
+			if (hasEqualsCheck && memoryValueComparator(SearchComparison::Equals, searchValue, readValue))
+				return true;
+
+			const bool isGreaterOperator = searchComparison == SearchComparison::GreaterThan || searchComparison == SearchComparison::GreaterThanOrEqual;
+			if (std::is_same_v<T, float>)
+			{
+				const T fTop = searchValue + 0.00001f;
+				const T fBottom = searchValue - 0.00001f;
+				const T memValue = std::bit_cast<float, u32>(readValue);
+				const bool isGreater = memValue > fTop;
+				const bool isLesser = memValue < fBottom;
+				return isGreaterOperator ? isGreater : isLesser;
+			}
+			else if (std::is_same_v<T, double>)
+			{
+				const double dTop = searchValue + 0.00001f;
+				const double dBottom = searchValue - 0.00001f;
+				const double memValue = std::bit_cast<double, u64>(readValue);
+				const bool isGreater = memValue > dTop;
+				const bool isLesser = memValue < dBottom;
+				return isGreaterOperator ? isGreater : isLesser;
+			}
+
+			const bool isGreater = readValue > searchValue;
+			return isGreaterOperator ? isGreater : !isGreater;
+			break;
+		}
+		default:
+			Console.Error("Debugger: Unknown type when doing memory search!");
+			return false;
+	}
+}
+
+template <typename T>
+std::vector<u32> searchWorker(DebugInterface* cpu, std::vector<u32> searchAddresses, SearchComparison searchComparison, u32 start, u32 end, T searchValue)
 {
 	std::vector<u32> hitAddresses;
 	const bool isSearchingRange = searchAddresses.size() <= 0;
@@ -927,7 +976,10 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, std::vector<u32> searc
 	{
 		for (u32 addr = start; addr < end; addr += sizeof(T))
 		{
-			if (checkAddressValueMatches(cpu, addr, value))
+			if (!cpu->isValidAddress(addr))
+				continue;
+			T readValue = readValueAtAddress<T>(cpu, addr);
+			if (memoryValueComparator(searchComparison, searchValue, readValue))
 			{
 				hitAddresses.push_back(addr);
 			}
@@ -937,11 +989,13 @@ static std::vector<u32> searchWorker(DebugInterface* cpu, std::vector<u32> searc
 	{
 		for (const u32 addr : searchAddresses)
 		{
-			if (checkAddressValueMatches(cpu, addr, value))
+			if (!cpu->isValidAddress(addr))
+				continue;
+			T readValue = readValueAtAddress<T>(cpu, addr);
+			if (memoryValueComparator(searchComparison, searchValue, readValue))
 			{
 				hitAddresses.push_back(addr);
 			}
-		
 		}
 	}
 	return hitAddresses;
@@ -961,7 +1015,6 @@ static bool compareByteArrayAtAddress(DebugInterface* cpu, u32 addr, QByteArray 
 
 static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u32> searchAddresses, u32 start, u32 end, QByteArray value)
 {
-
 	std::vector<u32> hitAddresses;
 	const bool isSearchingRange = searchAddresses.size() <= 0;
 	if (isSearchingRange)
@@ -988,24 +1041,23 @@ static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u
 	return hitAddresses;
 }
 
-std::vector<u32> startWorker(DebugInterface* cpu, const SearchType type, std::vector<u32> searchAddresses, u32 start, u32 end, QString value, int base)
+std::vector<u32> startWorker(DebugInterface* cpu, const SearchType type, const SearchComparison searchComparison, std::vector<u32> searchAddresses, u32 start, u32 end, QString value, int base)
 {
-
 	const bool isSigned = value.startsWith("-");
 	switch (type)
 	{
 		case SearchType::ByteType:
-			return isSigned ? searchWorker<s8>(cpu, searchAddresses, start, end, value.toShort(nullptr, base)) : searchWorker<u8>(cpu, searchAddresses, start, end, value.toUShort(nullptr, base));
+			return isSigned ? searchWorker<s8>(cpu, searchAddresses, searchComparison, start, end, value.toShort(nullptr, base)) : searchWorker<u8>(cpu, searchAddresses, searchComparison, start, end, value.toUShort(nullptr, base));
 		case SearchType::Int16Type:
-			return isSigned ? searchWorker<s16>(cpu, searchAddresses, start, end, value.toShort(nullptr, base)) : searchWorker<u16>(cpu, searchAddresses, start, end, value.toUShort(nullptr, base));
+			return isSigned ? searchWorker<s16>(cpu, searchAddresses, searchComparison, start, end, value.toShort(nullptr, base)) : searchWorker<u16>(cpu, searchAddresses, searchComparison, start, end, value.toUShort(nullptr, base));
 		case SearchType::Int32Type:
-			return isSigned ? searchWorker<s32>(cpu, searchAddresses, start, end, value.toInt(nullptr, base)) : searchWorker<u32>(cpu, searchAddresses, start, end, value.toUInt(nullptr, base));
+			return isSigned ? searchWorker<s32>(cpu, searchAddresses, searchComparison, start, end, value.toInt(nullptr, base)) : searchWorker<u32>(cpu, searchAddresses, searchComparison, start, end, value.toUInt(nullptr, base));
 		case SearchType::Int64Type:
-			return isSigned ? searchWorker<s64>(cpu, searchAddresses, start, end, value.toLong(nullptr, base)) : searchWorker<s64>(cpu, searchAddresses, start, end, value.toULongLong(nullptr, base));
+			return isSigned ? searchWorker<s64>(cpu, searchAddresses, searchComparison, start, end, value.toLong(nullptr, base)) : searchWorker<s64>(cpu, searchAddresses, searchComparison, start, end, value.toULongLong(nullptr, base));
 		case SearchType::FloatType:
-			return searchWorker<float>(cpu, searchAddresses, start, end, value.toFloat());
+			return searchWorker<float>(cpu, searchAddresses, searchComparison, start, end, value.toFloat());
 		case SearchType::DoubleType:
-			return searchWorker<double>(cpu, searchAddresses, start, end, value.toDouble());
+			return searchWorker<double>(cpu, searchAddresses, searchComparison, start, end, value.toDouble());
 		case SearchType::StringType:
 			return searchWorkerByteArray(cpu, searchAddresses, start, end, value.toUtf8());
 		case SearchType::ArrayType:
@@ -1049,8 +1101,17 @@ void CpuWidget::onSearchButtonClicked()
 	}
 
 	const QString searchValue = m_ui.txtSearchValue->text();
-
+	const SearchComparison searchComparison = static_cast<SearchComparison>(m_ui.cmbSearchComparison->currentIndex());
+	const QPushButton* senderButton = qobject_cast<QPushButton*>(sender());
+	const bool isFilterSearch = senderButton == m_ui.btnFilterSearch;
 	unsigned long long value;
+
+	const bool isVariableSize = searchType == SearchType::ArrayType || searchType == SearchType::StringType;
+	if (isVariableSize && searchComparison != SearchComparison::Equals && searchComparison != SearchComparison::NotEquals)
+	{
+		QMessageBox::critical(this, tr("Debugger"), tr("Search types Array and String can only be used with Equals and Not Equals search comparisons."));
+		return;
+	}
 
 	switch (searchType)
 	{
@@ -1113,19 +1174,16 @@ void CpuWidget::onSearchButtonClicked()
 		m_searchResults = results;
 		loadSearchResults();
 		m_ui.btnFilterSearch->setDisabled(m_ui.listSearchResults->count() == 0);
-		
 	});
 
 	m_ui.btnSearch->setDisabled(true);
-	QPushButton* senderButton = qobject_cast<QPushButton*>(sender());
-	bool isFilterSearch = senderButton == m_ui.btnFilterSearch;
 	std::vector<u32> addresses;
 	if (isFilterSearch)
 	{
 		addresses = m_searchResults;
 	}
 	QFuture<std::vector<u32>> workerFuture =
-		QtConcurrent::run(startWorker, &m_cpu, searchType, addresses, searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
+		QtConcurrent::run(startWorker, &m_cpu, searchType, searchComparison, addresses, searchStart, searchEnd, searchValue, searchHex ? 16 : 10);
 	workerWatcher->setFuture(workerFuture);
 }
 
@@ -1141,7 +1199,8 @@ void CpuWidget::onSearchResultsListScroll(u32 value)
 	}
 }
 
-void CpuWidget::loadSearchResults() {
+void CpuWidget::loadSearchResults()
+{
 	const u32 numLoaded = m_ui.listSearchResults->count();
 	const u32 amountLeftToLoad = m_searchResults.size() - numLoaded;
 	if (amountLeftToLoad < 1)
