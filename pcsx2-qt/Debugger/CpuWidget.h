@@ -44,6 +44,18 @@ public:
 	CpuWidget(QWidget* parent, DebugInterface& cpu);
 	~CpuWidget();
 
+	enum class SearchType
+	{
+		ByteType,
+		Int16Type,
+		Int32Type,
+		Int64Type,
+		FloatType,
+		DoubleType,
+		StringType,
+		ArrayType
+	};
+
 public slots:
 	void paintEvent(QPaintEvent* event);
 

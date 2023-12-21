@@ -39,6 +39,8 @@
 using namespace QtUtils;
 using namespace MipsStackWalk;
 
+using SearchType = CpuWidget::SearchType;
+
 CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	: m_cpu(cpu)
 	, m_bpModel(cpu)
@@ -986,27 +988,27 @@ static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u
 	return hitAddresses;
 }
 
-std::vector<u32> startWorker(DebugInterface* cpu, int type, std::vector<u32> searchAddresses, u32 start, u32 end, QString value, int base)
+std::vector<u32> startWorker(DebugInterface* cpu, const SearchType type, std::vector<u32> searchAddresses, u32 start, u32 end, QString value, int base)
 {
 
 	const bool isSigned = value.startsWith("-");
 	switch (type)
 	{
-		case 0:
+		case SearchType::ByteType:
 			return isSigned ? searchWorker<s8>(cpu, searchAddresses, start, end, value.toShort(nullptr, base)) : searchWorker<u8>(cpu, searchAddresses, start, end, value.toUShort(nullptr, base));
-		case 1:
+		case SearchType::Int16Type:
 			return isSigned ? searchWorker<s16>(cpu, searchAddresses, start, end, value.toShort(nullptr, base)) : searchWorker<u16>(cpu, searchAddresses, start, end, value.toUShort(nullptr, base));
-		case 2:
+		case SearchType::Int32Type:
 			return isSigned ? searchWorker<s32>(cpu, searchAddresses, start, end, value.toInt(nullptr, base)) : searchWorker<u32>(cpu, searchAddresses, start, end, value.toUInt(nullptr, base));
-		case 3:
+		case SearchType::Int64Type:
 			return isSigned ? searchWorker<s64>(cpu, searchAddresses, start, end, value.toLong(nullptr, base)) : searchWorker<s64>(cpu, searchAddresses, start, end, value.toULongLong(nullptr, base));
-		case 4:
+		case SearchType::FloatType:
 			return searchWorker<float>(cpu, searchAddresses, start, end, value.toFloat());
-		case 5:
+		case SearchType::DoubleType:
 			return searchWorker<double>(cpu, searchAddresses, start, end, value.toDouble());
-		case 6:
+		case SearchType::StringType:
 			return searchWorkerByteArray(cpu, searchAddresses, start, end, value.toUtf8());
-		case 7:
+		case SearchType::ArrayType:
 			return searchWorkerByteArray(cpu, searchAddresses, start, end, QByteArray::fromHex(value.toUtf8()));
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
@@ -1020,7 +1022,7 @@ void CpuWidget::onSearchButtonClicked()
 	if (!m_cpu.isAlive())
 		return;
 
-	const int searchType = m_ui.cmbSearchType->currentIndex();
+	const SearchType searchType = static_cast<SearchType>(m_ui.cmbSearchType->currentIndex());
 	const bool searchHex = m_ui.chkSearchHex->isChecked();
 
 	bool ok;
@@ -1052,20 +1054,20 @@ void CpuWidget::onSearchButtonClicked()
 
 	switch (searchType)
 	{
-		case 0:
-		case 1:
-		case 2:
-		case 3:
+		case SearchType::ByteType:
+		case SearchType::Int16Type:
+		case SearchType::Int32Type:
+		case SearchType::Int64Type:
 			value = searchValue.toULongLong(&ok, searchHex ? 16 : 10);
 			break;
-		case 4:
-		case 5:
+		case SearchType::FloatType:
+		case SearchType::DoubleType:
 			searchValue.toDouble(&ok);
 			break;
-		case 6:
+		case SearchType::StringType:
 			ok = !searchValue.isEmpty();
 			break;
-		case 7:
+		case SearchType::ArrayType:
 			ok = !searchValue.trimmed().isEmpty();
 			break;
 	}
@@ -1078,21 +1080,21 @@ void CpuWidget::onSearchButtonClicked()
 
 	switch (searchType)
 	{
-		case 7:
-		case 6:
-		case 5:
-		case 4:
+		case SearchType::ArrayType:
+		case SearchType::StringType:
+		case SearchType::DoubleType:
+		case SearchType::FloatType:
 			break;
-		case 3:
+		case SearchType::Int64Type:
 			if (value <= std::numeric_limits<unsigned long long>::max())
 				break;
-		case 2:
+		case SearchType::Int32Type:
 			if (value <= std::numeric_limits<unsigned long>::max())
 				break;
-		case 1:
+		case SearchType::Int16Type:
 			if (value <= std::numeric_limits<unsigned short>::max())
 				break;
-		case 0:
+		case SearchType::ByteType:
 			if (value <= std::numeric_limits<unsigned char>::max())
 				break;
 		default:
