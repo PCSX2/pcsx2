@@ -54,7 +54,6 @@ BIOS
 #endif
 
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
-static int s_ba6 = 0;
 
 static u16 s_ba[0xff];
 static u16 s_dve_regs[0xff];
