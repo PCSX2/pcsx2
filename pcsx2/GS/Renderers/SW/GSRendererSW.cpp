@@ -29,7 +29,7 @@ GSRenderer* CURRENT_ISA::makeGSRendererSW(int threads)
 
 #define LOG 0
 
-static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
+[[maybe_unused]] static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : nullptr;
 
 static constexpr GSVector4 s_pos_scale = GSVector4::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 

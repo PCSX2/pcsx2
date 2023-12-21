@@ -359,7 +359,7 @@ GSRendererType D3D::GetPreferredRenderer()
 	if (!adapter)
 		return GSRendererType::DX11;
 
-	const auto get_d3d11_feature_level = [&factory, &adapter]() -> std::optional<D3D_FEATURE_LEVEL> {
+	const auto get_d3d11_feature_level = [&adapter]() -> std::optional<D3D_FEATURE_LEVEL> {
 		static const D3D_FEATURE_LEVEL check[] = {
 			D3D_FEATURE_LEVEL_12_0,
 			D3D_FEATURE_LEVEL_11_0,
@@ -378,7 +378,7 @@ GSRendererType D3D::GetPreferredRenderer()
 		Console.WriteLn("D3D11 feature level for autodetection: %x", static_cast<unsigned>(feature_level));
 		return feature_level;
 	};
-	const auto get_d3d12_device = [&factory, &adapter]() {
+	const auto get_d3d12_device = [&adapter]() {
 		wil::com_ptr_nothrow<ID3D12Device> device;
 		const HRESULT hr = D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.put()));
 		if (FAILED(hr))
