@@ -202,7 +202,7 @@ bool GSClut::CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP)
 				m_CBP[1] = TEX0.CBP;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	return true;

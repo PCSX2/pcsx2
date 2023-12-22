@@ -3107,7 +3107,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy)
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	m_conf.verts = m_vertex.buff;
@@ -5376,7 +5376,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			case AFAIL_FB_ONLY: z = false; break; // rgba
 			case AFAIL_ZB_ONLY: r = g = b = a = false; break; // z
 			case AFAIL_RGB_ONLY: z = a = false; break; // rgb
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 
 		// Depth test should be disabled when depth writes are masked and similarly, Alpha test must be disabled

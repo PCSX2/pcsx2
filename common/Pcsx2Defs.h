@@ -17,9 +17,9 @@
 
 // make sure __POSIX__ is defined for all systems where we assume POSIX compliance
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-	#ifndef __POSIX__
-		#define __POSIX__ 1
-	#endif
+#ifndef __POSIX__
+#define __POSIX__ 1
+#endif
 #endif
 
 #include "Pcsx2Types.h"
@@ -35,21 +35,16 @@
 // --------------------------------------------------------------------------------------
 // Dev / Debug conditionals - Consts for using if() statements instead of uglier #ifdef.
 // --------------------------------------------------------------------------------------
-// Note: Using if() optimizes nicely in Devel and Release builds, but will generate extra
-// code overhead in debug builds (since debug neither inlines, nor optimizes out const-
-// level conditionals).  Normally not a concern, but if you stick if( IsDevbuild ) in
-// some tight loops it will likely make debug builds unusably slow.
-//
 #ifdef PCSX2_DEVBUILD
-	static constexpr bool IsDevBuild = true;
+static constexpr bool IsDevBuild = true;
 #else
-	static constexpr bool IsDevBuild = false;
+static constexpr bool IsDevBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
-	static constexpr bool IsDebugBuild = true;
+static constexpr bool IsDebugBuild = true;
 #else
-	static constexpr bool IsDebugBuild = false;
+static constexpr bool IsDebugBuild = false;
 #endif
 
 // Defines the memory page size for the target platform at compilation.  All supported platforms
@@ -63,38 +58,40 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 // --------------------------------------------------------------------------------------
 #ifdef _MSC_VER
 
-	#define __noinline __declspec(noinline)
-	#define __noreturn __declspec(noreturn)
+#define __noinline __declspec(noinline)
+#define __noreturn __declspec(noreturn)
+
+#define RESTRICT __restrict
+#define ASSUME(x) __assume(x)
 
 #else
 
 // --------------------------------------------------------------------------------------
-//  GCC / Intel Compilers Section
+//  GCC / Clang Compilers Section
 // --------------------------------------------------------------------------------------
 
-	#define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while(0)
+// SysV ABI passes vector parameters through registers unconditionally.
+#ifndef _WIN32
+#define __vectorcall
+#endif
 
-	// SysV ABI passes vector parameters through registers unconditionally.
-	#ifndef _WIN32
-		#define __vectorcall
-	#endif
+// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
+// warnings when a static inlined function isn't used in the scope of a single file (which
+// happens *by design* like all the friggen time >_<)
 
-	// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
-	// warnings when a static inlined function isn't used in the scope of a single file (which
-	// happens *by design* like all the friggen time >_<)
+#define __forceinline __attribute__((always_inline, unused))
+#define __noinline __attribute__((noinline))
+#define __noreturn __attribute__((noreturn))
 
-	#define _inline __inline__ __attribute__((unused))
-	#ifdef NDEBUG
-		#define __forceinline __attribute__((always_inline, unused))
-	#else
-		#define __forceinline __attribute__((unused))
-	#endif
-	#ifndef __noinline
-		#define __noinline __attribute__((noinline))
-	#endif
-	#ifndef __noreturn
-		#define __noreturn __attribute__((noreturn))
-	#endif
+#define RESTRICT __restrict__
+
+#define ASSUME(x) \
+	do \
+	{ \
+		if (!(x)) \
+			__builtin_unreachable(); \
+	} while (0)
+
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -110,50 +107,18 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 //
 #define __fi __forceinline
 #ifdef PCSX2_DEVBUILD
-	#define __ri
+#define __ri
 #else
-	#define __ri __fi
-#endif
-
-#ifndef RESTRICT
-	#if defined(_MSC_VER)
-		#define RESTRICT __restrict
-	#elif defined(__GNUC__)
-		#define RESTRICT __restrict__
-	#else
-		#define RESTRICT
-	#endif
-#endif
-
-// __assume, potentially enables optimization.
-#ifdef _MSC_VER
-#define ASSUME(x) __assume(x)
-#else
-#define ASSUME(x) \
-	do \
-	{ \
-		if (!(x)) \
-			__builtin_unreachable(); \
-	} while (0)
+#define __ri __fi
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Safe deallocation macros -- checks pointer validity (non-null) when needed, and sets
 // pointer to null after deallocation.
 
-#define safe_delete(ptr) \
-	((void)(delete (ptr)), (ptr) = NULL)
-
-#define safe_delete_array(ptr) \
-	((void)(delete[](ptr)), (ptr) = NULL)
-
-// No checks for NULL.
-#define safe_free(ptr) \
-	((void)(free(ptr), !!0), (ptr) = NULL)
-//((void) (( ( (ptr) != NULL ) && (free( ptr ), !!0) ), (ptr) = NULL))
-
-#define safe_fclose(ptr) \
-	((void)((((ptr) != NULL) && (fclose(ptr), !!0)), (ptr) = NULL))
+#define safe_delete(ptr) (delete (ptr), (ptr) = nullptr)
+#define safe_delete_array(ptr) (delete[] (ptr), (ptr) = nullptr)
+#define safe_free(ptr) (std::free(ptr), (ptr) = nullptr)
 
 // --------------------------------------------------------------------------------------
 //  ImplementEnumOperators  (macro)
@@ -257,6 +222,6 @@ static constexpr s64 _4gb = _1gb * 4;
 // Disable some spammy warnings which wx appeared to disable.
 // We probably should fix these at some point.
 #ifdef _MSC_VER
-#pragma warning(disable: 4244) // warning C4244: 'initializing': conversion from 'uptr' to 'uint', possible loss of data
-#pragma warning(disable: 4267) // warning C4267: 'initializing': conversion from 'size_t' to 'uint', possible loss of data
+#pragma warning(disable : 4244) // warning C4244: 'initializing': conversion from 'uptr' to 'uint', possible loss of data
+#pragma warning(disable : 4267) // warning C4267: 'initializing': conversion from 'size_t' to 'uint', possible loss of data
 #endif

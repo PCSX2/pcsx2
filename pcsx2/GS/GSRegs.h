@@ -1219,7 +1219,7 @@ struct alignas(32) GIFPath
 					case 16:
 						break;
 					default:
-						__assume(0);
+						ASSUME(0);
 				}
 			}
 		}

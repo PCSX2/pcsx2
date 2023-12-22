@@ -365,7 +365,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			switch (context->CLAMP.WMT)
@@ -393,7 +393,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			gd.t.min = gd.t.min.xxxxlh();

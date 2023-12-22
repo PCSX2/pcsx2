@@ -246,7 +246,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 #if _M_SSE >= 0x501
