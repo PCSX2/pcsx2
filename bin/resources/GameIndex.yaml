@@ -7449,6 +7449,8 @@ SCPS-15026:
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん
   name-en: "Boku no Natsuyasumi 2 - Umi no Bouken-hen"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes menu text.
 SCPS-15027:
   name: ポポロクロイス〜はじまりの冒険〜 通常版 [初回生産]
   name-sort: ぽぽろくろいす〜はじまりのぼうけん〜 つうじょうばん [しょかいせいさん]
@@ -8501,6 +8503,8 @@ SCPS-19303:
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん PS2 the Best
   name-en: "Boku no Natsuyasumi 2 [PS2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes menu text.
 SCPS-19304:
   name: グランツーリスモ 4 “プロローグ版” PS2 the Best
   name-sort: ぐらんつーりすも 4 “ぷろろーぐばん” PS2 the Best
@@ -14564,6 +14568,8 @@ SLES-50927:
 SLES-50930:
   name: "Dino Stalker"
   region: "PAL-E"
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLES-50932:
   name: "Smash Court Tennis - Pro Tournament"
   region: "PAL-M5"
@@ -14906,9 +14912,13 @@ SLES-51094:
 SLES-51095:
   name: "Dino Stalker"
   region: "PAL-F"
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLES-51096:
   name: "Dino Stalker"
   region: "PAL-G"
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLES-51100:
   name: "Club Football - Liverpool FC"
   region: "PAL-M6"
@@ -24933,7 +24943,7 @@ SLES-54903:
   name-sort: "Sims 2, The - Castaway"
   region: "PAL-M13"
   gsHWFixes:
-    halfPixelOffset: 1 # Removes horizontal and vertical lines on the ground, trees and the sky.
+    halfPixelOffset: 4 # Removes horizontal and vertical lines on the ground, trees and the sky.
 SLES-54904:
   name: "The Simpsons Game"
   name-sort: "Simpsons Game, The"
@@ -30643,6 +30653,8 @@ SLPM-61025:
 SLPM-61026:
   name: "Gun Survivor 3 - Dino Crisis"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLPM-61027:
   name: "Prismix - PlayStation 2 Sen'you Music Visual Soft - Demo Disc Vol. 1"
   region: "NTSC-J"
@@ -35554,6 +35566,8 @@ SLPM-65139:
   name-en: "Gun Survivor 3 - Dino Crisis"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLPM-65140:
   name: ジョジョの奇妙な冒険 黄金の旋風
   name-sort: じょじょのきみょうなぼうけん おうごんのせんぷう
@@ -46218,6 +46232,8 @@ SLPM-67528:
 SLPM-67529:
   name: "Gun Survivor 3 Dino Crisis"
   region: "NTSC-K"
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLPM-67530:
   name: "NHL 2003"
   region: "NTSC-K"
@@ -57668,6 +57684,8 @@ SLUS-20485:
   name: "Dino Stalker"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes flashing in some scenes.
 SLUS-20486:
   name: "Marvel vs. Capcom 2"
   region: "NTSC-U"
@@ -64105,7 +64123,7 @@ SLUS-21664:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 1 # Removes horizontal and vertical lines on the ground, trees and the sky.
+    halfPixelOffset: 4 # Removes horizontal and vertical lines on the ground, trees and the sky.
 SLUS-21665:
   name: "The Simpsons Game"
   name-sort: "Simpsons Game, The"

@@ -1567,6 +1567,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
+		if (!src) [[unlikely]]
+			return nullptr;
 	}
 	else
 	{
@@ -2074,6 +2076,8 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 		return nullptr;
 
 	Target* dst = Target::Create(TEX0, size.x, size.y, scale, type, true);
+	if (!dst) [[unlikely]]
+		return nullptr;
 
 	const bool was_clear = PreloadTarget(TEX0, size, valid_size, is_frame, preload, preserve_target, draw_rect, dst, src);
 
@@ -2789,7 +2793,7 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 	// But this causes rects to be too big, especially in WRC games, I don't think there's any need to align them here.
 	GSVector4i r = rect;
 
-	off.loopPages(rect, [this, &rect, bp, bw, psm, &found, &r](u32 page)
+	off.loopPages(rect, [this, &rect, bp, bw, psm, &found](u32 page)
 	{
 		auto& list = m_src.m_map[page];
 		for (auto i = list.begin(); i != list.end();)
@@ -3918,6 +3922,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			GSTexture* dTex = outside_target ?
 								  g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, true) :
 								  g_gs_device->CreateTexture(w, h, tlevels, GSTexture::Format::Color, true);
+			if (!dTex) [[unlikely]]
+			{
+				Console.Error("Failed to allocate %dx%d texture for offset source", w, h);
+				delete src;
+				return nullptr;
+			}
+
 			m_source_memory_usage += dTex->GetMemUsage();
 
 			// copy the rt in
@@ -4193,6 +4204,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			GSTexture* dTex = use_texture ?
 								  g_gs_device->CreateTexture(new_size.x, new_size.y, 1, GSTexture::Format::Color, true) :
 								  g_gs_device->CreateRenderTarget(new_size.x, new_size.y, GSTexture::Format::Color, source_rect_empty || destX != 0 || destY != 0);
+			if (!dTex) [[unlikely]]
+			{
+				Console.Error("Failed to allocate %dx%d texture for target copy to source", new_size.x, new_size.y);
+				delete src;
+				return nullptr;
+			}
+
 			m_source_memory_usage += dTex->GetMemUsage();
 			src->m_texture = dTex;
 
@@ -4266,6 +4284,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		else if (paltex)
 		{
 			src->m_texture = g_gs_device->CreateTexture(tw, th, tlevels, GSTexture::Format::UNorm8);
+			if (!src->m_texture) [[unlikely]]
+			{
+				Console.Error("Failed to allocate %dx%d paltex texture", tw, th);
+				delete src;
+				return nullptr;
+			}
+
 			m_source_memory_usage += src->m_texture->GetMemUsage();
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
@@ -4275,6 +4300,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		else
 		{
 			src->m_texture = g_gs_device->CreateTexture(tw, th, tlevels, GSTexture::Format::Color);
+			if (!src->m_texture) [[unlikely]]
+			{
+				Console.Error("Failed to allocate %dx%d source texture", tw, th);
+				delete src;
+				return nullptr;
+			}
+
 			m_source_memory_usage += src->m_texture->GetMemUsage();
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
@@ -4350,6 +4382,12 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		if (!lmtex)
 		{
 			lmtex = g_gs_device->CreateTexture(tex_width, tex_height, 1, GSTexture::Format::Color, false);
+			if (!lmtex) [[unlikely]]
+			{
+				Console.Error("Failed to allocate %dx%d texture for page preloading", tex_width, tex_height);
+				return;
+			}
+
 			lmtex_mapped = lmtex->Map(lmtex_map);
 		}
 
@@ -4558,6 +4596,12 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 
 	// Allocate our render target for drawing everything to.
 	GSTexture* dtex = g_gs_device->CreateRenderTarget(scaled_width, scaled_height, GSTexture::Format::Color, true);
+	if (!dtex) [[unlikely]]
+	{
+		Console.Error("Failed to allocate %dx%d merged dest texture", scaled_width, scaled_height);
+		return nullptr;
+	}
+
 	m_source_memory_usage += dtex->GetMemUsage();
 
 	// Sort rect list by the texture, we want to batch as many as possible together.
@@ -5477,6 +5521,12 @@ void GSTextureCache::Target::Update()
 
 	// This'll leave undefined data in pixels that we're not reading from... shouldn't hurt anything.
 	GSTexture* const t = g_gs_device->CreateTexture(t_size.z, t_size.w, 1, GSTexture::Format::Color);
+	if (!t) [[unlikely]]
+	{
+		Console.Error("Failed to allocate %dx%d for update source", t_size.z, t_size.w);
+		return;
+	}
+
 	GSTexture::GSMap m;
 	const bool mapped = t->Map(m);
 
@@ -6094,6 +6144,12 @@ void GSTextureCache::Palette::InitializeTexture()
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
 		m_tex_palette = g_gs_device->CreateTexture(m_pal, 1, 1, GSTexture::Format::Color);
+		if (!m_tex_palette) [[unlikely]]
+		{
+			Console.Error("Failed to allocate %ux1 texture for palette", m_pal);
+			return;
+		}
+
 		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
 		g_texture_cache->m_source_memory_usage += m_tex_palette->GetMemUsage();
 	}

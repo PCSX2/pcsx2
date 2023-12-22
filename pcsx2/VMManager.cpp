@@ -1240,6 +1240,14 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	s_target_speed = GetTargetSpeedForLimiterMode(s_limiter_mode);
 	s_use_vsync_for_timing = false;
 
+	s_cpu_implementation_changed = false;
+	s_cpu_provider_pack->ApplyConfig();
+	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
+	SysClearExecutionCache();
+	memBindConditionalHandlers();
+	SysMemory::Reset();
+	cpuReset();
+
 	Console.WriteLn("Opening GS...");
 	s_gs_open_on_initialize = MTGS::IsOpen();
 	if (!s_gs_open_on_initialize && !MTGS::WaitForOpen())
@@ -1338,13 +1346,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	s_mxcsr_saved = static_cast<u32>(a64_getfpcr());
 #endif
 
-	s_cpu_implementation_changed = false;
-	s_cpu_provider_pack->ApplyConfig();
-	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
-	SysClearExecutionCache();
-	memBindConditionalHandlers();
-	SysMemory::Reset();
-	cpuReset();
 	hwReset();
 
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
@@ -2404,7 +2405,6 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 		}
 	}
 
-	changed |= (EmuConfig.McdEnableEjection != old_config.McdEnableEjection);
 	changed |= (EmuConfig.McdFolderAutoManage != old_config.McdFolderAutoManage);
 
 	if (!changed)
