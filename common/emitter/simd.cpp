@@ -15,6 +15,7 @@
 
 #include "common/emitter/internal.h"
 #include "common/emitter/tools.h"
+#include "common/emitter/x86_intrin.h"
 
 // Mask of valid bit fields for the target CPU.  Typically this is either 0xFFFF (SSE2
 // or better) or 0xFFBF (SSE1 and earlier).  Code can ensure a safe/valid MXCSR by

@@ -25,8 +25,6 @@
 #include "Pcsx2Types.h"
 #include <cstddef>
 
-#include "common/emitter/x86_intrin.h"
-
 // --------------------------------------------------------------------------------------
 // Dev / Debug conditionals - Consts for using if() statements instead of uglier #ifdef.
 // --------------------------------------------------------------------------------------
