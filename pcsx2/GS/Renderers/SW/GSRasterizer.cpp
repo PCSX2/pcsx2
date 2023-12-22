@@ -1168,7 +1168,7 @@ void GSSingleRasterizer::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& da
 
 void GSSingleRasterizer::Draw(GSRasterizerData& data)
 {
-	if (!unlikely(m_ds.SetupDraw(data)))
+	if (!m_ds.SetupDraw(data)) [[unlikely]]
 	{
 		m_ds.ResetCodeCache();
 		m_ds.SetupDraw(data);
@@ -1251,7 +1251,7 @@ void GSRasterizerList::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data
 {
 	GSVector4i r = data->bbox.rintersect(data->scissor);
 
-	if (unlikely(!m_ds.SetupDraw(*data.get())))
+	if (!m_ds.SetupDraw(*data.get())) [[unlikely]]
 	{
 		Sync();
 		m_ds.ResetCodeCache();

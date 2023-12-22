@@ -201,11 +201,8 @@ protected:
 	 */
 	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0, u32 buf_size = MAX_IPC_SIZE - 1)
 	{
-		const bool res = ((command_len + command_size) > buf_size ||
+		return ((command_len + command_size) > buf_size ||
 					(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
-		if (unlikely(res))
-			return false;
-		return true;
 	}
 
 public:

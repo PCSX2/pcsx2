@@ -62,7 +62,7 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	s32 len;
 
 	// Shouldn't happen, but just in case someone tries to translate an empty string.
-	if (unlikely(msg.empty()))
+	if (msg.empty()) [[unlikely]]
 	{
 		ret.first = &s_translation_string_cache[0];
 		ret.second = 0;
@@ -72,11 +72,11 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	s_translation_string_mutex.lock_shared();
 	ctx_it = s_translation_string_map.find(context);
 
-	if (unlikely(ctx_it == s_translation_string_map.end()))
+	if (ctx_it == s_translation_string_map.end()) [[unlikely]]
 		goto add_string;
 
 	msg_it = ctx_it->second.find(msg);
-	if (unlikely(msg_it == ctx_it->second.end()))
+	if (msg_it == ctx_it->second.end()) [[unlikely]]
 		goto add_string;
 
 	ret.first = &s_translation_string_cache[msg_it->second.first];
@@ -88,7 +88,7 @@ add_string:
 	s_translation_string_mutex.unlock_shared();
 	s_translation_string_mutex.lock();
 
-	if (unlikely(s_translation_string_cache.empty()))
+	if (s_translation_string_cache.empty()) [[unlikely]]
 	{
 		// First element is always an empty string.
 		s_translation_string_cache.resize(TRANSLATION_STRING_CACHE_SIZE);

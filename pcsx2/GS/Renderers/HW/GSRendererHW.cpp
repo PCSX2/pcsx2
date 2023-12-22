@@ -2240,7 +2240,7 @@ void GSRendererHW::Draw()
 				g_texture_cache->LookupSource(TEX0, env.TEXA, MIP_CLAMP, tmm.coverage, (GSConfig.HWMipmap >= HWMipmapLevel::Basic || GSConfig.TriFilter == TriFiltering::Forced) ? &hash_lod_range : nullptr,
 					possible_shuffle, m_vt.IsLinear(), m_cached_ctx.FRAME.Block(), req_color, req_alpha);
 
-			if (unlikely(!src))
+			if (!src) [[unlikely]]
 			{
 				GL_INS("ERROR: Source lookup failed, skipping.");
 				CleanupDraw(true);
@@ -2352,7 +2352,7 @@ void GSRendererHW::Draw()
 
 			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::RenderTarget, true,
 				fm, false, force_preload, preserve_rt_color, m_r, src);
-			if (unlikely(!rt))
+			if (!rt) [[unlikely]]
 			{
 				GL_INS("ERROR: Failed to create FRAME target, skipping.");
 				CleanupDraw(true);
@@ -2376,7 +2376,7 @@ void GSRendererHW::Draw()
 		{
 			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::DepthStencil,
 				true, 0, false, force_preload, preserve_depth, m_r, src);
-			if (unlikely(!ds))
+			if (!ds) [[unlikely]]
 			{
 				GL_INS("ERROR: Failed to create ZBUF target, skipping.");
 				CleanupDraw(true);
