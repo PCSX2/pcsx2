@@ -636,9 +636,9 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 		v[0].XYZ.Y = static_cast<u16>(RCONTEXT->XYOFFSET.OFY + (r.m_r.w << 4));
 		v[0].U = r.m_r.z << 4;
 		v[0].V = r.m_r.w << 4;
-		RCONTEXT->scissor.in.z = r.m_r.z;
+		RCONTEXT->scissor.in.z = r.m_r.z * 2;
 		RCONTEXT->scissor.in.w = r.m_r.w;
-		r.m_vt.m_max.p.x = r.m_r.z;
+		r.m_vt.m_max.p.x = r.m_r.z * 2;
 		r.m_vt.m_max.p.y = r.m_r.w;
 		r.m_vt.m_max.t.x = r.m_r.z;
 		r.m_vt.m_max.t.y = r.m_r.w;
