@@ -23,7 +23,7 @@
 template <typename Fn>
 static void foreachBlock(const GSOffset& off, GSLocalMemory* mem, const GSVector4i& r, u8* dst, int dstpitch, int bpp, Fn&& fn)
 {
-	ASSERT(off.isBlockAligned(r));
+	pxAssert(off.isBlockAligned(r));
 	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
 	int right = r.right >> off.blockShiftX();
 	int bottom = r.bottom >> off.blockShiftY();
@@ -270,7 +270,7 @@ GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIF
 	u32 zpsm = ZBUF.PSM;
 	u32 bw = FRAME.FBW;
 
-	ASSERT(m_psm[fpsm].trbpp > 8 || m_psm[zpsm].trbpp > 8);
+	pxAssert(m_psm[fpsm].trbpp > 8 || m_psm[zpsm].trbpp > 8);
 
 	// "(psm & 0x0f) ^ ((psm & 0xf0) >> 2)" creates 4 bit unique identifiers for render target formats (only)
 
@@ -323,7 +323,7 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 	u32 zpsm = ZBUF.PSM;
 	u32 bw = FRAME.FBW;
 
-	ASSERT(m_psm[fpsm].trbpp > 8 || m_psm[zpsm].trbpp > 8);
+	pxAssert(m_psm[fpsm].trbpp > 8 || m_psm[zpsm].trbpp > 8);
 
 	// "(psm & 0x0f) ^ ((psm & 0xf0) >> 2)" creates 4 bit unique identifiers for render target formats (only)
 

@@ -73,7 +73,7 @@ __forceinline bool BitEqual(const T& a, const T& b)
 	}
 	if (i != sizeof(T))
 	{
-		ASSERT(i + 1 == sizeof(T));
+		pxAssert(i + 1 == sizeof(T));
 		eqb = ac[i] == bc[i] && eqb;
 	}
 	return eqb;

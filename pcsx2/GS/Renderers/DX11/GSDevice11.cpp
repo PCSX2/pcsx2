@@ -1073,7 +1073,7 @@ void GSDevice11::DrawIndexedPrimitive()
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 {
-	ASSERT(offset + count <= (int)m_index.count);
+	pxAssert(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	PSUpdateShaderState();
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
@@ -1719,7 +1719,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 	{
 		if (sel.pal_fmt || sel.wms >= 3 || sel.wmt >= 3)
 		{
-			ASSERT(ssel.biln == 0);
+			pxAssert(ssel.biln == 0);
 		}
 
 		auto i = std::as_const(m_ps_ss).find(ssel.key);
@@ -2460,12 +2460,12 @@ static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector 
 /// Clears things we don't support that can be quietly disabled
 static void preprocessSel(GSDevice11::PSSelector& sel)
 {
-	ASSERT(sel.write_rg  == 0); // Not supported, shouldn't be sent
+	pxAssert(sel.write_rg  == 0); // Not supported, shouldn't be sent
 }
 
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
-	ASSERT(!config.require_full_barrier); // We always specify no support so it shouldn't request this
+	pxAssert(!config.require_full_barrier); // We always specify no support so it shouldn't request this
 	preprocessSel(config.ps);
 
 	GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();

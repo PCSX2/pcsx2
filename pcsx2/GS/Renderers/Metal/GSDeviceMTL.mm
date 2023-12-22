@@ -115,7 +115,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
 	size_t pos = buffer.usage.Allocate(m_current_draw, amt);
 
 	Map ret = {buffer.mtlbuffer, pos, reinterpret_cast<char*>(buffer.buffer) + pos};
-	ASSERT(pos <= buffer.usage.Size() && "Previous code should have guaranteed there was enough space");
+	pxAssertMsg(pos <= buffer.usage.Size(), "Previous code should have guaranteed there was enough space");
 	return ret;
 }
 
@@ -162,7 +162,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(BufferPair& buffer, size_t amt)
 	size_t pos = buffer.usage.Allocate(m_current_draw, amt);
 	Map ret = {nil, pos, reinterpret_cast<char*>(buffer.buffer) + pos};
 	ret.gpu_buffer = m_dev.features.unified_memory ? buffer.cpubuffer : buffer.gpubuffer;
-	ASSERT(pos <= buffer.usage.Size() && "Previous code should have guaranteed there was enough space");
+	pxAssertMsg(pos <= buffer.usage.Size(), "Previous code should have guaranteed there was enough space");
 	return ret;
 }
 
@@ -260,7 +260,7 @@ void GSDeviceMTL::FlushEncoders()
 	}
 	if (m_dev.features.unified_memory)
 	{
-		ASSERT(!m_vertex_upload_cmdbuf && "Should never be used!");
+		pxAssertMsg(!m_vertex_upload_cmdbuf, "Should never be used!");
 	}
 	else if (m_vertex_upload_cmdbuf)
 	{
@@ -468,7 +468,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	{
 		ms->m_last_write = m_current_draw;
 		desc.stencilAttachment.texture = ms->GetTexture();
-		assert(stencil_load != MTLLoadActionClear);
+		pxAssert(stencil_load != MTLLoadActionClear);
 		desc.stencilAttachment.loadAction = stencil_load;
 	}
 
@@ -750,7 +750,7 @@ bool GSDeviceMTL::HasSurface()  const { return static_cast<bool>(m_layer);}
 
 void GSDeviceMTL::AttachSurfaceOnMainThread()
 {
-	ASSERT([NSThread isMainThread]);
+	pxAssert([NSThread isMainThread]);
 	m_layer = MRCRetain([CAMetalLayer layer]);
 	[m_layer setDrawableSize:CGSizeMake(m_window_info.surface_width, m_window_info.surface_height)];
 	[m_layer setDevice:m_dev.dev];
@@ -761,7 +761,7 @@ void GSDeviceMTL::AttachSurfaceOnMainThread()
 
 void GSDeviceMTL::DetachSurfaceOnMainThread()
 {
-	ASSERT([NSThread isMainThread]);
+	pxAssert([NSThread isMainThread]);
 	[m_view setLayer:nullptr];
 	[m_view setWantsLayer:NO];
 	m_view = nullptr;
@@ -2122,11 +2122,11 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			BeginRenderPass(@"PrimID Destination Alpha Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
 			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][config.datm], config.drawarea);
 			MRESetDSS(dsel);
-			ASSERT(config.ps.date == 1 || config.ps.date == 2);
+			pxAssert(config.ps.date == 1 || config.ps.date == 2);
 			if (config.ps.tex_is_fb)
 				MRESetTexture(config.rt, GSMTLTextureIndexRenderTarget);
 			config.require_one_barrier = false; // Ending render pass is our barrier
-			ASSERT(config.require_full_barrier == false && config.drawlist == nullptr);
+			pxAssert(config.require_full_barrier == false && config.drawlist == nullptr);
 			MRESetHWPipelineState(config.vs, config.ps, {}, {});
 			MREInitHWDraw(config, allocation);
 			SendHWDraw(config, m_current_render.encoder, index_buffer, index_buffer_offset);

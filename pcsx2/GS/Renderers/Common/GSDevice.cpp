@@ -61,7 +61,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::YUV:                    return "ps_yuv";
 			// clang-format on
 		default:
-			ASSERT(0);
+			pxAssert(0);
 			return "ShaderConvertUnknownShader";
 	}
 }
@@ -81,7 +81,7 @@ const char* shaderName(PresentShader value)
 		case PresentShader::SUPERSAMPLE_AUTO:   return "ps_automagical_supersampling";
 			// clang-format on
 		default:
-			ASSERT(0);
+			pxAssert(0);
 			return "DisplayShaderUnknownShader";
 	}
 }
@@ -299,7 +299,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	{
 		t = *i;
 
-		assert(t);
+		pxAssert(t);
 
 		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->GetMipmapLevels() == levels)
 		{

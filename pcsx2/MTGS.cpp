@@ -648,7 +648,7 @@ void MTGS::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 			pxFailRel("MTGS Thread Died");
 	}
 
-	assert(!(weakWait && syncRegs) && "No synchronization for this!");
+	pxAssert(!(weakWait && syncRegs) && "No synchronization for this!");
 
 	if (syncRegs)
 	{

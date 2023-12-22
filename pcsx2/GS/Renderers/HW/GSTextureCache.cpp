@@ -823,7 +823,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		
 		if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
-			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+			pxAssert(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 			if (t->m_age == 0)
 			{
 				// Perfect Match
@@ -922,7 +922,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 			// FIXME: do I need to allow m_age == 1 as a potential match (as DepthStencil) ???
 			if (t->m_age <= 1 && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
-				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+				pxAssert(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 				dst = t;
 				inside_target = false;
 				break;
@@ -976,8 +976,8 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		return LookupSource(TEX0, TEXA, CLAMP, r, nullptr, possible_shuffle, linear, frame_fbp, req_color, req_alpha);
 	}
 
-	ASSERT(src->m_texture);
-	ASSERT(src->m_scale == (dst ? dst->m_scale : 1.0f));
+	pxAssert(src->m_texture);
+	pxAssert(src->m_scale == (dst ? dst->m_scale : 1.0f));
 
 	return src;
 }
@@ -1682,7 +1682,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 	}
 	else
 	{
-		assert(type == RenderTarget);
+		pxAssert(type == RenderTarget);
 		// Let's try to find a perfect frame that contains valid data
 		for (auto i = list.begin(); i != list.end(); ++i)
 		{
@@ -2052,7 +2052,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		dst->m_used |= used;
 		dst->readbacks_since_draw = 0;
 
-		assert(dst && dst->m_texture && dst->m_scale == scale);
+		pxAssert(dst && dst->m_texture && dst->m_scale == scale);
 	}
 
 	return dst;
@@ -2137,7 +2137,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 
 	dst->readbacks_since_draw = 0;
 
-	assert(dst && dst->m_texture && dst->m_scale == scale);
+	pxAssert(dst && dst->m_texture && dst->m_scale == scale);
 	return dst;
 }
 
@@ -4315,10 +4315,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 	}
 
-	ASSERT(src->m_texture);
-	ASSERT(src->m_target == (dst != nullptr));
-	ASSERT(src->m_from_target == dst);
-	ASSERT(src->m_scale == ((!dst || (TEX0.PSM == PSMT8 && !channel_shuffle)) ? 1.0f : dst->m_scale));
+	pxAssert(src->m_texture);
+	pxAssert(src->m_target == (dst != nullptr));
+	pxAssert(src->m_from_target == dst);
+	pxAssert(src->m_scale == ((!dst || (TEX0.PSM == PSMT8 && !channel_shuffle)) ? 1.0f : dst->m_scale));
 
 	if (src != m_temporary_source)
 	{
@@ -4847,7 +4847,7 @@ void GSTextureCache::AgeHashCache()
 
 GSTextureCache::Target* GSTextureCache::Target::Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear)
 {
-	ASSERT(type == RenderTarget || type == DepthStencil);
+	pxAssert(type == RenderTarget || type == DepthStencil);
 
 	const int scaled_w = static_cast<int>(std::ceil(static_cast<float>(w) * scale));
 	const int scaled_h = static_cast<int>(std::ceil(static_cast<float>(h) * scale));
@@ -5975,10 +5975,10 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		b2a_offset.y = b_rect.y;
 	}
 
-	assert(!so.is_valid || b2a_offset.x >= b_rect.x);
-	assert(!so.is_valid || b2a_offset.x < b_rect.z);
-	assert(!so.is_valid || b2a_offset.y >= b_rect.y);
-	assert(!so.is_valid || b2a_offset.y < b_rect.w);
+	pxAssert(!so.is_valid || b2a_offset.x >= b_rect.x);
+	pxAssert(!so.is_valid || b2a_offset.x < b_rect.z);
+	pxAssert(!so.is_valid || b2a_offset.y >= b_rect.y);
+	pxAssert(!so.is_valid || b2a_offset.y < b_rect.w);
 
 	if (so.is_valid)
 	{
@@ -6023,17 +6023,17 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		}
 	}
 
-	assert(!so.is_valid || b2a_offset.z > b2a_offset.x);
-	assert(!so.is_valid || b2a_offset.z <= b_rect.z);
-	assert(!so.is_valid || b2a_offset.w > b_rect.y);
-	assert(!so.is_valid || b2a_offset.w <= b_rect.w);
+	pxAssert(!so.is_valid || b2a_offset.z > b2a_offset.x);
+	pxAssert(!so.is_valid || b2a_offset.z <= b_rect.z);
+	pxAssert(!so.is_valid || b2a_offset.w > b_rect.y);
+	pxAssert(!so.is_valid || b2a_offset.w <= b_rect.w);
 
 	so.b2a_offset = b2a_offset;
 
 	const GSVector4i& r1 = so.b2a_offset;
 	const GSVector4i& r2 = b_rect;
 	[[maybe_unused]] const GSVector4i ri = r1.rintersect(r2);
-	assert(!so.is_valid || (r1.eq(ri) && r1.x >= 0 && r1.y >= 0 && r1.z > 0 && r1.w > 0));
+	pxAssert(!so.is_valid || (r1.eq(ri) && r1.x >= 0 && r1.y >= 0 && r1.z > 0 && r1.w > 0));
 
 	// Clear cache if size too big.
 	if (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
@@ -6160,7 +6160,7 @@ void GSTextureCache::Palette::InitializeTexture()
 
 u64 GSTextureCache::PaletteKeyHash::operator()(const PaletteKey& key) const
 {
-	ASSERT(key.pal == 16 || key.pal == 256);
+	pxAssert(key.pal == 16 || key.pal == 256);
 	return key.pal == 16 ?
 			   GSXXH3_64bits(key.clut, sizeof(key.clut[0]) * 16) :
 			   GSXXH3_64bits(key.clut, sizeof(key.clut[0]) * 256);
@@ -6195,7 +6195,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 
 std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(const u32* clut, u16 pal, bool need_gs_texture)
 {
-	ASSERT(pal == 16 || pal == 256);
+	pxAssert(pal == 16 || pal == 256);
 
 	// Choose which hash map search into:
 	//    pal == 16  : index 0

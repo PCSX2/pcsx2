@@ -131,8 +131,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#endif
 #endif
 
-#define ASSERT assert
-
 //////////////////////////////////////////////////////////////////////////////////////////
 // Safe deallocation macros -- checks pointer validity (non-null) when needed, and sets
 // pointer to null after deallocation.

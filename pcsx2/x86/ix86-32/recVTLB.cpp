@@ -249,7 +249,7 @@ static u8* m_IndirectDispatchers = nullptr;
 //
 static u8* GetIndirectDispatcherPtr(int mode, int operandsize, int sign = 0)
 {
-	assert(mode || operandsize >= 3 ? !sign : true);
+	pxAssert(mode || operandsize >= 3 ? !sign : true);
 
 	return &m_IndirectDispatchers[(mode * (8 * INDIRECT_DISPATCHER_SIZE)) + (sign * 5 * INDIRECT_DISPATCHER_SIZE) +
 								  (operandsize * INDIRECT_DISPATCHER_SIZE)];

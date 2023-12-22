@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -19,6 +19,9 @@
 #include "GSVector.h"
 #include "GSClut.h"
 #include "MultiISA.h"
+
+#include "common/Assertions.h"
+
 #include <array>
 #include <unordered_map>
 
@@ -398,7 +401,7 @@ public:
 	constexpr GSOffset assertSizesMatch(const GSSwizzleInfo& swz) const
 	{
 		GSOffset o = *this;
-#define MATCH(x) ASSERT(o.x == swz.x); o.x = swz.x;
+#define MATCH(x) pxAssert(o.x == swz.x); o.x = swz.x;
 		MATCH(m_pageMask)
 		MATCH(m_blockMask)
 		MATCH(m_pixelRowMask)
