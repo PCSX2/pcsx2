@@ -152,7 +152,7 @@ GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuff
 GSDownloadTextureMTL::~GSDownloadTextureMTL() = default;
 
 std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* dev, u32 width, u32 height, GSTexture::Format format)
-{
+{ @autoreleasepool {
 	const u32 buffer_size = GetBufferSize(width, height, format, PITCH_ALIGNMENT);
 
 	MRCOwned<id<MTLBuffer>> buffer = MRCTransfer([dev->m_dev.dev newBufferWithLength:buffer_size options:MTLResourceStorageModeShared]);
@@ -162,8 +162,9 @@ std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* 
 		return {};
 	}
 
+	[buffer setLabel:[NSString stringWithFormat:@"Download Texture %d", dev->m_dl_texture_count++]];
 	return std::unique_ptr<GSDownloadTextureMTL>(new GSDownloadTextureMTL(dev, buffer, width, height, format));
-}
+}}
 
 void GSDownloadTextureMTL::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
