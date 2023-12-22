@@ -331,6 +331,24 @@ public:
 	std::vector<DebugEntry> m_debug_entries;
 	u32 m_debug_group_level = 0;
 
+	enum class TextureLabel
+	{
+		ColorRT,
+		HDRRT,
+		U16RT,
+		U32RT,
+		DepthStencil,
+		PrimIDTexture,
+		RWTexture,
+		Unorm8Texture,
+		Texture,
+		ReplacementTexture,
+		Other,
+		Last = Other,
+	};
+	u32 m_texture_counts[static_cast<u32>(TextureLabel::Last) + 1] = {};
+	u32 m_dl_texture_count = 0;
+
 	GSDeviceMTL();
 	~GSDeviceMTL() override;
 

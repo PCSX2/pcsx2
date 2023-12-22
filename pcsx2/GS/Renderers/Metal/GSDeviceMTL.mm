@@ -511,6 +511,74 @@ static constexpr MTLPixelFormat ConvertPixelFormat(GSTexture::Format format)
 	}
 }
 
+static GSDeviceMTL::TextureLabel GetTextureLabel(GSTexture::Type type, GSTexture::Format format)
+{
+	switch (type)
+	{
+		case GSTexture::Type::RenderTarget:
+			switch (format)
+			{
+				case GSTexture::Format::Color:    return GSDeviceMTL::TextureLabel::ColorRT;
+				case GSTexture::Format::HDRColor: return GSDeviceMTL::TextureLabel::HDRRT;
+				case GSTexture::Format::UInt16:   return GSDeviceMTL::TextureLabel::U16RT;
+				case GSTexture::Format::UInt32:   return GSDeviceMTL::TextureLabel::U32RT;
+				case GSTexture::Format::PrimID:   return GSDeviceMTL::TextureLabel::PrimIDTexture;
+				case GSTexture::Format::Invalid:
+				case GSTexture::Format::DepthStencil:
+				case GSTexture::Format::UNorm8:
+				case GSTexture::Format::BC1:
+				case GSTexture::Format::BC2:
+				case GSTexture::Format::BC3:
+				case GSTexture::Format::BC7:
+					return GSDeviceMTL::TextureLabel::Other;
+			}
+		case GSTexture::Type::Texture:
+			switch (format)
+			{
+				case GSTexture::Format::Color:
+					return GSDeviceMTL::TextureLabel::Texture;
+				case GSTexture::Format::UNorm8:
+					return GSDeviceMTL::TextureLabel::Unorm8Texture;
+				case GSTexture::Format::BC1:
+				case GSTexture::Format::BC2:
+				case GSTexture::Format::BC3:
+				case GSTexture::Format::BC7:
+					return GSDeviceMTL::TextureLabel::ReplacementTexture;
+				case GSTexture::Format::Invalid:
+				case GSTexture::Format::HDRColor:
+				case GSTexture::Format::DepthStencil:
+				case GSTexture::Format::UInt16:
+				case GSTexture::Format::UInt32:
+				case GSTexture::Format::PrimID:
+					return GSDeviceMTL::TextureLabel::Other;
+			}
+		case GSTexture::Type::DepthStencil:
+			return GSDeviceMTL::TextureLabel::DepthStencil;
+		case GSTexture::Type::RWTexture:
+			return GSDeviceMTL::TextureLabel::RWTexture;
+		case GSTexture::Type::Invalid:
+			return GSDeviceMTL::TextureLabel::Other;
+	}
+}
+
+static const char* TextureLabelString(GSDeviceMTL::TextureLabel label)
+{
+	switch (label)
+	{
+		case GSDeviceMTL::TextureLabel::ColorRT:            return "Color RT";
+		case GSDeviceMTL::TextureLabel::HDRRT:              return "HDR RT";
+		case GSDeviceMTL::TextureLabel::U16RT:              return "U16 RT";
+		case GSDeviceMTL::TextureLabel::U32RT:              return "U32 RT";
+		case GSDeviceMTL::TextureLabel::DepthStencil:       return "Depth Stencil";
+		case GSDeviceMTL::TextureLabel::PrimIDTexture:      return "PrimID";
+		case GSDeviceMTL::TextureLabel::RWTexture:          return "RW Texture";
+		case GSDeviceMTL::TextureLabel::Unorm8Texture:      return "Unorm8 Texture";
+		case GSDeviceMTL::TextureLabel::Texture:            return "Texture";
+		case GSDeviceMTL::TextureLabel::ReplacementTexture: return "Replacement Texture";
+		case GSDeviceMTL::TextureLabel::Other:              return "Unknown Texture";
+	}
+}
+
 GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
 { @autoreleasepool {
 	MTLPixelFormat fmt = ConvertPixelFormat(format);
@@ -547,6 +615,8 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 	MRCOwned<id<MTLTexture>> tex = MRCTransfer([m_dev.dev newTextureWithDescriptor:desc]);
 	if (tex)
 	{
+		TextureLabel label = GetTextureLabel(type, format);
+		[tex setLabel:[NSString stringWithFormat:@"%s %d", TextureLabelString(label), m_texture_counts[static_cast<u32>(label)]++]];
 		GSTextureMTL* t = new GSTextureMTL(this, tex, type, format);
 		switch (type)
 		{
