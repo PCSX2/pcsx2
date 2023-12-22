@@ -1,10 +1,8 @@
-/*
- Copyright (c) 2016 Mathieu Laurendeau <mat.lau@laposte.net>
- License: GPLv3
- */
+// SPDX-FileCopyrightText: 2016 Mathieu Laurendeau <mat.lau@laposte.net>, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0-only
 
-#ifndef FF_LG_H_
-#define FF_LG_H_
+#pragma once
+
 #include <climits>
 #include <cstdint>
 
@@ -48,5 +46,3 @@ static inline int16_t ff_lg_u16_to_s16(uint16_t s)
 int16_t ff_lg_get_condition_coef(uint8_t caps, unsigned char k, unsigned char s, int16_t max = SHRT_MAX);
 uint16_t ff_lg_get_spring_deadband(uint8_t caps, unsigned char d, unsigned char dL, uint16_t max = USHRT_MAX);
 uint16_t ff_lg_get_damper_clip(uint8_t caps, unsigned char c);
-
-#endif

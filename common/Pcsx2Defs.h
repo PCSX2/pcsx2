@@ -1,26 +1,7 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
-
-// make sure __POSIX__ is defined for all systems where we assume POSIX compliance
-#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-#ifndef __POSIX__
-#define __POSIX__ 1
-#endif
-#endif
 
 #include "Pcsx2Types.h"
 #include <cstddef>
@@ -51,6 +32,7 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 // --------------------------------------------------------------------------------------
 #ifdef _MSC_VER
 
+#define __forceinline_odr __forceinline
 #define __noinline __declspec(noinline)
 #define __noreturn __declspec(noreturn)
 
@@ -72,7 +54,11 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
+// __forceinline_odr is for member functions that are defined in headers. MSVC can't specify
+// inline and __forceinline at the same time, but it required to not get ODR errors in GCC.
+
 #define __forceinline __attribute__((always_inline, unused))
+#define __forceinline_odr __forceinline inline
 #define __noinline __attribute__((noinline))
 #define __noreturn __attribute__((noreturn))
 

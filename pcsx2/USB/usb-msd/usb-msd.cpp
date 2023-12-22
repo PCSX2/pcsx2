@@ -1,13 +1,6 @@
-/*
- * USB Mass Storage Device emulation
- *
- * Copyright (c) 2006 CodeSourcery.
- * Written by Paul Brook
- *
- * This code is licenced under the LGPL.
- */
+// SPDX-FileCopyrightText: 2007 CodeSourcery, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"
