@@ -113,11 +113,11 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 	{
 		// If it did draws very recently, we should keep the recent stuff in case it hasn't been preloaded/used yet.
 		// Rocky Legend does this with the main menu FMV's.
-		if (s_last_transfer_draw_n == s_n)
+		if (s_last_transfer_draw_n > (s_n - 5))
 		{
 			for (auto iter = m_draw_transfers.rbegin(); iter != m_draw_transfers.rend(); iter++)
 			{
-				if ((s_n - iter->draw) > 5)
+				if ((s_n - iter->draw) > 50)
 				{
 					m_draw_transfers.erase(m_draw_transfers.begin(), std::next(iter).base());
 					break;
@@ -175,7 +175,7 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 	TEX0.TBW = curFramebuffer.FBW;
 	TEX0.PSM = curFramebuffer.PSM;
 
-	if (GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, framebufferSize, GetTextureScaleFactor()))
+	if (GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, framebufferSize, GetTextureScaleFactor(), false))
 	{
 		rt->Update();
 		t = rt->m_texture;
@@ -214,7 +214,7 @@ GSTexture* GSRendererHW::GetFeedbackOutput(float& scale)
 	TEX0.TBW = m_regs->EXTBUF.EXBW;
 	TEX0.PSM = PCRTCDisplays.PCRTCDisplays[index].PSM;
 
-	GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, fb_size, GetTextureScaleFactor());
+	GSTextureCache::Target* rt = g_texture_cache->LookupDisplayTarget(TEX0, fb_size, GetTextureScaleFactor(), true);
 	if (!rt)
 		return nullptr;
 
@@ -593,8 +593,12 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
-	if (GSConfig.UserHacks_HalfPixelOffset <= 1 || GetUpscaleMultiplier() == 1.0f)
+	if (GSConfig.UserHacks_HalfPixelOffset <= GSHalfPixelOffset::Normal ||
+		GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::Native ||
+		GetUpscaleMultiplier() == 1.0f)
+	{
 		return GSVector4(0.0f);
+	}
 
 	const GSVertex* v = &m_vertex.buff[0];
 	const float scale = tex->GetScale();
@@ -607,7 +611,7 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 
 	if (PRIM->FST)
 	{
-		if (GSConfig.UserHacks_HalfPixelOffset == 3)
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::SpecialAggressive)
 		{
 			if (!linear && t_position == 8)
 			{
@@ -1900,7 +1904,8 @@ void GSRendererHW::Draw()
 	}
 
 	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC);
-	const bool not_writing_to_all = (!PrimitiveCoversWithoutGaps() || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
+	const bool no_gaps = PrimitiveCoversWithoutGaps();
+	const bool not_writing_to_all = (!no_gaps || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
 	bool preserve_depth =
 		not_writing_to_all || (!no_ds && (!all_depth_tests_pass || !m_cached_ctx.DepthWrite() || m_cached_ctx.TEST.ATE));
 
@@ -2317,8 +2322,9 @@ void GSRendererHW::Draw()
 		// create that target, because the clear isn't black, it'll hang around and never get invalidated.
 		const bool is_square = (t_size.y == t_size.x) && m_r.w >= 1023 && PrimitiveCoversWithoutGaps();
 		const bool is_clear = is_possible_mem_clear && is_square;
-		const bool possible_shuffle = draw_sprite_tex && ((src && src->m_target && src->m_from_target && src->m_from_target->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].depth == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].depth) &&
-									GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || IsPossibleChannelShuffle();
+		const bool possible_shuffle = draw_sprite_tex && (((src && src->m_target && src->m_from_target && src->m_from_target->m_32_bits_fmt && GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].depth == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].depth) &&
+															  GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) ||
+															 IsPossibleChannelShuffle());
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
 			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block());
 
@@ -2559,6 +2565,42 @@ void GSRendererHW::Draw()
 	const bool can_update_size = !is_possible_mem_clear && !m_texture_shuffle && !m_channel_shuffle;
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
+		// Try to turn blits in to single sprites, saves upscaling problems when striped clears/blits.
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && no_gaps && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
+		{
+			// Full final framebuffer only.
+			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
+			if (std::abs(fb_size.x - m_r.width()) <= 1 && std::abs(fb_size.y - m_r.height()) <= 1)
+			{
+				GSVertex* v = m_vertex.buff;
+
+				v[0].XYZ.Z = v[1].XYZ.Z;
+				v[0].RGBAQ = v[1].RGBAQ;
+				v[0].FOG = v[1].FOG;
+				m_vt.m_eq.rgba = 0xFFFF;
+				m_vt.m_eq.z = true;
+				m_vt.m_eq.f = true;
+
+				v[1].XYZ.X = v[m_index.tail - 1].XYZ.X;
+				v[1].XYZ.Y = v[m_index.tail - 1].XYZ.Y;
+
+				if (PRIM->FST)
+				{
+					v[1].U = v[m_index.tail - 1].U;
+					v[1].V = v[m_index.tail - 1].V;
+				}
+				else
+				{
+					v[1].ST.S = v[m_index.tail - 1].ST.S;
+					v[1].ST.T = v[m_index.tail - 1].ST.T;
+					v[1].RGBAQ.Q = v[m_index.tail - 1].RGBAQ.Q;
+				}
+
+				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+				m_index.tail = 2;
+			}
+		}
+
 		if (rt && (!is_possible_mem_clear || rt->m_TEX0.PSM != FRAME_TEX0.PSM))
 		{
 			if (rt->m_TEX0.TBW != FRAME_TEX0.TBW && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
@@ -2610,11 +2652,11 @@ void GSRendererHW::Draw()
 		GSVector2i new_size = t_size;
 
 		// We need to adjust the size if it's a texture shuffle as we could end up making the RT twice the size.
-		if (rt && m_texture_shuffle && m_split_texture_shuffle_pages == 0)
+		if (src && m_texture_shuffle && m_split_texture_shuffle_pages == 0)
 		{
-			if ((new_size.x > rt->m_valid.z && m_vt.m_max.p.x == new_size.x) || (new_size.y > rt->m_valid.w && m_vt.m_max.p.y == new_size.y))
+			if ((new_size.x > src->m_valid_rect.z && m_vt.m_max.p.x == new_size.x) || (new_size.y > src->m_valid_rect.w && m_vt.m_max.p.y == new_size.y))
 			{
-				if (new_size.y <= rt->m_valid.w && (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW))
+				if (new_size.y <= src->m_valid_rect.w && (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW))
 					new_size.x /= 2;
 				else
 					new_size.y /= 2;
@@ -4622,6 +4664,13 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 					   scaled_copy_size.x, scaled_copy_size.y, src_target->m_texture->GetFormat(), false) :
 				   g_gs_device->CreateTexture(
 					   scaled_copy_size.x, scaled_copy_size.y, 1, src_target->m_texture->GetFormat(), true);
+	if (!src_copy) [[unlikely]]
+	{
+		Console.Error("Failed to allocate %dx%d texture for hazard copy", scaled_copy_size.x, scaled_copy_size.y);
+		m_conf.tex = nullptr;
+		m_conf.ps.tfx = 4;
+		return;
+	}
 	g_gs_device->CopyRect(
 		src_target->m_texture, src_copy, scaled_copy_range, scaled_copy_dst_offset.x, scaled_copy_dst_offset.y);
 	m_conf.tex = src_copy;
@@ -5116,30 +5165,43 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.vs.fst = PRIM->FST;
 
 	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
-	const GSVector2i rtsize = m_conf.ds ? m_conf.ds->GetSize() : m_conf.rt->GetSize();
-	const float rtscale = (ds ? ds->GetScale() : rt->GetScale());
-	const float sx = 2.0f * rtscale / (rtsize.x << 4);
-	const float sy = 2.0f * rtscale / (rtsize.y << 4);
-	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
-	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-	float ox2 = -1.0f / rtsize.x;
-	float oy2 = -1.0f / rtsize.y;
-	float mod_xy = 0.0f;
-	//This hack subtracts around half a pixel from OFX and OFY.
-	//
-	//The resulting shifted output aligns better with common blending / corona / blurring effects,
-	//but introduces a few bad pixels on the edges.
-	if (!rt)
+	const GSTextureCache::Target* rt_or_ds = rt ? rt : ds;
+	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
+	const float rtscale = rt_or_ds->GetScale();
+	float sx, sy, ox, oy, ox2, oy2;
+	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native)
 	{
-		mod_xy = GetModXYOffset();
+		sx = 2.0f * rtscale / (rtsize.x << 4);
+		sy = 2.0f * rtscale / (rtsize.y << 4);
+		ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+		oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+		ox2 = -1.0f / rtsize.x;
+		oy2 = -1.0f / rtsize.y;
+		float mod_xy = 0.0f;
+		//This hack subtracts around half a pixel from OFX and OFY.
+		//
+		//The resulting shifted output aligns better with common blending / corona / blurring effects,
+		//but introduces a few bad pixels on the edges.
+		if (!rt)
+			mod_xy = GetModXYOffset();
+		else
+			mod_xy = rt->OffsetHack_modxy;
+
+		if (mod_xy > 1.0f)
+		{
+			ox2 *= mod_xy;
+			oy2 *= mod_xy;
+		}
 	}
 	else
-		mod_xy = rt->OffsetHack_modxy;
-
-	if (mod_xy > 1.0f)
 	{
-		ox2 *= mod_xy;
-		oy2 *= mod_xy;
+		// Align coordinates to native resolution framebuffer, hope for the best.
+		sx = 2.0f / (rt_or_ds->GetUnscaledWidth() << 4);
+		sy = 2.0f / (rt_or_ds->GetUnscaledHeight() << 4);
+		ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+		oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+		ox2 = -1.0f / rt_or_ds->GetUnscaledWidth();
+		oy2 = -1.0f / rt_or_ds->GetUnscaledHeight();
 	}
 
 	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
@@ -5859,7 +5921,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	ReplaceVerticesWithSprite(m_r, GSVector2i(1, 1));
 
 	// Prevent wasting time looking up and creating the target which is getting blown away.
-	if (!clear_depth)
+	if (frame_psm.trbpp >= zbuf_psm.trbpp)
 	{
 		SetNewFRAME(base * BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
 		m_cached_ctx.ZBUF.ZMSK = true;
@@ -6135,14 +6197,15 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, th, GSTexture::Format::Color))
 		{
 			// sRect is the top of texture
+			// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.
 			const GSVector4 sRect(m_vt.m_min.t.x / tw, m_vt.m_min.t.y / th, m_vt.m_max.t.x / tw, m_vt.m_max.t.y / th);
-			const GSVector4 dRect(r_texture);
+			const GSVector4 dRect = GSVector4(r_texture) + GSVector4(0.5f);
 			const GSVector4i r_full(0, 0, tw, th);
 
 			g_gs_device->CopyRect(tex->m_texture, rt, r_full, 0, 0);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
-			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect);
+			g_gs_device->StretchRect(tex->m_texture, sRect, rt, dRect, ShaderConvert::COPY, m_vt.IsRealLinear());
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 			g_gs_device->CopyRect(rt, tex->m_texture, r_full, 0, 0);
@@ -6227,24 +6290,22 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 	// Check that the height matches. Xenosaga 3 draws a letterbox around
 	// the FMV with a sprite at the top and bottom of the framebuffer.
 	const GSVertex* v = &m_vertex.buff[0];
-	const u32 first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
-	const u32 first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 
 	// Horizontal Match.
 	if ((first_dpX >> 4) == m_r.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
-		u32 last_pY = v[1].XYZ.Y;
 		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			const u32 dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
-			if (dpY != first_dpY || v[i].XYZ.Y != last_pY)
+			const int last_pY = v[i - 1].XYZ.Y;
+			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			if (std::abs(dpY - first_dpY) >= 16 || std::abs(static_cast<int>(v[i].XYZ.Y) - last_pY) >= 16)
 			{
 				m_primitive_covers_without_gaps = false;
 				return false;
 			}
-
-			last_pY = v[i + 1].XYZ.Y;
 		}
 
 		m_primitive_covers_without_gaps = true;
@@ -6255,14 +6316,19 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 	if ((first_dpY >> 4) == m_r.w)
 	{
 		// Borrowed from MergeSprite().
-		u32 last_pX = v[1].XYZ.X;
+		const int offset_X = m_context->XYOFFSET.OFX;
 		for (u32 i = 2; i < m_vertex.next; i += 2)
 		{
-			if (v[i].XYZ.X < v[i-2].XYZ.X)
+			const int last_pX = v[i - 1].XYZ.X;
+			const int this_start_X = v[i].XYZ.X;
+			const int last_start_X = v[i - 2].XYZ.X;
+
+			const int  dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+
+			if (this_start_X < last_start_X)
 			{
-				const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-				const u32 prev_X = v[i - 2].XYZ.X - m_context->XYOFFSET.OFX;
-				if (dpX != prev_X || v[i].XYZ.X != m_context->XYOFFSET.OFX)
+				const int prev_X = last_start_X - offset_X;
+				if (std::abs(dpX - prev_X) >= 16 || std::abs(this_start_X - offset_X) >= 16)
 				{
 					m_primitive_covers_without_gaps = false;
 					return false;
@@ -6270,15 +6336,12 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 			}
 			else
 			{
-				const u32 dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
-				if (dpX != first_dpX || v[i].XYZ.X != last_pX)
+				if (std::abs(dpX - first_dpX) >= 16 || std::abs(this_start_X - last_pX) >= 16)
 				{
 					m_primitive_covers_without_gaps = false;
 					return false;
 				}
 			}
-
-			last_pX = v[i + 1].XYZ.X;
 		}
 
 		m_primitive_covers_without_gaps = true;
@@ -6286,6 +6349,79 @@ bool GSRendererHW::PrimitiveCoversWithoutGaps()
 	}
 
 	m_primitive_covers_without_gaps = false;
+	return false;
+}
+
+// Like PrimitiveCoversWithoutGaps but with texture coordinates.
+bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
+{
+	if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	{
+		return false;
+	}
+
+	// Simple case: one sprite.
+	if (m_index.tail == 2)
+	{
+		return true;
+	}
+
+	const GSVertex* v = &m_vertex.buff[0];
+	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+	const int first_dtV = v[1].V - v[0].V;
+	const int first_dtU = v[1].U - v[0].U;
+
+	// Horizontal Match.
+	if ((first_dpX >> 4) == m_r.z)
+	{
+		// Borrowed from MergeSprite() modified to calculate heights.
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int last_tV = v[i - 1].V;
+			const int dtV = v[i + 1].V - v[i].V;
+			const u32 last_tV_diff = std::abs(static_cast<int>(v[i].XYZ.Y) - last_tV);
+			if (std::abs(dtV - first_dtV) >= 16 || last_tV_diff >= 16 || last_tV_diff == 0)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// Vertical Match.
+	if ((first_dpY >> 4) == m_r.w)
+	{
+		// Borrowed from MergeSprite().
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int last_tU = v[i - 1].U;
+			const int this_start_U = v[i].U;
+			const int last_start_U = v[i - 2].U;
+
+			const int  dtU = v[i + 1].U - v[i].U;
+
+			if (this_start_U < last_start_U)
+			{
+				if (std::abs(dtU - last_start_U) >= 16 || std::abs(this_start_U) >= 16)
+				{;
+					return false;
+				}
+			}
+			else
+			{
+				const u32 last_tU_diff = std::abs(this_start_U - last_tU);
+				if (std::abs(dtU - first_dtU) >= 16 || last_tU_diff >= 16 || last_tU_diff == 0)
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	return false;
 }
 

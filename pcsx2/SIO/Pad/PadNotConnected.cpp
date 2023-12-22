@@ -20,10 +20,10 @@
 #include "Host.h"
 
 const Pad::ControllerInfo PadNotConnected::ControllerInfo = {Pad::ControllerType::NotConnected, "None",
-	TRANSLATE_NOOP("Pad", "Not Connected"), {}, {}, Pad::VibrationCapabilities::NoVibration };
+	TRANSLATE_NOOP("Pad", "Not Connected"), nullptr, {}, {}, Pad::VibrationCapabilities::NoVibration };
 
-PadNotConnected::PadNotConnected(u8 unifiedSlot)
-	: PadBase(unifiedSlot)
+PadNotConnected::PadNotConnected(u8 unifiedSlot, size_t ejectTicks)
+	: PadBase(unifiedSlot, ejectTicks)
 {
 
 }
@@ -117,5 +117,5 @@ u8 PadNotConnected::GetPressure(u32 index) const
 
 u8 PadNotConnected::SendCommandByte(u8 commandByte)
 {
-	return 0x00;
+	return 0xff;
 }

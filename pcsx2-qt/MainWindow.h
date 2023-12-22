@@ -119,6 +119,7 @@ public Q_SLOTS:
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
 	void runOnUIThread(const std::function<void()>& func);
+	void requestReset();
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true);
 	void requestExit(bool allow_confirm = true);
 	void checkForSettingChanges();
@@ -243,6 +244,8 @@ private:
 	void switchToGameListView();
 	void switchToEmulationView();
 
+	bool shouldAbortForMemcardBusy(const VMLock& lock);
+
 	QWidget* getContentParent();
 	QWidget* getDisplayContainer() const;
 	void saveDisplayWindowGeometryToConfig();
@@ -311,6 +314,7 @@ private:
 	bool m_was_paused_on_surface_loss = false;
 	bool m_was_disc_change_request = false;
 	bool m_is_closing = false;
+	bool m_is_temporarily_windowed = false;
 
 	QString m_last_fps_status;
 

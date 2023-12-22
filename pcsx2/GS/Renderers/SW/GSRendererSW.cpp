@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,8 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSRendererSW.h"
+#include "GS/Renderers/SW/GSRendererSW.h"
+#include "GS/Renderers/SW/GSTextureSW.h"
 #include "GS/GSGL.h"
+
 #include "common/StringUtil.h"
 
 MULTI_ISA_UNSHARED_IMPL;
@@ -382,7 +384,7 @@ void GSRendererSW::Draw()
 		return;
 	}
 
-	if (0) if (LOG)
+	if constexpr (LOG && false)
 	{
 		int n = GSUtil::GetVertexCount(PRIM->PRIM);
 
@@ -552,7 +554,7 @@ void GSRendererSW::Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item)
 		Sync(5);
 	}
 
-	if (LOG)
+	if constexpr (LOG)
 	{
 		GSScanlineGlobalData& gd = ((SharedData*)item.get())->global;
 
@@ -589,7 +591,7 @@ void GSRendererSW::Sync(int reason)
 
 	m_rl->Sync();
 
-	if (0) if (LOG)
+	if constexpr (LOG && false)
 	{
 		std::string s;
 
@@ -612,7 +614,7 @@ void GSRendererSW::Sync(int reason)
 
 	int pixels = m_rl->GetPixels();
 
-	if (LOG)
+	if constexpr (LOG)
 	{
 		fprintf(s_fp, "sync n=%d r=%d t=%llu p=%d %c\n", s_n, reason, t, pixels, t > 10000000 ? '*' : ' ');
 		fflush(s_fp);
@@ -623,7 +625,7 @@ void GSRendererSW::Sync(int reason)
 
 void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
-	if (LOG)
+	if constexpr (LOG)
 	{
 		fprintf(s_fp, "w %05x %u %u, %d %d %d %d\n", BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM, r.x, r.y, r.z, r.w);
 		fflush(s_fp);
@@ -636,12 +638,11 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if (!m_rl->IsSynced())
 	{
-		pages.loopPagesWithBreak([&](u32 page)
+		pages.loopPagesWithBreak([this](u32 page)
 		{
 			if (m_fzb_pages[page] | m_tex_pages[page])
 			{
 				Sync(6);
-
 				return false;
 			}
 			return true;
@@ -653,7 +654,7 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
 {
-	if (LOG)
+	if constexpr (LOG)
 	{
 		fprintf(s_fp, "%s %05x %u %u, %d %d %d %d\n", clut ? "rp" : "r", BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM, r.x, r.y, r.z, r.w);
 		fflush(s_fp);
@@ -664,12 +665,11 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		GSOffset off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
 		GSOffset::PageLooper pages = off.pageLooperForRect(r);
 
-		pages.loopPagesWithBreak([&](u32 page)
+		pages.loopPagesWithBreak([this](u32 page)
 		{
 			if (m_fzb_pages[page])
 			{
 				Sync(7);
-
 				return false;
 			}
 			return true;
@@ -679,7 +679,7 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 {
-	pages.loopPages([=](u32 page)
+	pages.loopPages([this, type](u32 page)
 	{
 		switch (type)
 		{
@@ -703,7 +703,7 @@ void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 
 void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int type)
 {
-	pages.loopPages([=](u32 page)
+	pages.loopPages([this, type](u32 page)
 	{
 		switch (type)
 		{
@@ -727,20 +727,20 @@ void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int typ
 
 bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const GSOffset::PageLooper* zb_pages, const GSVector4i& r)
 {
-	bool synced = m_rl->IsSynced();
+	const bool synced = m_rl->IsSynced();
 
-	bool fb = fb_pages != NULL;
-	bool zb = zb_pages != NULL;
+	const bool fb = (fb_pages != nullptr);
+	const bool zb = (zb_pages != nullptr);
 
 	GSOffset::PageLooper _fb_pages, _zb_pages;
-	auto requirePages = [&]
+	const auto requirePages = [this, &fb_pages, &zb_pages, &r, &_fb_pages, &_zb_pages]
 	{
-		if (fb_pages == NULL)
+		if (!fb_pages)
 		{
 			_fb_pages = m_context->offset.fb.pageLooperForRect(r);
 			fb_pages = &_fb_pages;
 		}
-		if (zb_pages == NULL)
+		if (!zb_pages)
 		{
 			_zb_pages = m_context->offset.zb.pageLooperForRect(r);
 			zb_pages = &_zb_pages;
@@ -762,10 +762,10 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 		requirePages();
 
-		fb_pages->loopPages([&](u32 i)
+		fb_pages->loopPages([this, &used](u32 i)
 		{
-			u32 row = i >> 5;
-			u32 col = 1 << (i & 31);
+			const u32 row = i >> 5;
+			const u32 col = 1 << (i & 31);
 
 			m_fzb_cur_pages[row] |= col;
 
@@ -773,10 +773,10 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 			used |= m_tex_pages[i];
 		});
 
-		zb_pages->loopPages([&](u32 i)
+		zb_pages->loopPages([this, &used](u32 i)
 		{
-			u32 row = i >> 5;
-			u32 col = 1 << (i & 31);
+			const u32 row = i >> 5;
+			const u32 col = 1 << (i & 31);
 
 			m_fzb_cur_pages[row] |= col;
 
@@ -788,7 +788,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 		{
 			if (used)
 			{
-				if (LOG)
+				if constexpr (LOG)
 				{
 					fprintf(s_fp, "syncpoint 0\n");
 					fflush(s_fp);
@@ -804,9 +804,9 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 	{
 		// same target, only check new areas and cross-rendering between frame and z-buffer
 
-		GSVector4i bbox = m_fzb_bbox.runion(r);
+		const GSVector4i bbox = m_fzb_bbox.runion(r);
 
-		bool check = !m_fzb_bbox.eq(bbox);
+		const bool check = !m_fzb_bbox.eq(bbox);
 
 		m_fzb_bbox = bbox;
 
@@ -818,7 +818,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			u32 used = 0;
 
-			fb_pages->loopPages([&](u32 i)
+			fb_pages->loopPages([this, &used](u32 i)
 			{
 				u32 row = i >> 5;
 				u32 col = 1 << (i & 31);
@@ -831,7 +831,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 				}
 			});
 
-			zb_pages->loopPages([&](u32 i)
+			zb_pages->loopPages([this, &used](u32 i)
 			{
 				u32 row = i >> 5;
 				u32 col = 1 << (i & 31);
@@ -848,7 +848,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 			{
 				if (used)
 				{
-					if (LOG)
+					if constexpr (LOG)
 					{
 						fprintf(s_fp, "syncpoint 1\n");
 						fflush(s_fp);
@@ -866,40 +866,40 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			if (fb && !res)
 			{
-				fb_pages->loopPagesWithBreak([&](u32 page)
+				fb_pages->loopPagesWithBreak([this, &res](u32 page)
 				{
 					if (m_fzb_pages[page] & 0xffff0000)
 					{
-						if (LOG)
+						if constexpr (LOG)
 						{
 							fprintf(s_fp, "syncpoint 2\n");
 							fflush(s_fp);
 						}
 
 						res = true;
-
 						return false;
 					}
+
 					return true;
 				});
 			}
 
 			if (zb && !res)
 			{
-				zb_pages->loopPagesWithBreak([&](u32 page)
+				zb_pages->loopPagesWithBreak([this, &res](u32 page)
 				{
 					if (m_fzb_pages[page] & 0x0000ffff)
 					{
-						if (LOG)
+						if constexpr (LOG)
 						{
 							fprintf(s_fp, "syncpoint 3\n");
 							fflush(s_fp);
 						}
 
 						res = true;
-
 						return false;
 					}
+
 					return true;
 				});
 			}
@@ -918,7 +918,7 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 			GSOffset::PageLooper pages = sd->m_tex[i].t->m_offset.pageLooperForRect(sd->m_tex[i].r);
 
 			bool ret = false;
-			pages.loopPagesWithBreak([&](u32 pages)
+			pages.loopPagesWithBreak([this, &ret](u32 pages)
 			{
 				// TODO: 8H 4HL 4HH texture at the same place as the render target (24 bit, or 32-bit where the alpha channel is masked, Valkyrie Profile 2)
 
@@ -936,8 +936,6 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 
 	return false;
 }
-
-#include "GSTextureSW.h"
 
 bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 {
@@ -1458,7 +1456,7 @@ GSRendererSW::SharedData::~SharedData()
 	if (global.dimx)
 		GSRingHeap::free(global.dimx);
 
-	if (LOG)
+	if constexpr (LOG)
 	{
 		fprintf(s_fp, "[%d] done t=%lld p=%d | %d %d %d | %08x_%08x\n",
 			counter,

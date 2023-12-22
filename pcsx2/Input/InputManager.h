@@ -196,6 +196,9 @@ namespace InputManager
 	/// Converts a key code from an identifier to a human-readable string.
 	std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
 
+	/// Converts a key code from an identifier to an icon which can be drawn.
+	const char* ConvertHostKeyboardCodeToIcon(u32 code);
+
 	/// Creates a key for a host-specific key code.
 	InputBindingKey MakeHostKeyboardKey(u32 key_code);
 
@@ -214,6 +217,9 @@ namespace InputManager
 
 	/// Converts a chord of binding keys to a string.
 	std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys);
+
+	/// Represents a binding with icon fonts, if available.
+	bool PrettifyInputBinding(std::string& binding);
 
 	/// Returns a list of all hotkeys.
 	std::vector<const HotkeyInfo*> GetHotkeyList();

@@ -15,6 +15,12 @@
 
 #pragma once
 
+#include "SIO/SioTypes.h"
+
+#include <array>
+
+class StateWrapper;
+
 enum class MultitapMode
 {
 	NOT_SET = 0xff,
@@ -27,8 +33,11 @@ enum class MultitapMode
 class MultitapProtocol
 {
 private:
+	u8 currentPadSlot = 0;
+	u8 currentMemcardSlot = 0;
+
 	void SupportCheck();
-	void Select();
+	void Select(MultitapMode mode);
 
 public:
 	MultitapProtocol();
@@ -36,8 +45,13 @@ public:
 
 	void SoftReset();
 	void FullReset();
+	bool DoState(StateWrapper& sw);
+
+	u8 GetPadSlot();
+	u8 GetMemcardSlot();
 
 	void SendToMultitap();
 };
 
-extern MultitapProtocol g_MultitapProtocol;
+extern std::array<MultitapProtocol, SIO::PORTS> g_MultitapArr;
+

@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <numeric>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -221,6 +222,161 @@ bool Path::IsAbsolute(const std::string_view& path)
 #else
 	return (path.length() >= 1 && path[0] == '/');
 #endif
+}
+
+std::string Path::RealPath(const std::string_view& path)
+{
+	// Resolve non-absolute paths first.
+	std::vector<std::string_view> components;
+	if (!IsAbsolute(path))
+		components = Path::SplitNativePath(Path::Combine(FileSystem::GetWorkingDirectory(), path));
+	else
+		components = Path::SplitNativePath(path);
+
+	std::string realpath;
+	if (components.empty())
+		return realpath;
+
+	// Different to path because relative.
+	realpath.reserve(std::accumulate(components.begin(), components.end(), static_cast<size_t>(0),
+						 [](size_t l, const std::string_view& s) { return l + s.length(); }) +
+					 components.size() + 1);
+
+#ifdef _WIN32
+	std::wstring wrealpath;
+	std::vector<WCHAR> symlink_buf;
+	wrealpath.reserve(realpath.size());
+	symlink_buf.resize(path.size() + 1);
+
+	// Check for any symbolic links throughout the path while adding components.
+	bool test_symlink = true;
+	for (const std::string_view& comp : components)
+	{
+		if (!realpath.empty())
+			realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+		realpath.append(comp);
+		if (test_symlink)
+		{
+			DWORD attribs;
+			if (StringUtil::UTF8StringToWideString(wrealpath, realpath) &&
+				(attribs = GetFileAttributesW(wrealpath.c_str())) != INVALID_FILE_ATTRIBUTES)
+			{
+				// if not a link, go to the next component
+				if (attribs & FILE_ATTRIBUTE_REPARSE_POINT)
+				{
+					const HANDLE hFile =
+						CreateFileW(wrealpath.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+					if (hFile != INVALID_HANDLE_VALUE)
+					{
+						// is a link! resolve it.
+						DWORD ret = GetFinalPathNameByHandleW(hFile, symlink_buf.data(), static_cast<DWORD>(symlink_buf.size()),
+							FILE_NAME_NORMALIZED);
+						if (ret > symlink_buf.size())
+						{
+							symlink_buf.resize(ret);
+							ret = GetFinalPathNameByHandleW(hFile, symlink_buf.data(), static_cast<DWORD>(symlink_buf.size()),
+								FILE_NAME_NORMALIZED);
+						}
+						if (ret != 0)
+							StringUtil::WideStringToUTF8String(realpath, std::wstring_view(symlink_buf.data(), ret));
+						else
+							test_symlink = false;
+
+						CloseHandle(hFile);
+					}
+				}
+			}
+			else
+			{
+				// not a file or link
+				test_symlink = false;
+			}
+		}
+	}
+
+	// GetFinalPathNameByHandleW() adds a \\?\ prefix, so remove it.
+	if (realpath.starts_with("\\\\?\\") && IsAbsolute(std::string_view(realpath.data() + 4, realpath.size() - 4)))
+		realpath.erase(0, 4);
+
+#else
+	// Why this monstrosity instead of calling realpath()? realpath() only works on files that exist.
+	std::string basepath;
+	std::string symlink;
+
+	basepath.reserve(realpath.capacity());
+	symlink.resize(realpath.capacity());
+
+	// Check for any symbolic links throughout the path while adding components.
+	bool test_symlink = true;
+	for (const std::string_view& comp : components)
+	{
+		if (!test_symlink)
+		{
+			realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+			realpath.append(comp);
+			continue;
+		}
+
+		basepath = realpath;
+		if (realpath.empty() || realpath.back() != FS_OSPATH_SEPARATOR_CHARACTER)
+			realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+		realpath.append(comp);
+
+		// Check if the last component added is a symlink
+		struct stat sb;
+		if (lstat(realpath.c_str(), &sb) != 0)
+		{
+			// Don't bother checking any further components once we error out.
+			test_symlink = false;
+			continue;
+		}
+		else if (!S_ISLNK(sb.st_mode))
+		{
+			// Nope, keep going.
+			continue;
+		}
+
+		for (;;)
+		{
+			ssize_t sz = readlink(realpath.c_str(), symlink.data(), symlink.size());
+			if (sz < 0)
+			{
+				// shouldn't happen, due to the S_ISLNK check above.
+				test_symlink = false;
+				break;
+			}
+			else if (static_cast<size_t>(sz) == symlink.size())
+			{
+				// need a larger buffer
+				symlink.resize(symlink.size() * 2);
+				continue;
+			}
+			else
+			{
+				// is a link, and we resolved it. gotta check if the symlink itself is relative :(
+				symlink.resize(static_cast<size_t>(sz));
+				if (!Path::IsAbsolute(symlink))
+				{
+					// symlink is relative to the directory of the symlink
+					realpath = basepath;
+					if (realpath.empty() || realpath.back() != FS_OSPATH_SEPARATOR_CHARACTER)
+						realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+					realpath.append(symlink);
+				}
+				else
+				{
+					// Use the new, symlinked path.
+					realpath = symlink;
+				}
+
+				break;
+			}
+		}
+	}
+#endif
+
+	return realpath;
 }
 
 std::string Path::ToNativePath(const std::string_view& path)
@@ -1411,6 +1567,7 @@ std::string FileSystem::GetProgramPath()
 		break;
 	}
 
+	// Windows symlinks don't behave silly like Linux, so no need to RealPath() it.
 	return StringUtil::WideStringToUTF8String(buffer);
 }
 

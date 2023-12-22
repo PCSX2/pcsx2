@@ -28,7 +28,6 @@
 #include "IopMem.h"
 #include "MTGS.h"
 #include "Memory.h"
-#include "SysForwardDefs.h"
 #include "VMManager.h"
 #include "svnrev.h"
 #include "vtlb.h"
@@ -82,6 +81,12 @@ namespace Achievements
 	static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
 	static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
 
+	// Some API calls are really slow. Set a longer timeout.
+	static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
+
+	// Chrome uses 10 server calls per domain, seems reasonable.
+	static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
+
 	static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
 	static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 	static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
@@ -98,7 +103,6 @@ namespace Achievements
 		struct LeaderboardTrackerIndicator
 		{
 			u32 tracker_id;
-			ImVec2 size;
 			std::string text;
 			Common::Timer show_hide_time;
 			bool active;
@@ -129,22 +133,21 @@ namespace Achievements
 	static void EnsureCacheDirectoriesExist();
 	static void ClearGameInfo();
 	static void ClearGameHash();
-	static std::string GetUserAgent();
 	static void BeginLoadingScreen(const char* text, bool* was_running_idle);
 	static void EndLoadingScreen(bool was_running_idle);
 	static std::string_view GetELFNameForHash(const std::string& elf_path);
-	static std::string GetGameHash();
+	static std::string GetGameHash(const std::string& elf_path);
 	static void SetHardcoreMode(bool enabled, bool force_display_message);
 	static bool IsLoggedInOrLoggingIn();
 	static bool IsUnknownGame();
 	static void ShowLoginSuccess(const rc_client_t* client);
-	static void IdentifyGame(u32 disc_crc);
+	static void IdentifyGame(u32 disc_crc, u32 crc);
 	static void BeginLoadGame();
 	static void UpdateGameSummary();
 	static void DownloadImage(std::string url, std::string cache_filename);
 
-	static bool CreateClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http);
-	static void DestroyClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http);
+	static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
+	static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 	static void ClientMessageCallback(const char* message, const rc_client_t* client);
 	static uint32_t ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
 	static void ClientServerCall(
@@ -203,12 +206,12 @@ namespace Achievements
 	static std::recursive_mutex s_achievements_mutex;
 	static rc_client_t* s_client;
 	static std::string s_image_directory;
-	static std::unique_ptr<Common::HTTPDownloader> s_http_downloader;
+	static std::unique_ptr<HTTPDownloader> s_http_downloader;
 
-	static u32 s_game_disc_crc;
 	static std::string s_game_hash;
 	static std::string s_game_title;
 	static std::string s_game_icon;
+	static u32 s_game_crc;
 	static rc_client_user_game_summary_t s_game_summary;
 	static u32 s_game_id = 0;
 
@@ -240,19 +243,6 @@ namespace Achievements
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
 	return std::unique_lock(s_achievements_mutex);
-}
-
-std::string Achievements::GetUserAgent()
-{
-	std::string ret;
-	if (!PCSX2_isReleaseVersion && GIT_TAGGED_COMMIT)
-		ret = fmt::format("PCSX2 Nightly - {} ({})", GIT_TAG, GetOSVersionString());
-	else if (!PCSX2_isReleaseVersion)
-		ret = fmt::format("PCSX2 {} ({})", GIT_REV, GetOSVersionString());
-	else
-		ret = fmt::format("PCSX2 {}.{}.{}-{} ({})", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV, GetOSVersionString());
-
-	return ret;
 }
 
 void Achievements::BeginLoadingScreen(const char* text, bool* was_running_idle)
@@ -308,12 +298,8 @@ std::string_view Achievements::GetELFNameForHash(const std::string& elf_path)
 	return std::string_view(elf_path).substr(start, end - start);
 }
 
-std::string Achievements::GetGameHash()
+std::string Achievements::GetGameHash(const std::string& elf_path)
 {
-	const std::string elf_path = VMManager::GetDiscELF();
-	if (elf_path.empty())
-		return {};
-
 	// this.. really shouldn't be invalid
 	const std::string_view name_for_hash = GetELFNameForHash(elf_path);
 	if (name_for_hash.empty())
@@ -352,8 +338,8 @@ std::string Achievements::GetGameHash()
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-	auto callback = [cache_filename](s32 status_code, std::string content_type, Common::HTTPDownloader::Request::Data data) {
-		if (status_code != Common::HTTPDownloader::HTTP_OK)
+	auto callback = [cache_filename](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
+		if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			return;
 
 		if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
@@ -454,7 +440,7 @@ bool Achievements::Initialize()
 
 	// Begin disc identification early, before the login finishes.
 	if (VMManager::HasValidVM())
-		IdentifyGame(VMManager::GetDiscCRC());
+		IdentifyGame(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 	const std::string username = Host::GetBaseStringSettingValue("Achievements", "Username");
 	const std::string api_token = Host::GetBaseStringSettingValue("Achievements", "Token");
@@ -472,14 +458,17 @@ bool Achievements::Initialize()
 	return true;
 }
 
-bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http)
+bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-	*http = Common::HTTPDownloader::Create(GetUserAgent().c_str());
+	*http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
 	if (!*http)
 	{
 		Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
 		return false;
 	}
+
+	(*http)->SetTimeout(SERVER_CALL_TIMEOUT);
+	(*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
 
 	rc_client_t* new_client = rc_client_create(ClientReadMemory, ClientServerCall);
 	if (!new_client)
@@ -501,7 +490,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<Common::HT
 	return true;
 }
 
-void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<Common::HTTPDownloader>* http)
+void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
 	(*http)->WaitForAllRequests();
 
@@ -649,17 +638,20 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
-	Common::HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
-																Common::HTTPDownloader::Request::Data data) {
+	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type,
+														HTTPDownloader::Request::Data data) {
 		rc_api_server_response_t rr;
-		rr.http_status_code = status_code;
+		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
+														   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+														   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
+												   status_code;
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
 
 		callback(&rr, callback_data);
 	};
 
-	Common::HTTPDownloader* http = static_cast<Common::HTTPDownloader*>(rc_client_get_userdata(client));
+	HTTPDownloader* http = static_cast<HTTPDownloader*>(rc_client_get_userdata(client));
 
 	// TODO: Content-type for post
 	if (request->post_data)
@@ -833,21 +825,26 @@ void Achievements::GameChanged(u32 disc_crc, u32 crc)
 	if (!IsActive())
 		return;
 
-	IdentifyGame(disc_crc);
+	IdentifyGame(disc_crc, crc);
 }
 
-void Achievements::IdentifyGame(u32 disc_crc)
+void Achievements::IdentifyGame(u32 disc_crc, u32 crc)
 {
-	// avoid reading+hashing the executable if the crc hasn't changed
-	if (s_game_disc_crc == disc_crc)
+	// If we're currently loading the ELF, assume that we're going to load the default ELF.
+	// That way we can download achievement data while the PS2 logo runs. Pretty safe assumption.
+	const bool booted_elf = VMManager::Internal::HasBootedELF();
+	const u32 crc_to_use = booted_elf ? crc : disc_crc;
+
+	// Avoid reading+hashing the executable if the crc hasn't changed.
+	if (s_game_crc == crc_to_use)
 		return;
 
-	std::string game_hash = GetGameHash();
+	const std::string game_hash = GetGameHash(booted_elf ? VMManager::GetCurrentELF() : VMManager::GetDiscELF());
 	if (s_game_hash == game_hash)
 		return;
 
 	ClearGameHash();
-	s_game_disc_crc = disc_crc;
+	s_game_crc = crc_to_use;
 	s_game_hash = std::move(game_hash);
 
 #ifdef ENABLE_RAINTEGRATION
@@ -886,7 +883,7 @@ void Achievements::BeginLoadGame()
 	if (s_game_hash.empty())
 	{
 		// when we're booting the bios, or shutting down, this will fail
-		if (s_game_disc_crc != 0)
+		if (s_game_crc != 0)
 		{
 			Host::AddKeyedOSDMessage("retroachievements_disc_read_failed",
 				TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
@@ -1007,7 +1004,7 @@ void Achievements::ClearGameInfo()
 
 void Achievements::ClearGameHash()
 {
-	s_game_disc_crc = 0;
+	s_game_crc = 0;
 	std::string().swap(s_game_hash);
 }
 
@@ -1225,17 +1222,9 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
 	DevCon.WriteLn(
 		"(Achievements) Showing leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
-	TinyString width_string;
-	width_string.append(ICON_FA_STOPWATCH);
-	const u32 display_len = static_cast<u32>(std::strlen(event->leaderboard_tracker->display));
-	for (u32 i = 0; i < display_len; i++)
-		width_string.append('0');
-
 	LeaderboardTrackerIndicator indicator;
 	indicator.tracker_id = event->leaderboard_tracker->id;
-	indicator.size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
-		ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
-	indicator.text = fmt::format(ICON_FA_STOPWATCH " {}", event->leaderboard_tracker->display);
+	indicator.text = event->leaderboard_tracker->display;
 	indicator.active = true;
 	s_active_leaderboard_trackers.push_back(std::move(indicator));
 }
@@ -1264,8 +1253,7 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
 	DevCon.WriteLn(
 		"(Achievements) Updating leaderboard tracker: %u: %s", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
-	it->text.clear();
-	fmt::format_to(std::back_inserter(it->text), ICON_FA_STOPWATCH " {}", event->leaderboard_tracker->display);
+	it->text = event->leaderboard_tracker->display;
 	it->active = true;
 }
 
@@ -1480,8 +1468,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 		return;
 
 	// this assumes that the CRC and ELF name has been loaded prior to the cheevos state (it should be).
-	if (VMManager::GetDiscCRC() != s_game_disc_crc)
-		GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
+	GameChanged(VMManager::GetDiscCRC(), VMManager::GetCurrentCRC());
 
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())
@@ -1642,9 +1629,9 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
 
 	// We need to use a temporary client if achievements aren't currently active.
 	rc_client_t* client = s_client;
-	Common::HTTPDownloader* http = s_http_downloader.get();
+	HTTPDownloader* http = s_http_downloader.get();
 	const bool is_temporary_client = (client == nullptr);
-	std::unique_ptr<Common::HTTPDownloader> temporary_downloader;
+	std::unique_ptr<HTTPDownloader> temporary_downloader;
 	ScopedGuard temporary_client_guard = [&client, is_temporary_client, &temporary_downloader]() {
 		if (is_temporary_client)
 			DestroyClient(&client, &temporary_downloader);
@@ -1828,6 +1815,43 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 	return true;
 }
 
+void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
+{
+#ifdef ENABLE_RAINTEGRATION
+	if (IsUsingRAIntegration())
+	{
+		const bool result = (RA_WarnDisableHardcore(trigger) != 0);
+		callback(result);
+		return;
+	}
+#endif
+
+	if (!FullscreenUI::Initialize())
+	{
+		Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcode mode is active.", trigger)),
+			Host::OSD_WARNING_DURATION);
+		callback(false);
+		return;
+	}
+
+	auto real_callback = [callback = std::move(callback)](bool res) mutable {
+		// don't run the callback in the middle of rendering the UI
+		Host::RunOnCPUThread([callback = std::move(callback), res]() {
+			if (res)
+				DisableHardcoreMode();
+			callback(res);
+		});
+	};
+
+	ImGuiFullscreen::OpenConfirmMessageDialog(
+		TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
+		fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
+												 "want to disable hardcore mode? {0} will be cancelled if you select No."),
+			trigger),
+		std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
+		fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
+}
+
 void Achievements::ClearUIState()
 {
 	if (FullscreenUI::IsAchievementsWindowOpen() || FullscreenUI::IsLeaderboardsWindowOpen())
@@ -1944,6 +1968,8 @@ void Achievements::DrawGameOverlays()
 			DevCon.WriteLn("(Achievements) Remove progress indicator");
 			s_active_progress_indicator.reset();
 		}
+
+		position.y -= image_size.y - padding * 3.0f;
 	}
 
 	if (!s_active_leaderboard_trackers.empty())
@@ -1953,17 +1979,31 @@ void Achievements::DrawGameOverlays()
 			const LeaderboardTrackerIndicator& indicator = *it;
 			const float opacity = IndicatorOpacity(indicator);
 
-			const ImVec2 box_min = ImVec2(position.x - indicator.size.x - padding * 2.0f, position.y - indicator.size.y - padding * 2.0f);
+			TinyString width_string;
+			width_string.append(ICON_FA_STOPWATCH);
+			for (u32 i = 0; i < indicator.text.length(); i++)
+				width_string.append('0');
+			const ImVec2 size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
+				ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
+
+			const ImVec2 box_min = ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f);
 			const ImVec2 box_max = position;
 			const float box_rounding = LayoutScale(1.0f);
 			dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ImVec4(0.13f, 0.13f, 0.13f, opacity * 0.5f)), box_rounding);
 			dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.8f, opacity)), box_rounding);
 
 			const u32 text_col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
-			const ImVec2 text_pos = box_min + ImVec2(padding, padding);
-			const ImVec4 text_clip_rect(text_pos.x, text_pos.y, box_max.x, box_max.y);
+			const ImVec2 text_size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
+				ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, indicator.text.c_str(),
+				indicator.text.c_str() + indicator.text.length());
+			const ImVec2 text_pos = ImVec2(box_max.x - padding - text_size.x, box_min.y + padding);
+			const ImVec4 text_clip_rect(box_min.x, box_min.y, box_max.x, box_max.y);
 			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, text_col, indicator.text.c_str(),
 				indicator.text.c_str() + indicator.text.length(), 0.0f, &text_clip_rect);
+
+			const ImVec2 icon_pos = ImVec2(box_min.x + padding, box_min.y + padding);
+			dl->AddText(g_medium_font, g_medium_font->FontSize, icon_pos, text_col, ICON_FA_STOPWATCH,
+				nullptr, 0.0f, &text_clip_rect);
 
 			if (!indicator.active && opacity <= 0.01f)
 			{
@@ -1974,9 +2014,12 @@ void Achievements::DrawGameOverlays()
 			{
 				++it;
 			}
+
+			position.x = box_min.x - padding;
 		}
 
-		position.y -= image_size.y + padding;
+		// Uncomment if there are any other overlays above this one.
+		//position.y -= image_size.y - padding * 3.0f;
 	}
 }
 
@@ -2151,16 +2194,23 @@ void Achievements::DrawAchievementsWindow()
 			ImGui::PopFont();
 
 			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
-			if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
+			if (s_game_summary.num_core_achievements > 0)
 			{
-				text.fmt(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
-					s_game_summary.points_unlocked);
+				if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
+				{
+					text.fmt(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
+						s_game_summary.points_unlocked);
+				}
+				else
+				{
+					text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
+						s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
+						s_game_summary.points_core);
+				}
 			}
 			else
 			{
-				text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-					s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
-					s_game_summary.points_core);
+				text.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
 			}
 
 			top += g_medium_font->FontSize + spacing;
@@ -2170,21 +2220,24 @@ void Achievements::DrawAchievementsWindow()
 				summary_bb.Min, summary_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
 			ImGui::PopFont();
 
-			const float progress_height = ImGuiFullscreen::LayoutScale(20.0f);
-			const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
-			const float fraction =
-				static_cast<float>(s_game_summary.num_unlocked_achievements) / static_cast<float>(s_game_summary.num_core_achievements);
-			dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
-			dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-				ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
+			if (s_game_summary.num_core_achievements > 0)
+			{
+				const float progress_height = ImGuiFullscreen::LayoutScale(20.0f);
+				const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
+				const float fraction =
+					static_cast<float>(s_game_summary.num_unlocked_achievements) / static_cast<float>(s_game_summary.num_core_achievements);
+				dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
+				dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+					ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
 
-			text.fmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
-			text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
-			const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
-				progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
-			dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor),
-				text.c_str(), text.end_ptr());
-			top += progress_height + spacing;
+				text.fmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+				text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
+				const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+					progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
+				dl->AddText(g_medium_font, g_medium_font->FontSize, text_pos, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor),
+					text.c_str(), text.end_ptr());
+				top += progress_height + spacing;
+			}
 		}
 	}
 	ImGuiFullscreen::EndFullscreenWindow();
@@ -2906,7 +2959,7 @@ void Achievements::SwitchToRAIntegration()
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
 	RA_InitClient((HWND)main_window_handle, "PCSX2", GIT_TAG);
-	RA_SetUserAgentDetail(Achievements::GetUserAgent().c_str());
+	RA_SetUserAgentDetail(Host::GetHTTPUserAgent().c_str());
 
 	RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,
 		RACallbackEstimateTitle, RACallbackResetEmulator, RACallbackLoadROM);

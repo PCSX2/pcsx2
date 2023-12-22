@@ -177,6 +177,10 @@ static void parse_features(
 					#if CPUINFO_ARCH_ARM64
 						processor->features |= CPUINFO_ARM_LINUX_FEATURE_FCMA;
 					#endif
+				} else if (memcmp(feature_start, "i8mm", feature_length) == 0) {
+					#if CPUINFO_ARCH_ARM64
+						processor->features2 |= CPUINFO_ARM_LINUX_FEATURE2_I8MM;
+					#endif
 #if CPUINFO_ARCH_ARM
 				} else if (memcmp(feature_start, "half", feature_length) == 0) {
 					processor->features |= CPUINFO_ARM_LINUX_FEATURE_HALF;
@@ -282,6 +286,10 @@ static void parse_features(
 				if (memcmp(feature_start, "asimdrdm", feature_length) == 0) {
 					#if CPUINFO_ARCH_ARM64
 						processor->features |= CPUINFO_ARM_LINUX_FEATURE_ASIMDRDM;
+					#endif
+				} else if (memcmp(feature_start, "asimdfhm", feature_length) == 0) {
+					#if CPUINFO_ARCH_ARM64
+						processor->features |= CPUINFO_ARM_LINUX_FEATURE_ASIMDFHM;
 					#endif
 #if CPUINFO_ARCH_ARM
 				} else if (memcmp(feature_start, "fastmult", feature_length) == 0) {
@@ -896,6 +904,7 @@ bool cpuinfo_arm_linux_parse_proc_cpuinfo(
 	uint32_t max_processors_count,
 	struct cpuinfo_arm_linux_processor processors[restrict static max_processors_count])
 {
+	hardware[0] = '\0';
 	struct proc_cpuinfo_parser_state state = {
 		.hardware = hardware,
 		.revision = revision,

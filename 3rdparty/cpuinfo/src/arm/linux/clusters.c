@@ -48,7 +48,7 @@ static inline bool bitmask_all(uint32_t bitfield, uint32_t mask) {
  * @param usable_processors - number of processors in the @p processors array with CPUINFO_LINUX_FLAG_VALID flags.
  * @param max_processors - number of elements in the @p processors array.
  * @param[in,out] processors - processor descriptors with pre-parsed POSSIBLE and PRESENT flags, minimum/maximum
- *                             frequency, MIDR infromation, and core cluster (package siblings list) information.
+ *                             frequency, MIDR information, and core cluster (package siblings list) information.
  *
  * @retval true if the heuristic successfully assigned all processors into clusters of cores.
  * @retval false if known details about processors contradict the heuristic configuration of core clusters.
@@ -292,9 +292,9 @@ bool cpuinfo_arm_linux_detect_core_clusters_by_heuristic(
  *   - Processors assigned to these clusters stay assigned to the same clusters
  *   - No new processors are added to these clusters
  * - Processors without pre-assigned cluster are clustered in one sequential scan:
- *   - If known details (min/max frequency, MIDR components) of a processor are compatible with a preceeding
- *     processor, without pre-assigned cluster, the processor is assigned to the cluster of the preceeding processor.
- *   - If known details (min/max frequency, MIDR components) of a processor are not compatible with a preceeding
+ *   - If known details (min/max frequency, MIDR components) of a processor are compatible with a preceding
+ *     processor, without pre-assigned cluster, the processor is assigned to the cluster of the preceding processor.
+ *   - If known details (min/max frequency, MIDR components) of a processor are not compatible with a preceding
  *     processor, the processor is assigned to a newly created cluster.
  *
  * The function must be called after parsing OS-provided information on core clusters, and usually is called only
@@ -309,7 +309,7 @@ bool cpuinfo_arm_linux_detect_core_clusters_by_heuristic(
  *
  * @param max_processors - number of elements in the @p processors array.
  * @param[in,out] processors - processor descriptors with pre-parsed POSSIBLE and PRESENT flags, minimum/maximum
- *                             frequency, MIDR infromation, and core cluster (package siblings list) information.
+ *                             frequency, MIDR information, and core cluster (package siblings list) information.
  *
  * @retval true if the heuristic successfully assigned all processors into clusters of cores.
  * @retval false if known details about processors contradict the heuristic configuration of core clusters.
@@ -331,7 +331,7 @@ void cpuinfo_arm_linux_detect_core_clusters_by_sequential_scan(
 				if (cluster_flags & CPUINFO_LINUX_FLAG_MIN_FREQUENCY) {
 					if (cluster_min_frequency != processors[i].min_frequency) {
 						cpuinfo_log_info(
-							"minimum frequency of processor %"PRIu32" (%"PRIu32" KHz) is different than of preceeding cluster (%"PRIu32" KHz); "
+							"minimum frequency of processor %"PRIu32" (%"PRIu32" KHz) is different than of preceding cluster (%"PRIu32" KHz); "
 							"processor %"PRIu32" starts to a new cluster",
 							i, processors[i].min_frequency, cluster_min_frequency, i);
 						goto new_cluster;
@@ -346,7 +346,7 @@ void cpuinfo_arm_linux_detect_core_clusters_by_sequential_scan(
 				if (cluster_flags & CPUINFO_LINUX_FLAG_MAX_FREQUENCY) {
 					if (cluster_max_frequency != processors[i].max_frequency) {
 						cpuinfo_log_debug(
-							"maximum frequency of processor %"PRIu32" (%"PRIu32" KHz) is different than of preceeding cluster (%"PRIu32" KHz); "
+							"maximum frequency of processor %"PRIu32" (%"PRIu32" KHz) is different than of preceding cluster (%"PRIu32" KHz); "
 							"processor %"PRIu32" starts a new cluster",
 							i, processors[i].max_frequency, cluster_max_frequency, i);
 						goto new_cluster;
@@ -361,7 +361,7 @@ void cpuinfo_arm_linux_detect_core_clusters_by_sequential_scan(
 				if (cluster_flags & CPUINFO_ARM_LINUX_VALID_IMPLEMENTER) {
 					if ((cluster_midr & CPUINFO_ARM_MIDR_IMPLEMENTER_MASK) != (processors[i].midr & CPUINFO_ARM_MIDR_IMPLEMENTER_MASK)) {
 						cpuinfo_log_debug(
-							"CPU Implementer of processor %"PRIu32" (0x%02"PRIx32") is different than of preceeding cluster (0x%02"PRIx32"); "
+							"CPU Implementer of processor %"PRIu32" (0x%02"PRIx32") is different than of preceding cluster (0x%02"PRIx32"); "
 							"processor %"PRIu32" starts to a new cluster",
 							i, midr_get_implementer(processors[i].midr), midr_get_implementer(cluster_midr), i);
 						goto new_cluster;
@@ -417,11 +417,11 @@ void cpuinfo_arm_linux_detect_core_clusters_by_sequential_scan(
 				}
 			}
 
-			/* All checks passed, attach processor to the preceeding cluster */
+			/* All checks passed, attach processor to the preceding cluster */
 			cluster_processors++;
 			processors[i].package_leader_id = cluster_start;
 			processors[i].flags |= CPUINFO_LINUX_FLAG_PACKAGE_CLUSTER;
-			cpuinfo_log_debug("assigned processor %"PRIu32" to preceeding cluster of processor %"PRIu32, i, cluster_start);
+			cpuinfo_log_debug("assigned processor %"PRIu32" to preceding cluster of processor %"PRIu32, i, cluster_start);
 			continue;
 
 new_cluster:

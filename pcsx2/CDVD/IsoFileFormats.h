@@ -95,7 +95,7 @@ public:
 protected:
 	void _init();
 
-	bool tryIsoType(u32 _size, s32 _offset, s32 _blockofs);
+	bool tryIsoType(u32 size, u32 offset, u32 blockofs);
 	void FindParts();
 };
 

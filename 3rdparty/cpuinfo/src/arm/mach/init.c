@@ -15,43 +15,25 @@
 #include <cpuinfo/log.h>
 
 /* Polyfill recent CPUFAMILY_ARM_* values for older SDKs */
-#ifndef CPUFAMILY_ARM_MONSOON_MISTRAL
-	#define CPUFAMILY_ARM_MONSOON_MISTRAL   0xE81E7EF6
-#endif
 #ifndef CPUFAMILY_ARM_VORTEX_TEMPEST
-	#define CPUFAMILY_ARM_VORTEX_TEMPEST    0x07D34B9F
+	#define CPUFAMILY_ARM_VORTEX_TEMPEST     0x07D34B9F
 #endif
 #ifndef CPUFAMILY_ARM_LIGHTNING_THUNDER
-	#define CPUFAMILY_ARM_LIGHTNING_THUNDER 0x462504D2
+	#define CPUFAMILY_ARM_LIGHTNING_THUNDER  0x462504D2
 #endif
 #ifndef CPUFAMILY_ARM_FIRESTORM_ICESTORM
 	#define CPUFAMILY_ARM_FIRESTORM_ICESTORM 0x1B588BB3
 #endif
+#ifndef CPUFAMILY_ARM_AVALANCHE_BLIZZARD
+	#define CPUFAMILY_ARM_AVALANCHE_BLIZZARD 0xDA33D83D
+#endif
 
 struct cpuinfo_arm_isa cpuinfo_isa = {
-#if CPUINFO_ARCH_ARM
-	.thumb = true,
-	.thumb2 = true,
-	.thumbee = false,
-	.jazelle = false,
-	.armv5e = true,
-	.armv6 = true,
-	.armv6k = true,
-	.armv7 = true,
-	.vfpv2 = false,
-	.vfpv3 = true,
-	.d32 = true,
-	.wmmx = false,
-	.wmmx2 = false,
-	.neon = true,
-#endif
-#if CPUINFO_ARCH_ARM64
 	.aes = true,
 	.sha1 = true,
 	.sha2 = true,
 	.pmull = true,
 	.crc32 = true,
-#endif
 };
 
 static uint32_t get_sys_info(int type_specifier, const char* name) {
@@ -83,10 +65,8 @@ static uint32_t get_sys_info_by_name(const char* type_specifier) {
 	return result;
 }
 
-static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t cpu_subtype, uint32_t core_index, uint32_t core_count) {
+static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t core_index, uint32_t core_count) {
 	switch (cpu_family) {
-		case CPUFAMILY_ARM_SWIFT:
-			return cpuinfo_uarch_swift;
 		case CPUFAMILY_ARM_CYCLONE:
 			return cpuinfo_uarch_cyclone;
 		case CPUFAMILY_ARM_TYPHOON:
@@ -107,25 +87,15 @@ static enum cpuinfo_uarch decode_uarch(uint32_t cpu_family, uint32_t cpu_subtype
 		case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
 			/* Hexa-core: 2x Firestorm + 4x Icestorm; Octa-core: 4x Firestorm + 4x Icestorm */
 			return core_index + 4 < core_count ? cpuinfo_uarch_firestorm : cpuinfo_uarch_icestorm;
+		case CPUFAMILY_ARM_AVALANCHE_BLIZZARD:
+			/* Hexa-core: 2x Avalanche + 4x Blizzard */
+			return core_index + 4 < core_count ? cpuinfo_uarch_avalanche : cpuinfo_uarch_blizzard;
 		default:
 			/* Use hw.cpusubtype for detection */
 			break;
 	}
 
-	#if CPUINFO_ARCH_ARM
-		switch (cpu_subtype) {
-			case CPU_SUBTYPE_ARM_V7:
-				return cpuinfo_uarch_cortex_a8;
-			case CPU_SUBTYPE_ARM_V7F:
-				return cpuinfo_uarch_cortex_a9;
-			case CPU_SUBTYPE_ARM_V7K:
-				return cpuinfo_uarch_cortex_a7;
-			default:
-				return cpuinfo_uarch_unknown;
-		}
-	#else
-		return cpuinfo_uarch_unknown;
-	#endif
+	return cpuinfo_uarch_unknown;
 }
 
 static void decode_package_name(char* package_name) {
@@ -299,71 +269,118 @@ void cpuinfo_arm_mach_init(void) {
 
 
 	const uint32_t cpu_family = get_sys_info_by_name("hw.cpufamily");
-	const uint32_t cpu_type = get_sys_info_by_name("hw.cputype");
-	const uint32_t cpu_subtype = get_sys_info_by_name("hw.cpusubtype");
-	switch (cpu_type) {
-		case CPU_TYPE_ARM64:
-			cpuinfo_isa.aes = true;
-			cpuinfo_isa.sha1 = true;
-			cpuinfo_isa.sha2 = true;
-			cpuinfo_isa.pmull = true;
-			cpuinfo_isa.crc32 = true;
-			break;
-#if CPUINFO_ARCH_ARM
-		case CPU_TYPE_ARM:
-			switch (cpu_subtype) {
-				case CPU_SUBTYPE_ARM_V8:
-					cpuinfo_isa.armv8 = true;
-					cpuinfo_isa.aes = true;
-					cpuinfo_isa.sha1 = true;
-					cpuinfo_isa.sha2 = true;
-					cpuinfo_isa.pmull = true;
-					cpuinfo_isa.crc32 = true;
-					/* Fall-through to add ARMv7S features */
-				case CPU_SUBTYPE_ARM_V7S:
-				case CPU_SUBTYPE_ARM_V7K:
-					cpuinfo_isa.fma = true;
-					/* Fall-through to add ARMv7F features */
-				case CPU_SUBTYPE_ARM_V7F:
-					cpuinfo_isa.armv7mp = true;
-					cpuinfo_isa.fp16 = true;
-					/* Fall-through to add ARMv7 features */
-				case CPU_SUBTYPE_ARM_V7:
-					break;
-				default:
-					break;
-			}
-			break;
-#endif
-	}
-	/*
-	 * Support for ARMv8.1 Atomics & FP16 arithmetic instructions is supposed to be detected via
-	 * sysctlbyname calls with "hw.optional.armv8_1_atomics" and "hw.optional.neon_fp16" arguments
-	 * (see https://devstreaming-cdn.apple.com/videos/wwdc/2018/409t8zw7rumablsh/409/409_whats_new_in_llvm.pdf),
-	 * but on new iOS versions these calls just fail with EPERM.
-	 *
-	 * Thus, we whitelist CPUs known to support these instructions.
-	 */
-	switch (cpu_family) {
-		case CPUFAMILY_ARM_MONSOON_MISTRAL:
-		case CPUFAMILY_ARM_VORTEX_TEMPEST:
-		case CPUFAMILY_ARM_LIGHTNING_THUNDER:
-		case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
-			#if CPUINFO_ARCH_ARM64
-				cpuinfo_isa.atomics = true;
-			#endif
-			cpuinfo_isa.fp16arith = true;
-	}
 
 	/*
-	 * There does not yet seem to exist an OS mechanism to detect support for
-	 * ARMv8.2 optional dot-product instructions, so we currently whitelist CPUs
-	 * known to support these instruction.
+	 * iOS 15 and macOS 12 added sysctls for ARM features, use them where possible.
+	 * Otherwise, fallback to hardcoded set of CPUs with known support.
 	 */
-	switch (cpu_family) {
-		case CPUFAMILY_ARM_LIGHTNING_THUNDER:
-		case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
-			cpuinfo_isa.dot = true;
+	const uint32_t has_feat_lse = get_sys_info_by_name("hw.optional.arm.FEAT_LSE");
+	if (has_feat_lse != 0) {
+		cpuinfo_isa.atomics = true;
+	} else {
+		// Mandatory in ARMv8.1-A, list only cores released before iOS 15 / macOS 12
+		switch (cpu_family) {
+			case CPUFAMILY_ARM_MONSOON_MISTRAL:
+			case CPUFAMILY_ARM_VORTEX_TEMPEST:
+			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+				cpuinfo_isa.atomics = true;
+		}
+	}
+
+	const uint32_t has_feat_rdm = get_sys_info_by_name("hw.optional.arm.FEAT_RDM");
+	if (has_feat_rdm != 0) {
+		cpuinfo_isa.rdm = true;
+	} else {
+		// Optional in ARMv8.2-A (implemented in Apple cores),
+		// list only cores released before iOS 15 / macOS 12
+		switch (cpu_family) {
+			case CPUFAMILY_ARM_MONSOON_MISTRAL:
+			case CPUFAMILY_ARM_VORTEX_TEMPEST:
+			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+				cpuinfo_isa.rdm = true;
+		}
+	}
+
+	const uint32_t has_feat_fp16 = get_sys_info_by_name("hw.optional.arm.FEAT_FP16");
+	if (has_feat_fp16 != 0) {
+		cpuinfo_isa.fp16arith = true;
+	} else {
+		// Optional in ARMv8.2-A (implemented in Apple cores),
+		// list only cores released before iOS 15 / macOS 12
+		switch (cpu_family) {
+			case CPUFAMILY_ARM_MONSOON_MISTRAL:
+			case CPUFAMILY_ARM_VORTEX_TEMPEST:
+			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+				cpuinfo_isa.fp16arith = true;
+		}
+	}
+
+	const uint32_t has_feat_fhm = get_sys_info_by_name("hw.optional.arm.FEAT_FHM");
+	if (has_feat_fhm != 0) {
+		cpuinfo_isa.fhm = true;
+	} else {
+		// Prior to iOS 15, use 'hw.optional.armv8_2_fhm'
+		const uint32_t has_feat_fhm_legacy = get_sys_info_by_name("hw.optional.armv8_2_fhm");
+		if (has_feat_fhm_legacy != 0) {
+			cpuinfo_isa.fhm = true;
+		} else {
+			// Mandatory in ARMv8.4-A when FP16 arithmetics is implemented,
+			// list only cores released before iOS 15 / macOS 12
+			switch (cpu_family) {
+				case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+				case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+					cpuinfo_isa.fhm = true;
+			}
+		}
+	}
+
+	const uint32_t has_feat_bf16 = get_sys_info_by_name("hw.optional.arm.FEAT_BF16");
+	if (has_feat_bf16 != 0) {
+		cpuinfo_isa.bf16 = true;
+	}
+
+	const uint32_t has_feat_fcma = get_sys_info_by_name("hw.optional.arm.FEAT_FCMA");
+	if (has_feat_fcma != 0) {
+		cpuinfo_isa.fcma = true;
+	} else {
+		// Mandatory in ARMv8.3-A, list only cores released before iOS 15 / macOS 12
+		switch (cpu_family) {
+			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+				cpuinfo_isa.fcma = true;
+		}
+	}
+
+	const uint32_t has_feat_jscvt = get_sys_info_by_name("hw.optional.arm.FEAT_JSCVT");
+	if (has_feat_jscvt != 0) {
+		cpuinfo_isa.jscvt = true;
+	} else {
+		// Mandatory in ARMv8.3-A, list only cores released before iOS 15 / macOS 12
+		switch (cpu_family) {
+			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+				cpuinfo_isa.jscvt = true;
+		}
+	}
+
+	const uint32_t has_feat_dotprod = get_sys_info_by_name("hw.optional.arm.FEAT_DotProd");
+	if (has_feat_dotprod != 0) {
+		cpuinfo_isa.dot = true;
+	} else {
+		// Mandatory in ARMv8.4-A, list only cores released before iOS 15 / macOS 12
+		switch (cpu_family) {
+			case CPUFAMILY_ARM_LIGHTNING_THUNDER:
+			case CPUFAMILY_ARM_FIRESTORM_ICESTORM:
+				cpuinfo_isa.dot = true;
+		}
+	}
+
+	const uint32_t has_feat_i8mm = get_sys_info_by_name("hw.optional.arm.FEAT_I8MM");
+	if (has_feat_i8mm != 0) {
+		cpuinfo_isa.i8mm = true;
 	}
 
 	uint32_t num_clusters = 1;
@@ -374,7 +391,7 @@ void cpuinfo_arm_mach_init(void) {
 			.core_id = i % cores_per_package,
 			.package = packages + i / cores_per_package,
 			.vendor = cpuinfo_vendor_apple,
-			.uarch = decode_uarch(cpu_family, cpu_subtype, i, mach_topology.cores),
+			.uarch = decode_uarch(cpu_family, i, mach_topology.cores),
 		};
 		if (i != 0 && cores[i].uarch != cores[i - 1].uarch) {
 			num_clusters++;

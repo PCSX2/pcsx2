@@ -42,7 +42,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 	connect(m_ui.enableCheats, &QCheckBox::stateChanged, this, &GameCheatSettingsWidget::updateListEnabled);
 	connect(m_ui.cheatList, &QTreeWidget::itemDoubleClicked, this, &GameCheatSettingsWidget::onCheatListItemDoubleClicked);
 	connect(m_ui.cheatList, &QTreeWidget::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
-	connect(m_ui.reloadCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::reloadList);
+	connect(m_ui.reloadCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
 	connect(m_ui.enableAll, &QPushButton::clicked, this, [this]() { setStateForAll(true); });
 	connect(m_ui.disableAll, &QPushButton::clicked, this, [this]() { setStateForAll(false); });
 }

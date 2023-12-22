@@ -98,10 +98,10 @@ void AutoEject::CountDownTicks()
 
 void AutoEject::Set(size_t port, size_t slot)
 {
-	if (EmuConfig.McdEnableEjection && mcds[port][slot].autoEjectTicks == 0)
+	if (mcds[port][slot].autoEjectTicks == 0)
 	{
-		mcds[port][slot].autoEjectTicks = 1; // 1 second is enough.
-		mcds[port][slot].term = 0x55; // Reset terminator to default (0x55), forces the PS2 to recheck the memcard.
+		mcds[port][slot].autoEjectTicks = 60; // 60 frames is enough.
+		mcds[port][slot].term = Terminator::NOT_READY; // Reset terminator to NOT_READY (0x66), forces the PS2 to recheck the memcard.
 	}
 }
 
@@ -133,4 +133,32 @@ void AutoEject::ClearAll()
 			AutoEject::Clear(port, slot);
 		}
 	}
+}
+
+// Decremented once per frame if nonzero, indicates how many more frames must pass before
+// memcards are considered "no longer being written to". Used as a way to detect if it is
+// unsafe to shutdown the VM due to memcard access.
+static std::atomic_uint32_t currentBusyTicks = 0;
+
+void MemcardBusy::Decrement()
+{
+	if (currentBusyTicks.load(std::memory_order_relaxed) == 0)
+		return;
+
+	currentBusyTicks.fetch_sub(1, std::memory_order_release);
+}
+
+void MemcardBusy::SetBusy()
+{
+	currentBusyTicks.store(300, std::memory_order_release);
+}
+
+bool MemcardBusy::IsBusy()
+{
+	return (currentBusyTicks.load(std::memory_order_acquire) > 0);
+}
+
+void MemcardBusy::ClearBusy()
+{
+	currentBusyTicks.store(0, std::memory_order_release);
 }

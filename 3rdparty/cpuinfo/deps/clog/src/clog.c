@@ -10,6 +10,9 @@
 #ifdef __ANDROID__
 	#include <android/log.h>
 #endif
+#ifdef __hexagon__
+	#include <qurt_printf.h>
+#endif
 
 #ifndef CLOG_LOG_TO_STDIO
 	#ifdef __ANDROID__
@@ -102,12 +105,14 @@ void clog_vlog_fatal(const char* module, const char* format, va_list args) {
 			out_buffer = heap_buffer;
 		}
 		out_buffer[prefix_chars + format_chars] = '\n';
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			DWORD bytes_written;
 			WriteFile(
 				GetStdHandle(STD_ERROR_HANDLE),
 				out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH,
 				&bytes_written, NULL);
+		#elif defined(__hexagon__)
+			qurt_printf("%s", out_buffer);
 		#else
 			write(STDERR_FILENO, out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH);
 		#endif
@@ -178,12 +183,14 @@ void clog_vlog_error(const char* module, const char* format, va_list args) {
 			out_buffer = heap_buffer;
 		}
 		out_buffer[prefix_chars + format_chars] = '\n';
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			DWORD bytes_written;
 			WriteFile(
 				GetStdHandle(STD_ERROR_HANDLE),
 				out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH,
 				&bytes_written, NULL);
+		#elif defined(__hexagon__)
+			qurt_printf("%s", out_buffer);
 		#else
 			write(STDERR_FILENO, out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH);
 		#endif
@@ -254,12 +261,14 @@ void clog_vlog_warning(const char* module, const char* format, va_list args) {
 			out_buffer = heap_buffer;
 		}
 		out_buffer[prefix_chars + format_chars] = '\n';
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			DWORD bytes_written;
 			WriteFile(
 				GetStdHandle(STD_ERROR_HANDLE),
 				out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH,
 				&bytes_written, NULL);
+		#elif defined(__hexagon__)
+			qurt_printf("%s", out_buffer);
 		#else
 			write(STDERR_FILENO, out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH);
 		#endif
@@ -330,12 +339,14 @@ void clog_vlog_info(const char* module, const char* format, va_list args) {
 			out_buffer = heap_buffer;
 		}
 		out_buffer[prefix_chars + format_chars] = '\n';
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			DWORD bytes_written;
 			WriteFile(
 				GetStdHandle(STD_OUTPUT_HANDLE),
 				out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH,
 				&bytes_written, NULL);
+		#elif defined(__hexagon__)
+			qurt_printf("%s", out_buffer);
 		#else
 			write(STDOUT_FILENO, out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH);
 		#endif
@@ -406,12 +417,14 @@ void clog_vlog_debug(const char* module, const char* format, va_list args) {
 			out_buffer = heap_buffer;
 		}
 		out_buffer[prefix_chars + format_chars] = '\n';
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			DWORD bytes_written;
 			WriteFile(
 				GetStdHandle(STD_OUTPUT_HANDLE),
 				out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH,
 				&bytes_written, NULL);
+		#elif defined(__hexagon__)
+			qurt_printf("%s", out_buffer);
 		#else
 			write(STDOUT_FILENO, out_buffer, prefix_chars + format_chars + CLOG_SUFFIX_LENGTH);
 		#endif

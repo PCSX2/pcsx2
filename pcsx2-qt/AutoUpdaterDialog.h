@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,14 +14,20 @@
  */
 
 #pragma once
+
+#include "common/Pcsx2Defs.h"
+
 #include "ui_AutoUpdaterDialog.h"
+
+#include <memory>
 #include <string>
+
 #include <QtCore/QDateTime>
 #include <QtCore/QStringList>
+#include <QtCore/QTimer>
 #include <QtWidgets/QDialog>
 
-class QNetworkAccessManager;
-class QNetworkReply;
+class HTTPDownloader;
 class QProgressDialog;
 
 class AutoUpdaterDialog final : public QDialog
@@ -46,28 +52,33 @@ public Q_SLOTS:
 	void queueUpdateCheck(bool display_message);
 
 private Q_SLOTS:
-	void getLatestReleaseComplete(QNetworkReply* reply);
-
-	void queueGetChanges();
-	void getChangesComplete(QNetworkReply* reply);
-
+	void httpPollTimerPoll();
 	void downloadUpdateClicked();
 	void skipThisUpdateClicked();
 	void remindMeLaterClicked();
 
 private:
 	void reportError(const char* msg, ...);
+
+	bool ensureHttpReady();
+
 	void checkIfUpdateNeeded();
 	QString getCurrentUpdateTag() const;
 
-	bool processUpdate(const QByteArray& update_data, QProgressDialog& progress);
+	void getLatestReleaseComplete(s32 status_code, std::vector<u8> data);
+
+	void queueGetChanges();
+	void getChangesComplete(s32 status_code, std::vector<u8> data);
+
+	bool processUpdate(const std::vector<u8>& data, QProgressDialog& progress);
 #if defined(_WIN32)
 	bool doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path);
 #endif
 
 	Ui::AutoUpdaterDialog m_ui;
 
-	QNetworkAccessManager* m_network_access_mgr = nullptr;
+	std::unique_ptr<HTTPDownloader> m_http;
+	QTimer* m_http_poll_timer = nullptr;
 	QString m_latest_version;
 	QDateTime m_latest_version_timestamp;
 	QString m_download_url;

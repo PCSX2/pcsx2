@@ -114,6 +114,9 @@ if(GCC_VERSION VERSION_GREATER_EQUAL "9.0" AND GCC_VERSION VERSION_LESS "9.2")
 	This text being in a compile log in an open issue may cause it to be closed.")
 endif()
 
+# Prevent fmt from being built with exceptions, or being thrown at call sites.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
+
 add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
@@ -141,6 +144,7 @@ add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/lz4 EXCLUDE_FROM_ALL)
 
 if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
@@ -156,7 +160,7 @@ disable_compiler_warnings_for_target(cubeb)
 disable_compiler_warnings_for_target(speex)
 
 # Find the Qt components that we need.
-find_package(Qt6 6.6.0 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets Network LinguistTools REQUIRED)
+find_package(Qt6 6.6.0 COMPONENTS CoreTools Core GuiTools Gui WidgetsTools Widgets LinguistTools REQUIRED)
 
 if(WIN32)
   add_subdirectory(3rdparty/rainterface EXCLUDE_FROM_ALL)

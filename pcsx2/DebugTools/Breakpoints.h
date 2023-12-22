@@ -138,6 +138,7 @@ public:
 
 	static void SetSkipFirst(BreakPointCpu cpu, u32 pc);
 	static u32 CheckSkipFirst(BreakPointCpu cpu, u32 pc);
+	static void ClearSkipFirst();
 
 	// Includes uncached addresses.
 	static const std::vector<MemCheck> GetMemCheckRanges();

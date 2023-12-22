@@ -219,7 +219,7 @@ void* GSRingHeap::alloc_internal(size_t size, size_t align_mask, size_t prefix_s
 				size_t used = m_current_buffer->m_amt_allocated.load(std::memory_order_relaxed) - 1;
 				if (used * 4 < total)
 				{
-					fprintf(stderr, "GSRingHeap: Orphaning %zdmb buffer with low usage of %d%%, check that allocations are actually being deallocated approximately in order\n", total / mb, static_cast<int>((used * 100) / total));
+					fprintf(stderr, "GSRingHeap: Orphaning %zumb buffer with low usage of %d%%, check that allocations are actually being deallocated approximately in order\n", total / mb, static_cast<int>((used * 100) / total));
 				}
 			}
 		}

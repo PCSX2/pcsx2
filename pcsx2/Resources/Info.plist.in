@@ -39,6 +39,8 @@
 	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>${PCSX2_MICROPHONE_USAGE_DESCRIPTION}</string>
 	<key>LSApplicationCategoryType</key> 
 	<string>public.app-category.games</string>
 	<key>CFBundleDevelopmentRegion</key>

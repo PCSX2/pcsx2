@@ -47,15 +47,13 @@ struct VMBootParameters
 
 	std::optional<bool> fast_boot;
 	std::optional<bool> fullscreen;
+	bool disable_achievements_hardcore_mode = false;
 };
 
 namespace VMManager
 {
 	/// The number of usable save state slots.
 	static constexpr s32 NUM_SAVE_STATE_SLOTS = 10;
-
-	/// Returns the currently active savestate slot.
-	s32 GetCurrentActiveSaveStateSlot();
 
 	/// The stack size to use for threads running recompilers
 	static constexpr std::size_t EMU_THREAD_STACK_SIZE = 2 * 1024 * 1024; // µVU likes recursion
@@ -92,6 +90,9 @@ namespace VMManager
 
 	/// Returns the crc of the executable currently running.
 	u32 GetCurrentCRC();
+
+	/// Returns the path to the ELF which is currently running. Only safe to read on the EE thread.
+	const std::string& GetCurrentELF();
 
 	/// Initializes all system components.
 	bool Initialize(VMBootParameters boot_params);

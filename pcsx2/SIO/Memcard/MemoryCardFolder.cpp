@@ -83,14 +83,10 @@ static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 	std::fclose(file);
 }
 
-static constexpr time_t MEMORY_CARD_FILE_ENTRY_DATE_TIME_OFFSET = 60 * 60 * 9; // 9 hours from UTC
 static auto last = std::chrono::time_point<std::chrono::system_clock>();
 
 MemoryCardFileEntryDateTime MemoryCardFileEntryDateTime::FromTime(time_t time)
 {
-	// TODO: Is this safe with regard to DST?
-	time += MEMORY_CARD_FILE_ENTRY_DATE_TIME_OFFSET;
-
 	struct tm converted = {};
 #ifdef _MSC_VER
 	gmtime_s(&converted, &time);
@@ -118,7 +114,12 @@ time_t MemoryCardFileEntryDateTime::ToTime() const
 	converted.tm_mday = day;
 	converted.tm_mon = std::max(static_cast<int>(month) - 1, 0);
 	converted.tm_year = std::max(static_cast<int>(year) - 1900, 0);
-	return mktime(&converted);
+
+#ifdef _MSC_VER
+	return _mkgmtime(&converted);
+#else
+	return timegm(&converted);
+#endif
 }
 
 FolderMemoryCard::FolderMemoryCard()

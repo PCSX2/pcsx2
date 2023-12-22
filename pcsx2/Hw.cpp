@@ -40,19 +40,19 @@ void hwReset()
 	psHu32(DMAC_ENABLEW) = 0x1201;
 	psHu32(DMAC_ENABLER) = 0x1201;
 
+	rcntInit();
+
 	// Sets SPU2 sample rate to PS2 standard (48KHz) whenever emulator is reset.
 	// For PSX mode sample rate setting, see HwWrite.cpp
 	SPU2::Reset(false);
 
 	sifReset();
-
 	gsReset();
 	gifUnit.Reset();
 	ipuReset();
 	vif0Reset();
 	vif1Reset();
 	gif_fifo.init();
-	rcntInit();
 	USBreset();
 }
 

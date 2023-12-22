@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -151,11 +151,15 @@ namespace ImGuiFullscreen
 		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, float padding = 0.0f, ImGuiWindowFlags flags = 0);
 	void EndFullscreenWindow();
 
+	void PrerenderMenuButtonBorder();
 	void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
 		float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
 	void EndMenuButtons();
+	void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 	bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min, ImVec2* max,
 		ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
+	void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true, float rounding = 0.0f);
+	void ResetMenuButtonFrame();
 	void MenuHeading(const char* title, bool draw_line = true);
 	bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 	bool ActiveButton(const char* title, bool is_active, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,

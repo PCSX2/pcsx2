@@ -28,6 +28,7 @@ enum cpuinfo_arm_chipset_vendor {
 	cpuinfo_arm_chipset_vendor_spreadtrum,
 	cpuinfo_arm_chipset_vendor_telechips,
 	cpuinfo_arm_chipset_vendor_texas_instruments,
+	cpuinfo_arm_chipset_vendor_unisoc,
 	cpuinfo_arm_chipset_vendor_wondermedia,
 	cpuinfo_arm_chipset_vendor_max,
 };
@@ -62,6 +63,7 @@ enum cpuinfo_arm_chipset_series {
 	cpuinfo_arm_chipset_series_spreadtrum_sc,
 	cpuinfo_arm_chipset_series_telechips_tcc,
 	cpuinfo_arm_chipset_series_texas_instruments_omap,
+	cpuinfo_arm_chipset_series_unisoc_t,
 	cpuinfo_arm_chipset_series_wondermedia_wm,
 	cpuinfo_arm_chipset_series_max,
 };

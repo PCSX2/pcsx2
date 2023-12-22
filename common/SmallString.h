@@ -253,10 +253,58 @@ public:
 		assign(move);
 	}
 
+	__fi SmallStackString(const SmallStackString& copy)
+	{
+		init();
+		assign(copy);
+	}
+
+	__fi SmallStackString(SmallStackString&& move)
+	{
+		init();
+		assign(move);
+	}
+
 	__fi SmallStackString(const std::string_view& sv)
 	{
 		init();
 		assign(sv);
+	}
+
+	__fi SmallStackString& operator=(const SmallStringBase& copy)
+	{
+		assign(copy);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(SmallStringBase&& move)
+	{
+		assign(move);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(const SmallStackString& copy)
+	{
+		assign(copy);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(SmallStackString&& move)
+	{
+		assign(move);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(const std::string_view& sv)
+	{
+		assign(sv);
+		return *this;
+	}
+
+	__fi SmallStackString& operator=(const char* str)
+	{
+		assign(str);
+		return *this;
 	}
 
 	// Override the fromstring method
@@ -321,3 +369,25 @@ __fi void SmallStringBase::fmt(fmt::format_string<T...> fmt, T&&... args)
 	clear();
 	fmt::vformat_to(std::back_inserter(*this), fmt, fmt::make_format_args(args...));
 }
+
+#define MAKE_FORMATTER(type) \
+	template <> \
+	struct fmt::formatter<type> \
+	{ \
+		template <typename ParseContext> \
+		constexpr auto parse(ParseContext& ctx) \
+		{ \
+			return ctx.begin(); \
+		} \
+\
+		template <typename FormatContext> \
+		auto format(const type& str, FormatContext& ctx) \
+		{ \
+			return fmt::format_to(ctx.out(), "{}", str.view()); \
+		} \
+	};
+
+MAKE_FORMATTER(TinyString);
+MAKE_FORMATTER(SmallString);
+
+#undef MAKE_FORMATTER

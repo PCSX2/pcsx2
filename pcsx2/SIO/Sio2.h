@@ -40,7 +40,6 @@ public:
 	u32 iStat; // 0x1f808280
 
 	u8 port = 0;
-	u8 slot = 0;
 
 	// The current working index of SEND3. The SEND3 register is a 16 position
 	// array of command descriptors. Each descriptor describes the port the command

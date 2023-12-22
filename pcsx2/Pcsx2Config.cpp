@@ -805,7 +805,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingIntEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
-	GSSettingIntEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
+	GSSettingIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
 	GSSettingIntEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
 	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
 	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
@@ -872,7 +872,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_NativePaletteDraw = false;
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_DisableRenderFixes = false;
-	UserHacks_HalfPixelOffset = 0;
+	UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 	UserHacks_RoundSprite = 0;
 	UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 	PreloadFrameWithGSData = false;
@@ -903,7 +903,7 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 	UserHacks_WildHack = false;
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	UserHacks_NativePaletteDraw = false;
-	UserHacks_HalfPixelOffset = 0;
+	UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 	UserHacks_RoundSprite = 0;
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;
@@ -1478,7 +1478,6 @@ Pcsx2Config::Pcsx2Config()
 {
 	bitset = 0;
 	// Set defaults for fresh installs / reset settings
-	McdEnableEjection = true;
 	McdFolderAutoManage = true;
 	EnablePatches = true;
 	EnableFastBoot = true;
@@ -1537,7 +1536,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 
 	SettingsWrapBitBool(BackupSavestate);
 	SettingsWrapBitBool(SavestateZstdCompression);
-	SettingsWrapBitBool(McdEnableEjection);
 	SettingsWrapBitBool(McdFolderAutoManage);
 
 	SettingsWrapBitBool(WarnAboutUnsafeSettings);
@@ -1687,7 +1685,7 @@ bool EmuFolders::InitializeCriticalFolders()
 
 void EmuFolders::SetAppRoot()
 {
-	std::string program_path(FileSystem::GetProgramPath());
+	const std::string program_path = FileSystem::GetProgramPath();
 	Console.WriteLn("Program Path: %s", program_path.c_str());
 
 	AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
@@ -1732,12 +1730,11 @@ void EmuFolders::SetDataDirectory()
 	const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
 	if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
 	{
-		DataRoot = Path::Combine(xdg_config_home, "PCSX2");
+		DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
 	}
 	else
 	{
 		// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
-		// Maybe we should drop the former when Qt goes live.
 		const char* home_dir = getenv("HOME");
 		if (home_dir)
 		{
@@ -1746,14 +1743,14 @@ void EmuFolders::SetDataDirectory()
 			if (!FileSystem::DirectoryExists(config_dir.c_str()))
 				FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
 
-			DataRoot = Path::Combine(config_dir, "PCSX2");
+			DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
 		}
 	}
 #elif defined(__APPLE__)
 	static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
 	const char* home_dir = getenv("HOME");
 	if (home_dir)
-		DataRoot = Path::Combine(home_dir, MAC_DATA_DIR);
+		DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
 
 	// make sure it exists

@@ -88,7 +88,18 @@ void MemoryCardProtocol::Probe()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	The2bTerminator(4);
+
+	if (!mcd->IsPresent())
+	{
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+	}
+	else
+	{
+		The2bTerminator(4);
+	}
 }
 
 void MemoryCardProtocol::UnknownWriteDeleteEnd()
@@ -180,22 +191,27 @@ void MemoryCardProtocol::SetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 newTerminator = g_Sio2FifoIn.front();
+	mcd->term = g_Sio2FifoIn.front();
 	g_Sio2FifoIn.pop_front();
-	const u8 oldTerminator = mcd->term;
-	mcd->term = newTerminator;
 	g_Sio2FifoOut.push_back(0x00);
 	g_Sio2FifoOut.push_back(0x2b);
-	g_Sio2FifoOut.push_back(oldTerminator);
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
+// This one is a bit unusual. Old and new versions of MCMAN seem to handle this differently.
+// Some commands may check [4] for the terminator. Others may check [3]. Typically, older
+// MCMAN revisions will exclusively check [4], and newer revisions will check both [3] and [4]
+// for different values. In all cases, they expect to see a valid terminator value.
+//
+// Also worth noting old revisions of MCMAN will not set anything other than 0x55 for the terminator,
+// while newer revisions will set the terminator to another value (most commonly 0x5a).
 void MemoryCardProtocol::GetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
 	g_Sio2FifoOut.push_back(0x2b);
 	g_Sio2FifoOut.push_back(mcd->term);
-	g_Sio2FifoOut.push_back(static_cast<u8>(Terminator::DEFAULT));
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
 void MemoryCardProtocol::WriteData()
@@ -223,6 +239,8 @@ void MemoryCardProtocol::WriteData()
 	g_Sio2FifoOut.push_back(mcd->term);
 
 	ReadWriteIncrement(writeLength);
+
+	MemcardBusy::SetBusy();
 }
 
 void MemoryCardProtocol::ReadData()
@@ -253,6 +271,12 @@ void MemoryCardProtocol::ReadData()
 u8 MemoryCardProtocol::PS1Read(u8 data)
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
+
+	if (!mcd->IsPresent())
+	{
+		return 0xff;
+	}
+
 	bool sendAck = true;
 	u8 ret = 0;
 
@@ -379,8 +403,9 @@ u8 MemoryCardProtocol::PS1Write(u8 data)
 	}
 
 	g_Sio0.SetAcknowledge(sendAck);
-
 	ps1McState.currentByte++;
+
+	MemcardBusy::SetBusy();
 	return ret;
 }
 
@@ -404,6 +429,8 @@ void MemoryCardProtocol::EraseBlock()
 	PS1_FAIL();
 	mcd->EraseBlock();
 	The2bTerminator(4);
+
+	MemcardBusy::SetBusy();
 }
 
 void MemoryCardProtocol::UnknownBoot()
@@ -489,7 +516,19 @@ void MemoryCardProtocol::AuthF3()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	The2bTerminator(5);
+
+	if (!mcd->IsPresent())
+	{
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+		g_Sio2FifoOut.push_back(0xff);
+	}
+	else
+	{
+		mcd->term = Terminator::READY;
+		The2bTerminator(5);
+	}
 }
 
 void MemoryCardProtocol::AuthF7()

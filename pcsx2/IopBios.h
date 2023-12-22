@@ -86,6 +86,6 @@ namespace R3000A
 	}
 } // namespace R3000A
 
-extern void Hle_SetElfPath(const char* elfFileName);
-extern void Hle_ClearElfPath();
+extern void Hle_SetHostRoot(const char* bootFilename);
+extern void Hle_ClearHostRoot();
 

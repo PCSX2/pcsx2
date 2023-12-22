@@ -37,6 +37,7 @@
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/ImGui/ImGuiOverlays.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
@@ -394,13 +395,33 @@ void EmuThread::run()
 	// Main CPU thread loop.
 	while (!m_shutdown_flag.load())
 	{
-		if (!VMManager::HasValidVM())
+		switch (VMManager::GetState())
 		{
-			m_event_loop->exec();
-			continue;
-		}
+			case VMState::Initializing:
+				pxFailRel("Shouldn't be in the starting state");
+				continue;
 
-		executeVM();
+			case VMState::Shutdown:
+			case VMState::Paused:
+				m_event_loop->exec();
+				continue;
+
+			case VMState::Running:
+				m_event_loop->processEvents(QEventLoop::AllEvents);
+				VMManager::Execute();
+				continue;
+
+			case VMState::Resetting:
+				VMManager::Reset();
+				continue;
+
+			case VMState::Stopping:
+				destroyVM();
+				continue;
+
+			default:
+				continue;
+		}
 	}
 
 	// Teardown in reverse order.
@@ -423,40 +444,6 @@ void EmuThread::destroyVM()
 	m_was_paused_by_focus_loss = false;
 	VMManager::Shutdown(m_save_state_on_shutdown);
 	m_save_state_on_shutdown = false;
-}
-
-void EmuThread::executeVM()
-{
-	for (;;)
-	{
-		switch (VMManager::GetState())
-		{
-			case VMState::Initializing:
-				pxFailRel("Shouldn't be in the starting state state");
-				continue;
-
-			case VMState::Paused:
-				m_event_loop->exec();
-				continue;
-
-			case VMState::Running:
-				m_event_loop->processEvents(QEventLoop::AllEvents);
-				VMManager::Execute();
-				continue;
-
-			case VMState::Resetting:
-				VMManager::Reset();
-				continue;
-
-			case VMState::Stopping:
-				destroyVM();
-				m_event_loop->processEvents(QEventLoop::AllEvents);
-				return;
-
-			default:
-				continue;
-		}
-	}
 }
 
 void EmuThread::createBackgroundControllerPollTimer()
@@ -1015,7 +1002,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		if (THREAD_VU1)
 		{
 			gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
-						  .arg(VMManager::GetCurrentActiveSaveStateSlot())
+						  .arg(SaveStateSelectorUI::GetCurrentSlot())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
@@ -1024,7 +1011,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		else
 		{
 			gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
-						  .arg(VMManager::GetCurrentActiveSaveStateSlot())
+						  .arg(SaveStateSelectorUI::GetCurrentSlot())
 						  .arg(gs_stat_str.c_str())
 						  .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 						  .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);

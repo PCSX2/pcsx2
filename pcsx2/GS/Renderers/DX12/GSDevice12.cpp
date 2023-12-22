@@ -861,6 +861,9 @@ bool GSDevice12::CreateSwapChain()
 		Console.WriteLn("Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
 		hr = m_dxgi_factory->CreateSwapChainForHwnd(
 			m_command_queue.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
+
+		if (FAILED(hr))
+			Console.Warning("Failed to create windowed swap chain.");
 	}
 
 	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
@@ -2926,8 +2929,8 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// image DATE prepass
-		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_MIN, D3D12_BLEND_ONE,
-			D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_RED);
+		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_MIN, D3D12_BLEND_ONE,
+			D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_RED);
 	}
 	else if (pbs.enable)
 	{

@@ -20,7 +20,7 @@
 class PadNotConnected final : public PadBase
 {
 public:
-	PadNotConnected(u8 unifiedSlot);
+	PadNotConnected(u8 unifiedSlot, size_t ejectTicks = 0);
 	~PadNotConnected() override;
 
 	Pad::ControllerType GetType() const override;

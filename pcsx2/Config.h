@@ -97,6 +97,7 @@ struct InputBindingInfo
 
 	const char* name;
 	const char* display_name;
+	const char* icon_name;
 	Type bind_type;
 	u16 bind_index;
 	GenericInputBinding generic_mapping;
@@ -374,6 +375,16 @@ enum class GSBilinearDirtyMode : u8
 	Automatic,
 	ForceBilinear,
 	ForceNearest,
+	MaxCount
+};
+
+enum class GSHalfPixelOffset : u8
+{
+	Off,
+	Normal,
+	Special,
+	SpecialAggressive,
+	Native,
 	MaxCount
 };
 
@@ -761,7 +772,7 @@ struct Pcsx2Config
 		int SkipDrawEnd = 0;
 
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
-		s8 UserHacks_HalfPixelOffset = 0;
+		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 		s8 UserHacks_RoundSprite = 0;
 		s32 UserHacks_TCOffsetX = 0;
 		s32 UserHacks_TCOffsetY = 0;
@@ -1287,8 +1298,6 @@ struct Pcsx2Config
 		InhibitScreensaver : 1,
 		BackupSavestate : 1,
 		SavestateZstdCompression : 1,
-		// enables simulated ejection of memory cards when loading savestates
-		McdEnableEjection : 1,
 		McdFolderAutoManage : 1,
 
 		HostFs : 1,

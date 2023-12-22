@@ -18,6 +18,8 @@ body:
 
         Please make an effort to make sure your issue isn't already reported.
 
+        Do not create issues involving software piracy of BIOS or ISO files, our rules specifically prohibit this and your issue will be closed.
+
         ### Please Avoid Issues Pertaining to the Following:
         - We are **not** accepting bug reports for **PSX mode** at this time.
           - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use  [Duckstation](https://github.com/stenzek/duckstation/releases/tag/latest).

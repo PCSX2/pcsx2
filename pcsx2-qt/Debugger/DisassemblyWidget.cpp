@@ -234,6 +234,11 @@ void DisassemblyWidget::contextAddFunction()
 	}
 }
 
+void DisassemblyWidget::contextCopyFunctionName()
+{
+	QGuiApplication::clipboard()->setText(QString::fromStdString(m_cpu->GetSymbolMap().GetLabelName(m_selectedAddressStart)));
+}
+
 void DisassemblyWidget::contextRemoveFunction()
 {
 	u32 curFuncAddr = m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart);
@@ -665,6 +670,11 @@ void DisassemblyWidget::customMenuRequested(QPoint pos)
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionHex);
 	contextMenu->addAction(action = new QAction(tr("Copy Instruction Text"), this));
 	connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyInstructionText);
+	if (m_selectedAddressStart == m_cpu->GetSymbolMap().GetFunctionStart(m_selectedAddressStart)) 
+	{
+		contextMenu->addAction(action = new QAction(tr("Copy Function Name"), this));
+		connect(action, &QAction::triggered, this, &DisassemblyWidget::contextCopyFunctionName);
+	}
 	contextMenu->addSeparator();
 	if (AddressCanRestore(m_selectedAddressStart, m_selectedAddressEnd))
 	{
@@ -827,7 +837,7 @@ QString DisassemblyWidget::FetchSelectionInfo(SelectionInfo selInfo)
 	return infoBlock;
 }
 
-void DisassemblyWidget::gotoAddress(u32 address)
+void DisassemblyWidget::gotoAddress(u32 address, bool should_set_focus)
 {
 	const u32 destAddress = address & ~3;
 	// Center the address
@@ -836,7 +846,8 @@ void DisassemblyWidget::gotoAddress(u32 address)
 	m_selectedAddressEnd = destAddress;
 
 	this->repaint();
-	this->setFocus();
+	if(should_set_focus)
+		this->setFocus();
 }
 
 bool DisassemblyWidget::AddressCanRestore(u32 start, u32 end)

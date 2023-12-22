@@ -158,9 +158,13 @@ namespace Patch
 	static std::vector<std::string> FindPatchFilesOnDisk(
 		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
 
+	static bool ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName);
+	static bool ContainsPatchName(const PatchList& patches, const std::string_view patchName);
+
 	template <typename F>
 	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
 
+	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
 	static void ReloadEnabledLists();
 	static u32 EnablePatches(const PatchList& patches, const EnablePatchList& enable_list);
@@ -215,6 +219,13 @@ void Patch::TrimPatchLine(std::string& buffer)
 		buffer.erase(pos);
 }
 
+bool Patch::ContainsPatchName(const PatchList& patch_list, const std::string_view patch_name)
+{
+	return std::find_if(patch_list.begin(), patch_list.end(), [&patch_name](const PatchGroup& patch) {
+		return patch.name == patch_name;
+	}) != patch_list.end();
+}
+
 int Patch::PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
 	const std::span<const PatchTextTable>& Table)
 {
@@ -267,7 +278,15 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 
 			if (!current_patch_group.name.empty() || !current_patch_group.patches.empty())
 			{
-				patch_list->push_back(std::move(current_patch_group));
+				// Don't show patches with duplicate names, prefer the first loaded.
+				if (!ContainsPatchName(*patch_list, current_patch_group.name))
+				{
+					patch_list->push_back(std::move(current_patch_group));
+				}
+				else
+				{
+					Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped loading patch '{}' since a patch with a duplicate name was already loaded.", current_patch_group.name));
+				}
 				current_patch_group = {};
 			}
 
@@ -350,6 +369,13 @@ std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& ser
 	return ret;
 }
 
+bool Patch::ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName)
+{
+	return std::find_if(patches.begin(), patches.end(), [&patchName](const PatchInfo& patch) {
+		return patch.name == patchName;
+	}) != patches.end();
+}
+
 template <typename F>
 void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f)
 {
@@ -358,20 +384,28 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 	if (for_ui || !Achievements::IsHardcoreModeActive())
 		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats, for_ui);
 
+	bool unlabeled_patch_found = false;
 	if (!disk_patch_files.empty())
 	{
 		for (const std::string& file : disk_patch_files)
 		{
 			std::optional<std::string> contents = FileSystem::ReadFileToString(file.c_str());
 			if (contents.has_value())
-				f(std::move(file), std::move(contents.value()));
-		}
+			{
+				// Catch if unlabeled patches are being loaded so we can disable ZIP patches to prevent conflicts.
+				if (PatchStringHasUnlabelledPatch(contents.value()))
+				{
+					unlabeled_patch_found = true;
+					Console.WriteLn(fmt::format("Patch: Disabling any bundled '{}' patches due to unlabeled patch being loaded. (To avoid conflicts)", PATCHES_ZIP_NAME));
+				}
 
-		return;
+				f(std::move(file), std::move(contents.value()));
+			}
+		}
 	}
 
 	// Otherwise fall back to the zip.
-	if (cheats || !OpenPatchesZip())
+	if (cheats || unlabeled_patch_found || !OpenPatchesZip())
 		return;
 
 	// Prefer filename with serial.
@@ -384,6 +418,39 @@ void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool ch
 	}
 	if (pnach_data.has_value())
 		f(std::move(zip_filename), std::move(pnach_data.value()));
+}
+
+bool Patch::PatchStringHasUnlabelledPatch(const std::string& pnach_data)
+{
+	std::istringstream ss(pnach_data);
+	std::string line;
+	bool foundPatch = false, foundLabel = false;
+
+	while (std::getline(ss, line))
+	{
+		TrimPatchLine(line);
+		if (line.empty())
+			continue;
+
+		if (line.length() > 2 && line.front() == '[' && line.back() == ']')
+		{
+			if (!foundPatch)
+				return false;
+			foundLabel = true;
+			continue;
+		}
+
+		std::string_view key, value;
+		StringUtil::ParseAssignmentString(line, &key, &value);
+		if (key == "patch")
+		{
+			if (!foundLabel)
+				return true;
+
+			foundPatch = true;
+		}
+	}
+	return false;
 }
 
 void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches)
@@ -406,7 +473,15 @@ void Patch::ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, 
 				if (std::none_of(dst->begin(), dst->end(),
 						[&current_patch](const PatchInfo& pi) { return (pi.name == current_patch.name); }))
 				{
-					dst->push_back(std::move(current_patch));
+					// Don't show patches with duplicate names, prefer the first loaded.
+					if (!ContainsPatchName(*dst, current_patch.name))
+					{
+						dst->push_back(std::move(current_patch));
+					}
+					else
+					{
+						Console.WriteLn(Color_Gray, fmt::format("Patch: Skipped reading patch '{}' since a patch with a duplicate name was already loaded.", current_patch.name));
+					}
 				}
 				current_patch = {};
 			}

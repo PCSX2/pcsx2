@@ -46,6 +46,7 @@
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
 #include "pcsx2/Recording/InputRecordingControls.h"
+#include "pcsx2/SIO/Sio.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
@@ -66,24 +67,26 @@
 #endif
 
 const char* MainWindow::OPEN_FILE_FILTER =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
+	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
 									"Media Descriptor File (*.mdf);;"
 									"MAME CHD Images (*.chd);;"
 									"CSO Images (*.cso);;"
+									"ZSO Images (*.zso);;"
 									"GZ Images (*.gz);;"
 									"ELF Executables (*.elf);;"
 									"IRX Executables (*.irx);;"
 									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
 									"Block Dumps (*.dump)");
 
-const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.gz *.dump);;"
+const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;"
 																			"Single-Track Raw Images (*.bin *.iso);;"
 																			"Cue Sheets (*.cue);;"
 																			"Media Descriptor File (*.mdf);;"
 																			"MAME CHD Images (*.chd);;"
 																			"CSO Images (*.cso);;"
+																			"ZSO Images (*.zso);;"
 																			"GZ Images (*.gz);;"
 																			"Block Dumps (*.dump)");
 
@@ -433,10 +436,10 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onAchievementsHardcoreModeChanged, this, &MainWindow::onAchievementsHardcoreModeChanged);
 	connect(thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
 
-	connect(m_ui.actionReset, &QAction::triggered, thread, &EmuThread::resetVM);
+	connect(m_ui.actionReset, &QAction::triggered, this, &MainWindow::requestReset);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
 	connect(m_ui.actionFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
-	connect(m_ui.actionToolbarReset, &QAction::triggered, thread, &EmuThread::resetVM);
+	connect(m_ui.actionToolbarReset, &QAction::triggered, this, &MainWindow::requestReset);
 	connect(m_ui.actionToolbarPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
 	connect(m_ui.actionToolbarFullscreen, &QAction::triggered, thread, &EmuThread::toggleFullscreen);
 	connect(m_ui.actionToggleSoftwareRendering, &QAction::triggered, thread, &EmuThread::toggleSoftwareRendering);
@@ -457,8 +460,15 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 
 void MainWindow::recreate()
 {
-	if (s_vm_valid)
-		requestShutdown(false, true, EmuConfig.SaveStateOnShutdown);
+	const bool was_display_created = m_display_created;
+	if (was_display_created)
+	{
+		g_emu_thread->setSurfaceless(true);
+		while (m_display_widget || !g_emu_thread->isSurfaceless())
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+		m_display_created = false;
+	}
 
 	// We need to close input sources, because e.g. DInput uses our window handle.
 	g_emu_thread->closeInputSources();
@@ -467,6 +477,7 @@ void MainWindow::recreate()
 	g_main_window = nullptr;
 
 	MainWindow* new_main_window = new MainWindow();
+	pxAssert(g_main_window == new_main_window);
 	new_main_window->initialize();
 	new_main_window->refreshGameList(false);
 	new_main_window->show();
@@ -474,6 +485,13 @@ void MainWindow::recreate()
 
 	// Reload the sources we just closed.
 	g_emu_thread->reloadInputSources();
+
+	if (was_display_created)
+	{
+		g_emu_thread->setSurfaceless(false);
+		g_main_window->updateEmulationActions(false, s_vm_valid, Achievements::IsHardcoreModeActive());
+		g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
+	}
 }
 
 void MainWindow::recreateSettings()
@@ -534,6 +552,8 @@ void MainWindow::destroySubWindows()
 		m_settings_window->deleteLater();
 		m_settings_window = nullptr;
 	}
+
+	SettingsWindow::closeGamePropertiesDialogs();
 }
 
 void MainWindow::onScreenshotActionTriggered()
@@ -958,7 +978,26 @@ bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) ||
-		   (g_emu_thread->shouldRenderToMain() && isRenderingFullscreen()) || QtHost::InNoGUIMode();
+		   (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || m_is_temporarily_windowed)) ||
+		   QtHost::InNoGUIMode();
+}
+
+bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
+{
+	if (MemcardBusy::IsBusy() && !GSDumpReplayer::IsReplayingDump())
+	{
+		const QMessageBox::StandardButton res = QMessageBox::question(
+			lock.getDialogParent(),
+			tr("WARNING: Memory Card Busy"),
+			tr("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"));
+
+		if (res != QMessageBox::Yes)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void MainWindow::switchToGameListView()
@@ -1028,6 +1067,22 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 	func();
 }
 
+void MainWindow::requestReset()
+{
+	if (!s_vm_valid)
+		return;
+
+	const auto lock = pauseAndLockVM();
+
+	// Check if memcard is busy, deny request if so
+	if (shouldAbortForMemcardBusy(lock))
+	{
+		return;
+	}
+
+	g_emu_thread->resetVM();
+}
+
 bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool default_save_to_state)
 {
 	if (!s_vm_valid)
@@ -1036,12 +1091,17 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 	// If we don't have a crc, we can't save state.
 	allow_save_to_state &= (m_current_disc_crc != 0);
 	bool save_state = allow_save_to_state && default_save_to_state;
+	VMLock lock(pauseAndLockVM());
+
+	// Check if memcard is busy, deny request if so.
+	if (shouldAbortForMemcardBusy(lock))
+	{
+		return false;
+	}
 
 	// Only confirm on UI thread because we need to display a msgbox.
 	if (!m_is_closing && allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
-		VMLock lock(pauseAndLockVM());
-
 		QMessageBox msgbox(lock.getDialogParent());
 		msgbox.setIcon(QMessageBox::Question);
 		msgbox.setWindowTitle(tr("Confirm Shutdown"));
@@ -1823,10 +1883,10 @@ void MainWindow::showEvent(QShowEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
 	// If there's no VM, we can just exit as normal.
-	if (!s_vm_valid)
+	if (!s_vm_valid || !m_display_created)
 	{
 		saveStateToConfig();
-		if (m_display_widget)
+		if (m_display_created)
 			g_emu_thread->stopFullscreenUI();
 		destroySubWindows();
 		QMainWindow::closeEvent(event);
@@ -1883,6 +1943,14 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
+	const auto mcLock = pauseAndLockVM();
+
+	// Check if memcard is busy, deny request if so
+	if (shouldAbortForMemcardBusy(mcLock))
+	{
+		return;
+	}
+
 	const QString filename(getFilenameFromMimeData(event->mimeData()));
 	const std::string filename_str(filename.toStdString());
 	if (VMManager::IsSaveStateFileName(filename_str))
@@ -2021,7 +2089,10 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 		}
 		else
 		{
-			restoreDisplayWindowGeometryFromConfig();
+			if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
+				container->setGeometry(geometry());
+			else
+				restoreDisplayWindowGeometryFromConfig();
 			container->showNormal();
 		}
 
@@ -2107,7 +2178,10 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	}
 	else if (!render_to_main)
 	{
-		restoreDisplayWindowGeometryFromConfig();
+		if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
+			container->setGeometry(geometry());
+		else
+			restoreDisplayWindowGeometryFromConfig();
 		container->showNormal();
 	}
 	else if (s_use_central_widget)
@@ -2310,10 +2384,16 @@ SettingsWindow* MainWindow::getSettingsWindow()
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
 	SettingsWindow* dlg = getSettingsWindow();
-	if (dlg->isVisible())
-		dlg->raise();
-	else
+	if (!dlg->isVisible())
+	{
 		dlg->show();
+	}
+	else
+	{
+		dlg->raise();
+		dlg->activateWindow();
+		dlg->setFocus();
+	}
 
 	if (category)
 		dlg->setCategory(category);
@@ -2336,18 +2416,20 @@ void MainWindow::openDebugger()
 
 void MainWindow::doControllerSettings(ControllerSettingsWindow::Category category)
 {
-	if (m_controller_settings_window)
+	if (!m_controller_settings_window)
+		m_controller_settings_window = new ControllerSettingsWindow();
+
+	if (!m_controller_settings_window->isVisible())
 	{
-		if (m_controller_settings_window->isVisible())
-			m_controller_settings_window->raise();
-		else
-			m_controller_settings_window->show();
+		m_controller_settings_window->show();
 	}
 	else
 	{
-		m_controller_settings_window = new ControllerSettingsWindow();
-		m_controller_settings_window->show();
+		m_controller_settings_window->raise();
+		m_controller_settings_window->activateWindow();
+		m_controller_settings_window->setFocus();
 	}
+
 
 	if (category != ControllerSettingsWindow::Category::Count)
 		m_controller_settings_window->setCategory(category);
@@ -2570,7 +2652,7 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 	QAction* action = menu->addAction(is_right_click_menu ? tr("Load State File...") : tr("Load From File..."));
 	connect(action, &QAction::triggered, [this, filename]() {
-		const QString path(QFileDialog::getOpenFileName(this, tr("Select Save State File"), QString(), tr("Save States (*.p2s)")));
+		const QString path(QFileDialog::getOpenFileName(this, tr("Select Save State File"), QString(), tr("Save States (*.p2s *.p2s.backup)")));
 		if (path.isEmpty())
 			return;
 
@@ -2708,6 +2790,12 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 {
 	const auto lock = pauseAndLockVM();
 
+	// Check if memcard is busy, deny request if so
+	if (shouldAbortForMemcardBusy(lock))
+	{
+		return;
+	}
+
 	bool reset_system = false;
 	if (!m_was_disc_change_request)
 	{
@@ -2759,9 +2847,19 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 	// However, we do not want to switch back to render-to-main, the window might have generated this event.
 	if (was_fullscreen)
 	{
+		// m_is_temporarily_windowed needs to be set, so that we don't show the main window just for this popup.
+		pxAssertRel(!g_main_window->m_is_temporarily_windowed, "Not already temporarily windowed");
+		g_main_window->m_is_temporarily_windowed = true;
+
 		g_emu_thread->setFullscreen(false, false);
-		while (QtHost::IsVMValid() && g_emu_thread->isFullscreen())
-			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+		// Container could change... thanks Wayland.
+		QWidget* container;
+		while (QtHost::IsVMValid() && (g_emu_thread->isFullscreen() ||
+										  !(container = getDisplayContainer()) || container->isFullScreen()))
+		{
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+		}
 	}
 
 	// Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
@@ -2795,7 +2893,10 @@ MainWindow::VMLock::VMLock(VMLock&& lock)
 MainWindow::VMLock::~VMLock()
 {
 	if (m_was_fullscreen)
+	{
+		g_main_window->m_is_temporarily_windowed = false;
 		g_emu_thread->setFullscreen(true, true);
+	}
 
 	if (!m_was_paused)
 		g_emu_thread->setVMPaused(false);
@@ -2805,6 +2906,7 @@ void MainWindow::VMLock::cancelResume()
 {
 	m_was_paused = true;
 	m_was_fullscreen = false;
+	g_main_window->m_is_temporarily_windowed = false;
 }
 
 bool QtHost::IsVMValid()

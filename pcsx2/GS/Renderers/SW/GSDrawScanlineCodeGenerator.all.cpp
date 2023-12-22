@@ -2310,7 +2310,7 @@ void GSDrawScanlineCodeGenerator2::ColorTFX()
 	const XYm& f_ga  = _f_ga;
 	const XYm& tmpga = xym2;
 
-	auto modulate16_1_rb = [&]
+	auto modulate16_1_rb = [this]
 	{
 		// GSVector4i rb = iip ? rbf : m_local.c.rb;
 		modulate16(_rb, _f_rb, 1);

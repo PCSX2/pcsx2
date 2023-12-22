@@ -676,10 +676,8 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		return false;
 	}
 
-	GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo RGB channel shuffle");
-
-	GSTextureCache::Target* tex = g_texture_cache->LookupTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
-	if (!tex)
+	GSTextureCache::Target* src = g_texture_cache->LookupTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+	if (!src)
 		return false;
 
 	// have to set up the palette ourselves too, since GSC executes before it does
@@ -693,14 +691,64 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	shuffle_hle_active = true;
 	skip = 1;
 
-	GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
-		tex->GetTexture(), nullptr, tex->GetScale(), tex->GetTexture(), tex->GetScale(), tex->GetUnscaledRect());
-	config.pal = palette->GetPaletteGSTexture();
-	config.ps.channel = ChannelFetch_RGB;
-	config.colormask.wrgba = 1 | 2 | 4;
-	r.EndHLEHardwareDraw(false);
+	const u32 fbmsk = RFBMSK;
+	if (RFBMSK != 0x00FFFFFFu)
+	{
+		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo RGB channel shuffle");
 
-	return true;
+		GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
+			src->GetTexture(), nullptr, src->GetScale(), src->GetTexture(), src->GetScale(), src->GetUnscaledRect());
+		config.pal = palette->GetPaletteGSTexture();
+		config.ps.channel = ChannelFetch_RGB;
+		config.colormask.wrgba = 1 | 2 | 4;
+		r.EndHLEHardwareDraw(false);
+
+		return true;
+	}
+	else
+	{
+		// There's a second variant of this shuffle which gets used in the fade on some setups. See issue #10144.
+		// Instead of extracting the RGB channels, then immediately applying the brightness effect, it extracts
+		// each channel to a separate buffer, then applies them a few hundred draws later. So, we can replicate
+		// that in HLE by creating 3 targets, extracting the corresponding channel to each.
+
+		// Can't use the valid of src, because it gets converted from depth at some point..
+		// Use the drawn, it's 640x256, which should be correct. The 3 targets get stacked up immediately after
+		// each other, in NTSC, that's 0x0, 0xA00, 0x1400, but try to compute it dynamically in case it differs.
+		const GSVector2i size = GSVector2i(src->m_drawn_since_read.z, src->m_drawn_since_read.w);
+		const u32 page_offset = (size.y / 32) * src->m_TEX0.TBW * BLOCKS_PER_PAGE;
+
+		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo A channel shuffle");
+		GL_INS("Src: %x %s TBW %u, Dst: %x, %x, %x", src->m_TEX0.TBP0, psm_str(src->m_TEX0.PSM), src->m_TEX0.TBW,
+			src->m_TEX0.TBP0, src->m_TEX0.TBP0 + page_offset, src->m_TEX0.TBP0 + page_offset * 2);
+		GL_INS("Rect: %d,%d => %d,%d", src->m_drawn_since_read.x, src->m_drawn_since_read.y,
+			src->m_drawn_since_read.z, src->m_drawn_since_read.w);
+
+		for (u32 channel = 0; channel < 3; channel++)
+		{
+			const GIFRegTEX0 TEX0 = GIFRegTEX0::Create(RTEX0.TBP0 + channel * page_offset, RTEX0.TBW, PSMCT32);
+			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, src->GetUnscaledSize(), src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
+			if (!dst)
+			{
+				dst = g_texture_cache->CreateTarget(TEX0, size, size, src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
+				if (!dst)
+					continue;
+			}
+
+			dst->m_TEX0.PSM = PSMCT32;
+			dst->UpdateValidChannels(PSMCT32, fbmsk);
+			dst->UpdateValidity(GSVector4i::loadh(size));
+
+			GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
+				dst->GetTexture(), nullptr, dst->GetScale(), src->GetTexture(), src->GetScale(), src->GetUnscaledRect());
+			config.pal = palette->GetPaletteGSTexture();
+			config.ps.channel = ChannelFetch_RED + channel;
+			config.colormask.wrgba = 8;
+			r.EndHLEHardwareDraw(false);
+		}
+
+		return true;
+	}
 }
 
 bool GSHwHack::GSC_BlueTongueGames(GSRendererHW& r, int& skip)

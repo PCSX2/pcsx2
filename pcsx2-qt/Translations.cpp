@@ -22,6 +22,7 @@
 #include "common/StringUtil.h"
 
 #include "pcsx2/ImGui/ImGuiManager.h"
+#include "pcsx2/MTGS.h"
 
 #include "fmt/format.h"
 #include "imgui.h"
@@ -48,6 +49,10 @@ QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Show All")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Preferences...")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
 QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
+
+// Strings that will be parsed out by our build system and sent to fun places
+QT_TRANSLATE_NOOP("PermissionsDialogMicrophone", "PCSX2 uses your microphone to emulate a USB microphone plugged into the virtual PS2")
+QT_TRANSLATE_NOOP("PermissionsDialogCamera", "PCSX2 uses your camera to emulate an EyeToy camera plugged into the virtual PS2")
 #endif
 
 namespace QtHost
@@ -64,8 +69,6 @@ namespace QtHost
 	static std::string GetFontPath(const GlyphInfo* gi);
 	static void UpdateGlyphRanges(const std::string_view& language);
 	static const GlyphInfo* GetGlyphInfo(const std::string_view& language);
-
-	static std::vector<ImWchar> s_glyph_ranges;
 
 	static QLocale s_current_locale;
 	static QCollator s_current_collator;
@@ -191,10 +194,18 @@ void QtHost::InstallTranslator()
 		s_translators.push_back(translator);
 	}
 
-	UpdateGlyphRanges(language.toStdString());
-
-	// Clear translation cache after installing translators, to prevent races.
-	Host::ClearTranslationCache();
+	// We end up here both on language change, and on startup.
+	if (g_emu_thread)
+	{
+		Host::RunOnCPUThread([language = language.toStdString()]() {
+			UpdateGlyphRanges(language);
+			Host::ClearTranslationCache();
+		});
+	}
+	else
+	{
+		UpdateGlyphRanges(language.toStdString());
+	}
 }
 
 static std::string QtHost::GetFontPath(const GlyphInfo* gi)
@@ -303,10 +314,10 @@ void QtHost::UpdateGlyphRanges(const std::string_view& language)
 	const GlyphInfo* gi = GetGlyphInfo(language);
 
 	std::string font_path;
-	s_glyph_ranges.clear();
+	std::vector<ImWchar> glyph_ranges;
 
 	// Base Latin range is always included.
-	s_glyph_ranges.insert(s_glyph_ranges.begin(), std::begin(s_base_latin_range), std::end(s_base_latin_range));
+	glyph_ranges.insert(glyph_ranges.begin(), std::begin(s_base_latin_range), std::end(s_base_latin_range));
 
 	if (gi)
 	{
@@ -317,8 +328,8 @@ void QtHost::UpdateGlyphRanges(const std::string_view& language)
 			{
 				// Always should be in pairs.
 				pxAssert(ptr[0] != 0 && ptr[1] != 0);
-				s_glyph_ranges.push_back(*(ptr++));
-				s_glyph_ranges.push_back(*(ptr++));
+				glyph_ranges.push_back(*(ptr++));
+				glyph_ranges.push_back(*(ptr++));
 			}
 		}
 
@@ -328,16 +339,25 @@ void QtHost::UpdateGlyphRanges(const std::string_view& language)
 	// If we don't have any specific glyph range, assume Central European, except if English, then keep the size down.
 	if ((!gi || !gi->used_glyphs) && language != "en")
 	{
-		s_glyph_ranges.insert(
-			s_glyph_ranges.begin(), std::begin(s_central_european_ranges), std::end(s_central_european_ranges));
+		glyph_ranges.insert(
+			glyph_ranges.begin(), std::begin(s_central_european_ranges), std::end(s_central_european_ranges));
 	}
 
 	// List terminator.
-	s_glyph_ranges.push_back(0);
-	s_glyph_ranges.push_back(0);
+	glyph_ranges.push_back(0);
+	glyph_ranges.push_back(0);
 
-	ImGuiManager::SetFontPath(std::move(font_path));
-	ImGuiManager::SetFontRange(s_glyph_ranges.data());
+	// Called on CPU thread, so we need to do this on the GS thread if it's active.
+	if (MTGS::IsOpen())
+	{
+		MTGS::RunOnGSThread([font_path = std::move(font_path), glyph_ranges = std::move(glyph_ranges)]() mutable {
+			ImGuiManager::SetFontPathAndRange(std::move(font_path), std::move(glyph_ranges));
+		});
+	}
+	else
+	{
+		ImGuiManager::SetFontPathAndRange(std::move(font_path), std::move(glyph_ranges));
+	}
 }
 
 // clang-format off

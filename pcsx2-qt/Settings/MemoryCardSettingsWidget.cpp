@@ -55,7 +55,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidg
 
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders",
 		"MemoryCards", Path::Combine(EmuFolders::DataRoot, "memcards"));
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoEject, "EmuCore", "McdEnableEjection", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticManagement, "EmuCore", "McdFolderAutoManage", true);
 
 	setupAdditionalUi();
@@ -75,9 +74,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidg
 	connect(m_ui.deleteCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::deleteCard);
 
 	refresh();
-
-	dialog->registerWidgetHelp(m_ui.autoEject, tr("Auto-eject Memory Cards when loading save states"), tr("Checked"),
-		tr("Avoids broken Memory Card saves. May not work with some games such as Guitar Hero."));
 
 	dialog->registerWidgetHelp(m_ui.automaticManagement, tr("Automatically manage saves based on running game"),
 		tr("Checked"),
