@@ -94,3 +94,4 @@ CMakeSettings.json
 
 /pcsx2/crash-*.dmp
 /pcsx2/crash-*.txt
+/bin/hostfs/dl
