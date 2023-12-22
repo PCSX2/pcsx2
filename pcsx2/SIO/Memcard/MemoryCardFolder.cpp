@@ -576,7 +576,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent)
 {
 	const std::string filePath(Path::Combine(dirPath, fileEntry.m_fileName));
-	pxAssertMsg(StringUtil::StartsWith(filePath, m_folderName.c_str()), "Full file path starts with MC folder path");
+	pxAssertMsg(filePath.starts_with(m_folderName), "Full file path starts with MC folder path");
 	const std::string relativeFilePath(filePath.substr(m_folderName.length() + 1));
 
 	if (auto file = FileSystem::OpenManagedCFile(filePath.c_str(), "rb"); file)
@@ -668,7 +668,7 @@ u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory(const std::string& di
 	FileSystem::FindFiles(dirPath.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &files);
 	for (const FILESYSTEM_FIND_DATA& fd : files)
 	{
-		if (StringUtil::StartsWith(fd.FileName, "_pcsx2_"))
+		if (fd.FileName.starts_with("_pcsx2_"))
 			continue;
 
 		++requiredFileEntryPages;
@@ -1803,7 +1803,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 
 		for (FILESYSTEM_FIND_DATA& fd : results)
 		{
-			if (StringUtil::StartsWith(fd.FileName, "_pcsx2_"))
+			if (fd.FileName.starts_with("_pcsx2_"))
 				continue;
 
 			std::string filePath(Path::Combine(dirPath, fd.FileName));
@@ -2176,7 +2176,7 @@ void FileAccessHelper::CloseMatching(const std::string_view& path)
 {
 	for (auto it = m_files.begin(); it != m_files.end();)
 	{
-		if (StringUtil::StartsWith(it->second.hostFilePath, path))
+		if (it->second.hostFilePath.starts_with(path))
 		{
 			CloseFileHandle(it->second.fileHandle, it->second.fileRef->entry);
 			it = m_files.erase(it);

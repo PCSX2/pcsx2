@@ -209,17 +209,6 @@ namespace StringUtil
 	std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
 	std::string EncodeHex(const u8* data, int length);
 
-	/// starts_with from C++20
-	static inline bool StartsWith(const std::string_view& str, const std::string_view& prefix)
-	{
-		return (str.compare(0, prefix.length(), prefix) == 0);
-	}
-	static inline bool EndsWith(const std::string_view& str, const std::string_view& suffix)
-	{
-		const std::size_t suffix_length = suffix.length();
-		return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
-	}
-
 	/// StartsWith/EndsWith variants which aren't case sensitive.
 	static inline bool StartsWithNoCase(const std::string_view& str, const std::string_view& prefix)
 	{

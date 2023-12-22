@@ -187,7 +187,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			auto fix = std::string(n.val().str, n.val().len);
 
 			// Enum values don't end with Hack, but gamedb does, so remove it before comparing.
-			if (StringUtil::EndsWith(fix, "Hack"))
+			if (fix.ends_with("Hack"))
 			{
 				fix.erase(fix.size() - 4);
 				for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)

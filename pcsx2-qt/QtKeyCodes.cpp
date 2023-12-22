@@ -476,7 +476,7 @@ std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::stri
 {
 	std::string_view compare_name = str;
 	u32 modifier_bits = 0;
-	if (StringUtil::StartsWith(compare_name, "Numpad"))
+	if (compare_name.starts_with("Numpad"))
 	{
 		compare_name = compare_name.substr(6);
 		modifier_bits |= Qt::KeypadModifier;

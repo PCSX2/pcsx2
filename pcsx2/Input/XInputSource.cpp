@@ -266,7 +266,7 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
 
 std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
 {
-	if (!StringUtil::StartsWith(device, "XInput-") || binding.empty())
+	if (!device.starts_with("XInput-") || binding.empty())
 		return std::nullopt;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(7));
@@ -277,7 +277,7 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_vi
 	key.source_type = InputSourceType::XInput;
 	key.source_index = static_cast<u32>(player_id.value());
 
-	if (StringUtil::EndsWith(binding, "Motor"))
+	if (binding.ends_with("Motor"))
 	{
 		key.source_subtype = InputSubclass::ControllerMotor;
 		if (binding == "LargeMotor")
@@ -399,7 +399,7 @@ std::vector<InputBindingKey> XInputSource::EnumerateMotors()
 
 bool XInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
 {
-	if (!StringUtil::StartsWith(device, "XInput-"))
+	if (!device.starts_with("XInput-"))
 		return false;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(7));

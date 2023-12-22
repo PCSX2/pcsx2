@@ -169,7 +169,7 @@ namespace R3000A
 		// For now it just supports relative folders from the location of the elf
 		std::string native_path(Path::Canonicalize(path));
 		std::string new_path;
-		if (!hostRoot.empty() && StringUtil::StartsWith(native_path, hostRoot))
+		if (!hostRoot.empty() && native_path.starts_with(hostRoot))
 			new_path = std::move(native_path);
 		else if (!hostRoot.empty()) // relative paths
 			new_path = Path::Combine(hostRoot, native_path);
@@ -195,7 +195,7 @@ namespace R3000A
 		{
 			// Only allow descendants of the hostfs directory.
 			if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
-				!StringUtil::StartsWith(canonicalized_path, hostRoot) || // and start with the host root,
+				!canonicalized_path.starts_with(hostRoot) || // and start with the host root,
 				canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
 			{
 				Console.Error(fmt::format(
