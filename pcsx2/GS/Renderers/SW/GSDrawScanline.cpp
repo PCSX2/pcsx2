@@ -395,7 +395,7 @@ __ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineG
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	switch (sel.afail)
@@ -420,7 +420,7 @@ __ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineG
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	return true;

@@ -364,7 +364,7 @@ GSVideoMode GSState::GetVideoMode()
 			return GSVideoMode::Unknown;
 	}
 
-	__assume(0); // unreachable
+	ASSUME(0); // unreachable
 }
 
 float GSState::GetTvRefreshRate()
@@ -388,7 +388,7 @@ float GSState::GetTvRefreshRate()
 			return 0;
 	}
 
-	__assume(0); // unreachable
+	ASSUME(0); // unreachable
 }
 
 const char* GSState::GetFlushReasonString(GSFlushReason reason)
@@ -1658,7 +1658,7 @@ void GSState::FlushPrim()
 				case GS_INVALID:
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			pxAssert((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
@@ -2427,7 +2427,7 @@ void GSState::Transfer(const u8* mem, u32 size)
 
 								break;
 							default:
-								__assume(0);
+								ASSUME(0);
 						}
 
 						path.nloop = 0;
@@ -2494,7 +2494,7 @@ void GSState::Transfer(const u8* mem, u32 size)
 					break;
 				}
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 
@@ -3477,7 +3477,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 					GrowVertexBuffer(); // in case too many vertices were skipped
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 
 		return;
@@ -3576,7 +3576,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 			m_vertex.tail = head;
 			return;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	// Update rectangle for the current draw. We can use the re-integer coordinates from min/max here.
@@ -3678,7 +3678,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			vr.z = (maxu | minu) + 1;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	switch (wmt)
@@ -3696,7 +3696,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			vr.w = (maxv | minv) + 1;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	// Software renderer fixes TEX0 so that TW/TH contain MAXU/MAXV.
@@ -3925,7 +3925,7 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 					m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			switch (context->TEX0.TFX)
@@ -3955,7 +3955,7 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 					a.z = a.w;
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 		min = a.x;
@@ -3995,7 +3995,7 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 				return true;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	bool pass = true;
@@ -4069,7 +4069,7 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 					return false;
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 	}
 
@@ -4091,7 +4091,7 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 				zm = 0xffffffff;
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 	}
 

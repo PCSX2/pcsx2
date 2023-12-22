@@ -23,6 +23,9 @@
 
 #ifdef PCSX2_DEVBUILD
 
+#define safe_fclose(ptr) \
+	((void)((((ptr) != nullptr) && (std::fclose(ptr), !!0)), (ptr) = nullptr))
+
 static FILE* DMA4LogFile = nullptr;
 static FILE* DMA7LogFile = nullptr;
 static FILE* ADMA4LogFile = nullptr;

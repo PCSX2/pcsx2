@@ -235,7 +235,7 @@ void GSLocalMemoryFunctions::WriteImageColumn(GSLocalMemory& mem, int l, int r, 
 				case PSMZ16: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				case PSMZ16S: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 		}
 	}
@@ -262,7 +262,7 @@ void GSLocalMemoryFunctions::WriteImageBlock(GSLocalMemory& mem, int l, int r, i
 				case PSMZ16: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				case PSMZ16S: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 		}
 	}
@@ -289,7 +289,7 @@ void GSLocalMemoryFunctions::WriteImageLeftRight(GSLocalMemory& mem, int l, int 
 				case PSMZ16: mem.WritePixel16Z(x, y, *(u16*)&src[x * 2], bp, bw); break;
 				case PSMZ16S: mem.WritePixel16SZ(x, y, *(u16*)&src[x * 2], bp, bw); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 		}
 	}
@@ -328,7 +328,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 				case PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
 				case PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 
 			switch (psm)
@@ -361,7 +361,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 					break;
 				// TODO
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 
@@ -421,7 +421,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 			case PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
 			case PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
 			// TODO
-			default: __assume(0);
+			default: ASSUME(0);
 			}
 
 			switch (psm)
@@ -454,7 +454,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 					break;
 				// TODO
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 	}

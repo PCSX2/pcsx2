@@ -512,7 +512,7 @@ public:
 					case 1: return yyyy(v).zxzw(*this);
 					case 2: return yyzz(v).zxzw(*this);
 					case 3: return yyww(v).zxzw(*this);
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			case 1:
@@ -522,7 +522,7 @@ public:
 					case 1: return xxyy(v).xzzw(*this);
 					case 2: return xxzz(v).xzzw(*this);
 					case 3: return xxww(v).xzzw(*this);
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			case 2:
@@ -532,7 +532,7 @@ public:
 					case 1: return xyzx(wwyy(v));
 					case 2: return xyzx(wwzz(v));
 					case 3: return xyzx(wwww(v));
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			case 3:
@@ -542,11 +542,11 @@ public:
 					case 1: return xyxz(zzyy(v));
 					case 2: return xyxz(zzzz(v));
 					case 3: return xyxz(zzww(v));
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 
 		return *this;
