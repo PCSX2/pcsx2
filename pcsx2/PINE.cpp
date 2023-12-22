@@ -562,8 +562,10 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			const u16 l = FromSpan<u16>(buf, buf_cnt + 4);
 			if (!SafetyChecks(buf_cnt, 6, ret_cnt, l, buf_size))
 				goto error;
-			if (!vtlb_ramRead(a, reinterpret_cast<mem8_t*>(&ret_buffer[ret_cnt]), (u32)l))
+			if (!vtlb_memSafeReadBytes(a, reinterpret_cast<mem8_t*>(&ret_buffer[ret_cnt]), (u32)l))
 				goto error;
+			//if (!vtlb_ramRead(a, reinterpret_cast<mem8_t*>(&ret_buffer[ret_cnt]), (u32)l))
+			//	goto error;
 			ret_cnt += l;
 			buf_cnt += 6;
 			break;
@@ -580,8 +582,9 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			if (!SafetyChecks(buf_cnt, c + 6, ret_cnt, 0, buf_size))
 				goto error;
 			buf_cnt += 6;
-			if (!vtlb_ramWrite(a, reinterpret_cast<mem8_t*>(&buf[buf_cnt]), (u32)c))
-				goto error;
+			vtlb_memSafeWriteBytes(a, reinterpret_cast<mem8_t*>(&buf[buf_cnt]), (u32)c);
+			//if (!vtlb_ramWrite(a, reinterpret_cast<mem8_t*>(&buf[buf_cnt]), (u32)c))
+			//	goto error;
 			buf_cnt += c;
 			u8 res = 1;
 			ToResultVector(ret_buffer, res, ret_cnt);
