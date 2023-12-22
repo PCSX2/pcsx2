@@ -25,6 +25,7 @@
 #include <immintrin.h>
 #endif
 
+#include <algorithm>
 #include <cstring>
 
 #ifdef _WIN32
