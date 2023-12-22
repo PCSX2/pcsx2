@@ -256,7 +256,7 @@ QString SettingsWindow::getCategory() const
 void SettingsWindow::setCategory(const char* category)
 {
 	// the titles in the category list will be translated.
-	const QString translated_category(qApp->translate("SettingsDialog", category));
+	const QString translated_category(tr(category));
 
 	for (int i = 0; i < m_ui.settingsCategory->count(); i++)
 	{
@@ -645,3 +645,11 @@ void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const
 	dialog->show();
 }
 
+void SettingsWindow::closeGamePropertiesDialogs()
+{
+	for (SettingsWindow* dialog : s_open_game_properties_dialogs)
+	{
+		dialog->close();
+		dialog->deleteLater();
+	}
+}

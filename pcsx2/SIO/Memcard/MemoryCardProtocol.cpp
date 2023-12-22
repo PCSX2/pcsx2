@@ -23,17 +23,21 @@
 #include "des.h"
 
 #define MC_LOG_ENABLE 0
-#define MC_LOG if (MC_LOG_ENABLE) DevCon
+#define MC_LOG \
+	if (MC_LOG_ENABLE) \
+	DevCon
 
-#define PS1_FAIL() if (this->PS1Fail()) return;
+#define PS1_FAIL() \
+	if (this->PS1Fail()) \
+		return;
 
 MemoryCardProtocol g_MemoryCardProtocol;
 
 // keysource and key are self generated values
-uint8_t keysource[] = { 0xf5, 0x80, 0x95, 0x3c, 0x4c, 0x84, 0xa9, 0xc0 };
-uint8_t dex_key[16] = { 0x17, 0x39, 0xd3, 0xbc, 0xd0, 0x2c, 0x18, 0x07, 0x4b, 0x17, 0xf0, 0xea, 0xc4, 0x66, 0x30, 0xf9 };
-uint8_t cex_key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
-uint8_t *key = dex_key;
+uint8_t keysource[] = {0xf5, 0x80, 0x95, 0x3c, 0x4c, 0x84, 0xa9, 0xc0};
+uint8_t dex_key[16] = {0x17, 0x39, 0xd3, 0xbc, 0xd0, 0x2c, 0x18, 0x07, 0x4b, 0x17, 0xf0, 0xea, 0xc4, 0x66, 0x30, 0xf9};
+uint8_t cex_key[16] = {0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20};
+uint8_t* key = dex_key;
 uint8_t iv[8];
 uint8_t seed[8];
 uint8_t nonce[8];
@@ -44,38 +48,39 @@ uint8_t MechaResponse1[8];
 uint8_t MechaResponse2[8];
 uint8_t MechaResponse3[8];
 
-static void desEncrypt(void *key, void *data)
+static void desEncrypt(void* key, void* data)
 {
 	DesContext dc;
-	desInit(&dc, (uint8_t *) key, 8);
-	desEncryptBlock(&dc, (uint8_t *) data, (uint8_t *) data);
+	desInit(&dc, (uint8_t*)key, 8);
+	desEncryptBlock(&dc, (uint8_t*)data, (uint8_t*)data);
 }
 
-static void desDecrypt(void *key, void *data)
+static void desDecrypt(void* key, void* data)
 {
 	DesContext dc;
-	desInit(&dc, (uint8_t *) key, 8);
-	desDecryptBlock(&dc, (uint8_t *) data, (uint8_t *) data);
+	desInit(&dc, (uint8_t*)key, 8);
+	desDecryptBlock(&dc, (uint8_t*)data, (uint8_t*)data);
 }
 
-static void doubleDesEncrypt(void *key, void *data)
+static void doubleDesEncrypt(void* key, void* data)
 {
 	desEncrypt(key, data);
-	desDecrypt(&((uint8_t *) key)[8], data);
+	desDecrypt(&((uint8_t*)key)[8], data);
 	desEncrypt(key, data);
 }
 
-static void doubleDesDecrypt(void *key, void *data)
+static void doubleDesDecrypt(void* key, void* data)
 {
 	desDecrypt(key, data);
-	desEncrypt(&((uint8_t *) key)[8], data);
+	desEncrypt(&((uint8_t*)key)[8], data);
 	desDecrypt(key, data);
 }
 
 static void xor_bit(const void* a, const void* b, void* Result, size_t Length)
 {
 	size_t i;
-	for (i = 0; i < Length; i++) {
+	for (i = 0; i < Length; i++)
+	{
 		((uint8_t*)Result)[i] = ((uint8_t*)a)[i] ^ ((uint8_t*)b)[i];
 	}
 }
@@ -92,10 +97,10 @@ void generateIvSeedNonce()
 
 void generateResponse()
 {
-	uint8_t ChallengeIV[8] = { /* SHA256: e7b02f4f8d99a58b96dbca4db81c5d666ea7c46fbf6e1d5c045eaba0ee25416a */ };
+	uint8_t ChallengeIV[8] = {/* SHA256: e7b02f4f8d99a58b96dbca4db81c5d666ea7c46fbf6e1d5c045eaba0ee25416a */};
 	char filename[1024];
 	snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "civ.bin");
-	FILE *f = fopen(filename, "rb");
+	FILE* f = fopen(filename, "rb");
 	if (f)
 	{
 		fread(ChallengeIV, 1, sizeof(ChallengeIV), f);
@@ -114,7 +119,7 @@ void generateResponse()
 	xor_bit(random, MechaResponse1, MechaResponse2, 8);
 	doubleDesEncrypt(key, MechaResponse2);
 
-	uint8_t CardKey[] = { 'M', 'e', 'c', 'h', 'a', 'P', 'w', 'n' };
+	uint8_t CardKey[] = {'M', 'e', 'c', 'h', 'a', 'P', 'w', 'n'};
 	xor_bit(CardKey, MechaResponse2, MechaResponse3, 8);
 	doubleDesEncrypt(key, MechaResponse3);
 }
@@ -282,22 +287,27 @@ void MemoryCardProtocol::SetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
-	const u8 newTerminator = g_Sio2FifoIn.front();
+	mcd->term = g_Sio2FifoIn.front();
 	g_Sio2FifoIn.pop_front();
-	const u8 oldTerminator = mcd->term;
-	mcd->term = newTerminator;
 	g_Sio2FifoOut.push_back(0x00);
 	g_Sio2FifoOut.push_back(0x2b);
-	g_Sio2FifoOut.push_back(oldTerminator);
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
+// This one is a bit unusual. Old and new versions of MCMAN seem to handle this differently.
+// Some commands may check [4] for the terminator. Others may check [3]. Typically, older
+// MCMAN revisions will exclusively check [4], and newer revisions will check both [3] and [4]
+// for different values. In all cases, they expect to see a valid terminator value.
+//
+// Also worth noting old revisions of MCMAN will not set anything other than 0x55 for the terminator,
+// while newer revisions will set the terminator to another value (most commonly 0x5a).
 void MemoryCardProtocol::GetTerminator()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
 	g_Sio2FifoOut.push_back(0x2b);
 	g_Sio2FifoOut.push_back(mcd->term);
-	g_Sio2FifoOut.push_back(static_cast<u8>(Terminator::DEFAULT));
+	g_Sio2FifoOut.push_back(mcd->term);
 }
 
 void MemoryCardProtocol::WriteData()
@@ -733,7 +743,9 @@ void MemoryCardProtocol::AuthCrypt()
 			g_Sio2FifoOut.push_back(mcd->term);
 			break;
 		default:
-			Console.Warning("%s(queue) Unexpected modeByte (%02X), please report to the PCSX2 team", __FUNCTION__, modeByte);
+			mcd->term = Terminator::READY;
+			The2bTerminator(5);
+			Console.Warning("%s(queue) Unexpected modeByte (%02X), please report", __FUNCTION__, modeByte);
 			break;
 	}
 }

@@ -552,6 +552,8 @@ void MainWindow::destroySubWindows()
 		m_settings_window->deleteLater();
 		m_settings_window = nullptr;
 	}
+
+	SettingsWindow::closeGamePropertiesDialogs();
 }
 
 void MainWindow::onScreenshotActionTriggered()
@@ -985,11 +987,10 @@ bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
 	if (MemcardBusy::IsBusy() && !GSDumpReplayer::IsReplayingDump())
 	{
 		const QMessageBox::StandardButton res = QMessageBox::question(
-			lock.getDialogParent(), 
-			tr("WARNING: Memory Card Busy"), 
-			tr("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?")
-		);
-		
+			lock.getDialogParent(),
+			tr("WARNING: Memory Card Busy"),
+			tr("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"));
+
 		if (res != QMessageBox::Yes)
 		{
 			return true;
@@ -1097,7 +1098,7 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 	{
 		return false;
 	}
-	
+
 	// Only confirm on UI thread because we need to display a msgbox.
 	if (!m_is_closing && allow_confirm && !GSDumpReplayer::IsReplayingDump() && Host::GetBoolSettingValue("UI", "ConfirmShutdown", true))
 	{
@@ -2383,10 +2384,16 @@ SettingsWindow* MainWindow::getSettingsWindow()
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
 	SettingsWindow* dlg = getSettingsWindow();
-	if (dlg->isVisible())
-		dlg->raise();
-	else
+	if (!dlg->isVisible())
+	{
 		dlg->show();
+	}
+	else
+	{
+		dlg->raise();
+		dlg->activateWindow();
+		dlg->setFocus();
+	}
 
 	if (category)
 		dlg->setCategory(category);
@@ -2409,18 +2416,20 @@ void MainWindow::openDebugger()
 
 void MainWindow::doControllerSettings(ControllerSettingsWindow::Category category)
 {
-	if (m_controller_settings_window)
+	if (!m_controller_settings_window)
+		m_controller_settings_window = new ControllerSettingsWindow();
+
+	if (!m_controller_settings_window->isVisible())
 	{
-		if (m_controller_settings_window->isVisible())
-			m_controller_settings_window->raise();
-		else
-			m_controller_settings_window->show();
+		m_controller_settings_window->show();
 	}
 	else
 	{
-		m_controller_settings_window = new ControllerSettingsWindow();
-		m_controller_settings_window->show();
+		m_controller_settings_window->raise();
+		m_controller_settings_window->activateWindow();
+		m_controller_settings_window->setFocus();
 	}
+
 
 	if (category != ControllerSettingsWindow::Category::Count)
 		m_controller_settings_window->setCategory(category);

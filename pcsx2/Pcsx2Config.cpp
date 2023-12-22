@@ -1478,7 +1478,6 @@ Pcsx2Config::Pcsx2Config()
 {
 	bitset = 0;
 	// Set defaults for fresh installs / reset settings
-	McdEnableEjection = true;
 	McdFolderAutoManage = true;
 	EnablePatches = true;
 	EnableFastBoot = true;
@@ -1537,7 +1536,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 
 	SettingsWrapBitBool(BackupSavestate);
 	SettingsWrapBitBool(SavestateZstdCompression);
-	SettingsWrapBitBool(McdEnableEjection);
 	SettingsWrapBitBool(McdFolderAutoManage);
 
 	SettingsWrapBitBool(WarnAboutUnsafeSettings);

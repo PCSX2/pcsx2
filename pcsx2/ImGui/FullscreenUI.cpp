@@ -278,10 +278,8 @@ namespace FullscreenUI
 	static void DoShutdown(bool save_state);
 	static void RequestReset();
 	static void DoReset();
-	static void RequestChangeDiscFromFile();
 	static void DoChangeDiscFromFile();
 	static void RequestChangeDisc();
-	static void DoChangeDisc();
 	static void DoRequestExit();
 	static void DoToggleFullscreen();
 
@@ -999,16 +997,6 @@ void FullscreenUI::DoReset()
 	});
 }
 
-void FullscreenUI::RequestChangeDiscFromFile()
-{
-	ConfirmShutdownIfMemcardBusy([](bool result) {
-		if (result)
-			DoChangeDiscFromFile();
-		else
-			ClosePauseMenu();
-	});
-}
-
 void FullscreenUI::DoChangeDiscFromFile()
 {
 	auto callback = [](const std::string& path) {
@@ -1038,15 +1026,10 @@ void FullscreenUI::RequestChangeDisc()
 {
 	ConfirmShutdownIfMemcardBusy([](bool result) {
 		if (result)
-			DoChangeDisc();
+			DoChangeDiscFromFile();
 		else
 			ClosePauseMenu();
 	});
-}
-
-void FullscreenUI::DoChangeDisc()
-{
-	DoChangeDiscFromFile();
 }
 
 void FullscreenUI::DoRequestExit()
@@ -3680,8 +3663,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 	DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "Folders", "MemoryCards", EmuFolders::MemoryCards);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "Folder Memory Card Filter"),
 		FSUI_CSTR("Simulates a larger memory card by filtering saves only to the current game."), "EmuCore", "McdFolderAutoManage", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Auto Eject When Loading"),
-		FSUI_CSTR("Automatically ejects Memory Cards when they differ after loading a state."), "EmuCore", "McdEnableEjection", true);
 
 	for (u32 port = 0; port < NUM_MEMORY_CARD_PORTS; port++)
 	{
