@@ -121,10 +121,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#define __ri __fi
 #endif
 
-#if defined(__x86_64__) && !defined(_M_AMD64)
-	#define _M_AMD64
-#endif
-
 #ifndef RESTRICT
 	#if defined(_MSC_VER)
 		#define RESTRICT __restrict
