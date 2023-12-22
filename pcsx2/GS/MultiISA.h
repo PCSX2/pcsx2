@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "PCSX2Base.h"
 #include "common/Pcsx2Defs.h"
+#include "common/VectorIntrin.h"
 
 // For multiple-isa compilation
 #ifdef MULTI_ISA_UNSHARED_COMPILATION

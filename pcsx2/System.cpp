@@ -22,7 +22,7 @@
 #include "common/StringUtil.h"
 
 #ifdef _M_X86
-#include "common/emitter/x86_intrin.h"
+#include "common/emitter/tools.h"
 #endif
 
 extern R5900cpu GSDumpReplayerCpu;

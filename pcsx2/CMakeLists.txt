@@ -55,7 +55,6 @@ endif()
 if(WIN32)
 	set(MIN_WIN32 0x0A00)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
-		__SSE4_1__
 		WINVER=${MIN_WIN32}
 		_WIN32_WINNT=${MIN_WIN32}
 		WIN32_LEAN_AND_MEAN
@@ -190,7 +189,6 @@ set(pcsx2Headers
 	Memory.h
 	MemoryTypes.h
 	Patch.h
-	PCSX2Base.h
 	PerformanceMetrics.h
 	PrecompiledHeader.h
 	R3000A.h
@@ -200,7 +198,6 @@ set(pcsx2Headers
 	ShaderCacheVersion.h
 	Sifcmd.h
 	Sif.h
-	SingleRegisterTypes.h
 	SIO/Sio.h
 	SIO/Sio2.h
 	SIO/Sio0.h

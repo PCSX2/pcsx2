@@ -354,6 +354,10 @@
     <ClInclude Include="SmallString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VectorIntrin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleRegisterTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

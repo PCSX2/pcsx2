@@ -3,12 +3,13 @@
 
 #include "General.h"
 #include "Console.h"
-#include "emitter/x86_intrin.h"
+#include "VectorIntrin.h"
 
 static u32 PAUSE_TIME = 0;
 
 static void MultiPause()
 {
+#ifdef _M_X86
 	_mm_pause();
 	_mm_pause();
 	_mm_pause();
@@ -17,6 +18,27 @@ static void MultiPause()
 	_mm_pause();
 	_mm_pause();
 	_mm_pause();
+#elif defined(_M_ARM64) && defined(_MSC_VER)
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+#elif defined(_M_ARM64)
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+#else
+#error Unknown architecture.
+#endif
 }
 
 static u32 MeasurePauseTime()

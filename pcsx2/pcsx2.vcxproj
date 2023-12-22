@@ -672,7 +672,6 @@
     <ClInclude Include="IPU\IPUdma.h" />
     <ClInclude Include="Mdec.h" />
     <ClInclude Include="Patch.h" />
-    <ClInclude Include="PCSX2Base.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ps2\pgif.h" />
     <ClInclude Include="StateWrapper.h" />
@@ -711,7 +710,6 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="SaveState.h" />
-    <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />

@@ -6,7 +6,8 @@
 #include "Common.h"
 #include "Gif.h"
 #include "GS/GS.h"
-#include "SingleRegisterTypes.h"
+
+#include "common/SingleRegisterTypes.h"
 
 extern double GetVerticalFrequency();
 alignas(16) extern u8 g_RealGSMem[Ps2MemSize::GSregs];

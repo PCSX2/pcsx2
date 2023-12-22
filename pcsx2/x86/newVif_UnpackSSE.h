@@ -7,10 +7,6 @@
 #include "Vif_Dma.h"
 #include "newVif.h"
 
-#include "common/emitter/x86_intrin.h"
-
-using namespace x86Emitter;
-
 // --------------------------------------------------------------------------------------
 //  VifUnpackSSE_Base
 // --------------------------------------------------------------------------------------

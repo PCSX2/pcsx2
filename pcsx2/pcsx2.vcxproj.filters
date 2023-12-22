@@ -1418,9 +1418,6 @@
     <ClInclude Include="Patch.h">
       <Filter>Misc</Filter>
     </ClInclude>
-    <ClInclude Include="PCSX2Base.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Misc</Filter>
     </ClInclude>
@@ -1440,9 +1437,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="SaveState.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="SingleRegisterTypes.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="System.h">

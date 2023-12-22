@@ -24,7 +24,6 @@
 #include "LogSink.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "PCSX2Base.h"
 #include "PINE.h"
 #include "Patch.h"
 #include "PerformanceMetrics.h"
@@ -50,7 +49,6 @@
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/Timer.h"
-#include "common/emitter/tools.h"
 
 #include "IconsFontAwesome5.h"
 #include "discord_rpc.h"
@@ -61,7 +59,7 @@
 #include <sstream>
 
 #ifdef _M_X86
-#include "common/emitter/x86_intrin.h"
+#include "common/emitter/tools.h"
 #endif
 
 #ifdef _WIN32
