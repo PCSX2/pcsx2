@@ -41,35 +41,15 @@
 // some tight loops it will likely make debug builds unusably slow.
 //
 #ifdef PCSX2_DEVBUILD
-	static const bool IsDevBuild = true;
+	static constexpr bool IsDevBuild = true;
 #else
-	static const bool IsDevBuild = false;
+	static constexpr bool IsDevBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
-	static const bool IsDebugBuild = true;
+	static constexpr bool IsDebugBuild = true;
 #else
-	static const bool IsDebugBuild = false;
-#endif
-
-#ifdef PCSX2_DEBUG
-	#define pxDebugCode(code) code
-#else
-	#define pxDebugCode(code)
-#endif
-
-#ifdef PCSX2_DEVBUILD
-	#define pxDevelCode(code) code
-#else
-	#define pxDevelCode(code)
-#endif
-
-#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-	#define pxReleaseCode(code)
-	#define pxNonReleaseCode(code) code
-#else
-	#define pxReleaseCode(code) code
-	#define pxNonReleaseCode(code)
+	static constexpr bool IsDebugBuild = false;
 #endif
 
 // Defines the memory page size for the target platform at compilation.  All supported platforms
@@ -134,17 +114,12 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 // from Devel builds is likely useful; but which should be inlined in an optimized Release
 // environment.
 //
-#ifdef PCSX2_DEVBUILD
-	#define __releaseinline
-#else
-	#define __releaseinline __forceinline
-#endif
-
-#define __ri __releaseinline
 #define __fi __forceinline
-
-// Makes sure that if anyone includes xbyak, it doesn't do anything bad
-#define XBYAK_ENABLE_OMITTED_OPERAND
+#ifdef PCSX2_DEVBUILD
+	#define __ri
+#else
+	#define __ri __fi
+#endif
 
 #if defined(__x86_64__) && !defined(_M_AMD64)
 	#define _M_AMD64
@@ -162,10 +137,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 
 #ifndef __has_attribute
 	#define __has_attribute(x) 0
-#endif
-
-#ifndef __has_builtin
-	#define __has_builtin(x) 0
 #endif
 
 #ifdef __cpp_constinit

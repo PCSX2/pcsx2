@@ -20,7 +20,9 @@
 
 #include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
-#include <stdlib.h>
+
+#include <algorithm>
+#include <cstdlib>
 
 void* _aligned_malloc(size_t size, size_t align)
 {

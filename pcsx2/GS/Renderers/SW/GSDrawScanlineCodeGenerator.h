@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,27 +15,17 @@
 
 #pragma once
 
-#include "GSScanlineEnvironment.h"
-#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/Renderers/SW/GSScanlineEnvironment.h"
+#include "GS/Renderers/SW/GSNewCodeGenerator.h"
 #include "GS/GSUtil.h"
 #include "GS/MultiISA.h"
-
-#ifdef _WIN32
-#include "common/RedtapeWindows.h"
-#endif
-#include <xbyak/xbyak.h>
-
-#if defined(_M_AMD64) || defined(_WIN64)
-#define RegLong Xbyak::Reg64
-#else
-#define RegLong Xbyak::Reg32
-#endif
 
 MULTI_ISA_UNSHARED_START
 
 class GSDrawScanlineCodeGenerator : public Xbyak::CodeGenerator
 {
-	void operator=(const GSDrawScanlineCodeGenerator&);
+	GSDrawScanlineCodeGenerator(const GSDrawScanlineCodeGenerator&) = delete;
+	void operator=(const GSDrawScanlineCodeGenerator&) = delete;
 
 	GSScanlineSelector m_sel;
 
