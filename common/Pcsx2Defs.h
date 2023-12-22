@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,15 +15,8 @@
 
 #pragma once
 
-// clang-format off
-
-#ifdef __CYGWIN__
-	#define __linux__
-#endif
-
-// make sure __POSIX__ is defined for all systems where we assume POSIX
-// compliance
-#if defined(__linux__) || defined(__APPLE__) || defined(__unix__) || defined(__CYGWIN__) || defined(__LINUX__)
+// make sure __POSIX__ is defined for all systems where we assume POSIX compliance
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 	#ifndef __POSIX__
 		#define __POSIX__ 1
 	#endif
@@ -158,9 +151,7 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 #endif
 
 #ifndef RESTRICT
-	#ifdef __INTEL_COMPILER
-		#define RESTRICT restrict
-	#elif defined(_MSC_VER)
+	#if defined(_MSC_VER)
 		#define RESTRICT __restrict
 	#elif defined(__GNUC__)
 		#define RESTRICT __restrict__
