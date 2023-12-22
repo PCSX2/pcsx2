@@ -3,32 +3,7 @@
 
 #pragma once
 
-#ifdef __linux__
-#include <signal.h>
-#endif
-
 #include "vtlb.h"
-
-#include "common/emitter/x86_intrin.h"
-
-// [TODO] This *could* be replaced with an assignment operator on u128 that implicitly
-// uses _mm_store and _mm_load internally.  However, there are alignment concerns --
-// u128 is not alignment strict.  (we would need a u128 and u128a for types known to
-// be strictly 128-bit aligned).
-static __fi void CopyQWC( void* dest, const void* src )
-{
-	_mm_store_ps( (float*)dest, _mm_load_ps((const float*)src) );
-}
-
-static __fi void ZeroQWC( void* dest )
-{
-	_mm_store_ps( (float*)dest, _mm_setzero_ps() );
-}
-
-static __fi void ZeroQWC( u128& dest )
-{
-	_mm_store_ps( (float*)&dest, _mm_setzero_ps() );
-}
 
 #define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
 
@@ -108,7 +83,7 @@ extern void memMapVUmicro();
 #define memWrite32 vtlb_memWrite<mem32_t>
 #define memWrite64 vtlb_memWrite<mem64_t>
 
-static __fi void memRead128(u32 mem, mem128_t* out) { _mm_store_si128((__m128i*)out, vtlb_memRead128(mem)); }
+static __fi void memRead128(u32 mem, mem128_t* out) { r128_store(out, vtlb_memRead128(mem)); }
 static __fi void memRead128(u32 mem, mem128_t& out) { memRead128(mem, &out); }
 
 static __fi void memWrite128(u32 mem, const mem128_t* val)	{ vtlb_memWrite128(mem, r128_load(val)); }

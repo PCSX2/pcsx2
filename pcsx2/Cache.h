@@ -4,7 +4,8 @@
 #pragma once
 
 #include "Common.h"
-#include "SingleRegisterTypes.h"
+
+#include "common/SingleRegisterTypes.h"
 
 void resetCache();
 void writeCache8(u32 mem, u8 value);

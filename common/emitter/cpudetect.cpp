@@ -4,7 +4,7 @@
 #include "common/General.h"
 #include "common/emitter/tools.h"
 #include "common/emitter/internal.h"
-#include "common/emitter/x86_intrin.h"
+#include "common/VectorIntrin.h"
 #include <atomic>
 
 // CPU information support

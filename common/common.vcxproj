@@ -118,6 +118,8 @@
     <ClInclude Include="HeapArray.h" />
     <ClInclude Include="HeterogeneousContainers.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="SingleRegisterTypes.h" />
+    <ClInclude Include="VectorIntrin.h" />
     <ClInclude Include="LRUCache.h" />
     <ClInclude Include="HTTPDownloader.h" />
     <ClInclude Include="HTTPDownloaderCurl.h">

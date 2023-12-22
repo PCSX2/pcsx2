@@ -5,16 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 #include "common/Assertions.h"
-
-#include "PCSX2Base.h"
-
-#include <xmmintrin.h>
-#include <emmintrin.h>
-#include <tmmintrin.h>
-#include <smmintrin.h>
-#if _M_SSE >= 0x500
-#include <immintrin.h>
-#endif
+#include "common/VectorIntrin.h"
 
 #include <algorithm>
 #include <cstring>
