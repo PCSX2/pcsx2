@@ -69,7 +69,7 @@ __noinline static void UpdatePauseTime()
 u32 ShortSpin()
 {
 	u32 inc = PAUSE_TIME;
-	if (unlikely(inc == 0))
+	if (inc == 0) [[unlikely]]
 	{
 		UpdatePauseTime();
 		inc = PAUSE_TIME;

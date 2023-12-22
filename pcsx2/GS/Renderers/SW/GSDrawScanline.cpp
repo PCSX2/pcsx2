@@ -91,7 +91,7 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 
 #ifdef ENABLE_JIT_RASTERIZER
 	data.draw_scanline = m_ds_map[global.sel];
-	if (!unlikely(data.draw_scanline))
+	if (!data.draw_scanline) [[unlikely]]
 		return false;
 
 	if (global.sel.aa1)
@@ -103,7 +103,7 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 		sel.edge = 1;
 
 		data.draw_edge = m_ds_map[sel];
-		if (unlikely(!data.draw_edge))
+		if (!data.draw_edge) [[unlikely]]
 			return false;
 	}
 	else

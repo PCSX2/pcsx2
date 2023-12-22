@@ -99,7 +99,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
 	amt = (amt + 31) & ~31ull;
 	u64 last_draw = m_last_finished_draw.load(std::memory_order_acquire);
 	bool needs_new = buffer.usage.PrepareForAllocation(last_draw, amt);
-	if (unlikely(needs_new))
+	if (needs_new) [[unlikely]]
 	{
 		// Orphan buffer
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
@@ -140,7 +140,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(BufferPair& buffer, size_t amt)
 		}
 		buffer.last_upload = 0;
 	}
-	if (unlikely(needs_new))
+	if (needs_new) [[unlikely]]
 	{
 		// Orphan buffer
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
@@ -669,7 +669,7 @@ MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 {
 	NSError* err = nil;
 	MRCOwned<id<MTLFunction>> fn = MRCTransfer([m_dev.shaders newFunctionWithName:name constantValues:m_fn_constants error:&err]);
-	if (unlikely(err))
+	if (err) [[unlikely]]
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to load shader %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
@@ -685,7 +685,7 @@ MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipeline
 	[desc setFragmentFunction:fragment];
 	NSError* err;
 	MRCOwned<id<MTLRenderPipelineState>> res = MRCTransfer([m_dev.dev newRenderPipelineStateWithDescriptor:desc error:&err]);
-	if (unlikely(err))
+	if (err) [[unlikely]]
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
@@ -705,7 +705,7 @@ MRCOwned<id<MTLComputePipelineState>> GSDeviceMTL::MakeComputePipeline(id<MTLFun
 		                              options:0
 		                           reflection:nil
 		                                error:&err]);
-	if (unlikely(err))
+	if (err) [[unlikely]]
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
@@ -1897,7 +1897,7 @@ void GSDeviceMTL::MRESetSampler(SamplerSelector sel)
 {
 	if (m_current_render.has.sampler && m_current_render.sampler_sel.key == sel.key)
 		return;
-	if (unlikely(!m_sampler_hw[sel.key]))
+	if (!m_sampler_hw[sel.key]) [[unlikely]]
 		m_sampler_hw[sel.key] = CreateSampler(m_dev.dev, sel);
 	[m_current_render.encoder setFragmentSamplerState:m_sampler_hw[sel.key] atIndex:0];
 	m_current_render.sampler_sel = sel;

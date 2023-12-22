@@ -118,7 +118,7 @@ struct GSRingHeap::Buffer
 	/// Decrement the main amt_allocated refcount
 	void decref(size_t amt)
 	{
-		if (unlikely(m_amt_allocated.fetch_sub(amt, std::memory_order_release) == amt))
+		if (m_amt_allocated.fetch_sub(amt, std::memory_order_release) == amt) [[unlikely]]
 		{
 			std::atomic_thread_fence(std::memory_order_acquire);
 			_aligned_free(this);
@@ -154,7 +154,7 @@ struct GSRingHeap::Buffer
 			do
 			{
 				usage_mask |= 1ull << (cur_quadrant * 16);
-				if (unlikely(isStillInUse(cur_quadrant)))
+				if (isStillInUse(cur_quadrant)) [[unlikely]]
 					return nullptr;
 			} while (++cur_quadrant <= new_quadrant);
 		}
@@ -202,7 +202,7 @@ void* GSRingHeap::alloc_internal(size_t size, size_t align_mask, size_t prefix_s
 	prefix_size += sizeof(Buffer*); // Add space for a pointer to the buffer
 	size_t total_size = size + prefix_size;
 
-	if (likely(total_size <= (m_current_buffer->m_size / 2)))
+	if (total_size <= (m_current_buffer->m_size / 2)) [[likely]]
 	{
 		if (void* ptr = m_current_buffer->alloc(size, align_mask, prefix_size))
 		{

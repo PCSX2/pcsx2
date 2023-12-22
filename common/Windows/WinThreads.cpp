@@ -216,7 +216,7 @@ u64 Threading::GetThreadTicksPerSecond()
 	// On x86, despite what the MS documentation says, this basically appears to be rdtsc.
 	// So, the frequency is our base clock speed (and stable regardless of power management).
 	static u64 frequency = 0;
-	if (unlikely(frequency == 0))
+	if (frequency == 0) [[unlikely]]
 	{
 		HKEY key;
 		LSTATUS res =

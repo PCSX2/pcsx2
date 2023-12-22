@@ -312,7 +312,7 @@ public:
 			int endOff   = firstRowPgXEnd;
 			int yCnt = this->yCnt;
 
-			if (unlikely(slowPath))
+			if (slowPath) [[unlikely]]
 			{
 				u32 touched[MAX_PAGES / 32] = {};
 				for (int y = 0; y < yCnt; y++)

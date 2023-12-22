@@ -407,10 +407,8 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill)
 
 	// Seach in cache before trying to compile the block
 	nVifBlock* b = v.vifBlocks.find(block);
-	if (unlikely(b == nullptr))
-	{
+	if (!b) [[unlikely]]
 		b = dVifCompile<idx>(block, isFill);
-	}
 
 	{ // Execute the block
 		const VURegs& VU = vuRegs[idx];
@@ -419,7 +417,7 @@ _vifT __fi void dVifUnpack(const u8* data, bool isFill)
 		u8* startmem = VU.Mem + (vif.tag.addr & (vuMemLimit - 0x10));
 		u8* endmem   = VU.Mem + vuMemLimit;
 
-		if (likely((startmem + b->length) <= endmem))
+		if ((startmem + b->length) <= endmem) [[likely]]
 		{
 			// No wrapping, you can run the fast dynarec
 			((nVifrecCall)b->startPtr)((uptr)startmem, (uptr)data);
