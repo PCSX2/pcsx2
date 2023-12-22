@@ -17,6 +17,8 @@
 #include "Global.h"
 #include "GS/GSVector.h"
 
+#include "common/Console.h"
+
 #include <array>
 
 void V_Core::AnalyzeReverbPreset()

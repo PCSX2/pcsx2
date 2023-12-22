@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -13,13 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PCSX2_PRECOMPILED_HEADER
-#define PCSX2_PRECOMPILED_HEADER
+#pragma once
 
 // Disable some pointless warnings...
 #ifdef _MSC_VER
 #	pragma warning(disable:4250) //'class' inherits 'method' via dominance
-#	pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
 #include "common/Pcsx2Defs.h"
@@ -64,27 +62,3 @@
 // need a full recompile anyway, when modified (etc)
 
 #include "PCSX2Base.h"
-
-#include "common/Console.h"
-#include "common/General.h"
-#include "common/emitter/tools.h"
-
-typedef void FnType_Void();
-typedef FnType_Void* Fnptr_Void;
-
-// --------------------------------------------------------------------------------------
-//  Compiler/OS specific macros and defines
-// --------------------------------------------------------------------------------------
-
-#if defined(_MSC_VER)
-
-#	define strnicmp _strnicmp
-#	define stricmp _stricmp
-
-#else	// must be GCC or Clang
-
-#include <sys/types.h>
-
-#endif
-
-#endif

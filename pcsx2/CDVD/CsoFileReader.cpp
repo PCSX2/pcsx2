@@ -18,6 +18,7 @@
 #include "AsyncFileReader.h"
 #include "CsoFileReader.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Error.h"
 #include "common/StringUtil.h"

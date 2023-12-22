@@ -26,6 +26,7 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"

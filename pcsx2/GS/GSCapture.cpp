@@ -25,6 +25,7 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/DynamicLibrary.h"
 #include "common/Path.h"
@@ -36,7 +37,9 @@
 #include <mutex>
 #include <string>
 
-#ifdef __clang__
+#if defined(_MSC_VER)
+#pragma warning(disable:4996) // warning C4996: 'AVCodecContext::channels': was declared deprecated
+#elif defined (__clang__)
 // We're using deprecated fields because we're targeting multiple ffmpeg versions.
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif

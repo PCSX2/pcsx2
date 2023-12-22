@@ -15,6 +15,12 @@
 
 #include "PrecompiledHeader.h"
 
+#include "AdapterUtils.h"
+
+#include "common/Assertions.h"
+#include "common/Console.h"
+#include "common/StringUtil.h"
+
 #ifdef __POSIX__
 #include <vector>
 #include <fstream>
@@ -22,8 +28,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include "common/StringUtil.h"
 
 #ifdef __linux__
 #include <unistd.h>
@@ -34,13 +38,8 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <net/route.h>
-
-#include "common/Assertions.h"
-
 #endif
 #endif
-
-#include "AdapterUtils.h"
 
 using namespace PacketReader;
 using namespace PacketReader::IP;

@@ -3,6 +3,7 @@
 
 #include "MemoryCardConvertWorker.h"
 
+#include "common/Console.h"
 #include "common/Path.h"
 #include "common/FileSystem.h"
 

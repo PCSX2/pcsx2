@@ -39,10 +39,6 @@
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
-#ifdef _WIN32
-#define strcasecmp stricmp
-#endif
-
 enum ReferenceIndexType
 {
 	REF_INDEX_PC       = 32,
@@ -74,44 +70,44 @@ public:
 			char reg[8];
 			std::snprintf(reg, std::size(reg), "r%d", i);
 
-			if (strcasecmp(str, reg) == 0 || strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
+			if (StringUtil::Strcasecmp(str, reg) == 0 || StringUtil::Strcasecmp(str, cpu->getRegisterName(0, i)) == 0)
 			{
 				referenceIndex = i;
 				return true;
 			}
 		}
 
-		if (strcasecmp(str, "pc") == 0)
+		if (StringUtil::Strcasecmp(str, "pc") == 0)
 		{
 			referenceIndex = REF_INDEX_PC;
 			return true;
 		}
 
-		if (strcasecmp(str, "hi") == 0)
+		if (StringUtil::Strcasecmp(str, "hi") == 0)
 		{
 			referenceIndex = REF_INDEX_HI;
 			return true;
 		}
 
-		if (strcasecmp(str, "lo") == 0)
+		if (StringUtil::Strcasecmp(str, "lo") == 0)
 		{
 			referenceIndex = REF_INDEX_LO;
 			return true;
 		}
 
-		if (strcasecmp(str, "target") == 0)
+		if (StringUtil::Strcasecmp(str, "target") == 0)
 		{
 			referenceIndex = REF_INDEX_OPTARGET;
 			return true;
 		}
 
-		if (strcasecmp(str, "load") == 0)
+		if (StringUtil::Strcasecmp(str, "load") == 0)
 		{
 			referenceIndex = REF_INDEX_OPLOAD;
 			return true;
 		}
 
-		if (strcasecmp(str, "store") == 0)
+		if (StringUtil::Strcasecmp(str, "store") == 0)
 		{
 			referenceIndex = REF_INDEX_OPSTORE;
 			return true;

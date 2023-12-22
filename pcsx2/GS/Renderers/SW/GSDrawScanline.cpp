@@ -19,6 +19,8 @@
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
 #include "GS/Renderers/SW/GSRasterizer.h"
 
+#include "common/Console.h"
+
 // Comment to disable all dynamic code generation.
 #define ENABLE_JIT_RASTERIZER
 

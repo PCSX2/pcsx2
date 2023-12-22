@@ -34,6 +34,8 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "IopMem.h"
 
+#include "common/Console.h"
+
 #define DMA_DIRECTION_TO_DEVICE 0
 #define DMA_DIRECTION_FROM_DEVICE 1
 #define ED_LINK_LIMIT 32

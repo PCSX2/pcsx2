@@ -23,6 +23,8 @@
 
 #include "IconsPromptFont.h"
 
+#include "common/Console.h"
+
 // The generic input bindings on this might seem bizarre, but they are intended to match what DS2 buttons
 // would do what actions, if you played Guitar Hero on a PS2 with a DS2 instead of a controller.
 static const InputBindingInfo s_bindings[] = {

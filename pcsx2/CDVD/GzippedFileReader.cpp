@@ -21,6 +21,7 @@
 #include "Host.h"
 #include "CDVD/zlib_indexed.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Error.h"
 #include "common/Path.h"

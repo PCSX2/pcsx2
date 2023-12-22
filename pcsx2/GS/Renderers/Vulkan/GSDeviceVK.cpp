@@ -26,6 +26,7 @@
 
 #include "Host.h"
 
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"

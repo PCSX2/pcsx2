@@ -18,6 +18,8 @@
 #include "DHCP_Options.h"
 #include "DEV9/PacketReader/NetLib.h"
 
+#include "common/Console.h"
+
 namespace PacketReader::IP::UDP::DHCP
 {
 	DHCPopSubnet::DHCPopSubnet(IP_Address mask)

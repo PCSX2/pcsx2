@@ -24,6 +24,7 @@
 #include "VMManager.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 

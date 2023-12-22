@@ -19,6 +19,7 @@
 #include "pcsx2/Config.h"
 #include "fmt/format.h"
 
+#include "common/Console.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/WAVWriter.h"

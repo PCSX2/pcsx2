@@ -18,6 +18,7 @@
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 
 #include <limits>
 

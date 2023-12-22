@@ -4675,15 +4675,15 @@ alignas(16) const FNTYPE PREFIX##_UPPER_OPCODE[64] = { \
 } \
 
 _vuTablesPre(VU0, VU0)
-_vuTablesMess(VU0, Fnptr_Void)
+_vuTablesMess(VU0, FnPtr_VuVoid)
 _vuTablesPost(VU0, VU0)
 
 _vuTablesPre(VU1, VU1)
-_vuTablesMess(VU1, Fnptr_Void)
+_vuTablesMess(VU1, FnPtr_VuVoid)
 _vuTablesPost(VU1, VU1)
 
-_vuRegsTables(VU0, VU0regs, Fnptr_VuRegsN)
-_vuRegsTables(VU1, VU1regs, Fnptr_VuRegsN)
+_vuRegsTables(VU0, VU0regs, FnPtr_VuRegsN)
+_vuRegsTables(VU1, VU1regs, FnPtr_VuRegsN)
 
 
 // --------------------------------------------------------------------------------------

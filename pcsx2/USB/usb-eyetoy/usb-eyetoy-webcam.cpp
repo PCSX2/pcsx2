@@ -22,6 +22,8 @@
 #include "USB/USB.h"
 #include "StateWrapper.h"
 
+#include "common/Console.h"
+
 namespace usb_eyetoy
 {
 	typedef struct EYETOYState

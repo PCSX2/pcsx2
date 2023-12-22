@@ -18,6 +18,8 @@
 #include "UDP_Packet.h"
 #include "DEV9/PacketReader/NetLib.h"
 
+#include "common/Console.h"
+
 namespace PacketReader::IP::UDP
 {
 	UDP_Packet::UDP_Packet(Payload* data)

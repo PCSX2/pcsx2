@@ -19,6 +19,7 @@
 #include "CDVD/CDVD.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/Error.h"
 
 #include <cstring>

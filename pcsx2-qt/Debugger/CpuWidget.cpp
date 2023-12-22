@@ -28,13 +28,16 @@
 #include "DebugTools/MipsStackWalk.h"
 
 #include "QtUtils.h"
+
+#include "common/Console.h"
+
+#include "demangler/demangler.h"
+
 #include <QtGui/QClipboard>
 #include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFutureWatcher>
 #include <QtWidgets/QScrollBar>
-
-#include "demangler/demangler.h"
 
 using namespace QtUtils;
 using namespace MipsStackWalk;

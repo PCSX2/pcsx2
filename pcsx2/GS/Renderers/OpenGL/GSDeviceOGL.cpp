@@ -24,6 +24,7 @@
 #include "GS/GSUtil.h"
 #include "Host.h"
 
+#include "common/Console.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"

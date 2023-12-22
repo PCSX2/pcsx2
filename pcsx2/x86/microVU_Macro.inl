@@ -405,7 +405,7 @@ static void mVUFinishVU0()
 	skipvuidle.SetTarget();
 }
 
-static void TEST_FBRST_RESET(int flagreg, FnType_Void* resetFunct, int vuIndex)
+static void TEST_FBRST_RESET(int flagreg, void(*resetFunct)(), int vuIndex)
 {
 	xTEST(xRegister32(flagreg), (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;

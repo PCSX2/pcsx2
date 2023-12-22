@@ -17,6 +17,8 @@
 #include "usb-pad.h"
 #include "lg/lg_ff.h"
 
+#include "common/Console.h"
+
 namespace usb_pad
 {
 	static void SetConstantForce(FFDevice* ffdev, int force)

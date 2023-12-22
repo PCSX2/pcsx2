@@ -19,6 +19,8 @@
 #include "IopGte.h"
 #include "IopMem.h"
 
+#include "common/Console.h"
+
 // Note: Branch instructions of the Interpreter are defined externally because
 // the recompiler shouldn't be using them (it isn't entirely safe, due to the
 // delay slot and event handling differences between recs and ints)
