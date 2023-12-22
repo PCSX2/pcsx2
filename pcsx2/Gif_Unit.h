@@ -324,7 +324,7 @@ struct Gif_Path
 				break;      // Enough free front space
 			mtgsReadWait(); // Let MTGS run to free up buffer space
 		}
-		pxAssertDev(curSize + size <= buffSize, "Gif Path Buffer Overflow!");
+		pxAssertMsg(curSize + size <= buffSize, "Gif Path Buffer Overflow!");
 		memcpy(&buffer[curSize], pMem, size);
 		curSize += size;
 	}

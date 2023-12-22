@@ -60,6 +60,7 @@ void vif1TransferToMemory()
 	const u32 size = std::min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
 	//const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
 
+#ifdef PCSX2_DEVBUILD
 	if (size)
 	{
 		// Checking if any crazy game does a partial
@@ -71,6 +72,7 @@ void vif1TransferToMemory()
 		pxAssert(p2.isDone() || !p2.gifTag.isValid);
 		pxAssert(p3.isDone() || !p3.gifTag.isValid);
 	}
+#endif
 
 	MTGS::InitAndReadFIFO(reinterpret_cast<u8*>(pMem), size);
 	//	pMem += size;

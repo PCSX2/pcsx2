@@ -66,10 +66,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#define __noinline __declspec(noinline)
 	#define __noreturn __declspec(noreturn)
 
-	// Don't know if there are Visual C++ equivalents of these.
-	#define likely(x) (!!(x))
-	#define unlikely(x) (!!(x))
-
 #else
 
 // --------------------------------------------------------------------------------------
@@ -99,8 +95,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#ifndef __noreturn
 		#define __noreturn __attribute__((noreturn))
 	#endif
-	#define likely(x) __builtin_expect(!!(x), 1)
-	#define unlikely(x) __builtin_expect(!!(x), 0)
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -129,6 +123,18 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#else
 		#define RESTRICT
 	#endif
+#endif
+
+// __assume, potentially enables optimization.
+#ifdef _MSC_VER
+#define ASSUME(x) __assume(x)
+#else
+#define ASSUME(x) \
+	do \
+	{ \
+		if (!(x)) \
+			__builtin_unreachable(); \
+	} while (0)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////

@@ -188,7 +188,7 @@ namespace x86Emitter
 	public:
 		uint GetOperandSize() const
 		{
-			pxAssertDev(_operandSize != 0, "Attempted to use operand size of uninitialized or void object");
+			pxAssertMsg(_operandSize != 0, "Attempted to use operand size of uninitialized or void object");
 			return _operandSize;
 		}
 
@@ -384,7 +384,7 @@ namespace x86Emitter
 		explicit xRegister16(const xRegisterInt& other)
 			: _parent(2, other.Id)
 		{
-			pxAssertDev(other.canMapIDTo(2), "Mapping h registers to higher registers can produce unexpected values");
+			pxAssertMsg(other.canMapIDTo(2), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
 		bool operator==(const xRegister16& src) const { return this->Id == src.Id; }
@@ -404,7 +404,7 @@ namespace x86Emitter
 		explicit xRegister32(const xRegisterInt& other)
 			: _parent(4, other.Id)
 		{
-			pxAssertDev(other.canMapIDTo(4), "Mapping h registers to higher registers can produce unexpected values");
+			pxAssertMsg(other.canMapIDTo(4), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
 		static const inline xRegister32& GetInstance(uint id);
@@ -426,7 +426,7 @@ namespace x86Emitter
 		explicit xRegister64(const xRegisterInt& other)
 			: _parent(8, other.Id)
 		{
-			pxAssertDev(other.canMapIDTo(8), "Mapping h registers to higher registers can produce unexpected values");
+			pxAssertMsg(other.canMapIDTo(8), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
 		static const inline xRegister64& GetInstance(uint id);

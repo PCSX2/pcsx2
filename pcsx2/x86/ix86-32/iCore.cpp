@@ -227,7 +227,7 @@ int _allocX86reg(int type, int reg, int mode)
 {
 	if (type == X86TYPE_GPR || type == X86TYPE_PSX)
 	{
-		pxAssertDev(reg >= 0 && reg < 34, "Register index out of bounds.");
+		pxAssertMsg(reg >= 0 && reg < 34, "Register index out of bounds.");
 	}
 
 	int hostXMMreg = (type == X86TYPE_GPR) ? _checkXMMreg(XMMTYPE_GPRREG, reg, 0) : -1;

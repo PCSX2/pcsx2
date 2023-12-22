@@ -295,7 +295,7 @@ static void mVUEBit()
 
 static inline u32 branchAddr(const mV)
 {
-	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
+	pxAssumeMsg(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");
 	return ((((iPC + 2) + (_Imm11_ * 2)) & mVU.progMemMask) * 4);
 }
 

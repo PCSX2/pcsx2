@@ -189,7 +189,7 @@ static __ri uint LinuxProt(const PageProtectionMode& mode)
 
 void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 {
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
+	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	if (mode.IsNone())
 		return nullptr;
@@ -217,7 +217,7 @@ void HostSys::Munmap(void* base, size_t size)
 
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
+	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	const u32 lnxmode = LinuxProt(mode);
 

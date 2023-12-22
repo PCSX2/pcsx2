@@ -316,7 +316,7 @@ static __fi int ChannelNumber(u32 addr)
         case D9_CHCR: return 9;
 		default:
 		{
-			pxFailDev("Invalid DMA channel number");
+			pxFail("Invalid DMA channel number");
 			return 51; // some value
 		}
     }

@@ -438,7 +438,7 @@ static const void* _DynGen_DispatcherEvent()
 
 static const void* _DynGen_EnterRecompiledCode()
 {
-	pxAssertDev(DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!");
+	pxAssertMsg(DispatcherReg, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!");
 
 	u8* retval = xGetAlignedCallTarget();
 
@@ -798,12 +798,10 @@ void recClear(u32 addr, u32 size)
 		if (s_pCurBlock == PC_GETBLOCK(pexblock->startpc))
 			continue;
 		u32 blockend = pexblock->startpc + pexblock->size * 4;
-		if ((pexblock->startpc >= addr && pexblock->startpc < addr + size * 4) || (pexblock->startpc < addr && blockend > addr))
+		if ((pexblock->startpc >= addr && pexblock->startpc < addr + size * 4) || (pexblock->startpc < addr && blockend > addr)) [[unlikely]]
 		{
-			if (!IsDevBuild)
-				Console.Error("[EE] Impossible block clearing failure");
-			else
-				pxFailDev("[EE] Impossible block clearing failure");
+			Console.Error("[EE] Impossible block clearing failure");
+			pxFail("[EE] Impossible block clearing failure");
 		}
 	}
 

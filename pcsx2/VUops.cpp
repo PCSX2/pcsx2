@@ -4025,13 +4025,13 @@ static void VU0regsMI_XTOP(_VURegsNum* VUregsn) { _vuRegsXTOP(&VU0, VUregsn); }
 
 void VU0unknown()
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
 static void VU0regsunknown(_VURegsNum* VUregsn)
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
@@ -4391,13 +4391,13 @@ static void VU1regsMI_XTOP(_VURegsNum* VUregsn) { _vuRegsXTOP(&VU1, VUregsn); }
 
 static void VU1unknown()
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
 static void VU1regsunknown(_VURegsNum* VUregsn)
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 

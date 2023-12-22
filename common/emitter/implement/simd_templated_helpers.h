@@ -30,7 +30,7 @@ public:
 	__forceinline void operator()(const xRegisterSSE& to, const ModSibBase& from) const
 	{
 		bool isReallyAligned = ((from.Displacement & 0x0f) == 0) && from.Index.IsEmpty() && from.Base.IsEmpty();
-		pxAssertDev(isReallyAligned, "Alignment check failed on SSE indirect load.");
+		pxAssertMsg(isReallyAligned, "Alignment check failed on SSE indirect load.");
 		xOpWrite0F(Prefix, Opcode, to, from);
 	}
 

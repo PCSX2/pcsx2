@@ -407,7 +407,7 @@ ID3D12GraphicsCommandList4* GSDevice12::GetInitCommandList()
 	CommandListResources& res = m_command_lists[m_current_command_list];
 	if (!res.init_command_list_used)
 	{
-		HRESULT hr = res.command_allocators[0]->Reset();
+		[[maybe_unused]] HRESULT hr = res.command_allocators[0]->Reset();
 		pxAssertMsg(SUCCEEDED(hr), "Reset init command allocator failed");
 
 		res.command_lists[0]->Reset(res.command_allocators[0].get(), nullptr);

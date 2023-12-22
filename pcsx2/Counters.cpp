@@ -415,7 +415,7 @@ void UpdateVSyncRate(bool force)
 				else
 					total_scanlines = SCANLINES_TOTAL_NTSC_NI;
 				Console.Error("PCSX2-Counters: Unknown video mode detected");
-				pxAssertDev(false, "Unknown video mode detected via SetGsCrt");
+				pxAssertMsg(false, "Unknown video mode detected via SetGsCrt");
 		}
 
 		const bool video_mode_initialized = gsVideoMode != GS_VideoMode::Uninitialized;
