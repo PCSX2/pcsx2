@@ -51,7 +51,7 @@ DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format)
 	case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
 	case GSTexture::Format::Invalid:
 	default:
-		ASSERT(0);
+		pxAssert(0);
 		return DXGI_FORMAT_UNKNOWN;
 	}
 	// clang-format on

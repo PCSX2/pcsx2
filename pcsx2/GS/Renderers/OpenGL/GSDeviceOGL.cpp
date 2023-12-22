@@ -1313,7 +1313,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 			header += "#define FRAGMENT_SHADER 1\n";
 			break;
 		default:
-			ASSERT(0);
+			pxAssert(0);
 	}
 
 	// Select the entry point ie the main function

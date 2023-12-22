@@ -1281,7 +1281,7 @@ public:
 				}
 				else
 				{
-					ASSERT(0);
+					pxAssert(0);
 				}
 
 				v4 = v6.upl16(v7);
@@ -1338,7 +1338,7 @@ public:
 				}
 				else
 				{
-					ASSERT(0);
+					pxAssert(0);
 				}
 			}
 

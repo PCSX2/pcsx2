@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,6 +14,8 @@
  */
 
 #pragma once
+
+#include "common/Assertions.h"
 
 /// Table for storing swizzling of blocks within a page
 struct alignas(64) GSBlockSwizzleTable
@@ -54,7 +56,7 @@ struct alignas(128) GSPixelRowOffsetTable
 
 	int operator[](size_t x) const
 	{
-		ASSERT(x < 4096);
+		pxAssert(x < 4096);
 		return value[x];
 	}
 };

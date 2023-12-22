@@ -100,7 +100,7 @@ namespace GSPng
 		std::string root = file;
 		root.replace(file.length() - 4, 4, "");
 
-		ASSERT(fmt >= Format::START && fmt < Format::COUNT);
+		pxAssert(fmt >= Format::START && fmt < Format::COUNT);
 
 		if (compression < 0 || compression > Z_BEST_COMPRESSION)
 			compression = Z_BEST_SPEED;

@@ -92,7 +92,7 @@ public:
 			m_active->actual += actual;
 			m_active->total += total;
 
-			ASSERT(m_active->total >= m_active->actual);
+			pxAssert(m_active->total >= m_active->actual);
 		}
 	}
 
@@ -192,7 +192,7 @@ public:
 		{
 			u8* code_ptr = GSCodeReserve::ReserveMemory(MAX_SIZE);
 			CG cg(key, code_ptr, MAX_SIZE);
-			ASSERT(cg.getSize() < MAX_SIZE);
+			pxAssert(cg.getSize() < MAX_SIZE);
 
 #if 0
 			fprintf(stderr, "%s Location:%p Size:%zu Key:%llx\n", m_name.c_str(), code_ptr, cg.getSize(), (u64)key);

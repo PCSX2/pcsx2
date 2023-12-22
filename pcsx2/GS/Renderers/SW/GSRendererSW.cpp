@@ -684,15 +684,15 @@ void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 		switch (type)
 		{
 			case 0:
-				ASSERT((m_fzb_pages[page] & 0xFFFF) < USHRT_MAX);
+				pxAssert((m_fzb_pages[page] & 0xFFFF) < USHRT_MAX);
 				m_fzb_pages[page] += 1;
 				break;
 			case 1:
-				ASSERT((m_fzb_pages[page] >> 16) < USHRT_MAX);
+				pxAssert((m_fzb_pages[page] >> 16) < USHRT_MAX);
 				m_fzb_pages[page] += 0x10000;
 				break;
 			case 2:
-				ASSERT(m_tex_pages[page] < USHRT_MAX);
+				pxAssert(m_tex_pages[page] < USHRT_MAX);
 				m_tex_pages[page] += 1;
 				break;
 			default:
@@ -708,15 +708,15 @@ void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int typ
 		switch (type)
 		{
 			case 0:
-				ASSERT((m_fzb_pages[page] & 0xFFFF) > 0);
+				pxAssert((m_fzb_pages[page] & 0xFFFF) > 0);
 				m_fzb_pages[page] -= 1;
 				break;
 			case 1:
-				ASSERT((m_fzb_pages[page] >> 16) > 0);
+				pxAssert((m_fzb_pages[page] >> 16) > 0);
 				m_fzb_pages[page] -= 0x10000;
 				break;
 			case 2:
-				ASSERT(m_tex_pages[page] > 0);
+				pxAssert(m_tex_pages[page] > 0);
 				m_tex_pages[page] -= 1;
 				break;
 			default:
@@ -1073,7 +1073,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			if (t == NULL)
 			{
-				ASSERT(0);
+				pxAssert(0);
 				return false;
 			}
 
@@ -1121,8 +1121,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 				if (gd.sel.fst)
 				{
-					ASSERT(gd.sel.lcm == 1);
-					ASSERT(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
+					pxAssert(gd.sel.lcm == 1);
+					pxAssert(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
 
 					gd.sel.lcm = 1;
 				}
@@ -1169,7 +1169,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 					if (t == NULL)
 					{
-						ASSERT(0);
+						pxAssert(0);
 						return false;
 					}
 
@@ -1532,7 +1532,7 @@ void GSRendererSW::SharedData::ReleasePages()
 
 void GSRendererSW::SharedData::SetSource(GSTextureCacheSW::Texture* t, const GSVector4i& r, int level)
 {
-	ASSERT(m_tex[level].t == NULL);
+	pxAssert(m_tex[level].t == NULL);
 
 	m_tex[level].t = t;
 	m_tex[level].r = r;

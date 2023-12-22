@@ -374,7 +374,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	std::unique_lock<std::mutex> lock(s_lock);
 
-	ASSERT(fps != 0);
+	pxAssert(fps != 0);
 
 	InternalEndCapture(lock);
 

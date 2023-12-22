@@ -892,7 +892,7 @@ static int s_shm_fd = -1;
 
 void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
-	ASSERT(s_shm_fd == -1);
+	pxAssert(s_shm_fd == -1);
 
 	const char* file_name = "/GS.mem";
 	s_shm_fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
@@ -924,7 +924,7 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 
 void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 {
-	ASSERT(s_shm_fd >= 0);
+	pxAssert(s_shm_fd >= 0);
 
 	if (s_shm_fd < 0)
 		return;

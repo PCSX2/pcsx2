@@ -454,7 +454,7 @@ namespace usb_msd
 	{
 		size_t len;
 
-		assert(s->f.csw.sig == cpu_to_le32(0x53425355));
+		pxAssert(s->f.csw.sig == cpu_to_le32(0x53425355));
 		len = std::min<size_t>(sizeof(s->f.csw), p->buffer_size);
 		usb_packet_copy(p, &s->f.csw, len);
 		memset(&s->f.csw, 0, sizeof(s->f.csw));
@@ -756,7 +756,7 @@ namespace usb_msd
 	{
 		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 
-		assert(s->packet == p);
+		pxAssert(s->packet == p);
 		s->packet = NULL;
 
 		if (s->f.req.valid)
