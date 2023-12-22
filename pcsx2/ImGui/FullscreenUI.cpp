@@ -1004,7 +1004,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 		{
 			if (!VMManager::IsDiscFileName(path))
 			{
-				ShowToast({}, fmt::format(FSUI_FSTR("{} is not a valid disc image."), FileSystem::GetDisplayNameFromPath(path)));
+				ShowToast({}, fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
 			}
 			else
 			{
