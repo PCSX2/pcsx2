@@ -25,6 +25,7 @@
 #include "pcsx2/Host.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/StringUtil.h"
 
 #include "fmt/format.h"

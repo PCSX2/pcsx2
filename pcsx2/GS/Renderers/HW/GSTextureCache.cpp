@@ -22,6 +22,8 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "GS/GSXXH.h"
+
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/HashCombine.h"
 

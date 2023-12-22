@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 
 #ifdef __POSIX__
 #define SOCKET_ERROR -1

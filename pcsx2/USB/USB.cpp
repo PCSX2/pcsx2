@@ -22,6 +22,7 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/desc.h"
 
+#include "common/Console.h"
 #include "common/SettingsInterface.h"
 #include "common/WindowInfo.h"
 

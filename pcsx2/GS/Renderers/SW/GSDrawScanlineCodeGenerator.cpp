@@ -17,6 +17,9 @@
 #include "GSDrawScanlineCodeGenerator.h"
 #include "GSDrawScanlineCodeGenerator.all.h"
 #include "GSDrawScanline.h"
+
+#include "common/Console.h"
+
 #include <fstream>
 #include <map>
 #include <mutex>

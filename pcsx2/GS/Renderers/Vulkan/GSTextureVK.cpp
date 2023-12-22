@@ -22,6 +22,7 @@
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/BitUtils.h"
 
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,

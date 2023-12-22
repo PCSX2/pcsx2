@@ -23,6 +23,7 @@
 #include "pcsx2/ImGui/ImGuiManager.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>

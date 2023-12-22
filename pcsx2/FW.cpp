@@ -16,13 +16,14 @@
 #include "PrecompiledHeader.h"
 #include "IopDma.h"
 #include "R3000A.h"
-#include <stdlib.h>
-#include <string>
-using namespace std;
-
 #include "FW.h"
 
-u8 phyregs[16];
+#include "common/Console.h"
+
+#include <cstdlib>
+#include <string>
+
+static u8 phyregs[16];
 s8* fwregs;
 
 s32 FWopen()

@@ -18,6 +18,7 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-printer/usb-printer.h"
 #include "USB/USB.h"
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"

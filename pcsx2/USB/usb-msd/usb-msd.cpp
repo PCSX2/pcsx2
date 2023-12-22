@@ -8,17 +8,20 @@
  */
 
 #include "PrecompiledHeader.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-msd/usb-msd.h"
 #include "USB/USB.h"
-#include "common/FileSystem.h"
 #include "Host.h"
 #include "StateWrapper.h"
+
+#include "common/Console.h"
+#include "common/FileSystem.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #define le32_to_cpu(x) (x)
 #define cpu_to_le32(x) (x)

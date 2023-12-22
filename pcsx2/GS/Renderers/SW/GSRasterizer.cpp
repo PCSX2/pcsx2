@@ -20,10 +20,12 @@
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
+#include "VMManager.h"
+
 #include "common/AlignedMalloc.h"
+#include "common/Console.h"
 #include "common/General.h"
 #include "common/StringUtil.h"
-#include "VMManager.h"
 
 #define ENABLE_DRAW_STATS 0
 

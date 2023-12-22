@@ -75,7 +75,7 @@ bool PINEServer::Initialize(int slot)
 	// yes very good windows s/sun/sin/g sure is fine
 	server.sin_family = AF_INET;
 	// localhost only
-	server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server.sin_addr.s_addr = INADDR_LOOPBACK;
 	server.sin_port = htons(slot);
 
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)

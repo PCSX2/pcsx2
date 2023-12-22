@@ -21,6 +21,8 @@
 #include "Host.h"
 #include "StateWrapper.h"
 
+#include "common/Console.h"
+
 namespace usb_pad
 {
 	static const USBDescStrings df_desc_strings = {

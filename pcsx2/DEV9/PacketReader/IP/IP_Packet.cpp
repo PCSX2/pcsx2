@@ -18,6 +18,8 @@
 #include "IP_Packet.h"
 #include "DEV9/PacketReader/NetLib.h"
 
+#include "common/Console.h"
+
 namespace PacketReader::IP
 {
 	int IP_Packet::GetHeaderLength()

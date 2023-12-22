@@ -27,6 +27,7 @@
 #include "USB/usb-lightgun/guncon2.h"
 #include "VMManager.h"
 
+#include "common/Console.h"
 #include "common/StringUtil.h"
 
 #include <tuple>

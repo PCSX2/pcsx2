@@ -22,7 +22,6 @@
 
 #if _WIN32
 #include "common/RedtapeWindows.h"
-#include "common/StringUtil.h"
 #include <winioctl.h>
 #include <io.h>
 #elif defined(__POSIX__)
@@ -31,6 +30,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
+
+#include "common/Console.h"
+#include "common/StringUtil.h"
 
 void HddCreate::Start()
 {

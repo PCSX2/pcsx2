@@ -23,6 +23,7 @@
 #include <algorithm>
 #include "fmt/format.h"
 
+#include "common/Console.h"
 #include "common/StringUtil.h"
 
 #include "pcsx2/Host.h"

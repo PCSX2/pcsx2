@@ -36,6 +36,9 @@
 #include "USB/USB.h"
 #include "Host.h"
 #include "StateWrapper.h"
+
+#include "common/Console.h"
+
 #include "fmt/format.h"
 
 static FILE* file = NULL;

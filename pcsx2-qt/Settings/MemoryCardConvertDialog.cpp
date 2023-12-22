@@ -21,6 +21,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QProgressDialog>
 
+#include "common/Console.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 

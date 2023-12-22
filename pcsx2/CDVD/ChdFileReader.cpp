@@ -17,6 +17,7 @@
 #include "ChdFileReader.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"

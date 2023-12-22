@@ -21,6 +21,8 @@
 #include "SIO/Sio2.h"
 #include "SIO/Sio0.h"
 
+#include "common/Console.h"
+
 #define MC_LOG_ENABLE 0
 #define MC_LOG if (MC_LOG_ENABLE) DevCon
 

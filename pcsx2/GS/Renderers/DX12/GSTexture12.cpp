@@ -22,6 +22,7 @@
 #include "GS/GSGL.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/StringUtil.h"
 

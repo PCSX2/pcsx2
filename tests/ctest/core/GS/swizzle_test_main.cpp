@@ -17,6 +17,7 @@
 #include "pcsx2/GS/GSBlock.h"
 #include "pcsx2/GS/GSClut.h"
 #include "pcsx2/GS/MultiISA.h"
+#include "common/emitter/tools.h"
 #include <gtest/gtest.h>
 #include <string.h>
 

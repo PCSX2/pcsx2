@@ -34,6 +34,8 @@
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-hid/usb-hid.h"
 
+#include "common/Console.h"
+
 namespace usb_hid
 {
 	struct UsbHIDState

@@ -25,6 +25,7 @@
 #include "ImGui/ImGuiFullscreen.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/Easing.h"
 #include "common/Image.h"
 #include "common/LRUCache.h"

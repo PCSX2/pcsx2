@@ -19,6 +19,8 @@
 #include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
 #include "DEV9/PacketReader/IP/UDP/DNS/DNS_Packet.h"
 
+#include "common/Console.h"
+
 using PacketReader::PayloadPtr;
 using namespace PacketReader::IP;
 using namespace PacketReader::IP::UDP;

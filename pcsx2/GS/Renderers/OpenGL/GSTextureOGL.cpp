@@ -21,6 +21,7 @@
 #include "GS/GSExtra.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSGL.h"
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/AlignedMalloc.h"
 #include "common/StringUtil.h"

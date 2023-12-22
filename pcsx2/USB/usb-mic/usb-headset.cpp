@@ -35,6 +35,8 @@
 #include "USB/USB.h"
 #include "StateWrapper.h"
 
+#include "common/Console.h"
+
 #define BUFFER_FRAMES 200
 
 /*

@@ -17,6 +17,8 @@
 #include "DHCP_Packet.h"
 #include "DEV9/PacketReader/NetLib.h"
 
+#include "common/Console.h"
+
 namespace PacketReader::IP::UDP::DHCP
 {
 	DHCP_Packet::DHCP_Packet(u8* buffer, int bufferSize)

@@ -20,6 +20,7 @@
 #include "GS/GS.h"
 #include "Host.h"
 
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"

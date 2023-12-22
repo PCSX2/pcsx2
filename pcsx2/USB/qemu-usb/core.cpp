@@ -28,6 +28,8 @@
 #include "USB/qemu-usb/qusb.h"
 #include <utility>
 
+#include "common/Console.h"
+
 void usb_pick_speed(USBPort* port)
 {
 	static const int speeds[] = {

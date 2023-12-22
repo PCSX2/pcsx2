@@ -18,6 +18,8 @@
 #include "GS/GSUtil.h"
 #include "GS/GSState.h"
 
+#include "common/Console.h"
+
 GSVertexTrace::GSVertexTrace(const GSState* state, bool provoking_vertex_first)
 	: m_state(state)
 {

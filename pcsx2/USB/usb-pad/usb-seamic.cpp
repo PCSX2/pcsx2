@@ -20,6 +20,8 @@
 #include "USB/usb-mic/usb-mic-singstar.h"
 #include "USB/USB.h"
 
+#include "common/Console.h"
+
 namespace usb_pad
 {
 

@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
+#include "common/Console.h"
 #include "common/StringUtil.h"
 
 #include "jpge.h"

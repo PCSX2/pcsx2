@@ -22,6 +22,8 @@
 #include "IopDma.h"
 #include "IopGte.h"
 
+#include "common/Console.h"
+
 using namespace x86Emitter;
 
 extern int g_psxWriteOk;

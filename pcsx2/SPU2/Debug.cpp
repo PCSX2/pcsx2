@@ -18,6 +18,7 @@
 #include "SPU2/Global.h"
 #include "Config.h"
 
+#include "common/Console.h"
 #include "common/FileSystem.h"
 
 #include <cstdarg>
