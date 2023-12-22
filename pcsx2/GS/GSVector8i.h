@@ -1171,14 +1171,10 @@ public:
 		return cast(GSVector4i::load(i));
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static GSVector8i loadq(s64 i)
 	{
 		return cast(GSVector4i::loadq(i));
 	}
-
-#endif
 
 	__forceinline static void storent(void* p, const GSVector8i& v)
 	{
@@ -1215,14 +1211,10 @@ public:
 		return GSVector4i::store(GSVector4i::cast(v));
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static s64 storeq(const GSVector8i& v)
 	{
 		return GSVector4i::storeq(GSVector4i::cast(v));
 	}
-
-#endif
 
 	__forceinline static void storent(void* RESTRICT dst, const void* RESTRICT src, size_t size)
 	{
