@@ -366,7 +366,7 @@ bool DoCDVDopen(Error* error)
 		return true;
 	}
 
-	std::string dump_name(Path::StripExtension(FileSystem::GetDisplayNameFromPath(m_SourceFilename[CurrentSourceType])));
+	std::string dump_name(Path::StripExtension(m_SourceFilename[CurrentSourceType]));
 	if (dump_name.empty())
 		dump_name = "Untitled";
 

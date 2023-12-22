@@ -200,7 +200,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 
 	entry->path = path;
 	entry->serial.clear();
-	entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+	entry->title = Path::GetFileTitle(path);
 	entry->region = Region::Other;
 	entry->type = EntryType::ELF;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
@@ -632,7 +632,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 			continue;
 		}
 
-		progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
+		const std::string_view filename = Path::GetFileName(ffd.FileName);
+		progress->SetFormattedStatusText("Scanning '%.*s'...", static_cast<int>(filename.size()), filename.data());
 		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
 		progress->SetProgressValue(files_scanned);
 	}
@@ -1269,10 +1270,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 				if (has_title)
 					StringUtil::ReplaceAll(&url, "${title}", HTTPDownloader::URLEncode(entry.title));
 				if (has_file_title)
-				{
-					std::string display_name(FileSystem::GetDisplayNameFromPath(entry.path));
-					StringUtil::ReplaceAll(&url, "${filetitle}", HTTPDownloader::URLEncode(Path::GetFileTitle(display_name)));
-				}
+					StringUtil::ReplaceAll(&url, "${filetitle}", HTTPDownloader::URLEncode(Path::GetFileTitle(entry.path)));
 				if (has_serial)
 					StringUtil::ReplaceAll(&url, "${serial}", HTTPDownloader::URLEncode(entry.serial));
 
