@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -19,12 +19,18 @@
 #include "GSVertexSW.h"
 #include "common/Perf.h"
 
+#include <cstddef>
+
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Winvalid-offsetof" // We know what we're doing.
+#endif
+
 #define _rip_const(cptr) ptr[rip + ((char*)(cptr))]
-#define _rip_local(field) ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)]
-#define _rip_global(field) ptr[_m_local__gd + OFFSETOF(GSScanlineGlobalData, field)]
+#define _rip_local(field) ptr[_m_local + offsetof(GSScanlineLocalData, field)]
+#define _rip_global(field) ptr[_m_local__gd + offsetof(GSScanlineGlobalData, field)]
 
 /// On AVX, does a v-prefixed separate destination operation
 /// On SSE, moves src1 into dst using movdqa, then does the operation
