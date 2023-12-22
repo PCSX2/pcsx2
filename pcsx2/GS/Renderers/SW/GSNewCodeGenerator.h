@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
+ *  Copyright (C) 2002-2023 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,7 +15,13 @@
 
 #pragma once
 
+// Xbyak pulls in windows.h, and breaks everything.
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
+
 #define XBYAK_NO_OP_NAMES
+#define XBYAK_ENABLE_OMITTED_OPERAND
 
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
