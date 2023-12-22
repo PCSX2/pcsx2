@@ -131,18 +131,6 @@ static constexpr unsigned int __pagemask = __pagesize - 1;
 	#endif
 #endif
 
-#ifndef __has_attribute
-	#define __has_attribute(x) 0
-#endif
-
-#ifdef __cpp_constinit
-	#define CONSTINIT constinit
-#elif __has_attribute(require_constant_initialization)
-	#define CONSTINIT __attribute__((require_constant_initialization))
-#else
-	#define CONSTINIT
-#endif
-
 #define ASSERT assert
 
 //////////////////////////////////////////////////////////////////////////////////////////

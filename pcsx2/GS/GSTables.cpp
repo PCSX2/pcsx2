@@ -298,15 +298,15 @@ constexpr GSPixelColOffsetTable< 64> pixelColOffset16S  = makeColOffsetTable(_bl
 constexpr GSPixelColOffsetTable< 64> pixelColOffset8    = makeColOffsetTable(_blockTable8,    columnTable8);
 constexpr GSPixelColOffsetTable<128> pixelColOffset4    = makeColOffsetTable(_blockTable4,    columnTable4);
 // These can't be constexpr due to a GCC bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99901
-CONSTINIT const GSSizedPixelRowOffsetTable< 64> GSTables::_pixelRowOffset32   = makeRowOffsetTable(_blockTable32,   columnTable32, 0);
-CONSTINIT const GSSizedPixelRowOffsetTable< 64> GSTables::_pixelRowOffset16   = makeRowOffsetTable(_blockTable16,   columnTable16, 0);
-CONSTINIT const GSSizedPixelRowOffsetTable< 64> GSTables::_pixelRowOffset16S  = makeRowOffsetTable(_blockTable16S,  columnTable16, 0);
-CONSTINIT const GSSizedPixelRowOffsetTable<128> GSTables::_pixelRowOffset8[2] =
+constinit const GSSizedPixelRowOffsetTable< 64> GSTables::_pixelRowOffset32   = makeRowOffsetTable(_blockTable32,   columnTable32, 0);
+constinit const GSSizedPixelRowOffsetTable< 64> GSTables::_pixelRowOffset16   = makeRowOffsetTable(_blockTable16,   columnTable16, 0);
+constinit const GSSizedPixelRowOffsetTable< 64> GSTables::_pixelRowOffset16S  = makeRowOffsetTable(_blockTable16S,  columnTable16, 0);
+constinit const GSSizedPixelRowOffsetTable<128> GSTables::_pixelRowOffset8[2] =
 {
 	makeRowOffsetTable(_blockTable8, columnTable8, 0),
 	makeRowOffsetTable(_blockTable8, columnTable8, 2),
 };
-CONSTINIT const GSSizedPixelRowOffsetTable<128> GSTables::_pixelRowOffset4[2] =
+constinit const GSSizedPixelRowOffsetTable<128> GSTables::_pixelRowOffset4[2] =
 {
 	makeRowOffsetTable(_blockTable4, columnTable4, 0),
 	makeRowOffsetTable(_blockTable4, columnTable4, 2),
