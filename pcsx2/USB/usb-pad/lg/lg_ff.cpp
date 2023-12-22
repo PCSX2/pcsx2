@@ -1,9 +1,6 @@
-/*
- Copyright (c) 2016 Mathieu Laurendeau <mat.lau@laposte.net>
- License: GPLv3
- */
+// SPDX-FileCopyrightText: 2016 Mathieu Laurendeau <mat.lau@laposte.net>, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0-only
 
-#include "PrecompiledHeader.h"
 #include "lg_ff.h"
 
 typedef struct

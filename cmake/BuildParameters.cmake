@@ -161,7 +161,19 @@ if(WIN32)
 		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
 		_HAS_EXCEPTIONS=0
 	)
-	list(APPEND PCSX2_DEFS _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+	list(APPEND PCSX2_DEFS
+		_CRT_NONSTDC_NO_WARNINGS
+		_CRT_SECURE_NO_WARNINGS
+		CRT_SECURE_NO_DEPRECATE
+		_SCL_SECURE_NO_WARNINGS
+		_UNICODE
+		UNICODE
+	)
+else()
+	# Assume everything else is POSIX.
+	list(APPEND PCSX2_DEFS
+		__POSIX__
+	)
 endif()
 
 # Enable debug information in release builds for Linux.

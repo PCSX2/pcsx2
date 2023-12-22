@@ -140,8 +140,6 @@
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />
     <ClInclude Include="RedtapeWindows.h" />
-    <ClInclude Include="SafeArray.h" />
-    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="TextureDecompress.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="WAVWriter.h" />

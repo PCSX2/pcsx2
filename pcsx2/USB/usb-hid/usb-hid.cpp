@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include "PrecompiledHeader.h"
-
 #include "Host.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"

@@ -216,9 +216,6 @@
     <ClInclude Include="RedtapeWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SafeArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\implement\simd_arithmetic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -322,9 +319,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HTTPDownloaderWinHTTP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeterogeneousContainers.h">
