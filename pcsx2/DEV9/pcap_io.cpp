@@ -225,7 +225,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.type = Pcsx2Config::DEV9Options::NetApi::PCAP_Switched;
 #ifdef _WIN32
 		//guid
-		if (!StringUtil::StartsWith(d->name, PCAPPREFIX))
+		if (!std::string_view(d->name).ends_with(PCAPPREFIX))
 		{
 			Console.Error("PCAP: Unexpected Device: ", d->name);
 			d = d->next;

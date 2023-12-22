@@ -328,7 +328,7 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
 
 std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
 {
-	if (!StringUtil::StartsWith(device, "SDL-") || binding.empty())
+	if (!device.starts_with("SDL-") || binding.empty())
 		return std::nullopt;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(4));
@@ -339,7 +339,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	key.source_type = InputSourceType::SDL;
 	key.source_index = static_cast<u32>(player_id.value());
 
-	if (StringUtil::EndsWith(binding, "Motor"))
+	if (binding.ends_with("Motor"))
 	{
 		key.source_subtype = InputSubclass::ControllerMotor;
 		if (binding == "LargeMotor")
@@ -357,7 +357,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 			return std::nullopt;
 		}
 	}
-	else if (StringUtil::EndsWith(binding, "Haptic"))
+	else if (binding.ends_with("Haptic"))
 	{
 		key.source_subtype = InputSubclass::ControllerHaptic;
 		key.data = 0;
@@ -368,7 +368,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 		// likely an axis
 		const std::string_view axis_name(binding.substr(1));
 
-		if (StringUtil::StartsWith(axis_name, "Axis"))
+		if (axis_name.starts_with("Axis"))
 		{
 			std::string_view end;
 			if (auto value = StringUtil::FromChars<u32>(axis_name.substr(4), 10, &end))
@@ -392,7 +392,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 			}
 		}
 	}
-	else if (StringUtil::StartsWith(binding, "FullAxis"))
+	else if (binding.starts_with("FullAxis"))
 	{
 		std::string_view end;
 		if (auto value = StringUtil::FromChars<u32>(binding.substr(8), 10, &end))
@@ -404,7 +404,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 			return key;
 		}
 	}
-	else if (StringUtil::StartsWith(binding, "Hat"))
+	else if (binding.starts_with("Hat"))
 	{
 		std::string_view hat_dir;
 		if (auto value = StringUtil::FromChars<u32>(binding.substr(3), 10, &hat_dir); value.has_value() && !hat_dir.empty())
@@ -423,7 +423,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_
 	else
 	{
 		// must be a button
-		if (StringUtil::StartsWith(binding, "Button"))
+		if (binding.starts_with("Button"))
 		{
 			if (auto value = StringUtil::FromChars<u32>(binding.substr(6)))
 			{
@@ -575,7 +575,7 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 
 SDL_Joystick* SDLInputSource::GetJoystickForDevice(const std::string_view& device)
 {
-	if (!StringUtil::StartsWith(device, "SDL-"))
+	if (!device.starts_with("SDL-"))
 		return nullptr;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(4));
@@ -890,7 +890,7 @@ std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
 
 bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
 {
-	if (!StringUtil::StartsWith(device, "SDL-"))
+	if (!device.starts_with("SDL-"))
 		return false;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(4));

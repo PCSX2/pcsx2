@@ -323,7 +323,7 @@ void FileMemoryCard::Open()
 		FileSystem::SetPathCompression(fname.c_str(), EmuConfig.McdCompressNTFS);
 #endif
 
-		if (StringUtil::EndsWith(fname, ".bin"))
+		if (fname.ends_with(".bin"))
 		{
 			std::string newname(fname + "x");
 			if (!ConvertNoECCtoRAW(fname.c_str(), newname.c_str()))
@@ -385,7 +385,7 @@ void FileMemoryCard::Close()
 		std::fclose(m_file[slot]);
 		m_file[slot] = nullptr;
 
-		if (StringUtil::EndsWith(m_filenames[slot], ".bin"))
+		if (m_filenames[slot].ends_with(".bin"))
 		{
 			const std::string name_in(m_filenames[slot] + 'x');
 			if (ConvertRAWtoNoECC(name_in.c_str(), m_filenames[slot].c_str()))
@@ -890,8 +890,8 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 		}
 
 		// We only want relevant file types.
-		if (!(StringUtil::EndsWith(fd.FileName, ".ps2") || StringUtil::EndsWith(fd.FileName, ".mcr") ||
-			StringUtil::EndsWith(fd.FileName, ".mcd") || StringUtil::EndsWith(fd.FileName, ".bin")))
+		if (!(fd.FileName.ends_with(".ps2") || fd.FileName.ends_with(".mcr") ||
+			fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin")))
 			continue;
 
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)

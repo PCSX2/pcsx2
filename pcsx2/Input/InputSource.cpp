@@ -92,7 +92,7 @@ std::optional<InputBindingKey> InputSource::ParseGenericControllerKey(
 	key.source_type = clazz;
 	key.source_index = source_index.value();
 
-	if (StringUtil::StartsWith(sub_binding, "+Axis") || StringUtil::StartsWith(sub_binding, "-Axis"))
+	if (sub_binding.starts_with("+Axis") || sub_binding.starts_with("-Axis"))
 	{
 		const std::optional<s32> axis_number = StringUtil::FromChars<s32>(sub_binding.substr(5));
 		if (!axis_number.has_value() || axis_number.value() < 0)
@@ -108,7 +108,7 @@ std::optional<InputBindingKey> InputSource::ParseGenericControllerKey(
 		else
 			return std::nullopt;
 	}
-	else if (StringUtil::StartsWith(sub_binding, "FullAxis"))
+	else if (sub_binding.starts_with("FullAxis"))
 	{
 		const std::optional<s32> axis_number = StringUtil::FromChars<s32>(sub_binding.substr(8));
 		if (!axis_number.has_value() || axis_number.value() < 0)
@@ -117,7 +117,7 @@ std::optional<InputBindingKey> InputSource::ParseGenericControllerKey(
 		key.data = static_cast<u32>(axis_number.value());
 		key.modifier = InputModifier::FullAxis;
 	}
-	else if (StringUtil::StartsWith(sub_binding, "Button"))
+	else if (sub_binding.starts_with("Button"))
 	{
 		const std::optional<s32> button_number = StringUtil::FromChars<s32>(sub_binding.substr(6));
 		if (!button_number.has_value() || button_number.value() < 0)

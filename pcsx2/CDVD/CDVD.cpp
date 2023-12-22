@@ -429,12 +429,12 @@ static bool cdvdUncheckedLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std
 
 bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf, Error* error)
 {
-	if (StringUtil::StartsWith(elfpath, "host:"))
+	if (elfpath.starts_with("host:"))
 	{
 		std::string host_filename(elfpath.substr(5));
 		return elfo->OpenFile(host_filename, isPSXElf, error);
 	}
-	else if (StringUtil::StartsWith(elfpath, "cdrom:") || StringUtil::StartsWith(elfpath, "cdrom0:"))
+	else if (elfpath.starts_with("cdrom:") || elfpath.starts_with("cdrom0:"))
 	{
 		IsoReader isor;
 		if (!isor.Open(error))
@@ -451,7 +451,7 @@ bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf
 
 bool cdvdLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std::string_view& elfpath, bool isPSXElf, Error* error)
 {
-	if (!StringUtil::StartsWith(elfpath, "cdrom:") && !StringUtil::StartsWith(elfpath, "cdrom0:"))
+	if (!elfpath.starts_with("cdrom:") && !elfpath.starts_with("cdrom0:"))
 		return false;
 
 	return cdvdUncheckedLoadDiscElf(elfo, isor, elfpath, isPSXElf, error);
