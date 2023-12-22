@@ -167,7 +167,9 @@ void IPU_Fifo_Output::read(void *value, uint size)
 
 void ReadFIFO_IPUout(mem128_t* out)
 {
-	if (!pxAssertDev( ipuRegs.ctrl.OFC > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!" )) return;
+	pxAssertMsg(ipuRegs.ctrl.OFC > 0, "Attempted read from IPUout's FIFO, but the FIFO is empty!");
+	if (ipuRegs.ctrl.OFC == 0) [[unlikely]]
+		return;
 	ipu_fifo.out.read(out, 1);
 
 	// Games should always check the fifo before reading from it -- so if the FIFO has no data

@@ -113,7 +113,7 @@ bool Threading::WorkSema::WaitForEmpty()
 		if (m_state.compare_exchange_weak(value, value | STATE_FLAG_WAITING_EMPTY, std::memory_order_acquire))
 			break;
 	}
-	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
+	pxAssertMsg(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
 	m_empty_sema.Wait();
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
@@ -131,7 +131,7 @@ bool Threading::WorkSema::WaitForEmptyWithSpin()
 		waited += ShortSpin();
 		value = m_state.load(std::memory_order_acquire);
 	}
-	pxAssertDev(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
+	pxAssertMsg(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
 	m_empty_sema.Wait();
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }

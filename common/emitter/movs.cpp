@@ -151,7 +151,7 @@ namespace x86Emitter
 	//  CMOVcc
 	// --------------------------------------------------------------------------------------
 
-#define ccSane() pxAssertDev(ccType >= 0 && ccType <= 0x0f, "Invalid comparison type specifier.")
+#define ccSane() pxAssertMsg(ccType >= 0 && ccType <= 0x0f, "Invalid comparison type specifier.")
 
 // Macro useful for trapping unwanted use of EBP.
 //#define EbpAssert() pxAssert( to != ebp )

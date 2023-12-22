@@ -201,7 +201,7 @@ namespace x86Emitter
 
 		if (slideForward)
 		{
-			pxAssertDev(displacement8 >= 0, "Used slideForward on a backward jump; nothing to slide!");
+			pxAssertMsg(displacement8 >= 0, "Used slideForward on a backward jump; nothing to slide!");
 		}
 
 		if (is_s8(displacement8))
@@ -213,7 +213,7 @@ namespace x86Emitter
 			sptr distance = (sptr)target - (sptr)xGetPtr();
 
 			// This assert won't physically happen on x86 targets
-			pxAssertDev(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
+			pxAssertMsg(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
 
 			*bah = (s32)distance;
 		}
@@ -229,7 +229,7 @@ namespace x86Emitter
 	xForwardJumpBase::xForwardJumpBase(uint opsize, JccComparisonType cctype)
 	{
 		pxAssert(opsize == 1 || opsize == 4);
-		pxAssertDev(cctype != Jcc_Unknown, "Invalid ForwardJump conditional type.");
+		pxAssertMsg(cctype != Jcc_Unknown, "Invalid ForwardJump conditional type.");
 
 		BasePtr = (s8*)xGetPtr() +
 				  ((opsize == 1) ? 2 : // j8's are always 2 bytes.
@@ -253,12 +253,12 @@ namespace x86Emitter
 
 	void xForwardJumpBase::_setTarget(uint opsize) const
 	{
-		pxAssertDev(BasePtr != NULL, "");
+		pxAssertMsg(BasePtr != NULL, "");
 
 		sptr displacement = (sptr)xGetPtr() - (sptr)BasePtr;
 		if (opsize == 1)
 		{
-			pxAssertDev(is_s8(displacement), "Emitter Error: Invalid short jump displacement.");
+			pxAssertMsg(is_s8(displacement), "Emitter Error: Invalid short jump displacement.");
 			BasePtr[-1] = (s8)displacement;
 		}
 		else

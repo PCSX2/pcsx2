@@ -51,10 +51,12 @@ bool D3D12DescriptorHeapManager::Create(
 
 void D3D12DescriptorHeapManager::Destroy()
 {
+#ifdef PCSX2_DEVBUILD
 	for (BitSetType& bs : m_free_slots)
 	{
-		pxAssert(bs.all());
+		pxAssertMsg(bs.all(), "Not all descriptors were freed");
 	}
+#endif
 
 	m_shader_visible = false;
 	m_num_descriptors = 0;

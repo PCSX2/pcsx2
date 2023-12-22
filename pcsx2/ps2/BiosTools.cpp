@@ -299,7 +299,7 @@ bool IsBIOSAvailable(const std::string& full_path)
 //
 bool LoadBIOS()
 {
-	pxAssertDev(eeMem->ROM != NULL, "PS2 system memory has not been initialized yet.");
+	pxAssertMsg(eeMem->ROM, "PS2 system memory has not been initialized yet.");
 
 	std::string path = EmuConfig.FullpathToBios();
 	if (path.empty() || !FileSystem::FileExists(path.c_str()))

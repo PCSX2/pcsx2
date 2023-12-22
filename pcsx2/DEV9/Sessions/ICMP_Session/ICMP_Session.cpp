@@ -191,7 +191,7 @@ namespace Sessions
 		{
 			ResetEvent(icmpEvent);
 			//Prep buffer for reasing
-			int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
+			[[maybe_unused]] int count = IcmpParseReplies(icmpResponseBuffer.get(), icmpResponseBufferLen);
 			pxAssert(count == 1);
 			ICMP_ECHO_REPLY* pingRet = (ICMP_ECHO_REPLY*)icmpResponseBuffer.get();
 

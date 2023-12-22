@@ -309,7 +309,7 @@ protected:
 			}
 		}
 		int x = findFreeRegRec(0);
-		pxAssertDev(x >= 0, "microVU register allocation failure!");
+		pxAssertMsg(x >= 0, "microVU register allocation failure!");
 		return x;
 	}
 
@@ -341,7 +341,7 @@ protected:
 			}
 		}
 		int x = findFreeGPRRec(0);
-		pxAssertDev(x >= 0, "microVU register allocation failure!");
+		pxAssertMsg(x >= 0, "microVU register allocation failure!");
 		return x;
 	}
 

@@ -1298,7 +1298,7 @@ GSDevice::PresentResult GSDeviceMTL::BeginPresent(bool frame_skip)
 
 void GSDeviceMTL::EndPresent()
 { @autoreleasepool {
-	pxAssertDev(m_current_render.encoder && m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
+	pxAssertMsg(m_current_render.encoder && m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
 	ImGui::Render();
 	RenderImGui(ImGui::GetDrawData());
 	EndRenderPass();
@@ -2165,7 +2165,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	if (!rt && !config.ds)
 	{
 		// If we were rendering depth-only and depth gets cleared by the above check, that turns into rendering nothing, which should be a no-op
-		pxAssertDev(0, "RenderHW was given a completely useless draw call!");
+		pxAssertMsg(0, "RenderHW was given a completely useless draw call!");
 		[m_current_render.encoder insertDebugSignpost:@"Skipped no-color no-depth draw"];
 		if (primid_tex)
 			Recycle(primid_tex);

@@ -63,7 +63,7 @@ static OutputIsoFile blockDumpFile;
 // relying on DEP exceptions -- and a little more reliable too.
 static void CheckNullCDVD()
 {
-	pxAssertDev(CDVD != NULL, "Invalid CDVD object state (null pointer exception)");
+	pxAssertMsg(CDVD, "Invalid CDVD object state (null pointer exception)");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

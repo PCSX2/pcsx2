@@ -87,7 +87,7 @@ __fi void VifUnpackSSE_Dynarec::SetMasks(int cS) const
 
 void VifUnpackSSE_Dynarec::doMaskWrite(const xRegisterSSE& regX) const
 {
-	pxAssertDev(regX.Id <= 1, "Reg Overflow! XMM2 thru XMM6 are reserved for masking.");
+	pxAssertMsg(regX.Id <= 1, "Reg Overflow! XMM2 thru XMM6 are reserved for masking.");
 
 	const int cc = std::min(vCL, 3);
 	u32 m0 = (vB.mask >> (cc * 8)) & 0xff; //The actual mask example 0xE4 (protect, col, row, clear)

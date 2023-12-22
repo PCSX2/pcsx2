@@ -131,7 +131,7 @@ bool SaveStateBase::FreezeTag(const char* src)
 		return false;
 
 	char tagspace[32];
-	pxAssertDev(std::strlen(src) < (sizeof(tagspace) - 1), "Tag name exceeds the allowed length");
+	pxAssertMsg(std::strlen(src) < (sizeof(tagspace) - 1), "Tag name exceeds the allowed length");
 
 	std::memset(tagspace, 0, sizeof(tagspace));
 	StringUtil::Strlcpy(tagspace, src, sizeof(tagspace));

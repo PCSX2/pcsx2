@@ -2330,10 +2330,12 @@ void ImGuiFullscreen::OpenBackgroundProgressDialog(const char* str_id, std::stri
 
 	std::unique_lock<std::mutex> lock(s_background_progress_lock);
 
+#ifdef PCSX2_DEVBUILD
 	for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
 	{
-		pxAssert(data.id != id);
+		pxAssertMsg(data.id != id, "Duplicate background progress dialog open");
 	}
+#endif
 
 	BackgroundProgressDialogData data;
 	data.id = id;

@@ -204,9 +204,9 @@ bool SaveStateBase::gifPathFreeze(u32 path)
 {
 
 	Gif_Path& gifPath = gifUnit.gifPath[path];
-	pxAssertDev(!gifPath.readAmount, "Gif Path readAmount should be 0!");
-	pxAssertDev(!gifPath.gsPack.readAmount, "GS Pack readAmount should be 0!");
-	pxAssertDev(!gifPath.GetPendingGSPackets(), "MTVU GS Pack Queue should be 0!");
+	pxAssertMsg(!gifPath.readAmount, "Gif Path readAmount should be 0!");
+	pxAssertMsg(!gifPath.gsPack.readAmount, "GS Pack readAmount should be 0!");
+	pxAssertMsg(!gifPath.GetPendingGSPackets(), "MTVU GS Pack Queue should be 0!");
 
 	if (!gifPath.isMTVU())
 	{ // FixMe: savestate freeze bug (Gust games) with MTVU enabled

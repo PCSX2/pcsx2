@@ -612,7 +612,8 @@ void MTGS::MainLoop()
 // If isMTVU, then this implies this function is being called from the MTVU thread...
 void MTGS::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 {
-	if (!pxAssertDev(IsOpen(), "MTGS Warning!  WaitGS issued on a closed thread."))
+	pxAssertMsg(IsOpen(), "MTGS Warning!  WaitGS issued on a closed thread.");
+	if (!IsOpen()) [[unlikely]]
 		return;
 
 	Gif_Path& path = gifUnit.gifPath[GIF_PATH_1];
@@ -745,7 +746,7 @@ void MTGS::GenericStall(uint size)
 
 		if (somedone > 0x80)
 		{
-			pxAssertDev(s_SignalRingEnable == 0, "MTGS Thread Synchronization Error");
+			pxAssertMsg(s_SignalRingEnable == 0, "MTGS Thread Synchronization Error");
 			s_SignalRingPosition.store(somedone, std::memory_order_release);
 
 			//Console.WriteLn( Color_Blue, "(EEcore Sleep) PrepDataPacker \tringpos=0x%06x, writepos=0x%06x, signalpos=0x%06x", readpos, writepos, m_SignalRingPosition );
@@ -767,7 +768,7 @@ void MTGS::GenericStall(uint size)
 					break;
 			}
 
-			pxAssertDev(s_SignalRingPosition <= 0, "MTGS Thread Synchronization Error");
+			pxAssertMsg(s_SignalRingPosition <= 0, "MTGS Thread Synchronization Error");
 		}
 		else
 		{
@@ -1075,7 +1076,7 @@ void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path)
 	}
 	else
 	{
-		pxAssertDev(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
+		pxAssertMsg(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
 		gifUnit.gifPath[path].readAmount.fetch_add(gsPack.size);
 		MTGS::SendSimpleGSPacket(MTGS::Command::GSPacket, gsPack.offset, gsPack.size, path);
 	}

@@ -58,7 +58,7 @@ void Console_SetStdout(FILE* fp)
 // threaded mutex lock, which are only valid after C++ initialization has finished.
 void Console_SetActiveHandler(const IConsoleWriter& writer, FILE* flushfp)
 {
-	pxAssertDev(
+	pxAssertMsg(
 		(writer.WriteRaw != NULL) && (writer.DoWriteLn != NULL) &&
 			(writer.Newline != NULL) && (writer.SetTitle != NULL) &&
 			(writer.DoSetColor != NULL),

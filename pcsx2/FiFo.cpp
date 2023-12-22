@@ -74,7 +74,7 @@ void WriteFIFO_VIF0(const mem128_t* value)
 	vif0ch.qwc += 1;
 	if (vif0.irqoffset.value != 0 && vif0.vifstalled.enabled)
 		DevCon.Warning("Offset on VIF0 FIFO start!");
-	bool ret = VIF0transfer((u32*)value, 4);
+	[[maybe_unused]] bool ret = VIF0transfer((u32*)value, 4);
 
 	if (vif0.cmd)
 	{
@@ -86,7 +86,7 @@ void WriteFIFO_VIF0(const mem128_t* value)
 		vif0Regs.stat.VPS = VPS_IDLE;
 	}
 
-	pxAssertDev(ret, "vif stall code not implemented");
+	pxAssertMsg(ret, "vif stall code not implemented");
 }
 
 void WriteFIFO_VIF1(const mem128_t* value)
@@ -106,7 +106,7 @@ void WriteFIFO_VIF1(const mem128_t* value)
 		DevCon.Warning("Offset on VIF1 FIFO start!");
 	}
 
-	bool ret = VIF1transfer((u32*)value, 4);
+	[[maybe_unused]] bool ret = VIF1transfer((u32*)value, 4);
 
 	if (vif1.cmd)
 	{
@@ -126,7 +126,7 @@ void WriteFIFO_VIF1(const mem128_t* value)
 			gifUnit.Execute(false, true);
 	}
 
-	pxAssertDev(ret, "vif stall code not implemented");
+	pxAssertMsg(ret, "vif stall code not implemented");
 }
 
 void WriteFIFO_GIF(const mem128_t* value)

@@ -230,7 +230,7 @@ uint FileMcd_GetMtapSlot(uint slot)
 	{
 		case 0:
 		case 1:
-			pxFailDev("Invalid parameter in call to GetMtapSlot -- specified slot is one of the base slots, not a Multitap slot.");
+			pxFail("Invalid parameter in call to GetMtapSlot -- specified slot is one of the base slots, not a Multitap slot.");
 			break;
 
 		case 2:
@@ -452,7 +452,8 @@ void FileMemoryCard::GetSizeInfo(uint slot, McdSizeInfo& outways)
 	outways.EraseBlockSizeInSectors = 16; // 0x0010
 	outways.Xor = 18; // 0x12, XOR 02 00 00 10
 
-	if (pxAssert(m_file[slot]))
+	pxAssert(m_file[slot]);
+	if (m_file[slot])
 		outways.McdSizeInSectors = static_cast<u32>(FileSystem::FSize64(m_file[slot])) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
 	else
 		outways.McdSizeInSectors = 0x4000;

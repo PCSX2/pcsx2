@@ -51,7 +51,7 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC)
 	if (pc > (s64)mVU.microMemSize)
 	{
 		Console.Error("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc);
-		pxFailDev("microVU: PC out of VU memory");
+		pxFail("microVU: PC out of VU memory");
 	}
 
 	// The PC handling will prewrap the PC so we need to set the end PC to the end of the micro memory, but only if it wraps, no more.

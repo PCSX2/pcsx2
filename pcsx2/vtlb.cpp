@@ -591,57 +591,57 @@ static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError
 
 static mem8_t vtlbDefaultPhyRead8(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read8 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read8 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem16_t vtlbDefaultPhyRead16(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read16 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read16 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem32_t vtlbDefaultPhyRead32(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read32 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read32 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem64_t vtlbDefaultPhyRead64(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read64 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read64 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static RETURNS_R128 vtlbDefaultPhyRead128(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read128 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read128 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return r128_zero();
 }
 
 static void vtlbDefaultPhyWrite8(u32 addr, mem8_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write8 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write8 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite16(u32 addr, mem16_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write16 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write16 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite32(u32 addr, mem32_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write32 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write32 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite64(u32 addr, mem64_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write64 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write64 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void TAKES_R128 vtlbDefaultPhyWrite128(u32 addr, r128 data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write128 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write128 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 // ===========================================================================================
@@ -677,7 +677,7 @@ __ri void vtlb_ReassignHandler(vtlbHandler rv,
 
 vtlbHandler vtlb_NewHandler()
 {
-	pxAssertDev(vtlbHandlerCount < VTLB_HANDLER_ITEMS, "VTLB handler count overflow!");
+	pxAssertMsg(vtlbHandlerCount < VTLB_HANDLER_ITEMS, "VTLB handler count overflow!");
 	return vtlbHandlerCount++;
 }
 

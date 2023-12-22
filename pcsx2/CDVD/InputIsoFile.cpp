@@ -49,7 +49,7 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 	if (lsn >= m_blocks)
 	{
 		std::string msg(fmt::format("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks));
-		pxAssertDev(false, msg.c_str());
+		pxAssertMsg(false, msg.c_str());
 		Console.Error(msg.c_str());
 		return -1;
 	}
