@@ -39,6 +39,7 @@ int ATA::Open(const std::string& hddPath)
 {
 	readBufferLen = 256 * 512;
 	readBuffer = new u8[readBufferLen];
+	memset(sceSec, 0, sizeof(sceSec));
 
 	//Open File
 	if (!FileSystem::FileExists(hddPath.c_str()))
@@ -50,6 +51,45 @@ int ATA::Open(const std::string& hddPath)
 	{
 		Console.Error("Failed to open HDD image '%s'", hddPath.c_str());
 		return -1;
+	}
+
+	// Open and read the content of the hddid file
+	std::string hddidPath = Path::ReplaceExtension(hddPath, "hddid");
+	std::optional<std::vector<u8>> fileContent = FileSystem::ReadBinaryFile(hddidPath.c_str());
+
+	if (fileContent.has_value() && fileContent.value().size() <= sizeof(sceSec))
+	{
+		// Copy the content to sceSec
+		std::copy(fileContent.value().begin(), fileContent.value().end(), sceSec);
+	}
+	else
+	{
+		// fill sceSec with default data if hdd id file is not present
+		memcpy(sceSec, "Sony Computer Entertainment Inc.", 32); // Always this magic header.
+		memcpy(sceSec + 0x20, "SCPH-20401", 10); // sometimes this matches HDD model, the rest 6 bytes filles with zeroes, or sometimes with spaces
+		memcpy(sceSec + 0x30, "  40", 4); // or " 120" for PSX DESR, reference for ps2 area size. The rest bytes filled with zeroes
+
+		sceSec[0x40] = 0; // 0x40 - 0x43 - 4-byte HDD internal SCE serial, does not match real HDD serial, currently hardcoded to 0x1000000
+		sceSec[0x41] = 0;
+		sceSec[0x42] = 0;
+		sceSec[0x43] = 0x01;
+
+		// purpose of next 12 bytes is unknown
+		sceSec[0x44] = 0; // always zero
+		sceSec[0x45] = 0; // always zero
+		sceSec[0x46] = 0x1a;
+		sceSec[0x47] = 0x01;
+		sceSec[0x48] = 0x02;
+		sceSec[0x49] = 0x20;
+		sceSec[0x4a] = 0; // always zero
+		sceSec[0x4b] = 0; // always zero
+		// next 4 bytes always these values
+		sceSec[0x4c] = 0x01;
+		sceSec[0x4d] = 0x03;
+		sceSec[0x4e] = 0x11;
+		sceSec[0x4f] = 0x01;
+		// 0x50 - 0x80 is a random unique block of data
+		// 0x80 and up - zero filled
 	}
 
 	//Store HddImage size for later use
@@ -130,7 +170,7 @@ void ATA::InitSparseSupport(const std::string& hddPath)
 
 	/*  https://askbob.tech/the-ntfs-blog-sparse-and-compressed-file/
 	 *  NTFS Sparse Block Size are the same size as a compression unit
-	 *  Cluster Size    Compression Unit    
+	 *  Cluster Size    Compression Unit
 	 *  --------------------------------
 	 *  512bytes         8kb (0x02000)
 	 *    1kb           16kb (0x04000)
