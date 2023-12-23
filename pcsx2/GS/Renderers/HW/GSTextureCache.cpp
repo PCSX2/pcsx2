@@ -5432,8 +5432,9 @@ void GSTextureCache::Source::PreloadLevel(int level)
 		std::pair<u8, u8> mip_alpha_minmax;
 		PreloadTexture(m_TEX0, m_TEXA, m_region.AdjustForMipmap(level), g_gs_renderer->m_mem, m_palette != nullptr,
 			m_texture, level, &mip_alpha_minmax);
+		// The entire alpha is always recalculated
 		m_alpha_minmax.first = std::min(m_alpha_minmax.first, mip_alpha_minmax.first);
-		m_alpha_minmax.second = std::min(m_alpha_minmax.second, mip_alpha_minmax.second);
+		m_alpha_minmax.second = std::max(m_alpha_minmax.second, mip_alpha_minmax.second);
 	}
 }
 
@@ -6539,6 +6540,11 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	{
 		rtx(mem, off, block_rect, map.bits, map.pitch, TEXA);
 		tex->Unmap();
+		// Temporary, can't read the texture here so we need to come up with a smarter solution, but this will get around it being broken.
+		if (alpha_minmax)
+		{
+			*alpha_minmax = std::make_pair<u8, u8>(0, 255);
+		}
 	}
 	else
 	{
