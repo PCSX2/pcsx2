@@ -81,12 +81,14 @@ static bool s_no_console = false;
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
 static u32 s_loop_number = s_loop_count;
+static double s_last_internal_draws = 0;
 static double s_last_draws = 0;
 static double s_last_render_passes = 0;
 static double s_last_barriers = 0;
 static double s_last_copies = 0;
 static double s_last_uploads = 0;
 static double s_last_readbacks = 0;
+static u64 s_total_internal_draws = 0;
 static u64 s_total_draws = 0;
 static u64 s_total_render_passes = 0;
 static u64 s_total_barriers = 0;
@@ -94,6 +96,7 @@ static u64 s_total_copies = 0;
 static u64 s_total_uploads = 0;
 static u64 s_total_readbacks = 0;
 static u32 s_total_frames = 0;
+static u32 s_total_drawn_frames = 0;
 
 bool GSRunner::InitializeConfig()
 {
@@ -257,19 +260,31 @@ void Host::BeginPresentFrame()
 
 	if (GSConfig.UseHardwareRenderer())
 	{
+		const u32 last_draws = s_total_internal_draws;
+		const u32 last_uploads = s_total_uploads;
+
 		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) {
 			// perfmon resets every 30 frames to zero
 			const double val = g_perfmon.GetCounter(counter);
 			dst += static_cast<u64>((val < last) ? val : (val - last));
 			last = val;
 		};
+
+		update_stat(GSPerfMon::Draw, s_total_internal_draws, s_last_internal_draws);
 		update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
 		update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
 		update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
 		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
 		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
 		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
+
+		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
+
+		if(!idle_frame)
+			s_total_drawn_frames++;
+
 		s_total_frames++;
+
 		std::atomic_thread_fence(std::memory_order_release);
 	}
 }
@@ -634,13 +649,13 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 void GSRunner::DumpStats()
 {
 	std::atomic_thread_fence(std::memory_order_acquire);
-	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} FRAMES ========", s_total_frames));
-	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_frames)))));
+	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} ({}) FRAMES ========", s_total_frames, s_total_drawn_frames));
+	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn("============================================");
 }
 
