@@ -602,7 +602,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	if (!idle_frame)
 		g_gs_device->AgePool();
 
-	g_perfmon.EndFrame();
+
+	g_perfmon.EndFrame(idle_frame);
+
 	if ((g_perfmon.GetFrame() & 0x1f) == 0)
 		g_perfmon.Update();
 

@@ -52,7 +52,7 @@ public:
 
 	void SetFrame(u64 frame) { m_frame = frame; }
 	u64 GetFrame() { return m_frame; }
-	void EndFrame();
+	void EndFrame(bool frame_only);
 
 	void Put(counter_t c, double val) { m_counters[c] += val; }
 	double GetCounter(counter_t c) { return m_counters[c]; }
