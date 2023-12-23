@@ -30,10 +30,12 @@ void GSPerfMon::Reset()
 	std::memset(m_stats, 0, sizeof(m_stats));
 }
 
-void GSPerfMon::EndFrame()
+void GSPerfMon::EndFrame(bool frame_only)
 {
 	m_frame++;
-	m_count++;
+
+	if(!frame_only)
+		m_count++;
 }
 
 void GSPerfMon::Update()
