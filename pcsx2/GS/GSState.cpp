@@ -4458,6 +4458,9 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 			combined_rect.z += std::max(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.x);
 			combined_rect.w += std::max(PCRTCDisplays[0].framebufferOffsets.y, PCRTCDisplays[1].framebufferOffsets.y);
 		}
+
+		max_height += combined_rect.y;
+
 		offset = (max_height / min_mag) - offset;
 		combined_rect.w = std::min(combined_rect.w, offset);
 		return GSVector2i(combined_rect.z, combined_rect.w);
@@ -4480,6 +4483,8 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 		{
 			offset = (offset - 1) / 2;
 		}
+
+		max_height += out_rect.y;
 
 		offset = (max_height / min_mag) - offset;
 		out_rect.w = std::min(out_rect.w, offset);
