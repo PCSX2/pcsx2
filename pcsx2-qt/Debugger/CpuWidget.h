@@ -44,6 +44,29 @@ public:
 	CpuWidget(QWidget* parent, DebugInterface& cpu);
 	~CpuWidget();
 
+	enum class SearchType
+	{
+		ByteType,
+		Int16Type,
+		Int32Type,
+		Int64Type,
+		FloatType,
+		DoubleType,
+		StringType,
+		ArrayType
+	};
+
+	// Note: The order of these enum values must reflect the order in thee Search Comparison combobox.
+	enum class SearchComparison
+	{
+		Equals,
+		NotEquals,
+		GreaterThan,
+		GreaterThanOrEqual,
+		LessThan,
+		LessThanOrEqual
+	};
+
 public slots:
 	void paintEvent(QPaintEvent* event);
 
