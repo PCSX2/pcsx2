@@ -1253,7 +1253,7 @@ bool QtHost::InitializeConfig()
 		}
 
 		VMManager::SetDefaultSettings(*s_base_settings_interface, true, true, true, true, true);
-		
+
 		// Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
 		if (!s_run_setup_wizard)
 			SaveSettings();
@@ -1542,6 +1542,7 @@ void QtHost::PrintCommandLineHelp(const std::string_view& progname)
 	std::fprintf(stderr, "  -batch: Enables batch mode (exits after shutting down).\n");
 	std::fprintf(stderr, "  -nogui: Hides main window while running (implies batch mode).\n");
 	std::fprintf(stderr, "  -elf <file>: Overrides the boot ELF with the specified filename.\n");
+	std::fprintf(stderr, "  -gameargs <string>: passes the specified quoted space-delimited string of launch arguments.\n");
 	std::fprintf(stderr, "  -disc <path>: Uses the specified host DVD drive as a source.\n");
 	std::fprintf(stderr, "  -logfile <path>: Writes the application log to path instead of emulog.txt.\n");
 	std::fprintf(stderr, "  -bios: Starts the BIOS (System Menu/OSDSYS).\n");
@@ -1634,6 +1635,11 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			else if (CHECK_ARG_PARAM(QStringLiteral("-elf")))
 			{
 				AutoBoot(autoboot)->elf_override = (++it)->toStdString();
+				continue;
+			}
+			else if (CHECK_ARG_PARAM(QStringLiteral("-gameargs")))
+			{
+				EmuConfig.CurrentGameArgs = (++it)->toStdString();
 				continue;
 			}
 			else if (CHECK_ARG_PARAM(QStringLiteral("-disc")))
@@ -1738,7 +1744,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 	{
 		QMessageBox::critical(nullptr, QStringLiteral("Error"),
 			s_nogui_mode ? QStringLiteral("Cannot use no-gui mode, because no boot filename was specified.") :
-                           QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
+						   QStringLiteral("Cannot use batch mode, because no boot filename was specified."));
 		return false;
 	}
 
