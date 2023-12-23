@@ -7872,6 +7872,8 @@ SCPS-15085:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 0 # Fixes missing graphics.
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
 SCPS-15086:
   name: 爆封スラッシュ! キズナ 嵐
   name-sort: 爆封すらっしゅ! きずな あらし
@@ -8041,6 +8043,8 @@ SCPS-15103:
   name-sort: がんぱれーど・おーけすとら しろのしょう 〜あおもりぺんぎんでんせつ〜（げんていばん）
   name-en: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
@@ -8049,6 +8053,8 @@ SCPS-15104:
   name-sort: がんぱれーど・おーけすとら しろのしょう 〜あおもりぺんぎんでんせつ〜
   name-en: "Gunparade Orchestra - Shiro no Shou - Aomori Penguin Densetsu"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
@@ -8083,6 +8089,8 @@ SCPS-15107:
   name-sort: がんぱれーど・おーけすとら みどりのしょう 〜おおかみとかれのしょうねん〜 げんていばん
   name-en: "Gunparade Orchestra - Midori no Shou [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
@@ -8093,6 +8101,8 @@ SCPS-15108:
   name-sort: がんぱれーど・おーけすとら みどりのしょう 〜おおかみとかれのしょうねん〜
   name-en: "Gunparade Orchestra - Midori no Shou"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
@@ -8103,6 +8113,8 @@ SCPS-15109:
   name-sort: がんぱれーど・おーけすとら あおのしょう 〜ひかりのうみからてがみをおくります〜 げんていばん
   name-en: "Gunparade Orchestra - Ao no Shou [Limited Edition]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
@@ -8115,6 +8127,8 @@ SCPS-15110:
   name-sort: がんぱれーど・おーけすとら あおのしょう 〜ひかりのうみからてがみをおくります〜
   name-en: "Gunparade Orchestra - Ao no Shou"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fix font gap and some texture.
   memcardFilters:
     - "SCPS-15103"
     - "SCPS-15104"
@@ -26145,6 +26159,8 @@ SLES-55349:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLES-55350:
   name: "Need for Speed - Undercover"
@@ -26152,6 +26168,8 @@ SLES-55350:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLES-55351:
   name: "Need for Speed - Undercover"
@@ -26159,6 +26177,8 @@ SLES-55351:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLES-55352:
   name: "Need for Speed - Undercover"
@@ -26167,6 +26187,8 @@ SLES-55352:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLES-55353:
   name: "Need for Speed - Undercover"
@@ -26174,6 +26196,8 @@ SLES-55353:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLES-55354:
   name: "Shin Megami Tensei - Persona 3 FES"
@@ -29521,6 +29545,8 @@ SLPM-55127:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLPM-55128:
   name: "Rugby 08"
@@ -29880,6 +29906,8 @@ SLPM-55244:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLPM-55245:
   name: ひまわり -Pebble in the Sky-
@@ -41659,6 +41687,9 @@ SLPM-66239:
   name-sort: れっするえんじぇるす SURVIVOR
   name-en: "Wrestle Angels Survivor"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPM-66239"
+    - "SLPM-66927"
 SLPM-66240:
   name: 実戦パチスロ必勝法! アラジン2エボリューション
   name-sort: じっせんぱちすろひっしょうほう! あらじん2えぼりゅーしょん
@@ -45644,6 +45675,9 @@ SLPM-66927:
   name-sort: れっするえんじぇるす SURVIVOR Good Price
   name-en: "Wrestle Angels Survivor [Good Price]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPM-66239"
+    - "SLPM-66927"
 SLPM-66928:
   name: "Your Memories Off Girls Style"
   region: "NTSC-J"
@@ -64837,6 +64871,8 @@ SLUS-21801:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_NFSUndercover"
 SLUS-21802:
   name: "Naked Brothers Band - The Video Game"

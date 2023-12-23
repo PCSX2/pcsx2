@@ -193,6 +193,7 @@ static bool s_screensaver_inhibited = false;
 static PINEServer s_pine_server;
 
 static bool s_discord_presence_active = false;
+static time_t s_discord_presence_time_epoch;
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -934,7 +935,7 @@ void VMManager::UpdateDiscDetails(bool booting)
 	if (MTGS::IsOpen())
 		MTGS::GameChanged();
 	ReloadPINE();
-	UpdateDiscordPresence();
+	UpdateDiscordPresence(s_state.load(std::memory_order_relaxed) == VMState::Initializing);
 
 	if (!GSDumpReplayer::IsReplayingDump())
 		FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
@@ -1089,7 +1090,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 		Achievements::GameChanged(0, 0);
 		FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
-		UpdateDiscordPresence();
+		UpdateDiscordPresence(true);
 		Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
 
 		UpdateGameSettingsLayer();
@@ -1402,7 +1403,7 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	Achievements::GameChanged(0, 0);
 	FullscreenUI::GameChanged(s_title, std::string(), s_disc_serial, 0, 0);
-	UpdateDiscordPresence();
+	UpdateDiscordPresence(true);
 	Host::OnGameChanged(s_title, std::string(), std::string(), s_disc_serial, 0, 0);
 
 	s_fast_boot_requested = false;
@@ -3087,7 +3088,7 @@ void VMManager::InitializeDiscordPresence()
 	Discord_Initialize("1025789002055430154", &handlers, 0, nullptr);
 	s_discord_presence_active = true;
 
-	UpdateDiscordPresence();
+	UpdateDiscordPresence(true);
 }
 
 void VMManager::ShutdownDiscordPresence()
@@ -3101,16 +3102,19 @@ void VMManager::ShutdownDiscordPresence()
 	s_discord_presence_active = false;
 }
 
-void VMManager::UpdateDiscordPresence()
+void VMManager::UpdateDiscordPresence(bool update_session_time)
 {
 	if (!s_discord_presence_active)
 		return;
+
+	if (update_session_time)
+		s_discord_presence_time_epoch = std::time(nullptr);
 
 	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
 	DiscordRichPresence rp = {};
 	rp.largeImageKey = "4k-pcsx2";
 	rp.largeImageText = "PCSX2 Emulator";
-	rp.startTimestamp = std::time(nullptr);
+	rp.startTimestamp = s_discord_presence_time_epoch;
 	rp.details = s_title.empty() ? "No Game Running" : s_title.c_str();
 
 	std::string state_string;

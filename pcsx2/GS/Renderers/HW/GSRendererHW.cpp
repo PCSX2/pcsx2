@@ -2373,7 +2373,7 @@ void GSRendererHW::Draw()
 		if (!ds)
 		{
 			ds = g_texture_cache->CreateTarget(ZBUF_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::DepthStencil,
-				m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, m_r, src);
+				true, 0, false, force_preload, preserve_depth, m_r, src);
 			if (unlikely(!ds))
 			{
 				GL_INS("ERROR: Failed to create ZBUF target, skipping.");
@@ -4298,7 +4298,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// Require a float conversion if the texure is a depth otherwise uses Integral scaling
 		if (psm.depth)
 		{
-			m_conf.ps.depth_fmt = (tex->m_texture->GetType() != GSTexture::Type::DepthStencil) ? 3 : 1;
+			m_conf.ps.depth_fmt = (tex->m_texture->GetType() != GSTexture::Type::DepthStencil) ? 3 : tex->m_32_bits_fmt ? 1 : 2;
 		}
 
 		// Shuffle is a 16 bits format, so aem is always required
@@ -5808,12 +5808,8 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		return false;
 
 	GSTextureCache::Target* half_point = g_texture_cache->GetExactTarget(half << 5, m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::RenderTarget : GSTextureCache::DepthStencil, half << 5);
-
 	if (half_point)
-	{
-		half_point = nullptr;
 		return false;
-	}
 
 	// Don't allow double half clear to go through when the number of bits written through FRAME and Z are different.
 	// GTA: LCS does this setup, along with a few other games. Thankfully if it's a zero clear, we'll clear both

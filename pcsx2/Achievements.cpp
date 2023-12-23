@@ -814,7 +814,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 	Host::OnAchievementsRefreshed();
 
 	lock.unlock();
-	VMManager::UpdateDiscordPresence();
+	VMManager::UpdateDiscordPresence(false);
 	lock.lock();
 }
 
