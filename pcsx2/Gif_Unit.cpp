@@ -86,7 +86,7 @@ bool Gif_HandlerAD(u8* pMem)
 	return false;
 }
 
-bool Gif_HandlerAD_MTVU(u8* pMem)
+void Gif_HandlerAD_MTVU(u8* pMem)
 {
 	// Note: Atomic communication is with MTVU.cpp Get_GSChanges
 	const u8 reg = pMem[8] & 0x7f;
@@ -129,7 +129,6 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	{
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
 	}
-	return 0;
 }
 
 // Returns true if pcsx2 needed to process the packet...
