@@ -1669,7 +1669,10 @@ void recNEG_S_xmm(int info)
 
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	xXOR.PS(xRegisterSSE(EEREC_D), ptr[&s_neg[0]]);
-	ClampValues(EEREC_D);
+
+	// Always preserve sign. Using float clamping here would result in
+	// +inf to become +fMax instead of -fMax, which is definitely wrong.
+	fpuFloat3(EEREC_D);
 }
 
 FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED | XMMINFO_READS);
