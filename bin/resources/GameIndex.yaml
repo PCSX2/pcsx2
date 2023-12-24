@@ -314,7 +314,6 @@ PAPX-90512:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -523,7 +522,6 @@ PBPX-95523:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95524:
   name: "Gran Turismo 4 - Prologue [PlayStation 2 Racing Pack]"
@@ -534,7 +532,6 @@ PBPX-95524:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95525:
   name: "Final Fantasy XII"
@@ -561,7 +558,6 @@ PBPX-95601:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
 PCPX-96301:
   name: "I.Q Remix+ - Intelligent Qube"
   region: "NTSC-J"
@@ -767,7 +763,6 @@ PCPX-96649:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
 PCPX-96653:
   name: "Ratchet & Clank 3"
   region: "NTSC-J"
@@ -1176,7 +1171,6 @@ SCAJ-20066:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCAJ-20067:
   name: "GunGrave O.D."
@@ -2051,14 +2045,12 @@ SCAJ-30006:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
 SCAJ-30007:
   name: "Gran Turismo 4"
   region: "NTSC-Unk"
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -2069,7 +2061,6 @@ SCAJ-30008:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -3135,7 +3126,6 @@ SCED-52455:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCED-52461:
   name: "SingStar [Press Kit]"
@@ -4675,7 +4665,6 @@ SCES-51719:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -4923,7 +4912,6 @@ SCES-52438:
     - "SCES-51719"
     - "SCES-52438"
     - "SCES-50294"
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCES-52456:
   name: "Ratchet & Clank 3"
@@ -6333,7 +6321,6 @@ SCKA-20022:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCKA-20023:
   name: "Fatal Frame II"
@@ -6961,7 +6948,6 @@ SCKA-30001:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -7645,7 +7631,6 @@ SCPS-15055:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCPS-15056:
   name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす
@@ -8212,7 +8197,6 @@ SCPS-17001:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -8466,7 +8450,6 @@ SCPS-19252:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -8541,7 +8524,6 @@ SCPS-19304:
     - "SCPS-15009"
     - "SCPS-55007"
   # vuClampMode = 2  Text in GT mode works.
-  # eeClampMode = 3  Text in races works.
 SCPS-19305:
   name: SIREN PS2 the Best
   name-sort: SIREN PS2 the Best
@@ -9299,7 +9281,6 @@ SCUS-90682:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -10109,7 +10090,6 @@ SCUS-97328:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -10503,7 +10483,6 @@ SCUS-97436:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -10721,7 +10700,6 @@ SCUS-97483:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
