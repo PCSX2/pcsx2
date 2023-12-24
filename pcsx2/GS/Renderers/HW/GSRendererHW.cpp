@@ -466,18 +466,19 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 	if (PRIM->FST)
 	{
 		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
-
+		const int reversed_pos = (v[0].XYZ.X > v[1].XYZ.X) ? 1 : 0;
+		const int reversed_U = (v[0].U > v[1].U) ? 1 : 0;
 		for (u32 i = 0; i < count; i += 2)
 		{
 			if (write_ba)
-				v[i].XYZ.X -= 128u;
+				v[i + reversed_pos].XYZ.X -= 128u;
 			else
-				v[i + 1].XYZ.X += 128u;
+				v[i + 1 - reversed_pos].XYZ.X += 128u;
 
 			if (read_ba)
-				v[i].U -= 128u;
+				v[i + reversed_U].U -= 128u;
 			else
-				v[i + 1].U += 128u;
+				v[i + 1 - reversed_U].U += 128u;
 
 			if (!half_bottom_vert)
 			{
@@ -503,18 +504,20 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 	{
 		const float offset_8pix = 8.0f / tw;
 		GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
+		const int reversed_pos = (v[0].XYZ.X > v[1].XYZ.X) ? 1 : 0;
+		const int reversed_S = (v[0].ST.S > v[1].ST.S) ? 1 : 0;
 
 		for (u32 i = 0; i < count; i += 2)
 		{
 			if (write_ba)
-				v[i].XYZ.X -= 128u;
+				v[i + reversed_pos].XYZ.X -= 128u;
 			else
-				v[i + 1].XYZ.X += 128u;
+				v[i + 1 - reversed_pos].XYZ.X += 128u;
 
 			if (read_ba)
-				v[i].ST.S -= offset_8pix;
+				v[i + reversed_S].ST.S -= offset_8pix;
 			else
-				v[i + 1].ST.S += offset_8pix;
+				v[i + 1 - reversed_S].ST.S += offset_8pix;
 
 			if (!half_bottom_vert)
 			{
@@ -2627,8 +2630,8 @@ void GSRendererHW::Draw()
 				m_index.tail = 2;
 			}
 		}
-
-		if (rt && (!is_possible_mem_clear || rt->m_TEX0.PSM != FRAME_TEX0.PSM))
+		const bool blending_cd = PRIM->ABE && !m_context->ALPHA.IsOpaque();
+		if (rt && ((!is_possible_mem_clear || blending_cd) || rt->m_TEX0.PSM != FRAME_TEX0.PSM))
 		{
 			if (rt->m_TEX0.TBW != FRAME_TEX0.TBW && !m_cached_ctx.ZBUF.ZMSK && (m_cached_ctx.FRAME.FBMSK & 0xFF000000))
 			{
