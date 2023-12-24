@@ -649,13 +649,21 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	// Unfortunately because we're HLE'ing split RGB shuffles into one, and the draws themselves
 	// vary a lot, we can't predetermine a skip number, and because the game changes the CBP,
 	// that's going to break us in the middle off the shuffle... So, just track it ourselves.
+
+	// Need to track the FBMSK as well. The transition at the start of the race does both an RGB
+	// and A shuffle, but obviously changes FBMSK mid-way, so we can restart then.
+
 	static bool shuffle_hle_active = false;
+	static u32 shuffle_fbmsk = 0;
 
 	const bool is_cs = r.IsPossibleChannelShuffle();
 	if (shuffle_hle_active && is_cs)
 	{
-		skip = 1;
-		return true;
+		if (RFBMSK == shuffle_fbmsk)
+		{
+			skip = 1;
+			return true;
+		}
 	}
 	else if (!is_cs)
 	{
@@ -663,7 +671,8 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		return false;
 	}
 
-	GSTextureCache::Target* src = g_texture_cache->LookupTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
+	GSTextureCache::Target* src = g_texture_cache->LookupTarget(RTEX0, GSVector2i(1, 1), r.GetTextureScaleFactor(),
+		GSTextureCache::RenderTarget, true, 0, false, false, true, true, GSVector4i::zero(), true);
 	if (!src)
 		return false;
 
@@ -676,6 +685,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 
 	// skip this draw, and until the end of the CS, ignoring fbmsk and cbp
 	shuffle_hle_active = true;
+	shuffle_fbmsk = RFBMSK;
 	skip = 1;
 
 	const u32 fbmsk = RFBMSK;
@@ -700,20 +710,27 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		// that in HLE by creating 3 targets, extracting the corresponding channel to each.
 
 		// Can't use the valid of src, because it gets converted from depth at some point..
-		// Use the drawn, it's 640x256, which should be correct. The 3 targets get stacked up immediately after
-		// each other, in NTSC, that's 0x0, 0xA00, 0x1400, but try to compute it dynamically in case it differs.
-		const GSVector2i size = GSVector2i(src->m_drawn_since_read.z, src->m_drawn_since_read.w);
-		const u32 page_offset = (size.y / 32) * src->m_TEX0.TBW * BLOCKS_PER_PAGE;
+		// Drawn isn't correct, because the target might be from earlier, where it had a higher height.
+		// Instead, we use the resolution from the PCRTC, and halve it. Only thing that seems to work,
+		// otherwise we get the incorrect offset texture pointers. In NTSC, that's 0x0, 0xA00, 0x1400.
+
+		// Further complicating things, the Prologue version shuffles into FBP0 from a different TBP0, so we can't
+		// use that as an indicator. Luckily, all the alpha destination shuffles seem to write to FBP0, so we can
+		// get away with just hardcoding it.
+		const GSVector2i resolution = r.PCRTCDisplays.GetResolution();
+		const GSVector2i size = GSVector2i(resolution.x, resolution.y / 2);
+		const u32 page_offset = ((size.y + 31) / 32) * src->m_TEX0.TBW * BLOCKS_PER_PAGE;
+		constexpr u32 base = 0;
 
 		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo A channel shuffle");
 		GL_INS("Src: %x %s TBW %u, Dst: %x, %x, %x", src->m_TEX0.TBP0, psm_str(src->m_TEX0.PSM), src->m_TEX0.TBW,
-			src->m_TEX0.TBP0, src->m_TEX0.TBP0 + page_offset, src->m_TEX0.TBP0 + page_offset * 2);
+			base, base + page_offset, base + page_offset * 2);
 		GL_INS("Rect: %d,%d => %d,%d", src->m_drawn_since_read.x, src->m_drawn_since_read.y,
 			src->m_drawn_since_read.z, src->m_drawn_since_read.w);
 
 		for (u32 channel = 0; channel < 3; channel++)
 		{
-			const GIFRegTEX0 TEX0 = GIFRegTEX0::Create(RTEX0.TBP0 + channel * page_offset, RTEX0.TBW, PSMCT32);
+			const GIFRegTEX0 TEX0 = GIFRegTEX0::Create(base + channel * page_offset, RTEX0.TBW, PSMCT32);
 			GSTextureCache::Target* dst = g_texture_cache->LookupTarget(TEX0, src->GetUnscaledSize(), src->GetScale(), GSTextureCache::RenderTarget, true, fbmsk);
 			if (!dst)
 			{
