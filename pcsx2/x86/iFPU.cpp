@@ -342,13 +342,8 @@ static void fpuFreeIfTemp(int xmmreg)
 
 __fi void fpuFloat3(int regd) // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
 {
-	const int t1reg = _allocTempXMMreg(XMMT_FPS);
-	xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
-	xAND.PS(xRegisterSSE(t1reg), ptr[&s_neg[0]]);
-	xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
-	xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
-	xOR.PS(xRegisterSSE(regd), xRegisterSSE(t1reg));
-	_freeXMMreg(t1reg);
+	xPMIN.SD(xRegisterSSE(regd), ptr128[&g_maxvals[0]]);
+	xPMIN.UD(xRegisterSSE(regd), ptr128[&g_minvals[0]]);
 }
 
 __fi void fpuFloat(int regd) // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax
