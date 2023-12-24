@@ -1188,6 +1188,7 @@ target_compile_definitions(PCSX2_FLAGS INTERFACE
 	XBYAK_NO_EXCEPTION
 )
 
+set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
 if(COMMAND target_precompile_headers)
 	message("Using precompiled headers.")
 	target_precompile_headers(PCSX2_FLAGS INTERFACE PrecompiledHeader.h)
