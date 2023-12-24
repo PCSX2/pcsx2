@@ -1,30 +1,23 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSDrawScanlineCodeGenerator.all.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GSVertexSW.h"
 #include "common/Perf.h"
 
+#include <cstddef>
+
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Winvalid-offsetof" // We know what we're doing.
+#endif
+
 #define _rip_const(cptr) ptr[rip + ((char*)(cptr))]
-#define _rip_local(field) ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)]
-#define _rip_global(field) ptr[_m_local__gd + OFFSETOF(GSScanlineGlobalData, field)]
+#define _rip_local(field) ptr[_m_local + offsetof(GSScanlineLocalData, field)]
+#define _rip_global(field) ptr[_m_local__gd + offsetof(GSScanlineGlobalData, field)]
 
 /// On AVX, does a v-prefixed separate destination operation
 /// On SSE, moves src1 into dst using movdqa, then does the operation
@@ -98,7 +91,7 @@ GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator*
 	m_sel.key = key;
 	use_lod = m_sel.mmin;
 	if (isYmm)
-		ASSERT(hasAVX2);
+		pxAssert(hasAVX2);
 }
 
 // MARK: - Helpers
@@ -3282,7 +3275,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplSSE4(
 
 void GSDrawScanlineCodeGenerator2::ReadTexelImpl(const Xmm& dst, const Xmm& addr, u8 i, bool texInRBX, bool preserveDst)
 {
-	ASSERT(i < 4);
+	pxAssert(i < 4);
 
 	AddressReg clut = _m_local__gd__clut;
 	AddressReg tex = texInRBX ? rbx : _m_local__gd__tex;

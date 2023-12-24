@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSLocalMemory.h"
 #include "GS.h"
 #include "GSBlock.h"
@@ -193,7 +180,7 @@ void GSLocalMemoryFunctions::PopulateFunctions(GSLocalMemory& mem)
 template <typename Fn>
 static void foreachBlock(const GSOffset& off, GSLocalMemory& mem, const GSVector4i& r, u8* dst, int dstpitch, int bpp, Fn&& fn)
 {
-	ASSERT(off.isBlockAligned(r));
+	pxAssert(off.isBlockAligned(r));
 	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
 	int right = r.right >> off.blockShiftX();
 	int bottom = r.bottom >> off.blockShiftY();
@@ -235,7 +222,7 @@ void GSLocalMemoryFunctions::WriteImageColumn(GSLocalMemory& mem, int l, int r, 
 				case PSMZ16: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				case PSMZ16S: GSBlock::WriteColumn16<alignment>(y, mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 		}
 	}
@@ -262,7 +249,7 @@ void GSLocalMemoryFunctions::WriteImageBlock(GSLocalMemory& mem, int l, int r, i
 				case PSMZ16: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16Z(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				case PSMZ16S: GSBlock::WriteBlock16<alignment>(mem.BlockPtr16SZ(x, y, bp, bw), &src[x * 2], srcpitch); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 		}
 	}
@@ -289,7 +276,7 @@ void GSLocalMemoryFunctions::WriteImageLeftRight(GSLocalMemory& mem, int l, int 
 				case PSMZ16: mem.WritePixel16Z(x, y, *(u16*)&src[x * 2], bp, bw); break;
 				case PSMZ16S: mem.WritePixel16SZ(x, y, *(u16*)&src[x * 2], bp, bw); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 		}
 	}
@@ -328,7 +315,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 				case PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
 				case PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
 				// TODO
-				default: __assume(0);
+				default: ASSUME(0);
 			}
 
 			switch (psm)
@@ -361,7 +348,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 					break;
 				// TODO
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 
@@ -421,7 +408,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 			case PSMZ16: dst = mem.BlockPtr16Z(x, y, bp, bw); break;
 			case PSMZ16S: dst = mem.BlockPtr16SZ(x, y, bp, bw); break;
 			// TODO
-			default: __assume(0);
+			default: ASSUME(0);
 			}
 
 			switch (psm)
@@ -454,7 +441,7 @@ void GSLocalMemoryFunctions::WriteImageTopBottom(GSLocalMemory& mem, int l, int 
 					break;
 				// TODO
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 	}
@@ -791,7 +778,7 @@ static void readWriteHelper(int& tx, int& ty, int len, int xinc, int sx, int w, 
 	int ex = sx + w;
 	int remX = ex - tx;
 
-	ASSERT(remX >= 0);
+	pxAssert(remX >= 0);
 
 	GSOffset::PAHelper pa = off.paMulti(tx, y);
 
@@ -969,7 +956,7 @@ void GSLocalMemoryFunctions::ReadImageX(const GSLocalMemory& mem, int& tx, int& 
 					GSVector4i::store<false>(&pd[4], GSVector4i::load(ps + 8, ps + 12));
 
 					for (int i = 0; i < 8; i++)
-						ASSERT(pd[i] == vm[pa.value(x + i)]);
+						pxAssert(pd[i] == vm[pa.value(x + i)]);
 				}
 
 				for (; len > 0 && x < ex; len--, x++, pd++)
@@ -1095,7 +1082,7 @@ void GSLocalMemoryFunctions::ReadTextureGPU24(GSLocalMemory& mem, const GSOffset
 	});
 
 	// Convert packed RGB scanline to 32 bits RGBA
-	ASSERT(dstpitch >= r.width() * 4);
+	pxAssert(dstpitch >= r.width() * 4);
 	for (int y = r.top; y < r.bottom; y++)
 	{
 		u8* line = dst + y * dstpitch;

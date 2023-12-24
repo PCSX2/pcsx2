@@ -118,6 +118,8 @@
     <ClInclude Include="HeapArray.h" />
     <ClInclude Include="HeterogeneousContainers.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="SingleRegisterTypes.h" />
+    <ClInclude Include="VectorIntrin.h" />
     <ClInclude Include="LRUCache.h" />
     <ClInclude Include="HTTPDownloader.h" />
     <ClInclude Include="HTTPDownloaderCurl.h">
@@ -140,8 +142,6 @@
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />
     <ClInclude Include="RedtapeWindows.h" />
-    <ClInclude Include="SafeArray.h" />
-    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="TextureDecompress.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="WAVWriter.h" />

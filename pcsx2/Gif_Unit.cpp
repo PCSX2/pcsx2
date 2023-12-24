@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 
 #include "Gif_Unit.h"
@@ -99,7 +86,7 @@ bool Gif_HandlerAD(u8* pMem)
 	return false;
 }
 
-bool Gif_HandlerAD_MTVU(u8* pMem)
+void Gif_HandlerAD_MTVU(u8* pMem)
 {
 	// Note: Atomic communication is with MTVU.cpp Get_GSChanges
 	const u8 reg = pMem[8] & 0x7f;
@@ -142,7 +129,6 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	{
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
 	}
-	return 0;
 }
 
 // Returns true if pcsx2 needed to process the packet...
@@ -204,9 +190,9 @@ bool SaveStateBase::gifPathFreeze(u32 path)
 {
 
 	Gif_Path& gifPath = gifUnit.gifPath[path];
-	pxAssertDev(!gifPath.readAmount, "Gif Path readAmount should be 0!");
-	pxAssertDev(!gifPath.gsPack.readAmount, "GS Pack readAmount should be 0!");
-	pxAssertDev(!gifPath.GetPendingGSPackets(), "MTVU GS Pack Queue should be 0!");
+	pxAssertMsg(!gifPath.readAmount, "Gif Path readAmount should be 0!");
+	pxAssertMsg(!gifPath.gsPack.readAmount, "GS Pack readAmount should be 0!");
+	pxAssertMsg(!gifPath.GetPendingGSPackets(), "MTVU GS Pack Queue should be 0!");
 
 	if (!gifPath.isMTVU())
 	{ // FixMe: savestate freeze bug (Gust games) with MTVU enabled

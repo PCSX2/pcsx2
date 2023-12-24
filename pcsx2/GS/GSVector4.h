@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 class alignas(16) GSVector4
 {
@@ -553,7 +541,7 @@ public:
 					case 1: return yyyy(v).zxzw(*this);
 					case 2: return yyzz(v).zxzw(*this);
 					case 3: return yyww(v).zxzw(*this);
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			case 1:
@@ -563,7 +551,7 @@ public:
 					case 1: return xxyy(v).xzzw(*this);
 					case 2: return xxzz(v).xzzw(*this);
 					case 3: return xxww(v).xzzw(*this);
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			case 2:
@@ -573,7 +561,7 @@ public:
 					case 1: return xyzx(wwyy(v));
 					case 2: return xyzx(wwzz(v));
 					case 3: return xyzx(wwww(v));
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			case 3:
@@ -583,11 +571,11 @@ public:
 					case 1: return xyxz(zzyy(v));
 					case 2: return xyxz(zzzz(v));
 					case 3: return xyxz(zzww(v));
-					default: __assume(0);
+					default: ASSUME(0);
 				}
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 
 #endif

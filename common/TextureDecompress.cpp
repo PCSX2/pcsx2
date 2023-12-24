@@ -469,21 +469,12 @@ void DecompressBlockBC5 (uint32_t x, uint32_t y, uint32_t stride, enum BC5Mode m
 
 // File: bc7decomp.c - Richard Geldreich, Jr. 3/31/2020 - MIT license or public domain (see end of file)
 #include <string.h>
-
-#if (defined(_M_AMD64) || defined(_M_X64) || defined(__SSE2__))
-#  define BC7DECOMP_USE_SSE2
-#endif
-
-#ifdef BC7DECOMP_USE_SSE2
 #include <immintrin.h>
 #include <emmintrin.h>
-#endif
 
 namespace bc7decomp
 {
-
-#ifdef BC7DECOMP_USE_SSE2
-	const __m128i g_bc7_weights4_sse2[8] =
+	static const __m128i g_bc7_weights4_sse2[8] =
 	{
 		_mm_set_epi16(4, 4, 4, 4, 0, 0, 0, 0),
 		_mm_set_epi16(13, 13, 13, 13, 9, 9, 9, 9),
@@ -494,13 +485,12 @@ namespace bc7decomp
 		_mm_set_epi16(55, 55, 55, 55, 51, 51, 51, 51),
 		_mm_set_epi16(64, 64, 64, 64, 60, 60, 60, 60),
 	};
-#endif
 
-const uint32_t g_bc7_weights2[4] = { 0, 21, 43, 64 };
-const uint32_t g_bc7_weights3[8] = { 0, 9, 18, 27, 37, 46, 55, 64 };
-const uint32_t g_bc7_weights4[16] = { 0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64 };
+static const uint32_t g_bc7_weights2[4] = { 0, 21, 43, 64 };
+static const uint32_t g_bc7_weights3[8] = { 0, 9, 18, 27, 37, 46, 55, 64 };
+static const uint32_t g_bc7_weights4[16] = { 0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64 };
 
-const uint8_t g_bc7_partition2[64 * 16] =
+static const uint8_t g_bc7_partition2[64 * 16] =
 {
 	0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,		0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,		0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,		0,0,0,1,0,0,1,1,0,0,1,1,0,1,1,1,		0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,1,		0,0,1,1,0,1,1,1,0,1,1,1,1,1,1,1,		0,0,0,1,0,0,1,1,0,1,1,1,1,1,1,1,		0,0,0,0,0,0,0,1,0,0,1,1,0,1,1,1,
 	0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,		0,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,		0,0,0,0,0,0,0,1,0,1,1,1,1,1,1,1,		0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,		0,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,		0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,		0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,		0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,
@@ -512,7 +502,7 @@ const uint8_t g_bc7_partition2[64 * 16] =
 	0,1,1,0,1,1,0,0,1,1,0,0,1,0,0,1,		0,1,1,0,0,0,1,1,0,0,1,1,1,0,0,1,		0,1,1,1,1,1,1,0,1,0,0,0,0,0,0,1,		0,0,0,1,1,0,0,0,1,1,1,0,0,1,1,1,		0,0,0,0,1,1,1,1,0,0,1,1,0,0,1,1,		0,0,1,1,0,0,1,1,1,1,1,1,0,0,0,0,		0,0,1,0,0,0,1,0,1,1,1,0,1,1,1,0,		0,1,0,0,0,1,0,0,0,1,1,1,0,1,1,1
 };
 
-const uint8_t g_bc7_partition3[64 * 16] =
+static const uint8_t g_bc7_partition3[64 * 16] =
 {
 	0,0,1,1,0,0,1,1,0,2,2,1,2,2,2,2,		0,0,0,1,0,0,1,1,2,2,1,1,2,2,2,1,		0,0,0,0,2,0,0,1,2,2,1,1,2,2,1,1,		0,2,2,2,0,0,2,2,0,0,1,1,0,1,1,1,		0,0,0,0,0,0,0,0,1,1,2,2,1,1,2,2,		0,0,1,1,0,0,1,1,0,0,2,2,0,0,2,2,		0,0,2,2,0,0,2,2,1,1,1,1,1,1,1,1,		0,0,1,1,0,0,1,1,2,2,1,1,2,2,1,1,
 	0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,		0,0,0,0,1,1,1,1,1,1,1,1,2,2,2,2,		0,0,0,0,1,1,1,1,2,2,2,2,2,2,2,2,		0,0,1,2,0,0,1,2,0,0,1,2,0,0,1,2,		0,1,1,2,0,1,1,2,0,1,1,2,0,1,1,2,		0,1,2,2,0,1,2,2,0,1,2,2,0,1,2,2,		0,0,1,1,0,1,1,2,1,1,2,2,1,2,2,2,		0,0,1,1,2,0,0,1,2,2,0,0,2,2,2,0,
@@ -524,19 +514,19 @@ const uint8_t g_bc7_partition3[64 * 16] =
 	0,1,1,0,0,1,1,0,2,2,2,2,2,2,2,2,		0,0,2,2,0,0,1,1,0,0,1,1,0,0,2,2,		0,0,2,2,1,1,2,2,1,1,2,2,0,0,2,2,		0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,2,		0,0,0,2,0,0,0,1,0,0,0,2,0,0,0,1,		0,2,2,2,1,2,2,2,0,2,2,2,1,2,2,2,		0,1,0,1,2,2,2,2,2,2,2,2,2,2,2,2,		0,1,1,1,2,0,1,1,2,2,0,1,2,2,2,0,
 };
 
-const uint8_t g_bc7_table_anchor_index_second_subset[64] = { 15,15,15,15,15,15,15,15,		15,15,15,15,15,15,15,15,		15, 2, 8, 2, 2, 8, 8,15,		2, 8, 2, 2, 8, 8, 2, 2,		15,15, 6, 8, 2, 8,15,15,		2, 8, 2, 2, 2,15,15, 6,		6, 2, 6, 8,15,15, 2, 2,		15,15,15,15,15, 2, 2,15 };
+static const uint8_t g_bc7_table_anchor_index_second_subset[64] = { 15,15,15,15,15,15,15,15,		15,15,15,15,15,15,15,15,		15, 2, 8, 2, 2, 8, 8,15,		2, 8, 2, 2, 8, 8, 2, 2,		15,15, 6, 8, 2, 8,15,15,		2, 8, 2, 2, 2,15,15, 6,		6, 2, 6, 8,15,15, 2, 2,		15,15,15,15,15, 2, 2,15 };
 
-const uint8_t g_bc7_table_anchor_index_third_subset_1[64] =
+static const uint8_t g_bc7_table_anchor_index_third_subset_1[64] =
 {
 	3, 3,15,15, 8, 3,15,15,		8, 8, 6, 6, 6, 5, 3, 3,		3, 3, 8,15, 3, 3, 6,10,		5, 8, 8, 6, 8, 5,15,15,		8,15, 3, 5, 6,10, 8,15,		15, 3,15, 5,15,15,15,15,		3,15, 5, 5, 5, 8, 5,10,		5,10, 8,13,15,12, 3, 3
 };
 
-const uint8_t g_bc7_table_anchor_index_third_subset_2[64] =
+static const uint8_t g_bc7_table_anchor_index_third_subset_2[64] =
 {
 	15, 8, 8, 3,15,15, 3, 8,		15,15,15,15,15,15,15, 8,		15, 8,15, 3,15, 8,15, 8,		3,15, 6,10,15,15,10, 8,		15, 3,15,10,10, 8, 9,10,		6,15, 8,15, 3, 6, 6, 8,		15, 3,15,15,15,15,15,15,		15,15,15,15, 3,15,15, 8
 };
 
-const uint8_t g_bc7_first_byte_to_mode[256] =
+static const uint8_t g_bc7_first_byte_to_mode[256] =
 {
 	8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
 	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
@@ -556,7 +546,7 @@ const uint8_t g_bc7_first_byte_to_mode[256] =
 	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
 };
 
-inline void insert_weight_zero(uint64_t& index_bits, uint32_t bits_per_index, uint32_t offset)
+static inline void insert_weight_zero(uint64_t& index_bits, uint32_t bits_per_index, uint32_t offset)
 {
 	uint64_t LOW_BIT_MASK = (static_cast<uint64_t>(1) << ((bits_per_index * (offset + 1)) - 1)) - 1;
 	uint64_t HIGH_BIT_MASK = ~LOW_BIT_MASK;
@@ -587,8 +577,6 @@ static inline uint32_t bc7_interp(uint32_t l, uint32_t h, uint32_t w, uint32_t b
 	return 0;
 }
 
-
-#ifdef BC7DECOMP_USE_SSE2
 static inline __m128i bc7_interp_sse2(__m128i l, __m128i h, __m128i w, __m128i iw)
 {
 	return _mm_srli_epi16(_mm_add_epi16(_mm_add_epi16(_mm_mullo_epi16(l, iw), _mm_mullo_epi16(h, w)), _mm_set1_epi16(32)), 6);
@@ -631,9 +619,8 @@ static inline void bc7_interp3_sse2(const color_rgba* endpoint_pair, color_rgba*
 	_mm_storeu_si128(reinterpret_cast<__m128i*>(out_colors), all_colors_0);
 	_mm_storeu_si128(reinterpret_cast<__m128i*>(out_colors + 4), all_colors_1);
 }
-#endif
 
-bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* pPixels)
+static bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* pPixels)
 {
 	//const uint32_t SUBSETS = 3;
 	const uint32_t ENDPOINTS = 6;
@@ -643,9 +630,6 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	const uint32_t ENDPOINT_BITS = (mode == 0) ? 4 : 5;
 	const uint32_t ENDPOINT_MASK = (1 << ENDPOINT_BITS) - 1;
 	const uint32_t PBITS = (mode == 0) ? 6 : 0;
-#ifndef BC7DECOMP_USE_SSE2
-	const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
-#endif
 	const uint32_t PART_BITS = (mode == 0) ? 4 : 6;
 	const uint32_t PART_MASK = (1 << PART_BITS) - 1;
 
@@ -707,7 +691,6 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 
 	color_rgba block_colors[3][8];
 
-#ifdef BC7DECOMP_USE_SSE2
 	for (uint32_t s = 0; s < 3; s++)
 	{
 		if (WEIGHT_BITS == 2)
@@ -715,15 +698,6 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 		else
 			bc7_interp3_sse2(endpoints + s * 2, block_colors[s]);
 	}
-#else
-	for (uint32_t s = 0; s < 3; s++)
-		for (uint32_t i = 0; i < WEIGHT_VALS; i++)
-		{
-			for (uint32_t c = 0; c < 3; c++)
-				block_colors[s][i][c] = static_cast<uint8_t>(bc7_interp(endpoints[s * 2 + 0][c], endpoints[s * 2 + 1][c], i, WEIGHT_BITS));
-			block_colors[s][i][3] = 255;
-		}
-#endif
 
 	for (uint32_t i = 0; i < 16; i++)
 		pPixels[i] = block_colors[g_bc7_partition3[part * 16 + i]][weights[i]];
@@ -731,7 +705,7 @@ bool unpack_bc7_mode0_2(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	return true;
 }
 
-bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba* pPixels)
+static bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba* pPixels)
 {
 	//const uint32_t SUBSETS = 2;
 	const uint32_t ENDPOINTS = 4;
@@ -742,9 +716,6 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 	const uint32_t ENDPOINT_MASK = (1 << ENDPOINT_BITS) - 1;
 	const uint32_t PBITS = (mode == 1) ? 2 : 4;
 	const uint32_t SHARED_PBITS = (mode == 1) ? true : false;
-#ifndef BC7DECOMP_USE_SSE2
-	const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
-#endif
 
 	const uint64_t low_chunk = data_chunks[0];
 	const uint64_t high_chunk = data_chunks[1];
@@ -812,7 +783,6 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 			endpoints[e][c] = static_cast<uint8_t>((mode != 7U && c == 3U) ? 255 : bc7_dequant(endpoints[e][c], pbits[SHARED_PBITS ? (e >> 1) : e], ENDPOINT_BITS));
 		
 	color_rgba block_colors[2][8];
-#ifdef BC7DECOMP_USE_SSE2
 	for (uint32_t s = 0; s < 2; s++)
 	{
 		if (WEIGHT_BITS == 2)
@@ -820,15 +790,6 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 		else
 			bc7_interp3_sse2(endpoints + s * 2, block_colors[s]);
 	}
-#else
-	for (uint32_t s = 0; s < 2; s++)
-		for (uint32_t i = 0; i < WEIGHT_VALS; i++)
-		{
-			for (uint32_t c = 0; c < COMPS; c++)
-				block_colors[s][i][c] = static_cast<uint8_t>(bc7_interp(endpoints[s * 2 + 0][c], endpoints[s * 2 + 1][c], i, WEIGHT_BITS));
-			block_colors[s][i][3] = (COMPS == 3) ? 255 : block_colors[s][i][3];
-		}
-#endif
 
 	for (uint32_t i = 0; i < 16; i++)
 		pPixels[i] = block_colors[g_bc7_partition2[part * 16 + i]][weights[i]];
@@ -836,7 +797,7 @@ bool unpack_bc7_mode1_3_7(uint32_t mode, const uint64_t* data_chunks, color_rgba
 	return true;
 }
 
-bool unpack_bc7_mode4_5(uint32_t mode, const uint64_t* data_chunks, color_rgba* pPixels)
+static bool unpack_bc7_mode4_5(uint32_t mode, const uint64_t* data_chunks, color_rgba* pPixels)
 {
 	const uint32_t ENDPOINTS = 2;
 	//const uint32_t COMPS = 4;
@@ -918,16 +879,10 @@ bool unpack_bc7_mode4_5(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 			endpoints[e][c] = static_cast<uint8_t>(bc7_dequant(endpoints[e][c], (c == 3) ? A_ENDPOINT_BITS : ENDPOINT_BITS));
 
 	color_rgba block_colors[8];
-#ifdef BC7DECOMP_USE_SSE2
 	if (weight_bits[0] == 3)
 		bc7_interp3_sse2(endpoints, block_colors);
 	else
 		bc7_interp2_sse2(endpoints, block_colors);
-#else
-	for (uint32_t i = 0; i < (1U << weight_bits[0]); i++)
-		for (uint32_t c = 0; c < 3; c++)
-			block_colors[i][c] = static_cast<uint8_t>(bc7_interp(endpoints[0][c], endpoints[1][c], i, weight_bits[0]));
-#endif
 
 	for (uint32_t i = 0; i < (1U << weight_bits[1]); i++)
 		block_colors[i][3] = static_cast<uint8_t>(bc7_interp(endpoints[0][3], endpoints[1][3], i, weight_bits[1]));
@@ -943,6 +898,7 @@ bool unpack_bc7_mode4_5(uint32_t mode, const uint64_t* data_chunks, color_rgba* 
 	return true;
 }
 
+namespace {
 struct bc7_mode_6
 {
 	struct
@@ -989,8 +945,9 @@ struct bc7_mode_6
 		uint64_t m_hi_bits;
 	};
 };
+}
 
-bool unpack_bc7_mode6(const void *pBlock_bits, color_rgba *pPixels)
+static bool unpack_bc7_mode6(const void *pBlock_bits, color_rgba *pPixels)
 {
 	static_assert(sizeof(bc7_mode_6) == 16, "sizeof(bc7_mode_6) == 16");
 
@@ -1009,7 +966,6 @@ bool unpack_bc7_mode6(const void *pBlock_bits, color_rgba *pPixels)
 	const uint32_t a1 = static_cast<uint32_t>((block.m_lo.m_a1 << 1) | block.m_hi.m_p1);
 
 	color_rgba vals[16];
-#ifdef BC7DECOMP_USE_SSE2
 	__m128i vep0 = _mm_set_epi16((short)a0, (short)b0, (short)g0, (short)r0, (short)a0, (short)b0, (short)g0, (short)r0);
 	__m128i vep1 = _mm_set_epi16((short)a1, (short)b1, (short)g1, (short)r1, (short)a1, (short)b1, (short)g1, (short)r1);
 
@@ -1027,18 +983,6 @@ bool unpack_bc7_mode6(const void *pBlock_bits, color_rgba *pPixels)
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(vals + i), combined);
 	}
-#else
-	for (uint32_t i = 0; i < 16; i++)
-	{
-		const uint32_t w = g_bc7_weights4[i];
-		const uint32_t iw = 64 - w;
-		vals[i].set_noclamp_rgba(
-			(r0 * iw + r1 * w + 32) >> 6,
-			(g0 * iw + g1 * w + 32) >> 6,
-			(b0 * iw + b1 * w + 32) >> 6,
-			(a0 * iw + a1 * w + 32) >> 6);
-	}
-#endif
 
 	pPixels[0] = vals[block.m_hi.m_s00];
 	pPixels[1] = vals[block.m_hi.m_s10];

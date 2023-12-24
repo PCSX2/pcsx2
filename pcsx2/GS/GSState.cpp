@@ -1,24 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/GSState.h"
 #include "GS/GSDump.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
+
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -364,7 +353,7 @@ GSVideoMode GSState::GetVideoMode()
 			return GSVideoMode::Unknown;
 	}
 
-	__assume(0); // unreachable
+	ASSUME(0); // unreachable
 }
 
 float GSState::GetTvRefreshRate()
@@ -388,7 +377,7 @@ float GSState::GetTvRefreshRate()
 			return 0;
 	}
 
-	__assume(0); // unreachable
+	ASSUME(0); // unreachable
 }
 
 const char* GSState::GetFlushReasonString(GSFlushReason reason)
@@ -646,7 +635,7 @@ void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r)
 template <u32 prim, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u32 size)
 {
-	ASSERT(size > 0 && size % 3 == 0);
+	pxAssert(size > 0 && size % 3 == 0);
 
 	CheckFlushes();
 
@@ -680,7 +669,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 template <u32 prim, bool auto_flush, bool index_swap>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32 size)
 {
-	ASSERT(size > 0 && size % 3 == 0);
+	pxAssert(size > 0 && size % 3 == 0);
 
 	CheckFlushes();
 
@@ -736,7 +725,7 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 
 	UpdateVertexKick();
 
-	ASSERT(m_index.tail == 0 || !g_gs_device->Features().provoking_vertex_last || m_index.buff[m_index.tail - 1] + 1 == m_vertex.next);
+	pxAssert(m_index.tail == 0 || !g_gs_device->Features().provoking_vertex_last || m_index.buff[m_index.tail - 1] + 1 == m_vertex.next);
 
 	if (m_index.tail == 0)
 		m_vertex.next = 0;
@@ -1633,7 +1622,7 @@ void GSState::FlushPrim()
 			switch (PRIM->PRIM)
 			{
 				case GS_POINTLIST:
-					ASSERT(0);
+					pxAssert(0);
 					break;
 				case GS_LINELIST:
 				case GS_LINESTRIP:
@@ -1658,10 +1647,10 @@ void GSState::FlushPrim()
 				case GS_INVALID:
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
-			ASSERT((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
+			pxAssert((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
 		}
 
 		// If the PSM format of Z is invalid, but it is masked (no write) and ZTST is set to ALWAYS pass (no test, just allow)
@@ -2427,7 +2416,7 @@ void GSState::Transfer(const u8* mem, u32 size)
 
 								break;
 							default:
-								__assume(0);
+								ASSUME(0);
 						}
 
 						path.nloop = 0;
@@ -2494,7 +2483,7 @@ void GSState::Transfer(const u8* mem, u32 size)
 					break;
 				}
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 
@@ -2913,10 +2902,10 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 
 			// Be sure to get vertex in good order, otherwise .r* function doesn't
 			// work as expected.
-			ASSERT(sprite.x <= sprite.z);
-			ASSERT(sprite.y <= sprite.w);
-			ASSERT(all.x <= all.z);
-			ASSERT(all.y <= all.w);
+			pxAssert(sprite.x <= sprite.z);
+			pxAssert(sprite.y <= sprite.w);
+			pxAssert(all.x <= all.z);
+			pxAssert(all.y <= all.w);
 
 			if (all.rintersect(sprite).rempty())
 			{
@@ -3346,7 +3335,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	constexpr u32 n = NumIndicesForPrim(prim);
 	static_assert(n > 0);
 
-	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
+	pxAssert(m_vertex.tail < m_vertex.maxcount + 3);
 
 	if (auto_flush && skip == 0 && m_index.tail > 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
 	{
@@ -3477,7 +3466,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 					GrowVertexBuffer(); // in case too many vertices were skipped
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 
 		return;
@@ -3576,7 +3565,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 			m_vertex.tail = head;
 			return;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	// Update rectangle for the current draw. We can use the re-integer coordinates from min/max here.
@@ -3678,7 +3667,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			vr.z = (maxu | minu) + 1;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	switch (wmt)
@@ -3696,7 +3685,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			vr.w = (maxv | minv) + 1;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	// Software renderer fixes TEX0 so that TW/TH contain MAXU/MAXV.
@@ -3925,7 +3914,7 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 					m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			switch (context->TEX0.TFX)
@@ -3955,7 +3944,7 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 					a.z = a.w;
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 		}
 		min = a.x;
@@ -3995,7 +3984,7 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 				return true;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	bool pass = true;
@@ -4069,7 +4058,7 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 					return false;
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 	}
 
@@ -4091,7 +4080,7 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 				zm = 0xffffffff;
 				break;
 			default:
-				__assume(0);
+				ASSUME(0);
 		}
 	}
 

@@ -1,46 +1,9 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
-#ifdef __linux__
-#include <signal.h>
-#endif
-
 #include "vtlb.h"
-
-#include "common/emitter/x86_intrin.h"
-
-// [TODO] This *could* be replaced with an assignment operator on u128 that implicitly
-// uses _mm_store and _mm_load internally.  However, there are alignment concerns --
-// u128 is not alignment strict.  (we would need a u128 and u128a for types known to
-// be strictly 128-bit aligned).
-static __fi void CopyQWC( void* dest, const void* src )
-{
-	_mm_store_ps( (float*)dest, _mm_load_ps((const float*)src) );
-}
-
-static __fi void ZeroQWC( void* dest )
-{
-	_mm_store_ps( (float*)dest, _mm_setzero_ps() );
-}
-
-static __fi void ZeroQWC( u128& dest )
-{
-	_mm_store_ps( (float*)&dest, _mm_setzero_ps() );
-}
 
 #define PSM(mem)	(vtlb_GetPhyPtr((mem)&0x1fffffff)) //pcsx2 is a competition.The one with most hacks wins :D
 
@@ -120,7 +83,7 @@ extern void memMapVUmicro();
 #define memWrite32 vtlb_memWrite<mem32_t>
 #define memWrite64 vtlb_memWrite<mem64_t>
 
-static __fi void memRead128(u32 mem, mem128_t* out) { _mm_store_si128((__m128i*)out, vtlb_memRead128(mem)); }
+static __fi void memRead128(u32 mem, mem128_t* out) { r128_store(out, vtlb_memRead128(mem)); }
 static __fi void memRead128(u32 mem, mem128_t& out) { memRead128(mem, &out); }
 
 static __fi void memWrite128(u32 mem, const mem128_t* val)	{ vtlb_memWrite128(mem, r128_load(val)); }

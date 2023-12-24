@@ -1,20 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-
-#include "PrecompiledHeader.h"
 #include "Common.h"
 
 #include <float.h>
@@ -554,7 +540,7 @@ void LH()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 1))
+	if (addr & 1) [[unlikely]]
 		RaiseAddressError(addr, false);
 
 	s16 temp = memRead16(addr);
@@ -567,7 +553,7 @@ void LHU()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 1))
+	if (addr & 1) [[unlikely]]
 		RaiseAddressError(addr, false);
 
 	u16 temp = memRead16(addr);
@@ -580,7 +566,7 @@ void LW()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 3))
+	if (addr & 3) [[unlikely]]
 		RaiseAddressError(addr, false);
 
 	u32 temp = memRead32(addr);
@@ -593,7 +579,7 @@ void LWU()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 3))
+	if (addr & 3) [[unlikely]]
 		RaiseAddressError(addr, false);
 
 	u32 temp = memRead32(addr);
@@ -681,7 +667,7 @@ void LD()
 {
     s32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 7))
+	if (addr & 7) [[unlikely]]
 		RaiseAddressError(addr, false);
 
 	cpuRegs.GPR.r[_Rt_].UD[0] = memRead64(addr);
@@ -743,7 +729,7 @@ void SH()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 1))
+	if (addr & 1) [[unlikely]]
 		RaiseAddressError(addr, true);
 
 	memWrite16(addr, cpuRegs.GPR.r[_Rt_].US[0]);
@@ -753,7 +739,7 @@ void SW()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 3))
+	if (addr & 3) [[unlikely]]
 		RaiseAddressError(addr, true);
 
   memWrite32(addr, cpuRegs.GPR.r[_Rt_].UL[0]);
@@ -810,7 +796,7 @@ void SD()
 {
 	u32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 
-	if (unlikely(addr & 7))
+	if (addr & 7) [[unlikely]]
 		RaiseAddressError(addr, true);
 
     memWrite64(addr,cpuRegs.GPR.r[_Rt_].UD[0]);

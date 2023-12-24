@@ -1,26 +1,14 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "QtUtils.h"
 
 #include "pcsx2/Input/InputManager.h"
 
+#include "common/Pcsx2Defs.h"
 #include "common/StringUtil.h"
 
+#include "fmt/format.h"
 #include "IconsPromptFont.h"
 
 #include <QtGui/QKeyEvent>
@@ -476,7 +464,7 @@ std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::stri
 {
 	std::string_view compare_name = str;
 	u32 modifier_bits = 0;
-	if (StringUtil::StartsWith(compare_name, "Numpad"))
+	if (compare_name.starts_with("Numpad"))
 	{
 		compare_name = compare_name.substr(6);
 		modifier_bits |= Qt::KeypadModifier;

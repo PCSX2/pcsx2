@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,10 +23,12 @@
 #include "Common.h"
 #include "Memory.h"
 #include "Elfheader.h"
-#include "pcsx2/VMManager.h"
 #include "svnrev.h"
 #include "SysForwardDefs.h"
 #include "PINE.h"
+#include "VMManager.h"
+
+#include "fmt/format.h"
 
 PINEServer::PINEServer() {}
 
@@ -75,7 +63,7 @@ bool PINEServer::Initialize(int slot)
 	// yes very good windows s/sun/sin/g sure is fine
 	server.sin_family = AF_INET;
 	// localhost only
-	server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server.sin_addr.s_addr = INADDR_LOOPBACK;
 	server.sin_port = htons(slot);
 
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
@@ -278,7 +266,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 
 	while (buf_cnt < buf_size)
 	{
-		if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+		if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 			return IPCBuffer{5, MakeFailIPC(ret_buffer)};
 		buf_cnt++;
 		// example IPC messages: MsgRead/Write
@@ -298,7 +286,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u8 res = memRead8(a);
@@ -311,7 +299,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size))
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u16 res = memRead16(a);
@@ -324,7 +312,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u32 res = memRead32(a);
@@ -337,7 +325,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				const u64 res = memRead64(a);
@@ -350,7 +338,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
+				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				memWrite8(a, FromSpan<u8>(buf, buf_cnt + 4));
@@ -361,7 +349,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
+				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				memWrite16(a, FromSpan<u16>(buf, buf_cnt + 4));
@@ -372,7 +360,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
+				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				memWrite32(a, FromSpan<u32>(buf, buf_cnt + 4));
@@ -383,7 +371,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
+				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
 				memWrite64(a, FromSpan<u64>(buf, buf_cnt + 4));
@@ -406,7 +394,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					version = fmt::format("PCSX2 {}.{}.{}-{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
 				}
 				const u32 size = version.size() + 1;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
@@ -418,7 +406,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				VMManager::SaveStateToSlot(FromSpan<u8>(buf, buf_cnt));
 				buf_cnt += 1;
@@ -428,7 +416,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				VMManager::LoadStateFromSlot(FromSpan<u8>(buf, buf_cnt));
 				buf_cnt += 1;
@@ -440,7 +428,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				const std::string gameName = VMManager::GetTitle(false);
 				const u32 size = gameName.size() + 1;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
@@ -454,7 +442,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				const std::string gameSerial = VMManager::GetDiscSerial();
 				const u32 size = gameSerial.size() + 1;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
@@ -468,7 +456,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				const std::string crc = fmt::format("{:08x}", VMManager::GetDiscCRC());
 				const u32 size = crc.size() + 1;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
@@ -483,7 +471,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 
 				const std::string ElfVersion = VMManager::GetDiscVersion();
 				const u32 size = ElfVersion.size() + 1;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
@@ -493,7 +481,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			}
 			case MsgStatus:
 			{
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size))
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
 					goto error;
 				EmuStatus status;
 

@@ -173,5 +173,5 @@ add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
 # Deliberately at the end. We don't want to set the flag on third-party projects.
 if(MSVC)
 	# Don't warn about "deprecated" POSIX functions.
-	add_definitions("-D_CRT_SECURE_NO_WARNINGS" "-DCRT_SECURE_NO_DEPRECATE")
+	add_definitions("-D_CRT_NONSTDC_NO_WARNINGS" "-D_CRT_SECURE_NO_WARNINGS" "-DCRT_SECURE_NO_DEPRECATE")
 endif()

@@ -93,12 +93,14 @@ target_sources(common PRIVATE
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
+	SingleRegisterTypes.h
 	SmallString.h
 	StringUtil.h
 	Timer.h
 	TextureDecompress.h
 	Threading.h
 	TraceLog.h
+	VectorIntrin.h
 	WAVWriter.h
 	WindowInfo.h
 	WrappedMemCopy.h

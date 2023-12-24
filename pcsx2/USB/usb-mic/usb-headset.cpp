@@ -24,7 +24,6 @@
 
 // Most stuff is based on Qemu 1.7 USB soundcard passthrough code.
 
-#include "PrecompiledHeader.h"
 #include "Host.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
@@ -34,6 +33,8 @@
 #include "USB/usb-mic/audiodev.h"
 #include "USB/USB.h"
 #include "StateWrapper.h"
+
+#include "common/Console.h"
 
 #define BUFFER_FRAMES 200
 

@@ -1,32 +1,15 @@
-/*
- * vlc.h
- * Copyright (C) 2000-2002 Michel Lespinasse <walken@zoy.org>
- * Copyright (C) 1999-2000 Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
- * Modified by Florin for PCSX2 emu
- *
- * This file is part of mpeg2dec, a free MPEG-2 video stream decoder.
- * See http://libmpeg2.sourceforge.net/ for updates.
- *
- * mpeg2dec is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * mpeg2dec is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-2.0+
 
 /* NOTE: While part of this header is originally from libmpeg2, which is GPL - licensed,
  * it's not substantial and does not contain any functions, therefore can be argued
  * not to be a derived work. See http://lkml.iu.edu/hypermail/linux/kernel/0301.1/0362.html
  * The constants themselves can also be argued to be part of the MPEG-2 standard, whose
  * patents expired worldwide in Feb 2020.
+ *
+ * Original copyright included for completeness:
+ *   Copyright (C) 2000-2002 Michel Lespinasse <walken@zoy.org>
+ *   Copyright (C) 1999-2000 Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
  */
 
 #pragma once

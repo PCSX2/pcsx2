@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "GameDatabase.h"
 #include "GS/GS.h"
@@ -21,6 +7,7 @@
 #include "IconsFontAwesome5.h"
 #include "vtlb.h"
 
+#include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -187,7 +174,7 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			auto fix = std::string(n.val().str, n.val().len);
 
 			// Enum values don't end with Hack, but gamedb does, so remove it before comparing.
-			if (StringUtil::EndsWith(fix, "Hack"))
+			if (fix.ends_with("Hack"))
 			{
 				fix.erase(fix.size() - 4);
 				for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)

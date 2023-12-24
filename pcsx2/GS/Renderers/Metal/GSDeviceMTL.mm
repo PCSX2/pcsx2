@@ -1,25 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "Host.h"
 #include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/Renderers/Metal/GSTextureMTL.h"
 #include "GS/GSPerfMon.h"
+
+#include "common/Console.h"
 
 #include "imgui.h"
 
@@ -99,7 +87,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
 	amt = (amt + 31) & ~31ull;
 	u64 last_draw = m_last_finished_draw.load(std::memory_order_acquire);
 	bool needs_new = buffer.usage.PrepareForAllocation(last_draw, amt);
-	if (unlikely(needs_new))
+	if (needs_new) [[unlikely]]
 	{
 		// Orphan buffer
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
@@ -115,7 +103,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(UploadBuffer& buffer, size_t amt)
 	size_t pos = buffer.usage.Allocate(m_current_draw, amt);
 
 	Map ret = {buffer.mtlbuffer, pos, reinterpret_cast<char*>(buffer.buffer) + pos};
-	ASSERT(pos <= buffer.usage.Size() && "Previous code should have guaranteed there was enough space");
+	pxAssertMsg(pos <= buffer.usage.Size(), "Previous code should have guaranteed there was enough space");
 	return ret;
 }
 
@@ -140,7 +128,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(BufferPair& buffer, size_t amt)
 		}
 		buffer.last_upload = 0;
 	}
-	if (unlikely(needs_new))
+	if (needs_new) [[unlikely]]
 	{
 		// Orphan buffer
 		size_t newsize = std::max<size_t>(buffer.usage.Size() * 2, 4096);
@@ -162,7 +150,7 @@ GSDeviceMTL::Map GSDeviceMTL::Allocate(BufferPair& buffer, size_t amt)
 	size_t pos = buffer.usage.Allocate(m_current_draw, amt);
 	Map ret = {nil, pos, reinterpret_cast<char*>(buffer.buffer) + pos};
 	ret.gpu_buffer = m_dev.features.unified_memory ? buffer.cpubuffer : buffer.gpubuffer;
-	ASSERT(pos <= buffer.usage.Size() && "Previous code should have guaranteed there was enough space");
+	pxAssertMsg(pos <= buffer.usage.Size(), "Previous code should have guaranteed there was enough space");
 	return ret;
 }
 
@@ -260,7 +248,7 @@ void GSDeviceMTL::FlushEncoders()
 	}
 	if (m_dev.features.unified_memory)
 	{
-		ASSERT(!m_vertex_upload_cmdbuf && "Should never be used!");
+		pxAssertMsg(!m_vertex_upload_cmdbuf, "Should never be used!");
 	}
 	else if (m_vertex_upload_cmdbuf)
 	{
@@ -468,7 +456,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	{
 		ms->m_last_write = m_current_draw;
 		desc.stencilAttachment.texture = ms->GetTexture();
-		assert(stencil_load != MTLLoadActionClear);
+		pxAssert(stencil_load != MTLLoadActionClear);
 		desc.stencilAttachment.loadAction = stencil_load;
 	}
 
@@ -669,7 +657,7 @@ MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 {
 	NSError* err = nil;
 	MRCOwned<id<MTLFunction>> fn = MRCTransfer([m_dev.shaders newFunctionWithName:name constantValues:m_fn_constants error:&err]);
-	if (unlikely(err))
+	if (err) [[unlikely]]
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to load shader %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
@@ -685,7 +673,7 @@ MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipeline
 	[desc setFragmentFunction:fragment];
 	NSError* err;
 	MRCOwned<id<MTLRenderPipelineState>> res = MRCTransfer([m_dev.dev newRenderPipelineStateWithDescriptor:desc error:&err]);
-	if (unlikely(err))
+	if (err) [[unlikely]]
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
@@ -705,7 +693,7 @@ MRCOwned<id<MTLComputePipelineState>> GSDeviceMTL::MakeComputePipeline(id<MTLFun
 		                              options:0
 		                           reflection:nil
 		                                error:&err]);
-	if (unlikely(err))
+	if (err) [[unlikely]]
 	{
 		NSString* msg = [NSString stringWithFormat:@"Failed to create pipeline %@: %@", name, [err localizedDescription]];
 		Console.Error("%s", [msg UTF8String]);
@@ -750,7 +738,7 @@ bool GSDeviceMTL::HasSurface()  const { return static_cast<bool>(m_layer);}
 
 void GSDeviceMTL::AttachSurfaceOnMainThread()
 {
-	ASSERT([NSThread isMainThread]);
+	pxAssert([NSThread isMainThread]);
 	m_layer = MRCRetain([CAMetalLayer layer]);
 	[m_layer setDrawableSize:CGSizeMake(m_window_info.surface_width, m_window_info.surface_height)];
 	[m_layer setDevice:m_dev.dev];
@@ -761,7 +749,7 @@ void GSDeviceMTL::AttachSurfaceOnMainThread()
 
 void GSDeviceMTL::DetachSurfaceOnMainThread()
 {
-	ASSERT([NSThread isMainThread]);
+	pxAssert([NSThread isMainThread]);
 	[m_view setLayer:nullptr];
 	[m_view setWantsLayer:NO];
 	m_view = nullptr;
@@ -1298,7 +1286,7 @@ GSDevice::PresentResult GSDeviceMTL::BeginPresent(bool frame_skip)
 
 void GSDeviceMTL::EndPresent()
 { @autoreleasepool {
-	pxAssertDev(m_current_render.encoder && m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
+	pxAssertMsg(m_current_render.encoder && m_current_render_cmdbuf, "BeginPresent cmdbuf was destroyed");
 	ImGui::Render();
 	RenderImGui(ImGui::GetDrawData());
 	EndRenderPass();
@@ -1897,7 +1885,7 @@ void GSDeviceMTL::MRESetSampler(SamplerSelector sel)
 {
 	if (m_current_render.has.sampler && m_current_render.sampler_sel.key == sel.key)
 		return;
-	if (unlikely(!m_sampler_hw[sel.key]))
+	if (!m_sampler_hw[sel.key]) [[unlikely]]
 		m_sampler_hw[sel.key] = CreateSampler(m_dev.dev, sel);
 	[m_current_render.encoder setFragmentSamplerState:m_sampler_hw[sel.key] atIndex:0];
 	m_current_render.sampler_sel = sel;
@@ -2122,11 +2110,11 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			BeginRenderPass(@"PrimID Destination Alpha Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
 			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][config.datm], config.drawarea);
 			MRESetDSS(dsel);
-			ASSERT(config.ps.date == 1 || config.ps.date == 2);
+			pxAssert(config.ps.date == 1 || config.ps.date == 2);
 			if (config.ps.tex_is_fb)
 				MRESetTexture(config.rt, GSMTLTextureIndexRenderTarget);
 			config.require_one_barrier = false; // Ending render pass is our barrier
-			ASSERT(config.require_full_barrier == false && config.drawlist == nullptr);
+			pxAssert(config.require_full_barrier == false && config.drawlist == nullptr);
 			MRESetHWPipelineState(config.vs, config.ps, {}, {});
 			MREInitHWDraw(config, allocation);
 			SendHWDraw(config, m_current_render.encoder, index_buffer, index_buffer_offset);
@@ -2165,7 +2153,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	if (!rt && !config.ds)
 	{
 		// If we were rendering depth-only and depth gets cleared by the above check, that turns into rendering nothing, which should be a no-op
-		pxAssertDev(0, "RenderHW was given a completely useless draw call!");
+		pxAssertMsg(0, "RenderHW was given a completely useless draw call!");
 		[m_current_render.encoder insertDebugSignpost:@"Skipped no-color no-depth draw"];
 		if (primid_tex)
 			Recycle(primid_tex);

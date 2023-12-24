@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include <cassert>
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 class alignas(32) GSVector8i
 {
@@ -986,7 +972,7 @@ public:
 	template <int i>
 	__forceinline int extract8() const
 	{
-		ASSERT(i < 32);
+		pxAssert(i < 32);
 
 		GSVector4i v = extract<i / 16>();
 
@@ -996,7 +982,7 @@ public:
 	template <int i>
 	__forceinline int extract16() const
 	{
-		ASSERT(i < 16);
+		pxAssert(i < 16);
 
 		GSVector4i v = extract<i / 8>();
 
@@ -1006,7 +992,7 @@ public:
 	template <int i>
 	__forceinline int extract32() const
 	{
-		ASSERT(i < 8);
+		pxAssert(i < 8);
 
 		GSVector4i v = extract<i / 4>();
 
@@ -1019,7 +1005,7 @@ public:
 	template <int i>
 	__forceinline GSVector4i extract() const
 	{
-		ASSERT(i < 2);
+		pxAssert(i < 2);
 
 		if (i == 0)
 			return GSVector4i(_mm256_castsi256_si128(m));
@@ -1030,7 +1016,7 @@ public:
 	template <int i>
 	__forceinline GSVector8i insert(__m128i m) const
 	{
-		ASSERT(i < 2);
+		pxAssert(i < 2);
 
 		return GSVector8i(_mm256_inserti128_si256(this->m, m, i));
 	}
@@ -1171,14 +1157,10 @@ public:
 		return cast(GSVector4i::load(i));
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static GSVector8i loadq(s64 i)
 	{
 		return cast(GSVector4i::loadq(i));
 	}
-
-#endif
 
 	__forceinline static void storent(void* p, const GSVector8i& v)
 	{
@@ -1215,14 +1197,10 @@ public:
 		return GSVector4i::store(GSVector4i::cast(v));
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static s64 storeq(const GSVector8i& v)
 	{
 		return GSVector4i::storeq(GSVector4i::cast(v));
 	}
-
-#endif
 
 	__forceinline static void storent(void* RESTRICT dst, const void* RESTRICT src, size_t size)
 	{

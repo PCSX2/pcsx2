@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
@@ -188,7 +176,7 @@ namespace x86Emitter
 	public:
 		uint GetOperandSize() const
 		{
-			pxAssertDev(_operandSize != 0, "Attempted to use operand size of uninitialized or void object");
+			pxAssertMsg(_operandSize != 0, "Attempted to use operand size of uninitialized or void object");
 			return _operandSize;
 		}
 
@@ -384,7 +372,7 @@ namespace x86Emitter
 		explicit xRegister16(const xRegisterInt& other)
 			: _parent(2, other.Id)
 		{
-			pxAssertDev(other.canMapIDTo(2), "Mapping h registers to higher registers can produce unexpected values");
+			pxAssertMsg(other.canMapIDTo(2), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
 		bool operator==(const xRegister16& src) const { return this->Id == src.Id; }
@@ -404,7 +392,7 @@ namespace x86Emitter
 		explicit xRegister32(const xRegisterInt& other)
 			: _parent(4, other.Id)
 		{
-			pxAssertDev(other.canMapIDTo(4), "Mapping h registers to higher registers can produce unexpected values");
+			pxAssertMsg(other.canMapIDTo(4), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
 		static const inline xRegister32& GetInstance(uint id);
@@ -426,7 +414,7 @@ namespace x86Emitter
 		explicit xRegister64(const xRegisterInt& other)
 			: _parent(8, other.Id)
 		{
-			pxAssertDev(other.canMapIDTo(8), "Mapping h registers to higher registers can produce unexpected values");
+			pxAssertMsg(other.canMapIDTo(8), "Mapping h registers to higher registers can produce unexpected values");
 		}
 
 		static const inline xRegister64& GetInstance(uint id);

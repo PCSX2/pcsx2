@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "Common.h"
 #include "DebugTools/SymbolMap.h"
@@ -169,7 +155,7 @@ namespace R3000A
 		// For now it just supports relative folders from the location of the elf
 		std::string native_path(Path::Canonicalize(path));
 		std::string new_path;
-		if (!hostRoot.empty() && StringUtil::StartsWith(native_path, hostRoot))
+		if (!hostRoot.empty() && native_path.starts_with(hostRoot))
 			new_path = std::move(native_path);
 		else if (!hostRoot.empty()) // relative paths
 			new_path = Path::Combine(hostRoot, native_path);
@@ -195,7 +181,7 @@ namespace R3000A
 		{
 			// Only allow descendants of the hostfs directory.
 			if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
-				!StringUtil::StartsWith(canonicalized_path, hostRoot) || // and start with the host root,
+				!canonicalized_path.starts_with(hostRoot) || // and start with the host root,
 				canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
 			{
 				Console.Error(fmt::format(

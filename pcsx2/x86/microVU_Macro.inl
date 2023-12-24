@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 extern void _vu0WaitMicro();
@@ -405,7 +393,7 @@ static void mVUFinishVU0()
 	skipvuidle.SetTarget();
 }
 
-static void TEST_FBRST_RESET(int flagreg, FnType_Void* resetFunct, int vuIndex)
+static void TEST_FBRST_RESET(int flagreg, void(*resetFunct)(), int vuIndex)
 {
 	xTEST(xRegister32(flagreg), (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;

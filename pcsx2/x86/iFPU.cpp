@@ -1,20 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "Common.h"
 #include "R5900OpcodeTables.h"
@@ -357,13 +342,8 @@ static void fpuFreeIfTemp(int xmmreg)
 
 __fi void fpuFloat3(int regd) // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
 {
-	const int t1reg = _allocTempXMMreg(XMMT_FPS);
-	xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
-	xAND.PS(xRegisterSSE(t1reg), ptr[&s_neg[0]]);
-	xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
-	xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
-	xOR.PS(xRegisterSSE(regd), xRegisterSSE(t1reg));
-	_freeXMMreg(t1reg);
+	xPMIN.SD(xRegisterSSE(regd), ptr128[&g_maxvals[0]]);
+	xPMIN.UD(xRegisterSSE(regd), ptr128[&g_minvals[0]]);
 }
 
 __fi void fpuFloat(int regd) // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax

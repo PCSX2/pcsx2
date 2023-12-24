@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
@@ -200,7 +186,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 
 	entry->path = path;
 	entry->serial.clear();
-	entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+	entry->title = Path::GetFileTitle(path);
 	entry->region = Region::Other;
 	entry->type = EntryType::ELF;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
@@ -231,65 +217,65 @@ GameList::Region GameList::ParseDatabaseRegion(const std::string_view& db_region
 	// clang-format off
 						////// NTSC //////
 						//////////////////
-	if (StringUtil::StartsWith(db_region, "NTSC-B"))
+	if (db_region.starts_with("NTSC-B"))
 		return Region::NTSC_B;
-	else if (StringUtil::StartsWith(db_region, "NTSC-C"))
+	else if (db_region.starts_with("NTSC-C"))
 		return Region::NTSC_C;
-	else if (StringUtil::StartsWith(db_region, "NTSC-HK"))
+	else if (db_region.starts_with("NTSC-HK"))
 		return Region::NTSC_HK;
-	else if (StringUtil::StartsWith(db_region, "NTSC-J"))
+	else if (db_region.starts_with("NTSC-J"))
 		return Region::NTSC_J;
-	else if (StringUtil::StartsWith(db_region, "NTSC-K"))
+	else if (db_region.starts_with("NTSC-K"))
 		return Region::NTSC_K;
-	else if (StringUtil::StartsWith(db_region, "NTSC-T"))
+	else if (db_region.starts_with("NTSC-T"))
 		return Region::NTSC_T;
-	else if (StringUtil::StartsWith(db_region, "NTSC-U"))
+	else if (db_region.starts_with("NTSC-U"))
 		return Region::NTSC_U;
 						////// PAL //////
 						//////////////////
-	else if (StringUtil::StartsWith(db_region, "PAL-AF"))
+	else if (db_region.starts_with("PAL-AF"))
 		return Region::PAL_AF;
-	else if (StringUtil::StartsWith(db_region, "PAL-AU"))
+	else if (db_region.starts_with("PAL-AU"))
 		return Region::PAL_AU;
-	else if (StringUtil::StartsWith(db_region, "PAL-A"))
+	else if (db_region.starts_with("PAL-A"))
 		return Region::PAL_A;
-	else if (StringUtil::StartsWith(db_region, "PAL-BE"))
+	else if (db_region.starts_with("PAL-BE"))
 		return Region::PAL_BE;
-	else if (StringUtil::StartsWith(db_region, "PAL-E"))
+	else if (db_region.starts_with("PAL-E"))
 		return Region::PAL_E;
-	else if (StringUtil::StartsWith(db_region, "PAL-FI"))
+	else if (db_region.starts_with("PAL-FI"))
 		return Region::PAL_FI;
-	else if (StringUtil::StartsWith(db_region, "PAL-F"))
+	else if (db_region.starts_with("PAL-F"))
 		return Region::PAL_F;
-	else if (StringUtil::StartsWith(db_region, "PAL-GR"))
+	else if (db_region.starts_with("PAL-GR"))
 		return Region::PAL_GR;
-	else if (StringUtil::StartsWith(db_region, "PAL-G"))
+	else if (db_region.starts_with("PAL-G"))
 		return Region::PAL_G;
-	else if (StringUtil::StartsWith(db_region, "PAL-IN"))
+	else if (db_region.starts_with("PAL-IN"))
 		return Region::PAL_IN;
-	else if (StringUtil::StartsWith(db_region, "PAL-I"))
+	else if (db_region.starts_with("PAL-I"))
 		return Region::PAL_I;
-	else if (StringUtil::StartsWith(db_region, "PAL-M"))
+	else if (db_region.starts_with("PAL-M"))
 		return Region::PAL_M;
-	else if (StringUtil::StartsWith(db_region, "PAL-NL"))
+	else if (db_region.starts_with("PAL-NL"))
 		return Region::PAL_NL;
-	else if (StringUtil::StartsWith(db_region, "PAL-NO"))
+	else if (db_region.starts_with("PAL-NO"))
 		return Region::PAL_NO;
-	else if (StringUtil::StartsWith(db_region, "PAL-PL"))
+	else if (db_region.starts_with("PAL-PL"))
 		return Region::PAL_PL;
-	else if (StringUtil::StartsWith(db_region, "PAL-P"))
+	else if (db_region.starts_with("PAL-P"))
 		return Region::PAL_P;
-	else if (StringUtil::StartsWith(db_region, "PAL-R"))
+	else if (db_region.starts_with("PAL-R"))
 		return Region::PAL_R;
-	else if (StringUtil::StartsWith(db_region, "PAL-SC"))
+	else if (db_region.starts_with("PAL-SC"))
 		return Region::PAL_SC;
-	else if (StringUtil::StartsWith(db_region, "PAL-SWI"))
+	else if (db_region.starts_with("PAL-SWI"))
 		return Region::PAL_SWI;
-	else if (StringUtil::StartsWith(db_region, "PAL-SW"))
+	else if (db_region.starts_with("PAL-SW"))
 		return Region::PAL_SW;
-	else if (StringUtil::StartsWith(db_region, "PAL-S"))
+	else if (db_region.starts_with("PAL-S"))
 		return Region::PAL_S;
-	else if (StringUtil::StartsWith(db_region, "PAL-UK"))
+	else if (db_region.starts_with("PAL-UK"))
 		return Region::PAL_UK;
 	else
 		return Region::Other;
@@ -632,7 +618,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 			continue;
 		}
 
-		progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
+		const std::string_view filename = Path::GetFileName(ffd.FileName);
+		progress->SetFormattedStatusText("Scanning '%.*s'...", static_cast<int>(filename.size()), filename.data());
 		ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
 		progress->SetProgressValue(files_scanned);
 	}
@@ -1269,10 +1256,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 				if (has_title)
 					StringUtil::ReplaceAll(&url, "${title}", HTTPDownloader::URLEncode(entry.title));
 				if (has_file_title)
-				{
-					std::string display_name(FileSystem::GetDisplayNameFromPath(entry.path));
-					StringUtil::ReplaceAll(&url, "${filetitle}", HTTPDownloader::URLEncode(Path::GetFileTitle(display_name)));
-				}
+					StringUtil::ReplaceAll(&url, "${filetitle}", HTTPDownloader::URLEncode(Path::GetFileTitle(entry.path)));
 				if (has_serial)
 					StringUtil::ReplaceAll(&url, "${serial}", HTTPDownloader::URLEncode(entry.serial));
 

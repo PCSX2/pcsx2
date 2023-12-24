@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "common/Assertions.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 class alignas(16) GSVector4i
 {
@@ -1107,8 +1093,6 @@ public:
 		return _mm_extract_epi32(m, i);
 	}
 
-#ifdef _M_AMD64
-
 	template <int i>
 	__forceinline GSVector4i insert64(s64 a) const
 	{
@@ -1123,8 +1107,6 @@ public:
 
 		return _mm_extract_epi64(m, i);
 	}
-
-#endif
 
 	template <int src, class T>
 	__forceinline GSVector4i gather8_4(const T* ptr) const
@@ -1351,8 +1333,6 @@ public:
 		return v;
 	}
 
-#if defined(_M_AMD64)
-
 	template <int src, class T>
 	__forceinline GSVector4i gather64_4(const T* ptr) const
 	{
@@ -1407,50 +1387,6 @@ public:
 
 		return v;
 	}
-
-#else
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_4(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = loadu(&ptr[extract8<src + 0>() & 0xf], &ptr[extract8<src + 0>() >> 4]);
-
-		return v;
-	}
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_8(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = load(&ptr[extract8<src + 0>()], &ptr[extract8<src + 1>()]);
-
-		return v;
-	}
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_16(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = load(&ptr[extract16<src + 0>()], &ptr[extract16<src + 1>()]);
-
-		return v;
-	}
-
-	template <int src, class T>
-	__forceinline GSVector4i gather64_32(const T* ptr) const
-	{
-		GSVector4i v;
-
-		v = load(&ptr[extract32<src + 0>()], &ptr[extract32<src + 1>()]);
-
-		return v;
-	}
-
-#endif
 
 	template <class T>
 	__forceinline void gather8_4(const T* RESTRICT ptr, GSVector4i* RESTRICT dst) const
@@ -1571,15 +1507,11 @@ public:
 		dst[1] = gather64_32<2>(ptr);
 	}
 
-#ifdef _M_AMD64
-
 	template <class T>
 	__forceinline void gather64_64(const T* RESTRICT ptr, GSVector4i* RESTRICT dst) const
 	{
 		dst[0] = gather64_64<>(ptr);
 	}
-
-#endif
 
 	__forceinline static GSVector4i loadnt(const void* p)
 	{
@@ -1630,14 +1562,10 @@ public:
 		return GSVector4i(_mm_cvtsi32_si128(i));
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static GSVector4i loadq(s64 i)
 	{
 		return GSVector4i(_mm_cvtsi64_si128(i));
 	}
-
-#endif
 
 	__forceinline static void storent(void* p, const GSVector4i& v)
 	{
@@ -1674,14 +1602,10 @@ public:
 		return _mm_cvtsi128_si32(v.m);
 	}
 
-#ifdef _M_AMD64
-
 	__forceinline static s64 storeq(const GSVector4i& v)
 	{
 		return _mm_cvtsi128_si64(v.m);
 	}
-
-#endif
 
 	__forceinline static void storent(void* RESTRICT dst, const void* RESTRICT src, size_t size)
 	{

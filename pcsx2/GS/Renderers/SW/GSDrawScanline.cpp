@@ -1,23 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
 #include "GS/Renderers/SW/GSRasterizer.h"
+
+#include "common/Console.h"
 
 // Comment to disable all dynamic code generation.
 #define ENABLE_JIT_RASTERIZER
@@ -91,7 +80,7 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 
 #ifdef ENABLE_JIT_RASTERIZER
 	data.draw_scanline = m_ds_map[global.sel];
-	if (!unlikely(data.draw_scanline))
+	if (!data.draw_scanline) [[unlikely]]
 		return false;
 
 	if (global.sel.aa1)
@@ -103,7 +92,7 @@ bool GSDrawScanline::SetupDraw(GSRasterizerData& data)
 		sel.edge = 1;
 
 		data.draw_edge = m_ds_map[sel];
-		if (unlikely(!data.draw_edge))
+		if (!data.draw_edge) [[unlikely]]
 			return false;
 	}
 	else
@@ -395,7 +384,7 @@ __ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineG
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	switch (sel.afail)
@@ -420,7 +409,7 @@ __ri static bool TestAlpha(T& test, T& fm, T& zm, const T& ga, const GSScanlineG
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	return true;
@@ -490,7 +479,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 		steps = pixels - vlen;
 	}
 
-	ASSERT((left & (vlen - 1)) == 0);
+	pxAssert((left & (vlen - 1)) == 0);
 
 	const GSVector2i* fza_base = &global.fzbr[top];
 	const GSVector2i* fza_offset = &global.fzbc[left >> 2];
@@ -1845,7 +1834,7 @@ __ri static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 
 	c = c & (~m);
 
 	if (masked)
-		ASSERT(mask.U32[0] != 0);
+		pxAssert(mask.U32[0] != 0);
 
 	GSVector4i br = r.ralign<Align_Inside>(GSVector2i(8 * 4 / sizeof(T), 8));
 
@@ -1871,8 +1860,8 @@ __ri static void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 
 void GSDrawScanline::DrawRect(const GSVector4i& r, const GSVertexSW& v, GSScanlineLocalData& local)
 {
 	const GSScanlineGlobalData& global = GlobalFromLocal(local);
-	ASSERT(r.y >= 0);
-	ASSERT(r.w >= 0);
+	pxAssert(r.y >= 0);
+	pxAssert(r.w >= 0);
 
 	// FIXME: sometimes the frame and z buffer may overlap, the outcome is undefined
 

@@ -1,32 +1,15 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
-#include "common/FileSystem.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "SymbolMap.h"
+
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
+
 #include <algorithm>
 
 SymbolMap R5900SymbolMap;
 SymbolMap R3000SymbolMap;
-
-#ifdef _WIN32
-#define strcasecmp stricmp
-#endif
-
-#define ARRAY_SIZE(x) (sizeof((x)) / sizeof(*(x)))
 
 void SymbolMap::SortSymbols()
 {
@@ -76,19 +59,19 @@ bool SymbolMap::LoadNocashSym(const std::string& filename)
 				if (sscanf(s + 1, "%04X", &size) != 1)
 					continue;
 
-				if (strcasecmp(value, ".byt") == 0)
+				if (StringUtil::Strcasecmp(value, ".byt") == 0)
 				{
 					AddData(address, size, DATATYPE_BYTE, 0);
 				}
-				else if (strcasecmp(value, ".wrd") == 0)
+				else if (StringUtil::Strcasecmp(value, ".wrd") == 0)
 				{
 					AddData(address, size, DATATYPE_HALFWORD, 0);
 				}
-				else if (strcasecmp(value, ".dbl") == 0)
+				else if (StringUtil::Strcasecmp(value, ".dbl") == 0)
 				{
 					AddData(address, size, DATATYPE_WORD, 0);
 				}
-				else if (strcasecmp(value, ".asc") == 0)
+				else if (StringUtil::Strcasecmp(value, ".asc") == 0)
 				{
 					AddData(address, size, DATATYPE_ASCII, 0);
 				}

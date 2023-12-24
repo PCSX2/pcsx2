@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2005 Fabrice Bellard, 2008 Max Krasnyansky, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: MIT
+
 /*
  * QEMU USB emulation
  *
@@ -24,8 +27,13 @@
  * THE SOFTWARE.
  */
 
-#include "PrecompiledHeader.h"
 #include "USB/qemu-usb/qusb.h"
+
+#include "common/Console.h"
+
+#include <cassert>
+#include <climits>
+#include <cstring>
 #include <utility>
 
 void usb_pick_speed(USBPort* port)

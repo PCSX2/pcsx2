@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #if !defined(_WIN32)
 #include <cstdio>
@@ -189,7 +177,7 @@ static __ri uint LinuxProt(const PageProtectionMode& mode)
 
 void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 {
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
+	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	if (mode.IsNone())
 		return nullptr;
@@ -217,7 +205,7 @@ void HostSys::Munmap(void* base, size_t size)
 
 void HostSys::MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode)
 {
-	pxAssertDev((size & (__pagesize - 1)) == 0, "Size is page aligned");
+	pxAssertMsg((size & (__pagesize - 1)) == 0, "Size is page aligned");
 
 	const u32 lnxmode = LinuxProt(mode);
 

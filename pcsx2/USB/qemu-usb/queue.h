@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /*      $NetBSD: queue.h,v 1.52 2009/04/20 09:56:08 mschuett Exp $ */
 
 /*

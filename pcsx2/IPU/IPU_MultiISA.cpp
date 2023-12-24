@@ -1,26 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- *
- *  Some of the functions in this file are based on the mpeg2dec library,
- * 
- *  Copyright (C) 2000-2002 Michel Lespinasse <walken@zoy.org>
- *  Copyright (C) 1999-2000 Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
- *  Modified by Florin for PCSX2 emu
- *
- *  under the GPL license. However, they have been heavily rewritten for PCSX2 usage.
- *  The original author's copyright statement is included above for completeness sake.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-2.0+
+
+// Some of the functions in this file are based on the mpeg2dec library,
+//
+// Copyright (C) 2000-2002 Michel Lespinasse <walken@zoy.org>
+// Copyright (C) 1999-2000 Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
+//
+// under the GPL license. However, they have been heavily rewritten for PCSX2 usage.
+// The original author's copyright statement is included above for completeness sake.
 
 #include "IPU/IPU.h"
 #include "IPU/IPUdma.h"

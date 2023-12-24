@@ -1,20 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/CDVDcommon.h"
 #include "CDVD/IsoReader.h"
@@ -25,6 +10,7 @@
 #include "IconsFontAwesome5.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -63,7 +49,7 @@ static OutputIsoFile blockDumpFile;
 // relying on DEP exceptions -- and a little more reliable too.
 static void CheckNullCDVD()
 {
-	pxAssertDev(CDVD != NULL, "Invalid CDVD object state (null pointer exception)");
+	pxAssertMsg(CDVD, "Invalid CDVD object state (null pointer exception)");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -366,7 +352,7 @@ bool DoCDVDopen(Error* error)
 		return true;
 	}
 
-	std::string dump_name(Path::StripExtension(FileSystem::GetDisplayNameFromPath(m_SourceFilename[CurrentSourceType])));
+	std::string dump_name(Path::StripExtension(m_SourceFilename[CurrentSourceType]));
 	if (dump_name.empty())
 		dump_name = "Untitled";
 

@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -25,6 +11,7 @@
 #include "ImGui/ImGuiFullscreen.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/Easing.h"
 #include "common/Image.h"
 #include "common/LRUCache.h"
@@ -40,6 +27,7 @@
 
 #include <array>
 #include <cmath>
+#include <condition_variable>
 #include <deque>
 #include <mutex>
 #include <variant>
@@ -2330,10 +2318,12 @@ void ImGuiFullscreen::OpenBackgroundProgressDialog(const char* str_id, std::stri
 
 	std::unique_lock<std::mutex> lock(s_background_progress_lock);
 
+#ifdef PCSX2_DEVBUILD
 	for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
 	{
-		pxAssert(data.id != id);
+		pxAssertMsg(data.id != id, "Duplicate background progress dialog open");
 	}
+#endif
 
 	BackgroundProgressDialogData data;
 	data.id = id;

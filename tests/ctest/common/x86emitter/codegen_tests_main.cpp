@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2020 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "codegen_tests.h"
 #include <gtest/gtest.h>
@@ -67,7 +55,7 @@ TEST(CodegenTests, LEATest)
 	CODEGEN_TEST(xLEA(r8, ptr[r10*4+3+r9]), "4f 8d 44 91 03");
 	CODEGEN_TEST(xLEA(r8, ptr[base]), "4c 8d 05 f9 ff ff ff");
 	CODEGEN_TEST(xLoadFarAddr(r8, base), "4c 8d 05 f9 ff ff ff");
-	CODEGEN_TEST(xLoadFarAddr(r8, (void*)0x1234567890), "49 b8 90 78 56 34 12 00 00 00");
+	CODEGEN_TEST(xLoadFarAddr(r8, (void*)0xff00001234567890), "49 b8 90 78 56 34 12 00 00 ff");
 	CODEGEN_TEST(xLEA(rax, ptr[(void*)0x1234]), "b8 34 12 00 00"); // Converted to mov rax, 0x1234
 	CODEGEN_TEST(xLoadFarAddr(rax, (void*)0x1234), "b8 34 12 00 00");
 	CODEGEN_TEST(xLEA_Writeback(rbx), "48 8d 1d cd cd cd 0d");

@@ -1,25 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "Host.h"
 
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -61,7 +48,7 @@ const char* shaderName(ShaderConvert value)
 		case ShaderConvert::YUV:                    return "ps_yuv";
 			// clang-format on
 		default:
-			ASSERT(0);
+			pxAssert(0);
 			return "ShaderConvertUnknownShader";
 	}
 }
@@ -81,7 +68,7 @@ const char* shaderName(PresentShader value)
 		case PresentShader::SUPERSAMPLE_AUTO:   return "ps_automagical_supersampling";
 			// clang-format on
 		default:
-			ASSERT(0);
+			pxAssert(0);
 			return "DisplayShaderUnknownShader";
 	}
 }
@@ -299,7 +286,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 	{
 		t = *i;
 
-		assert(t);
+		pxAssert(t);
 
 		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->GetMipmapLevels() == levels)
 		{

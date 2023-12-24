@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "Common.h"
 #include "GS.h"
@@ -60,6 +46,7 @@ void vif1TransferToMemory()
 	const u32 size = std::min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
 	//const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
 
+#ifdef PCSX2_DEVBUILD
 	if (size)
 	{
 		// Checking if any crazy game does a partial
@@ -71,6 +58,7 @@ void vif1TransferToMemory()
 		pxAssert(p2.isDone() || !p2.gifTag.isValid);
 		pxAssert(p3.isDone() || !p3.gifTag.isValid);
 	}
+#endif
 
 	MTGS::InitAndReadFIFO(reinterpret_cast<u8*>(pMem), size);
 	//	pMem += size;

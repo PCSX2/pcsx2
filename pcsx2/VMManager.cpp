@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "Achievements.h"
 #include "CDVD/CDVD.h"
@@ -38,7 +24,6 @@
 #include "LogSink.h"
 #include "MTGS.h"
 #include "MTVU.h"
-#include "PCSX2Base.h"
 #include "PINE.h"
 #include "Patch.h"
 #include "PerformanceMetrics.h"
@@ -64,7 +49,6 @@
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/Timer.h"
-#include "common/emitter/tools.h"
 
 #include "IconsFontAwesome5.h"
 #include "discord_rpc.h"
@@ -75,7 +59,7 @@
 #include <sstream>
 
 #ifdef _M_X86
-#include "common/emitter/x86_intrin.h"
+#include "common/emitter/tools.h"
 #endif
 
 #ifdef _WIN32
@@ -841,7 +825,7 @@ void VMManager::UpdateDiscDetails(bool booting)
 		}
 		else if (!s_elf_override.empty())
 		{
-			s_disc_serial = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override));
+			s_disc_serial = Path::GetFileTitle(s_elf_override);
 			s_disc_version = {};
 			s_disc_crc = 0; // set below
 		}
@@ -884,7 +868,7 @@ void VMManager::UpdateDiscDetails(bool booting)
 				if (!s_elf_override.empty())
 				{
 					title = fmt::format(
-						"{} [{}]", game_title, Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(s_elf_override)));
+						"{} [{}]", game_title, Path::GetFileTitle(s_elf_override));
 				}
 				else
 				{
@@ -1025,13 +1009,12 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 			return false;
 		}
 
-		const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
-		if (IsGSDumpFileName(display_name))
+		if (IsGSDumpFileName(filename))
 		{
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 			return GSDumpReplayer::Initialize(filename.c_str());
 		}
-		else if (IsElfFileName(display_name))
+		else if (IsElfFileName(filename))
 		{
 			// alternative way of booting an elf, change the elf override, and (optionally) use the disc
 			// specified in the game settings.
@@ -2015,7 +1998,6 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
-	const std::string display_name((source != CDVD_SourceType::Iso) ? path : FileSystem::GetDisplayNameFromPath(path));
 	CDVDsys_ChangeSource(source);
 	if (!path.empty())
 		CDVDsys_SetFile(source, std::move(path));
@@ -2032,7 +2014,8 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		else
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				fmt::format(TRANSLATE_FS("VMManager", "Disc changed to '{}'."), display_name), Host::OSD_INFO_DURATION);
+				fmt::format(TRANSLATE_FS("VMManager", "Disc changed to '{}'."), Path::GetFileName(path)),
+				Host::OSD_INFO_DURATION);
 		}
 	}
 	else
@@ -2040,7 +2023,7 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
 			fmt::format(
 				TRANSLATE_FS("VMManager", "Failed to open new disc image '{}'. Reverting to old image.\nError was: {}"),
-				display_name, error.GetDescription()),
+				Path::GetFileName(path), error.GetDescription()),
 			Host::OSD_ERROR_DURATION);
 		CDVDsys_ChangeSource(old_type);
 		if (!old_path.empty())

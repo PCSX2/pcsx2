@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/SW/GSRendererSW.h"
 #include "GS/Renderers/SW/GSTextureSW.h"
 #include "GS/GSGL.h"
@@ -29,7 +16,7 @@ GSRenderer* CURRENT_ISA::makeGSRendererSW(int threads)
 
 #define LOG 0
 
-static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
+[[maybe_unused]] static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : nullptr;
 
 static constexpr GSVector4 s_pos_scale = GSVector4::cxpr(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 
@@ -684,15 +671,15 @@ void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 		switch (type)
 		{
 			case 0:
-				ASSERT((m_fzb_pages[page] & 0xFFFF) < USHRT_MAX);
+				pxAssert((m_fzb_pages[page] & 0xFFFF) < USHRT_MAX);
 				m_fzb_pages[page] += 1;
 				break;
 			case 1:
-				ASSERT((m_fzb_pages[page] >> 16) < USHRT_MAX);
+				pxAssert((m_fzb_pages[page] >> 16) < USHRT_MAX);
 				m_fzb_pages[page] += 0x10000;
 				break;
 			case 2:
-				ASSERT(m_tex_pages[page] < USHRT_MAX);
+				pxAssert(m_tex_pages[page] < USHRT_MAX);
 				m_tex_pages[page] += 1;
 				break;
 			default:
@@ -708,15 +695,15 @@ void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int typ
 		switch (type)
 		{
 			case 0:
-				ASSERT((m_fzb_pages[page] & 0xFFFF) > 0);
+				pxAssert((m_fzb_pages[page] & 0xFFFF) > 0);
 				m_fzb_pages[page] -= 1;
 				break;
 			case 1:
-				ASSERT((m_fzb_pages[page] >> 16) > 0);
+				pxAssert((m_fzb_pages[page] >> 16) > 0);
 				m_fzb_pages[page] -= 0x10000;
 				break;
 			case 2:
-				ASSERT(m_tex_pages[page] > 0);
+				pxAssert(m_tex_pages[page] > 0);
 				m_tex_pages[page] -= 1;
 				break;
 			default:
@@ -1073,7 +1060,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			if (t == NULL)
 			{
-				ASSERT(0);
+				pxAssert(0);
 				return false;
 			}
 
@@ -1121,8 +1108,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 				if (gd.sel.fst)
 				{
-					ASSERT(gd.sel.lcm == 1);
-					ASSERT(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
+					pxAssert(gd.sel.lcm == 1);
+					pxAssert(((m_vt.m_min.t.uph(m_vt.m_max.t) == GSVector4::zero()).mask() & 3) == 3); // ratchet and clank (menu)
 
 					gd.sel.lcm = 1;
 				}
@@ -1169,7 +1156,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 					if (t == NULL)
 					{
-						ASSERT(0);
+						pxAssert(0);
 						return false;
 					}
 
@@ -1241,7 +1228,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			switch (context->CLAMP.WMT)
@@ -1270,7 +1257,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				default:
-					__assume(0);
+					ASSUME(0);
 			}
 
 			gd.t.min = gd.t.min.xxxxlh();
@@ -1532,7 +1519,7 @@ void GSRendererSW::SharedData::ReleasePages()
 
 void GSRendererSW::SharedData::SetSource(GSTextureCacheSW::Texture* t, const GSVector4i& r, int level)
 {
-	ASSERT(m_tex[level].t == NULL);
+	pxAssert(m_tex[level].t == NULL);
 
 	m_tex[level].t = t;
 	m_tex[level].r = r;

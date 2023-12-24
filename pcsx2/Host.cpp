@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
@@ -62,7 +48,7 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	s32 len;
 
 	// Shouldn't happen, but just in case someone tries to translate an empty string.
-	if (unlikely(msg.empty()))
+	if (msg.empty()) [[unlikely]]
 	{
 		ret.first = &s_translation_string_cache[0];
 		ret.second = 0;
@@ -72,11 +58,11 @@ std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view
 	s_translation_string_mutex.lock_shared();
 	ctx_it = s_translation_string_map.find(context);
 
-	if (unlikely(ctx_it == s_translation_string_map.end()))
+	if (ctx_it == s_translation_string_map.end()) [[unlikely]]
 		goto add_string;
 
 	msg_it = ctx_it->second.find(msg);
-	if (unlikely(msg_it == ctx_it->second.end()))
+	if (msg_it == ctx_it->second.end()) [[unlikely]]
 		goto add_string;
 
 	ret.first = &s_translation_string_cache[msg_it->second.first];
@@ -88,7 +74,7 @@ add_string:
 	s_translation_string_mutex.unlock_shared();
 	s_translation_string_mutex.lock();
 
-	if (unlikely(s_translation_string_cache.empty()))
+	if (s_translation_string_cache.empty()) [[unlikely]]
 	{
 		// First element is always an empty string.
 		s_translation_string_cache.resize(TRANSLATION_STRING_CACHE_SIZE);

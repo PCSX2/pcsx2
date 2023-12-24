@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include "PrecompiledHeader.h"
-
 #include "Host.h"
 #include "Input/InputManager.h"
 #include "StateWrapper.h"
@@ -33,6 +31,8 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-hid/usb-hid.h"
+
+#include "common/Console.h"
 
 namespace usb_hid
 {

@@ -55,7 +55,6 @@ endif()
 if(WIN32)
 	set(MIN_WIN32 0x0A00)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE
-		__SSE4_1__
 		WINVER=${MIN_WIN32}
 		_WIN32_WINNT=${MIN_WIN32}
 		WIN32_LEAN_AND_MEAN
@@ -190,7 +189,6 @@ set(pcsx2Headers
 	Memory.h
 	MemoryTypes.h
 	Patch.h
-	PCSX2Base.h
 	PerformanceMetrics.h
 	PrecompiledHeader.h
 	R3000A.h
@@ -200,7 +198,6 @@ set(pcsx2Headers
 	ShaderCacheVersion.h
 	Sifcmd.h
 	Sif.h
-	SingleRegisterTypes.h
 	SIO/Sio.h
 	SIO/Sio2.h
 	SIO/Sio0.h
@@ -487,7 +484,6 @@ set(pcsx2GSSourcesUnshared
 
 set(pcsx2GSSources
 	GS/GS.cpp
-	GS/GSAlignedClass.cpp
 	GS/GSCapture.cpp
 	GS/GSClut.cpp
 	GS/GSDrawingContext.cpp
@@ -514,7 +510,6 @@ set(pcsx2GSSources
 	GS/Renderers/HW/GSTextureCache.cpp
 	GS/Renderers/HW/GSTextureReplacementLoaders.cpp
 	GS/Renderers/HW/GSTextureReplacements.cpp
-	GS/Renderers/SW/GSNewCodeGenerator.cpp
 	GS/Renderers/SW/GSTextureCacheSW.cpp
 	GS/Renderers/SW/GSTextureSW.cpp
 	)
@@ -532,6 +527,7 @@ set(pcsx2GSHeaders
 	GS/GSGL.h
 	GS/GSRegs.h
 	GS/GS.h
+	GS/GSJobQueue.h
 	GS/GSLocalMemory.h
 	GS/GSLzma.h
 	GS/GSPerfMon.h
@@ -539,8 +535,6 @@ set(pcsx2GSHeaders
 	GS/GSRingHeap.h
 	GS/GSState.h
 	GS/GSTables.h
-	GS/GSThread_CXX11.h
-	GS/GSThread.h
 	GS/GSUtil.h
 	GS/GSVector.h
 	GS/GSVector4.h
@@ -976,7 +970,6 @@ set(pcsx2x86Sources
 	x86/iR3000Atables.cpp
 	x86/iR5900Analysis.cpp
 	x86/iR5900Misc.cpp
-	x86/ir5900tables.cpp
 	x86/ix86-32/iCore.cpp
 	x86/ix86-32/iR5900.cpp
 	x86/ix86-32/iR5900Arit.cpp

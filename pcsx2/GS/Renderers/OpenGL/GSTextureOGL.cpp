@@ -1,26 +1,14 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
-#include <limits.h>
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
 #include "GS/Renderers/OpenGL/GSTextureOGL.h"
 #include "GS/Renderers/OpenGL/GLState.h"
 #include "GS/GSExtra.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSGL.h"
+
+#include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/AlignedMalloc.h"
 #include "common/StringUtil.h"
@@ -143,7 +131,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			m_int_format = 0;
 			m_int_type = 0;
 			m_int_shift = 0;
-			ASSERT(0);
+			pxAssert(0);
 	}
 
 	// Only 32 bits input texture will be supported for mipmap
@@ -184,7 +172,7 @@ void* GSTextureOGL::GetNativeHandle() const
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
-	ASSERT(m_type != Type::DepthStencil);
+	pxAssert(m_type != Type::DepthStencil);
 
 	if (layer >= m_mipmap_levels)
 		return true;
@@ -260,8 +248,8 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 	GSVector4i r = _r ? *_r : GSVector4i(0, 0, m_size.x, m_size.y);
 	// Will need some investigation
-	ASSERT(r.width() != 0);
-	ASSERT(r.height() != 0);
+	pxAssert(r.width() != 0);
+	pxAssert(r.height() != 0);
 
 	const u32 pitch = Common::AlignUpPow2(r.width() << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 	m.pitch = pitch;
@@ -323,7 +311,7 @@ void GSTextureOGL::Unmap()
 
 void GSTextureOGL::GenerateMipmap()
 {
-	ASSERT(m_mipmap_levels > 1);
+	pxAssert(m_mipmap_levels > 1);
 	GSDeviceOGL::GetInstance()->CommitClear(this, true);
 	glGenerateTextureMipmap(m_texture_id);
 }

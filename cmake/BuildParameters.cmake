@@ -111,6 +111,11 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	endif()
 	list(APPEND PCSX2_DEFS _M_X86=1)
 	set(_M_X86 1)
+
+	# SSE4.1 is not set by MSVC, it uses _M_SSE instead.
+	if(MSVC)
+		list(APPEND PCSX2_DEFS __SSE4_1__=1)
+	endif()
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
@@ -161,7 +166,19 @@ if(WIN32)
 		$<${CONFIG_ANY_REL}:_ITERATOR_DEBUG_LEVEL=0>
 		_HAS_EXCEPTIONS=0
 	)
-	list(APPEND PCSX2_DEFS _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+	list(APPEND PCSX2_DEFS
+		_CRT_NONSTDC_NO_WARNINGS
+		_CRT_SECURE_NO_WARNINGS
+		CRT_SECURE_NO_DEPRECATE
+		_SCL_SECURE_NO_WARNINGS
+		_UNICODE
+		UNICODE
+	)
+else()
+	# Assume everything else is POSIX.
+	list(APPEND PCSX2_DEFS
+		__POSIX__
+	)
 endif()
 
 # Enable debug information in release builds for Linux.

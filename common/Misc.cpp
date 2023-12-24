@@ -1,25 +1,15 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "General.h"
 #include "Console.h"
+#include "VectorIntrin.h"
 
 static u32 PAUSE_TIME = 0;
 
 static void MultiPause()
 {
+#ifdef _M_X86
 	_mm_pause();
 	_mm_pause();
 	_mm_pause();
@@ -28,6 +18,27 @@ static void MultiPause()
 	_mm_pause();
 	_mm_pause();
 	_mm_pause();
+#elif defined(_M_ARM64) && defined(_MSC_VER)
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+	__isb(_ARM64_BARRIER_SY);
+#elif defined(_M_ARM64)
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+	__asm__ __volatile__("isb");
+#else
+#error Unknown architecture.
+#endif
 }
 
 static u32 MeasurePauseTime()
@@ -69,7 +80,7 @@ __noinline static void UpdatePauseTime()
 u32 ShortSpin()
 {
 	u32 inc = PAUSE_TIME;
-	if (unlikely(inc == 0))
+	if (inc == 0) [[unlikely]]
 	{
 		UpdatePauseTime();
 		inc = PAUSE_TIME;

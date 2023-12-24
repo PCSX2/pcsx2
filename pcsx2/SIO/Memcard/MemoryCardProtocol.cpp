@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "SIO/Memcard/MemoryCardProtocol.h"
 
@@ -21,6 +7,9 @@
 #include "SIO/Sio2.h"
 #include "SIO/Sio0.h"
 #include "des.h"
+
+#include "common/Assertions.h"
+#include "common/Console.h"
 
 #define MC_LOG_ENABLE 0
 #define MC_LOG \
@@ -431,7 +420,7 @@ u8 MemoryCardProtocol::PS1Read(u8 data)
 u8 MemoryCardProtocol::PS1State(u8 data)
 {
 	Console.Error("%s(%02X) I do not exist, please change that ASAP.", __FUNCTION__, data);
-	assert(false);
+	pxFail("Missing PS1State handler");
 	return 0x00;
 }
 
