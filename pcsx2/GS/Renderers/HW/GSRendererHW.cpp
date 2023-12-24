@@ -3408,7 +3408,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 		// UC: will copy depth to green channel
 		// ToA: will copy depth to alpha channel
-		if ((m_cached_ctx.FRAME.FBMSK & 0xFF0000) == 0xFF0000)
+		if ((m_cached_ctx.FRAME.FBMSK & 0x00FF0000) == 0x00FF0000)
 		{
 			// Green channel is masked
 			GL_INS("Tales Of Abyss Crazyness (MSB 16b depth to Alpha)");
@@ -3443,13 +3443,15 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MAXU & 0x8) == 8))
 	{
-		// Read either blue or Alpha. Let's go for Blue ;)
 		// MGS3/Kill Zone
-		GL_INS("Blue channel");
 		if (test_only)
 			return true;
 
-		m_conf.ps.channel = ChannelFetch_BLUE;
+		ChannelFetch channel_select = (m_cached_ctx.CLAMP.WMT != 3 || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
+
+		GL_INS("%s channel", (channel_select == ChannelFetch_BLUE) ? "blue" : "alpha");
+
+		m_conf.ps.channel = channel_select;
 	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MINU & 0x8) == 0))
 	{
