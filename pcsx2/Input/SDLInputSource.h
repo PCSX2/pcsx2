@@ -68,7 +68,6 @@ private:
 	void ShutdownSubsystem();
 	void LoadSettings(SettingsInterface& si);
 	void SetHints();
-	bool LoadControllerDB();
 
 	ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
 	ControllerDataVector::iterator GetControllerDataForPlayerId(int id);

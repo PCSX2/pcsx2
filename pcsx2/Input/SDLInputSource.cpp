@@ -130,6 +130,14 @@ static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
 	SDL_GameControllerSetLED(gc, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
 }
 
+static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
+{
+	if (priority >= SDL_LOG_PRIORITY_INFO)
+		Console.WriteLn(fmt::format("SDL: {}", message));
+	else
+		DevCon.WriteLn(fmt::format("SDL: {}", message));
+}
+
 SDLInputSource::SDLInputSource() = default;
 
 SDLInputSource::~SDLInputSource()
@@ -218,6 +226,21 @@ u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_
 
 void SDLInputSource::SetHints()
 {
+	if (const std::string upath = Path::Combine(EmuFolders::DataRoot, CONTROLLER_DB_FILENAME); FileSystem::FileExists(upath.c_str()))
+	{
+		Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: Using Controller DB from user directory: '{}'", upath));
+		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, upath.c_str());
+	}
+	else if (const std::string rpath = Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME); FileSystem::FileExists(rpath.c_str()))
+	{
+		Console.WriteLn(Color_StrongGreen, "SDLInputSource: Using Controller DB from resources.");
+		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, rpath.c_str());
+	}
+	else
+	{
+		Console.Error(fmt::format("SDLInputSource: Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME));
+	}
+
 	SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_controller_raw_mode ? "1" : "0");
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
@@ -235,28 +258,6 @@ void SDLInputSource::SetHints()
 		SDL_SetHint(hint.first.c_str(), hint.second.c_str());
 }
 
-bool SDLInputSource::LoadControllerDB()
-{
-	Error error;
-	auto fp = FileSystem::OpenManagedCFile(Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME).c_str(), "rb", &error);
-	std::optional<std::string> data;
-	if (!fp || !(data = FileSystem::ReadFileToString(fp.get())))
-	{
-		Console.Error(fmt::format("SDLInputSource: Failed to open controller database: {}", error.GetDescription()));
-		return false;
-	}
-
-	if (SDL_GameControllerAddMappingsFromRW(SDL_RWFromConstMem(data->c_str(), data->length()), SDL_TRUE) < 0)
-	{
-		Console.Error(fmt::format("SDLInputSource: SDL_GameControllerAddMappingsFromRW() failed: {}", SDL_GetError()));
-		return false;
-	}
-
-	Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: Loaded {} controller mappings from {}.",
-										   SDL_GameControllerNumMappings(), CONTROLLER_DB_FILENAME));
-	return true;
-}
-
 bool SDLInputSource::InitializeSubsystem()
 {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
@@ -265,9 +266,16 @@ bool SDLInputSource::InitializeSubsystem()
 		return false;
 	}
 
+	SDL_LogSetOutputFunction(SDLLogCallback, nullptr);
+#ifdef PCSX2_DEVBUILD
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#else
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
+#endif
+
 	// we should open the controllers as the connected events come in, so no need to do any more here
 	m_sdl_subsystem_initialized = true;
-	LoadControllerDB();
+	Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: {} controller mappings are loaded.", SDL_GameControllerNumMappings()));
 	return true;
 }
 
