@@ -1895,7 +1895,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 						continue;
 
 					dst->m_was_dst_matched = true;
-
+					dst->m_TEX0.TBW = dst_match->m_TEX0.TBW;
+					dst->UpdateValidity(dst->m_valid);
 					if (!CopyRGBFromDepthToColor(dst, dst_match))
 					{
 						// Needed new texture and memory allocation failed.
@@ -1957,8 +1958,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		{
 			Target* t = *i;
 			// Don't pull in targets without valid lower 24 bits, it makes no sense to convert them.
-			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb)
+			// FIXME: Technically the difference in size is fine, but if the target gets reinterpreted, the hw renderer doesn't rearrange the target.
+			// This does cause some extra uploads in some games (like Burnout), but without this, bad data gets displayed in games like Transformers.
+			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb || (!is_shuffle && t->m_TEX0.TBW < TEX0.TBW && possible_clear))
+			{
 				continue;
+			}
 
 			const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
 			if (t_psm_s.bpp != psm_s.bpp)
