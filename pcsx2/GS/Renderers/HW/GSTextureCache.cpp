@@ -108,6 +108,12 @@ bool GSTextureCache::FullRectDirty(Target* target, u32 rgba_mask)
 		return true;
 	}
 
+	// Check drawn areas on dst matches.
+	if (target->m_was_dst_matched && target->m_dirty.size() == 1 && target->m_drawn_since_read.rintersect(target->m_dirty[0].r).eq(target->m_drawn_since_read))
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -1310,6 +1316,26 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								if (!t_clean)
 									t->Update();
 
+								if ((psm == PSMT4 || psm == PSMT8) && t->m_was_dst_matched && !t->m_valid_rgb)
+								{
+
+									GL_CACHE("TC: Attempt to repopulate RGB for target [%x] on source lookup", t->m_TEX0.TBP0);
+									for (Target* dst_match : m_dst[DepthStencil])
+									{
+										if (dst_match->m_TEX0.TBP0 != t->m_TEX0.TBP0 || !dst_match->m_valid_rgb)
+											continue;
+										
+										if (!CopyRGBFromDepthToColor(t, dst_match))
+										{
+											// If we can't update it, then just read back the valid data.
+											DevCon.Warning("Failed to update dst matched texture");
+										}
+										t->m_valid_rgb = true;
+										break;
+									}
+
+								}
+
 								dst = t;
 
 								found_t = true;
@@ -1852,6 +1878,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		}
 
 		// If our RGB was invalidated, we need to pull it from depth.
+		// Terminator 3 will reuse our dst_matched target with the RGB masked, then later use the full ARGB area, so we need to update the depth.
 		const bool preserve_target = preserve_rgb || preserve_alpha;
 		if (type == RenderTarget && (preserve_target || !dst->m_valid.rintersect(draw_rect).eq(dst->m_valid)) &&
 			!dst->m_valid_rgb && !FullRectDirty(dst, 0x7) &&
@@ -1866,6 +1893,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				{
 					if (dst_match->m_TEX0.TBP0 != TEX0.TBP0 || !dst_match->m_valid_rgb)
 						continue;
+
+					dst->m_was_dst_matched = true;
 
 					if (!CopyRGBFromDepthToColor(dst, dst_match))
 					{
@@ -2006,6 +2035,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_valid_alpha_low = dst_match->m_valid_alpha_low;//&& psm_s.trbpp != 24;
 			dst->m_valid_alpha_high = dst_match->m_valid_alpha_high;//&& psm_s.trbpp != 24;
 			dst->m_valid_rgb = dst_match->m_valid_rgb;
+			dst->m_was_dst_matched = true;
 
 			if(GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp > 16)
 				dst->m_TEX0.TBW = dst_match->m_TEX0.TBW; // Be careful of shuffles of the depth as C16, but using a buffer width of 16 (Mercenaries).
