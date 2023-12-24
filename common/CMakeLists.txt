@@ -131,6 +131,8 @@ target_sources(common PRIVATE
 	Darwin/DarwinMisc.h
 )
 
+set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+
 if(USE_VTUNE)
 	target_link_libraries(common PUBLIC Vtune::Vtune)
 endif()
