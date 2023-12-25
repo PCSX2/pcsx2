@@ -898,7 +898,7 @@ SCAJ-20003:
   name: "Warrior in Argus"
   region: "NTSC-J"
 SCAJ-20004:
-  name: "dot hack - Outbreak Part 3"
+  name: ".hack//Outbreak Part 3"
   region: "NTSC-Unk"
   memcardFilters:
     - "SCPS-55029"
@@ -1007,7 +1007,7 @@ SCAJ-20023:
     alignSprite: 1 # Fixes vertical lines.
     recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCAJ-20024:
-  name: "dot hack - Quarantine Part 4"
+  name: ".hack//Quarantine Part 4"
   region: "NTSC-Unk"
   memcardFilters:
     - "SCPS-55029"
@@ -9015,7 +9015,7 @@ SCPS-55028:
   name: "Popolocrois Story - Hajime no Bouken"
   region: "NTSC-J"
 SCPS-55029:
-  name: "dot hack - Infection Part 1"
+  name: ".hack//Infection Part 1"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -9061,7 +9061,7 @@ SCPS-55041:
   name: "Memories Off"
   region: "NTSC-J"
 SCPS-55042:
-  name: "dot hack - Mutation Part 2"
+  name: ".hack//Mutation Part 2"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -17472,7 +17472,7 @@ SLES-52230:
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLES-52237:
-  name: "dot hack - Infection Part 1"
+  name: ".hack//Infection Part 1"
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -18004,7 +18004,7 @@ SLES-52466:
   name: "Ribbit King"
   region: "PAL-M5"
 SLES-52467:
-  name: "dot hack - Mutation Part 2"
+  name: ".hack//Mutation Part 2"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -18013,7 +18013,7 @@ SLES-52467:
     - "SLES-52468"
     - "SLES-52469"
 SLES-52468:
-  name: "dot hack - Quarantine Part 4"
+  name: ".hack//Quarantine Part 4"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -18022,7 +18022,7 @@ SLES-52468:
     - "SLES-52468"
     - "SLES-52469"
 SLES-52469:
-  name: "dot hack - Outbreak Part 3"
+  name: ".hack//Outbreak Part 3"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -27618,7 +27618,7 @@ SLKA-25078:
   region: "NTSC-K"
   compat: 5
 SLKA-25080:
-  name: "dot hack - Infection"
+  name: ".hack//감염확대 Vol.1"
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -27832,7 +27832,7 @@ SLKA-25137:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLKA-25138:
-  name: "dot hack - Mutation"
+  name: ".hack//악성변이 Vol.2"
   region: "NTSC-K"
 SLKA-25139:
   name: "Fu-un Shinsengumi"
@@ -27857,7 +27857,7 @@ SLKA-25144:
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
 SLKA-25145:
-  name: "dot hack - Outbreak"
+  name: ".hack//침식오염 Vol.3"
   region: "NTSC-K"
 SLKA-25146:
   name: "Kaido Battle 2 - Chain Reaction"
@@ -27959,7 +27959,7 @@ SLKA-25173:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-K"
 SLKA-25174:
-  name: "dot hack - Quarantine"
+  name: ".hack//절대포워 Vol.4"
   region: "NTSC-K"
 SLKA-25175:
   name: "Transformers"
@@ -46478,7 +46478,7 @@ SLPM-68520:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-68521:
-  name: "Dot Hack Fraegment [Senkou Release-ban]"
+  name: ".hack//frägment [Senkou Release-ban]"
   region: "NTSC-J"
 SLPM-68523:
   name: "Phantasy Star Universe (Premiere Disc)"
@@ -50048,7 +50048,7 @@ SLPS-25120:
 SLPS-25121:
   name: .hack//感染拡大 Vol.1
   name-sort: .hack//かんせんかくだい Vol.1
-  name-en: "dot hack - Infection Part 1"
+  name-en: .hack//Infection Part 1"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -50161,7 +50161,7 @@ SLPS-25142:
 SLPS-25143:
   name: .hack//悪性変異 Vol.2
   name-sort: .hack//あくせいへんい Vol.2
-  name-en: "dot hack - Mutation Part 2"
+  name-en: ".hack//Mutation Part 2"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -50243,7 +50243,7 @@ SLPS-25157:
 SLPS-25158:
   name: .hack//侵食汚染 vol.3
   name-sort: .hack//しんしょくおせん vol.3
-  name-en: "dot hack - Outbreak Part 3"
+  name-en: ".hack//Outbreak Part 3"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -50484,7 +50484,7 @@ SLPS-25201:
 SLPS-25202:
   name: .hack//絶対包囲 vol.4
   name-sort: .hack//ぜったいほうい vol.4
-  name-en: "dot hack - Quarantine Part 4"
+  name-en: ".hack//Quarantine Part 4"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -52290,9 +52290,9 @@ SLPS-25526:
   name-en: "Medical 91"
   region: "NTSC-J"
 SLPS-25527:
-  name: .hack // fragment オンライン / オフライン
-  name-sort: .hack // fragment おんらいん / おふらいん
-  name-en: "dot hack - Fragment"
+  name: .hack//frägment オンライン / オフライン
+  name-sort: .hack//frägment おんらいん / おふらいん
+  name-en: ".hack//frägment Online / Offline"
   region: "NTSC-J"
   compat: 5
 SLPS-25528:
@@ -53006,7 +53006,7 @@ SLPS-25650:
 SLPS-25651:
   name: .hack//G.U. Vol.1 再誕
   name-sort: .hack//G.U. Vol.1 さい誕
-  name-en: "dot hack G.U. Vol.1 - Saitan"
+  name-en: ".hack//G.U. Vol.1 - Saitan"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -53026,7 +53026,7 @@ SLPS-25651:
     - "SLPS-25656"
     - "SLPS-25756"
 SLPS-25652:
-  name: "dot hack G.U. Vol. 1 - Saitan [Terminal Disc - The End of the World]"
+  name: ".hack//G.U. Vol. 1 - Saitan [Terminal Disc - The End of the World]"
   region: "NTSC-J"
 SLPS-25653:
   name: クラスターエッジ 君を待つ未来への証 初回限定版
@@ -53041,7 +53041,7 @@ SLPS-25654:
 SLPS-25655:
   name: .hack//G.U. Vol.2 君想フ声
   name-sort: .hack//G.U. Vol.2 きみおもふごえ
-  name-en: "dot hack G.U. Vol.2 - Kimi Omou Koe"
+  name-en: ".hack//G.U. Vol.2 - Kimi Omou Koe"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -53063,7 +53063,7 @@ SLPS-25655:
 SLPS-25656:
   name: .hack//G.U. Vol.3 歩くような速さで
   name-sort: .hack//G.U. Vol.3 あるくようなはやさで
-  name-en: "dot hack - G.U. Vol.3 - Aruku Youna Hayasa de"
+  name-en: ".hack//G.U. Vol.3 - Aruku Youna Hayasa de"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -53614,10 +53614,10 @@ SLPS-25754:
   name-en: "Kino no Tabi 2 - The Beautiful World [Electric Shock SP]"
   region: "NTSC-J"
 SLPS-25755:
-  name: "Dot Hack G.U. Vol. 1 - Saitan"
+  name: ".hack//G.U. Vol. 1 - Saitan"
   region: "NTSC-J"
 SLPS-25756:
-  name: "dot hack G.U. Vol.1 - Saitan [Bandai the Best]"
+  name: ".hack//G.U. Vol.1 - Saitan [Bandai the Best]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -55092,9 +55092,9 @@ SLPS-73229:
   name-en: "TearRing Saga Series - Berwick Saga [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73230:
-  name: .hack// Vol.1×Vol.2 PS2 the Best
-  name-sort: .hack// Vol.1×Vol.2 PS2 the Best
-  name-en: "dot hack - Vol.1 & Vol.2 [PS2 The Best] [Vol.1 Disc]"
+  name: .hack//Vol.1×Vol.2 PS2 the Best
+  name-sort: .hack//Vol.1×Vol.2 PS2 the Best
+  name-en: ".hack//Vol.1 & Vol.2 [PS2 The Best] [Vol.1 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -55110,7 +55110,7 @@ SLPS-73230:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73231:
-  name: "dot hack - Vol.1 & Vol.2 [PS2 The Best] [Vol.2 Disc]"
+  name: ".hack//Vol.1 & Vol.2 [PS2 The Best] [Vol.2 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -55126,9 +55126,9 @@ SLPS-73231:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73232:
-  name: .hack// Vol.3×Vol.4 PS2 the Best
-  name-sort: .hack// Vol.3×Vol.4 PS2 the Best
-  name-en: "dot hack - Vol.3 & Vol.4 [PS2 The Best] [Vol.3 Disc]"
+  name: .hack//Vol.3×Vol.4 PS2 the Best
+  name-sort: .hack//Vol.3×Vol.4 PS2 the Best
+  name-en: ".hack//Vol.3 & Vol.4 [PS2 The Best] [Vol.3 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -55144,7 +55144,7 @@ SLPS-73232:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73233:
-  name: "dot hack - Vol.3 & Vol.4 [PS2 The Best] [Vol.4 Disc]"
+  name: ".hack//Vol.3 & Vol.4 [PS2 The Best] [Vol.4 Disc]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -55361,7 +55361,7 @@ SLPS-73258:
   name-en: "Kenka Banchou 2 - Full Throttle [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73259:
-  name: "Dot Hack G.U. Vol. 1 - Saitan"
+  name: ".hack//G.U. Vol. 1 - Saitan"
   region: "NTSC-J"
 SLPS-73263:
   name: アルトネリコ2 世界に響く少女たちの創造詩 PS2 the Best
@@ -55380,10 +55380,10 @@ SLPS-73265:
   name: "Kagero II - Dark Illusion"
   region: "NTSC-J"
 SLPS-73266:
-  name: "Dot Hack G.U. Vol. 2 - Kimi Omou Koe"
+  name: ".hack//G.U. Vol. 2 - Kimi Omou Koe"
   region: "NTSC-J"
 SLPS-73267:
-  name: "Dot Hack G.U. Vol. 3 - Aruku You na Hayasa de"
+  name: ".hack//G.U. Vol. 3 - Aruku You na Hayasa de"
   region: "NTSC-J"
 SLPS-73269:
   name: 機動戦士ガンダムSEED DESTINY 連合VS. Z.A.F.T. II PLUS PS2 the Best
@@ -56676,7 +56676,7 @@ SLUS-20266:
   region: "NTSC-U"
   compat: 5
 SLUS-20267:
-  name: "dot hack - Infection Part 1"
+  name: ".hack//Infection Part 1"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -58141,7 +58141,7 @@ SLUS-20561:
   gsHWFixes:
     autoFlush: 2 # Fixes incorrect blur effect.
 SLUS-20562:
-  name: "dot hack - Mutation Part 2"
+  name: ".hack//Mutation Part 2"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -58150,7 +58150,7 @@ SLUS-20562:
     - "SLUS-20563"
     - "SLUS-20564"
 SLUS-20563:
-  name: "dot hack - Outbreak Part 3"
+  name: ".hack//Outbreak Part 3"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -58159,7 +58159,7 @@ SLUS-20563:
     - "SLUS-20563"
     - "SLUS-20564"
 SLUS-20564:
-  name: "dot hack - Quarantine Part 4"
+  name: ".hack//Quarantine Part 4"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -61940,7 +61940,7 @@ SLUS-21256:
   region: "NTSC-U"
   compat: 5
 SLUS-21258:
-  name: "dot hack - G.U. Vol.1 - Rebirth"
+  name: ".hack//G.U. Vol.1 - Rebirth"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -63368,7 +63368,7 @@ SLUS-21479:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
 SLUS-21480:
-  name: "dot hack GU Volume 1 - Rebirth - Terminal Disc"
+  name: ".hack//G.U. Volume 1 - Rebirth - Terminal Disc"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -63417,7 +63417,7 @@ SLUS-21487:
   region: "NTSC-U"
   compat: 5
 SLUS-21488:
-  name: "dot hack - G.U. Vol.2 - Reminisce"
+  name: ".hack//G.U. Vol.2 - Reminisce"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -63430,7 +63430,7 @@ SLUS-21488:
     - "SLUS-21489"
     - "SLUS-21480"
 SLUS-21489:
-  name: "dot hack - G.U. Vol.3 - Redemption"
+  name: ".hack//G.U. Vol.3 - Redemption"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -65651,7 +65651,7 @@ SLUS-28021:
   name: "Everquest Online Adventures [Beta Vol.2.0]"
   region: "NTSC-U"
 SLUS-28023:
-  name: "dot hack - Infection Part 1 [Trade Demo]"
+  name: ".hack//Infection Part 1 [Trade Demo]"
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -65673,7 +65673,7 @@ SLUS-28031:
   name: "Auto Modellista - Public Beta Volume 2.0"
   region: "NTSC-U"
 SLUS-28032:
-  name: "dot hack - Mutation Part 2 [Trade Demo]"
+  name: ".hack//Mutation Part 2 [Trade Demo]"
   region: "NTSC-U"
 SLUS-28034:
   name: "Disgaea - Hour of Darkness [Trade Demo]"
@@ -65901,7 +65901,7 @@ SLUS-29040:
   name: "Dr. Muto [Demo]"
   region: "NTSC-U"
 SLUS-29042:
-  name: "dot hack - Infection Part 1 [Regular Demo]"
+  name: ".hack//Infection Part 1 [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -65932,7 +65932,7 @@ SLUS-29054:
   name: "Splashdown - Rides Gone Wild [Demo]"
   region: "NTSC-U"
 SLUS-29055:
-  name: "dot hack - Mutation Part 2 [Regular Demo]"
+  name: ".hack//Mutation Part 2 [Regular Demo]"
   region: "NTSC-U"
 SLUS-29056:
   name: "Alter Echo [Demo]"
@@ -65963,7 +65963,7 @@ SLUS-29063:
   name: "Everquest Online Adventures - Frontiers [Public Beta Ver.1.0]"
   region: "NTSC-U"
 SLUS-29065:
-  name: "dot hack - Outbreak Part 3 [Demo]"
+  name: ".hack//Outbreak Part 3 [Demo]"
   region: "NTSC-U"
 SLUS-29067:
   name: "Tak and the Power of Juju [Demo]"
@@ -66031,7 +66031,7 @@ SLUS-29083:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes outlines around environmental objects.
 SLUS-29084:
-  name: "dot hack - Quarantine Part 4 [Demo]"
+  name: ".hack//Quarantine Part 4 [Demo]"
   region: "NTSC-U"
 SLUS-29085:
   name: "Champions of Norrath - Realms of Everquest"
@@ -66495,7 +66495,7 @@ SLUS-29198:
   roundModes:
     vu1RoundMode: 0 # Massages the Z on the score meter for hardware mode, software doesn't really need this.
 SLUS-29199:
-  name: "dot hack - G.U. Vol.1 - Rebirth [Demo]"
+  name: ".hack//G.U. Vol.1 - Rebirth [Demo]"
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 2 # Sharpens world in far distances.
