@@ -2181,6 +2181,20 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 		// Not *strictly* correct if RGB is masked, but we won't use it as a texture if not..
 		dst->m_valid_rgb = true;
 
+		// If there is an opposite target without valid RGB, we need to match them up
+		auto& rev_list = m_dst[1 - type];
+		for (auto j = rev_list.begin(); j != rev_list.end();)
+		{
+			Target* const rev_t = *j;
+			if (rev_t->m_TEX0.TBP0 == dst->m_TEX0.TBP0 && GSLocalMemory::m_psm[rev_t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp)
+			{
+				if(!rev_t->m_valid_rgb)
+					rev_t->m_was_dst_matched = true;
+				break;
+			}
+			++j;
+		}
+
 		const int bpp = GSLocalMemory::m_psm[TEX0.PSM].trbpp;
 		const u32 mask = GSLocalMemory::m_psm[TEX0.PSM].fmsk;
 		// If the alpha is masked and preloaded, we need to say it's valid else textures might fail to use the whole texture if RGB is valid.
@@ -2774,6 +2788,18 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 			// Don't keep partial depth buffers around.
 			if ((!t->m_valid_alpha_low && !t->m_valid_alpha_high && !t->m_valid_rgb) || type == DepthStencil)
 			{
+				auto& rev_list = m_dst[1 - type];
+				for (auto j = rev_list.begin(); j != rev_list.end();)
+				{
+					Target* const rev_t = *j;
+					if (rev_t->m_TEX0.TBP0 == t->m_TEX0.TBP0 && GSLocalMemory::m_psm[rev_t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
+					{
+						rev_t->m_was_dst_matched = false;
+						break;
+					}
+					++j;
+				}
+
 				GL_CACHE("TC: InvalidateContainedTargets: Remove Target %s[%x, %s]", to_string(type), t->m_TEX0.TBP0, psm_str(t->m_TEX0.PSM));
 				i = list.erase(i);
 				delete t;
@@ -2827,6 +2853,19 @@ void GSTextureCache::InvalidateVideoMemType(int type, u32 bp, u32 write_psm, u32
 
 		// Need to also remove any sources which reference this target.
 		InvalidateSourcesFromTarget(t);
+
+		// If we dst_matched and copied, no need to keep it marked as a copy if the original no longer exists.
+		auto& rev_list = m_dst[1 - type];
+		for (auto j = rev_list.begin(); j != rev_list.end();)
+		{
+			Target* const rev_t = *j;
+			if (rev_t->m_TEX0.TBP0 == t->m_TEX0.TBP0 && GSLocalMemory::m_psm[rev_t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp)
+			{
+				rev_t->m_was_dst_matched = false;
+				break;
+			}
+			++j;
+		}
 
 		list.erase(i);
 		delete t;
