@@ -2688,6 +2688,9 @@ void GSRendererHW::Draw()
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
 	GSTextureCache::Target* old_rt = nullptr;
 	GSTextureCache::Target* old_ds = nullptr;
+
+	// If the draw is dated, we're going to expand in to black, so it's just a pointless rescale which will mess up our valid rects and end blocks.
+	if(!(m_cached_ctx.TEST.DATE && m_cached_ctx.TEST.DATM))
 	{
 		GSVector2i new_size = t_size;
 
