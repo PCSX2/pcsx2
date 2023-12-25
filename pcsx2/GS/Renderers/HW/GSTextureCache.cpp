@@ -3528,13 +3528,22 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// You'd think we'd update to use the source valid bits, but it's not, because it might be copying some data which was uploaded and dirtied the target.
 	// An example of this is Cross Channel - To All People where it renders a picture with 0x7f000000 FBMSK at 0x1180, which was all cleared to black on boot,
 	// Then it moves it to 0x2e80, where some garbage has been loaded underneath, so we can't assume that's the only valid data.
-	dst->m_valid_rgb |= src->m_valid_rgb;
-	dst->m_valid_alpha_low |= src->m_valid_alpha_low;
-	dst->m_valid_alpha_high |= src->m_valid_alpha_high;
+	// We need to be cautious of the validity of the channels vs the format it's using, you don't want to set the alpha to true if it's only copying RGB.
+	if (GSUtil::GetChannelMask(DPSM) & 0x7)
+		dst->m_valid_rgb |= src->m_valid_rgb;
+
+	if (GSUtil::GetChannelMask(DPSM) & 0x8)
+	{
+		if(DPSM != PSMT4HH)
+			dst->m_valid_alpha_low |= src->m_valid_alpha_low;
+		if (DPSM != PSMT4HL)
+			dst->m_valid_alpha_high |= src->m_valid_alpha_high;
+		dst->m_alpha_max = src->m_alpha_max;
+		dst->m_alpha_min = src->m_alpha_min;
+	}
+
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
-	dst->m_alpha_max = src->m_alpha_max;
-	dst->m_alpha_min = src->m_alpha_min;
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
 	return true;
