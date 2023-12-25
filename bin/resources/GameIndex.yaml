@@ -11928,8 +11928,8 @@ SLED-52441:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52473:
   name: "Transformers - Optimus Prime [Demo]"
@@ -11939,8 +11939,8 @@ SLED-52473:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52474:
   name: "Transformers - Red Alert [Demo]"
@@ -11950,8 +11950,8 @@ SLED-52474:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
@@ -17865,8 +17865,8 @@ SLES-52388:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
@@ -20339,8 +20339,8 @@ SLES-53309:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-53311:
   name: "Graffiti Kingdom"
@@ -20375,18 +20375,33 @@ SLES-53332:
   name: "Medal of Honor - European Assault"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLES-53333:
   name: "Medal of Honor - Les Faucons de Guerre"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLES-53334:
   name: "Medal of Honor - European Assault"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLES-53335:
   name: "Medal of Honor - European Assault"
   region: "PAL-I"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLES-53336:
   name: "Medal of Honor - European Assault"
   region: "PAL-S"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLES-53338:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "PAL-M3"
@@ -21841,8 +21856,7 @@ SLES-53753:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLES-53754:
   name: "ATV Offroad Fury 3"
   region: "PAL-M6"
@@ -23759,8 +23773,7 @@ SLES-54466:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLES-54467:
   name: "Final Armada"
   region: "PAL-M5"
@@ -27956,8 +27969,8 @@ SLKA-25175:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLKA-25176:
   name: "Pump It Up - Exceed"
@@ -28235,6 +28248,9 @@ SLKA-25242:
 SLKA-25243:
   name: "Medal of Honor - European Assault"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
   region: "NTSC-K"
@@ -29253,6 +29269,12 @@ SLPM-55036:
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
+SLPM-55037:
+  name: "Medal of Honor - European Assault [EASY 1980]"
+  region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLPM-55038:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "NTSC-J"
@@ -40673,6 +40695,9 @@ SLPM-66078:
 SLPM-66079:
   name: "Medal of Honor - Europe Kyoushuu"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLPM-66080:
   name: GENERATION OF CHAOSIII 〜時の封印〜 [IFコレクション]
   name-sort: GENERATION OF CHAOSIII 〜ときのふういん〜 [IFこれくしょん]
@@ -43333,6 +43358,9 @@ SLPM-66514:
   name-sort: めだる おぶ おなー よーろっぱきょうしゅう [EA BEST HITS]
   name-en: "Medal of Honor - European Assault [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLPM-66515:
   name: スター・ウォーズ エピソード3 シスの復讐 [EA BEST HITS]
   name-sort: すたー・うぉーず えぴそーど3 しすのふくしゅう [EA BEST HITS]
@@ -58655,8 +58683,8 @@ SLUS-20668:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-20669:
   name: "Resident Evil - Dead Aim"
@@ -61525,6 +61553,9 @@ SLUS-21199:
   name: "Medal of Honor - European Assault"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    bilinearUpscale: 1 # Smooths out sun texture.
 SLUS-21200:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-U"
@@ -63418,8 +63449,7 @@ SLUS-21490:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLUS-21491:
   name: "World Series of Poker - Tournament of Champions"
   region: "NTSC-U"
@@ -65668,8 +65698,8 @@ SLUS-28040:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-28043:
   name: "Test Drive - Eve of Destruction [Trade Demo]"
@@ -66071,8 +66101,8 @@ SLUS-29107:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-29108:
   name: "Def Jam - Fight For NY [Demo]"
@@ -66428,8 +66458,7 @@ SLUS-29192:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLUS-29193:
   name: "Need for Speed - Carbon [Demo]"
   region: "NTSC-U"
