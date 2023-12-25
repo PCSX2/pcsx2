@@ -300,6 +300,27 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	}
 #endif
 
+	// Hide advanced options by default.
+	if (!QtHost::ShouldShowAdvancedSettings())
+	{
+		// Advanced is always the last tab. Index is different for HW vs SW.
+		m_ui.tabs->removeTab(m_ui.tabs->count() - 1);
+		m_ui.advancedTab->deleteLater();
+		m_ui.advancedTab = nullptr;
+		m_ui.gsDownloadMode = nullptr;
+		m_ui.gsDumpCompression = nullptr;
+		m_ui.exclusiveFullscreenControl = nullptr;
+		m_ui.useBlitSwapChain = nullptr;
+		m_ui.skipPresentingDuplicateFrames = nullptr;
+		m_ui.threadedPresentation = nullptr;
+		m_ui.overrideTextureBarriers = nullptr;
+		m_ui.disableDualSource = nullptr;
+		m_ui.disableFramebufferFetch = nullptr;
+		m_ui.disableShaderCache = nullptr;
+		m_ui.disableVertexShaderExpand = nullptr;
+		m_ui.useDebugDevice = nullptr;
+	}
+
 	// Capture settings
 	{
 		for (const char** container = Pcsx2Config::GSOptions::CaptureContainers; *container; container++)
@@ -914,11 +935,14 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	else if (is_hardware && prev_tab == 2)
 		m_ui.tabs->setCurrentIndex(1);
 
-	m_ui.useBlitSwapChain->setEnabled(is_dx11);
+	if (m_ui.useBlitSwapChain)
+		m_ui.useBlitSwapChain->setEnabled(is_dx11);
 
-	m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
+	if (m_ui.overrideTextureBarriers)
+		m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
 
-	m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
+	if (m_ui.disableFramebufferFetch)
+		m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);
 
 	if (m_ui.exclusiveFullscreenControl)
 		m_ui.exclusiveFullscreenControl->setEnabled(is_auto || is_vk);
