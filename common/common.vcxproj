@@ -55,7 +55,6 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp" />
-    <ClCompile Include="General.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="HTTPDownloader.cpp" />
     <ClCompile Include="HTTPDownloaderCurl.cpp">
@@ -84,7 +83,7 @@
     <ClCompile Include="Windows\WinHostSys.cpp" />
     <ClCompile Include="Windows\WinMisc.cpp" />
     <ClCompile Include="Windows\WinThreads.cpp" />
-    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="HostSys.cpp" />
     <ClCompile Include="Semaphore.cpp" />
     <ClCompile Include="emitter\avx.cpp" />
     <ClCompile Include="emitter\bmi.cpp" />
@@ -135,7 +134,7 @@
     <ClInclude Include="SettingsWrapper.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="General.h" />
+    <ClInclude Include="HostSys.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />

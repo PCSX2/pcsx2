@@ -6,7 +6,6 @@
 #include "GS.h"
 #include "common/boost_spsc_queue.hpp"
 #include "common/Assertions.h"
-#include "common/General.h"
 #include "common/Threading.h"
 #include <condition_variable>
 #include <functional>

@@ -9,20 +9,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <cstring>
-
-template <typename T>
-[[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
-{
-	T value;
-	std::memcpy(&value, buffer + offset, sizeof(value));
-	return value;
-}
-
-[[maybe_unused]] __fi static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
-[[maybe_unused]] __fi static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
-[[maybe_unused]] __fi static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
-[[maybe_unused]] __fi static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }
 
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
@@ -30,46 +16,41 @@ template <typename T>
 class PageProtectionMode
 {
 protected:
-	bool m_read;
-	bool m_write;
-	bool m_exec;
+	bool m_read = false;
+	bool m_write = false;
+	bool m_exec = false;
 
 public:
-	PageProtectionMode()
-	{
-		All(false);
-	}
+	__fi constexpr PageProtectionMode() = default;
 
-	PageProtectionMode& Read(bool allow = true)
+	__fi constexpr PageProtectionMode& Read(bool allow = true)
 	{
 		m_read = allow;
 		return *this;
 	}
 
-	PageProtectionMode& Write(bool allow = true)
+	__fi constexpr PageProtectionMode& Write(bool allow = true)
 	{
 		m_write = allow;
 		return *this;
 	}
 
-	PageProtectionMode& Execute(bool allow = true)
+	__fi constexpr PageProtectionMode& Execute(bool allow = true)
 	{
 		m_exec = allow;
 		return *this;
 	}
 
-	PageProtectionMode& All(bool allow = true)
+	__fi constexpr PageProtectionMode& All(bool allow = true)
 	{
 		m_read = m_write = m_exec = allow;
 		return *this;
 	}
 
-	bool CanRead() const { return m_read; }
-	bool CanWrite() const { return m_write; }
-	bool CanExecute() const { return m_exec && m_read; }
-	bool IsNone() const { return !m_read && !m_write; }
-
-	std::string ToString() const;
+	__fi constexpr bool CanRead() const { return m_read; }
+	__fi constexpr bool CanWrite() const { return m_write; }
+	__fi constexpr bool CanExecute() const { return m_exec && m_read; }
+	__fi constexpr bool IsNone() const { return !m_read && !m_write; }
 };
 
 static __fi PageProtectionMode PageAccess_None()

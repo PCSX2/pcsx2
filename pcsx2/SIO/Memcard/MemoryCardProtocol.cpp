@@ -10,6 +10,8 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 
+#include <cstring>
+
 #define MC_LOG_ENABLE 0
 #define MC_LOG if (MC_LOG_ENABLE) DevCon
 

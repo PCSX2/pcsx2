@@ -3,6 +3,7 @@
 
 #include "common/Threading.h"
 #include "common/Assertions.h"
+#include "common/HostSys.h"
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"

@@ -6,7 +6,7 @@
 #include "common/BitUtils.h"
 #include "common/RedtapeWindows.h"
 #include "common/Console.h"
-#include "common/General.h"
+#include "common/HostSys.h"
 #include "common/StringUtil.h"
 #include "common/AlignedMalloc.h"
 #include "common/Assertions.h"

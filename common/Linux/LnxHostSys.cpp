@@ -20,7 +20,7 @@
 #include "common/BitUtils.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
-#include "common/General.h"
+#include "common/HostSys.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
 // the same thing.

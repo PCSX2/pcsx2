@@ -19,6 +19,7 @@
 #include "fmt/core.h"
 
 #include <array>
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <sstream>
