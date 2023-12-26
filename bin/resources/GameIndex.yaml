@@ -27966,7 +27966,7 @@ SLKA-25173:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-K"
 SLKA-25174:
-  name: "dot hack - 절대포워 Vol.4"
+  name: "dot hack - 절대포위 Vol.4"
   name-sort: "dot hack - Quarantine Part 4"
   name-en: "dot hack - Quarantine Part 4"
   region: "NTSC-K"
@@ -50251,8 +50251,8 @@ SLPS-25157:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLPS-25158:
-  name: dot hack - 侵食汚染 vol.3
-  name-sort: dot hack - しんしょくおせん vol.3
+  name: dot hack - 侵食汚染 Vol.3
+  name-sort: dot hack - しんしょくおせん Vol.3
   name-en: "dot hack - Outbreak Part 3"
   region: "NTSC-J"
   memcardFilters:
@@ -50492,8 +50492,8 @@ SLPS-25201:
   gameFixes:
     - InstantDMAHack # Fixes NULL GIFChain hang.
 SLPS-25202:
-  name: dot hack - 絶対包囲 vol.4
-  name-sort: dot hack - ぜったいほうい vol.4
+  name: dot hack - 絶対包囲 Vol.4
+  name-sort: dot hack - ぜったいほうい Vol.4
   name-en: "dot hack - Quarantine Part 4"
   region: "NTSC-J"
   memcardFilters:
