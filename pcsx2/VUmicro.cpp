@@ -7,6 +7,9 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 
+BaseVUmicroCPU* CpuVU0 = nullptr;
+BaseVUmicroCPU* CpuVU1 = nullptr;
+
 __inline u32 CalculateMinRunCycles(u32 cycles, bool requiresAccurateCycles)
 {
 	// If we're running an interlocked COP2 operation

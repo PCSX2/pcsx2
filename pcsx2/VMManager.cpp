@@ -27,6 +27,7 @@
 #include "PINE.h"
 #include "Patch.h"
 #include "PerformanceMetrics.h"
+#include "R3000A.h"
 #include "R5900.h"
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
@@ -36,9 +37,11 @@
 #include "SIO/Sio0.h"
 #include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
+#include "SysForwardDefs.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "svnrev.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -70,8 +73,17 @@
 #include "common/Darwin/DarwinMisc.h"
 #endif
 
+#ifdef _M_X86
+#include "x86/newVif.h"
+#endif
+
 namespace VMManager
 {
+	static void LogCPUCapabilities();
+	static void InitializeCPUProviders();
+	static void ShutdownCPUProviders();
+	static void UpdateCPUImplementations();
+
 	static void ApplyGameFixes();
 	static bool UpdateGameSettingsLayer();
 	static void CheckForConfigChanges(const Pcsx2Config& old_config);
@@ -130,7 +142,6 @@ namespace VMManager
 
 static constexpr u32 SETTINGS_VERSION = 1;
 
-static std::unique_ptr<SysCpuProviderPack> s_cpu_provider_pack;
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
 
@@ -175,6 +186,9 @@ static PINEServer s_pine_server;
 
 static bool s_discord_presence_active = false;
 static time_t s_discord_presence_time_epoch;
+
+// Making GSDumpReplayer.h dependent on R5900.h is a no-no, since the GS uses it.
+extern R5900cpu GSDumpReplayerCpu;
 
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
@@ -344,7 +358,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 	if (!cpuinfo_initialize())
 		Console.Error("cpuinfo_initialize() failed.");
 
-	SysLogMachineCaps();
+	LogCPUCapabilities();
 
 	if (!SysMemory::Allocate())
 	{
@@ -352,8 +366,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 		return false;
 	}
 
-	pxAssert(!s_cpu_provider_pack);
-	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
+	InitializeCPUProviders();
 
 	GSinit();
 	USBinit();
@@ -384,8 +397,6 @@ void VMManager::Internal::CPUThreadShutdown()
 	InputManager::CloseSources();
 	WaitForSaveStateFlush();
 
-	s_cpu_provider_pack.reset();
-
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 
 	USBshutdown();
@@ -393,16 +404,13 @@ void VMManager::Internal::CPUThreadShutdown()
 
 	MTGS::ShutdownThread();
 
+	ShutdownCPUProviders();
+
 	SysMemory::Release();
 
 #ifdef _WIN32
 	CoUninitialize();
 #endif
-}
-
-SysCpuProviderPack& GetCpuProviders()
-{
-	return *s_cpu_provider_pack;
 }
 
 bool VMManager::Internal::CheckSettingsVersion()
@@ -1232,9 +1240,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	s_use_vsync_for_timing = false;
 
 	s_cpu_implementation_changed = false;
-	s_cpu_provider_pack->ApplyConfig();
+	UpdateCPUImplementations();
+	Internal::ClearCPUExecutionCaches();
 	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
-	SysClearExecutionCache();
 	memBindConditionalHandlers();
 	SysMemory::Reset();
 	cpuReset();
@@ -1468,7 +1476,7 @@ void VMManager::Reset()
 	if (elf_was_changed)
 		HandleELFChange(false);
 
-	SysClearExecutionCache();
+	Internal::ClearCPUExecutionCaches();
 	memBindConditionalHandlers();
 	SysMemory::Reset();
 	cpuReset();
@@ -2110,14 +2118,150 @@ bool VMManager::IsLoadableFileName(const std::string_view& path)
 	return IsDiscFileName(path) || IsElfFileName(path) || IsGSDumpFileName(path) || IsBlockDumpFileName(path);
 }
 
+void VMManager::LogCPUCapabilities()
+{
+	if (!PCSX2_isReleaseVersion)
+	{
+		if (GIT_TAGGED_COMMIT) // Nightly builds
+		{
+			// tagged commit - more modern implementation of dev build versioning
+			// - there is no need to include the commit - that is associated with the tag,
+			// - git is implied and the tag is timestamped
+			Console.WriteLn(Color_StrongGreen, "PCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
+		}
+		else
+		{
+			Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
+#ifndef DISABLE_BUILD_DATE
+											   "- compiled on " __DATE__
+#endif
+				,
+				PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+				SVN_REV);
+		}
+	}
+	else
+	{ // shorter release version string
+		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
+#ifndef DISABLE_BUILD_DATE
+										   "- compiled on " __DATE__
+#endif
+			,
+			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+			SVN_REV);
+	}
+
+	Console.WriteLn("Savestate version: 0x%x", g_SaveVersion);
+	Console.Newline();
+
+	Console.WriteLn(Color_StrongBlack, "Host Machine Init:");
+
+	Console.Indent().WriteLn(
+		"Operating System = %s\n"
+		"Physical RAM     = %u MB",
+
+		GetOSVersionString().c_str(),
+		(u32)(GetPhysicalMemory() / _1mb));
+
+	Console.Indent().WriteLn("Processor        = %s", cpuinfo_get_package(0)->name);
+	Console.Indent().WriteLn("Core Count       = %u cores", cpuinfo_get_cores_count());
+	Console.Indent().WriteLn("Thread Count     = %u threads", cpuinfo_get_processors_count());
+
+	Console.Newline();
+
+	std::string features;
+
+	if (cpuinfo_has_x86_avx())
+		features += "AVX ";
+	if (cpuinfo_has_x86_avx2())
+		features += "AVX2 ";
+
+	StringUtil::StripWhitespace(&features);
+
+	Console.WriteLn(Color_StrongBlack, "x86 Features Detected:");
+	Console.Indent().WriteLn("%s", features.c_str());
+
+	Console.Newline();
+}
+
+
+void VMManager::InitializeCPUProviders()
+{
+	recCpu.Reserve();
+	psxRec.Reserve();
+
+	CpuMicroVU0.Reserve();
+	CpuMicroVU1.Reserve();
+
+	VifUnpackSSE_Init();
+}
+
+void VMManager::ShutdownCPUProviders()
+{
+	if (newVifDynaRec)
+	{
+		dVifRelease(1);
+		dVifRelease(0);
+	}
+
+	CpuMicroVU1.Shutdown();
+	CpuMicroVU0.Shutdown();
+
+	psxRec.Shutdown();
+	recCpu.Shutdown();
+}
+
+void VMManager::UpdateCPUImplementations()
+{
+	if (GSDumpReplayer::IsReplayingDump())
+	{
+		Cpu = &GSDumpReplayerCpu;
+		psxCpu = &psxInt;
+		CpuVU0 = &CpuIntVU0;
+		CpuVU1 = &CpuIntVU1;
+		return;
+	}
+
+	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
+	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
+
+	CpuVU0 = &CpuIntVU0;
+	CpuVU1 = &CpuIntVU1;
+
+	if (EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuVU0 = &CpuMicroVU0;
+
+	if (EmuConfig.Cpu.Recompiler.EnableVU1)
+		CpuVU1 = &CpuMicroVU1;
+}
+
+void VMManager::Internal::ClearCPUExecutionCaches()
+{
+	Cpu->Reset();
+	psxCpu->Reset();
+
+	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
+	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuMicroVU0.Reset();
+
+	CpuVU0->Reset();
+	CpuVU1->Reset();
+
+	if constexpr (newVifDynaRec)
+	{
+		dVifReset(0);
+		dVifReset(1);
+	}
+}
+
 void VMManager::Execute()
 {
 	// Check for interpreter<->recompiler switches.
 	if (std::exchange(s_cpu_implementation_changed, false))
 	{
 		// We need to switch the cpus out, and reset the new ones if so.
-		s_cpu_provider_pack->ApplyConfig();
-		SysClearExecutionCache();
+		UpdateCPUImplementations();
+		Internal::ClearCPUExecutionCaches();
 		vtlb_ResetFastmem();
 	}
 
@@ -2232,8 +2376,10 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
 	// so there's no need to leave the eject running.
 	FileMcd_CancelEject();
+
 	// Toss all the recs, we're going to be executing new code.
-	SysClearExecutionCache();
+	mmap_ResetBlockTracking();
+	ClearCPUExecutionCaches();
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
@@ -2291,7 +2437,7 @@ void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 
 	Console.WriteLn("Updating CPU configuration...");
 	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
-	SysClearExecutionCache();
+	Internal::ClearCPUExecutionCaches();
 	memBindConditionalHandlers();
 
 	if (EmuConfig.Cpu.Recompiler.EnableFastmem != old_config.Cpu.Recompiler.EnableFastmem)

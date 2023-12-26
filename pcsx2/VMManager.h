@@ -252,6 +252,9 @@ namespace VMManager
 		/// Throttles execution, or limits the frame rate.
 		void Throttle();
 
+		/// Resets/clears all execution/code caches.
+		void ClearCPUExecutionCaches();
+
 		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();
 		void ELFLoadingOnCPUThread(std::string elf_path);

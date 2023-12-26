@@ -22,22 +22,42 @@ BIOS
 0xBFC00000 - 0xBFFFFFFF un-cached
 */
 
-#include "IopHw.h"
-#include "GS.h"
-#include "VUmicro.h"
-#include "MTVU.h"
 #include "DEV9/DEV9.h"
+#include "IopHw.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS.h"
+#include "Host.h"
+#include "MTVU.h"
+#include "SPU2/spu2.h"
 #include "SaveState.h"
+#include "VUmicro.h"
 
 #include "ps2/HwInternal.h"
 #include "ps2/BiosTools.h"
-#include "SPU2/spu2.h"
 
 #include "common/AlignedMalloc.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
+
+namespace SysMemory
+{
+	static u8* TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size);
+	static u8* AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base);
+
+	static bool AllocateMemoryMap();
+	static void DumpMemoryMap();
+	static void ReleaseMemoryMap();
+
+	static u8* s_data_memory;
+	static void* s_data_memory_file_handle;
+	static u8* s_code_memory;
+} // namespace SysMemory
+
+static void memAllocate();
+static void memReset();
+static void memRelease();
 
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
 
@@ -46,6 +66,225 @@ static u16 s_dve_regs[0xff];
 static bool s_ba_command_executing = false;
 static bool s_ba_error_detected = false;
 static u16 s_ba_current_reg = 0;
+
+namespace HostMemoryMap
+{
+	// For debuggers
+	extern "C" {
+#ifdef _WIN32
+	_declspec(dllexport) uptr EEmem, IOPmem, VUmem;
+#else
+	__attribute__((visibility("default"), used)) uptr EEmem, IOPmem, VUmem;
+#endif
+	}
+} // namespace HostMemoryMap
+
+u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, uptr base, size_t size)
+{
+	u8* baseptr;
+
+	if (file_handle)
+		baseptr = static_cast<u8*>(HostSys::MapSharedMemory(file_handle, 0, (void*)base, size, PageAccess_ReadWrite()));
+	else
+		baseptr = static_cast<u8*>(HostSys::Mmap((void*)base, size, PageAccess_Any()));
+
+	if (!baseptr)
+		return nullptr;
+
+	if ((uptr)baseptr != base)
+	{
+		if (file_handle)
+		{
+			if (baseptr)
+				HostSys::UnmapSharedMemory(baseptr, size);
+		}
+		else
+		{
+			if (baseptr)
+				HostSys::Munmap(baseptr, size);
+		}
+
+		return nullptr;
+	}
+
+	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name,
+		baseptr, (uptr)baseptr + size, fmt::format("[{}mb]", size / _1mb).c_str());
+
+	return baseptr;
+}
+
+u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
+{
+	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Virtual memory size is page aligned");
+
+	// Everything looks nicer when the start of all the sections is a nice round looking number.
+	// Also reduces the variation in the address due to small changes in code.
+	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
+	uptr codeBase = (uptr)(void*)AllocateVirtualMemory / (1 << 28) * (1 << 28);
+
+	// The allocation is ~640mb in size, slighly under 3*2^28.
+	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
+	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
+	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
+	for (int offset = 4; offset >= -6; offset--)
+	{
+		uptr base = codeBase + (offset << 28) + offset_from_base;
+		if ((sptr)base < 0 || (sptr)(base + size - 1) < 0)
+		{
+			// VTLB will throw a fit if we try to put EE main memory here
+			continue;
+		}
+
+		if (u8* ret = TryAllocateVirtualMemory(name, file_handle, base, size))
+			return ret;
+
+		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...", name,
+			base, base + size);
+	}
+
+	return nullptr;
+}
+
+bool SysMemory::AllocateMemoryMap()
+{
+	s_data_memory_file_handle = HostSys::CreateSharedMemory(HostSys::GetFileMappingName("pcsx2").c_str(), HostMemoryMap::MainSize);
+	if (!s_data_memory_file_handle)
+	{
+		Host::ReportErrorAsync("Error", "Failed to create shared memory file.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_data_memory = AllocateVirtualMemory("Data Memory", s_data_memory_file_handle, HostMemoryMap::MainSize, 0)) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to map data memory at an acceptable location.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_code_memory = AllocateVirtualMemory("Code Memory", nullptr, HostMemoryMap::CodeSize, HostMemoryMap::MainSize)) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to allocate code memory at an acceptable location.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);
+	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
+	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemSize);
+
+	DumpMemoryMap();
+	return true;
+}
+
+void SysMemory::DumpMemoryMap()
+{
+#define DUMP_REGION(name, base, offset, size) \
+	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name, \
+		(uptr)(base + offset), (uptr)(base + offset + size), fmt::format("[{}mb]", size / _1mb).c_str());
+
+	DUMP_REGION("EE Main Memory", s_data_memory, HostMemoryMap::EEmemOffset, HostMemoryMap::EEmemSize);
+	DUMP_REGION("IOP Main Memory", s_data_memory, HostMemoryMap::IOPmemOffset, HostMemoryMap::IOPmemSize);
+	DUMP_REGION("VU0/1 On-Chip Memory", s_data_memory, HostMemoryMap::VUmemOffset, HostMemoryMap::VUmemSize);
+	DUMP_REGION("VTLB Virtual Map", s_data_memory, HostMemoryMap::VTLBAddressMapOffset, HostMemoryMap::VTLBVirtualMapSize);
+	DUMP_REGION("VTLB Address Map", s_data_memory, HostMemoryMap::VTLBAddressMapSize, HostMemoryMap::VTLBAddressMapSize);
+
+	DUMP_REGION("R5900 Recompiler Cache", s_code_memory, HostMemoryMap::EErecOffset, HostMemoryMap::EErecSize);
+	DUMP_REGION("R3000A Recompiler Cache", s_code_memory, HostMemoryMap::IOPrecOffset, HostMemoryMap::IOPrecSize);
+	DUMP_REGION("Micro VU0 Recompiler Cache", s_code_memory, HostMemoryMap::mVU0recOffset, HostMemoryMap::mVU0recSize);
+	DUMP_REGION("Micro VU0 Recompiler Cache", s_code_memory, HostMemoryMap::mVU1recOffset, HostMemoryMap::mVU1recSize);
+	DUMP_REGION("VIF0 Unpack Recompiler Cache", s_code_memory, HostMemoryMap::VIF0recOffset, HostMemoryMap::VIF0recSize);
+	DUMP_REGION("VIF1 Unpack Recompiler Cache", s_code_memory, HostMemoryMap::VIF1recOffset, HostMemoryMap::VIF1recSize);
+	DUMP_REGION("VIF Unpack Recompiler Cache", s_code_memory, HostMemoryMap::VIFUnpackRecOffset, HostMemoryMap::VIFUnpackRecSize);
+	DUMP_REGION("GS Software Renderer", s_code_memory, HostMemoryMap::SWrecOffset, HostMemoryMap::SWrecSize);
+
+
+#undef DUMP_REGION
+}
+
+void SysMemory::ReleaseMemoryMap()
+{
+	if (s_code_memory)
+	{
+		HostSys::Munmap(s_code_memory, HostMemoryMap::CodeSize);
+		s_code_memory = nullptr;
+	}
+
+	if (s_data_memory)
+	{
+		HostSys::UnmapSharedMemory(s_data_memory, HostMemoryMap::MainSize);
+		s_data_memory = nullptr;
+	}
+
+	if (s_data_memory_file_handle)
+	{
+		HostSys::DestroySharedMemory(s_data_memory_file_handle);
+		s_data_memory_file_handle = nullptr;
+	}
+}
+
+bool SysMemory::Allocate()
+{
+	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
+
+	ConsoleIndentScope indent(1);
+
+	if (!AllocateMemoryMap())
+		return false;
+
+	memAllocate();
+	iopMemAlloc();
+	vuMemAllocate();
+
+	if (!vtlb_Core_Alloc())
+		return false;
+
+	return true;
+}
+
+void SysMemory::Reset()
+{
+	DevCon.WriteLn(Color_StrongBlue, "Resetting host memory for virtual systems...");
+	ConsoleIndentScope indent(1);
+
+	memReset();
+	iopMemReset();
+	vuMemReset();
+
+	// Note: newVif is reset as part of other VIF structures.
+	// Software is reset on the GS thread.
+}
+
+void SysMemory::Release()
+{
+	Console.WriteLn(Color_Blue, "Releasing host memory for virtual systems...");
+	ConsoleIndentScope indent(1);
+
+	vtlb_Core_Free(); // Just to be sure... (calling order could result in it getting missed during Decommit).
+
+	vuMemRelease();
+	iopMemRelease();
+	memRelease();
+
+	ReleaseMemoryMap();
+}
+
+u8* SysMemory::GetDataPtr(size_t offset)
+{
+	pxAssert(offset <= HostMemoryMap::MainSize);
+	return s_data_memory + offset;
+}
+
+u8* SysMemory::GetCodePtr(size_t offset)
+{
+	pxAssert(offset <= HostMemoryMap::CodeSize);
+	return s_code_memory + offset;
+}
+
+void* SysMemory::GetDataFileHandle()
+{
+	return s_data_memory_file_handle;
+}
 
 void memSetKernelMode() {
 	//Do something here

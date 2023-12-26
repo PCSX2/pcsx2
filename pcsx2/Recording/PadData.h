@@ -3,6 +3,10 @@
 
 #pragma once
 
+#include "common/Pcsx2Defs.h"
+
+#include <tuple>
+
 class PadData
 {
 public:

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/Common/GSFunctionMap.h"
-#include "System.h"
+#include "Memory.h"
 
 namespace GSCodeReserve
 {

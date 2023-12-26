@@ -360,7 +360,6 @@
     </ClCompile>
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceLog.cpp" />
-    <ClCompile Include="System.cpp" />
     <ClCompile Include="Elfheader.cpp" />
     <ClCompile Include="CDVD\InputIsoFile.cpp" />
     <ClCompile Include="x86\BaseblockEx.cpp" />
@@ -710,7 +709,6 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="SaveState.h" />
-    <ClInclude Include="System.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />
     <ClInclude Include="Hardware.h" />

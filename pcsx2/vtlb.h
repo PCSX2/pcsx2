@@ -4,8 +4,8 @@
 #pragma once
 
 #include "MemoryTypes.h"
-#include "System.h"
 
+#include "common/General.h"
 #include "common/SingleRegisterTypes.h"
 
 static const uptr VTLB_AllocUpperBounds = _1gb * 2;

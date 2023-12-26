@@ -15,7 +15,6 @@
 #include <array>
 #include <chrono>
 
-#include "System.h"
 #include "Config.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
