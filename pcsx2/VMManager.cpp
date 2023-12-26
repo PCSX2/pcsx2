@@ -51,6 +51,7 @@
 #include "common/Timer.h"
 
 #include "IconsFontAwesome5.h"
+#include "cpuinfo.h"
 #include "discord_rpc.h"
 #include "fmt/core.h"
 
@@ -186,10 +187,9 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 #if defined(_M_X86)
 	// On Windows, this gets called as a global object constructor, before any of our objects are constructed.
 	// So, we have to put it on the stack instead.
-	x86capabilities temp_x86_caps;
-	temp_x86_caps.Identify();
+	cpuinfo_initialize();
 
-	if (!temp_x86_caps.hasStreamingSIMD4Extensions)
+	if (!cpuinfo_has_x86_sse4_1())
 	{
 		*error =
 			"PCSX2 requires the Streaming SIMD 4.1 Extensions instruction set, which your CPU does not support.\n\n"
@@ -199,7 +199,7 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 	}
 
 #if _M_SSE >= 0x0501
-	if (!temp_x86_caps.hasAVX || !temp_x86_caps.hasAVX2)
+	if (!cpuinfo_has_x86_avx2())
 	{
 		*error = "This build of PCSX2 requires the Advanced Vector Extensions 2 instruction set, which your CPU does "
 				 "not support.\n\n"
@@ -342,8 +342,9 @@ bool VMManager::Internal::CPUThreadInitialize()
 	}
 #endif
 
-	x86caps.Identify();
-	x86caps.CountCores();
+	if (!cpuinfo_initialize())
+		Console.Error("cpuinfo_initialize() failed.");
+
 	SysLogMachineCaps();
 
 	if (!SysMemory::Allocate())
@@ -2803,8 +2804,6 @@ static std::once_flag s_processor_list_initialized;
 
 #if defined(__linux__) || defined(_WIN32)
 
-#include "cpuinfo.h"
-
 static u32 GetProcessorIdForProcessor(const cpuinfo_processor* proc)
 {
 #if defined(__linux__)
@@ -2816,14 +2815,8 @@ static u32 GetProcessorIdForProcessor(const cpuinfo_processor* proc)
 #endif
 }
 
-static void InitializeCPUInfo()
+static void InitializeProcessorList()
 {
-	if (!cpuinfo_initialize())
-	{
-		Console.Error("Failed to initialize cpuinfo");
-		return;
-	}
-
 	const u32 cluster_count = cpuinfo_get_clusters_count();
 	if (cluster_count == 0)
 	{
@@ -2922,7 +2915,7 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 static u32 s_big_cores;
 static u32 s_small_cores;
 
-static void InitializeCPUInfo()
+static void InitializeProcessorList()
 {
 	s_big_cores = 0;
 	s_small_cores = 0;
@@ -2957,7 +2950,7 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 
 #else
 
-static void InitializeCPUInfo()
+static void InitializeProcessorList()
 {
 	DevCon.WriteLn("(VMManager) InitializeCPUInfo() not implemented.");
 }
@@ -2970,7 +2963,7 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 
 void VMManager::EnsureCPUInfoInitialized()
 {
-	std::call_once(s_processor_list_initialized, InitializeCPUInfo);
+	std::call_once(s_processor_list_initialized, InitializeProcessorList);
 }
 
 void VMManager::SetEmuThreadAffinities()

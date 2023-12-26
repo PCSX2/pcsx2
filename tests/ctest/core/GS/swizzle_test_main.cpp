@@ -8,6 +8,8 @@
 #include <gtest/gtest.h>
 #include <string.h>
 
+#include "cpuinfo.h"
+
 #ifdef MULTI_ISA_UNSHARED_COMPILATION
 
 #include "common/emitter/tools.h"
@@ -22,10 +24,10 @@ enum class TestISA
 
 static bool CheckCapabilities(TestISA required_caps)
 {
-	x86caps.Identify();
-	if (required_caps == TestISA::isa_avx && !x86caps.hasAVX)
+	cpuinfo_initialize();
+	if (required_caps == TestISA::isa_avx && !cpuinfo_has_x86_avx())
 		return false;
-	if (required_caps == TestISA::isa_avx2 && !x86caps.hasAVX2)
+	if (required_caps == TestISA::isa_avx2 && !cpuinfo_has_x86_avx2())
 		return false;
 
 	return true;

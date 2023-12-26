@@ -106,7 +106,6 @@ void SysLogMachineCaps()
 		GetOSVersionString().c_str(),
 		(u32)(GetPhysicalMemory() / _1mb));
 
-    cpuinfo_initialize();
 	Console.Indent().WriteLn("Processor        = %s", cpuinfo_get_package(0)->name);
 	Console.Indent().WriteLn("Core Count       = %u cores", cpuinfo_get_cores_count());
 	Console.Indent().WriteLn("Thread Count     = %u threads", cpuinfo_get_processors_count());
@@ -115,9 +114,9 @@ void SysLogMachineCaps()
 
 	std::string features;
 
-	if (x86caps.hasAVX)
+	if (cpuinfo_has_x86_avx())
 		features += "AVX ";
-	if (x86caps.hasAVX2)
+	if (cpuinfo_has_x86_avx2())
 		features += "AVX2 ";
 
 	StringUtil::StripWhitespace(&features);

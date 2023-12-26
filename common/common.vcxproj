@@ -88,7 +88,6 @@
     <ClCompile Include="Semaphore.cpp" />
     <ClCompile Include="emitter\avx.cpp" />
     <ClCompile Include="emitter\bmi.cpp" />
-    <ClCompile Include="emitter\cpudetect.cpp" />
     <ClCompile Include="emitter\fpu.cpp" />
     <ClCompile Include="emitter\groups.cpp" />
     <ClCompile Include="emitter\jmp.cpp" />
@@ -97,8 +96,6 @@
     <ClCompile Include="emitter\movs.cpp" />
     <ClCompile Include="emitter\simd.cpp" />
     <ClCompile Include="emitter\x86emitter.cpp" />
-    <ClCompile Include="emitter\LnxCpuDetect.cpp" />
-    <ClCompile Include="emitter\WinCpuDetect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="FastJmp.asm" />
