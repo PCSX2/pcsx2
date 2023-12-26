@@ -344,7 +344,6 @@ bool VMManager::Internal::CPUThreadInitialize()
 
 	x86caps.Identify();
 	x86caps.CountCores();
-	x86caps.SIMD_EstablishMXCSRmask();
 	SysLogMachineCaps();
 
 	if (!SysMemory::Allocate())
