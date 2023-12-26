@@ -17,13 +17,6 @@ enum SSE_RoundMode
 
 ImplementEnumOperators(SSE_RoundMode);
 
-// Predeclaration for xIndirect32
-namespace x86Emitter
-{
-	template <typename T>
-	class xIndirect;
-	typedef xIndirect<u32> xIndirect32;
-} // namespace x86Emitter
 
 // --------------------------------------------------------------------------------------
 //  SSE_MXCSR  -  Control/Status Register (bitfield)
@@ -79,6 +72,4 @@ union SSE_MXCSR
 	{
 		return bitmask != right.bitmask;
 	}
-
-	operator x86Emitter::xIndirect32() const;
 };
