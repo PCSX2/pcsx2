@@ -17,11 +17,10 @@ target_sources(common PRIVATE
 	Error.cpp
 	FastJmp.cpp
 	FileSystem.cpp
-	General.cpp
+	HostSys.cpp
 	Image.cpp
 	HTTPDownloader.cpp
 	MemorySettingsInterface.cpp
-	Misc.cpp
 	MD5Digest.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
@@ -72,8 +71,8 @@ target_sources(common PRIVATE
 	FPControl.h
 	FastJmp.h
 	FileSystem.h
-	General.h
 	HashCombine.h
+	HostSys.h
 	HeterogeneousContainers.h
 	Image.h
 	LRUCache.h

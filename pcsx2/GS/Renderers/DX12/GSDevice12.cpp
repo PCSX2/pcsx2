@@ -14,6 +14,7 @@
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
+#include "common/HostSys.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 

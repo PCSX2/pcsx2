@@ -4,6 +4,8 @@
 #include "GSPerfMon.h"
 #include "GS.h"
 
+#include <cstring>
+
 GSPerfMon g_perfmon;
 
 GSPerfMon::GSPerfMon() = default;

@@ -40,7 +40,7 @@
     <ClCompile Include="emitter\movs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Misc.cpp">
+    <ClCompile Include="HostSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Perf.cpp">
@@ -124,9 +124,6 @@
     <ClCompile Include="FileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="General.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -159,7 +156,7 @@
     <ClInclude Include="emitter\implement\dwshift.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="General.h">
+    <ClInclude Include="HostSys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\group1.h">

@@ -4,7 +4,7 @@
 #if !defined(_WIN32) && !defined(__APPLE__)
 
 #include "common/Pcsx2Types.h"
-#include "common/General.h"
+#include "common/HostSys.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"

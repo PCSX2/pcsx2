@@ -6,6 +6,7 @@
 #include "GS/GSPerfMon.h"
 #include "common/BitUtils.h"
 #include "common/Console.h"
+#include "common/HostSys.h"
 
 #ifdef __APPLE__
 

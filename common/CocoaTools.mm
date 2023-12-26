@@ -7,7 +7,7 @@
 
 #include "CocoaTools.h"
 #include "Console.h"
-#include "General.h"
+#include "HostSys.h"
 #include "WindowInfo.h"
 #include <dlfcn.h>
 #include <mutex>

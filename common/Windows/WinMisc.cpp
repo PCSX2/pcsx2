@@ -3,11 +3,10 @@
 
 #if defined(_WIN32)
 
-#include "common/Pcsx2Defs.h"
+#include "common/HostSys.h"
 #include "common/RedtapeWindows.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
-#include "common/General.h"
 #include "common/WindowInfo.h"
 
 #include "fmt/core.h"

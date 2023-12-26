@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "common/General.h"
+#include "common/Pcsx2Defs.h"
 #include "common/FPControl.h"
 #include <array>
 #include <string>

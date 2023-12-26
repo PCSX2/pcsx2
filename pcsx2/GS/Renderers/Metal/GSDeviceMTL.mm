@@ -8,6 +8,7 @@
 #include "GS/GSPerfMon.h"
 
 #include "common/Console.h"
+#include "common/HostSys.h"
 
 #include "imgui.h"
 

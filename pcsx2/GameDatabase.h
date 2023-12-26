@@ -8,6 +8,7 @@
 
 #include "common/FPControl.h"
 
+#include <cstring>
 #include <optional>
 #include <string>
 #include <string_view>
