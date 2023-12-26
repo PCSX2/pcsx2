@@ -8,6 +8,7 @@
 #include "vtlb.h"
 
 #include "common/Console.h"
+#include "common/EnumOps.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
@@ -193,9 +194,9 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			if (fix.ends_with("Hack"))
 			{
 				fix.erase(fix.size() - 4);
-				for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
+				for (GamefixId id = GamefixId_FIRST; id < GamefixId_COUNT; id = static_cast<GamefixId>(enum_cast(id) + 1))
 				{
-					if (fix.compare(EnumToString(id)) == 0 &&
+					if (fix.compare(Pcsx2Config::GamefixOptions::GetGameFixName(id)) == 0 &&
 						std::find(gameEntry.gameFixes.begin(), gameEntry.gameFixes.end(), id) == gameEntry.gameFixes.end())
 					{
 						gameEntry.gameFixes.push_back(id);
@@ -535,12 +536,12 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 	{
 		if (!applyAuto)
 		{
-			Console.Warning("[GameDB] Skipping Gamefix: %s", EnumToString(id));
+			Console.Warning("[GameDB] Skipping Gamefix: %s", Pcsx2Config::GamefixOptions::GetGameFixName(id));
 			continue;
 		}
 		// if the fix is present, it is said to be enabled
 		config.Gamefixes.Set(id, true);
-		Console.WriteLn("(GameDB) Enabled Gamefix: %s", EnumToString(id));
+		Console.WriteLn("(GameDB) Enabled Gamefix: %s", Pcsx2Config::GamefixOptions::GetGameFixName(id));
 
 		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
 		if (id == Fix_GoemonTlbMiss && true)

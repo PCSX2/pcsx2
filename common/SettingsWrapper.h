@@ -5,6 +5,8 @@
 
 #include "SettingsInterface.h"
 
+#include "common/EnumOps.h"
+
 // Helper class which loads or saves depending on the derived class.
 class SettingsWrapper
 {

@@ -1135,7 +1135,7 @@ static const char* const tbl_GamefixNames[] =
 		"FullVU0Sync",
 };
 
-const char* EnumToString(GamefixId id)
+const char* Pcsx2Config::GamefixOptions::GetGameFixName(GamefixId id)
 {
 	return tbl_GamefixNames[id];
 }
@@ -1154,7 +1154,6 @@ Pcsx2Config::GamefixOptions& Pcsx2Config::GamefixOptions::DisableAll()
 
 void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 {
-	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
 		// clang-format off
@@ -1177,14 +1176,13 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_VUOverflow:          VUOverflowHack          = enabled; break;
 		case Fix_BlitInternalFPS:     BlitInternalFPSHack     = enabled; break;
 		case Fix_FullVU0Sync:         FullVU0SyncHack         = enabled; break;
-		jNO_DEFAULT;
+		default:                                                         break;
 			// clang-format on
 	}
 }
 
 bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 {
-	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
 		// clang-format off
@@ -1207,7 +1205,7 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 		case Fix_VUOverflow:          return VUOverflowHack;
 		case Fix_BlitInternalFPS:     return BlitInternalFPSHack;
 		case Fix_FullVU0Sync:         return FullVU0SyncHack;
-		jNO_DEFAULT;
+		default:                      return false;
 			// clang-format on
 	}
 	return false; // unreachable, but we still need to suppress warnings >_<
