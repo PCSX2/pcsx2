@@ -25639,6 +25639,7 @@ SLES-55147:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
+    recommendedBlendingLevel: 4 # Fixes grey text.
 SLES-55148:
   name: "SBK 08 - Superbike World Championship"
   region: "PAL-M5"
@@ -28937,6 +28938,7 @@ SLKA-25422:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
+    recommendedBlendingLevel: 4 # Fixes grey text.
 SLKA-25423:
   name: "Sega Rally 2006"
   region: "NTSC-K"
@@ -64534,6 +64536,7 @@ SLUS-21731:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
+    recommendedBlendingLevel: 4 # Fixes grey text.
 SLUS-21732:
   name: "El Tigre - The Adventures of Manny Rivera"
   region: "NTSC-U"
