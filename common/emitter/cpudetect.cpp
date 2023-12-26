@@ -59,38 +59,6 @@ x86capabilities::x86capabilities()
 #pragma optimize("", on)
 #endif
 
-// Warning!  We've had problems with the MXCSR detection code causing stack corruption in
-// MSVC PGO builds.  The problem was fixed when I moved the MXCSR code to this function, and
-// moved the recSSE[] array to a global static (it was local to cpudetectInit).  Commented
-// here in case the nutty crash ever re-surfaces. >_<
-// Note: recSSE was deleted
-void x86capabilities::SIMD_EstablishMXCSRmask()
-{
-	if (!hasStreamingSIMDExtensions)
-		return;
-
-	MXCSR_Mask.bitmask = 0xFFBF; // MMX/SSE default
-
-	if (hasStreamingSIMD2Extensions)
-	{
-		// This is generally safe assumption, but FXSAVE is the "correct" way to
-		// detect MXCSR masking features of the cpu, so we use it's result below
-		// and override this.
-
-		MXCSR_Mask.bitmask = 0xFFFF; // SSE2 features added
-	}
-
-	alignas(16) u8 targetFXSAVE[512];
-
-	// Work for recent enough GCC/CLANG/MSVC 2012
-	_fxsave(&targetFXSAVE);
-
-	u32 result;
-	memcpy(&result, &targetFXSAVE[28], 4); // bytes 28->32 are the MXCSR_Mask.
-	if (result != 0)
-		MXCSR_Mask.bitmask = result;
-}
-
 const char* x86capabilities::GetTypeName() const
 {
 	switch (TypeID)

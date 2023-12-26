@@ -5,11 +5,6 @@
 #include "common/emitter/tools.h"
 #include "common/VectorIntrin.h"
 
-// Mask of valid bit fields for the target CPU.  Typically this is either 0xFFFF (SSE2
-// or better) or 0xFFBF (SSE1 and earlier).  Code can ensure a safe/valid MXCSR by
-// AND'ing this mask against an MXCSR prior to LDMXCSR.
-SSE_MXCSR MXCSR_Mask;
-
 const char* EnumToString(SSE_RoundMode sse)
 {
 	switch (sse)
@@ -66,14 +61,6 @@ SSE_MXCSR& SSE_MXCSR::EnableExceptions()
 SSE_MXCSR& SSE_MXCSR::DisableExceptions()
 {
 	bitmask |= 0x3f << 7;
-	return *this;
-}
-
-// Applies the reserve bits mask for the current running cpu, as fetched from the CPU
-// during CPU init/detection.
-SSE_MXCSR& SSE_MXCSR::ApplyReserveMask()
-{
-	bitmask &= MXCSR_Mask.bitmask;
 	return *this;
 }
 
