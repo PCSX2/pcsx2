@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "common/emitter/tools.h"
 #include "common/General.h"
+#include "common/FPControl.h"
 #include <array>
 #include <string>
 #include <optional>
@@ -385,11 +385,6 @@ typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
 
 ImplementEnumOperators(GamefixId);
 
-//------------ DEFAULT sseMXCSR VALUES ---------------
-#define DEFAULT_sseMXCSR 0xffc0 //FPU rounding > DaZ, FtZ, "chop"
-#define DEFAULT_sseVUMXCSR 0xffc0 //VU  rounding > DaZ, FtZ, "chop"
-#define SYSTEM_sseMXCSR 0x1f80
-
 // --------------------------------------------------------------------------------------
 //  TraceFiltersEE
 // --------------------------------------------------------------------------------------
@@ -597,9 +592,9 @@ struct Pcsx2Config
 	{
 		RecompilerOptions Recompiler;
 
-		SSE_MXCSR sseMXCSR;
-		SSE_MXCSR sseVU0MXCSR;
-		SSE_MXCSR sseVU1MXCSR;
+		FPControlRegister FPUFPCR;
+		FPControlRegister VU0FPCR;
+		FPControlRegister VU1FPCR;
 
 		u32 AffinityControlMode;
 
@@ -611,7 +606,7 @@ struct Pcsx2Config
 
 		bool operator==(const CpuOptions& right) const
 		{
-			return OpEqu(sseMXCSR) && OpEqu(sseVU0MXCSR) && OpEqu(sseVU1MXCSR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
+			return OpEqu(FPUFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
 		}
 
 		bool operator!=(const CpuOptions& right) const

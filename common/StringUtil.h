@@ -14,7 +14,16 @@
 #include <string_view>
 #include <vector>
 
+// Work around us defining _M_ARM64 but fast_float thinking that it means MSVC.
+#if defined(_M_ARM64) && !defined(_WIN32)
+#define HAD_M_ARM64 _M_ARM64
+#undef _M_ARM64
+#endif
 #include "fast_float/fast_float.h"
+#if defined(HAD_M_ARM64) && !defined(_WIN32)
+#define _M_ARM64 HAD_M_ARM64
+#undef HAD_M_ARM64
+#endif
 
 // Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
 // merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.

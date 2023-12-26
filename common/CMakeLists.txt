@@ -69,6 +69,7 @@ target_sources(common PRIVATE
 	Easing.h
 	EnumOps.h
 	Error.h
+	FPControl.h
 	FastJmp.h
 	FileSystem.h
 	General.h
@@ -122,7 +123,6 @@ target_sources(common PRIVATE
 	emitter/legacy_instructions.h
 	emitter/legacy_internal.h
 	emitter/legacy_types.h
-	emitter/tools.h
 	emitter/x86emitter.h
 	emitter/x86types.h
 	Darwin/DarwinMisc.h

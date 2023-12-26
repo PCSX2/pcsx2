@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
+#if defined(__APPLE__)
+#define _XOPEN_SOURCE
+#endif
+
 #if !defined(_WIN32)
 #include <cstdio>
 #include <sys/mman.h>
@@ -38,14 +42,23 @@ static PageFaultHandler s_exception_handler_callback;
 static bool s_in_exception_handler;
 
 #ifdef __APPLE__
+#include <mach/task.h>
+#include <mach/mach_init.h>
+#include <mach/mach_port.h>
+#endif
+
+#if defined(__APPLE__) || defined(__aarch64__)
 static struct sigaction s_old_sigbus_action;
-#else
+#endif
+#if !defined(__APPLE__) || defined(__aarch64__)
 static struct sigaction s_old_sigsegv_action;
 #endif
 
 static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
 {
-#ifdef __APPLE__
+#if defined(__aarch64__)
+	const struct sigaction& sa = (signal == SIGBUS) ? s_old_sigbus_action : s_old_sigsegv_action;
+#elif defined(__APPLE__)
 	const struct sigaction& sa = s_old_sigbus_action;
 #else
 	const struct sigaction& sa = s_old_sigsegv_action;
@@ -92,6 +105,12 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
 #elif defined(__x86_64__)
 	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
+#elif defined(__aarch64__)
+	#ifndef __APPLE__
+		void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
+	#else
+		void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+	#endif
 #else
 	void* const exception_pc = nullptr;
 #endif
@@ -129,13 +148,18 @@ bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
 		// Don't block the signal from executing recursively, we want to fire the original handler.
 		sa.sa_flags |= SA_NODEFER;
 #endif
-#ifdef __APPLE__
-		// MacOS uses SIGBUS for memory permission violations
+#if defined(__APPLE__) || defined(__aarch64__)
+		// MacOS uses SIGBUS for memory permission violations, as well as SIGSEGV on ARM64.
 		if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
 			return false;
-#else
+#endif
+#if !defined(__APPLE__) || defined(__aarch64__)
 		if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
 			return false;
+#endif
+#if defined(__APPLE__) && defined(__aarch64__)
+		// Stops LLDB getting in a EXC_BAD_ACCESS loop when passing page faults to PCSX2.
+		task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
 #endif
 	}
 
@@ -154,9 +178,10 @@ void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
 	s_exception_handler_callback = nullptr;
 
 	struct sigaction sa;
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__aarch64__)
 	sigaction(SIGBUS, &s_old_sigbus_action, &sa);
-#else
+#endif
+#if !defined(__APPLE__) || defined(__aarch64__)
 	sigaction(SIGSEGV, &s_old_sigsegv_action, &sa);
 #endif
 }
@@ -187,6 +212,11 @@ void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
 	if (base)
 		flags |= MAP_FIXED;
+
+#if defined(__APPLE__) && defined(_M_ARM64)
+	if (mode.CanExecute())
+		flags |= MAP_JIT;
+#endif
 
 	void* res = mmap(base, size, prot, flags, -1, 0);
 	if (res == MAP_FAILED)
@@ -270,6 +300,15 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 		pxFailRel("Failed to unmap shared memory");
 }
 
+#ifdef _M_ARM64
+
+void HostSys::FlushInstructionCache(void* address, u32 size)
+{
+	__builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
+}
+
+#endif
+
 SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
 	: m_base_ptr(base_ptr)
 	, m_size(size)
@@ -320,6 +359,25 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 
 	m_num_mappings--;
 	return true;
+}
+
+#endif
+
+#if defined(_M_ARM64) && defined(__APPLE__)
+
+static thread_local int s_code_write_depth = 0;
+
+void HostSys::BeginCodeWrite()
+{
+	if ((s_code_write_depth++) == 0)
+		pthread_jit_write_protect_np(0);
+}
+
+void HostSys::EndCodeWrite()
+{
+	pxAssert(s_code_write_depth > 0);
+	if ((--s_code_write_depth) == 0)
+		pthread_jit_write_protect_np(1);
 }
 
 #endif

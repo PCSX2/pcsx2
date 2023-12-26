@@ -652,7 +652,7 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 	ToPS2FPU(regd, false, regt, false);
 }
 
-alignas(16) static SSE_MXCSR roundmode_nearest, roundmode_neg;
+alignas(16) static FPControlRegister roundmode_nearest, roundmode_neg;
 
 void recDIV_S_xmm(int info)
 {
@@ -662,26 +662,26 @@ void recDIV_S_xmm(int info)
 
 	if (CHECK_FPUNEGDIVHACK)
 	{
-		if (g_sseMXCSR.GetRoundMode() != SSEround_NegInf)
+		if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::NegativeInfinity)
 		{
 			// Set roundmode to nearest since it isn't already
 			//Console.WriteLn("div to negative inf");
 
-			roundmode_neg = g_sseMXCSR;
-			roundmode_neg.SetRoundMode(SSEround_NegInf);
+			roundmode_neg = EmuConfig.Cpu.FPUFPCR;
+			roundmode_neg.SetRoundMode(FPRoundMode::NegativeInfinity);
 			xLDMXCSR(ptr32[&roundmode_neg.bitmask]);
 			roundmodeFlag = true;
 		}
 	}
 	else
 	{
-		if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
+		if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest)
 		{
 			// Set roundmode to nearest since it isn't already
 			//Console.WriteLn("div to nearest");
 
-			roundmode_nearest = g_sseMXCSR;
-			roundmode_nearest.SetRoundMode(SSEround_Nearest);
+			roundmode_nearest = EmuConfig.Cpu.FPUFPCR;
+			roundmode_nearest.SetRoundMode(FPRoundMode::Nearest);
 			xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 			roundmodeFlag = true;
 		}
@@ -699,7 +699,7 @@ void recDIV_S_xmm(int info)
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
 	if (roundmodeFlag)
-		xLDMXCSR(ptr32[&g_sseMXCSR]);
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
@@ -952,12 +952,12 @@ void recSQRT_S_xmm(int info)
 	const int t1reg = _allocTempXMMreg(XMMT_FPS);
 	//Console.WriteLn("FPU: SQRT");
 
-	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
+	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest)
 	{
 		// Set roundmode to nearest if it isn't already
 		//Console.WriteLn("sqrt to nearest");
-		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode(SSEround_Nearest);
+		roundmode_nearest = EmuConfig.Cpu.FPUFPCR;
+		roundmode_nearest.SetRoundMode(FPRoundMode::Nearest);
 		xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 		roundmodeFlag = 1;
 	}
@@ -989,7 +989,7 @@ void recSQRT_S_xmm(int info)
 	ToPS2FPU(EEREC_D, false, t1reg, false);
 
 	if (roundmodeFlag == 1)
-		xLDMXCSR(ptr32[&g_sseMXCSR.bitmask]);
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 
 	_freeXMMreg(t1reg);
 }
@@ -1074,12 +1074,12 @@ void recRSQRT_S_xmm(int info)
 	// behavior for both recs? --air
 
 	bool roundmodeFlag = false;
-	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
+	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest)
 	{
 		// Set roundmode to nearest if it isn't already
 		//Console.WriteLn("sqrt to nearest");
-		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode(SSEround_Nearest);
+		roundmode_nearest = EmuConfig.Cpu.FPUFPCR;
+		roundmode_nearest.SetRoundMode(FPRoundMode::Nearest);
 		xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 		roundmodeFlag = true;
 	}
@@ -1096,7 +1096,7 @@ void recRSQRT_S_xmm(int info)
 	_freeXMMreg(treg); _freeXMMreg(sreg);
 
 	if (roundmodeFlag)
-		xLDMXCSR(ptr32[&g_sseMXCSR.bitmask]);
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 }
 
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
