@@ -28,10 +28,6 @@
 #include "common/Threading.h"
 #include "common/Assertions.h"
 
-// We wont need this until we actually have this more then just stubbed out, so I'm commenting this out
-// to remove an unneeded dependency.
-//#include "x86emitter/tools.h"
-
 #if !defined(__unix__)
 
 #pragma message("LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/BSD distros.")
@@ -53,7 +49,11 @@ __forceinline void Threading::SpinWait()
 {
 	// If this doesn't compile you can just comment it out (it only serves as a
 	// performance hint and isn't required).
+#if defined(_M_X86)
 	__asm__("pause");
+#elif defined(_M_ARM64)
+	__asm__ __volatile__("isb");
+#endif
 }
 
 __forceinline void Threading::EnableHiresScheduler()

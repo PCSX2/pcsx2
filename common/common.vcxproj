@@ -111,6 +111,7 @@
     <ClInclude Include="Error.h" />
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="FPControl.h" />
     <ClInclude Include="HashCombine.h" />
     <ClInclude Include="HeapArray.h" />
     <ClInclude Include="HeterogeneousContainers.h" />
@@ -151,7 +152,6 @@
     <ClInclude Include="emitter\legacy_instructions.h" />
     <ClInclude Include="emitter\legacy_internal.h" />
     <ClInclude Include="emitter\legacy_types.h" />
-    <ClInclude Include="emitter\tools.h" />
     <ClInclude Include="emitter\x86emitter.h" />
     <ClInclude Include="emitter\x86types.h" />
     <ClInclude Include="emitter\implement\dwshift.h" />

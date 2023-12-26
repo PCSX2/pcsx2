@@ -156,10 +156,8 @@ public:
 
 // GetCpuProviders - this function is not implemented by PCSX2 core -- it must be
 // implemented by the provisioning interface.
+// TODO: Purge this and the class above
 extern SysCpuProviderPack& GetCpuProviders();
 
 extern void SysLogMachineCaps(); // Detects cpu type and fills cpuInfo structs.
 extern void SysClearExecutionCache(); // clears recompiled execution caches!
-
-extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCSR);
-extern SSE_MXCSR g_sseVU0MXCSR, g_sseVU1MXCSR, g_sseMXCSR;

@@ -21,17 +21,9 @@
 #include "common/Perf.h"
 #include "common/StringUtil.h"
 
-#ifdef _M_X86
-#include "common/emitter/tools.h"
-#endif
-
 extern R5900cpu GSDumpReplayerCpu;
 
 Pcsx2Config EmuConfig;
-
-SSE_MXCSR g_sseMXCSR = {DEFAULT_sseMXCSR};
-SSE_MXCSR g_sseVU0MXCSR = {DEFAULT_sseVUMXCSR};
-SSE_MXCSR g_sseVU1MXCSR = {DEFAULT_sseVUMXCSR};
 
 namespace SysMemory
 {
@@ -46,19 +38,6 @@ namespace SysMemory
 	static void* s_data_memory_file_handle;
 	static u8* s_code_memory;
 } // namespace SysMemory
-
-// SetCPUState -- for assignment of SSE roundmodes and clampmodes.
-//
-void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVU0MXCSR, SSE_MXCSR sseVU1MXCSR)
-{
-	//Msgbox::Alert("SetCPUState: Config.sseMXCSR = %x; Config.sseVUMXCSR = %x \n", Config.sseMXCSR, Config.sseVUMXCSR);
-
-	g_sseMXCSR = sseMXCSR;
-	g_sseVU0MXCSR = sseVU0MXCSR;
-	g_sseVU1MXCSR = sseVU1MXCSR;
-
-	_mm_setcsr(g_sseMXCSR.bitmask);
-}
 
 // This function should be called once during program execution.
 void SysLogMachineCaps()

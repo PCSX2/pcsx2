@@ -43,6 +43,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/FPControl.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
 #include "common/SmallString.h"
@@ -58,10 +59,6 @@
 #include <atomic>
 #include <mutex>
 #include <sstream>
-
-#ifdef _M_X86
-#include "common/emitter/tools.h"
-#endif
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -160,7 +157,6 @@ static bool s_elf_executed = false;
 static std::string s_elf_override;
 static std::string s_input_profile_name;
 static u32 s_frame_advance_count = 0;
-static u32 s_mxcsr_saved;
 static bool s_fast_boot_requested = false;
 static bool s_gs_open_on_initialize = false;
 
@@ -342,6 +338,9 @@ bool VMManager::Internal::CPUThreadInitialize()
 	}
 #endif
 
+	// Use the default rounding mode, just in case it differs on some platform.
+	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
+
 	if (!cpuinfo_initialize())
 		Console.Error("cpuinfo_initialize() failed.");
 
@@ -431,6 +430,8 @@ void VMManager::Internal::LoadStartupSettings()
 void VMManager::SetDefaultSettings(
 	SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui)
 {
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	if (si.GetUIntValue("UI", "SettingsVersion", 0u) != SETTINGS_VERSION)
 		si.SetUIntValue("UI", "SettingsVersion", SETTINGS_VERSION);
 
@@ -461,6 +462,11 @@ void VMManager::SetDefaultSettings(
 
 void VMManager::LoadSettings()
 {
+	// Switch the rounding mode back to the system default for loading settings.
+	// We might have a different mode, because this can be called during setting updates while a VM is active,
+	// and the rounding mode has an impact on the conversion of floating-point values to/from strings.
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
 	LoadCoreSettings(si);
@@ -561,6 +567,7 @@ void VMManager::ApplyCoreSettings()
 	EmuConfig.CopyRuntimeConfig(old_config);
 
 	{
+		FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
 		std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 		LoadCoreSettings(Host::GetSettingsInterface());
 		WarnAboutUnsafeSettings();
@@ -1226,7 +1233,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 	s_cpu_implementation_changed = false;
 	s_cpu_provider_pack->ApplyConfig();
-	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
+	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
 	SysMemory::Reset();
@@ -1324,12 +1331,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_cdvd_files.Cancel();
 	close_state.Cancel();
 
-#if defined(_M_X86)
-	s_mxcsr_saved = _mm_getcsr();
-#elif defined(_M_ARM64)
-	s_mxcsr_saved = static_cast<u32>(a64_getfpcr());
-#endif
-
 	hwReset();
 
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
@@ -1393,11 +1394,7 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	UpdateGameSettingsLayer();
 
-#ifdef _M_X86
-	_mm_setcsr(s_mxcsr_saved);
-#elif defined(_M_ARM64)
-	a64_setfpcr(s_mxcsr_saved);
-#endif
+	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
 
 	Patch::UnloadPatches();
 	R3000A::ioman::reset();
@@ -2293,7 +2290,7 @@ void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 	}
 
 	Console.WriteLn("Updating CPU configuration...");
-	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
+	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
 	SysClearExecutionCache();
 	memBindConditionalHandlers();
 
@@ -2600,7 +2597,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			TRANSLATE_SV(
 				"VMManager", "Hardware Download Mode is not set to Accurate, this may break rendering in some games."));
 	}
-	if (EmuConfig.Cpu.sseMXCSR.GetRoundMode() != SSEround_Chop)
+	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
 		append(ICON_FA_MICROCHIP,
 			TRANSLATE_SV("VMManager", "EE FPU Round Mode is not set to default, this may break some games."));
@@ -2611,11 +2608,15 @@ void VMManager::WarnAboutUnsafeSettings()
 		append(ICON_FA_MICROCHIP,
 			TRANSLATE_SV("VMManager", "EE FPU Clamp Mode is not set to default, this may break some games."));
 	}
-	if (EmuConfig.Cpu.sseVU0MXCSR.GetRoundMode() != SSEround_Chop ||
-		EmuConfig.Cpu.sseVU1MXCSR.GetRoundMode() != SSEround_Chop)
+	if (EmuConfig.Cpu.VU0FPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
 		append(ICON_FA_MICROCHIP,
-			TRANSLATE_SV("VMManager", "VU Round Mode is not set to default, this may break some games."));
+			TRANSLATE_SV("VMManager", "VU0 Round Mode is not set to default, this may break some games."));
+	}
+	if (EmuConfig.Cpu.VU1FPCR.GetRoundMode() != FPRoundMode::ChopZero)
+	{
+		append(ICON_FA_MICROCHIP,
+			TRANSLATE_SV("VMManager", "VU1 Round Mode is not set to default, this may break some games."));
 	}
 	if (!EmuConfig.Cpu.Recompiler.vu0Overflow || EmuConfig.Cpu.Recompiler.vu0ExtraOverflow ||
 		EmuConfig.Cpu.Recompiler.vu0SignOverflow || !EmuConfig.Cpu.Recompiler.vu1Overflow ||

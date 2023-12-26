@@ -29,7 +29,11 @@ __forceinline void Threading::SpinWait()
 {
 	// If this doesn't compile you can just comment it out (it only serves as a
 	// performance hint and isn't required).
+#if defined(_M_X86)
 	__asm__("pause");
+#elif defined(_M_ARM64)
+	__asm__ __volatile__("isb");
+#endif
 }
 
 __forceinline void Threading::EnableHiresScheduler()

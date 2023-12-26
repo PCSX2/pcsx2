@@ -138,7 +138,13 @@ namespace Perf
 			pxAssertRel(perf_marker != MAP_FAILED, "Map perf marker");
 
 			JITDUMP_HEADER jh = {};
+#if defined(_M_X86)
 			jh.elf_mach = EM_X86_64;
+#elif defined(_M_ARM64)
+			jh.elf_mach = EM_AARCH64;
+#else
+#error Unhandled architecture.
+#endif
 			jh.pid = getpid();
 			jh.timestamp = JitDumpTimestamp();
 			std::fwrite(&jh, sizeof(jh), 1, s_jitdump_file);

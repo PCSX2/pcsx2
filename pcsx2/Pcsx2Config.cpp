@@ -6,6 +6,7 @@
 #include "common/SettingsInterface.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
+#include "common/SmallString.h"
 #include "Config.h"
 #include "GS.h"
 #include "CDVD/CDVDcommon.h"
@@ -20,6 +21,18 @@
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #endif
+
+// Default EE/VU control registers have exceptions off, DaZ/FTZ, and the rounding mode set to Chop/Zero.
+static constexpr FPControlRegister DEFAULT_FPU_FP_CONTROL_REGISTER = FPControlRegister::GetDefault()
+																		 .DisableExceptions()
+																		 .SetDenormalsAreZero(true)
+																		 .SetFlushToZero(true)
+																		 .SetRoundMode(FPRoundMode::ChopZero);
+static constexpr FPControlRegister DEFAULT_VU_FP_CONTROL_REGISTER = FPControlRegister::GetDefault()
+																		.DisableExceptions()
+																		.SetDenormalsAreZero(true)
+																		.SetFlushToZero(true)
+																		.SetRoundMode(FPRoundMode::ChopZero);
 
 const char* SettingInfo::StringDefaultValue() const
 {
@@ -389,17 +402,14 @@ bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
 
 Pcsx2Config::CpuOptions::CpuOptions()
 {
-	sseMXCSR.bitmask = DEFAULT_sseMXCSR;
-	sseVU0MXCSR.bitmask = DEFAULT_sseVUMXCSR;
-	sseVU1MXCSR.bitmask = DEFAULT_sseVUMXCSR;
+	FPUFPCR = DEFAULT_FPU_FP_CONTROL_REGISTER;
+	VU0FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
+	VU1FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
 	AffinityControlMode = 0;
 }
 
 void Pcsx2Config::CpuOptions::ApplySanityCheck()
 {
-	sseMXCSR.ClearExceptionFlags().DisableExceptions();
-	sseVU0MXCSR.ClearExceptionFlags().DisableExceptions();
-	sseVU1MXCSR.ClearExceptionFlags().DisableExceptions();
 	AffinityControlMode = std::min<u32>(AffinityControlMode, 6);
 
 	Recompiler.ApplySanityCheck();
@@ -409,17 +419,23 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/CPU");
 
-	SettingsWrapBitBoolEx(sseMXCSR.DenormalsAreZero, "FPU.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseMXCSR.FlushToZero, "FPU.FlushToZero");
-	SettingsWrapBitfieldEx(sseMXCSR.RoundingControl, "FPU.Roundmode");
-	SettingsWrapEntry(AffinityControlMode);
+	const auto read_fpcr = [&wrap, &CURRENT_SETTINGS_SECTION](FPControlRegister& fpcr, std::string_view prefix) {
+		fpcr.SetDenormalsAreZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.DenormalsAreZero", prefix),
+			fpcr.GetDenormalsAreZero(), fpcr.GetDenormalsAreZero()));
+		fpcr.SetFlushToZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.DenormalsAreZero", prefix),
+			fpcr.GetFlushToZero(), fpcr.GetFlushToZero()));
 
-	SettingsWrapBitBoolEx(sseVU0MXCSR.DenormalsAreZero, "VU0.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseVU0MXCSR.FlushToZero, "VU0.FlushToZero");
-	SettingsWrapBitfieldEx(sseVU0MXCSR.RoundingControl, "VU0.Roundmode");
-	SettingsWrapBitBoolEx(sseVU1MXCSR.DenormalsAreZero, "VU1.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseVU1MXCSR.FlushToZero, "VU1.FlushToZero");
-	SettingsWrapBitfieldEx(sseVU1MXCSR.RoundingControl, "VU1.Roundmode");
+		uint round_mode = static_cast<uint>(fpcr.GetRoundMode());
+		wrap.Entry(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.Roundmode", prefix), round_mode, round_mode);
+		round_mode = std::min(round_mode, static_cast<uint>(FPRoundMode::MaxCount) - 1u);
+		fpcr.SetRoundMode(static_cast<FPRoundMode>(round_mode));
+	};
+
+	read_fpcr(FPUFPCR, "FPU");
+	read_fpcr(VU0FPCR, "VU0");
+	read_fpcr(VU1FPCR, "VU1");
+
+	SettingsWrapEntry(AffinityControlMode);
 
 	Recompiler.LoadSave(wrap);
 }
@@ -461,6 +477,7 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
 	switch (type)
 	{
+		// clang-format off
 		case GSRendererType::Auto:  return "Auto";
 		case GSRendererType::DX11:  return "Direct3D 11";
 		case GSRendererType::DX12:  return "Direct3D 12";
@@ -470,6 +487,7 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 		case GSRendererType::SW:    return "Software";
 		case GSRendererType::Null:  return "Null";
 		default:                    return "";
+			// clang-format on
 	}
 }
 
@@ -636,7 +654,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(Adapter) &&
-		
+
 		OpEqu(HWDumpDirectory) &&
 		OpEqu(SWDumpDirectory));
 }
@@ -1093,26 +1111,26 @@ std::string Pcsx2Config::DEV9Options::SaveIPHelper(u8* field)
 }
 
 static const char* const tbl_GamefixNames[] =
-{
-	"FpuMul",
-	"FpuNegDiv",
-	"GoemonTlb",
-	"SoftwareRendererFMV",
-	"SkipMPEG",
-	"OPHFlag",
-	"EETiming",
-	"InstantDMA",
-	"DMABusy",
-	"GIFFIFO",
-	"VIFFIFO",
-	"VIF1Stall",
-	"VuAddSub",
-	"Ibit",
-	"VUSync",
-	"VUOverflow",
-	"XGKick",
-	"BlitInternalFPS",
-	"FullVU0Sync",
+	{
+		"FpuMul",
+		"FpuNegDiv",
+		"GoemonTlb",
+		"SoftwareRendererFMV",
+		"SkipMPEG",
+		"OPHFlag",
+		"EETiming",
+		"InstantDMA",
+		"DMABusy",
+		"GIFFIFO",
+		"VIFFIFO",
+		"VIF1Stall",
+		"VuAddSub",
+		"Ibit",
+		"VUSync",
+		"VUOverflow",
+		"XGKick",
+		"BlitInternalFPS",
+		"FullVU0Sync",
 };
 
 const char* EnumToString(GamefixId id)
@@ -1137,6 +1155,7 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
+		// clang-format off
 		case Fix_VuAddSub:            VuAddSubHack            = enabled; break;
 		case Fix_FpuMultiply:         FpuMulHack              = enabled; break;
 		case Fix_FpuNegDiv:           FpuNegDivHack           = enabled; break;
@@ -1157,6 +1176,7 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_BlitInternalFPS:     BlitInternalFPSHack     = enabled; break;
 		case Fix_FullVU0Sync:         FullVU0SyncHack         = enabled; break;
 		jNO_DEFAULT;
+			// clang-format on
 	}
 }
 
@@ -1165,6 +1185,7 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
+		// clang-format off
 		case Fix_VuAddSub:            return VuAddSubHack;
 		case Fix_FpuMultiply:         return FpuMulHack;
 		case Fix_FpuNegDiv:           return FpuNegDivHack;
@@ -1185,6 +1206,7 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 		case Fix_BlitInternalFPS:     return BlitInternalFPSHack;
 		case Fix_FullVU0Sync:         return FullVU0SyncHack;
 		jNO_DEFAULT;
+			// clang-format on
 	}
 	return false; // unreachable, but we still need to suppress warnings >_<
 }
@@ -1497,11 +1519,6 @@ Pcsx2Config::Pcsx2Config()
 
 void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 {
-	// Switch the rounding mode back to the system default for loading settings.
-	// That way, we'll get exactly the same values as what we loaded when we first started.
-	const SSE_MXCSR prev_mxcsr(SSE_MXCSR::GetCurrent());
-	SSE_MXCSR::SetCurrent(SSE_MXCSR{SYSTEM_sseMXCSR});
-
 	SettingsWrapSection("EmuCore");
 
 	SettingsWrapBitBool(CdvdVerboseReads);
@@ -1561,8 +1578,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	{
 		CurrentAspectRatio = GS.AspectRatio;
 	}
-
-	SSE_MXCSR::SetCurrent(prev_mxcsr);
 }
 
 void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
@@ -1622,6 +1637,8 @@ void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 
 void Pcsx2Config::CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si)
 {
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	Pcsx2Config temp;
 	{
 		SettingsLoadWrapper wrapper(src_si);
@@ -1635,6 +1652,8 @@ void Pcsx2Config::CopyConfiguration(SettingsInterface* dest_si, SettingsInterfac
 
 void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
 {
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	Pcsx2Config temp;
 	SettingsClearWrapper wrapper(*dest_si);
 	temp.LoadSaveCore(wrapper);

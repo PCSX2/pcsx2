@@ -234,9 +234,6 @@
     <ClInclude Include="emitter\implement\test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="emitter\tools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\x86emitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -349,6 +346,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SingleRegisterTypes.h" />
+    <ClInclude Include="FPControl.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
