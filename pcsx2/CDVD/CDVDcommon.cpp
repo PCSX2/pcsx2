@@ -11,6 +11,7 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/EnumOps.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
