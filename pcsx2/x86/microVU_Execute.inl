@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "cpuinfo.h"
+
 //------------------------------------------------------------------
 // Dispatcher Functions
 //------------------------------------------------------------------
@@ -204,7 +206,7 @@ static void mVUGenerateCopyPipelineState(mV)
 {
 	mVU.copyPLState = xGetAlignedCallTarget();
 
-	if (x86caps.hasAVX2)
+	if (cpuinfo_has_x86_avx())
 	{
 		xVMOVAPS(ymm0, ptr[rax]);
 		xVMOVAPS(ymm1, ptr[rax + 32u]);
@@ -249,7 +251,7 @@ static void mVUGenerateCompareState(mV)
 {
 	mVU.compareStateF = xGetAlignedCallTarget();
 
-	if (!x86caps.hasAVX2)
+	if (!cpuinfo_has_x86_avx2())
 	{
 		xMOVAPS  (xmm0, ptr32[arg1reg]);
 		xPCMP.EQD(xmm0, ptr32[arg2reg]);

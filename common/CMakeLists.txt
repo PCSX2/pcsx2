@@ -37,7 +37,6 @@ target_sources(common PRIVATE
 	WindowInfo.cpp
 	emitter/avx.cpp
 	emitter/bmi.cpp
-	emitter/cpudetect.cpp
 	emitter/fpu.cpp
 	emitter/groups.cpp
 	emitter/jmp.cpp
@@ -45,8 +44,6 @@ target_sources(common PRIVATE
 	emitter/legacy_sse.cpp
 	emitter/movs.cpp
 	emitter/simd.cpp
-	emitter/LnxCpuDetect.cpp
-	emitter/WinCpuDetect.cpp
 	emitter/x86emitter.cpp
 	Darwin/DarwinThreads.cpp
 	Darwin/DarwinMisc.cpp
