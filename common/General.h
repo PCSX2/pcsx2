@@ -11,23 +11,6 @@
 #include <string>
 #include <cstring>
 
-// This macro is actually useful for about any and every possible application of C++
-// equality operators.
-#define OpEqu(field) (field == right.field)
-
-// Macro used for removing some of the redtape involved in defining bitfield/union helpers.
-//
-#define BITFIELD32() \
-	union \
-	{ \
-		u32 bitset; \
-		struct \
-		{
-
-#define BITFIELD_END \
-		}; \
-	};
-
 template <typename T>
 [[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
 {

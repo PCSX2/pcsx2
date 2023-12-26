@@ -22,6 +22,10 @@
 #include <ShlObj.h>
 #endif
 
+// This macro is actually useful for about any and every possible application of C++ equality operators.
+// Stuck here because of legacy code, new code shouldn't rely on it, it's difficult to read.
+#define OpEqu(field) (field == right.field)
+
 // Default EE/VU control registers have exceptions off, DaZ/FTZ, and the rounding mode set to Chop/Zero.
 static constexpr FPControlRegister DEFAULT_FPU_FP_CONTROL_REGISTER = FPControlRegister::GetDefault()
 																		 .DisableExceptions()
@@ -168,6 +172,41 @@ namespace EmuFolders
 	static void SetDataDirectory();
 } // namespace EmuFolders
 
+TraceFiltersEE::TraceFiltersEE()
+{
+	bitset = 0;
+}
+
+bool TraceFiltersEE::operator==(const TraceFiltersEE& right) const
+{
+	return OpEqu(bitset);
+}
+
+bool TraceFiltersEE::operator!=(const TraceFiltersEE& right) const
+{
+	return !this->operator==(right);
+}
+
+TraceFiltersIOP::TraceFiltersIOP()
+{
+	bitset = 0;
+}
+
+bool TraceFiltersIOP::operator==(const TraceFiltersIOP& right) const
+{
+	return OpEqu(bitset);
+}
+
+bool TraceFiltersIOP::operator!=(const TraceFiltersIOP& right) const
+{
+	return !this->operator==(right);
+}
+
+TraceLogFilters::TraceLogFilters()
+{
+	Enabled = false;
+}
+
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/TraceLog");
@@ -179,6 +218,16 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntry(EE.bitset);
 	SettingsWrapEntry(IOP.bitset);
+}
+
+bool TraceLogFilters::operator==(const TraceLogFilters& right) const
+{
+	return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP);
+}
+
+bool TraceLogFilters::operator!=(const TraceLogFilters& right) const
+{
+	return !this->operator==(right);
 }
 
 static constexpr const char* s_speed_hack_names[] = {
@@ -274,6 +323,11 @@ void Pcsx2Config::SpeedhackOptions::LoadSave(SettingsWrapper& wrap)
 	EECycleSkip = std::min(EECycleSkip, MAX_EE_CYCLE_SKIP);
 }
 
+ Pcsx2Config::ProfilerOptions::ProfilerOptions()
+	: bitset(0xfffffffe)
+{
+}
+
 void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/Profiler");
@@ -283,6 +337,16 @@ void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(RecBlocks_IOP);
 	SettingsWrapBitBool(RecBlocks_VU0);
 	SettingsWrapBitBool(RecBlocks_VU1);
+}
+
+bool Pcsx2Config::ProfilerOptions::operator!=(const ProfilerOptions& right) const
+{
+	return !OpEqu(bitset);
+}
+
+bool Pcsx2Config::ProfilerOptions::operator==(const ProfilerOptions& right) const
+{
+	return OpEqu(bitset);
 }
 
 Pcsx2Config::RecompilerOptions::RecompilerOptions()
@@ -394,12 +458,49 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(fpuFullMode);
 }
 
+u32 Pcsx2Config::RecompilerOptions::GetEEClampMode() const
+{
+	return fpuFullMode ? 3 : (fpuExtraOverflow ? 2 : (fpuOverflow ? 1 : 0));
+}
+
+void Pcsx2Config::RecompilerOptions::SetEEClampMode(u32 value)
+{
+	fpuOverflow = (value >= 1);
+	fpuExtraOverflow = (value >= 2);
+	fpuFullMode = (value >= 3);
+}
+
+u32 Pcsx2Config::RecompilerOptions::GetVUClampMode() const
+{
+	return vu0SignOverflow ? 3 : (vu0ExtraOverflow ? 2 : (vu0Overflow ? 1 : 0));
+}
+
+bool Pcsx2Config::RecompilerOptions::operator!=(const RecompilerOptions& right) const
+{
+	return !OpEqu(bitset);
+}
+
+bool Pcsx2Config::RecompilerOptions::operator==(const RecompilerOptions& right) const
+{
+	return OpEqu(bitset);
+}
+
 bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
 {
 	return (Recompiler.EnableEE != right.Recompiler.EnableEE ||
 			Recompiler.EnableIOP != right.Recompiler.EnableIOP ||
 			Recompiler.EnableVU0 != right.Recompiler.EnableVU0 ||
 			Recompiler.EnableVU1 != right.Recompiler.EnableVU1);
+}
+
+bool Pcsx2Config::CpuOptions::operator!=(const CpuOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::CpuOptions::operator==(const CpuOptions& right) const
+{
+	return OpEqu(FPUFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
 }
 
 Pcsx2Config::CpuOptions::CpuOptions()
@@ -991,6 +1092,32 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 	// clampy clamp
 }
 
+bool Pcsx2Config::SPU2Options::operator!=(const SPU2Options& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::SPU2Options::operator==(const SPU2Options& right) const
+{
+	return OpEqu(bitset) &&
+
+		   OpEqu(SynchMode) &&
+
+		   OpEqu(FinalVolume) &&
+		   OpEqu(Latency) &&
+		   OpEqu(OutputLatency) &&
+		   OpEqu(SpeakerConfiguration) &&
+		   OpEqu(DplDecodingLevel) &&
+
+		   OpEqu(SequenceLenMS) &&
+		   OpEqu(SeekWindowMS) &&
+		   OpEqu(OverlapMS) &&
+
+		   OpEqu(OutputModule) &&
+		   OpEqu(BackendName) &&
+		   OpEqu(DeviceName);
+}
+
 const char* Pcsx2Config::DEV9Options::NetApiNames[] = {
 	"Unset",
 	"PCAP Bridged",
@@ -1100,6 +1227,35 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 	}
 }
 
+bool Pcsx2Config::DEV9Options::operator!=(const DEV9Options& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::DEV9Options::operator==(const DEV9Options& right) const
+{
+	return OpEqu(EthEnable) &&
+		   OpEqu(EthApi) &&
+		   OpEqu(EthDevice) &&
+		   OpEqu(EthLogDNS) &&
+
+		   OpEqu(InterceptDHCP) &&
+		   (*(int*)PS2IP == *(int*)right.PS2IP) &&
+		   (*(int*)Gateway == *(int*)right.Gateway) &&
+		   (*(int*)DNS1 == *(int*)right.DNS1) &&
+		   (*(int*)DNS2 == *(int*)right.DNS2) &&
+
+		   OpEqu(AutoMask) &&
+		   OpEqu(AutoGateway) &&
+		   OpEqu(ModeDNS1) &&
+		   OpEqu(ModeDNS2) &&
+
+		   OpEqu(EthHosts) &&
+
+		   OpEqu(HddEnable) &&
+		   OpEqu(HddFile);
+}
+
 void Pcsx2Config::DEV9Options::LoadIPHelper(u8* field, const std::string& setting)
 {
 	if (4 == sscanf(setting.c_str(), "%hhu.%hhu.%hhu.%hhu", &field[0], &field[1], &field[2], &field[3]))
@@ -1110,6 +1266,19 @@ void Pcsx2Config::DEV9Options::LoadIPHelper(u8* field, const std::string& settin
 std::string Pcsx2Config::DEV9Options::SaveIPHelper(u8* field)
 {
 	return StringUtil::StdStringFromFormat("%u.%u.%u.%u", field[0], field[1], field[2], field[3]);
+}
+
+bool Pcsx2Config::DEV9Options::HostEntry::operator==(const HostEntry& right) const
+{
+	return OpEqu(Url) &&
+		   OpEqu(Desc) &&
+		   (*(int*)Address == *(int*)right.Address) &&
+		   OpEqu(Enabled);
+}
+
+bool Pcsx2Config::DEV9Options::HostEntry::operator!=(const HostEntry& right) const
+{
+	return !this->operator==(right);
 }
 
 static const char* const tbl_GamefixNames[] =
@@ -1179,6 +1348,16 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		default:                                                         break;
 			// clang-format on
 	}
+}
+
+bool Pcsx2Config::GamefixOptions::operator!=(const GamefixOptions& right) const
+{
+	return !OpEqu(bitset);
+}
+
+bool Pcsx2Config::GamefixOptions::operator==(const GamefixOptions& right) const
+{
+	return OpEqu(bitset);
 }
 
 bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
@@ -1261,6 +1440,16 @@ void Pcsx2Config::DebugOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfield(MemoryViewBytesPerRow);
 }
 
+bool Pcsx2Config::DebugOptions::operator!=(const DebugOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::DebugOptions::operator==(const DebugOptions& right) const
+{
+	return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
+}
+
 Pcsx2Config::FilenameOptions::FilenameOptions()
 {
 }
@@ -1270,6 +1459,16 @@ void Pcsx2Config::FilenameOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapSection("Filenames");
 
 	wrap.Entry(CURRENT_SETTINGS_SECTION, "BIOS", Bios, Bios);
+}
+
+bool Pcsx2Config::FilenameOptions::operator!=(const FilenameOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::FilenameOptions::operator==(const FilenameOptions& right) const
+{
+	return OpEqu(Bios);
 }
 
 Pcsx2Config::EmulationSpeedOptions::EmulationSpeedOptions()
