@@ -1113,7 +1113,9 @@ void GSDeviceVK::SubmitCommandBuffer(
 	if (spin_enabled && m_optional_extensions.vk_ext_calibrated_timestamps)
 		resources.submit_timestamp = GetCPUTimestamp();
 
-	if (!submit_on_thread || !m_present_thread.joinable())
+	// Don't use threaded presentation when spinning is enabled. ScanForCommandBufferCompletion()
+	// calls vkGetFenceStatus(), which reads a fence that has been passed off to the thread.
+	if (!submit_on_thread || GSConfig.HWSpinGPUForReadbacks || !m_present_thread.joinable())
 	{
 		DoSubmitCommandBuffer(m_current_frame, present_swap_chain, spin_cycles);
 		if (present_swap_chain)
