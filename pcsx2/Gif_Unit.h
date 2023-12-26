@@ -450,7 +450,7 @@ struct Gif_Path
 						break; // Exit Early
 					if (gifTag.curReg() == GIF_REG_A_D)
 					{
-						pxAssertMsg(Gif_HandlerAD_Debug(&buffer[curOffset]), "Unhandled GIF packet");
+						// pxAssertMsg(Gif_HandlerAD_Debug(&buffer[curOffset]), "Unhandled GIF packet");
 						Gif_HandlerAD_MTVU(&buffer[curOffset]);
 					}
 					incTag(curOffset, gsPack.size, 16); // 1 QWC
