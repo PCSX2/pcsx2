@@ -59,7 +59,6 @@ struct nVifStruct
 };
 
 extern void resetNewVif(int idx);
-extern void releaseNewVif(int idx);
 
 alignas(16) extern nVifStruct nVif[2];
 alignas(16) extern nVifCall nVifUpk[(2 * 2 * 16) * 4]; // ([USN][Masking][Unpack Type]) [curCycle]

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "R3000A.h"
-#include "System.h"
 #include "VU.h"
 #include "Vif.h"
 #include "x86/iR3000A.h"

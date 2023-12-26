@@ -3,8 +3,13 @@
 
 #pragma once
 
-#include "System.h"
 #include "PadData.h"
+
+#include "common/Pcsx2Defs.h"
+
+#include <optional>
+#include <string>
+#include <vector>
 
 // NOTE / TODOs for Version 2
 // - Move fromSavestate, undoCount, and total frames into the header

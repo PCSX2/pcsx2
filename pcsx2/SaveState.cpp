@@ -58,7 +58,7 @@ static void PreLoadPrep()
 	// clear protected pages, since we don't want to fault loading EE memory
 	mmap_ResetBlockTracking();
 
-	SysClearExecutionCache();
+	VMManager::Internal::ClearCPUExecutionCaches();
 }
 
 static void PostLoadPrep()
@@ -515,7 +515,6 @@ public:
 
 	virtual bool FreezeIn(zip_file_t* zf) const override
 	{
-		SysClearExecutionCache();
 		return MemorySavestateEntry::FreezeIn(zf);
 	}
 };

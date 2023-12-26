@@ -8,7 +8,6 @@
 #include "common/Threading.h"
 
 #include "PerformanceMetrics.h"
-#include "System.h"
 
 #include "GS.h"
 #include "GS/GSCapture.h"

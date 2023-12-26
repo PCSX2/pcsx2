@@ -11,8 +11,6 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
-#include "pcsx2/System.h"
-
 MemoryCardConvertDialog::MemoryCardConvertDialog(QWidget* parent, QString selectedCard)
 	: QDialog(parent)
 {

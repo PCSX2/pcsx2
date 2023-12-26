@@ -34,6 +34,8 @@ static constexpr FPControlRegister DEFAULT_VU_FP_CONTROL_REGISTER = FPControlReg
 																		.SetFlushToZero(true)
 																		.SetRoundMode(FPRoundMode::ChopZero);
 
+Pcsx2Config EmuConfig;
+
 const char* SettingInfo::StringDefaultValue() const
 {
 	return default_value ? default_value : "";

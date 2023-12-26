@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include "common/emitter/x86emitter.h"
+#include "Config.h"
 #include "R5900.h"
+#include "R5900_Profiler.h"
 #include "VU.h"
 #include "iCore.h"
-#include "R5900_Profiler.h"
+
+#include "common/emitter/x86emitter.h"
 
 // Register containing a pointer to our fastmem (4GB) area
 #define RFASTMEMBASE x86Emitter::rbp

@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "System.h"
-#include "iR5900.h"
+#include "Config.h"
+#include "R3000A.h"
 #include "Vif.h"
 #include "VU.h"
-#include "R3000A.h"
+#include "x86/iCore.h"
+#include "x86/iR5900.h"
 
 using namespace x86Emitter;
 
