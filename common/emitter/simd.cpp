@@ -64,11 +64,6 @@ SSE_MXCSR& SSE_MXCSR::DisableExceptions()
 	return *this;
 }
 
-SSE_MXCSR::operator x86Emitter::xIndirect32() const
-{
-	return x86Emitter::ptr32[&bitmask];
-}
-
 namespace x86Emitter
 {
 

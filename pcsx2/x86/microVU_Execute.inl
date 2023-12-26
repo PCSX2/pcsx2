@@ -32,7 +32,7 @@ void mVUdispatcherAB(mV)
 
 		// Load VU's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+			xLDMXCSR(ptr32[isVU0 ? &g_sseVU0MXCSR.bitmask : &g_sseVU1MXCSR.bitmask]);
 
 		// Load Regs
 		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_P].UL]);
@@ -72,7 +72,7 @@ void mVUdispatcherAB(mV)
 
 		// Load EE's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(g_sseMXCSR);
+			xLDMXCSR(ptr32[&g_sseMXCSR.bitmask]);
 
 		// = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
 		//              all other arguments are passed right to left.
@@ -96,7 +96,7 @@ void mVUdispatcherCD(mV)
 
 		// Load VU's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+			xLDMXCSR(ptr32[isVU0 ? &g_sseVU0MXCSR.bitmask : &g_sseVU1MXCSR.bitmask]);
 
 		mVUrestoreRegs(mVU);
 		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);
@@ -117,7 +117,7 @@ void mVUdispatcherCD(mV)
 
 		// Load EE's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(g_sseMXCSR);
+			xLDMXCSR(ptr32[&g_sseMXCSR.bitmask]);
 	}
 
 	xRET();

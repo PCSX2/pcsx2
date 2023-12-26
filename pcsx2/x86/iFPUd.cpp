@@ -669,7 +669,7 @@ void recDIV_S_xmm(int info)
 
 			roundmode_neg = g_sseMXCSR;
 			roundmode_neg.SetRoundMode(SSEround_NegInf);
-			xLDMXCSR(roundmode_neg);
+			xLDMXCSR(ptr32[&roundmode_neg.bitmask]);
 			roundmodeFlag = true;
 		}
 	}
@@ -682,7 +682,7 @@ void recDIV_S_xmm(int info)
 
 			roundmode_nearest = g_sseMXCSR;
 			roundmode_nearest.SetRoundMode(SSEround_Nearest);
-			xLDMXCSR(roundmode_nearest);
+			xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 			roundmodeFlag = true;
 		}
 	}
@@ -699,7 +699,7 @@ void recDIV_S_xmm(int info)
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
 	if (roundmodeFlag)
-		xLDMXCSR(g_sseMXCSR);
+		xLDMXCSR(ptr32[&g_sseMXCSR]);
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
@@ -958,7 +958,7 @@ void recSQRT_S_xmm(int info)
 		//Console.WriteLn("sqrt to nearest");
 		roundmode_nearest = g_sseMXCSR;
 		roundmode_nearest.SetRoundMode(SSEround_Nearest);
-		xLDMXCSR(roundmode_nearest);
+		xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 		roundmodeFlag = 1;
 	}
 
@@ -989,7 +989,7 @@ void recSQRT_S_xmm(int info)
 	ToPS2FPU(EEREC_D, false, t1reg, false);
 
 	if (roundmodeFlag == 1)
-		xLDMXCSR(g_sseMXCSR);
+		xLDMXCSR(ptr32[&g_sseMXCSR.bitmask]);
 
 	_freeXMMreg(t1reg);
 }
@@ -1080,7 +1080,7 @@ void recRSQRT_S_xmm(int info)
 		//Console.WriteLn("sqrt to nearest");
 		roundmode_nearest = g_sseMXCSR;
 		roundmode_nearest.SetRoundMode(SSEround_Nearest);
-		xLDMXCSR(roundmode_nearest);
+		xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
 		roundmodeFlag = true;
 	}
 
@@ -1096,7 +1096,7 @@ void recRSQRT_S_xmm(int info)
 	_freeXMMreg(treg); _freeXMMreg(sreg);
 
 	if (roundmodeFlag)
-		xLDMXCSR(g_sseMXCSR);
+		xLDMXCSR(ptr32[&g_sseMXCSR.bitmask]);
 }
 
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
