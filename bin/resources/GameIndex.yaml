@@ -2102,7 +2102,9 @@ SCAJ-30011:
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
 SCCS-40001:
-  name: "Ape Escape 2"
+  name: 捉猴啦 2
+  name-sort: "Zhuo Hou La 2"
+  name-en: "Ape Escape 2"
   region: "NTSC-C"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
@@ -2110,16 +2112,24 @@ SCCS-40001:
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCCS-40002:
-  name: "Devil May Cry 2 - Disc 1"
+  name: 恶魔猎人2 (Disc 1)
+  name-sort: "'E'mo Lieren 2 (Disc 1)"
+  name-en: "Devil May Cry 2 - Disc 1"
   region: "NTSC-C"
 SCCS-40003:
-  name: "Devil May Cry 2 - Disc 2"
+  name: 恶魔猎人2 (Disc 2)
+  name-sort: "'E'mo Lieren 2 (Disc 2)"
+  name-en: "Devil May Cry 2 - Disc 2"
   region: "NTSC-C"
 SCCS-40004:
-  name: "XIGO - Zuihou de Touzi"
+  name: XIGO: 最后的骰子
+  name-sort: "XIGO: Zuihou de Touzi"
+  name-en: "XIGO - Zuihou de Touzi"
   region: "NTSC-C"
 SCCS-40005:
-  name: "Ico"
+  name: ICO 古堡迷踪
+  name-sort: "ICO Gubao Mizong"
+  name-en: "Ico"
   region: "NTSC-C"
   compat: 5
   clampModes:
@@ -2130,51 +2140,82 @@ SCCS-40005:
     halfPixelOffset: 1 # Fixes effect misalignment.
     moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCCS-40006:
-  name: "Zhen Sanguo Wushuang 2"
+  name: 真·三国無双2
+  name-sort: "Zhen - Sanguo Wushuang 2"
+  name-en: "Zhen Sanguo Wushuang 2"
   region: "NTSC-C"
 SCCS-40007:
-  name: "Arc the Lad - Seirei no Tasogare"
+  name: 亚克传承　～精灵之黄昏～
+  name-sort: "Yake Chuancheng - Jingling Zhi Huanghun -"
+  nam-ene: "Arc the Lad - Seirei no Tasogare"
   region: "NTSC-C"
 SCCS-40009:
-  name: "Dragon Ball Z 2"
+  name: 龙珠二世
+  name-sort: "Longzhu Ershi"
+  name-en: "Dragon Ball Z 2"
   region: "NTSC-C"
 SCCS-40010:
-  name: "Super Puzzle Bobble 2"
+  name: 超级泡泡龙 2
+  name-sort: "Chaoji Paopaolong 2"
+  nam-en: "Super Puzzle Bobble 2"
   region: "NTSC-C"
 SCCS-40011:
-  name: "Armored Core 2 - Another Age"
+  name: 机战佣兵2
+  name-sort: "Jizhan Yongbing 2"
+  name-en: "Armored Core 2 - Another Age"
+  region: "NTSC-C"
+SCCS-40012:
+  name: 格斗擂台4 进化版
+  name-sort: "Gedou Leitai 4 Jinhuaban"
+  name-en: "Virtua Fighter 4 Evolution"
   region: "NTSC-C"
 SCCS-40014:
-  name: "World Soccer Winning Eleven 7 - International"
+  name: 实况足球 胜利十一人7 国际版
+  name-sort: "Shikuang Zuqiu Shengli Shiyi Ren 7 Guojiban"
+  name-en: "World Soccer Winning Eleven 7 - International"
   region: "NTSC-C"
 SCCS-40015:
-  name: "Viorate no Atelier - Gramnad no Renkinjutsushi 2"
+  name: 薇欧蕾特的工房 ～古拉姆那特的炼金术士2～
+  name-sort: "Wei'ouleite De Gongfang - Gulamunate De Lianjinshushi 2 -"
+  name-en: "Viorate no Atelier - Gramnad no Renkinjutsushi 2"
   region: "NTSC-C"
 SCCS-40016:
-  name: "Ape Escape - Pumped & Primed"
+  name: 比波猴百斗派对
+  name-sort: "Bibohou Baidou Paidui"
+  name-en: "Ape Escape - Pumped & Primed"
   region: "NTSC-C"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCCS-40017:
-  name: "EyeToy - Play"
+  name: 爱淘儿
+  name-sort: "AiTao'er"
+  name-en: "EyeToy - Play"
   region: "NTSC-C"
   compat: 5
 SCCS-40018:
-  name: "Saru EyeToy - Oosawagi! Ukkiuki Game Tenkomori!!"
+  name: 比波猴@爱淘儿 一起欢聚比波猴乐园吧！
+  name-sort: "Bibohou Aitao'er Yiqi Huanju Bibohou Leyuan Ba!"
+  name-en: "Saru EyeToy - Oosawagi! Ukkiuki Game Tenkomori!!"
   region: "NTSC-C"
   compat: 5
 SCCS-40019:
   name: "Formula One 04"
   region: "NTSC-C"
 SCCS-40022:
-  name: "World Soccer Winning Eleven 8 - Asia Championship"
+  name: 实况足球 胜利十一人 8 亚洲冠军联赛
+  name-sort: "Shikuang Zuqiu Shengli Shiyi Ren 8 Yazhou Guanjunliansai"
+  name-en: "World Soccer Winning Eleven 8 - Asia Championship"
   region: "NTSC-C"
   compat: 5
 SCCS-60001:
-  name: "Sakura Taisen - Atsuki Chishio Ni"
+  name: 樱花大战: 炽热之血
+  name-sort: "Yinghua Dazhan: Chire Zhi Xue"
+  name-en: "Sakura Taisen - Atsuki Chishio Ni"
   region: "NTSC-C"
 SCCS-60002:
-  name: "Gran Turismo 4 [Review Copy]"
+  name: 跑车浪漫旅 4
+  name-sort: "Paoche Langmanlu 4"
+  name-en: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
