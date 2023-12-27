@@ -3,7 +3,8 @@
 
 #include "FastJmp.h"
 
-#if !defined(_MSC_VER) || defined(__clang__)
+// Win32 uses Fastjmp.asm, because MSVC doesn't support inline asm.
+#if !defined(_WIN32) || defined(_M_ARM64)
 
 #if defined(__APPLE__)
 #define PREFIX "_"
