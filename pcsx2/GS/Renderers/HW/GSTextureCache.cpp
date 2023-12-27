@@ -1032,12 +1032,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		const u32 bw = TEX0.TBW;
 
 		GSVector4i req_rect = r;
-		// The read area might be offset but the start of the texture is at the beginning of the space.
-		req_rect.x = 0;
-		req_rect.y = 0;
 
-		if (region.HasX() || region.HasY())
-			req_rect = req_rect + region.GetOffset(req_rect.z, req_rect.w);
+		// The read area might be offset but the start of the texture is at the beginning of the space.
+		req_rect.x = region.HasX() ? region.GetMinX() : 0;
+		req_rect.y = region.HasY() ? region.GetMinY() : 0;
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -1219,7 +1217,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				else
 				{
 					rect_clean = t->m_dirty.empty();
-					if (!possible_shuffle && rect_clean && bp == t->m_TEX0.TBP0 && t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM) && width_match && real_fmt_match)
+					if (!possible_shuffle && frame_fbp != t->m_TEX0.TBP0 && rect_clean && bp == t->m_TEX0.TBP0 && t && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM) && width_match && real_fmt_match)
 					{
 						if (!tex_merge_rt && t->Overlaps(bp, bw, psm, req_rect))
 							ResizeTarget(t, req_rect, bp, psm, bw);
@@ -1291,7 +1289,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						// 1/ it just works :)
 						// 2/ even with upscaling
 						// 3/ for both Direct3D and OpenGL
-						if (GSConfig.UserHacks_CPUFBConversion && (psm == PSMT4 || psm == PSMT8))
+						if (psm == PSMT4 || (GSConfig.UserHacks_CPUFBConversion && psm == PSMT8))
 						{
 							// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
 							// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
@@ -5780,10 +5778,19 @@ bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool
 		default:
 			alpha_valid = ((m_TEX0.PSM & 0xF) == 0x1) ? true : (m_valid_alpha_low || m_valid_alpha_high);
 			color_valid = m_valid_rgb;
+			if (req_alpha && !alpha_valid && color_valid)
+			{
+				RGBAMask mask;
+				mask._u32 = 0x8;
+				AddDirtyRectTarget(this, this->m_valid, m_TEX0.PSM, m_TEX0.TBW, mask, false);
+				alpha_valid = true; // This is going to get resolved going forward.
+				m_valid_alpha_low = true;
+				m_valid_alpha_high = true;
+			}
 			break;
 	}
 
-	return (color_valid && req_color) || (!req_color && ((alpha_valid && req_alpha) || !req_alpha));
+	return (!req_color || color_valid) && (!req_alpha || alpha_valid);
 }
 
 void GSTextureCache::Target::ResizeDrawn(const GSVector4i& rect)

@@ -451,7 +451,7 @@ public:
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll(bool sources, bool targets, bool hash_cache);
 	void ReadbackAll();
-	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear = false);
+	static void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear = false);
 	void ResizeTarget(Target* t, GSVector4i rect, u32 tbp, u32 psm, u32 tbw);
 	static bool FullRectDirty(Target* target, u32 rgba_mask);
 	static bool FullRectDirty(Target* target);
