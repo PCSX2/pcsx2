@@ -336,7 +336,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 
 bool BreakpointModel::removeRows(int row, int count, const QModelIndex& index)
 {
-	beginRemoveRows(index, row, row + count);
+	beginRemoveRows(index, row, row + count - 1);
 
 	for (int i = row; i < row + count; i++)
 	{
