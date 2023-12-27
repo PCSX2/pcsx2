@@ -91,6 +91,10 @@ bool GSRunner::InitializeConfig()
 	if (!EmuFolders::InitializeCriticalFolders())
 		return false;
 
+	const char* error;
+	if (!VMManager::PerformEarlyHardwareChecks(&error))
+		return false;
+
 	// don't provide an ini path, or bother loading. we'll store everything in memory.
 	MemorySettingsInterface& si = s_settings_interface;
 	Host::Internal::SetBaseSettingsLayer(&si);
