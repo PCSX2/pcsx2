@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GS.h"
 #include "GS/GSGL.h"
@@ -26,7 +12,9 @@
 #include "Host.h"
 #include "ShaderCacheVersion.h"
 
+#include "common/Console.h"
 #include "common/BitUtils.h"
+#include "common/HostSys.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
@@ -407,7 +395,7 @@ ID3D12GraphicsCommandList4* GSDevice12::GetInitCommandList()
 	CommandListResources& res = m_command_lists[m_current_command_list];
 	if (!res.init_command_list_used)
 	{
-		HRESULT hr = res.command_allocators[0]->Reset();
+		[[maybe_unused]] HRESULT hr = res.command_allocators[0]->Reset();
 		pxAssertMsg(SUCCEEDED(hr), "Reset init command allocator failed");
 
 		res.command_lists[0]->Reset(res.command_allocators[0].get(), nullptr);
@@ -1240,7 +1228,7 @@ void GSDevice12::DrawIndexedPrimitive()
 
 void GSDevice12::DrawIndexedPrimitive(int offset, int count)
 {
-	ASSERT(offset + count <= (int)m_index.count);
+	pxAssert(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	GetCommandList()->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
 }

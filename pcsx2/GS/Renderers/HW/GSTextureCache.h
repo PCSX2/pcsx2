@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
@@ -146,6 +134,7 @@ public:
 		int m_age = 0;
 		u32 m_end_block = MAX_BP; // Hint of the surface area.
 		bool m_32_bits_fmt = false; // Allow to detect the casting of 32 bits as 16 bits texture
+		bool m_was_dst_matched = false;
 		bool m_shared_texture = false;
 
 		__fi GSTexture* GetTexture() const { return m_texture; }
@@ -473,8 +462,8 @@ public:
 	GSTexture* LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVector2i& offset, float* scale, const GSVector2i& size);
 	std::shared_ptr<Palette> LookupPaletteObject(const u32* clut, u16 pal, bool need_gs_texture);
 
-	Source* LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle, const bool linear, const u32 frame_fbp = 0xFFFFFFFF, bool req_color = true, bool req_alpha = true);
-	Source* LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, const bool linear, const u32 frame_fbp = 0xFFFFFFFF, bool req_color = true, bool req_alpha = true, bool palette = false);
+	Source* LookupSource(const bool is_color, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const GSVector2i* lod, const bool possible_shuffle, const bool linear, const u32 frame_fbp = 0xFFFFFFFF, bool req_color = true, bool req_alpha = true);
+	Source* LookupDepthSource(const bool is_depth, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, const GSVector4i& r, const bool possible_shuffle, const bool linear, const u32 frame_fbp = 0xFFFFFFFF, bool req_color = true, bool req_alpha = true, bool palette = false);
 
 	Target* FindTargetOverlap(Target* target, int type, int psm);
 	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,

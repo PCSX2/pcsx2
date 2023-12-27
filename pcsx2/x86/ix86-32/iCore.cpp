@@ -1,27 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "R3000A.h"
-#include "System.h"
 #include "VU.h"
 #include "Vif.h"
 #include "x86/iR3000A.h"
 #include "x86/iR5900.h"
 
+#include "common/Console.h"
 #include "common/emitter/x86emitter.h"
 
 using namespace x86Emitter;
@@ -227,7 +213,7 @@ int _allocX86reg(int type, int reg, int mode)
 {
 	if (type == X86TYPE_GPR || type == X86TYPE_PSX)
 	{
-		pxAssertDev(reg >= 0 && reg < 34, "Register index out of bounds.");
+		pxAssertMsg(reg >= 0 && reg < 34, "Register index out of bounds.");
 	}
 
 	int hostXMMreg = (type == X86TYPE_GPR) ? _checkXMMreg(XMMTYPE_GPRREG, reg, 0) : -1;

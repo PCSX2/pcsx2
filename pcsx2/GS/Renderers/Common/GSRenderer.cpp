@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiManager.h"
@@ -43,6 +29,8 @@
 #include <deque>
 #include <thread>
 #include <mutex>
+
+static void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename);
 
 static constexpr std::array<PresentShader, 8> s_tv_shader_indices = {
 	PresentShader::COPY, PresentShader::SCANLINE,
@@ -551,7 +539,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
 	if (GSConfig.DumpGSData && s_n >= GSConfig.SaveN)
 	{
-		m_regs->Dump(GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
+		DumpGSPrivRegs(*m_regs, GetDrawDumpPath("vsync_%05d_f%lld_gs_reg.txt", s_n, g_perfmon.GetFrame()));
 	}
 
 	const int fb_sprite_blits = g_perfmon.GetDisplayFramebufferSpriteBlits();
@@ -602,7 +590,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	if (!idle_frame)
 		g_gs_device->AgePool();
 
-	g_perfmon.EndFrame();
+
+	g_perfmon.EndFrame(idle_frame);
+
 	if ((g_perfmon.GetFrame() & 0x1f) == 0)
 		g_perfmon.Update();
 
@@ -1028,4 +1018,111 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 	*height = 0;
 	pixels->clear();
 	return false;
+}
+
+void DumpGSPrivRegs(const GSPrivRegSet& r, const std::string& filename)
+{
+	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wt");
+	if (!fp)
+		return;
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (i == 0 && !r.PMODE.EN1)
+			continue;
+		if (i == 1 && !r.PMODE.EN2)
+			continue;
+
+		std::fprintf(fp.get(), "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
+			i,
+			r.DISP[i].DISPFB.Block(),
+			r.DISP[i].DISPFB.FBW,
+			r.DISP[i].DISPFB.PSM,
+			r.DISP[i].DISPFB.DBX,
+			r.DISP[i].DISPFB.DBY);
+
+		std::fprintf(fp.get(), "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
+			i,
+			r.DISP[i].DISPLAY.DX,
+			r.DISP[i].DISPLAY.DY,
+			r.DISP[i].DISPLAY.DW,
+			r.DISP[i].DISPLAY.DH,
+			r.DISP[i].DISPLAY.MAGH,
+			r.DISP[i].DISPLAY.MAGV);
+	}
+
+	std::fprintf(fp.get(), "PMODE EN1=%u EN2=%u CRTMD=%u MMOD=%u AMOD=%u SLBG=%u ALP=%u\n",
+		r.PMODE.EN1,
+		r.PMODE.EN2,
+		r.PMODE.CRTMD,
+		r.PMODE.MMOD,
+		r.PMODE.AMOD,
+		r.PMODE.SLBG,
+		r.PMODE.ALP);
+
+	std::fprintf(fp.get(), "SMODE1 CLKSEL=%u CMOD=%u EX=%u GCONT=%u LC=%u NVCK=%u PCK2=%u PEHS=%u PEVS=%u PHS=%u PRST=%u PVS=%u RC=%u SINT=%u SLCK=%u SLCK2=%u SPML=%u T1248=%u VCKSEL=%u VHP=%u XPCK=%u\n",
+		r.SMODE1.CLKSEL,
+		r.SMODE1.CMOD,
+		r.SMODE1.EX,
+		r.SMODE1.GCONT,
+		r.SMODE1.LC,
+		r.SMODE1.NVCK,
+		r.SMODE1.PCK2,
+		r.SMODE1.PEHS,
+		r.SMODE1.PEVS,
+		r.SMODE1.PHS,
+		r.SMODE1.PRST,
+		r.SMODE1.PVS,
+		r.SMODE1.RC,
+		r.SMODE1.SINT,
+		r.SMODE1.SLCK,
+		r.SMODE1.SLCK2,
+		r.SMODE1.SPML,
+		r.SMODE1.T1248,
+		r.SMODE1.VCKSEL,
+		r.SMODE1.VHP,
+		r.SMODE1.XPCK);
+
+	std::fprintf(fp.get(), "SMODE2 INT=%u FFMD=%u DPMS=%u\n",
+		r.SMODE2.INT,
+		r.SMODE2.FFMD,
+		r.SMODE2.DPMS);
+
+	std::fprintf(fp.get(), "SRFSH %08x_%08x\n",
+		r.SRFSH.U32[0],
+		r.SRFSH.U32[1]);
+
+	std::fprintf(fp.get(), "SYNCH1 %08x_%08x\n",
+		r.SYNCH1.U32[0],
+		r.SYNCH1.U32[1]);
+
+	std::fprintf(fp.get(), "SYNCH2 %08x_%08x\n",
+		r.SYNCH2.U32[0],
+		r.SYNCH2.U32[1]);
+
+	std::fprintf(fp.get(), "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
+		r.SYNCV.VBP,
+		r.SYNCV.VBPE,
+		r.SYNCV.VDP,
+		r.SYNCV.VFP,
+		r.SYNCV.VFPE,
+		r.SYNCV.VS);
+
+	std::fprintf(fp.get(), "CSR %08x_%08x\n",
+		r.CSR.U32[0],
+		r.CSR.U32[1]);
+
+	std::fprintf(fp.get(), "BGCOLOR B=%u G=%u R=%u\n",
+		r.BGCOLOR.B,
+		r.BGCOLOR.G,
+		r.BGCOLOR.R);
+
+	std::fprintf(fp.get(), "EXTBUF BP=0x%x BW=%u FBIN=%u WFFMD=%u EMODA=%u EMODC=%u WDX=%u WDY=%u\n",
+		r.EXTBUF.EXBP, r.EXTBUF.EXBW, r.EXTBUF.FBIN, r.EXTBUF.WFFMD,
+		r.EXTBUF.EMODA, r.EXTBUF.EMODC, r.EXTBUF.WDX, r.EXTBUF.WDY);
+
+	std::fprintf(fp.get(), "EXTDATA SX=%u SY=%u SMPH=%u SMPV=%u WW=%u WH=%u\n",
+		r.EXTDATA.SX, r.EXTDATA.SY, r.EXTDATA.SMPH, r.EXTDATA.SMPV, r.EXTDATA.WW, r.EXTDATA.WH);
+
+	std::fprintf(fp.get(), "EXTWRITE EN=%u\n", r.EXTWRITE.WRITE);
 }

@@ -1,24 +1,13 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "pcsx2/GS/GSBlock.h"
 #include "pcsx2/GS/GSClut.h"
 #include "pcsx2/GS/MultiISA.h"
 #include <gtest/gtest.h>
 #include <string.h>
+
+#include "cpuinfo.h"
 
 #ifdef MULTI_ISA_UNSHARED_COMPILATION
 
@@ -32,10 +21,10 @@ enum class TestISA
 
 static bool CheckCapabilities(TestISA required_caps)
 {
-	x86caps.Identify();
-	if (required_caps == TestISA::isa_avx && !x86caps.hasAVX)
+	cpuinfo_initialize();
+	if (required_caps == TestISA::isa_avx && !cpuinfo_has_x86_avx())
 		return false;
-	if (required_caps == TestISA::isa_avx2 && !x86caps.hasAVX2)
+	if (required_caps == TestISA::isa_avx2 && !cpuinfo_has_x86_avx2())
 		return false;
 
 	return true;

@@ -1,24 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #if defined(_WIN32)
 
 #include "common/BitUtils.h"
 #include "common/RedtapeWindows.h"
 #include "common/Console.h"
-#include "common/General.h"
+#include "common/HostSys.h"
 #include "common/StringUtil.h"
 #include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
@@ -46,7 +34,13 @@ long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 	if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
 		return EXCEPTION_CONTINUE_SEARCH;
 
+#if defined(_M_AMD64)
 	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Rip);
+#elif defined(_M_ARM64)
+	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Pc);
+#else
+	void* const exception_pc = nullptr;
+#endif
 
 	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)eps->ExceptionRecord->ExceptionInformation[1]};
 
@@ -172,6 +166,15 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 	if (!UnmapViewOfFile(baseaddr))
 		pxFail("Failed to unmap shared memory");
 }
+
+#ifdef _M_ARM64
+
+void HostSys::FlushInstructionCache(void* address, u32 size)
+{
+	::FlushInstructionCache(GetCurrentProcess(), address, size);
+}
+
+#endif
 
 SharedMemoryMappingArea::SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages)
 	: m_base_ptr(base_ptr)

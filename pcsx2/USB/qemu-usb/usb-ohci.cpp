@@ -1,38 +1,14 @@
-/*
- * QEMU USB OHCI Emulation
- * Copyright (c) 2004 Gianni Tedesco
- * Copyright (c) 2006 CodeSourcery
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * TODO:
- *  o Isochronous transfers
- *  o Allocate bandwidth in frames properly
- *  o Disable timers when nothing needs to be done, or remove timer usage
- *    all together.
- *  o Handle unrecoverable errors properly
- *  o BIOS work to boot from USB storage
-*/
+// SPDX-FileCopyrightText: 2004 Gianni Tedesco, 2006 CodeSourcery, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-2.0+
 
-//typedef CPUReadMemoryFunc
-
-#include "PrecompiledHeader.h"
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/queue.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "IopMem.h"
+
+#include "common/Console.h"
+
+#include <cstring>
 
 #define DMA_DIRECTION_TO_DEVICE 0
 #define DMA_DIRECTION_FROM_DEVICE 1

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 /*
  * ix86 core v0.9.1
@@ -29,7 +17,6 @@
  */
 
 #include "common/emitter/internal.h"
-#include "common/emitter/tools.h"
 #include <functional>
 
 // ------------------------------------------------------------------------
@@ -317,7 +304,7 @@ const xRegister32
 		}
 		else
 		{
-			pxAssertDev(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
+			pxAssertMsg(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
 			ModRM(0, regfield, ModRm_UseSib);
 			SibSB(0, Sib_EIZ, Sib_UseDisp32);
 		}
@@ -357,7 +344,7 @@ const xRegister32
 	{
 		// 3 bits also on x86_64 (so max is 8)
 		// We might need to mask it on x86_64
-		pxAssertDev(regfield < 8, "Invalid x86 register identifier.");
+		pxAssertMsg(regfield < 8, "Invalid x86 register identifier.");
 		int displacement_size = (info.Displacement == 0) ? 0 :
                                                            ((info.IsByteSizeDisp()) ? 1 : 2);
 
@@ -575,7 +562,7 @@ const xRegister32
 		// Core2/i7 CPUs prefer unaligned addresses.  Checking for SSSE3 is a decent filter.
 		// (also align in debug modes for disasm convenience)
 
-		if (IsDebugBuild || !x86caps.hasSupplementalStreamingSIMD3Extensions)
+		if constexpr (IsDebugBuild)
 		{
 			// - P4's and earlier prefer 16 byte alignment.
 			// - AMD Athlons and Phenoms prefer 8 byte alignment, but I don't have an easy
@@ -714,7 +701,7 @@ const xRegister32
 				Factor++;
 			else
 			{
-				pxAssertDev(Index.IsEmpty(), "x86Emitter: Only one scaled index register is allowed in an address modifier.");
+				pxAssertMsg(Index.IsEmpty(), "x86Emitter: Only one scaled index register is allowed in an address modifier.");
 				Index = src;
 				Factor = 2;
 			}
@@ -724,7 +711,7 @@ const xRegister32
 		else if (Index.IsEmpty())
 			Index = src;
 		else
-			pxAssumeDev(false, "x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
+			pxAssumeMsg(false, "x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
 
 		return *this;
 	}
@@ -749,7 +736,7 @@ const xRegister32
 			Factor += src.Factor;
 		}
 		else
-			pxAssumeDev(false, "x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
+			pxAssumeMsg(false, "x86Emitter: address modifiers cannot have more than two index registers."); // oops, only 2 regs allowed per ModRm!
 
 		return *this;
 	}
@@ -836,7 +823,7 @@ const xRegister32
 				break;
 
 			case 3: // becomes [reg*2+reg]
-				pxAssertDev(Base.IsEmpty(), "Cannot scale an Index register by 3 when Base is not empty!");
+				pxAssertMsg(Base.IsEmpty(), "Cannot scale an Index register by 3 when Base is not empty!");
 				Base = Index;
 				Scale = 1;
 				break;
@@ -846,24 +833,24 @@ const xRegister32
 				break;
 
 			case 5: // becomes [reg*4+reg]
-				pxAssertDev(Base.IsEmpty(), "Cannot scale an Index register by 5 when Base is not empty!");
+				pxAssertMsg(Base.IsEmpty(), "Cannot scale an Index register by 5 when Base is not empty!");
 				Base = Index;
 				Scale = 2;
 				break;
 
 			case 6: // invalid!
-				pxAssumeDev(false, "x86 asm cannot scale a register by 6.");
+				pxAssumeMsg(false, "x86 asm cannot scale a register by 6.");
 				break;
 
 			case 7: // so invalid!
-				pxAssumeDev(false, "x86 asm cannot scale a register by 7.");
+				pxAssumeMsg(false, "x86 asm cannot scale a register by 7.");
 				break;
 
 			case 8:
 				Scale = 3;
 				break;
 			case 9: // becomes [reg*8+reg]
-				pxAssertDev(Base.IsEmpty(), "Cannot scale an Index register by 9 when Base is not empty!");
+				pxAssertMsg(Base.IsEmpty(), "Cannot scale an Index register by 9 when Base is not empty!");
 				Base = Index;
 				Scale = 3;
 				break;

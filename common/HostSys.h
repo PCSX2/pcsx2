@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
@@ -21,37 +9,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <cstring>
-
-// This macro is actually useful for about any and every possible application of C++
-// equality operators.
-#define OpEqu(field) (field == right.field)
-
-// Macro used for removing some of the redtape involved in defining bitfield/union helpers.
-//
-#define BITFIELD32() \
-	union \
-	{ \
-		u32 bitset; \
-		struct \
-		{
-
-#define BITFIELD_END \
-		}; \
-	};
-
-template <typename T>
-[[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
-{
-	T value;
-	std::memcpy(&value, buffer + offset, sizeof(value));
-	return value;
-}
-
-[[maybe_unused]] __fi static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
-[[maybe_unused]] __fi static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
-[[maybe_unused]] __fi static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
-[[maybe_unused]] __fi static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }
 
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
@@ -59,46 +16,41 @@ template <typename T>
 class PageProtectionMode
 {
 protected:
-	bool m_read;
-	bool m_write;
-	bool m_exec;
+	bool m_read = false;
+	bool m_write = false;
+	bool m_exec = false;
 
 public:
-	PageProtectionMode()
-	{
-		All(false);
-	}
+	__fi constexpr PageProtectionMode() = default;
 
-	PageProtectionMode& Read(bool allow = true)
+	__fi constexpr PageProtectionMode& Read(bool allow = true)
 	{
 		m_read = allow;
 		return *this;
 	}
 
-	PageProtectionMode& Write(bool allow = true)
+	__fi constexpr PageProtectionMode& Write(bool allow = true)
 	{
 		m_write = allow;
 		return *this;
 	}
 
-	PageProtectionMode& Execute(bool allow = true)
+	__fi constexpr PageProtectionMode& Execute(bool allow = true)
 	{
 		m_exec = allow;
 		return *this;
 	}
 
-	PageProtectionMode& All(bool allow = true)
+	__fi constexpr PageProtectionMode& All(bool allow = true)
 	{
 		m_read = m_write = m_exec = allow;
 		return *this;
 	}
 
-	bool CanRead() const { return m_read; }
-	bool CanWrite() const { return m_write; }
-	bool CanExecute() const { return m_exec && m_read; }
-	bool IsNone() const { return !m_read && !m_write; }
-
-	std::string ToString() const;
+	__fi constexpr bool CanRead() const { return m_read; }
+	__fi constexpr bool CanWrite() const { return m_write; }
+	__fi constexpr bool CanExecute() const { return m_exec && m_read; }
+	__fi constexpr bool IsNone() const { return !m_read && !m_write; }
 };
 
 static __fi PageProtectionMode PageAccess_None()
@@ -164,6 +116,25 @@ namespace HostSys
 
 	/// Removes the page fault handler. handler is only specified to check against the active callback.
 	void RemovePageFaultHandler(PageFaultHandler handler);
+
+	/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
+#if !defined(__APPLE__) || !defined(_M_ARM64)
+	// clang-format -off
+	[[maybe_unused]] __fi static void BeginCodeWrite() {}
+	[[maybe_unused]] __fi static void EndCodeWrite() {}
+	// clang-format on
+#else
+	void BeginCodeWrite();
+	void EndCodeWrite();
+#endif
+
+	/// Flushes the instruction cache on the host for the specified range.
+	/// Only needed on ARM64, X86 has coherent D/I cache.
+#ifdef _M_X86
+	[[maybe_unused]] __fi static void FlushInstructionCache(void* address, u32 size) {}
+#else
+	void FlushInstructionCache(void* address, u32 size);
+#endif
 }
 
 class SharedMemoryMappingArea

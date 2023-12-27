@@ -1,42 +1,29 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
-#include "PCSX2Base.h"
 #include <string>
 #include <vector>
 
 namespace GSDumpReplayer
 {
-bool IsReplayingDump();
+	bool IsReplayingDump();
 
-/// If set, playback will repeat once it reaches the last frame.
-void SetLoopCount(s32 loop_count = 0);
-int GetLoopCount();
-bool IsRunner();
-void SetIsDumpRunner(bool is_runner);
+	/// If set, playback will repeat once it reaches the last frame.
+	void SetLoopCount(s32 loop_count = 0);
+	int GetLoopCount();
+	bool IsRunner();
+	void SetIsDumpRunner(bool is_runner);
 
-bool Initialize(const char* filename);
-bool ChangeDump(const char* filename);
-void Shutdown();
+	bool Initialize(const char* filename);
+	bool ChangeDump(const char* filename);
+	void Shutdown();
 
-std::string GetDumpSerial();
-u32 GetDumpCRC();
+	std::string GetDumpSerial();
+	u32 GetDumpCRC();
 
-u32 GetFrameNumber();
+	u32 GetFrameNumber();
 
-void RenderUI();
-}
+	void RenderUI();
+} // namespace GSDumpReplayer

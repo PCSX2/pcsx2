@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
@@ -24,6 +10,7 @@
 #include "VMManager.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
@@ -32,6 +19,7 @@
 #include "fmt/core.h"
 
 #include <array>
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -233,11 +221,11 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::str
 		return std::nullopt;
 
 	// lameee, string matching
-	if (StringUtil::StartsWith(source, "Keyboard"))
+	if (source.starts_with("Keyboard"))
 	{
 		return ParseHostKeyboardKey(source, sub_binding);
 	}
-	else if (StringUtil::StartsWith(source, "Pointer"))
+	else if (source.starts_with("Pointer"))
 	{
 		return ParsePointerKey(source, sub_binding);
 	}
@@ -411,7 +399,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 		return;
 
 	// lameee, string matching
-	if (StringUtil::StartsWith(source, "Keyboard"))
+	if (source.starts_with("Keyboard"))
 	{
 		std::optional<InputBindingKey> key = ParseHostKeyboardKey(source, sub_binding);
 		const char* icon = key.has_value() ? ConvertHostKeyboardCodeToIcon(key->data) : nullptr;
@@ -422,7 +410,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 			return;
 		}
 	}
-	else if (StringUtil::StartsWith(source, "Pointer"))
+	else if (source.starts_with("Pointer"))
 	{
 		const std::optional<InputBindingKey> key = ParsePointerKey(source, sub_binding);
 		if (key.has_value())
@@ -633,7 +621,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 	key.source_type = InputSourceType::Pointer;
 	key.source_index = static_cast<u32>(pointer_index.value());
 
-	if (StringUtil::StartsWith(sub_binding, "Button"))
+	if (sub_binding.starts_with("Button"))
 	{
 		const std::optional<s32> button_number = StringUtil::FromChars<s32>(sub_binding.substr(6));
 		if (!button_number.has_value() || button_number.value() < 0)
@@ -646,7 +634,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 
 	for (u32 i = 0; i < s_pointer_axis_names.size(); i++)
 	{
-		if (StringUtil::StartsWith(sub_binding, s_pointer_axis_names[i]))
+		if (sub_binding.starts_with(s_pointer_axis_names[i]))
 		{
 			key.source_subtype = InputSubclass::PointerAxis;
 			key.data = i;
@@ -678,7 +666,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 
 std::optional<u32> InputManager::GetIndexFromPointerBinding(const std::string_view& source)
 {
-	if (!StringUtil::StartsWith(source, "Pointer-"))
+	if (!source.starts_with("Pointer-"))
 		return std::nullopt;
 
 	const std::optional<s32> pointer_index = StringUtil::FromChars<s32>(source.substr(8));

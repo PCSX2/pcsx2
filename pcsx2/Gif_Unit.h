@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 #include <deque>
@@ -28,7 +16,7 @@ struct GS_Packet;
 extern void Gif_MTGS_Wait(bool isMTVU);
 extern void Gif_FinishIRQ();
 extern bool Gif_HandlerAD(u8* pMem);
-extern bool Gif_HandlerAD_MTVU(u8* pMem);
+extern void Gif_HandlerAD_MTVU(u8* pMem);
 extern bool Gif_HandlerAD_Debug(u8* pMem);
 extern void Gif_AddBlankGSPacket(u32 size, GIF_PATH path);
 extern void Gif_AddGSPacketMTVU(GS_Packet& gsPack, GIF_PATH path);
@@ -324,7 +312,7 @@ struct Gif_Path
 				break;      // Enough free front space
 			mtgsReadWait(); // Let MTGS run to free up buffer space
 		}
-		pxAssertDev(curSize + size <= buffSize, "Gif Path Buffer Overflow!");
+		pxAssertMsg(curSize + size <= buffSize, "Gif Path Buffer Overflow!");
 		memcpy(&buffer[curSize], pMem, size);
 		curSize += size;
 	}
@@ -462,7 +450,8 @@ struct Gif_Path
 						break; // Exit Early
 					if (gifTag.curReg() == GIF_REG_A_D)
 					{
-						pxAssert(!Gif_HandlerAD_MTVU(&buffer[curOffset]));
+						// pxAssertMsg(Gif_HandlerAD_Debug(&buffer[curOffset]), "Unhandled GIF packet");
+						Gif_HandlerAD_MTVU(&buffer[curOffset]);
 					}
 					incTag(curOffset, gsPack.size, 16); // 1 QWC
 					gifTag.packedStep();

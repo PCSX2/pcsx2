@@ -1,26 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
 #include "Host.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/Error.h"
 
 #include "fmt/format.h"
@@ -49,7 +35,7 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 	if (lsn >= m_blocks)
 	{
 		std::string msg(fmt::format("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks));
-		pxAssertDev(false, msg.c_str());
+		pxAssertMsg(false, msg.c_str());
 		Console.Error(msg.c_str());
 		return -1;
 	}

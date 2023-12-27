@@ -1,23 +1,12 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2023 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
 #include "common/Pcsx2Defs.h"
 
 #include <bit>
+#include <cstring>
 
 #ifdef _MSC_VER
 
@@ -96,3 +85,16 @@ namespace Common
 		return std::countl_zero(static_cast<u32>(n));
 	}
 } // namespace Common
+
+template <typename T>
+[[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
+{
+	T value;
+	std::memcpy(&value, buffer + offset, sizeof(value));
+	return value;
+}
+
+[[maybe_unused]] __fi static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
+[[maybe_unused]] __fi static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
+[[maybe_unused]] __fi static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
+[[maybe_unused]] __fi static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }

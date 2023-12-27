@@ -282,7 +282,6 @@
     <ClCompile Include="sif2.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp" />
     <ClCompile Include="GS\GS.cpp" />
-    <ClCompile Include="GS\GSAlignedClass.cpp" />
     <ClCompile Include="GS\GSBlock.cpp" />
     <ClCompile Include="GS\GSCapture.cpp" />
     <ClCompile Include="GS\GSClut.cpp" />
@@ -294,7 +293,6 @@
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSNewCodeGenerator.cpp" />
     <ClCompile Include="GS\GSDump.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSHwHack.cpp" />
@@ -322,7 +320,6 @@
     <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp" />
     <ClCompile Include="GS\GSUtil.cpp" />
     <ClCompile Include="GS\GSVector.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTraceFMM.cpp" />
     <ClCompile Include="GS\GSXXH.cpp" />
@@ -363,7 +360,6 @@
     </ClCompile>
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceLog.cpp" />
-    <ClCompile Include="System.cpp" />
     <ClCompile Include="Elfheader.cpp" />
     <ClCompile Include="CDVD\InputIsoFile.cpp" />
     <ClCompile Include="x86\BaseblockEx.cpp" />
@@ -410,7 +406,6 @@
     <ClCompile Include="x86\iFPUd.cpp" />
     <ClCompile Include="x86\iMMI.cpp" />
     <ClCompile Include="x86\iR5900Misc.cpp" />
-    <ClCompile Include="x86\ir5900tables.cpp" />
     <ClCompile Include="x86\ix86-32\iR5900.cpp" />
     <ClCompile Include="x86\ix86-32\iR5900Arit.cpp" />
     <ClCompile Include="x86\ix86-32\iR5900AritImm.cpp" />
@@ -660,8 +655,7 @@
     <ClInclude Include="GS\Renderers\HW\GSTextureCache.h" />
     <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h" />
     <ClInclude Include="GS\Renderers\SW\GSTextureSW.h" />
-    <ClInclude Include="GS\GSThread.h" />
-    <ClInclude Include="GS\GSThread_CXX11.h" />
+    <ClInclude Include="GS\GSJobQueue.h" />
     <ClInclude Include="GS\GSUtil.h" />
     <ClInclude Include="GS\GSVector.h" />
     <ClInclude Include="GS\GSVector4i.h" />
@@ -677,7 +671,6 @@
     <ClInclude Include="IPU\IPUdma.h" />
     <ClInclude Include="Mdec.h" />
     <ClInclude Include="Patch.h" />
-    <ClInclude Include="PCSX2Base.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ps2\pgif.h" />
     <ClInclude Include="StateWrapper.h" />
@@ -716,8 +709,6 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="SaveState.h" />
-    <ClInclude Include="SingleRegisterTypes.h" />
-    <ClInclude Include="System.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />
     <ClInclude Include="Hardware.h" />

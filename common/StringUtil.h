@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 #include "Pcsx2Types.h"
@@ -26,7 +14,16 @@
 #include <string_view>
 #include <vector>
 
+// Work around us defining _M_ARM64 but fast_float thinking that it means MSVC.
+#if defined(_M_ARM64) && !defined(_WIN32)
+#define HAD_M_ARM64 _M_ARM64
+#undef _M_ARM64
+#endif
 #include "fast_float/fast_float.h"
+#if defined(HAD_M_ARM64) && !defined(_WIN32)
+#define _M_ARM64 HAD_M_ARM64
+#undef HAD_M_ARM64
+#endif
 
 // Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
 // merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
@@ -208,17 +205,6 @@ namespace StringUtil
 	/// Encode/decode hexadecimal byte buffers
 	std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
 	std::string EncodeHex(const u8* data, int length);
-
-	/// starts_with from C++20
-	static inline bool StartsWith(const std::string_view& str, const std::string_view& prefix)
-	{
-		return (str.compare(0, prefix.length(), prefix) == 0);
-	}
-	static inline bool EndsWith(const std::string_view& str, const std::string_view& suffix)
-	{
-		const std::size_t suffix_length = suffix.length();
-		return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
-	}
 
 	/// StartsWith/EndsWith variants which aren't case sensitive.
 	static inline bool StartsWithNoCase(const std::string_view& str, const std::string_view& prefix)

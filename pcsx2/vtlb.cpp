@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 /*
 	EE physical map :
@@ -27,8 +15,6 @@
 	vtlb/phy only supports the [0000 0000,2000 0000) region, with 4k pages.
 	vtlb/vmap supports mapping to either of these locations, or some other (externaly) specified address.
 */
-
-#include "PrecompiledHeader.h"
 
 #include "Common.h"
 #include "vtlb.h"
@@ -591,57 +577,57 @@ static void TAKES_R128 vtlbUnmappedPWriteLg(u32 addr, r128 data) { vtlb_BusError
 
 static mem8_t vtlbDefaultPhyRead8(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read8 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read8 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem16_t vtlbDefaultPhyRead16(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read16 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read16 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem32_t vtlbDefaultPhyRead32(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read32 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read32 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static mem64_t vtlbDefaultPhyRead64(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read64 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read64 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return 0;
 }
 
 static RETURNS_R128 vtlbDefaultPhyRead128(u32 addr)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted read128 from unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted read128 from unmapped physical address @ 0x{:08X}.", addr).c_str());
 	return r128_zero();
 }
 
 static void vtlbDefaultPhyWrite8(u32 addr, mem8_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write8 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write8 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite16(u32 addr, mem16_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write16 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write16 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite32(u32 addr, mem32_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write32 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write32 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void vtlbDefaultPhyWrite64(u32 addr, mem64_t data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write64 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write64 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 static void TAKES_R128 vtlbDefaultPhyWrite128(u32 addr, r128 data)
 {
-	pxFailDev(fmt::format("(VTLB) Attempted write128 to unmapped physical address @ 0x{:08X}.", addr).c_str());
+	pxFail(fmt::format("(VTLB) Attempted write128 to unmapped physical address @ 0x{:08X}.", addr).c_str());
 }
 
 // ===========================================================================================
@@ -677,7 +663,7 @@ __ri void vtlb_ReassignHandler(vtlbHandler rv,
 
 vtlbHandler vtlb_NewHandler()
 {
-	pxAssertDev(vtlbHandlerCount < VTLB_HANDLER_ITEMS, "VTLB handler count overflow!");
+	pxAssertMsg(vtlbHandlerCount < VTLB_HANDLER_ITEMS, "VTLB handler count overflow!");
 	return vtlbHandlerCount++;
 }
 
@@ -1037,7 +1023,7 @@ bool vtlb_GetGuestAddress(uptr host_addr, u32* guest_addr)
 	return true;
 }
 
-void vtlb_UpdateFastmemProtection(u32 paddr, u32 size, const PageProtectionMode& prot)
+void vtlb_UpdateFastmemProtection(u32 paddr, u32 size, PageProtectionMode prot)
 {
 	if (!CHECK_FASTMEM)
 		return;

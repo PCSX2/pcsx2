@@ -416,9 +416,6 @@
     <ClCompile Include="SourceLog.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="Elfheader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
@@ -543,9 +540,6 @@
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
     <ClCompile Include="x86\iR5900Misc.cpp">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClCompile>
-    <ClCompile Include="x86\ir5900tables.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClCompile>
     <ClCompile Include="x86\ix86-32\iR5900.cpp">
@@ -986,9 +980,6 @@
     <ClCompile Include="GS\GS.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="GS\GSAlignedClass.cpp">
-      <Filter>System\Ps2\GS</Filter>
-    </ClCompile>
     <ClCompile Include="GS\GSBlock.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
@@ -1064,9 +1055,6 @@
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSNewCodeGenerator.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
@@ -1080,9 +1068,6 @@
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp">
@@ -1430,9 +1415,6 @@
     <ClInclude Include="Patch.h">
       <Filter>Misc</Filter>
     </ClInclude>
-    <ClInclude Include="PCSX2Base.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Misc</Filter>
     </ClInclude>
@@ -1452,12 +1434,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="SaveState.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="SingleRegisterTypes.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="System.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="Dmac.h">
@@ -1922,9 +1898,6 @@
     <ClInclude Include="GS\GSTables.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\GSThread.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\GSUtil.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -1955,7 +1928,7 @@
     <ClInclude Include="GS\GSRingHeap.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\GSThread_CXX11.h">
+    <ClInclude Include="GS\GSJobQueue.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS\GSLzma.h">

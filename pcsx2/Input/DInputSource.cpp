@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2022  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #define INITGUID
 
@@ -325,7 +311,7 @@ void DInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey s
 
 std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
 {
-	if (!StringUtil::StartsWith(device, "DInput-") || binding.empty())
+	if (!device.starts_with("DInput-") || binding.empty())
 		return std::nullopt;
 
 	const std::optional<s32> player_id = StringUtil::FromChars<s32>(device.substr(7));
@@ -336,7 +322,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 	key.source_type = InputSourceType::DInput;
 	key.source_index = static_cast<u32>(player_id.value());
 
-	if (StringUtil::StartsWith(binding, "+Axis") || StringUtil::StartsWith(binding, "-Axis"))
+	if (binding.starts_with("+Axis") || binding.starts_with("-Axis"))
 	{
 		std::string_view end;
 		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(5), 10, &end);
@@ -349,7 +335,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 		key.invert = (end == "~");
 		return key;
 	}
-	else if (StringUtil::StartsWith(binding, "FullAxis"))
+	else if (binding.starts_with("FullAxis"))
 	{
 		std::string_view end;
 		const std::optional<u32> axis_index = StringUtil::FromChars<u32>(binding.substr(8), 10, &end);
@@ -362,7 +348,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 		key.invert = (end == "~");
 		return key;
 	}
-	else if (StringUtil::StartsWith(binding, "Hat"))
+	else if (binding.starts_with("Hat"))
 	{
 		if (binding[3] < '0' || binding[3] > '9' || binding.length() < 5)
 			return std::nullopt;
@@ -382,7 +368,7 @@ std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_vi
 		// bad direction
 		return std::nullopt;
 	}
-	else if (StringUtil::StartsWith(binding, "Button"))
+	else if (binding.starts_with("Button"))
 	{
 		const std::optional<u32> button_index = StringUtil::FromChars<u32>(binding.substr(6));
 		if (!button_index.has_value())

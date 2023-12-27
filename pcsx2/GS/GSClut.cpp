@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GS/GSClut.h"
 #include "GS/GSExtra.h"
 #include "GS/GSLocalMemory.h"
@@ -202,7 +189,7 @@ bool GSClut::CanLoadCLUT(const GIFRegTEX0& TEX0, const bool update_CBP)
 				m_CBP[1] = TEX0.CBP;
 			break;
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 	return true;
@@ -469,7 +456,7 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 {
 	// call only after Read32
 
-	ASSERT(!m_read.dirty);
+	pxAssert(!m_read.dirty);
 
 	if (m_read.adirty)
 	{
@@ -503,7 +490,7 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 			}
 			else
 			{
-				ASSERT(GSLocalMemory::m_psm[m_read.TEX0.PSM].pal == 16);
+				pxAssert(GSLocalMemory::m_psm[m_read.TEX0.PSM].pal == 16);
 
 				const GSVector4i v0 = (p[0] >> 24).ps32(p[1] >> 24);
 				const GSVector4i v1 = (p[2] >> 24).ps32(p[3] >> 24);
@@ -823,13 +810,13 @@ __forceinline void GSClut::ExpandCLUT64_T16(const GSVector4i& hi, const GSVector
 
 // TODO
 
-CONSTINIT const GSVector4i GSClut::m_bm = GSVector4i::cxpr(0x00007c00);
-CONSTINIT const GSVector4i GSClut::m_gm = GSVector4i::cxpr(0x000003e0);
-CONSTINIT const GSVector4i GSClut::m_rm = GSVector4i::cxpr(0x0000001f);
+constinit const GSVector4i GSClut::m_bm = GSVector4i::cxpr(0x00007c00);
+constinit const GSVector4i GSClut::m_gm = GSVector4i::cxpr(0x000003e0);
+constinit const GSVector4i GSClut::m_rm = GSVector4i::cxpr(0x0000001f);
 
 void GSClut::Expand16(const u16* RESTRICT src, u32* RESTRICT dst, int w, const GIFRegTEXA& TEXA)
 {
-	ASSERT((w & 7) == 0);
+	pxAssert((w & 7) == 0);
 
 	const GSVector4i rm = m_rm;
 	const GSVector4i gm = m_gm;

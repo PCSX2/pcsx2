@@ -93,6 +93,30 @@ cd ..
 echo "Installing Qt Base..."
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
+# since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
+# (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
+# We could run macdeployqt twice, but that's even more janky than patching it.
+patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
+--- shared.cpp
++++ shared.cpp
+@@ -1119,14 +1119,8 @@
+         addPlugins(QStringLiteral("networkinformation"));
+     }
+ 
+-    // All image formats (svg if QtSvg is used)
+-    const bool usesSvg = deploymentInfo.containsModule("Svg", libInfix);
+-    addPlugins(QStringLiteral("imageformats"), [usesSvg](const QString &lib) {
+-        if (lib.contains(QStringLiteral("qsvg")) && !usesSvg)
+-            return false;
+-        return true;
+-    });
+-
++    // All image formats
++    addPlugins(QStringLiteral("imageformats"));
+     addPlugins(QStringLiteral("iconengines"));
+ 
+     // Platforminputcontext plugins if QtGui is in use
+EOF
 cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DFEATURE_optimize_size=ON -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF
 make -C build "-j$NPROCS"
 make -C build install

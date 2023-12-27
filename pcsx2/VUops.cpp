@@ -1,19 +1,6 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "Common.h"
 #include "VUops.h"
 #include "GS.h"
@@ -4025,13 +4012,13 @@ static void VU0regsMI_XTOP(_VURegsNum* VUregsn) { _vuRegsXTOP(&VU0, VUregsn); }
 
 void VU0unknown()
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
 static void VU0regsunknown(_VURegsNum* VUregsn)
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
@@ -4391,13 +4378,13 @@ static void VU1regsMI_XTOP(_VURegsNum* VUregsn) { _vuRegsXTOP(&VU1, VUregsn); }
 
 static void VU1unknown()
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
 static void VU1regsunknown(_VURegsNum* VUregsn)
 {
-	pxFailDev("Unknown VU micromode opcode called");
+	pxFail("Unknown VU micromode opcode called");
 	CPU_LOG("Unknown VU micromode opcode called");
 }
 
@@ -4675,15 +4662,15 @@ alignas(16) const FNTYPE PREFIX##_UPPER_OPCODE[64] = { \
 } \
 
 _vuTablesPre(VU0, VU0)
-_vuTablesMess(VU0, Fnptr_Void)
+_vuTablesMess(VU0, FnPtr_VuVoid)
 _vuTablesPost(VU0, VU0)
 
 _vuTablesPre(VU1, VU1)
-_vuTablesMess(VU1, Fnptr_Void)
+_vuTablesMess(VU1, FnPtr_VuVoid)
 _vuTablesPost(VU1, VU1)
 
-_vuRegsTables(VU0, VU0regs, Fnptr_VuRegsN)
-_vuRegsTables(VU1, VU1regs, Fnptr_VuRegsN)
+_vuRegsTables(VU0, VU0regs, FnPtr_VuRegsN)
+_vuRegsTables(VU1, VU1regs, FnPtr_VuRegsN)
 
 
 // --------------------------------------------------------------------------------------

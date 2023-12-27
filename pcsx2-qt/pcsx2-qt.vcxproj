@@ -49,6 +49,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir)\Settings;$(ProjectDir)\GameList;$(ProjectDir)\Tools\InputRecording;$(ProjectDir)\Debugger;$(ProjectDir)\Debugger\Models</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>LZMA_API_STATIC;ENABLE_RAINTEGRATION;ENABLE_OPENGL;ENABLE_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>QT_NO_EXCEPTIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- Current Qt debug builds assert on RTTI. Remove this once we next build Qt. -->

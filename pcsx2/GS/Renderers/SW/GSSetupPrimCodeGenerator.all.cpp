@@ -1,27 +1,16 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSSetupPrimCodeGenerator.all.h"
 #include "GSVertexSW.h"
 #include "common/Perf.h"
 
+#include <cstddef>
+
 MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
-#define _rip_local(field) (ptr[_m_local + OFFSETOF(GSScanlineLocalData, field)])
+#define _rip_local(field) (ptr[_m_local + offsetof(GSScanlineLocalData, field)])
 
 #define _64_m_local _64_t0
 

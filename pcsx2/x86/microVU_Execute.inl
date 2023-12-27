@@ -1,19 +1,10 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
+#include "Config.h"
+#include "cpuinfo.h"
 
 //------------------------------------------------------------------
 // Dispatcher Functions
@@ -25,7 +16,7 @@ static bool mvuNeedsFPCRUpdate(mV)
 		return true;
 
 	// otherwise only emit when it's different to the EE
-	return g_sseMXCSR.bitmask != (isVU0 ? g_sseVU0MXCSR.bitmask : g_sseVU1MXCSR.bitmask);
+	return EmuConfig.Cpu.FPUFPCR.bitmask != (isVU0 ? EmuConfig.Cpu.VU0FPCR.bitmask : EmuConfig.Cpu.VU1FPCR.bitmask);
 }
 
 // Generates the code for entering/exit recompiled blocks
@@ -42,7 +33,7 @@ void mVUdispatcherAB(mV)
 
 		// Load VU's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+			xLDMXCSR(ptr32[isVU0 ? &EmuConfig.Cpu.VU0FPCR.bitmask : &EmuConfig.Cpu.VU1FPCR.bitmask]);
 
 		// Load Regs
 		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_P].UL]);
@@ -82,7 +73,7 @@ void mVUdispatcherAB(mV)
 
 		// Load EE's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(g_sseMXCSR);
+			xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 
 		// = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
 		//              all other arguments are passed right to left.
@@ -106,7 +97,7 @@ void mVUdispatcherCD(mV)
 
 		// Load VU's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+			xLDMXCSR(ptr32[isVU0 ? &EmuConfig.Cpu.VU0FPCR.bitmask : &EmuConfig.Cpu.VU1FPCR.bitmask]);
 
 		mVUrestoreRegs(mVU);
 		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);
@@ -127,7 +118,7 @@ void mVUdispatcherCD(mV)
 
 		// Load EE's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(g_sseMXCSR);
+			xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 	}
 
 	xRET();
@@ -216,7 +207,7 @@ static void mVUGenerateCopyPipelineState(mV)
 {
 	mVU.copyPLState = xGetAlignedCallTarget();
 
-	if (x86caps.hasAVX2)
+	if (cpuinfo_has_x86_avx())
 	{
 		xVMOVAPS(ymm0, ptr[rax]);
 		xVMOVAPS(ymm1, ptr[rax + 32u]);
@@ -261,7 +252,7 @@ static void mVUGenerateCompareState(mV)
 {
 	mVU.compareStateF = xGetAlignedCallTarget();
 
-	if (!x86caps.hasAVX2)
+	if (!cpuinfo_has_x86_avx2())
 	{
 		xMOVAPS  (xmm0, ptr32[arg1reg]);
 		xPCMP.EQD(xmm0, ptr32[arg2reg]);

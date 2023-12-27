@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
@@ -1219,7 +1207,7 @@ struct alignas(32) GIFPath
 					case 16:
 						break;
 					default:
-						__assume(0);
+						ASSUME(0);
 				}
 			}
 		}
@@ -1309,122 +1297,6 @@ struct GSPrivRegSet
 
 		u8 _pad17[0x1000];
 	};
-
-	void Dump(FILE* fp)
-	{
-		for (int i = 0; i < 2; i++)
-		{
-			if (!fp)
-				return;
-
-			if (i == 0 && !PMODE.EN1)
-				continue;
-			if (i == 1 && !PMODE.EN2)
-				continue;
-
-			fprintf(fp, "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
-				i,
-				DISP[i].DISPFB.Block(),
-				DISP[i].DISPFB.FBW,
-				DISP[i].DISPFB.PSM,
-				DISP[i].DISPFB.DBX,
-				DISP[i].DISPFB.DBY);
-
-			fprintf(fp, "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
-				i,
-				DISP[i].DISPLAY.DX,
-				DISP[i].DISPLAY.DY,
-				DISP[i].DISPLAY.DW,
-				DISP[i].DISPLAY.DH,
-				DISP[i].DISPLAY.MAGH,
-				DISP[i].DISPLAY.MAGV);
-		}
-
-		fprintf(fp, "PMODE EN1=%u EN2=%u CRTMD=%u MMOD=%u AMOD=%u SLBG=%u ALP=%u\n",
-			PMODE.EN1,
-			PMODE.EN2,
-			PMODE.CRTMD,
-			PMODE.MMOD,
-			PMODE.AMOD,
-			PMODE.SLBG,
-			PMODE.ALP);
-
-		fprintf(fp, "SMODE1 CLKSEL=%u CMOD=%u EX=%u GCONT=%u LC=%u NVCK=%u PCK2=%u PEHS=%u PEVS=%u PHS=%u PRST=%u PVS=%u RC=%u SINT=%u SLCK=%u SLCK2=%u SPML=%u T1248=%u VCKSEL=%u VHP=%u XPCK=%u\n",
-			SMODE1.CLKSEL,
-			SMODE1.CMOD,
-			SMODE1.EX,
-			SMODE1.GCONT,
-			SMODE1.LC,
-			SMODE1.NVCK,
-			SMODE1.PCK2,
-			SMODE1.PEHS,
-			SMODE1.PEVS,
-			SMODE1.PHS,
-			SMODE1.PRST,
-			SMODE1.PVS,
-			SMODE1.RC,
-			SMODE1.SINT,
-			SMODE1.SLCK,
-			SMODE1.SLCK2,
-			SMODE1.SPML,
-			SMODE1.T1248,
-			SMODE1.VCKSEL,
-			SMODE1.VHP,
-			SMODE1.XPCK);
-
-		fprintf(fp, "SMODE2 INT=%u FFMD=%u DPMS=%u\n",
-			SMODE2.INT,
-			SMODE2.FFMD,
-			SMODE2.DPMS);
-
-		fprintf(fp, "SRFSH %08x_%08x\n",
-			SRFSH.U32[0],
-			SRFSH.U32[1]);
-
-		fprintf(fp, "SYNCH1 %08x_%08x\n",
-			SYNCH1.U32[0],
-			SYNCH1.U32[1]);
-
-		fprintf(fp, "SYNCH2 %08x_%08x\n",
-			SYNCH2.U32[0],
-			SYNCH2.U32[1]);
-
-		fprintf(fp, "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
-			SYNCV.VBP,
-			SYNCV.VBPE,
-			SYNCV.VDP,
-			SYNCV.VFP,
-			SYNCV.VFPE,
-			SYNCV.VS);
-
-		fprintf(fp, "CSR %08x_%08x\n",
-			CSR.U32[0],
-			CSR.U32[1]);
-
-		fprintf(fp, "BGCOLOR B=%u G=%u R=%u\n",
-			BGCOLOR.B,
-			BGCOLOR.G,
-			BGCOLOR.R);
-
-		fprintf(fp, "EXTBUF BP=0x%x BW=%u FBIN=%u WFFMD=%u EMODA=%u EMODC=%u WDX=%u WDY=%u\n",
-			EXTBUF.EXBP, EXTBUF.EXBW, EXTBUF.FBIN, EXTBUF.WFFMD,
-			EXTBUF.EMODA, EXTBUF.EMODC, EXTBUF.WDX, EXTBUF.WDY);
-
-		fprintf(fp, "EXTDATA SX=%u SY=%u SMPH=%u SMPV=%u WW=%u WH=%u\n",
-			EXTDATA.SX, EXTDATA.SY, EXTDATA.SMPH, EXTDATA.SMPV, EXTDATA.WW, EXTDATA.WH);
-
-		fprintf(fp, "EXTWRITE EN=%u\n", EXTWRITE.WRITE);
-	}
-
-	void Dump(const std::string& filename)
-	{
-		FILE* fp = fopen(filename.c_str(), "wt");
-		if (fp)
-		{
-			Dump(fp);
-			fclose(fp);
-		}
-	}
 };
 
 #pragma pack(pop)

@@ -1,17 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
@@ -319,7 +307,7 @@ public:
 			case 1: WriteColumn32<1, alignment, mask>(dst, src, srcpitch); break;
 			case 2: WriteColumn32<2, alignment, mask>(dst, src, srcpitch); break;
 			case 3: WriteColumn32<3, alignment, mask>(dst, src, srcpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -332,7 +320,7 @@ public:
 			case 1: WriteColumn16<1, alignment>(dst, src, srcpitch); break;
 			case 2: WriteColumn16<2, alignment>(dst, src, srcpitch); break;
 			case 3: WriteColumn16<3, alignment>(dst, src, srcpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -345,7 +333,7 @@ public:
 			case 1: WriteColumn8<1, alignment>(dst, src, srcpitch); break;
 			case 2: WriteColumn8<2, alignment>(dst, src, srcpitch); break;
 			case 3: WriteColumn8<3, alignment>(dst, src, srcpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -358,7 +346,7 @@ public:
 			case 1: WriteColumn4<1, alignment>(dst, src, srcpitch); break;
 			case 2: WriteColumn4<2, alignment>(dst, src, srcpitch); break;
 			case 3: WriteColumn4<3, alignment>(dst, src, srcpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -640,7 +628,7 @@ public:
 			case 1: ReadColumn32<1>(src, dst, dstpitch); break;
 			case 2: ReadColumn32<2>(src, dst, dstpitch); break;
 			case 3: ReadColumn32<3>(src, dst, dstpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -652,7 +640,7 @@ public:
 			case 1: ReadColumn16<1>(src, dst, dstpitch); break;
 			case 2: ReadColumn16<2>(src, dst, dstpitch); break;
 			case 3: ReadColumn16<3>(src, dst, dstpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -664,7 +652,7 @@ public:
 			case 1: ReadColumn8<1>(src, dst, dstpitch); break;
 			case 2: ReadColumn8<2>(src, dst, dstpitch); break;
 			case 3: ReadColumn8<3>(src, dst, dstpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -676,7 +664,7 @@ public:
 			case 1: ReadColumn4<1>(src, dst, dstpitch); break;
 			case 2: ReadColumn4<2>(src, dst, dstpitch); break;
 			case 3: ReadColumn4<3>(src, dst, dstpitch); break;
-			default: __assume(0);
+			default: ASSUME(0);
 		}
 	}
 
@@ -1281,7 +1269,7 @@ public:
 				}
 				else
 				{
-					ASSERT(0);
+					pxAssert(0);
 				}
 
 				v4 = v6.upl16(v7);
@@ -1338,7 +1326,7 @@ public:
 				}
 				else
 				{
-					ASSERT(0);
+					pxAssert(0);
 				}
 			}
 

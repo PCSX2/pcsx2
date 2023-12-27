@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GS.h"
 #include "GS/GSGL.h"
@@ -26,7 +12,9 @@
 
 #include "Host.h"
 
+#include "common/Console.h"
 #include "common/BitUtils.h"
+#include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
 
@@ -1126,7 +1114,9 @@ void GSDeviceVK::SubmitCommandBuffer(
 	if (spin_enabled && m_optional_extensions.vk_ext_calibrated_timestamps)
 		resources.submit_timestamp = GetCPUTimestamp();
 
-	if (!submit_on_thread || !m_present_thread.joinable())
+	// Don't use threaded presentation when spinning is enabled. ScanForCommandBufferCompletion()
+	// calls vkGetFenceStatus(), which reads a fence that has been passed off to the thread.
+	if (!submit_on_thread || GSConfig.HWSpinGPUForReadbacks || !m_present_thread.joinable())
 	{
 		DoSubmitCommandBuffer(m_current_frame, present_swap_chain, spin_cycles);
 		if (present_swap_chain)
@@ -2715,7 +2705,7 @@ void GSDeviceVK::DrawIndexedPrimitive()
 
 void GSDeviceVK::DrawIndexedPrimitive(int offset, int count)
 {
-	ASSERT(offset + count <= (int)m_index.count);
+	pxAssert(offset + count <= (int)m_index.count);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	vkCmdDrawIndexed(GetCurrentCommandBuffer(), count, 1, m_index.start + offset, m_vertex.start, 0);
 }
@@ -3462,27 +3452,40 @@ void GSDeviceVK::OMSetRenderTargets(
 	{
 		if (vkRt)
 		{
-			// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
-			// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
-			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT && vkRt->GetState() == GSTexture::State::Cleared &&
-				IsDeviceNVIDIA())
+			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT)
 			{
-				vkRt->CommitClear();
-			}
+				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
+				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
+				if (vkRt->GetState() == GSTexture::State::Cleared && IsDeviceNVIDIA())
+					vkRt->CommitClear();
 
-			vkRt->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) ?
-										 GSTextureVK::Layout::FeedbackLoop :
-										 GSTextureVK::Layout::ColorAttachment);
+				if (vkRt->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
+				{
+					// need to update descriptors to reflect the new layout
+					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_RT);
+					vkRt->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
+				}
+			}
+			else
+			{
+				vkRt->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
+			}
 		}
 		if (vkDs)
 		{
 			// need to update descriptors to reflect the new layout
-			if ((feedback_loop & FeedbackLoopFlag_ReadDS) && vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
-				m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_RT);
-
-			vkDs->TransitionToLayout((feedback_loop & FeedbackLoopFlag_ReadDS) ?
-										 GSTextureVK::Layout::FeedbackLoop :
-										 GSTextureVK::Layout::DepthStencilAttachment);
+			if (feedback_loop & FeedbackLoopFlag_ReadDS)
+			{
+				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
+				{
+					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE);
+					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
+				}
+			}
+			else
+			{
+				vkDs->TransitionToLayout(GSTextureVK::Layout::DepthStencilAttachment);
+			}
 		}
 	}
 

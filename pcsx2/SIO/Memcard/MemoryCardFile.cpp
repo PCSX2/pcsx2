@@ -1,19 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "SIO/Memcard/MemoryCardFile.h"
 
@@ -21,6 +7,7 @@
 #include "SIO/Sio.h"
 
 #include "common/Assertions.h"
+#include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
@@ -28,7 +15,6 @@
 #include <array>
 #include <chrono>
 
-#include "System.h"
 #include "Config.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"
@@ -230,7 +216,7 @@ uint FileMcd_GetMtapSlot(uint slot)
 	{
 		case 0:
 		case 1:
-			pxFailDev("Invalid parameter in call to GetMtapSlot -- specified slot is one of the base slots, not a Multitap slot.");
+			pxFail("Invalid parameter in call to GetMtapSlot -- specified slot is one of the base slots, not a Multitap slot.");
 			break;
 
 		case 2:
@@ -323,7 +309,7 @@ void FileMemoryCard::Open()
 		FileSystem::SetPathCompression(fname.c_str(), EmuConfig.McdCompressNTFS);
 #endif
 
-		if (StringUtil::EndsWith(fname, ".bin"))
+		if (fname.ends_with(".bin"))
 		{
 			std::string newname(fname + "x");
 			if (!ConvertNoECCtoRAW(fname.c_str(), newname.c_str()))
@@ -385,7 +371,7 @@ void FileMemoryCard::Close()
 		std::fclose(m_file[slot]);
 		m_file[slot] = nullptr;
 
-		if (StringUtil::EndsWith(m_filenames[slot], ".bin"))
+		if (m_filenames[slot].ends_with(".bin"))
 		{
 			const std::string name_in(m_filenames[slot] + 'x');
 			if (ConvertRAWtoNoECC(name_in.c_str(), m_filenames[slot].c_str()))
@@ -452,7 +438,8 @@ void FileMemoryCard::GetSizeInfo(uint slot, McdSizeInfo& outways)
 	outways.EraseBlockSizeInSectors = 16; // 0x0010
 	outways.Xor = 18; // 0x12, XOR 02 00 00 10
 
-	if (pxAssert(m_file[slot]))
+	pxAssert(m_file[slot]);
+	if (m_file[slot])
 		outways.McdSizeInSectors = static_cast<u32>(FileSystem::FSize64(m_file[slot])) / (outways.SectorSize + outways.EraseBlockSizeInSectors);
 	else
 		outways.McdSizeInSectors = 0x4000;
@@ -890,8 +877,8 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 		}
 
 		// We only want relevant file types.
-		if (!(StringUtil::EndsWith(fd.FileName, ".ps2") || StringUtil::EndsWith(fd.FileName, ".mcr") ||
-			StringUtil::EndsWith(fd.FileName, ".mcd") || StringUtil::EndsWith(fd.FileName, ".bin")))
+		if (!(fd.FileName.ends_with(".ps2") || fd.FileName.ends_with(".mcr") ||
+			fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin")))
 			continue;
 
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)

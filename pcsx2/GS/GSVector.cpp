@@ -1,23 +1,11 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
 #include "GSVector.h"
+#include <array>
 #include <cfloat>
 
-CONSTINIT const GSVector4i GSVector4i::m_xff[17] =
+constinit const GSVector4i GSVector4i::m_xff[17] =
 {
 	cxpr(0x00000000, 0x00000000, 0x00000000, 0x00000000),
 	cxpr(0x000000ff, 0x00000000, 0x00000000, 0x00000000),
@@ -38,7 +26,7 @@ CONSTINIT const GSVector4i GSVector4i::m_xff[17] =
 	cxpr(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff),
 };
 
-CONSTINIT const GSVector4i GSVector4i::m_x0f[17] =
+constinit const GSVector4i GSVector4i::m_x0f[17] =
 {
 	cxpr(0x00000000, 0x00000000, 0x00000000, 0x00000000),
 	cxpr(0x0000000f, 0x00000000, 0x00000000, 0x00000000),
@@ -59,29 +47,29 @@ CONSTINIT const GSVector4i GSVector4i::m_x0f[17] =
 	cxpr(0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f),
 };
 
-CONSTINIT const GSVector4 GSVector4::m_ps0123 = cxpr(0.0f, 1.0f, 2.0f, 3.0f);
-CONSTINIT const GSVector4 GSVector4::m_ps4567 = cxpr(4.0f, 5.0f, 6.0f, 7.0f);
-CONSTINIT const GSVector4 GSVector4::m_half = cxpr(0.5f);
-CONSTINIT const GSVector4 GSVector4::m_one = cxpr(1.0f);
-CONSTINIT const GSVector4 GSVector4::m_two = cxpr(2.0f);
-CONSTINIT const GSVector4 GSVector4::m_four = cxpr(4.0f);
-CONSTINIT const GSVector4 GSVector4::m_x4b000000 = cxpr(0x4b000000);
-CONSTINIT const GSVector4 GSVector4::m_x4f800000 = cxpr(0x4f800000);
-CONSTINIT const GSVector4 GSVector4::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
-CONSTINIT const GSVector4 GSVector4::m_max = cxpr(FLT_MAX);
-CONSTINIT const GSVector4 GSVector4::m_min = cxpr(FLT_MIN);
+constinit const GSVector4 GSVector4::m_ps0123 = cxpr(0.0f, 1.0f, 2.0f, 3.0f);
+constinit const GSVector4 GSVector4::m_ps4567 = cxpr(4.0f, 5.0f, 6.0f, 7.0f);
+constinit const GSVector4 GSVector4::m_half = cxpr(0.5f);
+constinit const GSVector4 GSVector4::m_one = cxpr(1.0f);
+constinit const GSVector4 GSVector4::m_two = cxpr(2.0f);
+constinit const GSVector4 GSVector4::m_four = cxpr(4.0f);
+constinit const GSVector4 GSVector4::m_x4b000000 = cxpr(0x4b000000);
+constinit const GSVector4 GSVector4::m_x4f800000 = cxpr(0x4f800000);
+constinit const GSVector4 GSVector4::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
+constinit const GSVector4 GSVector4::m_max = cxpr(FLT_MAX);
+constinit const GSVector4 GSVector4::m_min = cxpr(FLT_MIN);
 
-CONSTINIT const GSVector8 GSVector8::m_half = cxpr(0.5f);
-CONSTINIT const GSVector8 GSVector8::m_one = cxpr(1.0f);
-CONSTINIT const GSVector8 GSVector8::m_x7fffffff = cxpr(0x7fffffff);
-CONSTINIT const GSVector8 GSVector8::m_x80000000 = cxpr(0x80000000);
-CONSTINIT const GSVector8 GSVector8::m_x4b000000 = cxpr(0x4b000000);
-CONSTINIT const GSVector8 GSVector8::m_x4f800000 = cxpr(0x4f800000);
-CONSTINIT const GSVector8 GSVector8::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
-CONSTINIT const GSVector8 GSVector8::m_max = cxpr(FLT_MAX);
-CONSTINIT const GSVector8 GSVector8::m_min = cxpr(FLT_MAX);
+constinit const GSVector8 GSVector8::m_half = cxpr(0.5f);
+constinit const GSVector8 GSVector8::m_one = cxpr(1.0f);
+constinit const GSVector8 GSVector8::m_x7fffffff = cxpr(0x7fffffff);
+constinit const GSVector8 GSVector8::m_x80000000 = cxpr(0x80000000);
+constinit const GSVector8 GSVector8::m_x4b000000 = cxpr(0x4b000000);
+constinit const GSVector8 GSVector8::m_x4f800000 = cxpr(0x4f800000);
+constinit const GSVector8 GSVector8::m_xc1e00000000fffff = cxpr64(0xc1e00000000fffffull);
+constinit const GSVector8 GSVector8::m_max = cxpr(FLT_MAX);
+constinit const GSVector8 GSVector8::m_min = cxpr(FLT_MAX);
 
-CONSTINIT const GSVector8i GSVector8i::m_xff[33] =
+constinit const GSVector8i GSVector8i::m_xff[33] =
 {
 	cxpr(0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000),
 	cxpr(0x000000ff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000),
@@ -118,7 +106,7 @@ CONSTINIT const GSVector8i GSVector8i::m_xff[33] =
 	cxpr(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff),
 };
 
-CONSTINIT const GSVector8i GSVector8i::m_x0f[33] =
+constinit const GSVector8i GSVector8i::m_x0f[33] =
 {
 	cxpr(0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000),
 	cxpr(0x0000000f, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000),

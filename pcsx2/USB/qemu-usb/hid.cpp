@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2005 Fabrice Bellard, 2007 OpenMoko, Inc. <andrew@openedhand.com>, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: MIT
+ 
 /*
 * QEMU HID devices
 *
@@ -23,9 +26,13 @@
 * THE SOFTWARE.
 */
 
-#include "PrecompiledHeader.h"
 #include "hid.h"
 #include "input-keymap.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 
 #define HID_USAGE_ERROR_ROLLOVER 0x01
 #define HID_USAGE_POSTFAIL 0x02

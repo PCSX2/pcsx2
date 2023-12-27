@@ -1,24 +1,20 @@
-/*
- * USB Mass Storage Device emulation
- *
- * Copyright (c) 2006 CodeSourcery.
- * Written by Paul Brook
- *
- * This code is licenced under the LGPL.
- */
+// SPDX-FileCopyrightText: 2007 CodeSourcery, 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
-#include "PrecompiledHeader.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include "USB/qemu-usb/qusb.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/usb-msd/usb-msd.h"
 #include "USB/USB.h"
-#include "common/FileSystem.h"
 #include "Host.h"
 #include "StateWrapper.h"
+
+#include "common/Console.h"
+#include "common/FileSystem.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #define le32_to_cpu(x) (x)
 #define cpu_to_le32(x) (x)
@@ -454,7 +450,7 @@ namespace usb_msd
 	{
 		size_t len;
 
-		assert(s->f.csw.sig == cpu_to_le32(0x53425355));
+		pxAssert(s->f.csw.sig == cpu_to_le32(0x53425355));
 		len = std::min<size_t>(sizeof(s->f.csw), p->buffer_size);
 		usb_packet_copy(p, &s->f.csw, len);
 		memset(&s->f.csw, 0, sizeof(s->f.csw));
@@ -756,7 +752,7 @@ namespace usb_msd
 	{
 		MSDState* s = USB_CONTAINER_OF(dev, MSDState, dev);
 
-		assert(s->packet == p);
+		pxAssert(s->packet == p);
 		s->packet = NULL;
 
 		if (s->f.req.valid)

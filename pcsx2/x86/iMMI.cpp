@@ -1,25 +1,5 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
-/*********************************************************
-*   cached MMI opcodes                                   *
-*                                                        *
-*********************************************************/
-
-#include "PrecompiledHeader.h"
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 #include "Common.h"
 #include "R5900OpcodeTables.h"
@@ -2638,18 +2618,8 @@ void recPSRAVW()
 		xPSRA.D(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
 
 		// merge & sign extend
-		if (x86caps.hasStreamingSIMD4Extensions)
-		{
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
-			xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		}
-		else
-		{
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
-			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_D));
-			xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
-		}
+		xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
+		xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 
 		_freeXMMreg(t0reg);
 		_freeXMMreg(t1reg);
@@ -2759,25 +2729,10 @@ void recPMULTUW()
 		}
 
 		// interleave & sign extend
-		if (x86caps.hasStreamingSIMD4Extensions)
-		{
-			xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
-			xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
-			xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
-			xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-		}
-		else
-		{
-			int t0reg = _allocTempXMMreg(XMMT_INT);
-			xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI), 0xd8);
-			xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-			xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
-
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-			xPUNPCK.HDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-			_freeXMMreg(t0reg);
-		}
+		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
+		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
+		xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
+		xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 	}
 	_clearNeededXMMregs();
 }
@@ -2825,25 +2780,11 @@ void recPMADDUW()
 		xPADD.Q(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
 
 	// interleave & sign extend
-	if (x86caps.hasStreamingSIMD4Extensions)
-	{
-		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
-		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
-		xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
-		xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-	}
-	else
-	{
-		int t0reg = _allocTempXMMreg(XMMT_INT);
-		xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI), 0xd8);
-		xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-		xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-		xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
+	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
+	xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
+	xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
+	xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 
-		xPUNPCK.LDQ(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-		xPUNPCK.HDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-		_freeXMMreg(t0reg);
-	}
 	_clearNeededXMMregs();
 }
 

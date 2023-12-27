@@ -17,11 +17,10 @@ target_sources(common PRIVATE
 	Error.cpp
 	FastJmp.cpp
 	FileSystem.cpp
-	General.cpp
+	HostSys.cpp
 	Image.cpp
 	HTTPDownloader.cpp
 	MemorySettingsInterface.cpp
-	Misc.cpp
 	MD5Digest.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
@@ -37,7 +36,6 @@ target_sources(common PRIVATE
 	WindowInfo.cpp
 	emitter/avx.cpp
 	emitter/bmi.cpp
-	emitter/cpudetect.cpp
 	emitter/fpu.cpp
 	emitter/groups.cpp
 	emitter/jmp.cpp
@@ -45,8 +43,6 @@ target_sources(common PRIVATE
 	emitter/legacy_sse.cpp
 	emitter/movs.cpp
 	emitter/simd.cpp
-	emitter/LnxCpuDetect.cpp
-	emitter/WinCpuDetect.cpp
 	emitter/x86emitter.cpp
 	Darwin/DarwinThreads.cpp
 	Darwin/DarwinMisc.cpp
@@ -72,10 +68,11 @@ target_sources(common PRIVATE
 	Easing.h
 	EnumOps.h
 	Error.h
+	FPControl.h
 	FastJmp.h
 	FileSystem.h
-	General.h
 	HashCombine.h
+	HostSys.h
 	HeterogeneousContainers.h
 	Image.h
 	LRUCache.h
@@ -93,12 +90,14 @@ target_sources(common PRIVATE
 	ScopedGuard.h
 	SettingsInterface.h
 	SettingsWrapper.h
+	SingleRegisterTypes.h
 	SmallString.h
 	StringUtil.h
 	Timer.h
 	TextureDecompress.h
 	Threading.h
 	TraceLog.h
+	VectorIntrin.h
 	WAVWriter.h
 	WindowInfo.h
 	WrappedMemCopy.h
@@ -123,11 +122,12 @@ target_sources(common PRIVATE
 	emitter/legacy_instructions.h
 	emitter/legacy_internal.h
 	emitter/legacy_types.h
-	emitter/tools.h
 	emitter/x86emitter.h
 	emitter/x86types.h
 	Darwin/DarwinMisc.h
 )
+
+set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
 
 if(USE_VTUNE)
 	target_link_libraries(common PUBLIC Vtune::Vtune)

@@ -10,9 +10,6 @@
     <ClCompile Include="Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="emitter\cpudetect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emitter\fpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -26,9 +23,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\legacy_sse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="emitter\LnxCpuDetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\avx.cpp">
@@ -46,7 +40,7 @@
     <ClCompile Include="emitter\movs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Misc.cpp">
+    <ClCompile Include="HostSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Perf.cpp">
@@ -62,9 +56,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\simd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="emitter\WinCpuDetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Windows\WinHostSys.cpp">
@@ -133,9 +124,6 @@
     <ClCompile Include="FileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="General.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -168,7 +156,7 @@
     <ClInclude Include="emitter\implement\dwshift.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="General.h">
+    <ClInclude Include="HostSys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\group1.h">
@@ -216,9 +204,6 @@
     <ClInclude Include="RedtapeWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SafeArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emitter\implement\simd_arithmetic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -244,9 +229,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\test.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="emitter\tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\x86emitter.h">
@@ -324,9 +306,6 @@
     <ClInclude Include="HTTPDownloaderWinHTTP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeterogeneousContainers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -360,6 +339,11 @@
     <ClInclude Include="SmallString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VectorIntrin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleRegisterTypes.h" />
+    <ClInclude Include="FPControl.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

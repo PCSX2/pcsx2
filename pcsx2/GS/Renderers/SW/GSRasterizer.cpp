@@ -1,29 +1,17 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021 PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-License-Identifier: LGPL-3.0+
 
 // TODO: JIT Draw* (flags: depth, texture, color (+iip), scissor)
 
-#include "PrecompiledHeader.h"
 #include "GS/Renderers/SW/GSRasterizer.h"
 #include "GS/Renderers/SW/GSDrawScanline.h"
 #include "GS/GSExtra.h"
 #include "PerformanceMetrics.h"
-#include "common/AlignedMalloc.h"
-#include "common/General.h"
-#include "common/StringUtil.h"
 #include "VMManager.h"
+
+#include "common/AlignedMalloc.h"
+#include "common/Console.h"
+#include "common/StringUtil.h"
 
 #define ENABLE_DRAW_STATS 0
 
@@ -85,14 +73,14 @@ static void __fi AddScanlineInfo(GSVertexSW* e, int pixels, int left, int top)
 
 bool GSRasterizer::IsOneOfMyScanlines(int top) const
 {
-	ASSERT(top >= 0 && top < 2048);
+	pxAssert(top >= 0 && top < 2048);
 
 	return m_scanline[top >> m_thread_height] != 0;
 }
 
 bool GSRasterizer::IsOneOfMyScanlines(int top, int bottom) const
 {
-	ASSERT(top >= 0 && top < 2048 && bottom >= 0 && bottom < 2048);
+	pxAssert(top >= 0 && top < 2048 && bottom >= 0 && bottom < 2048);
 
 	top = top >> m_thread_height;
 	bottom = (bottom + (1 << m_thread_height) - 1) >> m_thread_height;
@@ -246,7 +234,7 @@ void GSRasterizer::Draw(GSRasterizerData& data)
 			break;
 
 		default:
-			__assume(0);
+			ASSUME(0);
 	}
 
 #if _M_SSE >= 0x501
@@ -557,8 +545,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW2& RESTRICT edge, const GSVertexSW2& RESTRICT dedge, const GSVertexSW2& RESTRICT dscan, const GSVector4& RESTRICT p0)
 {
-	ASSERT(top < bottom);
-	ASSERT(edge.p.x <= edge.p.y);
+	pxAssert(top < bottom);
+	pxAssert(edge.p.x <= edge.p.y);
 
 	GSVertexSW* RESTRICT e = &m_edge.buff[m_edge.count];
 
@@ -736,8 +724,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const u16* index)
 
 void GSRasterizer::DrawTriangleSection(int top, int bottom, GSVertexSW& RESTRICT edge, const GSVertexSW& RESTRICT dedge, const GSVertexSW& RESTRICT dscan, const GSVector4& RESTRICT p0)
 {
-	ASSERT(top < bottom);
-	ASSERT(edge.p.x <= edge.p.y);
+	pxAssert(top < bottom);
+	pxAssert(edge.p.x <= edge.p.y);
 
 	GSVertexSW* RESTRICT e = &m_edge.buff[m_edge.count];
 
@@ -1136,7 +1124,7 @@ void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW&
 	m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - (left & ~(PIXELS_PER_LOOP - 1));
 	//m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - left;
 
-	ASSERT(m_pixels.actual <= m_pixels.total);
+	pxAssert(m_pixels.actual <= m_pixels.total);
 
 	m_draw_scanline(pixels, left, top, scan, m_local);
 }
@@ -1147,7 +1135,7 @@ void GSRasterizer::DrawEdge(int pixels, int left, int top, const GSVertexSW& sca
 	m_pixels.actual += 1;
 	m_pixels.total += PIXELS_PER_LOOP - 1;
 
-	ASSERT(m_pixels.actual <= m_pixels.total);
+	pxAssert(m_pixels.actual <= m_pixels.total);
 
 	m_draw_edge(pixels, left, top, scan, m_local);
 }
@@ -1168,7 +1156,7 @@ void GSSingleRasterizer::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& da
 
 void GSSingleRasterizer::Draw(GSRasterizerData& data)
 {
-	if (!unlikely(m_ds.SetupDraw(data)))
+	if (!m_ds.SetupDraw(data)) [[unlikely]]
 	{
 		m_ds.ResetCodeCache();
 		m_ds.SetupDraw(data);
@@ -1251,14 +1239,14 @@ void GSRasterizerList::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data
 {
 	GSVector4i r = data->bbox.rintersect(data->scissor);
 
-	if (unlikely(!m_ds.SetupDraw(*data.get())))
+	if (!m_ds.SetupDraw(*data.get())) [[unlikely]]
 	{
 		Sync();
 		m_ds.ResetCodeCache();
 		m_ds.SetupDraw(*data.get());
 	}
 
-	ASSERT(r.top >= 0 && r.top < 2048 && r.bottom >= 0 && r.bottom < 2048);
+	pxAssert(r.top >= 0 && r.top < 2048 && r.bottom >= 0 && r.bottom < 2048);
 
 	int top = r.top >> m_thread_height;
 	int bottom = std::min<int>((r.bottom + (1 << m_thread_height) - 1) >> m_thread_height, top + m_workers.size());
