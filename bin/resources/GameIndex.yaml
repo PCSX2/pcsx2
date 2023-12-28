@@ -1390,6 +1390,7 @@ SCAJ-20104:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
@@ -1594,6 +1595,7 @@ SCAJ-20136:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
   region: "NTSC-Unk"
@@ -1816,6 +1818,7 @@ SCAJ-20173:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -3381,6 +3384,7 @@ SCED-53081:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCED-53115:
   name: "Ace Combat - Squadron Leader [Demo]"
   region: "PAL-E"
@@ -3394,6 +3398,7 @@ SCED-53115:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCED-53116:
   name: "Bonus Demo 9 (You)"
   region: "PAL-M5"
@@ -4882,6 +4887,7 @@ SCES-52424:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     1D54FEA9:
       content: |-
@@ -5454,6 +5460,7 @@ SCES-54041:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters: # Reads AC4 and 5 saves for bonus unlockables.
     - "SCES-54041"
     - "SCES-50410"
@@ -6466,6 +6473,7 @@ SCKA-20042:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -6662,6 +6670,7 @@ SCKA-20070:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     2799A4E5:
       content: |-
@@ -6724,6 +6733,7 @@ SCKA-20082:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCKA-20084:
   name: "Monster House"
   region: "NTSC-K"
@@ -20377,31 +20387,31 @@ SLES-53332:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53333:
   name: "Medal of Honor - Les Faucons de Guerre"
   region: "PAL-F"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53334:
   name: "Medal of Honor - European Assault"
   region: "PAL-G"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53335:
   name: "Medal of Honor - European Assault"
   region: "PAL-I"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53336:
   name: "Medal of Honor - European Assault"
   region: "PAL-S"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53338:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "PAL-M3"
@@ -20656,7 +20666,6 @@ SLES-53415:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -20667,7 +20676,6 @@ SLES-53416:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-M3"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -20678,7 +20686,6 @@ SLES-53417:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-G"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -21747,7 +21754,6 @@ SLES-53722:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "PAL-E"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -28259,7 +28265,7 @@ SLKA-25243:
   region: "NTSC-K"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
   region: "NTSC-K"
@@ -29284,7 +29290,7 @@ SLPM-55037:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLPM-55038:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "NTSC-J"
@@ -40707,7 +40713,7 @@ SLPM-66079:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLPM-66080:
   name: GENERATION OF CHAOSIII 〜時の封印〜 [IFコレクション]
   name-sort: GENERATION OF CHAOSIII 〜ときのふういん〜 [IFこれくしょん]
@@ -42261,7 +42267,6 @@ SLPM-66328:
   name-en: "Call of Duty 2 - Big Red One"
   region: "NTSC-J"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -43370,7 +43375,7 @@ SLPM-66514:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLPM-66515:
   name: スター・ウォーズ エピソード3 シスの復讐 [EA BEST HITS]
   name-sort: すたー・うぉーず えぴそーど3 しすのふくしゅう [EA BEST HITS]
@@ -51718,6 +51723,7 @@ SLPS-25418:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     86089F31:
       content: |-
@@ -52868,6 +52874,7 @@ SLPS-25629:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -55018,6 +55025,7 @@ SLPS-73218:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SLPS-73219:
   name: テイルズ・オブ・ディスティニー2 PS2 the Best
   name-sort: ているず・おぶ・でぃすてぃにー2 PS2 the Best
@@ -55305,6 +55313,7 @@ SLPS-73250:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -59616,6 +59625,7 @@ SLUS-20851:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     39B574F0:
       content: |-
@@ -61565,7 +61575,7 @@ SLUS-21199:
   compat: 5
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
-    bilinearUpscale: 1 # Smooths out sun texture.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLUS-21200:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-U"
@@ -61742,7 +61752,6 @@ SLUS-21228:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -62358,7 +62367,6 @@ SLUS-21318:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -62539,6 +62547,7 @@ SLUS-21346:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SLUS-21346"
     - "SLUS-20152"
