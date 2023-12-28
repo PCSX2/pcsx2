@@ -2670,21 +2670,6 @@ void GSRendererHW::Draw()
 	if (ds)
 		ds->UpdateValidChannels(ZBUF_TEX0.PSM, zm);
 
-	if (rt)
-	{
-		if (m_texture_shuffle || m_channel_shuffle || (!rt->m_dirty.empty() && !rt->m_dirty.GetTotalRect(rt->m_TEX0, rt->m_unscaled_size).rintersect(m_r).rempty()))
-			rt->Update();
-		else
-			rt->m_age = 0;
-	}
-	if (ds)
-	{
-		if (m_texture_shuffle || m_channel_shuffle || (!ds->m_dirty.empty() && !ds->m_dirty.GetTotalRect(ds->m_TEX0, ds->m_unscaled_size).rintersect(m_r).rempty()))
-			ds->Update();
-		else
-			ds->m_age = 0;
-	}
-
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
 	GSTextureCache::Target* old_rt = nullptr;
 	GSTextureCache::Target* old_ds = nullptr;
@@ -2721,6 +2706,16 @@ void GSRendererHW::Draw()
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
 			{
+				// if the height cache gave a different size to our final size, we need to check if it needs preloading.
+				// Pirates - Legend of the Black Kat starts a draw of 416, but Z is 448 and it preloads the background.
+				if (rt->m_drawn_since_read.rempty() && rt->m_dirty.size() > 0 && new_height && (preserve_rt_color || preserve_rt_alpha)) {
+					RGBAMask mask;
+					mask._u32 = preserve_rt_color ? 0x7 : 0;
+					mask.c.a |= preserve_rt_alpha;
+					g_texture_cache->AddDirtyRectTarget(rt, GSVector4i(rt->m_valid.x, rt->m_valid.w, rt->m_valid.z, new_h), rt->m_TEX0.PSM, rt->m_TEX0.TBW, mask, false);
+					g_texture_cache->GetTargetSize(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, 0, new_h);
+				}
+
 				rt->ResizeValidity(rt->GetUnscaledRect());
 				rt->ResizeDrawn(rt->GetUnscaledRect());
 			}
@@ -2793,6 +2788,21 @@ void GSRendererHW::Draw()
 				}
 			}
 		}
+	}
+
+	if (rt)
+	{
+		if (m_texture_shuffle || m_channel_shuffle || (!rt->m_dirty.empty() && !rt->m_dirty.GetTotalRect(rt->m_TEX0, rt->m_unscaled_size).rintersect(m_r).rempty()))
+			rt->Update();
+		else
+			rt->m_age = 0;
+	}
+	if (ds)
+	{
+		if (m_texture_shuffle || m_channel_shuffle || (!ds->m_dirty.empty() && !ds->m_dirty.GetTotalRect(ds->m_TEX0, ds->m_unscaled_size).rintersect(m_r).rempty()))
+			ds->Update();
+		else
+			ds->m_age = 0;
 	}
 
 	if (src && src->m_shared_texture && src->m_texture != src->m_from_target->m_texture)
