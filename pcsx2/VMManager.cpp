@@ -3018,30 +3018,16 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 {
 	VMManager::EnsureCPUInfoInitialized();
 
-	const u32 cluster_count = cpuinfo_get_clusters_count();
-	if (cluster_count == 0)
+	const u32 core_count = cpuinfo_get_cores_count();
+	if (core_count == 0)
 	{
 		Console.Error("Invalid CPU count returned");
 		return;
 	}
 
-	Console.WriteLn("Cluster count: %u", cluster_count);
+	Console.WriteLn(fmt::format("CPU cores count: {}", core_count));
 
-	for (u32 i = 0; i < cluster_count; i++)
-	{
-		const cpuinfo_cluster* cluster = cpuinfo_get_cluster(i);
-		Console.WriteLn("  Cluster %u: %u cores and %u processors at %u MHz", i, cluster->core_count,
-			cluster->processor_count, static_cast<u32>(cluster->frequency /* / 1000000u*/));
-	}
-
-	const bool has_big_little = cluster_count > 1;
-	Console.WriteLn("Big-Little: %s", has_big_little ? "yes" : "no");
-
-	const u32 big_cores =
-		cpuinfo_get_cluster(0)->core_count + ((cluster_count > 2) ? cpuinfo_get_cluster(1)->core_count : 0u);
-	Console.WriteLn("Guessing we have %u big/medium cores...", big_cores);
-
-	if (big_cores >= 3)
+	if (core_count >= 3)
 	{
 		Console.WriteLn("  Enabling MTVU.");
 		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", true);
@@ -3052,8 +3038,8 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", false);
 	}
 
-	const int extra_threads = (big_cores > 3) ? 3 : 2;
-	Console.WriteLn("  Setting Extra Software Rendering Threads to %d.", extra_threads);
+	const int extra_threads = (core_count > 3) ? 3 : 2;
+	Console.WriteLn(fmt::format("  Setting Extra Software Rendering Threads to {}.", extra_threads));
 	si.SetIntValue("EmuCore/GS", "extrathreads", extra_threads);
 }
 
