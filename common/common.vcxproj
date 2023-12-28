@@ -55,7 +55,6 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp" />
-    <ClCompile Include="General.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="HTTPDownloader.cpp" />
     <ClCompile Include="HTTPDownloaderCurl.cpp">
@@ -84,11 +83,10 @@
     <ClCompile Include="Windows\WinHostSys.cpp" />
     <ClCompile Include="Windows\WinMisc.cpp" />
     <ClCompile Include="Windows\WinThreads.cpp" />
-    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="HostSys.cpp" />
     <ClCompile Include="Semaphore.cpp" />
     <ClCompile Include="emitter\avx.cpp" />
     <ClCompile Include="emitter\bmi.cpp" />
-    <ClCompile Include="emitter\cpudetect.cpp" />
     <ClCompile Include="emitter\fpu.cpp" />
     <ClCompile Include="emitter\groups.cpp" />
     <ClCompile Include="emitter\jmp.cpp" />
@@ -97,8 +95,6 @@
     <ClCompile Include="emitter\movs.cpp" />
     <ClCompile Include="emitter\simd.cpp" />
     <ClCompile Include="emitter\x86emitter.cpp" />
-    <ClCompile Include="emitter\LnxCpuDetect.cpp" />
-    <ClCompile Include="emitter\WinCpuDetect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="FastJmp.asm" />
@@ -114,6 +110,7 @@
     <ClInclude Include="Error.h" />
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="FileSystem.h" />
+    <ClInclude Include="FPControl.h" />
     <ClInclude Include="HashCombine.h" />
     <ClInclude Include="HeapArray.h" />
     <ClInclude Include="HeterogeneousContainers.h" />
@@ -137,7 +134,7 @@
     <ClInclude Include="SettingsWrapper.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="General.h" />
+    <ClInclude Include="HostSys.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ReadbackSpinManager.h" />
@@ -154,7 +151,6 @@
     <ClInclude Include="emitter\legacy_instructions.h" />
     <ClInclude Include="emitter\legacy_internal.h" />
     <ClInclude Include="emitter\legacy_types.h" />
-    <ClInclude Include="emitter\tools.h" />
     <ClInclude Include="emitter\x86emitter.h" />
     <ClInclude Include="emitter\x86types.h" />
     <ClInclude Include="emitter\implement\dwshift.h" />

@@ -2618,18 +2618,8 @@ void recPSRAVW()
 		xPSRA.D(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
 
 		// merge & sign extend
-		if (x86caps.hasStreamingSIMD4Extensions)
-		{
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
-			xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		}
-		else
-		{
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
-			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_D));
-			xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
-		}
+		xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
+		xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 
 		_freeXMMreg(t0reg);
 		_freeXMMreg(t1reg);
@@ -2739,25 +2729,10 @@ void recPMULTUW()
 		}
 
 		// interleave & sign extend
-		if (x86caps.hasStreamingSIMD4Extensions)
-		{
-			xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
-			xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
-			xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
-			xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-		}
-		else
-		{
-			int t0reg = _allocTempXMMreg(XMMT_INT);
-			xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI), 0xd8);
-			xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-			xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
-
-			xPUNPCK.LDQ(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-			xPUNPCK.HDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-			_freeXMMreg(t0reg);
-		}
+		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
+		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
+		xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
+		xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 	}
 	_clearNeededXMMregs();
 }
@@ -2805,25 +2780,11 @@ void recPMADDUW()
 		xPADD.Q(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
 
 	// interleave & sign extend
-	if (x86caps.hasStreamingSIMD4Extensions)
-	{
-		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
-		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
-		xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
-		xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-	}
-	else
-	{
-		int t0reg = _allocTempXMMreg(XMMT_INT);
-		xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI), 0xd8);
-		xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-		xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-		xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
+	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
+	xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
+	xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
+	xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 
-		xPUNPCK.LDQ(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
-		xPUNPCK.HDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
-		_freeXMMreg(t0reg);
-	}
 	_clearNeededXMMregs();
 }
 

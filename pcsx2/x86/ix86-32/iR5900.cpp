@@ -8,7 +8,6 @@
 #include "GS.h"
 #include "Memory.h"
 #include "Patch.h"
-#include "System.h"
 #include "R3000A.h"
 #include "R5900OpcodeTables.h"
 #include "VMManager.h"

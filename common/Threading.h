@@ -4,7 +4,6 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
-#include "common/General.h"
 
 #if defined(__APPLE__)
 #include <mach/semaphore.h>

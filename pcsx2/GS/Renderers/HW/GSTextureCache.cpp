@@ -108,6 +108,12 @@ bool GSTextureCache::FullRectDirty(Target* target, u32 rgba_mask)
 		return true;
 	}
 
+	// Check drawn areas on dst matches.
+	if (target->m_was_dst_matched && target->m_dirty.size() == 1 && target->m_drawn_since_read.rintersect(target->m_dirty[0].r).eq(target->m_drawn_since_read))
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -1310,6 +1316,26 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								if (!t_clean)
 									t->Update();
 
+								if ((psm == PSMT4 || psm == PSMT8) && t->m_was_dst_matched && !t->m_valid_rgb)
+								{
+
+									GL_CACHE("TC: Attempt to repopulate RGB for target [%x] on source lookup", t->m_TEX0.TBP0);
+									for (Target* dst_match : m_dst[DepthStencil])
+									{
+										if (dst_match->m_TEX0.TBP0 != t->m_TEX0.TBP0 || !dst_match->m_valid_rgb)
+											continue;
+										
+										if (!CopyRGBFromDepthToColor(t, dst_match))
+										{
+											// If we can't update it, then just read back the valid data.
+											DevCon.Warning("Failed to update dst matched texture");
+										}
+										t->m_valid_rgb = true;
+										break;
+									}
+
+								}
+
 								dst = t;
 
 								found_t = true;
@@ -1852,6 +1878,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		}
 
 		// If our RGB was invalidated, we need to pull it from depth.
+		// Terminator 3 will reuse our dst_matched target with the RGB masked, then later use the full ARGB area, so we need to update the depth.
 		const bool preserve_target = preserve_rgb || preserve_alpha;
 		if (type == RenderTarget && (preserve_target || !dst->m_valid.rintersect(draw_rect).eq(dst->m_valid)) &&
 			!dst->m_valid_rgb && !FullRectDirty(dst, 0x7) &&
@@ -1867,6 +1894,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					if (dst_match->m_TEX0.TBP0 != TEX0.TBP0 || !dst_match->m_valid_rgb)
 						continue;
 
+					dst->m_was_dst_matched = true;
+					dst->m_TEX0.TBW = dst_match->m_TEX0.TBW;
+					dst->UpdateValidity(dst->m_valid);
 					if (!CopyRGBFromDepthToColor(dst, dst_match))
 					{
 						// Needed new texture and memory allocation failed.
@@ -1928,8 +1958,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 		{
 			Target* t = *i;
 			// Don't pull in targets without valid lower 24 bits, it makes no sense to convert them.
-			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb)
+			// FIXME: Technically the difference in size is fine, but if the target gets reinterpreted, the hw renderer doesn't rearrange the target.
+			// This does cause some extra uploads in some games (like Burnout), but without this, bad data gets displayed in games like Transformers.
+			if (bp != t->m_TEX0.TBP0 || !t->m_valid_rgb || (!is_shuffle && t->m_TEX0.TBW < TEX0.TBW && possible_clear))
+			{
 				continue;
+			}
 
 			const GSLocalMemory::psm_t& t_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
 			if (t_psm_s.bpp != psm_s.bpp)
@@ -2006,6 +2040,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_valid_alpha_low = dst_match->m_valid_alpha_low;//&& psm_s.trbpp != 24;
 			dst->m_valid_alpha_high = dst_match->m_valid_alpha_high;//&& psm_s.trbpp != 24;
 			dst->m_valid_rgb = dst_match->m_valid_rgb;
+			dst->m_was_dst_matched = true;
 
 			if(GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp > 16)
 				dst->m_TEX0.TBW = dst_match->m_TEX0.TBW; // Be careful of shuffles of the depth as C16, but using a buffer width of 16 (Mercenaries).
@@ -3493,13 +3528,22 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	// You'd think we'd update to use the source valid bits, but it's not, because it might be copying some data which was uploaded and dirtied the target.
 	// An example of this is Cross Channel - To All People where it renders a picture with 0x7f000000 FBMSK at 0x1180, which was all cleared to black on boot,
 	// Then it moves it to 0x2e80, where some garbage has been loaded underneath, so we can't assume that's the only valid data.
-	dst->m_valid_rgb |= src->m_valid_rgb;
-	dst->m_valid_alpha_low |= src->m_valid_alpha_low;
-	dst->m_valid_alpha_high |= src->m_valid_alpha_high;
+	// We need to be cautious of the validity of the channels vs the format it's using, you don't want to set the alpha to true if it's only copying RGB.
+	if (GSUtil::GetChannelMask(DPSM) & 0x7)
+		dst->m_valid_rgb |= src->m_valid_rgb;
+
+	if (GSUtil::GetChannelMask(DPSM) & 0x8)
+	{
+		if(DPSM != PSMT4HH)
+			dst->m_valid_alpha_low |= src->m_valid_alpha_low;
+		if (DPSM != PSMT4HL)
+			dst->m_valid_alpha_high |= src->m_valid_alpha_high;
+		dst->m_alpha_max = src->m_alpha_max;
+		dst->m_alpha_min = src->m_alpha_min;
+	}
+
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
-	dst->m_alpha_max = src->m_alpha_max;
-	dst->m_alpha_min = src->m_alpha_min;
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
 	return true;

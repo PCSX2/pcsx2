@@ -416,9 +416,6 @@
     <ClCompile Include="SourceLog.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="Elfheader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
@@ -1437,9 +1434,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="SaveState.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="System.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="Dmac.h">

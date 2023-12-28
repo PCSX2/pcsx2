@@ -314,7 +314,6 @@ PAPX-90512:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -523,7 +522,6 @@ PBPX-95523:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95524:
   name: "Gran Turismo 4 - Prologue [PlayStation 2 Racing Pack]"
@@ -534,7 +532,6 @@ PBPX-95524:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95525:
   name: "Final Fantasy XII"
@@ -561,7 +558,6 @@ PBPX-95601:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
 PCPX-96301:
   name: "I.Q Remix+ - Intelligent Qube"
   region: "NTSC-J"
@@ -767,7 +763,6 @@ PCPX-96649:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
 PCPX-96653:
   name: "Ratchet & Clank 3"
   region: "NTSC-J"
@@ -1176,7 +1171,6 @@ SCAJ-20066:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCAJ-20067:
   name: "GunGrave O.D."
@@ -1390,6 +1384,7 @@ SCAJ-20104:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCAJ-20105:
   name: "Armored Core - Nine breaker"
   region: "NTSC-Unk"
@@ -1594,6 +1589,7 @@ SCAJ-20136:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCAJ-20137:
   name: "Musashiden II - Blademaster"
   region: "NTSC-Unk"
@@ -1816,6 +1812,7 @@ SCAJ-20173:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -2051,14 +2048,12 @@ SCAJ-30006:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
 SCAJ-30007:
   name: "Gran Turismo 4"
   region: "NTSC-Unk"
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -2069,7 +2064,6 @@ SCAJ-30008:
   region: "NTSC-Unk"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -3135,7 +3129,6 @@ SCED-52455:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCED-52461:
   name: "SingStar [Press Kit]"
@@ -3381,6 +3374,7 @@ SCED-53081:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCED-53115:
   name: "Ace Combat - Squadron Leader [Demo]"
   region: "PAL-E"
@@ -3394,6 +3388,7 @@ SCED-53115:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCED-53116:
   name: "Bonus Demo 9 (You)"
   region: "PAL-M5"
@@ -4675,7 +4670,6 @@ SCES-51719:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -4882,6 +4876,7 @@ SCES-52424:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     1D54FEA9:
       content: |-
@@ -4923,7 +4918,6 @@ SCES-52438:
     - "SCES-51719"
     - "SCES-52438"
     - "SCES-50294"
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCES-52456:
   name: "Ratchet & Clank 3"
@@ -5454,6 +5448,7 @@ SCES-54041:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters: # Reads AC4 and 5 saves for bonus unlockables.
     - "SCES-54041"
     - "SCES-50410"
@@ -6333,7 +6328,6 @@ SCKA-20022:
     trilinearFiltering: 1
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCKA-20023:
   name: "Fatal Frame II"
@@ -6466,6 +6460,7 @@ SCKA-20042:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -6662,6 +6657,7 @@ SCKA-20070:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     2799A4E5:
       content: |-
@@ -6724,6 +6720,7 @@ SCKA-20082:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SCKA-20084:
   name: "Monster House"
   region: "NTSC-K"
@@ -6961,7 +6958,6 @@ SCKA-30001:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -7645,7 +7641,6 @@ SCPS-15055:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCPS-15056:
   name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす
@@ -8212,7 +8207,6 @@ SCPS-17001:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -8466,7 +8460,6 @@ SCPS-19252:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -8541,7 +8534,6 @@ SCPS-19304:
     - "SCPS-15009"
     - "SCPS-55007"
   # vuClampMode = 2  Text in GT mode works.
-  # eeClampMode = 3  Text in races works.
 SCPS-19305:
   name: SIREN PS2 the Best
   name-sort: SIREN PS2 the Best
@@ -9299,7 +9291,6 @@ SCUS-90682:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -10109,7 +10100,6 @@ SCUS-97328:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -10503,7 +10493,6 @@ SCUS-97436:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -10721,7 +10710,6 @@ SCUS-97483:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
-    # eeClampMode = 3  Text in races works.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -11928,8 +11916,8 @@ SLED-52441:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52473:
   name: "Transformers - Optimus Prime [Demo]"
@@ -11939,8 +11927,8 @@ SLED-52473:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52474:
   name: "Transformers - Red Alert [Demo]"
@@ -11950,8 +11938,8 @@ SLED-52474:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLED-52476:
   name: "UEFA Euro 2004 - Portugal [Demo]"
@@ -17865,8 +17853,8 @@ SLES-52388:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-52392:
   name: "Combat Elite - WWII Paratroopers [Preview]"
@@ -20339,8 +20327,8 @@ SLES-53309:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLES-53311:
   name: "Graffiti Kingdom"
@@ -20375,18 +20363,33 @@ SLES-53332:
   name: "Medal of Honor - European Assault"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53333:
   name: "Medal of Honor - Les Faucons de Guerre"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53334:
   name: "Medal of Honor - European Assault"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53335:
   name: "Medal of Honor - European Assault"
   region: "PAL-I"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53336:
   name: "Medal of Honor - European Assault"
   region: "PAL-S"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLES-53338:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "PAL-M3"
@@ -20641,7 +20644,6 @@ SLES-53415:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -20652,7 +20654,6 @@ SLES-53416:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-M3"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -20663,7 +20664,6 @@ SLES-53417:
   name: "Call of Duty 2 - Big Red One"
   region: "PAL-G"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -21732,7 +21732,6 @@ SLES-53722:
   name: "Call of Duty 2 - Big Red One [Collector's Edition]"
   region: "PAL-E"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -21841,8 +21840,7 @@ SLES-53753:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLES-53754:
   name: "ATV Offroad Fury 3"
   region: "PAL-M6"
@@ -23759,8 +23757,7 @@ SLES-54466:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLES-54467:
   name: "Final Armada"
   region: "PAL-M5"
@@ -25626,6 +25623,7 @@ SLES-55147:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
+    recommendedBlendingLevel: 4 # Fixes grey text.
 SLES-55148:
   name: "SBK 08 - Superbike World Championship"
   region: "PAL-M5"
@@ -27605,7 +27603,9 @@ SLKA-25078:
   region: "NTSC-K"
   compat: 5
 SLKA-25080:
-  name: "dot hack - Infection"
+  name: "dot hack - 감염확대 Vol.1"
+  name-sort: "dot hack - Infection Part 1"
+  name-en: "dot hack - Infection Part 1"
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Sharpens world in far distances.
@@ -27819,7 +27819,9 @@ SLKA-25137:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
 SLKA-25138:
-  name: "dot hack - Mutation"
+  name: "dot hack - 악성변이 Vol.2"
+  name-sort: "dot hack - Mutation Part 2"
+  name-en: "dot hack - Mutation Part 2"
   region: "NTSC-K"
 SLKA-25139:
   name: "Fu-un Shinsengumi"
@@ -27844,7 +27846,9 @@ SLKA-25144:
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
 SLKA-25145:
-  name: "dot hack - Outbreak"
+  name: "dot hack - 침식오염 Vol.3"
+  name-sort: "dot hack - Outbreak Part 3"
+  name-en: "dot hack - Outbreak Part 3"
   region: "NTSC-K"
 SLKA-25146:
   name: "Kaido Battle 2 - Chain Reaction"
@@ -27946,7 +27950,9 @@ SLKA-25173:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-K"
 SLKA-25174:
-  name: "dot hack - Quarantine"
+  name: "dot hack - 절대포위 Vol.4"
+  name-sort: "dot hack - Quarantine Part 4"
+  name-en: "dot hack - Quarantine Part 4"
   region: "NTSC-K"
 SLKA-25175:
   name: "Transformers"
@@ -27956,8 +27962,8 @@ SLKA-25175:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLKA-25176:
   name: "Pump It Up - Exceed"
@@ -28235,6 +28241,9 @@ SLKA-25242:
 SLKA-25243:
   name: "Medal of Honor - European Assault"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
   region: "NTSC-K"
@@ -28913,6 +28922,7 @@ SLKA-25422:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
+    recommendedBlendingLevel: 4 # Fixes grey text.
 SLKA-25423:
   name: "Sega Rally 2006"
   region: "NTSC-K"
@@ -29253,6 +29263,12 @@ SLPM-55036:
     bilinearUpscale: 2 # Smooths out sun glare textures like native.
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
+SLPM-55037:
+  name: "Medal of Honor - European Assault [EASY 1980]"
+  region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLPM-55038:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "NTSC-J"
@@ -40673,6 +40689,9 @@ SLPM-66078:
 SLPM-66079:
   name: "Medal of Honor - Europe Kyoushuu"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLPM-66080:
   name: GENERATION OF CHAOSIII 〜時の封印〜 [IFコレクション]
   name-sort: GENERATION OF CHAOSIII 〜ときのふういん〜 [IFこれくしょん]
@@ -42226,7 +42245,6 @@ SLPM-66328:
   name-en: "Call of Duty 2 - Big Red One"
   region: "NTSC-J"
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -43333,6 +43351,9 @@ SLPM-66514:
   name-sort: めだる おぶ おなー よーろっぱきょうしゅう [EA BEST HITS]
   name-en: "Medal of Honor - European Assault [EA Best Hits]"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLPM-66515:
   name: スター・ウォーズ エピソード3 シスの復讐 [EA BEST HITS]
   name-sort: すたー・うぉーず えぴそーど3 しすのふくしゅう [EA BEST HITS]
@@ -46450,7 +46471,7 @@ SLPM-68520:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-68521:
-  name: "Dot Hack Fraegment [Senkou Release-ban]"
+  name: "dot hack - frägment [Senkou Release-ban]"
   region: "NTSC-J"
 SLPM-68523:
   name: "Phantasy Star Universe (Premiere Disc)"
@@ -50018,8 +50039,8 @@ SLPS-25120:
   name-en: "Gundam Gihren's Ambition"
   region: "NTSC-J"
 SLPS-25121:
-  name: .hack//感染拡大 Vol.1
-  name-sort: .hack//かんせんかくだい Vol.1
+  name: dot hack - 感染拡大 Vol.1
+  name-sort: dot hack - かんせんかくだい Vol.1
   name-en: "dot hack - Infection Part 1"
   region: "NTSC-J"
   gsHWFixes:
@@ -50131,8 +50152,8 @@ SLPS-25142:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLPS-25143:
-  name: .hack//悪性変異 Vol.2
-  name-sort: .hack//あくせいへんい Vol.2
+  name: dot hack - 悪性変異 Vol.2
+  name-sort: dot hack - あくせいへんい Vol.2
   name-en: "dot hack - Mutation Part 2"
   region: "NTSC-J"
   memcardFilters:
@@ -50213,8 +50234,8 @@ SLPS-25157:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLPS-25158:
-  name: .hack//侵食汚染 vol.3
-  name-sort: .hack//しんしょくおせん vol.3
+  name: dot hack - 侵食汚染 Vol.3
+  name-sort: dot hack - しんしょくおせん Vol.3
   name-en: "dot hack - Outbreak Part 3"
   region: "NTSC-J"
   memcardFilters:
@@ -50454,8 +50475,8 @@ SLPS-25201:
   gameFixes:
     - InstantDMAHack # Fixes NULL GIFChain hang.
 SLPS-25202:
-  name: .hack//絶対包囲 vol.4
-  name-sort: .hack//ぜったいほうい vol.4
+  name: dot hack - 絶対包囲 Vol.4
+  name-sort: dot hack - ぜったいほうい Vol.4
   name-en: "dot hack - Quarantine Part 4"
   region: "NTSC-J"
   memcardFilters:
@@ -51680,6 +51701,7 @@ SLPS-25418:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     86089F31:
       content: |-
@@ -52262,8 +52284,8 @@ SLPS-25526:
   name-en: "Medical 91"
   region: "NTSC-J"
 SLPS-25527:
-  name: .hack // fragment オンライン / オフライン
-  name-sort: .hack // fragment おんらいん / おふらいん
+  name: dot hack - fragment オンライン / オフライン
+  name-sort: dot hack - fragment おんらいん / おふらいん
   name-en: "dot hack - Fragment"
   region: "NTSC-J"
   compat: 5
@@ -52830,6 +52852,7 @@ SLPS-25629:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -52976,8 +52999,8 @@ SLPS-25650:
   region: "NTSC-J"
   compat: 5
 SLPS-25651:
-  name: .hack//G.U. Vol.1 再誕
-  name-sort: .hack//G.U. Vol.1 さい誕
+  name: dot hack - G.U. Vol.1 再誕
+  name-sort: dot hack - G.U. Vol.1 さい誕
   name-en: "dot hack G.U. Vol.1 - Saitan"
   region: "NTSC-J"
   memcardFilters:
@@ -53011,8 +53034,8 @@ SLPS-25654:
   name-en: "Cluster Edge - Kimi o Matsu Mirai e no Akashi"
   region: "NTSC-J"
 SLPS-25655:
-  name: .hack//G.U. Vol.2 君想フ声
-  name-sort: .hack//G.U. Vol.2 きみおもふごえ
+  name: dot hack - G.U. Vol.2 君想フ声
+  name-sort: dot hack - G.U. Vol.2 きみおもふごえ
   name-en: "dot hack G.U. Vol.2 - Kimi Omou Koe"
   region: "NTSC-J"
   memcardFilters:
@@ -53033,8 +53056,8 @@ SLPS-25655:
     - "SLPS-25656"
     - "SLPS-25756"
 SLPS-25656:
-  name: .hack//G.U. Vol.3 歩くような速さで
-  name-sort: .hack//G.U. Vol.3 あるくようなはやさで
+  name: dot hack - G.U. Vol.3 歩くような速さで
+  name-sort: dot hack - G.U. Vol.3 あるくようなはやさで
   name-en: "dot hack - G.U. Vol.3 - Aruku Youna Hayasa de"
   region: "NTSC-J"
   memcardFilters:
@@ -54980,6 +55003,7 @@ SLPS-73218:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
 SLPS-73219:
   name: テイルズ・オブ・ディスティニー2 PS2 the Best
   name-sort: ているず・おぶ・でぃすてぃにー2 PS2 the Best
@@ -55064,8 +55088,8 @@ SLPS-73229:
   name-en: "TearRing Saga Series - Berwick Saga [PS2 The Best]"
   region: "NTSC-J"
 SLPS-73230:
-  name: .hack// Vol.1×Vol.2 PS2 the Best
-  name-sort: .hack// Vol.1×Vol.2 PS2 the Best
+  name: dot hack - Vol.1×Vol.2 PS2 the Best
+  name-sort: dot hack - Vol.1×Vol.2 PS2 the Best
   name-en: "dot hack - Vol.1 & Vol.2 [PS2 The Best] [Vol.1 Disc]"
   region: "NTSC-J"
   memcardFilters:
@@ -55098,8 +55122,8 @@ SLPS-73231:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-73232:
-  name: .hack// Vol.3×Vol.4 PS2 the Best
-  name-sort: .hack// Vol.3×Vol.4 PS2 the Best
+  name: dot hack - Vol.3×Vol.4 PS2 the Best
+  name-sort: dot hack - Vol.3×Vol.4 PS2 the Best
   name-en: "dot hack - Vol.3 & Vol.4 [PS2 The Best] [Vol.3 Disc]"
   region: "NTSC-J"
   memcardFilters:
@@ -55267,6 +55291,7 @@ SLPS-73250:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SCAJ-20173"
     - "SLPS-25629"
@@ -58655,8 +58680,8 @@ SLUS-20668:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-20669:
   name: "Resident Evil - Dead Aim"
@@ -59578,6 +59603,7 @@ SLUS-20851:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
     cpuCLUTRender: 1 # Fixes sun occlusion.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   patches:
     39B574F0:
       content: |-
@@ -61525,6 +61551,9 @@ SLUS-21199:
   name: "Medal of Honor - European Assault"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
+    halfPixelOffset: 2 # Fixes misaligned blur.
 SLUS-21200:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-U"
@@ -61701,7 +61730,6 @@ SLUS-21228:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -62317,7 +62345,6 @@ SLUS-21318:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - SoftwareRendererFMVHack # Right side of the FMV is not rendering correctly.
     - IbitHack # Fixes lights.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in sprites.
@@ -62498,6 +62525,7 @@ SLUS-21346:
     mergeSprite: 1 # Better aligns main menu strips, improving font readability.
     cpuSpriteRenderBW: 2 # Fixes broken terrain rendering (See #10271 for details).
     cpuSpriteRenderLevel: 2 # Needed for above.
+    estimateTextureRegion: 1 # Improves performance and reduces HC size.
   memcardFilters:
     - "SLUS-21346"
     - "SLUS-20152"
@@ -63337,7 +63365,7 @@ SLUS-21479:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting.
 SLUS-21480:
-  name: "dot hack GU Volume 1 - Rebirth - Terminal Disc"
+  name: "dot hack G.U. Volume 1 - Rebirth - Terminal Disc"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -63418,8 +63446,7 @@ SLUS-21490:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLUS-21491:
   name: "World Series of Poker - Tournament of Champions"
   region: "NTSC-U"
@@ -64496,6 +64523,7 @@ SLUS-21731:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes black textures and flashlight circle not working.
     halfPixelOffset: 2 # Fixes ghosting.
+    recommendedBlendingLevel: 4 # Fixes grey text.
 SLUS-21732:
   name: "El Tigre - The Adventures of Manny Rivera"
   region: "NTSC-U"
@@ -65668,8 +65696,8 @@ SLUS-28040:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-28043:
   name: "Test Drive - Eve of Destruction [Trade Demo]"
@@ -66071,8 +66099,8 @@ SLUS-29107:
   speedHacks:
     mtvu: 0
   gsHWFixes:
-    cpuSpriteRenderBW: 4 # Fixes broken shadows and black shapes in sky.
-    cpuSpriteRenderLevel: 2 # Needed for above.
+    halfPixelOffset: 2 # Fixes depth line.
+    textureInsideRT: 1 # Fixes shadow and sky rendering.
     deinterlace: 9 # Any other method causes very bad lines on movement of the camera.
 SLUS-29108:
   name: "Def Jam - Fight For NY [Demo]"
@@ -66428,8 +66456,7 @@ SLUS-29192:
   gameFixes:
     - VIFFIFOHack # Needed to load the main game properly.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes bloom misalignment.
-    preloadFrameData: 1 # Fixes car reflections and brightness.
+    halfPixelOffset: 4 # Fixes bloom misalignment.
 SLUS-29193:
   name: "Need for Speed - Carbon [Demo]"
   region: "NTSC-U"

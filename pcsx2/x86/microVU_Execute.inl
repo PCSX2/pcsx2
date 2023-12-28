@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "Config.h"
+#include "cpuinfo.h"
+
 //------------------------------------------------------------------
 // Dispatcher Functions
 //------------------------------------------------------------------
@@ -13,7 +16,7 @@ static bool mvuNeedsFPCRUpdate(mV)
 		return true;
 
 	// otherwise only emit when it's different to the EE
-	return g_sseMXCSR.bitmask != (isVU0 ? g_sseVU0MXCSR.bitmask : g_sseVU1MXCSR.bitmask);
+	return EmuConfig.Cpu.FPUFPCR.bitmask != (isVU0 ? EmuConfig.Cpu.VU0FPCR.bitmask : EmuConfig.Cpu.VU1FPCR.bitmask);
 }
 
 // Generates the code for entering/exit recompiled blocks
@@ -30,7 +33,7 @@ void mVUdispatcherAB(mV)
 
 		// Load VU's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+			xLDMXCSR(ptr32[isVU0 ? &EmuConfig.Cpu.VU0FPCR.bitmask : &EmuConfig.Cpu.VU1FPCR.bitmask]);
 
 		// Load Regs
 		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_P].UL]);
@@ -70,7 +73,7 @@ void mVUdispatcherAB(mV)
 
 		// Load EE's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(g_sseMXCSR);
+			xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 
 		// = The first two DWORD or smaller arguments are passed in ECX and EDX registers;
 		//              all other arguments are passed right to left.
@@ -94,7 +97,7 @@ void mVUdispatcherCD(mV)
 
 		// Load VU's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(isVU0 ? g_sseVU0MXCSR : g_sseVU1MXCSR);
+			xLDMXCSR(ptr32[isVU0 ? &EmuConfig.Cpu.VU0FPCR.bitmask : &EmuConfig.Cpu.VU1FPCR.bitmask]);
 
 		mVUrestoreRegs(mVU);
 		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);
@@ -115,7 +118,7 @@ void mVUdispatcherCD(mV)
 
 		// Load EE's MXCSR state
 		if (mvuNeedsFPCRUpdate(mVU))
-			xLDMXCSR(g_sseMXCSR);
+			xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
 	}
 
 	xRET();
@@ -204,7 +207,7 @@ static void mVUGenerateCopyPipelineState(mV)
 {
 	mVU.copyPLState = xGetAlignedCallTarget();
 
-	if (x86caps.hasAVX2)
+	if (cpuinfo_has_x86_avx())
 	{
 		xVMOVAPS(ymm0, ptr[rax]);
 		xVMOVAPS(ymm1, ptr[rax + 32u]);
@@ -249,7 +252,7 @@ static void mVUGenerateCompareState(mV)
 {
 	mVU.compareStateF = xGetAlignedCallTarget();
 
-	if (!x86caps.hasAVX2)
+	if (!cpuinfo_has_x86_avx2())
 	{
 		xMOVAPS  (xmm0, ptr32[arg1reg]);
 		xPCMP.EQD(xmm0, ptr32[arg2reg]);

@@ -62,7 +62,7 @@ static const SettingInfo s_settings[] = {
 		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
 		TRANSLATE_NOOP("Pad",
-			"Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent "
+			"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
 			"controllers, e.g. DualShock 4, Xbox One Controller."),
 		"1.33", "0.01", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", TRANSLATE_NOOP("Pad", "Large Motor Vibration Scale"),

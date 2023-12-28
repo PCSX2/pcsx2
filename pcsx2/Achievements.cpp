@@ -22,7 +22,6 @@
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
-#include "common/General.h"
 #include "common/HTTPDownloader.h"
 #include "common/MD5Digest.h"
 #include "common/Path.h"

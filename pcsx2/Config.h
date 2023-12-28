@@ -3,12 +3,26 @@
 
 #pragma once
 
-#include "common/emitter/tools.h"
-#include "common/General.h"
+#include "common/Pcsx2Defs.h"
+#include "common/FPControl.h"
 #include <array>
 #include <string>
 #include <optional>
 #include <vector>
+
+// Macro used for removing some of the redtape involved in defining bitfield/union helpers.
+//
+#define BITFIELD32() \
+	union \
+	{ \
+		u32 bitset; \
+		struct \
+		{
+#define BITFIELD_END \
+	} \
+	; \
+	} \
+	;
 
 class SettingsInterface;
 class SettingsWrapper;
@@ -376,20 +390,6 @@ enum class GSHalfPixelOffset : u8
 	MaxCount
 };
 
-// Template function for casting enumerations to their underlying type
-template <typename Enumeration>
-typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
-{
-	return static_cast<typename std::underlying_type<Enumeration>::type>(E);
-}
-
-ImplementEnumOperators(GamefixId);
-
-//------------ DEFAULT sseMXCSR VALUES ---------------
-#define DEFAULT_sseMXCSR 0xffc0 //FPU rounding > DaZ, FtZ, "chop"
-#define DEFAULT_sseVUMXCSR 0xffc0 //VU  rounding > DaZ, FtZ, "chop"
-#define SYSTEM_sseMXCSR 0x1f80
-
 // --------------------------------------------------------------------------------------
 //  TraceFiltersEE
 // --------------------------------------------------------------------------------------
@@ -403,20 +403,10 @@ struct TraceFiltersEE
 		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
 	BITFIELD_END
 
-	TraceFiltersEE()
-	{
-		bitset = 0;
-	}
+	TraceFiltersEE();
 
-	bool operator==(const TraceFiltersEE& right) const
-	{
-		return OpEqu(bitset);
-	}
-
-	bool operator!=(const TraceFiltersEE& right) const
-	{
-		return !this->operator==(right);
-	}
+	bool operator==(const TraceFiltersEE& right) const;
+	bool operator!=(const TraceFiltersEE& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -432,20 +422,10 @@ struct TraceFiltersIOP
 		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
 	BITFIELD_END
 
-	TraceFiltersIOP()
-	{
-		bitset = 0;
-	}
+	TraceFiltersIOP();
 
-	bool operator==(const TraceFiltersIOP& right) const
-	{
-		return OpEqu(bitset);
-	}
-
-	bool operator!=(const TraceFiltersIOP& right) const
-	{
-		return !this->operator==(right);
-	}
+	bool operator==(const TraceFiltersIOP& right) const;
+	bool operator!=(const TraceFiltersIOP& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -464,22 +444,12 @@ struct TraceLogFilters
 	TraceFiltersEE EE;
 	TraceFiltersIOP IOP;
 
-	TraceLogFilters()
-	{
-		Enabled = false;
-	}
+	TraceLogFilters();
 
 	void LoadSave(SettingsWrapper& ini);
 
-	bool operator==(const TraceLogFilters& right) const
-	{
-		return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP);
-	}
-
-	bool operator!=(const TraceLogFilters& right) const
-	{
-		return !this->operator==(right);
-	}
+	bool operator==(const TraceLogFilters& right) const;
+	bool operator!=(const TraceLogFilters& right) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -507,21 +477,11 @@ struct Pcsx2Config
 		BITFIELD_END
 
 		// Default is Disabled, with all recs enabled underneath.
-		ProfilerOptions()
-			: bitset(0xfffffffe)
-		{
-		}
+		ProfilerOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const ProfilerOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
-
-		bool operator!=(const ProfilerOptions& right) const
-		{
-			return !OpEqu(bitset);
-		}
+		bool operator==(const ProfilerOptions& right) const;
+		bool operator!=(const ProfilerOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -564,32 +524,13 @@ struct Pcsx2Config
 
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const RecompilerOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
+		bool operator==(const RecompilerOptions& right) const;
+		bool operator!=(const RecompilerOptions& right) const;
 
-		bool operator!=(const RecompilerOptions& right) const
-		{
-			return !OpEqu(bitset);
-		}
+		u32 GetEEClampMode() const;
+		void SetEEClampMode(u32 value);
 
-		u32 GetEEClampMode() const
-		{
-			return fpuFullMode ? 3 : (fpuExtraOverflow ? 2 : (fpuOverflow ? 1 : 0));
-		}
-
-		void SetEEClampMode(u32 value)
-		{
-			fpuOverflow = (value >= 1);
-			fpuExtraOverflow = (value >= 2);
-			fpuFullMode = (value >= 3);
-		}
-
-		u32 GetVUClampMode() const
-		{
-			return vu0SignOverflow ? 3 : (vu0ExtraOverflow ? 2 : (vu0Overflow ? 1 : 0));
-		}
+		u32 GetVUClampMode() const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -597,9 +538,9 @@ struct Pcsx2Config
 	{
 		RecompilerOptions Recompiler;
 
-		SSE_MXCSR sseMXCSR;
-		SSE_MXCSR sseVU0MXCSR;
-		SSE_MXCSR sseVU1MXCSR;
+		FPControlRegister FPUFPCR;
+		FPControlRegister VU0FPCR;
+		FPControlRegister VU1FPCR;
 
 		u32 AffinityControlMode;
 
@@ -609,15 +550,8 @@ struct Pcsx2Config
 
 		bool CpusChanged(const CpuOptions& right) const;
 
-		bool operator==(const CpuOptions& right) const
-		{
-			return OpEqu(sseMXCSR) && OpEqu(sseVU0MXCSR) && OpEqu(sseVU1MXCSR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
-		}
-
-		bool operator!=(const CpuOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const CpuOptions& right) const;
+		bool operator!=(const CpuOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -890,31 +824,8 @@ struct Pcsx2Config
 
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const SPU2Options& right) const
-		{
-			return OpEqu(bitset) &&
-
-				OpEqu(SynchMode) &&
-
-				OpEqu(FinalVolume) &&
-				OpEqu(Latency) &&
-				OpEqu(OutputLatency) &&
-				OpEqu(SpeakerConfiguration) &&
-				OpEqu(DplDecodingLevel) &&
-
-				OpEqu(SequenceLenMS) &&
-				OpEqu(SeekWindowMS) &&
-				OpEqu(OverlapMS) &&
-
-				OpEqu(OutputModule) &&
-				OpEqu(BackendName) &&
-				OpEqu(DeviceName);
-		}
-
-		bool operator!=(const SPU2Options& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const SPU2Options& right) const;
+		bool operator!=(const SPU2Options& right) const;
 	};
 
 	struct DEV9Options
@@ -944,18 +855,8 @@ struct Pcsx2Config
 			u8 Address[4]{};
 			bool Enabled;
 
-			bool operator==(const HostEntry& right) const
-			{
-				return OpEqu(Url) &&
-					   OpEqu(Desc) &&
-					   (*(int*)Address == *(int*)right.Address) &&
-					   OpEqu(Enabled);
-			}
-
-			bool operator!=(const HostEntry& right) const
-			{
-				return !this->operator==(right);
-			}
+			bool operator==(const HostEntry& right) const;
+			bool operator!=(const HostEntry& right) const;
 		};
 
 		bool EthEnable{false};
@@ -983,34 +884,8 @@ struct Pcsx2Config
 
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const DEV9Options& right) const
-		{
-			return OpEqu(EthEnable) &&
-				   OpEqu(EthApi) &&
-				   OpEqu(EthDevice) &&
-				   OpEqu(EthLogDNS) &&
-
-				   OpEqu(InterceptDHCP) &&
-				   (*(int*)PS2IP == *(int*)right.PS2IP) &&
-				   (*(int*)Gateway == *(int*)right.Gateway) &&
-				   (*(int*)DNS1 == *(int*)right.DNS1) &&
-				   (*(int*)DNS2 == *(int*)right.DNS2) &&
-
-				   OpEqu(AutoMask) &&
-				   OpEqu(AutoGateway) &&
-				   OpEqu(ModeDNS1) &&
-				   OpEqu(ModeDNS2) &&
-
-				   OpEqu(EthHosts) &&
-
-				   OpEqu(HddEnable) &&
-				   OpEqu(HddFile);
-		}
-
-		bool operator!=(const DEV9Options& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const DEV9Options& right) const;
+		bool operator!=(const DEV9Options& right) const;
 
 	protected:
 		static void LoadIPHelper(u8* field, const std::string& setting);
@@ -1048,19 +923,14 @@ struct Pcsx2Config
 		void LoadSave(SettingsWrapper& wrap);
 		GamefixOptions& DisableAll();
 
+		static const char* GetGameFixName(GamefixId id);
+
 		bool Get(GamefixId id) const;
 		void Set(GamefixId id, bool enabled = true);
 		void Clear(GamefixId id) { Set(id, false); }
 
-		bool operator==(const GamefixOptions& right) const
-		{
-			return OpEqu(bitset);
-		}
-
-		bool operator!=(const GamefixOptions& right) const
-		{
-			return !OpEqu(bitset);
-		}
+		bool operator==(const GamefixOptions& right) const;
+		bool operator!=(const GamefixOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1114,15 +984,8 @@ struct Pcsx2Config
 		DebugOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const DebugOptions& right) const
-		{
-			return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
-		}
-
-		bool operator!=(const DebugOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const DebugOptions& right) const;
+		bool operator!=(const DebugOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1154,15 +1017,8 @@ struct Pcsx2Config
 		FilenameOptions();
 		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator==(const FilenameOptions& right) const
-		{
-			return OpEqu(Bios);
-		}
-
-		bool operator!=(const FilenameOptions& right) const
-		{
-			return !this->operator==(right);
-		}
+		bool operator==(const FilenameOptions& right) const;
+		bool operator!=(const FilenameOptions& right) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -1460,3 +1316,6 @@ namespace EmuFolders
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!
 #define PSX_EXTRALOGS 0
+
+#undef BITFIELD32
+#undef BITFIELD_END

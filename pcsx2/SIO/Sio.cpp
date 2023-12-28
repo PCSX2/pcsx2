@@ -9,6 +9,8 @@
 #include "Host.h"
 #include "IconsFontAwesome5.h"
 
+#include <atomic>
+
 _mcd mcds[2][4];
 _mcd *mcd;
 

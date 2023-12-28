@@ -6,6 +6,7 @@
 #include "common/SettingsInterface.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
+#include "common/SmallString.h"
 #include "Config.h"
 #include "GS.h"
 #include "CDVD/CDVDcommon.h"
@@ -20,6 +21,24 @@
 #include <KnownFolders.h>
 #include <ShlObj.h>
 #endif
+
+// This macro is actually useful for about any and every possible application of C++ equality operators.
+// Stuck here because of legacy code, new code shouldn't rely on it, it's difficult to read.
+#define OpEqu(field) (field == right.field)
+
+// Default EE/VU control registers have exceptions off, DaZ/FTZ, and the rounding mode set to Chop/Zero.
+static constexpr FPControlRegister DEFAULT_FPU_FP_CONTROL_REGISTER = FPControlRegister::GetDefault()
+																		 .DisableExceptions()
+																		 .SetDenormalsAreZero(true)
+																		 .SetFlushToZero(true)
+																		 .SetRoundMode(FPRoundMode::ChopZero);
+static constexpr FPControlRegister DEFAULT_VU_FP_CONTROL_REGISTER = FPControlRegister::GetDefault()
+																		.DisableExceptions()
+																		.SetDenormalsAreZero(true)
+																		.SetFlushToZero(true)
+																		.SetRoundMode(FPRoundMode::ChopZero);
+
+Pcsx2Config EmuConfig;
 
 const char* SettingInfo::StringDefaultValue() const
 {
@@ -153,6 +172,41 @@ namespace EmuFolders
 	static void SetDataDirectory();
 } // namespace EmuFolders
 
+TraceFiltersEE::TraceFiltersEE()
+{
+	bitset = 0;
+}
+
+bool TraceFiltersEE::operator==(const TraceFiltersEE& right) const
+{
+	return OpEqu(bitset);
+}
+
+bool TraceFiltersEE::operator!=(const TraceFiltersEE& right) const
+{
+	return !this->operator==(right);
+}
+
+TraceFiltersIOP::TraceFiltersIOP()
+{
+	bitset = 0;
+}
+
+bool TraceFiltersIOP::operator==(const TraceFiltersIOP& right) const
+{
+	return OpEqu(bitset);
+}
+
+bool TraceFiltersIOP::operator!=(const TraceFiltersIOP& right) const
+{
+	return !this->operator==(right);
+}
+
+TraceLogFilters::TraceLogFilters()
+{
+	Enabled = false;
+}
+
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/TraceLog");
@@ -164,6 +218,16 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEntry(EE.bitset);
 	SettingsWrapEntry(IOP.bitset);
+}
+
+bool TraceLogFilters::operator==(const TraceLogFilters& right) const
+{
+	return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP);
+}
+
+bool TraceLogFilters::operator!=(const TraceLogFilters& right) const
+{
+	return !this->operator==(right);
 }
 
 static constexpr const char* s_speed_hack_names[] = {
@@ -259,6 +323,11 @@ void Pcsx2Config::SpeedhackOptions::LoadSave(SettingsWrapper& wrap)
 	EECycleSkip = std::min(EECycleSkip, MAX_EE_CYCLE_SKIP);
 }
 
+ Pcsx2Config::ProfilerOptions::ProfilerOptions()
+	: bitset(0xfffffffe)
+{
+}
+
 void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/Profiler");
@@ -268,6 +337,16 @@ void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(RecBlocks_IOP);
 	SettingsWrapBitBool(RecBlocks_VU0);
 	SettingsWrapBitBool(RecBlocks_VU1);
+}
+
+bool Pcsx2Config::ProfilerOptions::operator!=(const ProfilerOptions& right) const
+{
+	return !OpEqu(bitset);
+}
+
+bool Pcsx2Config::ProfilerOptions::operator==(const ProfilerOptions& right) const
+{
+	return OpEqu(bitset);
 }
 
 Pcsx2Config::RecompilerOptions::RecompilerOptions()
@@ -379,6 +458,33 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(fpuFullMode);
 }
 
+u32 Pcsx2Config::RecompilerOptions::GetEEClampMode() const
+{
+	return fpuFullMode ? 3 : (fpuExtraOverflow ? 2 : (fpuOverflow ? 1 : 0));
+}
+
+void Pcsx2Config::RecompilerOptions::SetEEClampMode(u32 value)
+{
+	fpuOverflow = (value >= 1);
+	fpuExtraOverflow = (value >= 2);
+	fpuFullMode = (value >= 3);
+}
+
+u32 Pcsx2Config::RecompilerOptions::GetVUClampMode() const
+{
+	return vu0SignOverflow ? 3 : (vu0ExtraOverflow ? 2 : (vu0Overflow ? 1 : 0));
+}
+
+bool Pcsx2Config::RecompilerOptions::operator!=(const RecompilerOptions& right) const
+{
+	return !OpEqu(bitset);
+}
+
+bool Pcsx2Config::RecompilerOptions::operator==(const RecompilerOptions& right) const
+{
+	return OpEqu(bitset);
+}
+
 bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
 {
 	return (Recompiler.EnableEE != right.Recompiler.EnableEE ||
@@ -387,19 +493,26 @@ bool Pcsx2Config::CpuOptions::CpusChanged(const CpuOptions& right) const
 			Recompiler.EnableVU1 != right.Recompiler.EnableVU1);
 }
 
+bool Pcsx2Config::CpuOptions::operator!=(const CpuOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::CpuOptions::operator==(const CpuOptions& right) const
+{
+	return OpEqu(FPUFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
+}
+
 Pcsx2Config::CpuOptions::CpuOptions()
 {
-	sseMXCSR.bitmask = DEFAULT_sseMXCSR;
-	sseVU0MXCSR.bitmask = DEFAULT_sseVUMXCSR;
-	sseVU1MXCSR.bitmask = DEFAULT_sseVUMXCSR;
+	FPUFPCR = DEFAULT_FPU_FP_CONTROL_REGISTER;
+	VU0FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
+	VU1FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
 	AffinityControlMode = 0;
 }
 
 void Pcsx2Config::CpuOptions::ApplySanityCheck()
 {
-	sseMXCSR.ClearExceptionFlags().DisableExceptions();
-	sseVU0MXCSR.ClearExceptionFlags().DisableExceptions();
-	sseVU1MXCSR.ClearExceptionFlags().DisableExceptions();
 	AffinityControlMode = std::min<u32>(AffinityControlMode, 6);
 
 	Recompiler.ApplySanityCheck();
@@ -409,17 +522,23 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/CPU");
 
-	SettingsWrapBitBoolEx(sseMXCSR.DenormalsAreZero, "FPU.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseMXCSR.FlushToZero, "FPU.FlushToZero");
-	SettingsWrapBitfieldEx(sseMXCSR.RoundingControl, "FPU.Roundmode");
-	SettingsWrapEntry(AffinityControlMode);
+	const auto read_fpcr = [&wrap, &CURRENT_SETTINGS_SECTION](FPControlRegister& fpcr, std::string_view prefix) {
+		fpcr.SetDenormalsAreZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.DenormalsAreZero", prefix),
+			fpcr.GetDenormalsAreZero(), fpcr.GetDenormalsAreZero()));
+		fpcr.SetFlushToZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.DenormalsAreZero", prefix),
+			fpcr.GetFlushToZero(), fpcr.GetFlushToZero()));
 
-	SettingsWrapBitBoolEx(sseVU0MXCSR.DenormalsAreZero, "VU0.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseVU0MXCSR.FlushToZero, "VU0.FlushToZero");
-	SettingsWrapBitfieldEx(sseVU0MXCSR.RoundingControl, "VU0.Roundmode");
-	SettingsWrapBitBoolEx(sseVU1MXCSR.DenormalsAreZero, "VU1.DenormalsAreZero");
-	SettingsWrapBitBoolEx(sseVU1MXCSR.FlushToZero, "VU1.FlushToZero");
-	SettingsWrapBitfieldEx(sseVU1MXCSR.RoundingControl, "VU1.Roundmode");
+		uint round_mode = static_cast<uint>(fpcr.GetRoundMode());
+		wrap.Entry(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.Roundmode", prefix), round_mode, round_mode);
+		round_mode = std::min(round_mode, static_cast<uint>(FPRoundMode::MaxCount) - 1u);
+		fpcr.SetRoundMode(static_cast<FPRoundMode>(round_mode));
+	};
+
+	read_fpcr(FPUFPCR, "FPU");
+	read_fpcr(VU0FPCR, "VU0");
+	read_fpcr(VU1FPCR, "VU1");
+
+	SettingsWrapEntry(AffinityControlMode);
 
 	Recompiler.LoadSave(wrap);
 }
@@ -461,6 +580,7 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 {
 	switch (type)
 	{
+		// clang-format off
 		case GSRendererType::Auto:  return "Auto";
 		case GSRendererType::DX11:  return "Direct3D 11";
 		case GSRendererType::DX12:  return "Direct3D 12";
@@ -470,6 +590,7 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 		case GSRendererType::SW:    return "Software";
 		case GSRendererType::Null:  return "Null";
 		default:                    return "";
+			// clang-format on
 	}
 }
 
@@ -636,7 +757,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(Adapter) &&
-		
+
 		OpEqu(HWDumpDirectory) &&
 		OpEqu(SWDumpDirectory));
 }
@@ -971,6 +1092,32 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 	// clampy clamp
 }
 
+bool Pcsx2Config::SPU2Options::operator!=(const SPU2Options& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::SPU2Options::operator==(const SPU2Options& right) const
+{
+	return OpEqu(bitset) &&
+
+		   OpEqu(SynchMode) &&
+
+		   OpEqu(FinalVolume) &&
+		   OpEqu(Latency) &&
+		   OpEqu(OutputLatency) &&
+		   OpEqu(SpeakerConfiguration) &&
+		   OpEqu(DplDecodingLevel) &&
+
+		   OpEqu(SequenceLenMS) &&
+		   OpEqu(SeekWindowMS) &&
+		   OpEqu(OverlapMS) &&
+
+		   OpEqu(OutputModule) &&
+		   OpEqu(BackendName) &&
+		   OpEqu(DeviceName);
+}
+
 const char* Pcsx2Config::DEV9Options::NetApiNames[] = {
 	"Unset",
 	"PCAP Bridged",
@@ -1080,6 +1227,35 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 	}
 }
 
+bool Pcsx2Config::DEV9Options::operator!=(const DEV9Options& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::DEV9Options::operator==(const DEV9Options& right) const
+{
+	return OpEqu(EthEnable) &&
+		   OpEqu(EthApi) &&
+		   OpEqu(EthDevice) &&
+		   OpEqu(EthLogDNS) &&
+
+		   OpEqu(InterceptDHCP) &&
+		   (*(int*)PS2IP == *(int*)right.PS2IP) &&
+		   (*(int*)Gateway == *(int*)right.Gateway) &&
+		   (*(int*)DNS1 == *(int*)right.DNS1) &&
+		   (*(int*)DNS2 == *(int*)right.DNS2) &&
+
+		   OpEqu(AutoMask) &&
+		   OpEqu(AutoGateway) &&
+		   OpEqu(ModeDNS1) &&
+		   OpEqu(ModeDNS2) &&
+
+		   OpEqu(EthHosts) &&
+
+		   OpEqu(HddEnable) &&
+		   OpEqu(HddFile);
+}
+
 void Pcsx2Config::DEV9Options::LoadIPHelper(u8* field, const std::string& setting)
 {
 	if (4 == sscanf(setting.c_str(), "%hhu.%hhu.%hhu.%hhu", &field[0], &field[1], &field[2], &field[3]))
@@ -1092,30 +1268,43 @@ std::string Pcsx2Config::DEV9Options::SaveIPHelper(u8* field)
 	return StringUtil::StdStringFromFormat("%u.%u.%u.%u", field[0], field[1], field[2], field[3]);
 }
 
-static const char* const tbl_GamefixNames[] =
+bool Pcsx2Config::DEV9Options::HostEntry::operator==(const HostEntry& right) const
 {
-	"FpuMul",
-	"FpuNegDiv",
-	"GoemonTlb",
-	"SoftwareRendererFMV",
-	"SkipMPEG",
-	"OPHFlag",
-	"EETiming",
-	"InstantDMA",
-	"DMABusy",
-	"GIFFIFO",
-	"VIFFIFO",
-	"VIF1Stall",
-	"VuAddSub",
-	"Ibit",
-	"VUSync",
-	"VUOverflow",
-	"XGKick",
-	"BlitInternalFPS",
-	"FullVU0Sync",
+	return OpEqu(Url) &&
+		   OpEqu(Desc) &&
+		   (*(int*)Address == *(int*)right.Address) &&
+		   OpEqu(Enabled);
+}
+
+bool Pcsx2Config::DEV9Options::HostEntry::operator!=(const HostEntry& right) const
+{
+	return !this->operator==(right);
+}
+
+static const char* const tbl_GamefixNames[] =
+	{
+		"FpuMul",
+		"FpuNegDiv",
+		"GoemonTlb",
+		"SoftwareRendererFMV",
+		"SkipMPEG",
+		"OPHFlag",
+		"EETiming",
+		"InstantDMA",
+		"DMABusy",
+		"GIFFIFO",
+		"VIFFIFO",
+		"VIF1Stall",
+		"VuAddSub",
+		"Ibit",
+		"VUSync",
+		"VUOverflow",
+		"XGKick",
+		"BlitInternalFPS",
+		"FullVU0Sync",
 };
 
-const char* EnumToString(GamefixId id)
+const char* Pcsx2Config::GamefixOptions::GetGameFixName(GamefixId id)
 {
 	return tbl_GamefixNames[id];
 }
@@ -1134,9 +1323,9 @@ Pcsx2Config::GamefixOptions& Pcsx2Config::GamefixOptions::DisableAll()
 
 void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 {
-	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
+		// clang-format off
 		case Fix_VuAddSub:            VuAddSubHack            = enabled; break;
 		case Fix_FpuMultiply:         FpuMulHack              = enabled; break;
 		case Fix_FpuNegDiv:           FpuNegDivHack           = enabled; break;
@@ -1156,15 +1345,26 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		case Fix_VUOverflow:          VUOverflowHack          = enabled; break;
 		case Fix_BlitInternalFPS:     BlitInternalFPSHack     = enabled; break;
 		case Fix_FullVU0Sync:         FullVU0SyncHack         = enabled; break;
-		jNO_DEFAULT;
+		default:                                                         break;
+			// clang-format on
 	}
+}
+
+bool Pcsx2Config::GamefixOptions::operator!=(const GamefixOptions& right) const
+{
+	return !OpEqu(bitset);
+}
+
+bool Pcsx2Config::GamefixOptions::operator==(const GamefixOptions& right) const
+{
+	return OpEqu(bitset);
 }
 
 bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 {
-	pxAssert(EnumIsValid(id));
 	switch (id)
 	{
+		// clang-format off
 		case Fix_VuAddSub:            return VuAddSubHack;
 		case Fix_FpuMultiply:         return FpuMulHack;
 		case Fix_FpuNegDiv:           return FpuNegDivHack;
@@ -1184,7 +1384,8 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 		case Fix_VUOverflow:          return VUOverflowHack;
 		case Fix_BlitInternalFPS:     return BlitInternalFPSHack;
 		case Fix_FullVU0Sync:         return FullVU0SyncHack;
-		jNO_DEFAULT;
+		default:                      return false;
+			// clang-format on
 	}
 	return false; // unreachable, but we still need to suppress warnings >_<
 }
@@ -1239,6 +1440,16 @@ void Pcsx2Config::DebugOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfield(MemoryViewBytesPerRow);
 }
 
+bool Pcsx2Config::DebugOptions::operator!=(const DebugOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::DebugOptions::operator==(const DebugOptions& right) const
+{
+	return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
+}
+
 Pcsx2Config::FilenameOptions::FilenameOptions()
 {
 }
@@ -1248,6 +1459,16 @@ void Pcsx2Config::FilenameOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapSection("Filenames");
 
 	wrap.Entry(CURRENT_SETTINGS_SECTION, "BIOS", Bios, Bios);
+}
+
+bool Pcsx2Config::FilenameOptions::operator!=(const FilenameOptions& right) const
+{
+	return !this->operator==(right);
+}
+
+bool Pcsx2Config::FilenameOptions::operator==(const FilenameOptions& right) const
+{
+	return OpEqu(Bios);
 }
 
 Pcsx2Config::EmulationSpeedOptions::EmulationSpeedOptions()
@@ -1497,11 +1718,6 @@ Pcsx2Config::Pcsx2Config()
 
 void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 {
-	// Switch the rounding mode back to the system default for loading settings.
-	// That way, we'll get exactly the same values as what we loaded when we first started.
-	const SSE_MXCSR prev_mxcsr(SSE_MXCSR::GetCurrent());
-	SSE_MXCSR::SetCurrent(SSE_MXCSR{SYSTEM_sseMXCSR});
-
 	SettingsWrapSection("EmuCore");
 
 	SettingsWrapBitBool(CdvdVerboseReads);
@@ -1561,8 +1777,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	{
 		CurrentAspectRatio = GS.AspectRatio;
 	}
-
-	SSE_MXCSR::SetCurrent(prev_mxcsr);
 }
 
 void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
@@ -1622,6 +1836,8 @@ void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 
 void Pcsx2Config::CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si)
 {
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	Pcsx2Config temp;
 	{
 		SettingsLoadWrapper wrapper(src_si);
@@ -1635,6 +1851,8 @@ void Pcsx2Config::CopyConfiguration(SettingsInterface* dest_si, SettingsInterfac
 
 void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
 {
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	Pcsx2Config temp;
 	SettingsClearWrapper wrapper(*dest_si);
 	temp.LoadSaveCore(wrapper);

@@ -7,7 +7,6 @@
 #include "common/Assertions.h"
 #include "common/Path.h"
 
-#include "System.h"
 #include "Config.h"
 #include "Host.h"
 #include "IconsFontAwesome5.h"

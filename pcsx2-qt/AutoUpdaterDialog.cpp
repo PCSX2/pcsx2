@@ -20,6 +20,8 @@
 #include "common/HTTPDownloader.h"
 #include "common/StringUtil.h"
 
+#include "cpuinfo.h"
+
 #include <functional>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
@@ -220,6 +222,11 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 
 void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8> data)
 {
+#ifdef _M_X86
+	// should already be initialized, but just in case this somehow runs before the CPU thread starts setting up...
+	cpuinfo_initialize();
+#endif
+
 #ifdef AUTO_UPDATER_SUPPORTED
 	bool found_update_info = false;
 
@@ -277,11 +284,19 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 #endif
 						}
 
-						if (is_symbols || (!x86caps.hasAVX2 && is_avx2))
+						if (is_symbols)
 						{
 							// skip this asset
 							continue;
 						}
+
+#ifdef _M_X86
+						if (is_avx2 && cpuinfo_has_x86_avx2())
+						{
+							// skip this asset
+							continue;
+						}
+#endif
 
 						int score;
 						if (is_perfect_match)

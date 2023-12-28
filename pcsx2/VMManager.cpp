@@ -27,6 +27,7 @@
 #include "PINE.h"
 #include "Patch.h"
 #include "PerformanceMetrics.h"
+#include "R3000A.h"
 #include "R5900.h"
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
@@ -36,13 +37,16 @@
 #include "SIO/Sio0.h"
 #include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
+#include "SysForwardDefs.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "svnrev.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/FPControl.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
 #include "common/SmallString.h"
@@ -51,16 +55,13 @@
 #include "common/Timer.h"
 
 #include "IconsFontAwesome5.h"
+#include "cpuinfo.h"
 #include "discord_rpc.h"
 #include "fmt/core.h"
 
 #include <atomic>
 #include <mutex>
 #include <sstream>
-
-#ifdef _M_X86
-#include "common/emitter/tools.h"
-#endif
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -72,8 +73,17 @@
 #include "common/Darwin/DarwinMisc.h"
 #endif
 
+#ifdef _M_X86
+#include "x86/newVif.h"
+#endif
+
 namespace VMManager
 {
+	static void LogCPUCapabilities();
+	static void InitializeCPUProviders();
+	static void ShutdownCPUProviders();
+	static void UpdateCPUImplementations();
+
 	static void ApplyGameFixes();
 	static bool UpdateGameSettingsLayer();
 	static void CheckForConfigChanges(const Pcsx2Config& old_config);
@@ -132,7 +142,6 @@ namespace VMManager
 
 static constexpr u32 SETTINGS_VERSION = 1;
 
-static std::unique_ptr<SysCpuProviderPack> s_cpu_provider_pack;
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
 
@@ -159,7 +168,6 @@ static bool s_elf_executed = false;
 static std::string s_elf_override;
 static std::string s_input_profile_name;
 static u32 s_frame_advance_count = 0;
-static u32 s_mxcsr_saved;
 static bool s_fast_boot_requested = false;
 static bool s_gs_open_on_initialize = false;
 
@@ -179,6 +187,9 @@ static PINEServer s_pine_server;
 static bool s_discord_presence_active = false;
 static time_t s_discord_presence_time_epoch;
 
+// Making GSDumpReplayer.h dependent on R5900.h is a no-no, since the GS uses it.
+extern R5900cpu GSDumpReplayerCpu;
+
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
 #define COMMON_DOWNLOAD_MESSAGE "PCSX2 builds can be downloaded from https://pcsx2.net/downloads/"
@@ -186,10 +197,9 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 #if defined(_M_X86)
 	// On Windows, this gets called as a global object constructor, before any of our objects are constructed.
 	// So, we have to put it on the stack instead.
-	x86capabilities temp_x86_caps;
-	temp_x86_caps.Identify();
+	cpuinfo_initialize();
 
-	if (!temp_x86_caps.hasStreamingSIMD4Extensions)
+	if (!cpuinfo_has_x86_sse4_1())
 	{
 		*error =
 			"PCSX2 requires the Streaming SIMD 4.1 Extensions instruction set, which your CPU does not support.\n\n"
@@ -199,7 +209,7 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 	}
 
 #if _M_SSE >= 0x0501
-	if (!temp_x86_caps.hasAVX || !temp_x86_caps.hasAVX2)
+	if (!cpuinfo_has_x86_avx2())
 	{
 		*error = "This build of PCSX2 requires the Advanced Vector Extensions 2 instruction set, which your CPU does "
 				 "not support.\n\n"
@@ -342,10 +352,13 @@ bool VMManager::Internal::CPUThreadInitialize()
 	}
 #endif
 
-	x86caps.Identify();
-	x86caps.CountCores();
-	x86caps.SIMD_EstablishMXCSRmask();
-	SysLogMachineCaps();
+	// Use the default rounding mode, just in case it differs on some platform.
+	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
+
+	if (!cpuinfo_initialize())
+		Console.Error("cpuinfo_initialize() failed.");
+
+	LogCPUCapabilities();
 
 	if (!SysMemory::Allocate())
 	{
@@ -353,8 +366,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 		return false;
 	}
 
-	pxAssert(!s_cpu_provider_pack);
-	s_cpu_provider_pack = std::make_unique<SysCpuProviderPack>();
+	InitializeCPUProviders();
 
 	GSinit();
 	USBinit();
@@ -385,8 +397,6 @@ void VMManager::Internal::CPUThreadShutdown()
 	InputManager::CloseSources();
 	WaitForSaveStateFlush();
 
-	s_cpu_provider_pack.reset();
-
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 
 	USBshutdown();
@@ -394,16 +404,13 @@ void VMManager::Internal::CPUThreadShutdown()
 
 	MTGS::ShutdownThread();
 
+	ShutdownCPUProviders();
+
 	SysMemory::Release();
 
 #ifdef _WIN32
 	CoUninitialize();
 #endif
-}
-
-SysCpuProviderPack& GetCpuProviders()
-{
-	return *s_cpu_provider_pack;
 }
 
 bool VMManager::Internal::CheckSettingsVersion()
@@ -431,6 +438,8 @@ void VMManager::Internal::LoadStartupSettings()
 void VMManager::SetDefaultSettings(
 	SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui)
 {
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	if (si.GetUIntValue("UI", "SettingsVersion", 0u) != SETTINGS_VERSION)
 		si.SetUIntValue("UI", "SettingsVersion", SETTINGS_VERSION);
 
@@ -461,6 +470,11 @@ void VMManager::SetDefaultSettings(
 
 void VMManager::LoadSettings()
 {
+	// Switch the rounding mode back to the system default for loading settings.
+	// We might have a different mode, because this can be called during setting updates while a VM is active,
+	// and the rounding mode has an impact on the conversion of floating-point values to/from strings.
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
 	LoadCoreSettings(si);
@@ -561,6 +575,7 @@ void VMManager::ApplyCoreSettings()
 	EmuConfig.CopyRuntimeConfig(old_config);
 
 	{
+		FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
 		std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 		LoadCoreSettings(Host::GetSettingsInterface());
 		WarnAboutUnsafeSettings();
@@ -1225,9 +1240,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	s_use_vsync_for_timing = false;
 
 	s_cpu_implementation_changed = false;
-	s_cpu_provider_pack->ApplyConfig();
-	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
-	SysClearExecutionCache();
+	UpdateCPUImplementations();
+	Internal::ClearCPUExecutionCaches();
+	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
 	memBindConditionalHandlers();
 	SysMemory::Reset();
 	cpuReset();
@@ -1324,12 +1339,6 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_cdvd_files.Cancel();
 	close_state.Cancel();
 
-#if defined(_M_X86)
-	s_mxcsr_saved = _mm_getcsr();
-#elif defined(_M_ARM64)
-	s_mxcsr_saved = static_cast<u32>(a64_getfpcr());
-#endif
-
 	hwReset();
 
 	Console.WriteLn("VM subsystems initialized in %.2f ms", init_timer.GetTimeMilliseconds());
@@ -1393,11 +1402,7 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	UpdateGameSettingsLayer();
 
-#ifdef _M_X86
-	_mm_setcsr(s_mxcsr_saved);
-#elif defined(_M_ARM64)
-	a64_setfpcr(s_mxcsr_saved);
-#endif
+	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
 
 	Patch::UnloadPatches();
 	R3000A::ioman::reset();
@@ -1471,7 +1476,7 @@ void VMManager::Reset()
 	if (elf_was_changed)
 		HandleELFChange(false);
 
-	SysClearExecutionCache();
+	Internal::ClearCPUExecutionCaches();
 	memBindConditionalHandlers();
 	SysMemory::Reset();
 	cpuReset();
@@ -2113,14 +2118,150 @@ bool VMManager::IsLoadableFileName(const std::string_view& path)
 	return IsDiscFileName(path) || IsElfFileName(path) || IsGSDumpFileName(path) || IsBlockDumpFileName(path);
 }
 
+void VMManager::LogCPUCapabilities()
+{
+	if (!PCSX2_isReleaseVersion)
+	{
+		if (GIT_TAGGED_COMMIT) // Nightly builds
+		{
+			// tagged commit - more modern implementation of dev build versioning
+			// - there is no need to include the commit - that is associated with the tag,
+			// - git is implied and the tag is timestamped
+			Console.WriteLn(Color_StrongGreen, "PCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
+		}
+		else
+		{
+			Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
+#ifndef DISABLE_BUILD_DATE
+											   "- compiled on " __DATE__
+#endif
+				,
+				PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+				SVN_REV);
+		}
+	}
+	else
+	{ // shorter release version string
+		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
+#ifndef DISABLE_BUILD_DATE
+										   "- compiled on " __DATE__
+#endif
+			,
+			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+			SVN_REV);
+	}
+
+	Console.WriteLn("Savestate version: 0x%x", g_SaveVersion);
+	Console.Newline();
+
+	Console.WriteLn(Color_StrongBlack, "Host Machine Init:");
+
+	Console.Indent().WriteLn(
+		"Operating System = %s\n"
+		"Physical RAM     = %u MB",
+
+		GetOSVersionString().c_str(),
+		(u32)(GetPhysicalMemory() / _1mb));
+
+	Console.Indent().WriteLn("Processor        = %s", cpuinfo_get_package(0)->name);
+	Console.Indent().WriteLn("Core Count       = %u cores", cpuinfo_get_cores_count());
+	Console.Indent().WriteLn("Thread Count     = %u threads", cpuinfo_get_processors_count());
+
+	Console.Newline();
+
+	std::string features;
+
+	if (cpuinfo_has_x86_avx())
+		features += "AVX ";
+	if (cpuinfo_has_x86_avx2())
+		features += "AVX2 ";
+
+	StringUtil::StripWhitespace(&features);
+
+	Console.WriteLn(Color_StrongBlack, "x86 Features Detected:");
+	Console.Indent().WriteLn("%s", features.c_str());
+
+	Console.Newline();
+}
+
+
+void VMManager::InitializeCPUProviders()
+{
+	recCpu.Reserve();
+	psxRec.Reserve();
+
+	CpuMicroVU0.Reserve();
+	CpuMicroVU1.Reserve();
+
+	VifUnpackSSE_Init();
+}
+
+void VMManager::ShutdownCPUProviders()
+{
+	if (newVifDynaRec)
+	{
+		dVifRelease(1);
+		dVifRelease(0);
+	}
+
+	CpuMicroVU1.Shutdown();
+	CpuMicroVU0.Shutdown();
+
+	psxRec.Shutdown();
+	recCpu.Shutdown();
+}
+
+void VMManager::UpdateCPUImplementations()
+{
+	if (GSDumpReplayer::IsReplayingDump())
+	{
+		Cpu = &GSDumpReplayerCpu;
+		psxCpu = &psxInt;
+		CpuVU0 = &CpuIntVU0;
+		CpuVU1 = &CpuIntVU1;
+		return;
+	}
+
+	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
+	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
+
+	CpuVU0 = &CpuIntVU0;
+	CpuVU1 = &CpuIntVU1;
+
+	if (EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuVU0 = &CpuMicroVU0;
+
+	if (EmuConfig.Cpu.Recompiler.EnableVU1)
+		CpuVU1 = &CpuMicroVU1;
+}
+
+void VMManager::Internal::ClearCPUExecutionCaches()
+{
+	Cpu->Reset();
+	psxCpu->Reset();
+
+	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
+	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuMicroVU0.Reset();
+
+	CpuVU0->Reset();
+	CpuVU1->Reset();
+
+	if constexpr (newVifDynaRec)
+	{
+		dVifReset(0);
+		dVifReset(1);
+	}
+}
+
 void VMManager::Execute()
 {
 	// Check for interpreter<->recompiler switches.
 	if (std::exchange(s_cpu_implementation_changed, false))
 	{
 		// We need to switch the cpus out, and reset the new ones if so.
-		s_cpu_provider_pack->ApplyConfig();
-		SysClearExecutionCache();
+		UpdateCPUImplementations();
+		Internal::ClearCPUExecutionCaches();
 		vtlb_ResetFastmem();
 	}
 
@@ -2235,8 +2376,10 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
 	// so there's no need to leave the eject running.
 	FileMcd_CancelEject();
+
 	// Toss all the recs, we're going to be executing new code.
-	SysClearExecutionCache();
+	mmap_ResetBlockTracking();
+	ClearCPUExecutionCaches();
 }
 
 void VMManager::Internal::VSyncOnCPUThread()
@@ -2293,8 +2436,8 @@ void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 	}
 
 	Console.WriteLn("Updating CPU configuration...");
-	SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVU0MXCSR, EmuConfig.Cpu.sseVU1MXCSR);
-	SysClearExecutionCache();
+	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
+	Internal::ClearCPUExecutionCaches();
 	memBindConditionalHandlers();
 
 	if (EmuConfig.Cpu.Recompiler.EnableFastmem != old_config.Cpu.Recompiler.EnableFastmem)
@@ -2600,7 +2743,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			TRANSLATE_SV(
 				"VMManager", "Hardware Download Mode is not set to Accurate, this may break rendering in some games."));
 	}
-	if (EmuConfig.Cpu.sseMXCSR.GetRoundMode() != SSEround_Chop)
+	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
 		append(ICON_FA_MICROCHIP,
 			TRANSLATE_SV("VMManager", "EE FPU Round Mode is not set to default, this may break some games."));
@@ -2611,11 +2754,15 @@ void VMManager::WarnAboutUnsafeSettings()
 		append(ICON_FA_MICROCHIP,
 			TRANSLATE_SV("VMManager", "EE FPU Clamp Mode is not set to default, this may break some games."));
 	}
-	if (EmuConfig.Cpu.sseVU0MXCSR.GetRoundMode() != SSEround_Chop ||
-		EmuConfig.Cpu.sseVU1MXCSR.GetRoundMode() != SSEround_Chop)
+	if (EmuConfig.Cpu.VU0FPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
 		append(ICON_FA_MICROCHIP,
-			TRANSLATE_SV("VMManager", "VU Round Mode is not set to default, this may break some games."));
+			TRANSLATE_SV("VMManager", "VU0 Round Mode is not set to default, this may break some games."));
+	}
+	if (EmuConfig.Cpu.VU1FPCR.GetRoundMode() != FPRoundMode::ChopZero)
+	{
+		append(ICON_FA_MICROCHIP,
+			TRANSLATE_SV("VMManager", "VU1 Round Mode is not set to default, this may break some games."));
 	}
 	if (!EmuConfig.Cpu.Recompiler.vu0Overflow || EmuConfig.Cpu.Recompiler.vu0ExtraOverflow ||
 		EmuConfig.Cpu.Recompiler.vu0SignOverflow || !EmuConfig.Cpu.Recompiler.vu1Overflow ||
@@ -2804,8 +2951,6 @@ static std::once_flag s_processor_list_initialized;
 
 #if defined(__linux__) || defined(_WIN32)
 
-#include "cpuinfo.h"
-
 static u32 GetProcessorIdForProcessor(const cpuinfo_processor* proc)
 {
 #if defined(__linux__)
@@ -2817,14 +2962,8 @@ static u32 GetProcessorIdForProcessor(const cpuinfo_processor* proc)
 #endif
 }
 
-static void InitializeCPUInfo()
+static void InitializeProcessorList()
 {
-	if (!cpuinfo_initialize())
-	{
-		Console.Error("Failed to initialize cpuinfo");
-		return;
-	}
-
 	const u32 cluster_count = cpuinfo_get_clusters_count();
 	if (cluster_count == 0)
 	{
@@ -2879,30 +3018,16 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 {
 	VMManager::EnsureCPUInfoInitialized();
 
-	const u32 cluster_count = cpuinfo_get_clusters_count();
-	if (cluster_count == 0)
+	const u32 core_count = cpuinfo_get_cores_count();
+	if (core_count == 0)
 	{
 		Console.Error("Invalid CPU count returned");
 		return;
 	}
 
-	Console.WriteLn("Cluster count: %u", cluster_count);
+	Console.WriteLn(fmt::format("CPU cores count: {}", core_count));
 
-	for (u32 i = 0; i < cluster_count; i++)
-	{
-		const cpuinfo_cluster* cluster = cpuinfo_get_cluster(i);
-		Console.WriteLn("  Cluster %u: %u cores and %u processors at %u MHz", i, cluster->core_count,
-			cluster->processor_count, static_cast<u32>(cluster->frequency /* / 1000000u*/));
-	}
-
-	const bool has_big_little = cluster_count > 1;
-	Console.WriteLn("Big-Little: %s", has_big_little ? "yes" : "no");
-
-	const u32 big_cores =
-		cpuinfo_get_cluster(0)->core_count + ((cluster_count > 2) ? cpuinfo_get_cluster(1)->core_count : 0u);
-	Console.WriteLn("Guessing we have %u big/medium cores...", big_cores);
-
-	if (big_cores >= 3)
+	if (core_count >= 3)
 	{
 		Console.WriteLn("  Enabling MTVU.");
 		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", true);
@@ -2913,8 +3038,8 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 		si.SetBoolValue("EmuCore/Speedhacks", "vuThread", false);
 	}
 
-	const int extra_threads = (big_cores > 3) ? 3 : 2;
-	Console.WriteLn("  Setting Extra Software Rendering Threads to %d.", extra_threads);
+	const int extra_threads = (core_count > 3) ? 3 : 2;
+	Console.WriteLn(fmt::format("  Setting Extra Software Rendering Threads to {}.", extra_threads));
 	si.SetIntValue("EmuCore/GS", "extrathreads", extra_threads);
 }
 
@@ -2923,7 +3048,7 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 static u32 s_big_cores;
 static u32 s_small_cores;
 
-static void InitializeCPUInfo()
+static void InitializeProcessorList()
 {
 	s_big_cores = 0;
 	s_small_cores = 0;
@@ -2958,7 +3083,7 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 
 #else
 
-static void InitializeCPUInfo()
+static void InitializeProcessorList()
 {
 	DevCon.WriteLn("(VMManager) InitializeCPUInfo() not implemented.");
 }
@@ -2971,7 +3096,7 @@ static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 
 void VMManager::EnsureCPUInfoInitialized()
 {
-	std::call_once(s_processor_list_initialized, InitializeCPUInfo);
+	std::call_once(s_processor_list_initialized, InitializeProcessorList);
 }
 
 void VMManager::SetEmuThreadAffinities()

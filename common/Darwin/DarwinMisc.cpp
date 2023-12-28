@@ -16,7 +16,7 @@
 
 #include "common/Pcsx2Types.h"
 #include "common/Console.h"
-#include "common/General.h"
+#include "common/HostSys.h"
 #include "common/Threading.h"
 #include "common/WindowInfo.h"
 

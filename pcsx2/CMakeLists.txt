@@ -131,7 +131,6 @@ set(pcsx2Sources
 	SourceLog.cpp
 	SPR.cpp
 	StateWrapper.cpp
-	System.cpp
 	Vif0_Dma.cpp
 	Vif1_Dma.cpp
 	Vif1_MFIFO.cpp
@@ -209,7 +208,6 @@ set(pcsx2Headers
 	SPR.h
 	StateWrapper.h
 	SysForwardDefs.h
-	System.h
 	Vif_Dma.h
 	Vif.h
 	Vif_Unpack.h
@@ -1190,6 +1188,7 @@ target_compile_definitions(PCSX2_FLAGS INTERFACE
 	XBYAK_NO_EXCEPTION
 )
 
+set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
 if(COMMAND target_precompile_headers)
 	message("Using precompiled headers.")
 	target_precompile_headers(PCSX2_FLAGS INTERFACE PrecompiledHeader.h)

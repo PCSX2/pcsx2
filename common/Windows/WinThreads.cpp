@@ -5,7 +5,6 @@
 
 #include "common/Threading.h"
 #include "common/Assertions.h"
-#include "common/emitter/tools.h"
 #include "common/RedtapeWindows.h"
 #include <mmsystem.h>
 #include <process.h>
@@ -20,7 +19,11 @@ __fi void Threading::Timeslice()
 // improve performance and reduce cpu power consumption.
 __fi void Threading::SpinWait()
 {
+#ifdef _M_X86
 	_mm_pause();
+#else
+	YieldProcessor();
+#endif
 }
 
 __fi void Threading::EnableHiresScheduler()

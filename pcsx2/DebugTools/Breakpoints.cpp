@@ -7,7 +7,6 @@
 #include <cstdio>
 #include "R5900.h"
 #include "R3000A.h"
-#include "System.h"
 
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
 u32 CBreakPoints::breakSkipFirstAtEE_ = 0;

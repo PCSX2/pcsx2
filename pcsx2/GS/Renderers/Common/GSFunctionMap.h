@@ -5,8 +5,8 @@
 
 #include "GS/GSExtra.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
-#include "System.h"
-#include "common/emitter/tools.h"
+
+#include "common/HostSys.h"
 
 template <class KEY, class VALUE>
 class GSFunctionMap

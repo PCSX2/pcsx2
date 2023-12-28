@@ -54,6 +54,10 @@ oprofile_data/
 /Backup*
 /UpgradeLog*.htm
 
+# KDevelop 4 Workspace Configuration Files
+*.kdev4
+/.kdev4*
+
 /bin/**/*.dll
 /bin/**/*.dmp
 /bin/**/*.exp

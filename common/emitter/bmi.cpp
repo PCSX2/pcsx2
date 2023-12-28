@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "common/emitter/internal.h"
-#include "common/emitter/tools.h"
 
 namespace x86Emitter
 {

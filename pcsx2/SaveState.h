@@ -5,9 +5,9 @@
 
 #include <deque>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "System.h"
 #include "common/Assertions.h"
 
 class Error;

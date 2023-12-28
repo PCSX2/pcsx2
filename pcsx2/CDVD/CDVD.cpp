@@ -17,6 +17,7 @@
 #include "IopDma.h"
 #include "VMManager.h"
 
+#include "common/BitUtils.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"

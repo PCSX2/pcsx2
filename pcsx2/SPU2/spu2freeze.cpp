@@ -5,6 +5,8 @@
 #include "SPU2/spu2.h" // hopefully temporary, until I resolve lClocks depdendency
 #include "IopMem.h"
 
+#include <cstring>
+
 namespace SPU2Savestate
 {
 	// Arbitrary ID to identify SPU2 saves.

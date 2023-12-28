@@ -109,12 +109,15 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 		tr("Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio "
 		   "delay."));
 
-	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr(""));
+	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr("This is the default length of a single processing sequence in milliseconds which determines the how the original sound is chopped in the time-stretch algorithm. "
+	"Larger values mean fewer sequences are used in processing. In principle a larger value sounds better when slowing down the tempo, but worse when increasing the tempo and vice versa. "));
 
 	//: Seek Window: the region of samples (window) the audio stretching algorithm is allowed to search.
-	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seek Window Size"), tr("20 ms"), tr(""));
+	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seek Window Size"), tr("20 ms"), tr("The seeking window is for the algorithm that seeks the best possible overlapping location. "
 
-	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr(""));
+	"This determines from how wide a sample window the algorithm can use to find an optimal mixing location when the sound sequences are to be linked back together."));
+
+	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr("When the sound sequences are mixed back together to form again a continuous sound stream, this parameter defines how much the ends of the consecutive sequences will overlap with each other."));
 
 	dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), tr("100%"),
 		tr("Pre-applies a volume modifier to the game's audio output before forwarding it to your computer."));

@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "Threading.h"
-#include "General.h"
 #include "Assertions.h"
 #include "CrashHandler.h"
+#include "HostSys.h"
+#include "Threading.h"
 
 #include <mutex>
 #include "fmt/core.h"

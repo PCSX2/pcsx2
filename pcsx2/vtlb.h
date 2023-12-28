@@ -4,8 +4,8 @@
 #pragma once
 
 #include "MemoryTypes.h"
-#include "System.h"
 
+#include "common/HostSys.h"
 #include "common/SingleRegisterTypes.h"
 
 static const uptr VTLB_AllocUpperBounds = _1gb * 2;
@@ -73,7 +73,7 @@ extern void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 sz);
 extern void vtlb_VMapUnmap(u32 vaddr,u32 sz);
 extern bool vtlb_ResolveFastmemMapping(uptr* addr);
 extern bool vtlb_GetGuestAddress(uptr host_addr, u32* guest_addr);
-extern void vtlb_UpdateFastmemProtection(u32 paddr, u32 size, const PageProtectionMode& prot);
+extern void vtlb_UpdateFastmemProtection(u32 paddr, u32 size, PageProtectionMode prot);
 extern bool vtlb_BackpatchLoadStore(uptr code_address, uptr fault_address);
 
 extern void vtlb_ClearLoadStoreInfo();
