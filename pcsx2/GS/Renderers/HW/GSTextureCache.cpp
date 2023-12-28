@@ -509,6 +509,9 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 		const int vertical_offset = (inc_vertical_offset / src_info->pgs.y) * src_pg_width;
 		page_offset -= vertical_offset;
 
+		if (start_page < 0 && in_rect.x == 0 && in_rect.y == 0)
+			start_page -= vertical_offset;
+
 		sbp -= vertical_offset << 5;
 		// Update the block offset.
 		block_offset = static_cast<int>(sbp) - static_cast<int>(target_bp);
