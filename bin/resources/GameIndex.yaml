@@ -2113,12 +2113,12 @@ SCCS-40001:
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCCS-40002:
   name: 恶魔猎人2 (Disc 1)
-  name-sort: "'E'mo Lieren 2 (Disc 1)"
+  name-sort: "'Emo Lieren 2 Disc 1"
   name-en: "Devil May Cry 2 - Disc 1"
   region: "NTSC-C"
 SCCS-40003:
   name: 恶魔猎人2 (Disc 2)
-  name-sort: "'E'mo Lieren 2 (Disc 2)"
+  name-sort: "'Emo Lieren 2 Disc 2"
   name-en: "Devil May Cry 2 - Disc 2"
   region: "NTSC-C"
 SCCS-40004:
@@ -2141,12 +2141,12 @@ SCCS-40005:
     moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCCS-40006:
   name: 真·三国無双2
-  name-sort: "Zhen - Sanguo Wushuang 2"
+  name-sort: "Zhen Sanguo Wushuang 2"
   name-en: "Zhen Sanguo Wushuang 2"
   region: "NTSC-C"
 SCCS-40007:
   name: 亚克传承　～精灵之黄昏～
-  name-sort: "Yake Chuancheng - Jingling Zhi Huanghun -"
+  name-sort: "Yake Chuancheng Jingling Zhi Huanghun"
   nam-ene: "Arc the Lad - Seirei no Tasogare"
   region: "NTSC-C"
 SCCS-40009:
@@ -2176,7 +2176,7 @@ SCCS-40014:
   region: "NTSC-C"
 SCCS-40015:
   name: 薇欧蕾特的工房 ～古拉姆那特的炼金术士2～
-  name-sort: "Wei'ouleite De Gongfang - Gulamunate De Lianjinshushi 2 -"
+  name-sort: "Weiouleite De Gongfang Gulamunate De Lianjinshushi 2"
   name-en: "Viorate no Atelier - Gramnad no Renkinjutsushi 2"
   region: "NTSC-C"
 SCCS-40016:
@@ -2188,13 +2188,13 @@ SCCS-40016:
     halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCCS-40017:
   name: 爱淘儿
-  name-sort: "AiTao'er"
+  name-sort: "AiTaoer"
   name-en: "EyeToy - Play"
   region: "NTSC-C"
   compat: 5
 SCCS-40018:
   name: 比波猴@爱淘儿 一起欢聚比波猴乐园吧！
-  name-sort: "Bibohou Aitao'er Yiqi Huanju Bibohou Leyuan Ba!"
+  name-sort: "Bibohou Aitaoer Yiqi Huanju Bibohou Leyuan Ba!"
   name-en: "Saru EyeToy - Oosawagi! Ukkiuki Game Tenkomori!!"
   region: "NTSC-C"
   compat: 5
@@ -2209,7 +2209,7 @@ SCCS-40022:
   compat: 5
 SCCS-60001:
   name: 樱花大战 炽热之血
-  name-sort: "Yinghua Dazhan - Chire Zhi Xue"
+  name-sort: "Yinghua Dazhan Chire Zhi Xue"
   name-en: "Sakura Taisen - Atsuki Chishio Ni"
   region: "NTSC-C"
 SCCS-60002:
