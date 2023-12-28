@@ -459,7 +459,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 
 	int page_offset = (block_offset) >> 5;
 	// remove any hoizontal offset, this is added back on later.
-	int start_page = page_offset + (src_r.x / src_info->pgs.x) + ((src_r.y / src_info->pgs.y) * std::max(static_cast<int>(sbw), 1));
+	int start_page = page_offset + (in_rect.x / src_info->pgs.x) + ((in_rect.y / src_info->pgs.y) * std::max(static_cast<int>(src_width / 64), 1));
 	const int horizontal_pages = (start_page % src_pg_width);
 	start_page -= horizontal_pages;
 
