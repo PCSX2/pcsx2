@@ -2122,8 +2122,8 @@ SCCS-40003:
   name-en: "Devil May Cry 2 - Disc 2"
   region: "NTSC-C"
 SCCS-40004:
-  name: XIGO: 最后的骰子
-  name-sort: "XIGO: Zuihou de Touzi"
+  name: XIGO 最后的骰子
+  name-sort: "XIGO Zuihou de Touzi"
   name-en: "XIGO - Zuihou de Touzi"
   region: "NTSC-C"
 SCCS-40005:
@@ -2208,8 +2208,8 @@ SCCS-40022:
   region: "NTSC-C"
   compat: 5
 SCCS-60001:
-  name: 樱花大战: 炽热之血
-  name-sort: "Yinghua Dazhan: Chire Zhi Xue"
+  name: 樱花大战 炽热之血
+  name-sort: "Yinghua Dazhan - Chire Zhi Xue"
   name-en: "Sakura Taisen - Atsuki Chishio Ni"
   region: "NTSC-C"
 SCCS-60002:
