@@ -610,18 +610,21 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
 
 void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
 {
-	// check for an existing dialog with this crc
+	std::string filename = VMManager::GetGameSettingsPath(serial, disc_crc);
+
+	// check for an existing dialog with this filename
 	for (SettingsWindow* dialog : s_open_game_properties_dialogs)
 	{
-		if (dialog->m_disc_crc == disc_crc)
+		if (dialog->isPerGameSettings() && static_cast<INISettingsInterface*>(dialog->m_sif.get())->GetFileName() == filename)
 		{
 			dialog->show();
+			dialog->raise();
+			dialog->activateWindow();
 			dialog->setFocus();
 			return;
 		}
 	}
 
-	std::string filename(VMManager::GetGameSettingsPath(serial, disc_crc));
 	std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(filename);
 	if (FileSystem::FileExists(sif->GetFileName().c_str()))
 		sif->Load();
