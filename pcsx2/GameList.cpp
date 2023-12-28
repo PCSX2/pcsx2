@@ -1166,8 +1166,8 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 		const std::string_view file_title(Path::GetFileTitle(entry->path));
 		if (!file_title.empty() && entry->title != file_title)
 		{
-			std::string cover_filename(file_title);
-			cover_filename += extension;
+			std::string cover_filename = fmt::format("{}{}", file_title, extension);
+			Path::SanitizeFileName(&cover_filename);
 
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
@@ -1177,8 +1177,9 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 		// Last resort, check the game title
 		if (!entry->title.empty())
 		{
-			std::string cover_filename(entry->title + extension);
+			std::string cover_filename = fmt::format("{}{}", entry->title, extension);
 			Path::SanitizeFileName(&cover_filename);
+
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
@@ -1186,8 +1187,9 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 		// EN title too
 		if (!entry->title_en.empty())
 		{
-			std::string cover_filename(entry->title_en + extension);
+			std::string cover_filename = fmt::format("{}{}", entry->title_en, extension);
 			Path::SanitizeFileName(&cover_filename);
+
 			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
@@ -1200,19 +1202,19 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 
 std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial)
 {
-	const char* extension = std::strrchr(new_filename, '.');
-	if (!extension)
+	const std::string_view extension = Path::GetExtension(new_filename);
+	if (extension.empty())
 		return {};
 
-	std::string existing_filename = GetCoverImagePathForEntry(entry);
+	const std::string existing_filename = GetCoverImagePathForEntry(entry);
 	if (!existing_filename.empty())
 	{
-		std::string::size_type pos = existing_filename.rfind('.');
-		if (pos != std::string::npos && existing_filename.compare(pos, std::strlen(extension), extension) == 0)
+		const std::string_view existing_extension = Path::GetExtension(existing_filename);
+		if (!existing_extension.empty() && existing_extension == extension)
 			return existing_filename;
 	}
 
-	std::string cover_filename(use_serial ? (entry->serial + extension) : (entry->title + extension));
+	std::string cover_filename = fmt::format("{}.{}", use_serial ? entry->serial : entry->title, extension);
 	Path::SanitizeFileName(&cover_filename);
 	return Path::Combine(EmuFolders::Covers, cover_filename);
 }
