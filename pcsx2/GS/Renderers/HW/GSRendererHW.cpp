@@ -320,7 +320,7 @@ void GSRendererHW::ExpandLineIndices()
 		read -= 1;
 		write -= expansion_factor;
 
-		const GSVector4i in = read->sll16(2);
+		const GSVector4i in = read->sll16<2>();
 		write[0] = in.shuffle8(mask0) | low0;
 		write[1] = in.shuffle8(mask1) | low1;
 		write[2] = in.shuffle8(mask2) | low2;
@@ -373,7 +373,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			static_cast<int>(m_vt.m_min.p.x), static_cast<int>(m_vt.m_min.p.y), static_cast<int>(m_vt.m_min.p.z),
 			static_cast<int>(m_vt.m_min.p.w), r.x, r.y, r.z, r.w);
 
-		const GSVector4i fpr = r.sll32(4);
+		const GSVector4i fpr = r.sll32<4>();
 		v[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.x);
 		v[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.y);
 
@@ -487,7 +487,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 				const GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
 
 				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
-				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
 
 				v[i].XYZ.Y = static_cast<u16>(tmp.x);
 				v[i + 1].XYZ.Y = static_cast<u16>(tmp.z);
@@ -525,7 +525,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 				const GSVector4i offset(o.OFY, o.OFY);
 
 				GSVector4i tmp(v[i].XYZ.Y, v[i + 1].XYZ.Y);
-				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
 
 				//fprintf(stderr, "Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
 				v[i].XYZ.Y = static_cast<u16>(tmp.x);
@@ -1472,7 +1472,7 @@ void GSRendererHW::SwSpriteRender()
 				// Apply TFX
 				pxAssert(tex0_tfx == 0 || tex0_tfx == 1);
 				if (tex0_tfx == 0)
-					sc = sc.mul16l(vc).srl16(7).clamp8(); // clamp((sc * vc) >> 7, 0, 255), srl16 is ok because 16 bit values are unsigned
+					sc = sc.mul16l(vc).srl16<7>().clamp8(); // clamp((sc * vc) >> 7, 0, 255), srl16 is ok because 16 bit values are unsigned
 
 				if (tex0_tcc == 0)
 					sc = sc.blend(vc, a_mask);
@@ -1502,7 +1502,7 @@ void GSRendererHW::SwSpriteRender()
 				                                                             .ps32()    // 0x00AA00AA00aa00aa00AA00AA00aa00aa
 				                                                             .xxyy();   // 0x00AA00AA00AA00AA00aa00aa00aa00aa
 				const GSVector4i D = alpha_d == 0 ? sc : alpha_d == 1 ? dc0 : GSVector4i::zero();
-				dc = A.sub16(B).mul16l(C).sra16(7).add16(D); // (((A - B) * C) >> 7) + D, must use sra16 due to signed 16 bit values.
+				dc = A.sub16(B).mul16l(C).sra16<7>().add16(D); // (((A - B) * C) >> 7) + D, must use sra16 due to signed 16 bit values.
 				// dc alpha channels (dc.u16[3], dc.u16[7]) dirty
 			}
 			else
@@ -1514,7 +1514,7 @@ void GSRendererHW::SwSpriteRender()
 			if (m_draw_env->COLCLAMP.CLAMP)
 				dc = dc.clamp8(); // clamp(dc, 0, 255)
 			else
-				dc = dc.sll16(8).srl16(8); // Mask, lower 8 bits enabled per channel
+				dc = dc.sll16<8>().srl16<8>(); // Mask, lower 8 bits enabled per channel
 
 			// No Alpha Correction
 			pxAssert(m_context->FBA.FBA == 0);
@@ -6535,8 +6535,8 @@ bool GSRendererHW::IsReallyDithered() const
 void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector4i& unscaled_uv_rect,
 	const GSVector2i& unscaled_size, const GSVector4i& scissor)
 {
-	const GSVector4i fpr = unscaled_rect.sll32(4);
-	const GSVector4i fpuv = unscaled_uv_rect.sll32(4);
+	const GSVector4i fpr = unscaled_rect.sll32<4>();
+	const GSVector4i fpuv = unscaled_uv_rect.sll32<4>();
 	GSVertex* v = m_vertex.buff;
 
 	v[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.x);
@@ -6615,7 +6615,7 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 		vertices[i].V = v; \
 	} while (0)
 
-	const GSVector4i fp_rect = unscaled_rect.sll32(4);
+	const GSVector4i fp_rect = unscaled_rect.sll32<4>();
 	V(0, fp_rect.x, fp_rect.y, fp_rect.x, fp_rect.y); // top-left
 	V(1, fp_rect.z, fp_rect.y, fp_rect.z, fp_rect.y); // top-right
 	V(2, fp_rect.x, fp_rect.w, fp_rect.x, fp_rect.w); // bottom-left

@@ -837,8 +837,8 @@ void GSClut::Expand16(const u16* RESTRICT src, u32* RESTRICT dst, int w, const G
 			c = s[i];
 			cl = c.upl16(c);
 			ch = c.uph16(c);
-			d[i * 2 + 0] = ((cl & rm) << 3) | ((cl & gm) << 6) | ((cl & bm) << 9) | TA0.blend8(TA1, cl.sra16(15));
-			d[i * 2 + 1] = ((ch & rm) << 3) | ((ch & gm) << 6) | ((ch & bm) << 9) | TA0.blend8(TA1, ch.sra16(15));
+			d[i * 2 + 0] = ((cl & rm) << 3) | ((cl & gm) << 6) | ((cl & bm) << 9) | TA0.blend8(TA1, cl.sra16<15>());
+			d[i * 2 + 1] = ((ch & rm) << 3) | ((ch & gm) << 6) | ((ch & bm) << 9) | TA0.blend8(TA1, ch.sra16<15>());
 		}
 	}
 	else
@@ -848,8 +848,8 @@ void GSClut::Expand16(const u16* RESTRICT src, u32* RESTRICT dst, int w, const G
 			c = s[i];
 			cl = c.upl16(c);
 			ch = c.uph16(c);
-			d[i * 2 + 0] = ((cl & rm) << 3) | ((cl & gm) << 6) | ((cl & bm) << 9) | TA0.blend8(TA1, cl.sra16(15)).andnot(cl == GSVector4i::zero());
-			d[i * 2 + 1] = ((ch & rm) << 3) | ((ch & gm) << 6) | ((ch & bm) << 9) | TA0.blend8(TA1, ch.sra16(15)).andnot(ch == GSVector4i::zero());
+			d[i * 2 + 0] = ((cl & rm) << 3) | ((cl & gm) << 6) | ((cl & bm) << 9) | TA0.blend8(TA1, cl.sra16<15>()).andnot(cl == GSVector4i::zero());
+			d[i * 2 + 1] = ((ch & rm) << 3) | ((ch & gm) << 6) | ((ch & bm) << 9) | TA0.blend8(TA1, ch.sra16<15>()).andnot(ch == GSVector4i::zero());
 		}
 	}
 }
