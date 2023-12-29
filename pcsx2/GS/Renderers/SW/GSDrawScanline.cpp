@@ -627,7 +627,7 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 					}
 
 					if (sel.zclamp)
-						zs = zs.min_u32(VectorI::xffffffff().srl32(sel.zpsm * 8));
+						zs = zs.min_u32(VectorI(static_cast<int>(0xFFFFFFFFu >> (sel.zpsm * 8))));
 				}
 				else
 				{
