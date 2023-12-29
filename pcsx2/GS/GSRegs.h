@@ -262,7 +262,6 @@ union name          \
 #define REG128_SET(name) \
 	union name           \
 	{                    \
-		__m128i m128;    \
 		u64 U64[2];   \
 		u32 U32[4];
 

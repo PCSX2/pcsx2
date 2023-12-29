@@ -594,7 +594,7 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 	GSVector4i zf = xy.zwzw();
 
 	xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-	zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
+	zf = zf.srl32<4>() & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
 
 	m_v.m[1] = xy.upl32(zf);
 
@@ -654,7 +654,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 		GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
 		GSVector4i zf = GSVector4i::loadl(&r[2].U64[1]);
 		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-		zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
+		zf = zf.srl32<4>() & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
@@ -784,7 +784,7 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 
 	const GSVector4i xyzf = GSVector4i::loadl(&r->XYZF);
 	const GSVector4i xyz = xyzf & (GSVector4i::xffffffff().upl32(GSVector4i::x00ffffff()));
-	const GSVector4i uvf = GSVector4i::load((int)m_v.UV).upl32(xyzf.srl32(24).srl<4>());
+	const GSVector4i uvf = GSVector4i::load((int)m_v.UV).upl32(xyzf.srl32<24>().srl<4>());
 
 	m_v.m[1] = xyz.upl64(uvf);
 
@@ -3363,7 +3363,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	// integer coordinates for culling at native resolution, and the fixed point for all others. The XY offset has to be
 	// applied, then we split it into the fixed/integer portions.
 	const GSVector4i xy_ofs = new_v1.xxxx().u16to32().sub32(m_xyof);
-	const GSVector4i xy = xy_ofs.blend32<12>(xy_ofs.sra32(4));
+	const GSVector4i xy = xy_ofs.blend32<12>(xy_ofs.sra32<4>());
 	m_vertex.xy[xy_tail & 3] = xy;
 
 	// Backup head for triangle fans so we can read it later, otherwise it'll get lost after the 4th vertex.
