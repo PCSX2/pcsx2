@@ -48,9 +48,6 @@ else()
 
 	find_package(ZLIB REQUIRED)
 
-	## Use pcsx2 package to find module
-	include(FindLibc)
-
 	## Use CheckLib package to find module
 	include(CheckLib)
 
@@ -59,7 +56,7 @@ else()
 			check_lib(EGL EGL EGL/egl.h)
 		endif()
 
-		if(Linux)
+		if(LINUX)
 			check_lib(AIO aio libaio.h)
 			# There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
 			# When cross compiling, pkg-config will be skipped so we have to look for
@@ -95,7 +92,7 @@ endif(WIN32)
 find_package(Threads REQUIRED)
 
 # Also need SDL2.
-find_package(SDL2 2.28.4 REQUIRED)
+find_package(SDL2 2.28.5 REQUIRED)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -105,19 +102,6 @@ if(ENABLE_TESTS)
 	endif()
 endif()
 
-if(GCC_VERSION VERSION_GREATER_EQUAL "9.0" AND GCC_VERSION VERSION_LESS "9.2")
-	message(WARNING "
-	It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
-	as there is a bug known to cause the compiler to segfault while compiling. See patch
-	https://gitweb.gentoo.org/proj/gcc-patches.git/commit/?id=275ab714637a64672c6630cfd744af2c70957d5a
-	Even with that patch, compiling with LTO may still segfault. Use at your own risk!
-	This text being in a compile log in an open issue may cause it to be closed.")
-endif()
-
-# Prevent fmt from being built with exceptions, or being thrown at call sites.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
-
-add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
@@ -168,6 +152,10 @@ endif()
 
 # Demangler for the debugger
 add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
+
+# Prevent fmt from being built with exceptions, or being thrown at call sites.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
+add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
 
 # Deliberately at the end. We don't want to set the flag on third-party projects.
 if(MSVC)

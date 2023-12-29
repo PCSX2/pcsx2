@@ -7,13 +7,6 @@
     },
     "configurePresets": [
         {
-            "name": "gcc-base",
-            "displayName": "GCC Base",
-            "description": "Base preset for GCC. Only for inheriting from.",
-            "hidden": true,
-            "binaryDir": "${sourceDir}/build"
-        },
-        {
             "name": "clang-base",
             "displayName": "Base",
             "description": "Base preset for Clang. Only for inheriting from.",
@@ -32,68 +25,8 @@
             "name": "ninja-multi",
             "displayName": "Ninja Multi Config",
             "description": "Generate multiple ninja build files.",
-            "inherits": "gcc-base",
+            "inherits": "clang-base",
             "generator": "Ninja Multi-Config"
-        },
-        {
-            "name": "gcc-debug",
-            "displayName": "GCC Debug",
-            "description": "GCC Debug build with make.",
-            "inherits": "gcc-base",
-            "generator": "Unix Makefiles",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "gcc-devel",
-            "displayName": "GCC Devel",
-            "description": "GCC Developer build using make.",
-            "inherits": "gcc-base",
-            "generator": "Unix Makefiles",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Devel"
-            }
-        },
-        {
-            "name": "gcc-release",
-            "displayName": "GCC Release",
-            "description": "GCC Release build using make.",
-            "inherits": "gcc-base",
-            "generator": "Unix Makefiles",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "gcc-debug-ninja",
-            "displayName": "GCC Debug Ninja",
-            "description": "Debug build using ninja.",
-            "inherits": "gcc-base",
-            "generator": "Ninja",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "gcc-devel-ninja",
-            "displayName": "GCC Devel Ninja",
-            "description": "GCC Developer build using ninja.",
-            "inherits": "gcc-base",
-            "generator": "Ninja",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Devel"
-            }
-        },
-        {
-            "name": "gcc-release-ninja",
-            "displayName": "GCC Release Ninja",
-            "description": "GCC Release build using ninja.",
-            "inherits": "gcc-base",
-            "generator": "Ninja",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
         },
         {
             "name": "clang-debug",
