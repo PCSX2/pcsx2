@@ -109,8 +109,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 		tr("Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio "
 		   "delay."));
 
-	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr("This is the default length of a single processing sequence in milliseconds which determines the how the original sound is chopped in the time-stretch algorithm. "
-	"Larger values mean fewer sequences are used in processing. In principle a larger value sounds better when slowing down the tempo, but worse when increasing the tempo and vice versa. "));
+	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr("This is the default length of a single processing sequence which determines how the original sound is chopped in the time-stretch algorithm. "
+	"Larger values mean fewer sequences are used in processing. In principle a larger value sounds better when slowing down the tempo, but worse when increasing the tempo."));
 
 	//: Seek Window: the region of samples (window) the audio stretching algorithm is allowed to search.
 	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seek Window Size"), tr("20 ms"), tr("The seeking window is for the algorithm that seeks the best possible overlapping location. "
