@@ -30,6 +30,7 @@
 #include "common/StringUtil.h"
 #include "common/Timer.h"
 
+#include "IconsPromptFont.h"
 #include "fmt/format.h"
 #include "rc_client.h"
 
@@ -2335,19 +2336,41 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 	const ImVec2 points_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr()));
 	const float points_template_start = bb.Max.x - points_template_size.x;
 	const float points_start = points_template_start + ((points_template_size.x - points_size.x) * 0.5f);
-	const char* lock_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
-	const ImVec2 lock_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, FLT_MAX, 0.0f, lock_text));
+
+	const char* right_icon_text;
+	switch (cheevo->type)
+	{
+		case RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE:
+			right_icon_text = ICON_PF_ACHIEVEMENTS_MISSABLE; // Missable
+			break;
+
+		case RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION:
+			right_icon_text = ICON_PF_ACHIEVEMENTS_PROGRESSION; // Progression
+			break;
+
+		case RC_CLIENT_ACHIEVEMENT_TYPE_WIN:
+			right_icon_text = ICON_PF_ACHIEVEMENTS_WIN; // Win Condition
+			break;
+
+			// Just use the lock for standard achievements.
+		case RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD:
+		default:
+			right_icon_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
+			break;
+	}
+
+	const ImVec2 right_icon_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, FLT_MAX, 0.0f, right_icon_text));
 
 	const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 	const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
 	const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + g_medium_font->FontSize));
 	const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
 	const ImRect lock_bb(
-		ImVec2(points_template_start + ((points_template_size.x - lock_size.x) * 0.5f), bb.Min.y), ImVec2(bb.Max.x, midpoint));
+		ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y), ImVec2(bb.Max.x, midpoint));
 
 	ImGui::PushFont(g_large_font);
 	ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, cheevo->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
-	ImGui::RenderTextClipped(lock_bb.Min, lock_bb.Max, lock_text, nullptr, &lock_size, ImVec2(0.0f, 0.0f), &lock_bb);
+	ImGui::RenderTextClipped(lock_bb.Min, lock_bb.Max, right_icon_text, nullptr, &right_icon_size, ImVec2(0.0f, 0.0f), &lock_bb);
 	ImGui::PopFont();
 
 	ImGui::PushFont(g_medium_font);
