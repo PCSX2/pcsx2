@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/SW/GSRendererSW.h"
-#include "GS/Renderers/SW/GSTextureSW.h"
 #include "GS/GSGL.h"
 #include "GS/GSPng.h"
 
