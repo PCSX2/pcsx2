@@ -247,6 +247,9 @@ public:
 
 		/// Resizes target texture, DOES NOT RESCALE.
 		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true);
+
+	private:
+		void UpdateTextureDebugName();
 	};
 
 	class Source : public Surface
