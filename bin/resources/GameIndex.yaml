@@ -15303,6 +15303,9 @@ SLES-51220:
   name: "TY the Tasmanian Tiger"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes rendering of the moon.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-51222:
   name: "Rayman 3 - Hoodlum Havoc"
   region: "PAL-M5"
@@ -16717,8 +16720,8 @@ SLES-51861:
 SLES-51862:
   name: "Bass Master Fishing"
   region: "PAL-E"
-  gsHWFixes:
-    deinterlace: 7 # Fixes flashing FMVs.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMVs.
 SLES-51863:
   name: "Maze Action"
   region: "PAL-E"
@@ -31818,8 +31821,8 @@ SLPM-62148:
 SLPM-62150:
   name: "Simple 2000 Series Vol. 3 - The Bass Fishing"
   region: "NTSC-J"
-  gsHWFixes:
-    deinterlace: 7 # Fixes flashing FMVs.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMVs.
 SLPM-62151:
   name: 実況GIステイブル2
   name-sort: じっきょうGIすていぶる2
@@ -57477,8 +57480,8 @@ SLUS-20428:
   name: "Fisherman's Bass Club"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    deinterlace: 7 # Fixes flashing FMVs.
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes flickering FMVs.
 SLUS-20429:
   name: "Riding Spirits"
   region: "NTSC-U"
@@ -58211,6 +58214,9 @@ SLUS-20571:
   name: "TY the Tasmanian Tiger"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes rendering of the moon.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-20572:
   name: "Tiger Woods PGA Tour 2003"
   region: "NTSC-U"
