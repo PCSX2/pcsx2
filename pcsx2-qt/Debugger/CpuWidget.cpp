@@ -23,6 +23,9 @@
 #include <QtWidgets/QMessageBox>
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFutureWatcher>
+#include <QtCore/QRegularExpression>
+#include <QtCore/QRegularExpressionMatchIterator>
+#include <QtCore/QStringList>
 #include <QtWidgets/QScrollBar>
 
 using namespace QtUtils;
@@ -312,7 +315,7 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.breakpointList);
 	connect(actionExport, &QAction::triggered, [this]() {
 		// It's important to use the Export Role here to allow pasting to be translation agnostic
-		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), BreakpointModel::ExportRole));
+		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), BreakpointModel::ExportRole, true));
 	});
 	contextMenu->addAction(actionExport);
 
@@ -381,7 +384,18 @@ void CpuWidget::contextBPListPasteCSV()
 
 	for (const QString& line : csv.split('\n'))
 	{
-		const QStringList fields = line.split(',');
+		QStringList fields;
+		// In order to handle text with commas in them we must wrap values in quotes to mark
+		// where a value starts and end so that text commas aren't identified as delimiters.
+		// So matches each quote pair, parse it out, and removes the quotes to get the value.
+		QRegularExpression eachQuotePair(R"("([^"]|\\.)*")"); 
+		QRegularExpressionMatchIterator it = eachQuotePair.globalMatch(line);
+		while (it.hasNext())
+		{
+			QRegularExpressionMatch match = it.next();
+			QString matchedValue = match.captured(0);
+			fields << matchedValue.mid(1, matchedValue.length() - 2);
+		}
 		if (fields.size() != BreakpointModel::BreakpointColumns::COLUMN_COUNT)
 		{
 			Console.WriteLn("Debugger CSV Import: Invalid number of columns, skipping");
@@ -389,10 +403,10 @@ void CpuWidget::contextBPListPasteCSV()
 		}
 
 		bool ok;
-		int type = fields[0].toUInt(&ok);
+		int type = fields[BreakpointModel::BreakpointColumns::TYPE].toUInt(&ok);
 		if (!ok)
 		{
-			Console.WriteLn("Debugger CSV Import: Failed to parse type '%s', skipping", fields[0].toUtf8().constData());
+			Console.WriteLn("Debugger CSV Import: Failed to parse type '%s', skipping", fields[BreakpointModel::BreakpointColumns::TYPE].toUtf8().constData());
 			continue;
 		}
 
@@ -402,34 +416,34 @@ void CpuWidget::contextBPListPasteCSV()
 			BreakPoint bp;
 
 			// Address
-			bp.addr = fields[1].toUInt(&ok, 16);
+			bp.addr = fields[BreakpointModel::BreakpointColumns::OFFSET].toUInt(&ok, 16);
 			if (!ok)
 			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[1].toUtf8().constData());
+				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[BreakpointModel::BreakpointColumns::OFFSET].toUtf8().constData());
 				continue;
 			}
 
 			// Condition
-			if (!fields[4].isEmpty())
+			if (!fields[BreakpointModel::BreakpointColumns::CONDITION].isEmpty())
 			{
 				PostfixExpression expr;
 				bp.hasCond = true;
 				bp.cond.debug = &m_cpu;
 
-				if (!m_cpu.initExpression(fields[4].toUtf8().constData(), expr))
+				if (!m_cpu.initExpression(fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData(), expr))
 				{
-					Console.WriteLn("Debugger CSV Import: Failed to parse cond '%s', skipping", fields[4].toUtf8().constData());
+					Console.WriteLn("Debugger CSV Import: Failed to parse cond '%s', skipping", fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData());
 					continue;
 				}
 				bp.cond.expression = expr;
-				strncpy(&bp.cond.expressionString[0], fields[4].toUtf8().constData(), sizeof(bp.cond.expressionString));
+				strncpy(&bp.cond.expressionString[0], fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData(), sizeof(bp.cond.expressionString));
 			}
 
 			// Enabled
-			bp.enabled = fields[6].toUInt(&ok);
+			bp.enabled = fields[BreakpointModel::BreakpointColumns::ENABLED].toUInt(&ok);
 			if (!ok)
 			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse enable flag '%s', skipping", fields[1].toUtf8().constData());
+				Console.WriteLn("Debugger CSV Import: Failed to parse enable flag '%s', skipping", fields[BreakpointModel::BreakpointColumns::ENABLED].toUtf8().constData());
 				continue;
 			}
 
@@ -441,32 +455,32 @@ void CpuWidget::contextBPListPasteCSV()
 			// Mode
 			if (type >= MEMCHECK_INVALID)
 			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse cond type '%s', skipping", fields[0].toUtf8().constData());
+				Console.WriteLn("Debugger CSV Import: Failed to parse cond type '%s', skipping", fields [BreakpointModel::BreakpointColumns::TYPE].toUtf8().constData());
 				continue;
 			}
 			mc.cond = static_cast<MemCheckCondition>(type);
 
 			// Address
-			mc.start = fields[1].toUInt(&ok, 16);
+			mc.start = fields[BreakpointModel::BreakpointColumns::OFFSET].toUInt(&ok, 16);
 			if (!ok)
 			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[1].toUtf8().constData());
+				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[BreakpointModel::BreakpointColumns::OFFSET].toUtf8().constData());
 				continue;
 			}
 
 			// Size
-			mc.end = fields[2].toUInt(&ok) + mc.start;
+			mc.end = fields[BreakpointModel::BreakpointColumns::SIZE_LABEL].toUInt(&ok) + mc.start;
 			if (!ok)
 			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse length '%s', skipping", fields[1].toUtf8().constData());
+				Console.WriteLn("Debugger CSV Import: Failed to parse length '%s', skipping", fields[BreakpointModel::BreakpointColumns::SIZE_LABEL].toUtf8().constData());
 				continue;
 			}
 
 			// Result
-			int result = fields[6].toUInt(&ok);
+			int result = fields [BreakpointModel::BreakpointColumns::ENABLED].toUInt(&ok);
 			if (!ok)
 			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse result flag '%s', skipping", fields[1].toUtf8().constData());
+				Console.WriteLn("Debugger CSV Import: Failed to parse result flag '%s', skipping", fields [BreakpointModel::BreakpointColumns::ENABLED].toUtf8().constData());
 				continue;
 			}
 			mc.result = static_cast<MemCheckResult>(result);
