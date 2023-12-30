@@ -99,7 +99,7 @@ def get_pairs(tokens):
 with open(dst_file, "r") as f:
     original = f.read()
     updated = re.sub(out_pattern, "\\1 " + get_pairs(tokens) + " \\2", original)
-    updated = re.sub(out_pf_pattern, "\\1 " + get_pairs(pf_tokens) + " \\2", original)
+    updated = re.sub(out_pf_pattern, "\\1 " + get_pairs(pf_tokens) + " \\2", updated)
     if original != updated:
         with open(dst_file, "w") as f:
             f.write(updated)
