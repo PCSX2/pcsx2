@@ -14,6 +14,8 @@
 
 GSTexture::GSTexture() = default;
 
+GSTexture::~GSTexture() = default;
+
 bool GSTexture::Save(const std::string& fn)
 {
 	// Depth textures need special treatment - we have a stencil component.
@@ -60,6 +62,25 @@ bool GSTexture::Save(const std::string& fn)
 
 	const int compression = GSConfig.PNGCompressionLevel;
 	return GSPng::Save(format, fn, dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), compression, g_gs_device->IsRBSwapped());
+}
+
+const char* GSTexture::GetFormatName(Format format)
+{
+	static constexpr const char* format_names[] = {
+		"Invalid",
+		"Color",
+		"HDRColor",
+		"DepthStencil",
+		"UNorm8",
+		"UInt16",
+		"UInt32",
+		"PrimID",
+		"BC1",
+		"BC2",
+		"BC3",
+		"BC7",
+	};
+	return format_names[(static_cast<u32>(format) < std::size(format_names)) ? static_cast<u32>(format) : 0];
 }
 
 u32 GSTexture::GetCompressedBytesPerBlock() const

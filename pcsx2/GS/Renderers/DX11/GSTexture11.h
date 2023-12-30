@@ -33,6 +33,10 @@ public:
 	void Unmap() override;
 	void GenerateMipmap() override;
 
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
+
 	operator ID3D11Texture2D*();
 	operator ID3D11ShaderResourceView*();
 	operator ID3D11RenderTargetView*();
@@ -54,6 +58,10 @@ public:
 	void Unmap() override;
 
 	void Flush() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 private:
 	GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format);

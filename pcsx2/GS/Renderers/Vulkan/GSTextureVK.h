@@ -53,6 +53,10 @@ public:
 	void Unmap() override;
 	void GenerateMipmap() override;
 
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
+
 	void TransitionToLayout(Layout layout);
 	void CommitClear();
 	void CommitClear(VkCommandBuffer cmdbuf);
@@ -116,6 +120,10 @@ public:
 	void Unmap() override;
 
 	void Flush() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 private:
 	GSDownloadTextureVK(u32 width, u32 height, GSTexture::Format format);

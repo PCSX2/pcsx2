@@ -9,6 +9,7 @@
 
 #include <array>
 #include <d3d12.h>
+#include <string_view>
 
 class D3D12ShaderCache;
 
@@ -130,15 +131,9 @@ namespace D3D12
 		D3D12_COMPUTE_PIPELINE_STATE_DESC m_desc;
 	};
 
-#ifdef _DEBUG
-	void SetObjectName(ID3D12Object* object, const char* name);
-	void SetObjectNameFormatted(ID3D12Object* object, const char* format, ...);
+#ifdef PCSX2_DEVBUILD
+	void SetObjectName(ID3D12Object* object, std::string_view name);
 #else
-	static inline void SetObjectName(ID3D12Object* object, const char* name)
-	{
-	}
-	static inline void SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
-	{
-	}
+	static inline void SetObjectName(ID3D12Object* object, std::string_view name) {}
 #endif
 } // namespace D3D12

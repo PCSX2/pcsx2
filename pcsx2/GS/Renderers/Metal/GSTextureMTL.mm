@@ -128,6 +128,24 @@ void GSTextureMTL::GenerateMipmap()
 	}
 }}
 
+#ifdef PCSX2_DEVBUILD
+
+void GSTextureMTL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	@autoreleasepool {
+		NSString* label = [[[NSString alloc] autorelease]
+			initWithBytes:name.data()
+			length:static_cast<NSUInteger>(name.length())
+			encoding:NSUTF8StringEncoding];
+    [m_texture setLabel:label];
+  }
+}
+
+#endif
+
 GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer,
 	u32 width, u32 height, GSTexture::Format format)
 	: GSDownloadTexture(width, height, format)
@@ -150,7 +168,6 @@ std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* 
 		return {};
 	}
 
-	[buffer setLabel:[NSString stringWithFormat:@"Download Texture %d", dev->m_dl_texture_count++]];
 	return std::unique_ptr<GSDownloadTextureMTL>(new GSDownloadTextureMTL(dev, buffer, width, height, format));
 }}
 
@@ -243,5 +260,23 @@ void GSDownloadTextureMTL::Flush()
 
 	m_copy_cmdbuffer = nil;
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTextureMTL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	@autoreleasepool {
+		NSString* label = [[[NSString alloc] autorelease]
+			initWithBytes:name.data()
+			length:static_cast<NSUInteger>(name.length())
+			encoding:NSUTF8StringEncoding];
+    [m_buffer setLabel:label];
+  }
+}
+
+#endif
 
 #endif

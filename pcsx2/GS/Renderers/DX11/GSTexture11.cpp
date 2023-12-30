@@ -5,8 +5,11 @@
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 #include "GS/GSPerfMon.h"
+
 #include "common/Console.h"
 #include "common/BitUtils.h"
+
+#include "fmt/format.h"
 
 GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
 	GSTexture::Type type, GSTexture::Format format)
@@ -84,6 +87,22 @@ void GSTexture11::GenerateMipmap()
 {
 	GSDevice11::GetInstance()->GetD3DContext()->GenerateMips(operator ID3D11ShaderResourceView*());
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSTexture11::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	GSDevice11::SetD3DDebugObjectName(m_texture.get(), name);
+	if (m_srv)
+		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} SRV", name));
+	if (m_rtv)
+		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} RTV", name));
+}
+
+#endif
 
 GSTexture11::operator ID3D11Texture2D*()
 {
@@ -258,3 +277,15 @@ void GSDownloadTexture11::Flush()
 
 	// Handled when mapped.
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTexture11::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	GSDevice11::SetD3DDebugObjectName(m_texture.get(), name);
+}
+
+#endif

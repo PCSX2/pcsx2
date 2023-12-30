@@ -316,6 +316,19 @@ void GSTextureOGL::GenerateMipmap()
 	glGenerateTextureMipmap(m_texture_id);
 }
 
+#ifdef PCSX2_DEVBUILD
+
+void GSTextureOGL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	if (glObjectLabel)
+		glObjectLabel(GL_TEXTURE, m_texture_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
+}
+
+#endif
+
 GSDownloadTextureOGL::GSDownloadTextureOGL(u32 width, u32 height, GSTexture::Format format)
 	: GSDownloadTexture(width, height, format)
 {
@@ -469,3 +482,16 @@ void GSDownloadTextureOGL::Flush()
 	glDeleteSync(m_sync);
 	m_sync = {};
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTextureOGL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	if (glObjectLabel)
+		glObjectLabel(GL_BUFFER, m_buffer_id, name.length(), name.data());
+}
+
+#endif

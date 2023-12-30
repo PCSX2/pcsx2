@@ -190,15 +190,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	switch (type)
 	{
-		case Type::Texture:
-		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d texture", width, height);
-		}
-		break;
-
 		case Type::RenderTarget:
 		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d render target", width, height);
 			write_descriptor_type = WriteDescriptorType::RTV;
 			if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 			{
@@ -210,19 +203,12 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 		case Type::DepthStencil:
 		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d depth stencil", width, height);
 			write_descriptor_type = WriteDescriptorType::DSV;
 			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
 			{
 				dev->GetDSVHeapManager().Free(&srv_descriptor);
 				return {};
 			}
-		}
-		break;
-
-		case Type::RWTexture:
-		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d RW texture", width, height);
 		}
 		break;
 
@@ -601,6 +587,18 @@ void GSTexture12::GenerateMipmap()
 	SetUseFenceCounter(GSDevice12::GetInstance()->GetCurrentFenceValue());
 }
 
+#ifdef PCSX2_DEVBUILD
+
+void GSTexture12::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	D3D12::SetObjectName(m_resource.get(), name);
+}
+
+#endif
+
 void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
 {
 	TransitionToState(GSDevice12::GetInstance()->GetCommandList(), state);
@@ -800,3 +798,15 @@ void GSDownloadTexture12::Flush()
 	else
 		dev->WaitForFence(m_copy_fence_value, GSConfig.HWSpinGPUForReadbacks);
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTexture12::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	D3D12::SetObjectName(m_buffer.get(), name);
+}
+
+#endif
