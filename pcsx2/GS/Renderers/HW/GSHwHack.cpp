@@ -739,13 +739,21 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 					continue;
 			}
 
+			// Need the alpha channel.
 			dst->m_TEX0.PSM = PSMCT32;
+
+			// Alpha is unknown, since it comes from RGB.
+			dst->m_alpha_min = 0;
+			dst->m_alpha_max = 255;
+
 			dst->UpdateValidChannels(PSMCT32, fbmsk);
 			dst->UpdateValidity(GSVector4i::loadh(size));
 
 			GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
 				dst->GetTexture(), nullptr, dst->GetScale(), src->GetTexture(), src->GetScale(), src->GetUnscaledRect());
 			config.pal = palette->GetPaletteGSTexture();
+			config.ps.tfx = TFX_DECAL;
+			config.ps.tcc = true;
 			config.ps.channel = ChannelFetch_RED + channel;
 			config.colormask.wrgba = 8;
 			r.EndHLEHardwareDraw(false);
