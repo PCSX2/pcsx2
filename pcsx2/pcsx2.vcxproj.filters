@@ -1067,9 +1067,6 @@
     <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
@@ -1983,9 +1980,6 @@
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Renderers\SW\GSTextureSW.h">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\SW\GSVertexSW.h">
