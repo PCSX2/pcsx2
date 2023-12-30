@@ -92,7 +92,10 @@ if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PR
 		if (DISABLE_ADVANCE_SIMD)
 			add_compile_options("-msse" "-msse2" "-msse4.1" "-mfxsr")
 		else()
-			add_compile_options("-march=native")
+			# Can't use march=native on Apple Silicon.
+			if(NOT APPLE OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+				add_compile_options("-march=native")
+			endif()
 		endif()
 	endif()
 else()
