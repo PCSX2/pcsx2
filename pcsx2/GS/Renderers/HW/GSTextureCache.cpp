@@ -13,6 +13,7 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/HashCombine.h"
+#include "common/SmallString.h"
 
 #include "fmt/format.h"
 
@@ -2780,6 +2781,11 @@ bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Fo
 		Console.WriteLn("Failed to create %ux%u download texture", new_width, new_height);
 		return false;
 	}
+
+#ifdef PCSX2_DEVBUILD
+	(*tex)->SetDebugName(TinyString::from_fmt("Texture Cache {}x{} {} Readback",
+		new_width, new_height, GSTexture::GetFormatName(format)));
+#endif
 
 	return true;
 }

@@ -5,6 +5,8 @@
 
 #include "GS/Renderers/Common/GSTexture.h"
 
+#include <string_view>
+
 #ifndef __OBJC__
 	#error "This header is for use with Objective-C++ only.
 #endif
@@ -40,6 +42,10 @@ public:
 	void Unmap() override;
 	void GenerateMipmap() override;
 	id<MTLTexture> GetTexture() { return m_texture; }
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 };
 
 class GSDownloadTextureMTL final : public GSDownloadTexture
@@ -55,6 +61,10 @@ public:
 	void Unmap() override;
 
 	void Flush() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 private:
 	GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer, u32 width, u32 height, GSTexture::Format format);
