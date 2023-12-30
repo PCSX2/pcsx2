@@ -59,3 +59,13 @@ if(ACTUALLY_ENABLE_TESTS)
 	add_subdirectory(tests/ctest)
 endif()
 
+#-------------------------------------------------------------------------------
+if(NOT IS_SUPPORTED_COMPILER)
+	message(WARNING "
+*************** UNSUPPORTED CONFIGURATION ***************
+You are not compiling PCSX2 with a supported compiler.
+It may not even build successfully.
+PCSX2 only supports the Clang and MSVC compilers.
+No support will be provided, continue at your own risk.
+*********************************************************")
+endif()
