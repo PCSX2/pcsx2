@@ -517,21 +517,6 @@ void GSTextureVK::GenerateMipmap()
 	}
 }
 
-void GSTextureVK::Swap(GSTexture* tex)
-{
-	GSTexture::Swap(tex);
-	std::swap(m_image, static_cast<GSTextureVK*>(tex)->m_image);
-	std::swap(m_allocation, static_cast<GSTextureVK*>(tex)->m_allocation);
-	std::swap(m_view, static_cast<GSTextureVK*>(tex)->m_view);
-	std::swap(m_vk_format, static_cast<GSTextureVK*>(tex)->m_vk_format);
-	std::swap(m_layout, static_cast<GSTextureVK*>(tex)->m_layout);
-	std::swap(m_use_fence_counter, static_cast<GSTextureVK*>(tex)->m_use_fence_counter);
-	std::swap(m_clear_value, static_cast<GSTextureVK*>(tex)->m_clear_value);
-	std::swap(m_map_area, static_cast<GSTextureVK*>(tex)->m_map_area);
-	std::swap(m_map_level, static_cast<GSTextureVK*>(tex)->m_map_level);
-	std::swap(m_framebuffers, static_cast<GSTextureVK*>(tex)->m_framebuffers);
-}
-
 void GSTextureVK::CommitClear()
 {
 	if (m_state != GSTexture::State::Cleared)

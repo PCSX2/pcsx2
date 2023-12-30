@@ -32,8 +32,6 @@ public:
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
 	void Unmap() override;
 	void GenerateMipmap() override;
-	void Swap(GSTexture* tex) override;
-	bool Equal(GSTexture11* tex);
 
 	operator ID3D11Texture2D*();
 	operator ID3D11ShaderResourceView*();

@@ -316,21 +316,6 @@ void GSTextureOGL::GenerateMipmap()
 	glGenerateTextureMipmap(m_texture_id);
 }
 
-void GSTextureOGL::Swap(GSTexture* tex)
-{
-	GSTexture::Swap(tex);
-
-	std::swap(m_texture_id, static_cast<GSTextureOGL*>(tex)->m_texture_id);
-	std::swap(m_r_x, static_cast<GSTextureOGL*>(tex)->m_r_x);
-	std::swap(m_r_x, static_cast<GSTextureOGL*>(tex)->m_r_y);
-	std::swap(m_r_w, static_cast<GSTextureOGL*>(tex)->m_r_w);
-	std::swap(m_r_h, static_cast<GSTextureOGL*>(tex)->m_r_h);
-	std::swap(m_layer, static_cast<GSTextureOGL*>(tex)->m_layer);
-	std::swap(m_int_format, static_cast<GSTextureOGL*>(tex)->m_int_format);
-	std::swap(m_int_type, static_cast<GSTextureOGL*>(tex)->m_int_type);
-	std::swap(m_int_shift, static_cast<GSTextureOGL*>(tex)->m_int_shift);
-}
-
 GSDownloadTextureOGL::GSDownloadTextureOGL(u32 width, u32 height, GSTexture::Format format)
 	: GSDownloadTexture(width, height, format)
 {

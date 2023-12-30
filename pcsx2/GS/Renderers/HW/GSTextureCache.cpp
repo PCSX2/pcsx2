@@ -6241,8 +6241,8 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 		m_hash_cache_replacement_memory_usage -= it->second.texture->GetMemUsage();
 
 	it->second.is_replacement = true;
-	it->second.texture->Swap(tex);
-	g_gs_device->Recycle(tex);
+	g_gs_device->Recycle(it->second.texture);
+	it->second.texture = tex;	
 }
 
 // GSTextureCache::Palette

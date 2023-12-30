@@ -82,11 +82,3 @@ bool GSTextureSW::Save(const std::string& fn)
 	int compression = GSConfig.PNGCompressionLevel;
 	return GSPng::Save(fmt, fn, static_cast<u8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }
-
-void GSTextureSW::Swap(GSTexture* tex)
-{
-	GSTexture::Swap(tex);
-	std::swap(m_pitch, static_cast<GSTextureSW*>(tex)->m_pitch);
-	std::swap(m_data, static_cast<GSTextureSW*>(tex)->m_data);
-	// std::swap(m_mapped, static_cast<GSTextureSW*>(tex)->m_mapped);
-}

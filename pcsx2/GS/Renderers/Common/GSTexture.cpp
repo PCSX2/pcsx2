@@ -62,17 +62,6 @@ bool GSTexture::Save(const std::string& fn)
 	return GSPng::Save(format, fn, dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), compression, g_gs_device->IsRBSwapped());
 }
 
-void GSTexture::Swap(GSTexture* tex)
-{
-	std::swap(m_size, tex->m_size);
-	std::swap(m_mipmap_levels, tex->m_mipmap_levels);
-	std::swap(m_type, tex->m_type);
-	std::swap(m_format, tex->m_format);
-	std::swap(m_state, tex->m_state);
-	std::swap(m_needs_mipmaps_generated, tex->m_needs_mipmaps_generated);
-	std::swap(m_last_frame_used, tex->m_last_frame_used);
-}
-
 u32 GSTexture::GetCompressedBytesPerBlock() const
 {
 	return GetCompressedBytesPerBlock(m_format);
