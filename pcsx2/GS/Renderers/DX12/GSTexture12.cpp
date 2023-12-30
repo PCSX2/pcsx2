@@ -601,22 +601,6 @@ void GSTexture12::GenerateMipmap()
 	SetUseFenceCounter(GSDevice12::GetInstance()->GetCurrentFenceValue());
 }
 
-void GSTexture12::Swap(GSTexture* tex)
-{
-	GSTexture::Swap(tex);
-	std::swap(m_resource, static_cast<GSTexture12*>(tex)->m_resource);
-	std::swap(m_allocation, static_cast<GSTexture12*>(tex)->m_allocation);
-	std::swap(m_srv_descriptor, static_cast<GSTexture12*>(tex)->m_srv_descriptor);
-	std::swap(m_write_descriptor, static_cast<GSTexture12*>(tex)->m_write_descriptor);
-	std::swap(m_write_descriptor_type, static_cast<GSTexture12*>(tex)->m_write_descriptor_type);
-	std::swap(m_dxgi_format, static_cast<GSTexture12*>(tex)->m_dxgi_format);
-	std::swap(m_resource_state, static_cast<GSTexture12*>(tex)->m_resource_state);
-	std::swap(m_use_fence_counter, static_cast<GSTexture12*>(tex)->m_use_fence_counter);
-	std::swap(m_clear_value, static_cast<GSTexture12*>(tex)->m_clear_value);
-	std::swap(m_map_level, static_cast<GSTexture12*>(tex)->m_map_level);
-	std::swap(m_map_area, static_cast<GSTexture12*>(tex)->m_map_area);
-}
-
 void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
 {
 	TransitionToState(GSDevice12::GetInstance()->GetCommandList(), state);

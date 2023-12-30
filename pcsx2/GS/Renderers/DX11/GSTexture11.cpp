@@ -85,16 +85,6 @@ void GSTexture11::GenerateMipmap()
 	GSDevice11::GetInstance()->GetD3DContext()->GenerateMips(operator ID3D11ShaderResourceView*());
 }
 
-void GSTexture11::Swap(GSTexture* tex)
-{
-	GSTexture::Swap(tex);
-	std::swap(m_texture, static_cast<GSTexture11*>(tex)->m_texture);
-	std::swap(m_srv, static_cast<GSTexture11*>(tex)->m_srv);
-	std::swap(m_rtv, static_cast<GSTexture11*>(tex)->m_rtv);
-	std::swap(m_desc, static_cast<GSTexture11*>(tex)->m_desc);
-	std::swap(m_mapped_subresource, static_cast<GSTexture11*>(tex)->m_mapped_subresource);
-}
-
 GSTexture11::operator ID3D11Texture2D*()
 {
 	return m_texture.get();
@@ -161,11 +151,6 @@ GSTexture11::operator ID3D11UnorderedAccessView*()
 		GSDevice11::GetInstance()->GetD3DDevice()->CreateUnorderedAccessView(m_texture.get(), nullptr, m_uav.put());
 
 	return m_uav.get();
-}
-
-bool GSTexture11::Equal(GSTexture11* tex)
-{
-	return tex && m_texture == tex->m_texture;
 }
 
 GSDownloadTexture11::GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format)

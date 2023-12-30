@@ -80,7 +80,6 @@ public:
 	virtual void Unmap() = 0;
 	virtual void GenerateMipmap() {}
 	virtual bool Save(const std::string& fn);
-	virtual void Swap(GSTexture* tex);
 
 	__fi int GetWidth() const { return m_size.x; }
 	__fi int GetHeight() const { return m_size.y; }

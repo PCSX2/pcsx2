@@ -128,18 +128,6 @@ void GSTextureMTL::GenerateMipmap()
 	}
 }}
 
-void GSTextureMTL::Swap(GSTexture* other)
-{
-	GSTexture::Swap(other);
-
-	GSTextureMTL* mtex = static_cast<GSTextureMTL*>(other);
-	pxAssert(m_dev == mtex->m_dev);
-#define SWAP(x) std::swap(x, mtex->x)
-	SWAP(m_texture);
-	SWAP(m_has_mipmaps);
-#undef SWAP
-}
-
 GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer,
 	u32 width, u32 height, GSTexture::Format format)
 	: GSDownloadTexture(width, height, format)
