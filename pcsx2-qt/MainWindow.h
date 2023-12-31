@@ -205,6 +205,7 @@ private:
 
 	void setupAdditionalUi();
 	void connectSignals();
+	void createRendererSwitchMenu();
 	void recreate();
 	void recreateSettings();
 	void destroySubWindows();

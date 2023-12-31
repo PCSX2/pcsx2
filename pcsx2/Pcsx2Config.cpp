@@ -962,8 +962,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 #undef GSSettingStringEx
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
-	const std::string& dump_dir = UseHardwareRenderer() ? HWDumpDirectory : SWDumpDirectory;
-	if (DumpGSData && dump_dir.empty())
+	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))
 	{
 		Console.Error("Draw dumping is enabled but directory is unconfigured, please set one.");
 		DumpGSData = false;

@@ -125,7 +125,7 @@ std::string GSState::GetDrawDumpPath(const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
-	const std::string& base = GSConfig.UseHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
+	const std::string& base = GSIsHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
 	std::string ret(Path::Combine(base, StringUtil::StdStringFromFormatV(format, ap)));
 	va_end(ap);
 	return ret;
@@ -165,7 +165,7 @@ void GSState::Reset(bool hardware_reset)
 		// bounds value. This means that draws get skipped until the game sets a proper scissor up, which is definitely going to happen
 		// after reset (otherwise it'd only ever render 1x1).
 		//
-		if (!hardware_reset && GSConfig.UseHardwareRenderer())
+		if (!hardware_reset && GSIsHardwareRenderer())
 			m_env.CTXT[i].scissor.cull = GSVector4i::xffffffff();
 
 		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
@@ -4421,14 +4421,14 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 		if (combined_rect.z >= 2048)
 		{
 			const int high_x = (PCRTCDisplays[0].framebufferRect.x > PCRTCDisplays[1].framebufferRect.x) ? PCRTCDisplays[0].framebufferRect.x : PCRTCDisplays[1].framebufferRect.x;
-			combined_rect.z -= GSConfig.UseHardwareRenderer() ? 2048 : high_x;
+			combined_rect.z -= GSIsHardwareRenderer() ? 2048 : high_x;
 			combined_rect.x = 0;
 		}
 
 		if (combined_rect.w >= 2048)
 		{
 			const int high_y = (PCRTCDisplays[0].framebufferRect.y > PCRTCDisplays[1].framebufferRect.y) ? PCRTCDisplays[0].framebufferRect.y : PCRTCDisplays[1].framebufferRect.y;
-			combined_rect.w -= GSConfig.UseHardwareRenderer() ? 2048 : high_y;
+			combined_rect.w -= GSIsHardwareRenderer() ? 2048 : high_y;
 			combined_rect.y = 0;
 		}
 
@@ -4442,7 +4442,7 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 		}
 
 		// Hardware mode needs a wider framebuffer as it can't offset the read.
-		if (GSConfig.UseHardwareRenderer())
+		if (GSIsHardwareRenderer())
 		{
 			combined_rect.z += std::max(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.x);
 			combined_rect.w += std::max(PCRTCDisplays[0].framebufferOffsets.y, PCRTCDisplays[1].framebufferOffsets.y);
@@ -4612,7 +4612,7 @@ void GSState::GSPCRTCRegs::RemoveFramebufferOffset(int display)
 	if (display >= 0)
 	{
 		// Hardware needs nothing but handling for wrapped framebuffers.
-		if (GSConfig.UseHardwareRenderer())
+		if (GSIsHardwareRenderer())
 		{
 			if (PCRTCDisplays[display].framebufferRect.z >= 2048)
 			{
@@ -4648,7 +4648,7 @@ void GSState::GSPCRTCRegs::RemoveFramebufferOffset(int display)
 		// Software Mode Note:
 		// This code is to read the framebuffer nicely block aligned in software, then leave the remaining offset in to the block.
 		// In hardware mode this doesn't happen, it reads the whole framebuffer, so we need to keep the offset.
-		if (!GSConfig.UseHardwareRenderer())
+		if (!GSIsHardwareRenderer())
 		{
 			const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[PCRTCDisplays[1].PSM];
 

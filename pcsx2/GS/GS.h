@@ -49,9 +49,6 @@ enum class GSDisplayAlignment
 	RightOrBottom
 };
 
-extern Pcsx2Config::GSOptions GSConfig;
-
-class HostDisplay;
 class SmallStringBase;
 
 // Returns the ID for the specified function, otherwise -1.
@@ -62,7 +59,7 @@ s16 GSLookupMoveHandlerFunctionId(const std::string_view& name);
 void GSinit();
 void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
-bool GSreopen(bool recreate_device, bool recreate_renderer, const Pcsx2Config::GSOptions& old_config);
+bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<const Pcsx2Config::GSOptions*> old_config);
 void GSreset(bool hardware_reset);
 void GSclose();
 void GSgifSoftReset(u32 mask);
@@ -90,6 +87,8 @@ void GSResizeDisplayWindow(int width, int height, float scale);
 void GSUpdateDisplayWindow();
 void GSSetVSyncMode(VsyncMode mode);
 
+GSRendererType GSGetCurrentRenderer();
+bool GSIsHardwareRenderer();
 bool GSWantsExclusiveFullscreen();
 bool GSGetHostRefreshRate(float* refresh_rate);
 void GSGetAdaptersAndFullscreenModes(
@@ -105,7 +104,7 @@ void GSgetTitleStats(std::string& info);
 void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float* display_x, float* display_y);
 
 void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config);
-void GSSwitchRenderer(GSRendererType new_renderer, GSInterlaceMode new_interlace);
+void GSSetSoftwareRendering(bool software_renderer, GSInterlaceMode new_interlace);
 bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels);
 void GSJoinSnapshotThreads();
@@ -135,3 +134,5 @@ namespace Host
 	void OnCaptureStarted(const std::string& filename);
 	void OnCaptureStopped();
 }
+
+extern Pcsx2Config::GSOptions GSConfig;
