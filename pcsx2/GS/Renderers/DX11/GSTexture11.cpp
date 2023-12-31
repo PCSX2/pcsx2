@@ -99,7 +99,7 @@ void GSTexture11::SetDebugName(std::string_view name)
 	if (m_srv)
 		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} SRV", name));
 	if (m_rtv)
-		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} RTV", name));
+		GSDevice11::SetD3DDebugObjectName(m_rtv.get(), fmt::format("{} RTV", name));
 }
 
 #endif
