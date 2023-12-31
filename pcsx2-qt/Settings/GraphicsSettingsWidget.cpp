@@ -413,7 +413,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto Standard (4:3/3:2 "
 			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
 
-		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try choosing one of the available option."));
+		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options."));
 
 		dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Size"), tr("Screen Resolution"),
 			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of "
@@ -523,7 +523,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."));
 
 		dialog->registerWidgetHelp(m_ui.gpuTargetCLUTMode, tr("GPU Target CLUT"), tr("Disabled"), 
-			tr("Tries to detect when a game is drawing its own color palette and then renders it on the GPU with special handling"));
+			tr("Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."));
 
 		dialog->registerWidgetHelp(m_ui.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
@@ -694,7 +694,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		
 		"<b>If unsure, leave it on default.<b>"));
 
-		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("5000 Kbps"), tr("Determines the amount of bitrates to be used."
+		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 Kbps"), tr("Sets the video bitrate to be used."
 		
 		"Larger bitrate generally yields better video quality at the cost of larger resulting file size."));
 
@@ -706,22 +706,22 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.enableVideoCaptureArguments, tr("Enable Extra Video Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected video codec."));
 
 		dialog->registerWidgetHelp(m_ui.videoCaptureArguments, tr("Extra Video Arguments"), tr("Leave It Blank"),
-			tr("Parameters passed to selected video codec.<br> "
-			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.<b><br> "
+			tr("Parameters passed to the selected video codec.<br>"
+			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
 			   "For example: \"crf = 21 : preset = veryfast\""));
 
 		dialog->registerWidgetHelp(m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"), tr("Selects which Audio Codec to be used for Video Capture. "
 		
 		"<b>If unsure, leave it on default.<b>"));
 
-		dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("160 Kbps"), tr("Determines the amount of audio bitrate to be used."));
+		dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("160 Kbps"), tr("Sets the audio bitrate to be used."));
 
 		dialog->registerWidgetHelp(m_ui.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected audio codec."));
 
 		dialog->registerWidgetHelp(m_ui.audioCaptureArguments, tr("Extra Audio Arguments"), tr("Leave It Blank"),
-			tr("Parameters passed to selected audio codec.<br> "
-			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.<b><br> "
-			   "<>For example: \"compression_level = 4 : joint_stereo = 1\""));
+			tr("Parameters passed to the selected audio codec.<br>"
+			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
+			   "For example: \"compression_level = 4 : joint_stereo = 1\""));
 	}
 
 	// Advanced tab
