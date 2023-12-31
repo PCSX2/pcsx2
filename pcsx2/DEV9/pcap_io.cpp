@@ -211,7 +211,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.type = Pcsx2Config::DEV9Options::NetApi::PCAP_Switched;
 #ifdef _WIN32
 		//guid
-		if (!std::string_view(d->name).ends_with(PCAPPREFIX))
+		if (!std::string_view(d->name).starts_with(PCAPPREFIX))
 		{
 			Console.Error("PCAP: Unexpected Device: ", d->name);
 			d = d->next;
@@ -228,7 +228,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		else
 		{
 			//have to use description
-			//NPCAP 1.10 is using an version of pcap that dosn't
+			//NPCAP 1.10 is using a version of pcap that doesn't
 			//allow us to set it to use UTF8
 			//see https://github.com/nmap/npcap/issues/276
 			//We have to convert from ANSI to wstring, to then convert to UTF8
