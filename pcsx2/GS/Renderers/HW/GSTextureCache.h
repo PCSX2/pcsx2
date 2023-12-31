@@ -339,6 +339,7 @@ public:
 		std::array<FastList<Source*>, MAX_PAGES> m_map;
 
 		void Add(Source* s, const GIFRegTEX0& TEX0);
+		void SwapTexture(GSTexture* old_tex, GSTexture* new_tex);
 		void RemoveAll();
 		void RemoveAt(Source* s);
 	};

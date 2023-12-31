@@ -6076,6 +6076,15 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0)
 	});
 }
 
+void GSTextureCache::SourceMap::SwapTexture(GSTexture* old_tex, GSTexture* new_tex)
+{
+	for (auto s : m_surfaces)
+	{
+		if (s->m_texture == old_tex)
+			s->m_texture = new_tex;
+	}
+}
+
 void GSTextureCache::SourceMap::RemoveAll()
 {
 	for (auto s : m_surfaces)
@@ -6358,6 +6367,7 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 		m_hash_cache_replacement_memory_usage -= it->second.texture->GetMemUsage();
 
 	it->second.is_replacement = true;
+	m_src.SwapTexture(it->second.texture, tex);
 	g_gs_device->Recycle(it->second.texture);
 	it->second.texture = tex;	
 }
