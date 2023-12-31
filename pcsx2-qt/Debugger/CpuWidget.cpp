@@ -415,6 +415,7 @@ void CpuWidget::contextBPListPasteCSV()
 			QString matchedValue = match.captured(0);
 			fields << matchedValue.mid(1, matchedValue.length() - 2);
 		}
+
 		if (fields.size() != BreakpointModel::BreakpointColumns::COLUMN_COUNT)
 		{
 			Console.WriteLn("Debugger CSV Import: Invalid number of columns, skipping");
@@ -422,7 +423,7 @@ void CpuWidget::contextBPListPasteCSV()
 		}
 
 		bool ok;
-		int type = fields[BreakpointModel::BreakpointColumns::TYPE].toUInt(&ok);
+		const int type = fields[BreakpointModel::BreakpointColumns::TYPE].toUInt(&ok);
 		if (!ok)
 		{
 			Console.WriteLn("Debugger CSV Import: Failed to parse type '%s', skipping", fields[BreakpointModel::BreakpointColumns::TYPE].toUtf8().constData());
@@ -496,7 +497,7 @@ void CpuWidget::contextBPListPasteCSV()
 			}
 
 			// Result
-			int result = fields [BreakpointModel::BreakpointColumns::ENABLED].toUInt(&ok);
+			const int result = fields [BreakpointModel::BreakpointColumns::ENABLED].toUInt(&ok);
 			if (!ok)
 			{
 				Console.WriteLn("Debugger CSV Import: Failed to parse result flag '%s', skipping", fields [BreakpointModel::BreakpointColumns::ENABLED].toUtf8().constData());
@@ -637,7 +638,7 @@ void CpuWidget::contextSearchResultGoToDisassembly()
 	if (!selModel->hasSelection())
 		return;
 
-	m_ui.disassemblyWidget->gotoAddress(m_ui.listSearchResults->selectedItems().first()->data(256).toUInt());
+	m_ui.disassemblyWidget->gotoAddress(m_ui.listSearchResults->selectedItems().first()->data(Qt::UserRole).toUInt());
 }
 
 void CpuWidget::contextRemoveSearchResult()
@@ -647,8 +648,8 @@ void CpuWidget::contextRemoveSearchResult()
 		return;
 
 	const int selectedResultIndex = m_ui.listSearchResults->row(m_ui.listSearchResults->selectedItems().first());
-	auto* rowToRemove = m_ui.listSearchResults->takeItem(selectedResultIndex);
-	if (m_searchResults.size() > static_cast<size_t>(selectedResultIndex) && m_searchResults.at(selectedResultIndex) == rowToRemove->data(256).toUInt())
+	const auto* rowToRemove = m_ui.listSearchResults->takeItem(selectedResultIndex);
+	if (m_searchResults.size() > static_cast<size_t>(selectedResultIndex) && m_searchResults.at(selectedResultIndex) == rowToRemove->data(Qt::UserRole).toUInt())
 	{
 		m_searchResults.erase(m_searchResults.begin() + selectedResultIndex);
 	}
@@ -689,7 +690,7 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 
 			item->setText(QString("%0 %1").arg(FilledQStringFromValue(symbol.address, 16)).arg(symbolName));
 
-			item->setData(256, symbol.address);
+			item->setData(Qt::UserRole, symbol.address);
 
 			m_ui.listFunctions->addItem(item);
 		}
@@ -717,7 +718,7 @@ void CpuWidget::updateFunctionList(bool whenEmpty)
 						symbolName = demangledName;
 				}
 				QTreeWidgetItem* functionItem = new QTreeWidgetItem(moduleItem, QStringList(QString("%0 %1").arg(FilledQStringFromValue(sym.address, 16)).arg(symbolName)));
-				functionItem->setData(0, 256, sym.address);
+				functionItem->setData(0, Qt::UserRole, sym.address);
 				functions.append(functionItem);
 			}
 			moduleItem->addChildren(functions);
@@ -794,7 +795,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 	else
 		m_funclistContextMenu->clear();
 
-	if (m_ui.listFunctions->selectedItems().count() && m_ui.listFunctions->selectedItems().first()->data(256).isValid())
+	if (m_ui.listFunctions->selectedItems().count() && m_ui.listFunctions->selectedItems().first()->data(Qt::UserRole).isValid())
 	{
 		QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.listFunctions);
 		connect(copyName, &QAction::triggered, [this] {
@@ -802,14 +803,14 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 			// Resolve the function name by fetching the symbolmap and filtering the address
 
 			const QListWidgetItem* selectedItem = m_ui.listFunctions->selectedItems().first();
-			const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelName(selectedItem->data(256).toUInt()).c_str());
+			const QString functionName = QString(m_cpu.GetSymbolMap().GetLabelName(selectedItem->data(Qt::UserRole).toUInt()).c_str());
 			QApplication::clipboard()->setText(functionName);
 		});
 		m_funclistContextMenu->addAction(copyName);
 
 		QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.listFunctions);
 		connect(copyAddress, &QAction::triggered, [this] {
-			const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(256).toUInt(), 16);
+			const QString addressString = FilledQStringFromValue(m_ui.listFunctions->selectedItems().first()->data(Qt::UserRole).toUInt(), 16);
 			QApplication::clipboard()->setText(addressString);
 		});
 
@@ -819,14 +820,14 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 		QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.listFunctions);
 		connect(gotoDisasm, &QAction::triggered, [this] {
-			m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
+			m_ui.disassemblyWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(Qt::UserRole).toUInt());
 		});
 
 		m_funclistContextMenu->addAction(gotoDisasm);
 
 		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
 		connect(gotoMemory, &QAction::triggered, [this] {
-			m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(256).toUInt());
+			m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(Qt::UserRole).toUInt());
 		});
 
 		m_funclistContextMenu->addAction(gotoMemory);
@@ -866,7 +867,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 
 void CpuWidget::onFuncListDoubleClick(QListWidgetItem* item)
 {
-	m_ui.disassemblyWidget->gotoAddress(item->data(256).toUInt());
+	m_ui.disassemblyWidget->gotoAddress(item->data(Qt::UserRole).toUInt());
 }
 
 void CpuWidget::onModuleTreeContextMenu(QPoint pos)
@@ -876,17 +877,17 @@ void CpuWidget::onModuleTreeContextMenu(QPoint pos)
 	else
 		m_moduleTreeContextMenu->clear();
 
-	if (m_ui.treeModules->selectedItems().count() && m_ui.treeModules->selectedItems().first()->data(0, 256).isValid())
+	if (m_ui.treeModules->selectedItems().count() && m_ui.treeModules->selectedItems().first()->data(0, Qt::UserRole).isValid())
 	{
 		QAction* copyName = new QAction(tr("Copy Function Name"), m_ui.treeModules);
 		connect(copyName, &QAction::triggered, [this] {
-			QApplication::clipboard()->setText(m_cpu.GetSymbolMap().GetLabelName(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt()).c_str());
+			QApplication::clipboard()->setText(m_cpu.GetSymbolMap().GetLabelName(m_ui.treeModules->selectedItems().first()->data(0, Qt::UserRole).toUInt()).c_str());
 		});
 		m_moduleTreeContextMenu->addAction(copyName);
 
 		QAction* copyAddress = new QAction(tr("Copy Function Address"), m_ui.treeModules);
 		connect(copyAddress, &QAction::triggered, [this] {
-			const QString addressString = FilledQStringFromValue(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt(), 16);
+			const QString addressString = FilledQStringFromValue(m_ui.treeModules->selectedItems().first()->data(0, Qt::UserRole).toUInt(), 16);
 			QApplication::clipboard()->setText(addressString);
 		});
 		m_moduleTreeContextMenu->addAction(copyAddress);
@@ -895,13 +896,13 @@ void CpuWidget::onModuleTreeContextMenu(QPoint pos)
 
 		QAction* gotoDisasm = new QAction(tr("Go to in Disassembly"), m_ui.treeModules);
 		connect(gotoDisasm, &QAction::triggered, [this] {
-			m_ui.disassemblyWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt());
+			m_ui.disassemblyWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, Qt::UserRole).toUInt());
 		});
 		m_moduleTreeContextMenu->addAction(gotoDisasm);
 
 		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.treeModules);
 		connect(gotoMemory, &QAction::triggered, [this] {
-			m_ui.memoryviewWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, 256).toUInt());
+			m_ui.memoryviewWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, Qt::UserRole).toUInt());
 		});
 		m_moduleTreeContextMenu->addAction(gotoMemory);
 	}
@@ -939,9 +940,9 @@ void CpuWidget::onModuleTreeContextMenu(QPoint pos)
 
 void CpuWidget::onModuleTreeDoubleClick(QTreeWidgetItem* item)
 {
-	if (item->data(0, 256).isValid())
+	if (item->data(0, Qt::UserRole).isValid())
 	{
-		m_ui.disassemblyWidget->gotoAddress(item->data(0, 256).toUInt());
+		m_ui.disassemblyWidget->gotoAddress(item->data(0, Qt::UserRole).toUInt());
 	}
 }
 void CpuWidget::updateStackFrames()
@@ -1386,7 +1387,7 @@ void CpuWidget::loadSearchResults()
 	{
 		u32 address = m_searchResults.at(numLoaded + i);
 		QListWidgetItem* item = new QListWidgetItem(QtUtils::FilledQStringFromValue(address, 16));
-		item->setData(256, address);
+		item->setData(Qt::UserRole, address);
 		m_ui.listSearchResults->addItem(item);
 	}
 }
