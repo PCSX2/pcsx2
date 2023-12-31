@@ -610,20 +610,6 @@ void EmuThread::toggleSoftwareRendering()
 	MTGS::ToggleSoftwareRendering();
 }
 
-void EmuThread::switchRenderer(GSRendererType renderer)
-{
-	if (!isOnEmuThread())
-	{
-		QMetaObject::invokeMethod(this, "switchRenderer", Qt::QueuedConnection, Q_ARG(GSRendererType, renderer));
-		return;
-	}
-
-	if (!VMManager::HasValidVM())
-		return;
-
-	MTGS::SwitchRenderer(renderer, EmuConfig.GS.InterlaceMode);
-}
-
 void EmuThread::changeDisc(CDVD_SourceType source, const QString& path)
 {
 	if (!isOnEmuThread())

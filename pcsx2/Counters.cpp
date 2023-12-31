@@ -434,7 +434,6 @@ extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
 
-static bool RendererSwitched = false;
 static bool s_last_fmv_state = false;
 
 static __fi void DoFMVSwitch()
@@ -479,15 +478,12 @@ static __fi void DoFMVSwitch()
 			break;
 	}
 
-	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && (GSConfig.UseHardwareRenderer() || (RendererSwitched && GSConfig.Renderer == GSRendererType::SW)))
+	if (EmuConfig.Gamefixes.SoftwareRendererFMVHack && EmuConfig.GS.UseHardwareRenderer())
 	{
-		RendererSwitched = GSConfig.UseHardwareRenderer();
 		DevCon.Warning("FMV Switch");
 		// we don't use the sw toggle here, because it'll change back to auto if set to sw
-		MTGS::SwitchRenderer(new_fmv_state ? GSRendererType::SW : EmuConfig.GS.Renderer, new_fmv_state ? GSInterlaceMode::AdaptiveTFF : EmuConfig.GS.InterlaceMode, false);
+		MTGS::SetSoftwareRendering(new_fmv_state, new_fmv_state ? GSInterlaceMode::AdaptiveTFF : EmuConfig.GS.InterlaceMode, false);
 	}
-	else
-		RendererSwitched = false;
 }
 
 static __fi void VSyncStart(u32 sCycle)

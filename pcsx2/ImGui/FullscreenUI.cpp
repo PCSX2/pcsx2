@@ -4824,7 +4824,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					ClosePauseMenu();
 				}
 
-				if (ActiveButton(GSConfig.UseHardwareRenderer() ? (FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Switch To Software Renderer")) :
+				if (ActiveButton(GSIsHardwareRenderer() ? (FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Switch To Software Renderer")) :
 																  (FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Switch To Hardware Renderer")),
 						false))
 				{

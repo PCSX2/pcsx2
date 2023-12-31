@@ -250,7 +250,7 @@ void Host::BeginPresentFrame()
 		GSQueueSnapshot(dump_path);
 	}
 
-	if (GSConfig.UseHardwareRenderer())
+	if (GSIsHardwareRenderer())
 	{
 		const u32 last_draws = s_total_internal_draws;
 		const u32 last_uploads = s_total_uploads;

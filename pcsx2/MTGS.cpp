@@ -268,7 +268,7 @@ void MTGS::PostVsyncStart(bool registers_written)
 
 void MTGS::InitAndReadFIFO(u8* mem, u32 qwc)
 {
-	if (EmuConfig.GS.HWDownloadMode >= GSHardwareDownloadMode::Unsynchronized && GSConfig.UseHardwareRenderer())
+	if (EmuConfig.GS.HWDownloadMode >= GSHardwareDownloadMode::Unsynchronized && GSIsHardwareRenderer())
 	{
 		if (EmuConfig.GS.HWDownloadMode == GSHardwareDownloadMode::Unsynchronized)
 			GSReadLocalMemoryUnsync(mem, qwc, vif1.BITBLTBUF._u64, vif1.TRXPOS._u64, vif1.TRXREG._u64);
@@ -977,18 +977,19 @@ void MTGS::UpdateVSyncMode()
 	SetVSyncMode(Host::GetEffectiveVSyncMode());
 }
 
-void MTGS::SwitchRenderer(GSRendererType renderer, GSInterlaceMode interlace, bool display_message /* = true */)
+void MTGS::SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool display_message /* = true */)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
 	if (display_message)
 	{
-		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, fmt::format("Switching to {} renderer...",
-			Pcsx2Config::GSOptions::GetRendererName(renderer)), Host::OSD_INFO_DURATION);
+		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, software ?
+			TRANSLATE_STR("GS", "Switching to software renderer...") : TRANSLATE_STR("GS", "Switching to hardware renderer..."),
+			Host::OSD_QUICK_DURATION);
 	}
 
-	RunOnGSThread([renderer, interlace]() {
-		GSSwitchRenderer(renderer, interlace);
+	RunOnGSThread([software, interlace]() {
+		GSSetSoftwareRendering(software, interlace);
 	});
 
 	// See note in ApplySettings() for reasoning here.
@@ -996,22 +997,10 @@ void MTGS::SwitchRenderer(GSRendererType renderer, GSInterlaceMode interlace, bo
 		WaitGS(false, false, false);
 }
 
-void MTGS::SetSoftwareRendering(bool software, bool display_message /* = true */)
-{
-	// for hardware, use the chosen api in the base config, or auto if base is set to sw
-	GSRendererType new_renderer;
-	if (!software)
-		new_renderer = EmuConfig.GS.UseHardwareRenderer() ? EmuConfig.GS.Renderer : GSRendererType::Auto;
-	else
-		new_renderer = GSRendererType::SW;
-
-	SwitchRenderer(new_renderer, EmuConfig.GS.InterlaceMode, display_message);
-}
-
 void MTGS::ToggleSoftwareRendering()
 {
 	// reading from the GS thread.. but should be okay here
-	SetSoftwareRendering(GSConfig.Renderer != GSRendererType::SW);
+	SetSoftwareRendering(GSIsHardwareRenderer(), EmuConfig.GS.InterlaceMode);
 }
 
 bool MTGS::SaveMemorySnapshot(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
