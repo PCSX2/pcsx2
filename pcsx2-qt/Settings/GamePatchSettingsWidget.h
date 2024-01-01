@@ -41,6 +41,7 @@ class GamePatchSettingsWidget : public QWidget
 
 public:
 	GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	void disableAllPatches();
 	~GamePatchSettingsWidget();
 
 private Q_SLOTS:

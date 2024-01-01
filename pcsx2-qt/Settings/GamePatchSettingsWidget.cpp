@@ -71,6 +71,13 @@ void GamePatchSettingsWidget::onReloadClicked()
 	g_emu_thread->reloadPatches();
 }
 
+void GamePatchSettingsWidget::disableAllPatches()
+{
+	SettingsInterface* si = m_dialog->getSettingsInterface();
+	si->ClearSection(Patch::PATCHES_CONFIG_SECTION);
+	si->Save();
+}
+
 void GamePatchSettingsWidget::reloadList()
 {
 	// Patches shouldn't have any unlabelled patch groups, because they're new.
