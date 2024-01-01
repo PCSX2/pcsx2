@@ -23,6 +23,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCheats, "EmuCore", "EnableCheats", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowCheatsForAllCRCs", false);
 	updateListEnabled();
 
 	connect(m_ui.enableCheats, &QCheckBox::stateChanged, this, &GameCheatSettingsWidget::updateListEnabled);
@@ -31,6 +32,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 	connect(m_ui.reloadCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
 	connect(m_ui.enableAll, &QPushButton::clicked, this, [this]() { setStateForAll(true); });
 	connect(m_ui.disableAll, &QPushButton::clicked, this, [this]() { setStateForAll(false); });
+	connect(m_ui.allCRCsCheckbox, &QCheckBox::stateChanged, this, &GameCheatSettingsWidget::onReloadClicked);
 }
 
 GameCheatSettingsWidget::~GameCheatSettingsWidget() = default;
@@ -78,6 +80,7 @@ void GameCheatSettingsWidget::updateListEnabled()
 	m_ui.enableAll->setEnabled(cheats_enabled);
 	m_ui.disableAll->setEnabled(cheats_enabled);
 	m_ui.reloadCheats->setEnabled(cheats_enabled);
+	m_ui.allCRCsCheckbox->setEnabled(cheats_enabled);
 }
 
 void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings)
@@ -138,7 +141,8 @@ void GameCheatSettingsWidget::setStateRecursively(QTreeWidgetItem* parent, bool 
 void GameCheatSettingsWidget::reloadList()
 {
 	u32 num_unlabelled_codes = 0;
-	m_patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), true, &num_unlabelled_codes);
+	bool showAllCRCS = m_ui.allCRCsCheckbox->isChecked();
+	m_patches = Patch::GetPatchInfo(m_dialog->getSerial(), m_dialog->getDiscCRC(), true, showAllCRCS, & num_unlabelled_codes);
 	m_enabled_patches =
 		m_dialog->getSettingsInterface()->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
 

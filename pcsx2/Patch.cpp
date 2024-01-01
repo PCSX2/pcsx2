@@ -518,14 +518,14 @@ std::string_view Patch::PatchInfo::GetNameParentPart() const
 	return ret;
 }
 
-Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc, bool cheats, u32* num_unlabelled_patches)
+Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches)
 {
 	PatchInfoList ret;
 
 	if (num_unlabelled_patches)
 		*num_unlabelled_patches = 0;
 
-	EnumeratePnachFiles(serial, crc, cheats, true,
+	EnumeratePnachFiles(serial, crc, cheats, showAllCRCS,
 		[&ret, num_unlabelled_patches](const std::string& filename, const std::string& pnach_data) {
 			ExtractPatchInfo(&ret, pnach_data, num_unlabelled_patches);
 		});
