@@ -419,6 +419,7 @@
     <QtUi Include="Settings\ControllerMacroWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <None Include="Settings\ControllerBindingWidget_Popn.ui" />
     <None Include="Settings\FolderSettingsWidget.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

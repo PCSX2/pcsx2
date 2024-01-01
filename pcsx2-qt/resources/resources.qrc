@@ -68,6 +68,7 @@
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/play-line.svg</file>
 		<file>icons/black/svg/plus-line.svg</file>
+		<file>icons/black/svg/Popn-line.svg</file>
 		<file>icons/black/svg/price-tag-3-line.svg</file>
 		<file>icons/black/svg/printer-line.svg</file>
 		<file>icons/black/svg/refresh-line.svg</file>
@@ -161,6 +162,7 @@
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/play-line.svg</file>
 		<file>icons/white/svg/plus-line.svg</file>
+		<file>icons/white/svg/Popn-line.svg</file>
 		<file>icons/white/svg/price-tag-3-line.svg</file>
 		<file>icons/white/svg/printer-line.svg</file>
 		<file>icons/white/svg/refresh-line.svg</file>
@@ -186,5 +188,6 @@
 		<file>images/DualShock_2.svg</file>
 		<file>images/GT_Force.svg</file>
 		<file>images/Guitar.svg</file>
+		<file>images/Popn.svg</file>
 	</qresource>
 </RCC>

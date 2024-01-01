@@ -248,6 +248,7 @@
     <ClCompile Include="SIO\Pad\PadDualshock2.cpp" />
     <ClCompile Include="SIO\Pad\PadGuitar.cpp" />
     <ClCompile Include="SIO\Pad\PadNotConnected.cpp" />
+    <ClCompile Include="SIO\Pad\PadPopn.cpp" />
     <ClCompile Include="SIO\Sio.cpp" />
     <ClCompile Include="SIO\Sio0.cpp" />
     <ClCompile Include="SIO\Sio2.cpp" />
@@ -596,6 +597,7 @@
     <ClInclude Include="SIO\Pad\PadDualshock2.h" />
     <ClInclude Include="SIO\Pad\PadGuitar.h" />
     <ClInclude Include="SIO\Pad\PadNotConnected.h" />
+    <ClInclude Include="SIO\Pad\PadPopn.h" />
     <ClInclude Include="SIO\Pad\PadTypes.h" />
     <ClInclude Include="SIO\Sio.h" />
     <ClInclude Include="SIO\Sio0.h" />
