@@ -124,8 +124,8 @@ add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
 
-find_package(libzip)
-if(NOT libzip_FOUND)
+find_package(LIBZIP QUIET)
+if(NOT LIBZIP_FOUND)
 	add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
 endif()
 
