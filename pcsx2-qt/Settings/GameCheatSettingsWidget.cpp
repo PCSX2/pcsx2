@@ -80,6 +80,13 @@ void GameCheatSettingsWidget::updateListEnabled()
 	m_ui.reloadCheats->setEnabled(cheats_enabled);
 }
 
+void GameCheatSettingsWidget::disableAllCheats()
+{
+	SettingsInterface* si = m_dialog->getSettingsInterface();
+	si->ClearSection(Patch::CHEATS_CONFIG_SECTION);
+	si->Save();
+}
+
 void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings)
 {
 	SettingsInterface* si = m_dialog->getSettingsInterface();
