@@ -304,7 +304,6 @@ void ATA::ResetEnd(bool hard)
 	if (hard)
 	{
 		pioMode = 4;
-		sdmaMode = -1;
 		mdmaMode = 2;
 		udmaMode = -1;
 	}
@@ -312,10 +311,7 @@ void ATA::ResetEnd(bool hard)
 	{
 		pioMode = 4;
 		if (udmaMode == -1)
-		{
-			sdmaMode = -1;
 			mdmaMode = 2;
-		}
 	}
 
 	regControlEnableIRQ = false;
