@@ -154,16 +154,9 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	WriteUInt16(identifyData, &index, static_cast<u16>(curMultipleSectorsSetting | (1 << 8))); //word 59
 	//Total number of user addressable logical sectors
 	WriteUInt32(identifyData, &index, nbSectors); //word 60-61
-	//DMA modes
-	/*
-	 * bits 0-7: Singleword modes supported (0,1,2)
-	 * bits 8-15: Transfer mode active
-	 */
-	if (sdmaMode > 0)
-		WriteUInt16(identifyData, &index, static_cast<u16>(0x07 | (1 << (sdmaMode + 8)))); //word 62
-	else
-		WriteUInt16(identifyData, &index, 0x07); //word 62
-	//DMA Modes
+	//SDMA modes (Unsupported by original HDD)
+	index += 1 * 2; //word 62
+	//MDMA Modes
 	/*
 	 * bits 0-7: Multiword modes supported (0,1,2)
 	 * bits 8-15: Transfer mode active

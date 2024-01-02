@@ -40,7 +40,6 @@ private:
 #endif
 
 	int pioMode;
-	int sdmaMode;
 	int mdmaMode;
 	int udmaMode;
 
