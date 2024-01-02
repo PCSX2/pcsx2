@@ -26459,6 +26459,8 @@ SLES-55457:
 SLES-55458:
   name: "Rock Band - Song Pack 2"
   region: "PAL-M5"
+  speedHacks:
+    mvuFlag: 0 # Fixes broken rendering.
 SLES-55459:
   name: "Jelly Belly - Ballistic Beans"
   region: "PAL-M5"
@@ -65048,6 +65050,8 @@ SLUS-21830:
   name: "Rock Band Track Pack - Volume 2"
   region: "NTSC-U"
   compat: 3
+  speedHacks:
+    mvuFlag: 0 # Fixes broken rendering.
 SLUS-21831:
   name: "Army Men - Soldiers of Misfortune"
   region: "NTSC-U"
