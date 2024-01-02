@@ -14512,6 +14512,8 @@ SLES-50880:
 SLES-50882:
   name: "Mary-Kate and Ashley - Sweet 16"
   region: "PAL-E"
+  gameFixes:
+    - EETimingHack # Fixes random crashes in mini games.
 SLES-50886:
   name: "TransWorld Surf"
   region: "PAL-M5"
@@ -58408,6 +58410,8 @@ SLUS-20603:
   name: "Mary-Kate & Ashley - Sweet Sixteen - Licensed to Drive"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes random crashes in mini games.
 SLUS-20604:
   name: "MTV's Celebrity Deathmatch"
   region: "NTSC-U"
