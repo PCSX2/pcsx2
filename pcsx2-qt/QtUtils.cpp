@@ -255,13 +255,15 @@ namespace QtUtils
 		return wi;
 	}
 
-	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role)
+	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role, bool useQuotes)
 	{
 		QString csv;
 		// Header
 		for (int col = 0; col < model->columnCount(); col++)
 		{
-			csv += model->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString();
+			// Encapsulate value in quotes so that commas don't break the column count.
+			QString headerLine = model->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString();
+			csv += useQuotes ? QString("\"%1\"").arg(headerLine) : headerLine;
 			if (col < model->columnCount() - 1)
 				csv += ",";
 		}
@@ -273,7 +275,9 @@ namespace QtUtils
 		{
 			for (int col = 0; col < model->columnCount(); col++)
 			{
-				csv += model->data(model->index(row, col), role).toString();
+				// Encapsulate value in quotes so that commas don't break the column count.
+				QString dataLine = model->data(model->index(row, col), role).toString();
+				csv += useQuotes ? QString("\"%1\"").arg(dataLine) : dataLine;
 
 				if (col < model->columnCount() - 1)
 					csv += ",";

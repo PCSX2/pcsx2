@@ -1,38 +1,40 @@
-#-------------------------------------------------------------------------------
-#                       detectOperatingSystem
-#-------------------------------------------------------------------------------
-# This function detects on which OS cmake is run and set a flag to control the
-# build process. Supported OS: Linux, MacOSX, Windows
-# 
-# On linux, it also set a flag for specific distribution (ie Fedora)
-#-------------------------------------------------------------------------------
-function(detectOperatingSystem)
+function(detect_operating_system)
+	# LINUX wasn't added until CMake 3.25.
+	if (CMAKE_VERSION VERSION_LESS 3.25.0 AND CMAKE_SYSTEM_NAME MATCHES "Linux")
+		set(LINUX TRUE PARENT_SCOPE)
+	endif()
+
 	if(WIN32)
-		set(Windows TRUE PARENT_SCOPE)
-	elseif(UNIX AND APPLE)
-		if(IOS)
-			message(WARNING "iOS isn't supported, the build will most likely fail")
-		endif()
-		set(MacOSX TRUE PARENT_SCOPE)
-	elseif(UNIX)
-		if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-			set(Linux TRUE PARENT_SCOPE)
-			if (EXISTS /etc/os-release)
-				# Read the file without CR character
-				file(STRINGS /etc/os-release OS_RELEASE)
-				if("${OS_RELEASE}" MATCHES "^.*ID=fedora.*$")
-					set(Fedora TRUE PARENT_SCOPE)
-					message(STATUS "Build Fedora specific")
-				elseif("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
-					set(openSUSE TRUE PARENT_SCOPE)
-					message(STATUS "Build openSUSE specific")
-				endif()
-			endif()
-		elseif(CMAKE_SYSTEM_NAME MATCHES "kFreeBSD")
-			set(kFreeBSD TRUE PARENT_SCOPE)
-		elseif(CMAKE_SYSTEM_NAME STREQUAL "GNU")
-			set(GNU TRUE PARENT_SCOPE)
-		endif()
+		message(STATUS "Building for Windows.")
+	elseif(APPLE AND NOT IOS)
+		message(STATUS "Building for MacOS.")
+	elseif(LINUX)
+		message(STATUS "Building for Linux.")
+	elseif(BSD)
+		message(STATUS "Building for *BSD.")
+	else()
+		message(FATAL_ERROR "Unsupported platform.")
+	endif()
+endfunction()
+
+function(detect_compiler)
+	if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		set(USE_CLANG_CL TRUE PARENT_SCOPE)
+		set(IS_SUPPORTED_COMPILER TRUE PARENT_SCOPE)
+		message(STATUS "Building with Clang-CL.")
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+		set(USE_CLANG TRUE PARENT_SCOPE)
+		set(IS_SUPPORTED_COMPILER TRUE PARENT_SCOPE)
+		message(STATUS "Building with Clang/LLVM.")
+	elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		set(USE_GCC TRUE PARENT_SCOPE)
+		set(IS_SUPPORTED_COMPILER FALSE PARENT_SCOPE)
+		message(STATUS "Building with GNU GCC.")
+	elseif(MSVC)
+		set(IS_SUPPORTED_COMPILER TRUE PARENT_SCOPE)
+		message(STATUS "Building with MSVC.")
+	else()
+		message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 	endif()
 endfunction()
 
@@ -119,24 +121,6 @@ function(write_svnrev_h)
 	endif()
 endfunction()
 
-function(check_compiler_version version_warn version_err)
-	if(CMAKE_COMPILER_IS_GNUCXX)
-		execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-		string(STRIP "${GCC_VERSION}" GCC_VERSION)
-		if(GCC_VERSION VERSION_LESS ${version_err})
-			message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it!
-
-			The minimum supported version is ${version_err} but ${version_warn} is warmly recommended")
-		else()
-			if(GCC_VERSION VERSION_LESS ${version_warn})
-				message(WARNING "PCSX2 will stop supporting GCC ${GCC_VERSION} in the near future. Please upgrade to at least GCC ${version_warn}.")
-			endif()
-		endif()
-
-		set(GCC_VERSION "${GCC_VERSION}" PARENT_SCOPE)
-	endif()
-endfunction()
-
 function(check_no_parenthesis_in_path)
 	if ("${CMAKE_BINARY_DIR}" MATCHES "[()]" OR "${CMAKE_SOURCE_DIR}" MATCHES "[()]")
 		message(FATAL_ERROR "Your path contains some parenthesis. Unfortunately Cmake doesn't support them correctly.\nPlease rename your directory to avoid '(' and ')' characters\n")
@@ -162,25 +146,6 @@ function(alias_library new old)
 	endif()
 	add_library(${new} ALIAS _alias_${library_no_namespace})
 endfunction()
-
-# Helper macro to generate resources on linux (based on glib)
-macro(add_custom_glib_res out xml prefix)
-	set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
-	set(RESOURCE_FILES "${ARGN}")
-	# Note: trying to combine --generate-source and --generate-header doesn't work.
-	# It outputs whichever one comes last into the file named by the first
-	add_custom_command(
-		OUTPUT ${out}.h
-		COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
-			--c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.h
-		DEPENDS res/${xml} ${RESOURCE_FILES})
-
-	add_custom_command(
-		OUTPUT ${out}.cpp
-		COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
-			--c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.cpp
-		DEPENDS res/${xml} ${RESOURCE_FILES})
-endmacro()
 
 function(source_groups_from_vcxproj_filters file)
 	file(READ "${file}" filecontent)

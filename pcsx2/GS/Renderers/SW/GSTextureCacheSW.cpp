@@ -4,6 +4,7 @@
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/GSExtra.h"
 #include "GS/GSPerfMon.h"
+#include "GS/GSPng.h"
 #include "GS/GSUtil.h"
 
 GSTextureCacheSW::GSTextureCacheSW() = default;
@@ -304,45 +305,36 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	return true;
 }
 
-#include "GSTextureSW.h"
-
-bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
+bool GSTextureCacheSW::Texture::Save(const std::string& fn) const
 {
 	const u32* RESTRICT clut = g_gs_renderer->m_mem.m_clut;
 
-	int w = 1 << m_TEX0.TW;
-	int h = 1 << m_TEX0.TH;
+	const u32 w = 1 << m_TEX0.TW;
+	const u32 h = 1 << m_TEX0.TH;
 
-	GSTextureSW t(GSTexture::Type::Invalid, w, h);
-
-	GSTexture::GSMap m;
-
-	if (t.Map(m, nullptr))
+	constexpr GSPng::Format format = IsDevBuild ? GSPng::RGB_A_PNG : GSPng::RGB_PNG;
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+	const u8* RESTRICT src = (u8*)m_buff;
+	const u32 src_pitch = 1u << (m_tw + (psm.pal == 0 ? 2 : 0));
+	if (psm.pal == 0)
 	{
-		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
+		// no clut => dump directly
+		return GSPng::Save(format, fn, src, w, h, src_pitch, GSConfig.PNGCompressionLevel);
+	}
+	else
+	{
+		const std::unique_ptr<u32[]> dumptex = std::make_unique<u32[]>(w * h);
+		u32* dst = dumptex.get();
 
-		const u8* RESTRICT src = (u8*)m_buff;
-		int pitch = 1 << (m_tw + (psm.pal == 0 ? 2 : 0));
-
-		for (int j = 0; j < h; j++, src += pitch, m.bits += m.pitch)
+		for (u32 j = 0; j < h; j++)
 		{
-			if (psm.pal == 0)
-			{
-				memcpy(m.bits, src, sizeof(u32) * w);
-			}
-			else
-			{
-				for (int i = 0; i < w; i++)
-				{
-					((u32*)m.bits)[i] = clut[src[i]];
-				}
-			}
+			for (u32 i = 0; i < w; i++)
+				*(dst++) = clut[src[i]];
+
+			src += src_pitch;
 		}
 
-		t.Unmap();
-
-		return t.Save(fn);
+		return GSPng::Save(format, fn, reinterpret_cast<const u8*>(dumptex.get()),
+			w, h, w * sizeof(u32), GSConfig.PNGCompressionLevel);
 	}
-
-	return false;
 }

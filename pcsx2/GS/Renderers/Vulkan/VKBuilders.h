@@ -11,7 +11,7 @@
 #include <cstdarg>
 #include <string_view>
 
-#ifdef _DEBUG
+#ifdef PCSX2_DEVBUILD
 #define ENABLE_VULKAN_DEBUG_OBJECTS 1
 #endif
 

@@ -413,7 +413,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto Standard (4:3/3:2 "
 			   "Progressive) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
 
-		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.interlacing, tr("Deinterlacing"), tr("Automatic (Default)"), tr("Determines the deinterlacing method to be used on the interlaced screen of the emulated console. Automatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the available options."));
 
 		dialog->registerWidgetHelp(m_ui.screenshotSize, tr("Screenshot Size"), tr("Screen Resolution"),
 			tr("Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of "
@@ -516,9 +516,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	// Hardware Fixes tab
 	{
-		dialog->registerWidgetHelp(m_ui.cpuSpriteRenderBW, tr("CPU Sprite Render Size"), tr("0 (Disabled)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cpuSpriteRenderBW, tr("CPU Sprite Render Size"), tr("0 (Disabled)"), 
+			tr("The maximum target memory width that will allow the CPU Sprite Renderer to activate on."));
 
-		dialog->registerWidgetHelp(m_ui.cpuCLUTRender, tr("Software CLUT Render"), tr("0 (Disabled)"), tr(""));
+		dialog->registerWidgetHelp(m_ui.cpuCLUTRender, tr("Software CLUT Render"), tr("0 (Disabled)"), 
+			tr("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."));
+
+		dialog->registerWidgetHelp(m_ui.gpuTargetCLUTMode, tr("GPU Target CLUT"), tr("Disabled"), 
+			tr("Try to detect when a game is drawing its own color palette and then renders it on the GPU with special handling."));
 
 		dialog->registerWidgetHelp(m_ui.skipDrawStart, tr("Skipdraw Range Start"), tr("0"),
 			tr("Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right."));
@@ -599,6 +604,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
 			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
+
+		dialog->registerWidgetHelp(m_ui.nativePaletteDraw, tr("Unscaled Palette Texture Draws"), tr("Unchecked"),
+			tr("Force palette texture draws to render at native resolution."));
 	}
 
 	// Texture Replacement tab
@@ -682,12 +690,38 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 	// Recording tab
 	{
-		dialog->registerWidgetHelp(m_ui.enableVideoCaptureArguments, tr("Enable Extra Arguments"), tr("Unchecked"), tr(""));
+		dialog->registerWidgetHelp(m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"), tr("Selects which Video Codec to be used for Video Capture. "
+		
+		"<b>If unsure, leave it on default.<b>"));
 
-		dialog->registerWidgetHelp(m_ui.videoCaptureArguments, tr("Extra Arguments"), tr("Leave It Blank"),
-			tr("Parameters passed to selected video codec.<br> "
-			   "You must use '=' to separate key from value and ':' to separate two pairs from each other.<br> "
+		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 Kbps"), tr("Sets the video bitrate to be used."
+		
+		"Larger bitrate generally yields better video quality at the cost of larger resulting file size."));
+
+		dialog->registerWidgetHelp(m_ui.videoCaptureResolutionAuto, tr("Automatic Resolution"), tr("Unchecked"), tr("When checked, the video capture resolution will follows the internal resolution of the running game.<br><br>"
+		
+		"<b>Be careful when using this setting especially when you are upscaling, as higher internal resolution (above 4x) can results in very large video capture and can cause system overload.</b>"));
+
+
+		dialog->registerWidgetHelp(m_ui.enableVideoCaptureArguments, tr("Enable Extra Video Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected video codec."));
+
+		dialog->registerWidgetHelp(m_ui.videoCaptureArguments, tr("Extra Video Arguments"), tr("Leave It Blank"),
+			tr("Parameters passed to the selected video codec.<br>"
+			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
 			   "For example: \"crf = 21 : preset = veryfast\""));
+
+		dialog->registerWidgetHelp(m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"), tr("Selects which Audio Codec to be used for Video Capture. "
+		
+		"<b>If unsure, leave it on default.<b>"));
+
+		dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("160 Kbps"), tr("Sets the audio bitrate to be used."));
+
+		dialog->registerWidgetHelp(m_ui.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected audio codec."));
+
+		dialog->registerWidgetHelp(m_ui.audioCaptureArguments, tr("Extra Audio Arguments"), tr("Leave It Blank"),
+			tr("Parameters passed to the selected audio codec.<br>"
+			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
+			   "For example: \"compression_level = 4 : joint_stereo = 1\""));
 	}
 
 	// Advanced tab

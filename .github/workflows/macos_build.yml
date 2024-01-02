@@ -79,7 +79,8 @@ jobs:
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: .github/workflows/scripts/macos/build-dependencies.sh
+        run: |
+          .github/workflows/scripts/macos/build-dependencies.sh "$HOME/deps"
 
       - name: Download patches
         run: |

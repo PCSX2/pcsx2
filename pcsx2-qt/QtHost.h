@@ -92,7 +92,6 @@ public Q_SLOTS:
 	void reloadGameSettings();
 	void updateEmuFolders();
 	void toggleSoftwareRendering();
-	void switchRenderer(GSRendererType renderer);
 	void changeDisc(CDVD_SourceType source, const QString& path);
 	void setELFOverride(const QString& path);
 	void changeGSDump(const QString& path);

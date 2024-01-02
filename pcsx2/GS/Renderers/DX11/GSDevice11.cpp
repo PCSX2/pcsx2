@@ -60,6 +60,21 @@ GSDevice11::GSDevice11()
 
 GSDevice11::~GSDevice11() = default;
 
+void GSDevice11::SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
+{
+#ifdef PCSX2_DEVBUILD
+	// WKPDID_D3DDebugObjectName
+	static constexpr GUID guid = {0x429b8c22, 0x9188, 0x4b0c, {0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00}};
+
+	UINT existing_data_size;
+	HRESULT hr = obj->GetPrivateData(guid, &existing_data_size, nullptr);
+	if (SUCCEEDED(hr) && existing_data_size > 0)
+		return;
+
+	obj->SetPrivateData(guid, static_cast<UINT>(name.length()), name.data());
+#endif
+}
+
 RenderAPI GSDevice11::GetRenderAPI() const
 {
 	return RenderAPI::D3D11;
@@ -117,6 +132,8 @@ bool GSDevice11::Create()
 			D3D11_MESSAGE_ID hide[] = {
 				D3D11_MESSAGE_ID_DEVICE_OMSETRENDERTARGETS_HAZARD,
 				D3D11_MESSAGE_ID_DEVICE_PSSETSHADERRESOURCES_HAZARD,
+				D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET,
+				D3D11_MESSAGE_ID_QUERY_END_ABANDONING_PREVIOUS_RESULTS,
 			};
 
 			D3D11_INFO_QUEUE_FILTER filter = {};

@@ -1,8 +1,8 @@
 # Setting it to a range tells it that it supports the features on the newer
 # versions as well, avoiding setting policies.
-cmake_minimum_required(VERSION 3.16...3.24)
+cmake_minimum_required(VERSION 3.16...3.25)
 
-#Enabling this cmake policy gets rid of warnings regarding LTO.
+# Enabling this cmake policy gets rid of warnings regarding LTO.
 cmake_policy(SET CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
@@ -11,7 +11,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # Project Name
-project(Pcsx2)
+project(Pcsx2 C CXX)
 
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)
@@ -30,14 +30,11 @@ endif()
 include(Pcsx2Utils)
 
 check_no_parenthesis_in_path()
-detectOperatingSystem()
-check_compiler_version("7.0" "7.0")
+detect_operating_system()
+detect_compiler()
 
 #-------------------------------------------------------------------------------
 # Include specific module
-# GNUInstallDirs must be done before BuildParameters
-include(GNUInstallDirs)
-# BuildParameters Must be done before SearchForStuff
 include(BuildParameters)
 include(SearchForStuff)
 
@@ -62,3 +59,13 @@ if(ACTUALLY_ENABLE_TESTS)
 	add_subdirectory(tests/ctest)
 endif()
 
+#-------------------------------------------------------------------------------
+if(NOT IS_SUPPORTED_COMPILER)
+	message(WARNING "
+*************** UNSUPPORTED CONFIGURATION ***************
+You are not compiling PCSX2 with a supported compiler.
+It may not even build successfully.
+PCSX2 only supports the Clang and MSVC compilers.
+No support will be provided, continue at your own risk.
+*********************************************************")
+endif()

@@ -36,17 +36,6 @@ else()
 	)
 endif()
 
-if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
-	# gs is pretty bad at this
-	target_compile_options(PCSX2_FLAGS INTERFACE -Wno-packed-not-aligned -Wno-class-memaccess)
-endif()
-
-if ("${PGO}" STREQUAL "generate")
-	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-generate)
-elseif("${PGO}" STREQUAL "use")
-	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-use)
-endif()
-
 if(USE_LINKED_FFMPEG)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE USE_LINKED_FFMPEG)
 	target_link_libraries(PCSX2_FLAGS INTERFACE FFMPEG::avcodec FFMPEG::avformat FFMPEG::avutil FFMPEG::swscale FFMPEG::swresample)
@@ -509,7 +498,6 @@ set(pcsx2GSSources
 	GS/Renderers/HW/GSTextureReplacementLoaders.cpp
 	GS/Renderers/HW/GSTextureReplacements.cpp
 	GS/Renderers/SW/GSTextureCacheSW.cpp
-	GS/Renderers/SW/GSTextureSW.cpp
 	)
 
 # GS headers
@@ -565,7 +553,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.h
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.all.h
 	GS/Renderers/SW/GSTextureCacheSW.h
-	GS/Renderers/SW/GSTextureSW.h
 	GS/Renderers/SW/GSVertexSW.h
 	)
 
@@ -697,7 +684,7 @@ if(WIN32)
 		GS/Renderers/DX12/GSDevice12.h
 		GS/Renderers/DX12/GSTexture12.h
 	)
-elseif(Linux)
+elseif(LINUX)
 	list(APPEND pcsx2USBSources
 		USB/usb-eyetoy/cam-linux.cpp
 	)
@@ -1077,8 +1064,7 @@ target_sources(PCSX2 PRIVATE
 )
 
 # platform sources
-# Linux
-if(Linux)
+if(LINUX)
 	target_sources(PCSX2 PRIVATE
 		${pcsx2LinuxSources}
 		${pcsx2LinuxHeaders}
@@ -1090,8 +1076,7 @@ if(Linux)
 	)
 endif()
 
-# Windows
-if(Windows)
+if(WIN32)
 	target_sources(PCSX2 PRIVATE
 		${pcsx2WindowsSources}
 	)
@@ -1100,8 +1085,7 @@ endif()
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
 target_link_libraries(PCSX2_FLAGS INTERFACE jpgd)
 
-# MacOSX/BSD
-if(UNIX AND NOT Linux)
+if(APPLE OR BSD)
 	if(APPLE)
 		target_sources(PCSX2 PRIVATE
 			${pcsx2OSXSources})

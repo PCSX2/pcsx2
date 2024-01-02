@@ -2019,7 +2019,8 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 		else
 		{
 			Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
-				fmt::format(TRANSLATE_FS("VMManager", "Disc changed to '{}'."), Path::GetFileName(path)),
+				fmt::format(TRANSLATE_FS("VMManager", "Disc changed to '{}'."),
+					Path::GetFileName(CDVDsys_GetFile(CDVDsys_GetSourceType()))),
 				Host::OSD_INFO_DURATION);
 		}
 	}

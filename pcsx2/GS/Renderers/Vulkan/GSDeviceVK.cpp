@@ -78,6 +78,12 @@ static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
 static std::mutex s_instance_mutex;
 
+// Device extensions that are required for PCSX2.
+static constexpr const char* s_required_device_extensions[] = {
+	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
+	VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
+};
+
 GSDeviceVK::GSDeviceVK()
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -238,6 +244,47 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		VkPhysicalDeviceProperties props = {};
 		vkGetPhysicalDeviceProperties(device, &props);
 
+		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
+		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
+			VK_API_VERSION_MINOR(props.apiVersion) < 1)
+		{
+			Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because it only claims support for Vulkan {}.{}.{}",
+				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
+				VK_API_VERSION_PATCH(props.apiVersion)));
+			continue;
+		}
+
+		// Query the extension list to ensure that we don't include GPUs that are missing the extensions we require.
+		u32 extension_count = 0;
+		res = vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+		if (res != VK_SUCCESS)
+		{
+			Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because vkEnumerateInstanceExtensionProperties() failed: ",
+				props.deviceName, Vulkan::VkResultToString(res)));
+			continue;
+		}
+
+		std::vector<VkExtensionProperties> available_extension_list(extension_count);
+		if (extension_count > 0)
+		{
+			res = vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extension_list.data());
+			pxAssert(res == VK_SUCCESS);
+		}
+		bool has_missing_extension = false;
+		for (const char* required_extension_name : s_required_device_extensions)
+		{
+			if (std::find_if(available_extension_list.begin(), available_extension_list.end(), [required_extension_name](const VkExtensionProperties& ext) {
+					return (std::strcmp(required_extension_name, ext.extensionName) == 0);
+			}) == available_extension_list.end())
+			{
+				Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because is is missing required extension {}",
+					props.deviceName, required_extension_name));
+				has_missing_extension = true;
+			}
+		}
+		if (has_missing_extension)
+			continue;
+
 		std::string gpu_name = props.deviceName;
 
 		// handle duplicate adapter names
@@ -307,10 +354,10 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		return false;
 
 	// Required extensions.
-	if (!SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, true) ||
-		!SupportsExtension(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, true))
+	for (const char* extension_name : s_required_device_extensions)
 	{
-		return false;
+		if (!SupportsExtension(extension_name, true))
+			return false;
 	}
 
 	// MoltenVK does not support VK_EXT_line_rasterization. We want it for other platforms,

@@ -80,7 +80,7 @@ namespace Sessions
 			int err = 0;
 			int recived;
 
-			u_long available;
+			unsigned long available;
 #ifdef _WIN32
 			err = ioctlsocket(client, FIONREAD, &available);
 #elif defined(__POSIX__)

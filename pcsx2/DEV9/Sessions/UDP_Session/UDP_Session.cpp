@@ -8,6 +8,7 @@
 #define SOCKET_ERROR -1
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #endif
 
@@ -119,7 +120,7 @@ namespace Sessions
 
 		if (hasData)
 		{
-			u_long available = 0;
+			unsigned long available = 0;
 			PayloadData* recived = nullptr;
 			std::unique_ptr<u8[]> buffer;
 			sockaddr endpoint{0};

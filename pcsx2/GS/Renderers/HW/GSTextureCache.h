@@ -247,6 +247,9 @@ public:
 
 		/// Resizes target texture, DOES NOT RESCALE.
 		bool ResizeTexture(int new_unscaled_width, int new_unscaled_height, bool recycle_old = true);
+
+	private:
+		void UpdateTextureDebugName();
 	};
 
 	class Source : public Surface
@@ -336,6 +339,7 @@ public:
 		std::array<FastList<Source*>, MAX_PAGES> m_map;
 
 		void Add(Source* s, const GIFRegTEX0& TEX0);
+		void SwapTexture(GSTexture* old_tex, GSTexture* new_tex);
 		void RemoveAll();
 		void RemoveAt(Source* s);
 	};
@@ -451,7 +455,7 @@ public:
 	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll(bool sources, bool targets, bool hash_cache);
 	void ReadbackAll();
-	void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear = false);
+	static void AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm, u32 bw, RGBAMask rgba, bool req_linear = false);
 	void ResizeTarget(Target* t, GSVector4i rect, u32 tbp, u32 psm, u32 tbw);
 	static bool FullRectDirty(Target* target, u32 rgba_mask);
 	static bool FullRectDirty(Target* target);

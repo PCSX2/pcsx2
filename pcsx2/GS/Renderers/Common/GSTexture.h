@@ -6,6 +6,7 @@
 #include "GS/GSVector.h"
 
 #include <string>
+#include <string_view>
 
 class GSTexture
 {
@@ -70,17 +71,21 @@ protected:
 
 public:
 	GSTexture();
-	virtual ~GSTexture() {}
+	virtual ~GSTexture();
 
 	// Returns the native handle of a texture.
 	virtual void* GetNativeHandle() const = 0;
 
 	virtual bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) = 0;
-	virtual bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) = 0;
+	virtual bool Map(GSMap& m, const GSVector4i* r = nullptr, int layer = 0) = 0;
 	virtual void Unmap() = 0;
-	virtual void GenerateMipmap() {}
-	virtual bool Save(const std::string& fn);
-	virtual void Swap(GSTexture* tex);
+	virtual void GenerateMipmap() = 0;
+
+#ifdef PCSX2_DEVBUILD
+	virtual void SetDebugName(std::string_view name) = 0;
+#endif
+
+	bool Save(const std::string& fn);
 
 	__fi int GetWidth() const { return m_size.x; }
 	__fi int GetHeight() const { return m_size.y; }
@@ -94,6 +99,7 @@ public:
 	__fi Format GetFormat() const { return m_format; }
 	__fi bool IsCompressedFormat() const { return IsCompressedFormat(m_format); }
 
+	static const char* GetFormatName(Format format);
 	static u32 GetCompressedBytesPerBlock(Format format);
 	static u32 GetCompressedBlockSize(Format format);
 	static u32 CalcUploadPitch(Format format, u32 width);
@@ -196,6 +202,11 @@ public:
 	/// This may cause a command buffer submit depending on if one has occurred between the last
 	/// call to CopyFromTexture() and the Flush() call.
 	virtual void Flush() = 0;
+
+#ifdef PCSX2_DEVBUILD
+	/// Sets object name that will be displayed in graphics debuggers.
+	virtual void SetDebugName(std::string_view name) = 0;
+#endif
 
 	/// Reads the specified rectangle from the staging texture to out_ptr, with the specified stride
 	/// (length in bytes of each row). CopyFromTexture() must be called first. The contents of any

@@ -10,6 +10,7 @@
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -78,9 +79,111 @@ static int MipmapLevelsForSize(int width, int height)
 	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
 }
 
+#ifdef PCSX2_DEVBUILD
+
+enum class TextureLabel
+{
+	ColorRT,
+	HDRRT,
+	U16RT,
+	U32RT,
+	DepthStencil,
+	PrimIDTexture,
+	RWTexture,
+	CLUTTexture,
+	Texture,
+	ReplacementTexture,
+	Other,
+	Last = Other,
+};
+
+static std::array<u32, static_cast<u32>(TextureLabel::Last) + 1> s_texture_counts;
+
+static TextureLabel GetTextureLabel(GSTexture::Type type, GSTexture::Format format)
+{
+	switch (type)
+	{
+		case GSTexture::Type::RenderTarget:
+			switch (format)
+			{
+				case GSTexture::Format::Color:
+					return TextureLabel::ColorRT;
+				case GSTexture::Format::HDRColor:
+					return TextureLabel::HDRRT;
+				case GSTexture::Format::UInt16:
+					return TextureLabel::U16RT;
+				case GSTexture::Format::UInt32:
+					return TextureLabel::U32RT;
+				case GSTexture::Format::PrimID:
+					return TextureLabel::PrimIDTexture;
+				default:
+					return TextureLabel::Other;
+			}
+		case GSTexture::Type::Texture:
+			switch (format)
+			{
+				case GSTexture::Format::Color:
+					return TextureLabel::Texture;
+				case GSTexture::Format::UNorm8:
+					return TextureLabel::CLUTTexture;
+				case GSTexture::Format::BC1:
+				case GSTexture::Format::BC2:
+				case GSTexture::Format::BC3:
+				case GSTexture::Format::BC7:
+					return TextureLabel::ReplacementTexture;
+				default:
+					return TextureLabel::Other;
+			}
+		case GSTexture::Type::DepthStencil:
+			return TextureLabel::DepthStencil;
+		case GSTexture::Type::RWTexture:
+			return TextureLabel::RWTexture;
+		case GSTexture::Type::Invalid:
+		default:
+			return TextureLabel::Other;
+	}
+}
+
+static const char* TextureLabelString(TextureLabel label)
+{
+	switch (label)
+	{
+		case TextureLabel::ColorRT:
+			return "Color RT";
+		case TextureLabel::HDRRT:
+			return "HDR RT";
+		case TextureLabel::U16RT:
+			return "U16 RT";
+		case TextureLabel::U32RT:
+			return "U32 RT";
+		case TextureLabel::DepthStencil:
+			return "Depth Stencil";
+		case TextureLabel::PrimIDTexture:
+			return "PrimID";
+		case TextureLabel::RWTexture:
+			return "RW Texture";
+		case TextureLabel::CLUTTexture:
+			return "CLUT Texture";
+		case TextureLabel::Texture:
+			return "Texture";
+		case TextureLabel::ReplacementTexture:
+			return "Replacement Texture";
+		case TextureLabel::Other:
+		default:
+			return "Unknown Texture";
+	}
+}
+
+#endif
+
 std::unique_ptr<GSDevice> g_gs_device;
 
-GSDevice::GSDevice() = default;
+GSDevice::GSDevice()
+{
+#ifdef PCSX2_DEVBUILD
+	s_texture_counts.fill(0);
+#endif
+}
 
 GSDevice::~GSDevice()
 {
@@ -273,10 +376,9 @@ bool GSDevice::UpdateImGuiFontTexture()
 	return true;
 }
 
-GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse)
+GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_unused_texture)
 {
 	const GSVector2i size(width, height);
-	const bool prefer_new_texture = (m_features.prefer_new_textures && type == GSTexture::Type::Texture && !prefer_reuse);
 	FastList<GSTexture*>& pool = m_pool[type != GSTexture::Type::Texture];
 
 	GSTexture* t = nullptr;
@@ -290,7 +392,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 		if (t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->GetMipmapLevels() == levels)
 		{
-			if (!prefer_new_texture || t->GetLastFrameUsed() != m_frame)
+			if (!prefer_unused_texture || t->GetLastFrameUsed() != m_frame)
 			{
 				m_pool_memory_usage -= t->GetMemUsage();
 				pool.erase(i);
@@ -327,6 +429,15 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 					return nullptr;
 				}
 			}
+
+#ifdef PCSX2_DEVBUILD
+			if (GSConfig.UseDebugDevice)
+			{
+				const TextureLabel label = GetTextureLabel(type, format);
+				const u32 id = ++s_texture_counts[static_cast<u32>(label)];
+				t->SetDebugName(TinyString::from_fmt("{} {}", TextureLabelString(label), id));
+			}
+#endif
 		}
 	}
 
@@ -423,20 +534,20 @@ void GSDevice::PurgePool()
 	m_pool_memory_usage = 0;
 }
 
-GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear)
+GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse)
 {
-	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, format, clear, true);
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, format, clear, !prefer_reuse);
 }
 
-GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear)
+GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse)
 {
-	return FetchSurface(GSTexture::Type::DepthStencil, w, h, 1, format, clear, true);
+	return FetchSurface(GSTexture::Type::DepthStencil, w, h, 1, format, clear, !prefer_reuse);
 }
 
 GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
 	const int levels = mipmap_levels < 0 ? MipmapLevelsForSize(w, h) : mipmap_levels;
-	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, prefer_reuse);
+	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, m_features.prefer_new_textures && !prefer_reuse);
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)

@@ -5,8 +5,11 @@
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 #include "GS/GSPerfMon.h"
+
 #include "common/Console.h"
 #include "common/BitUtils.h"
+
+#include "fmt/format.h"
 
 GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
 	GSTexture::Type type, GSTexture::Format format)
@@ -85,15 +88,21 @@ void GSTexture11::GenerateMipmap()
 	GSDevice11::GetInstance()->GetD3DContext()->GenerateMips(operator ID3D11ShaderResourceView*());
 }
 
-void GSTexture11::Swap(GSTexture* tex)
+#ifdef PCSX2_DEVBUILD
+
+void GSTexture11::SetDebugName(std::string_view name)
 {
-	GSTexture::Swap(tex);
-	std::swap(m_texture, static_cast<GSTexture11*>(tex)->m_texture);
-	std::swap(m_srv, static_cast<GSTexture11*>(tex)->m_srv);
-	std::swap(m_rtv, static_cast<GSTexture11*>(tex)->m_rtv);
-	std::swap(m_desc, static_cast<GSTexture11*>(tex)->m_desc);
-	std::swap(m_mapped_subresource, static_cast<GSTexture11*>(tex)->m_mapped_subresource);
+	if (name.empty())
+		return;
+
+	GSDevice11::SetD3DDebugObjectName(m_texture.get(), name);
+	if (m_srv)
+		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} SRV", name));
+	if (m_rtv)
+		GSDevice11::SetD3DDebugObjectName(m_rtv.get(), fmt::format("{} RTV", name));
 }
+
+#endif
 
 GSTexture11::operator ID3D11Texture2D*()
 {
@@ -161,11 +170,6 @@ GSTexture11::operator ID3D11UnorderedAccessView*()
 		GSDevice11::GetInstance()->GetD3DDevice()->CreateUnorderedAccessView(m_texture.get(), nullptr, m_uav.put());
 
 	return m_uav.get();
-}
-
-bool GSTexture11::Equal(GSTexture11* tex)
-{
-	return tex && m_texture == tex->m_texture;
 }
 
 GSDownloadTexture11::GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format)
@@ -273,3 +277,15 @@ void GSDownloadTexture11::Flush()
 
 	// Handled when mapped.
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTexture11::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	GSDevice11::SetD3DDebugObjectName(m_texture.get(), name);
+}
+
+#endif
