@@ -84,7 +84,9 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Default Num of cylinders
 	WriteUInt16(identifyData, &index, defCylinders); //word 1
 	//Specific configuration
-	index += 1 * 2; //word 2
+	//We report "Device does not require SET FEATURES subcommand to spin-up after power - up and IDENTIFY DEVICE data is complete"
+	//Matching original PS2 HDD
+	WriteUInt16(identifyData, &index, 0xC837); //word 2
 	//Default Num of heads (Retired)
 	WriteUInt16(identifyData, &index, defHeads); //word 3
 	//Number of unformatted bytes per track (Retired)
@@ -110,9 +112,9 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Model number (40 ASCII characters)
 	WritePaddedString(identifyData, &index, "PCSX2-DEV9-ATA-HDD", 40); //word 27-46
 	//READ/WRITE MULI max sectors
-	WriteUInt16(identifyData, &index, 128 & (0x80 << 8)); //word 47
-	//Dword IO supported
-	WriteUInt16(identifyData, &index, 1); //word 48
+	WriteUInt16(identifyData, &index, 128 | (0x80 << 8)); //word 47
+	//Reserved
+	index += 1 * 2; //word 48
 	//Capabilities
 	/*
 	 * bits 7-0: Retired
@@ -125,9 +127,9 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 */
 	WriteUInt16(identifyData, &index, ((1 << 11) | (1 << 9) | (1 << 8))); //word 49
 	//Capabilities (0-Shall be set to one to indicate a device specific Standby timer value minimum)
-	index += 1 * 2; //word 50
+	WriteUInt16(identifyData, &index, 1 << 14); //word 50
 	//PIO data transfer cycle timing mode (Obsolete)
-	WriteUInt16(identifyData, &index, static_cast<u8>((pioMode > 2 ? pioMode : 2) << 8)); //word 51
+	WriteUInt16(identifyData, &index, static_cast<u16>((pioMode > 2 ? pioMode : 2) << 8)); //word 51
 	//DMA data transfer cycle timing mode (Obsolete)
 	WriteUInt16(identifyData, &index, 0); //word 52
 	//
