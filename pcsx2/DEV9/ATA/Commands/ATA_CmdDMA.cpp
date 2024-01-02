@@ -77,7 +77,7 @@ void ATA::PostCmdDMADataFromHost()
 
 void ATA::ATAreadDMA8Mem(u8* pMem, int size)
 {
-	if ((udmaMode >= 0) &&
+	if ((udmaMode >= 0 || mdmaMode >= 0) &&
 		(dev9.if_ctrl & SPD_IF_ATA_DMAEN) != 0)
 	{
 		if (size == 0 || nsector == -1)
@@ -103,7 +103,7 @@ void ATA::ATAreadDMA8Mem(u8* pMem, int size)
 
 void ATA::ATAwriteDMA8Mem(u8* pMem, int size)
 {
-	if ((udmaMode >= 0) &&
+	if ((udmaMode >= 0 || mdmaMode >= 0) &&
 		(dev9.if_ctrl & SPD_IF_ATA_DMAEN) != 0)
 	{
 		if (nsector == -1)
