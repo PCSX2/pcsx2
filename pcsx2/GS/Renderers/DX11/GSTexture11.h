@@ -32,8 +32,10 @@ public:
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
 	void Unmap() override;
 	void GenerateMipmap() override;
-	void Swap(GSTexture* tex) override;
-	bool Equal(GSTexture11* tex);
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 	operator ID3D11Texture2D*();
 	operator ID3D11ShaderResourceView*();
@@ -56,6 +58,10 @@ public:
 	void Unmap() override;
 
 	void Flush() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 private:
 	GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format);

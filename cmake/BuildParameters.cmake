@@ -38,21 +38,6 @@ endif()
 #-------------------------------------------------------------------------------
 option(USE_ASAN "Enable address sanitizer")
 
-if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	set(USE_CLANG_CL TRUE)
-	message(STATUS "Building with Clang-CL.")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-	set(USE_CLANG TRUE)
-	message(STATUS "Building with Clang/LLVM.")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	set(USE_GCC TRUE)
-	message(STATUS "Building with GNU GCC")
-elseif(MSVC)
-	message(STATUS "Building with MSVC")
-else()
-	message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
-endif()
-
 #-------------------------------------------------------------------------------
 # if no build type is set, use Devel as default
 # Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
@@ -81,52 +66,41 @@ mark_as_advanced(CMAKE_C_FLAGS_DEVEL CMAKE_CXX_FLAGS_DEVEL CMAKE_LINKER_FLAGS_DE
 #-------------------------------------------------------------------------------
 # Select the architecture
 #-------------------------------------------------------------------------------
-option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
+if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "amd64" OR
+   "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
+	# Multi-ISA only exists on x86.
+	option(DISABLE_ADVANCE_SIMD "Disable advance use of SIMD (SSE2+ & AVX)" OFF)
 
-# Print if we are cross compiling.
-if(CMAKE_CROSSCOMPILING)
-	message(STATUS "Cross compilation is enabled.")
-else()
-	message(STATUS "Cross compilation is disabled.")
-endif()
-
-# Architecture bitness detection
-include(TargetArch)
-target_architecture(PCSX2_TARGET_ARCHITECTURES)
-if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
-	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
-
-	# x86_64 requires -fPIC
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-	if(NOT DEFINED ARCH_FLAG AND NOT MSVC)
-		if (DISABLE_ADVANCE_SIMD)
-			set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr")
-		else()
-			#set(ARCH_FLAG "-march=native -fabi-version=6")
-			set(ARCH_FLAG "-march=native")
-		endif()
-	elseif(NOT DEFINED ARCH_FLAG AND USE_CLANG_CL)
-		set(ARCH_FLAG "-msse4.1")
-	endif()
 	list(APPEND PCSX2_DEFS _M_X86=1)
-	set(_M_X86 1)
+	set(_M_X86 TRUE)
+	if(DISABLE_ADVANCE_SIMD)
+		message(STATUS "Building for x86-64 (Multi-ISA).")
+	else()
+		message(STATUS "Building for x86-64.")
+	endif()
 
-	# SSE4.1 is not set by MSVC, it uses _M_SSE instead.
 	if(MSVC)
+		# SSE4.1 is not set by MSVC, it uses _M_SSE instead.
 		list(APPEND PCSX2_DEFS __SSE4_1__=1)
+
+		if(USE_CLANG_CL)
+			# clang-cl => need to explicitly enable SSE4.1.
+			add_compile_options("-msse4.1")
+		endif()
+	else()
+		# Multi-ISA => SSE4, otherwise native.
+		if (DISABLE_ADVANCE_SIMD)
+			add_compile_options("-msse" "-msse2" "-msse4.1" "-mfxsr")
+		else()
+			# Can't use march=native on Apple Silicon.
+			if(NOT APPLE OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+				add_compile_options("-march=native")
+			endif()
+		endif()
 	endif()
 else()
-	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
+	message(FATAL_ERROR "Unsupported architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()
-string(REPLACE " " ";" ARCH_FLAG_LIST "${ARCH_FLAG}")
-add_compile_options("${ARCH_FLAG_LIST}")
-
-#-------------------------------------------------------------------------------
-# Set some default compiler flags
-#-------------------------------------------------------------------------------
-option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
-option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
 # Require C++20.
 set(CMAKE_CXX_STANDARD 20)
@@ -183,7 +157,7 @@ endif()
 
 # Enable debug information in release builds for Linux.
 # Makes the backtrace actually meaningful.
-if(UNIX AND NOT APPLE)
+if(LINUX)
 	add_compile_options($<$<CONFIG:Release>:-g1>)
 endif()
 

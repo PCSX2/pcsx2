@@ -84,5 +84,5 @@ namespace QtUtils
 	};
 
 	/// Converts an abstract item model to a CSV string.
-	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role = Qt::DisplayRole);
+	QString AbstractItemModelToCSV(QAbstractItemModel* model, int role = Qt::DisplayRole, bool useQuotes = false);
 } // namespace QtUtils

@@ -125,7 +125,7 @@ std::string GSState::GetDrawDumpPath(const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
-	const std::string& base = GSConfig.UseHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
+	const std::string& base = GSIsHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
 	std::string ret(Path::Combine(base, StringUtil::StdStringFromFormatV(format, ap)));
 	va_end(ap);
 	return ret;
@@ -165,7 +165,7 @@ void GSState::Reset(bool hardware_reset)
 		// bounds value. This means that draws get skipped until the game sets a proper scissor up, which is definitely going to happen
 		// after reset (otherwise it'd only ever render 1x1).
 		//
-		if (!hardware_reset && GSConfig.UseHardwareRenderer())
+		if (!hardware_reset && GSIsHardwareRenderer())
 			m_env.CTXT[i].scissor.cull = GSVector4i::xffffffff();
 
 		m_env.CTXT[i].offset.fb = m_mem.GetOffset(m_env.CTXT[i].FRAME.Block(), m_env.CTXT[i].FRAME.FBW, m_env.CTXT[i].FRAME.PSM);
@@ -594,7 +594,7 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 	GSVector4i zf = xy.zwzw();
 
 	xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-	zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
+	zf = zf.srl32<4>() & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
 
 	m_v.m[1] = xy.upl32(zf);
 
@@ -654,7 +654,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 		GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
 		GSVector4i zf = GSVector4i::loadl(&r[2].U64[1]);
 		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-		zf = zf.srl32(4) & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
+		zf = zf.srl32<4>() & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
@@ -784,7 +784,7 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 
 	const GSVector4i xyzf = GSVector4i::loadl(&r->XYZF);
 	const GSVector4i xyz = xyzf & (GSVector4i::xffffffff().upl32(GSVector4i::x00ffffff()));
-	const GSVector4i uvf = GSVector4i::load((int)m_v.UV).upl32(xyzf.srl32(24).srl<4>());
+	const GSVector4i uvf = GSVector4i::load((int)m_v.UV).upl32(xyzf.srl32<24>().srl<4>());
 
 	m_v.m[1] = xyz.upl64(uvf);
 
@@ -3363,7 +3363,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	// integer coordinates for culling at native resolution, and the fixed point for all others. The XY offset has to be
 	// applied, then we split it into the fixed/integer portions.
 	const GSVector4i xy_ofs = new_v1.xxxx().u16to32().sub32(m_xyof);
-	const GSVector4i xy = xy_ofs.blend32<12>(xy_ofs.sra32(4));
+	const GSVector4i xy = xy_ofs.blend32<12>(xy_ofs.sra32<4>());
 	m_vertex.xy[xy_tail & 3] = xy;
 
 	// Backup head for triangle fans so we can read it later, otherwise it'll get lost after the 4th vertex.
@@ -4421,14 +4421,14 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 		if (combined_rect.z >= 2048)
 		{
 			const int high_x = (PCRTCDisplays[0].framebufferRect.x > PCRTCDisplays[1].framebufferRect.x) ? PCRTCDisplays[0].framebufferRect.x : PCRTCDisplays[1].framebufferRect.x;
-			combined_rect.z -= GSConfig.UseHardwareRenderer() ? 2048 : high_x;
+			combined_rect.z -= GSIsHardwareRenderer() ? 2048 : high_x;
 			combined_rect.x = 0;
 		}
 
 		if (combined_rect.w >= 2048)
 		{
 			const int high_y = (PCRTCDisplays[0].framebufferRect.y > PCRTCDisplays[1].framebufferRect.y) ? PCRTCDisplays[0].framebufferRect.y : PCRTCDisplays[1].framebufferRect.y;
-			combined_rect.w -= GSConfig.UseHardwareRenderer() ? 2048 : high_y;
+			combined_rect.w -= GSIsHardwareRenderer() ? 2048 : high_y;
 			combined_rect.y = 0;
 		}
 
@@ -4442,7 +4442,7 @@ GSVector2i GSState::GSPCRTCRegs::GetFramebufferSize(int display)
 		}
 
 		// Hardware mode needs a wider framebuffer as it can't offset the read.
-		if (GSConfig.UseHardwareRenderer())
+		if (GSIsHardwareRenderer())
 		{
 			combined_rect.z += std::max(PCRTCDisplays[0].framebufferOffsets.x, PCRTCDisplays[1].framebufferOffsets.x);
 			combined_rect.w += std::max(PCRTCDisplays[0].framebufferOffsets.y, PCRTCDisplays[1].framebufferOffsets.y);
@@ -4612,7 +4612,7 @@ void GSState::GSPCRTCRegs::RemoveFramebufferOffset(int display)
 	if (display >= 0)
 	{
 		// Hardware needs nothing but handling for wrapped framebuffers.
-		if (GSConfig.UseHardwareRenderer())
+		if (GSIsHardwareRenderer())
 		{
 			if (PCRTCDisplays[display].framebufferRect.z >= 2048)
 			{
@@ -4648,7 +4648,7 @@ void GSState::GSPCRTCRegs::RemoveFramebufferOffset(int display)
 		// Software Mode Note:
 		// This code is to read the framebuffer nicely block aligned in software, then leave the remaining offset in to the block.
 		// In hardware mode this doesn't happen, it reads the whole framebuffer, so we need to keep the offset.
-		if (!GSConfig.UseHardwareRenderer())
+		if (!GSIsHardwareRenderer())
 		{
 			const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[PCRTCDisplays[1].PSM];
 

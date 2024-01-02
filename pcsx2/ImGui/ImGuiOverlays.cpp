@@ -355,7 +355,7 @@ void ImGuiManager::DrawSettingsOverlay()
 			EmuConfig.EnableNoInterlacingPatches ? "N" : "");
 	}
 
-	if (GSConfig.UseHardwareRenderer())
+	if (GSIsHardwareRenderer())
 	{
 		if ((GSConfig.UpscaleMultiplier - std::floor(GSConfig.UpscaleMultiplier)) > 0.01)
 			APPEND("IR={:.2f} ", static_cast<float>(GSConfig.UpscaleMultiplier));

@@ -8,7 +8,10 @@ if (WIN32)
 	# We bundle everything on Windows
 	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libpng EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/libwebp EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/lz4 EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/winpixeventruntime EXCLUDE_FROM_ALL)
 	set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/ffmpeg/include")
@@ -47,9 +50,9 @@ else()
 	endif()
 
 	find_package(ZLIB REQUIRED)
-
-	## Use pcsx2 package to find module
-	include(FindLibc)
+	find_package(Zstd REQUIRED)
+	find_package(LZ4 REQUIRED)
+	find_package(WebP REQUIRED)
 
 	## Use CheckLib package to find module
 	include(CheckLib)
@@ -59,17 +62,9 @@ else()
 			check_lib(EGL EGL EGL/egl.h)
 		endif()
 
-		if(Linux)
+		if(LINUX)
 			check_lib(AIO aio libaio.h)
-			# There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
-			# When cross compiling, pkg-config will be skipped so we have to look for
-			# udev (it'll automatically be prefixed with lib). But when not cross
-			# compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
-			if(CMAKE_CROSSCOMPILING)
-				check_lib(LIBUDEV udev libudev.h)
-			else()
-				check_lib(LIBUDEV libudev libudev.h)
-			endif()
+			check_lib(LIBUDEV libudev libudev.h)
 		endif()
 
 		if(X11_API)
@@ -95,7 +90,7 @@ endif(WIN32)
 find_package(Threads REQUIRED)
 
 # Also need SDL2.
-find_package(SDL2 2.28.4 REQUIRED)
+find_package(SDL2 2.28.5 REQUIRED)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -105,20 +100,7 @@ if(ENABLE_TESTS)
 	endif()
 endif()
 
-if(GCC_VERSION VERSION_GREATER_EQUAL "9.0" AND GCC_VERSION VERSION_LESS "9.2")
-	message(WARNING "
-	It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
-	as there is a bug known to cause the compiler to segfault while compiling. See patch
-	https://gitweb.gentoo.org/proj/gcc-patches.git/commit/?id=275ab714637a64672c6630cfd744af2c70957d5a
-	Even with that patch, compiling with LTO may still segfault. Use at your own risk!
-	This text being in a compile log in an open issue may cause it to be closed.")
-endif()
-
-# Prevent fmt from being built with exceptions, or being thrown at call sites.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
-
-add_subdirectory(3rdparty/des)
-add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/des EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
@@ -134,18 +116,15 @@ add_library(fast_float INTERFACE)
 target_include_directories(fast_float INTERFACE 3rdparty/rapidyaml/rapidyaml/ext/c4core/src/c4/ext/fast_float/include)
 
 add_subdirectory(3rdparty/jpgd EXCLUDE_FROM_ALL)
-add_subdirectory(3rdparty/libwebp EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/cpuinfo EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(cpuinfo)
 add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
-add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
-add_subdirectory(3rdparty/lz4 EXCLUDE_FROM_ALL)
 
 if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
@@ -169,6 +148,10 @@ endif()
 
 # Demangler for the debugger
 add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
+
+# Prevent fmt from being built with exceptions, or being thrown at call sites.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
+add_subdirectory(3rdparty/fmt/fmt EXCLUDE_FROM_ALL)
 
 # Deliberately at the end. We don't want to set the flag on third-party projects.
 if(MSVC)

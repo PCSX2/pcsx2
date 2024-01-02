@@ -128,17 +128,23 @@ void GSTextureMTL::GenerateMipmap()
 	}
 }}
 
-void GSTextureMTL::Swap(GSTexture* other)
-{
-	GSTexture::Swap(other);
+#ifdef PCSX2_DEVBUILD
 
-	GSTextureMTL* mtex = static_cast<GSTextureMTL*>(other);
-	pxAssert(m_dev == mtex->m_dev);
-#define SWAP(x) std::swap(x, mtex->x)
-	SWAP(m_texture);
-	SWAP(m_has_mipmaps);
-#undef SWAP
+void GSTextureMTL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	@autoreleasepool {
+		NSString* label = [[[NSString alloc] autorelease]
+			initWithBytes:name.data()
+			length:static_cast<NSUInteger>(name.length())
+			encoding:NSUTF8StringEncoding];
+    [m_texture setLabel:label];
+  }
 }
+
+#endif
 
 GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuffer>> buffer,
 	u32 width, u32 height, GSTexture::Format format)
@@ -152,7 +158,7 @@ GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuff
 GSDownloadTextureMTL::~GSDownloadTextureMTL() = default;
 
 std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* dev, u32 width, u32 height, GSTexture::Format format)
-{
+{ @autoreleasepool {
 	const u32 buffer_size = GetBufferSize(width, height, format, PITCH_ALIGNMENT);
 
 	MRCOwned<id<MTLBuffer>> buffer = MRCTransfer([dev->m_dev.dev newBufferWithLength:buffer_size options:MTLResourceStorageModeShared]);
@@ -163,7 +169,7 @@ std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* 
 	}
 
 	return std::unique_ptr<GSDownloadTextureMTL>(new GSDownloadTextureMTL(dev, buffer, width, height, format));
-}
+}}
 
 void GSDownloadTextureMTL::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
@@ -254,5 +260,23 @@ void GSDownloadTextureMTL::Flush()
 
 	m_copy_cmdbuffer = nil;
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTextureMTL::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	@autoreleasepool {
+		NSString* label = [[[NSString alloc] autorelease]
+			initWithBytes:name.data()
+			length:static_cast<NSUInteger>(name.length())
+			encoding:NSUTF8StringEncoding];
+    [m_buffer setLabel:label];
+  }
+}
+
+#endif
 
 #endif

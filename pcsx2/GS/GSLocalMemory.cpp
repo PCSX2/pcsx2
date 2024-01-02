@@ -631,8 +631,6 @@ void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, u8* ds
 
 //
 
-#include "Renderers/SW/GSTextureSW.h"
-
 void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int w, int h)
 {
 	int pitch = w * 4;

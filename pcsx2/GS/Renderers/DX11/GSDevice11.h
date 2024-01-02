@@ -7,7 +7,10 @@
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/DX11/D3D11ShaderCache.h"
+
+#include <string_view>
 #include <unordered_map>
+
 #include <wil/com.h>
 #include <dxgi1_5.h>
 #include <d3d11_1.h>
@@ -264,6 +267,8 @@ private:
 public:
 	GSDevice11();
 	~GSDevice11() override;
+
+	static void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name);
 
 	__fi static GSDevice11* GetInstance() { return static_cast<GSDevice11*>(g_gs_device.get()); }
 	__fi ID3D11Device1* GetD3DDevice() const { return m_dev.get(); }

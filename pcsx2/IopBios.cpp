@@ -403,9 +403,11 @@ namespace R3000A
 			std::string relativePath = full_path.substr(full_path.find(':') + 1);
 			std::string path = host_path(relativePath, true);
 
-			FileSystem::FindResultsArray results;
-			if (!FileSystem::FindFiles(path.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_HIDDEN_FILES, &results))
+			if (!FileSystem::DirectoryExists(path.c_str()))
 				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
+
+			FileSystem::FindResultsArray results;
+			FileSystem::FindFiles(path.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_HIDDEN_FILES, &results);
 
 			*dir = new HostDir(std::move(results), std::move(path));
 			if (!*dir)

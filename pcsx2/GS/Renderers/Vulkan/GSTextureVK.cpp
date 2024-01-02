@@ -165,28 +165,6 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 		return {};
 	}
 
-	switch (type)
-	{
-		case Type::Texture:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d texture", width, height);
-			break;
-
-		case Type::RenderTarget:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d render target", width, height);
-			break;
-
-		case Type::DepthStencil:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d depth stencil", width, height);
-			break;
-
-		case Type::RWTexture:
-			Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), image, "%dx%d RW texture", width, height);
-			break;
-
-		default:
-			break;
-	}
-
 	return std::unique_ptr<GSTextureVK>(
 		new GSTextureVK(type, format, width, height, levels, image, allocation, view, vk_format));
 }
@@ -517,20 +495,18 @@ void GSTextureVK::GenerateMipmap()
 	}
 }
 
-void GSTextureVK::Swap(GSTexture* tex)
+#ifdef PCSX2_DEVBUILD
+
+void GSTextureVK::SetDebugName(std::string_view name)
 {
-	GSTexture::Swap(tex);
-	std::swap(m_image, static_cast<GSTextureVK*>(tex)->m_image);
-	std::swap(m_allocation, static_cast<GSTextureVK*>(tex)->m_allocation);
-	std::swap(m_view, static_cast<GSTextureVK*>(tex)->m_view);
-	std::swap(m_vk_format, static_cast<GSTextureVK*>(tex)->m_vk_format);
-	std::swap(m_layout, static_cast<GSTextureVK*>(tex)->m_layout);
-	std::swap(m_use_fence_counter, static_cast<GSTextureVK*>(tex)->m_use_fence_counter);
-	std::swap(m_clear_value, static_cast<GSTextureVK*>(tex)->m_clear_value);
-	std::swap(m_map_area, static_cast<GSTextureVK*>(tex)->m_map_area);
-	std::swap(m_map_level, static_cast<GSTextureVK*>(tex)->m_map_level);
-	std::swap(m_framebuffers, static_cast<GSTextureVK*>(tex)->m_framebuffers);
+	if (name.empty())
+		return;
+
+	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_image, "%.*s", static_cast<int>(name.size()), name.data());
+	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_view, "%.*s", static_cast<int>(name.size()), name.data());
 }
+
+#endif
 
 void GSTextureVK::CommitClear()
 {
@@ -952,3 +928,15 @@ void GSDownloadTextureVK::Flush()
 	else
 		GSDeviceVK::GetInstance()->WaitForFenceCounter(m_copy_fence_counter);
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTextureVK::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_buffer, "%.*s", static_cast<int>(name.size()), name.data());
+}
+
+#endif

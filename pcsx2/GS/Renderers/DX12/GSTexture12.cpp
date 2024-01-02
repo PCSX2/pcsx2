@@ -190,15 +190,8 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 	switch (type)
 	{
-		case Type::Texture:
-		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d texture", width, height);
-		}
-		break;
-
 		case Type::RenderTarget:
 		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d render target", width, height);
 			write_descriptor_type = WriteDescriptorType::RTV;
 			if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
 			{
@@ -210,19 +203,12 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int w
 
 		case Type::DepthStencil:
 		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d depth stencil", width, height);
 			write_descriptor_type = WriteDescriptorType::DSV;
 			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor))
 			{
 				dev->GetDSVHeapManager().Free(&srv_descriptor);
 				return {};
 			}
-		}
-		break;
-
-		case Type::RWTexture:
-		{
-			D3D12::SetObjectNameFormatted(resource.get(), "%dx%d RW texture", width, height);
 		}
 		break;
 
@@ -601,21 +587,17 @@ void GSTexture12::GenerateMipmap()
 	SetUseFenceCounter(GSDevice12::GetInstance()->GetCurrentFenceValue());
 }
 
-void GSTexture12::Swap(GSTexture* tex)
+#ifdef PCSX2_DEVBUILD
+
+void GSTexture12::SetDebugName(std::string_view name)
 {
-	GSTexture::Swap(tex);
-	std::swap(m_resource, static_cast<GSTexture12*>(tex)->m_resource);
-	std::swap(m_allocation, static_cast<GSTexture12*>(tex)->m_allocation);
-	std::swap(m_srv_descriptor, static_cast<GSTexture12*>(tex)->m_srv_descriptor);
-	std::swap(m_write_descriptor, static_cast<GSTexture12*>(tex)->m_write_descriptor);
-	std::swap(m_write_descriptor_type, static_cast<GSTexture12*>(tex)->m_write_descriptor_type);
-	std::swap(m_dxgi_format, static_cast<GSTexture12*>(tex)->m_dxgi_format);
-	std::swap(m_resource_state, static_cast<GSTexture12*>(tex)->m_resource_state);
-	std::swap(m_use_fence_counter, static_cast<GSTexture12*>(tex)->m_use_fence_counter);
-	std::swap(m_clear_value, static_cast<GSTexture12*>(tex)->m_clear_value);
-	std::swap(m_map_level, static_cast<GSTexture12*>(tex)->m_map_level);
-	std::swap(m_map_area, static_cast<GSTexture12*>(tex)->m_map_area);
+	if (name.empty())
+		return;
+
+	D3D12::SetObjectName(m_resource.get(), name);
 }
+
+#endif
 
 void GSTexture12::TransitionToState(D3D12_RESOURCE_STATES state)
 {
@@ -816,3 +798,15 @@ void GSDownloadTexture12::Flush()
 	else
 		dev->WaitForFence(m_copy_fence_value, GSConfig.HWSpinGPUForReadbacks);
 }
+
+#ifdef PCSX2_DEVBUILD
+
+void GSDownloadTexture12::SetDebugName(std::string_view name)
+{
+	if (name.empty())
+		return;
+
+	D3D12::SetObjectName(m_buffer.get(), name);
+}
+
+#endif

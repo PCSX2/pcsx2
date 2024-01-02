@@ -97,7 +97,7 @@ void GSDrawingContext::UpdateScissor()
 	scissor.in = rscissor + GSVector4i::cxpr(0, 0, 1, 1);
 
 	// Fixed-point scissor min/max, used for rejecting primitives which are entirely outside.
-	scissor.cull = rscissor.sll32(4);
+	scissor.cull = rscissor.sll32<4>();
 
 	// Offset applied to vertices for culling, zw is for native resolution culling
 	// We want to round subpixels down, because at least one pixel gets filled per scanline.

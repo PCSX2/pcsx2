@@ -354,20 +354,12 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(
 	return index;
 }
 
-#ifdef _DEBUG
+#ifdef PCSX2_DEVBUILD
 #include "common/StringUtil.h"
 
-void D3D12::SetObjectName(ID3D12Object* object, const char* name)
+void D3D12::SetObjectName(ID3D12Object* object, std::string_view name)
 {
 	object->SetName(StringUtil::UTF8StringToWideString(name).c_str());
-}
-
-void D3D12::SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
-{
-	std::va_list ap;
-	va_start(ap, format);
-	SetObjectName(object, StringUtil::StdStringFromFormatV(format, ap).c_str());
-	va_end(ap);
 }
 
 #endif

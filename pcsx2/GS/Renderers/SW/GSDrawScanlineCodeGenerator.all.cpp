@@ -17,7 +17,9 @@ using namespace Xbyak;
 
 #define _rip_const(cptr) ptr[rip + ((char*)(cptr))]
 #define _rip_local(field) ptr[_m_local + offsetof(GSScanlineLocalData, field)]
+#define _rip_local_offset(field, offset) ptr[_m_local + offsetof(GSScanlineLocalData, field) + (offset)]
 #define _rip_global(field) ptr[_m_local__gd + offsetof(GSScanlineGlobalData, field)]
+#define _rip_global_offset(field, offset) ptr[_m_local__gd + offsetof(GSScanlineGlobalData, field) + (offset)]
 
 /// On AVX, does a v-prefixed separate destination operation
 /// On SSE, moves src1 into dst using movdqa, then does the operation
@@ -3146,7 +3148,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImpl(
 void GSDrawScanlineCodeGenerator2::ReadTexelImplLoadTexLOD(int lod, int mip_offset)
 {
 	AddressReg texIn = _m_local__gd__tex;
-	Address lod_addr = m_sel.lcm ? _rip_global(lod.i.U32[lod]) : _rip_local(temp.lod.i.U32[lod]);
+	Address lod_addr = m_sel.lcm ? _rip_global_offset(lod.i.U32[0], sizeof(u32) * lod) : _rip_local_offset(temp.lod.i.U32[0], sizeof(u32) * lod);
 	mov(ebx, lod_addr);
 	mov(rbx, ptr[texIn + rbx * wordsize + mip_offset]);
 }

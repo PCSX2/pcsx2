@@ -36,11 +36,14 @@ public:
 
 	void* GetNativeHandle() const override;
 
-	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
-	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
-	void Unmap() final;
-	void GenerateMipmap() final;
-	void Swap(GSTexture* tex) final;
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) override;
+	void Unmap() override;
+	void GenerateMipmap() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 	bool IsIntegerFormat() const
 	{
@@ -67,6 +70,10 @@ public:
 	void Unmap() override;
 
 	void Flush() override;
+
+#ifdef PCSX2_DEVBUILD
+	void SetDebugName(std::string_view name) override;
+#endif
 
 private:
 	GSDownloadTextureOGL(u32 width, u32 height, GSTexture::Format format);

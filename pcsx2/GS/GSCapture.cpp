@@ -16,6 +16,7 @@
 #include "common/BitUtils.h"
 #include "common/DynamicLibrary.h"
 #include "common/Path.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 
@@ -838,6 +839,10 @@ bool GSCapture::DeliverVideoFrame(GSTexture* stex)
 			Console.Error("GSCapture: Failed to create %x%d download texture", stex->GetWidth(), stex->GetHeight());
 			return false;
 		}
+
+#ifdef PCSX2_DEVBUILD
+		pf.tex->SetDebugName(TinyString::from_fmt("GSCapture {}x{} Download Texture", stex->GetWidth(), stex->GetHeight()));
+#endif
 	}
 
 	const GSVector4i rc(0, 0, stex->GetWidth(), stex->GetHeight());

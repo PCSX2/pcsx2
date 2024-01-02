@@ -5,10 +5,17 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/GSExtra.h"
+#include "Host.h"
+
+#ifdef _M_X86
+#include "GS/Renderers/Vulkan/GSDeviceVK.h"
+#endif
 
 #include "common/Console.h"
 #include "common/StringUtil.h"
 #include "common/Path.h"
+
+#include "IconsFontAwesome5.h"
 
 #include <array>
 #include <d3d11.h>
@@ -310,6 +317,8 @@ std::string D3D::GetDriverVersionFromLUID(const LUID& luid)
 	return ret;
 }
 
+#ifdef _M_X86
+
 D3D::VendorID D3D::GetVendorID(IDXGIAdapter1* adapter)
 {
 	DXGI_ADAPTER_DESC1 desc;
@@ -371,6 +380,18 @@ GSRendererType D3D::GetPreferredRenderer()
 			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
 		return device;
 	};
+	const auto check_vulkan_supported = []() {
+		std::vector<std::string> vk_adapter_names;
+		GSDeviceVK::GetAdaptersAndFullscreenModes(&vk_adapter_names, nullptr);
+		if (!vk_adapter_names.empty())
+			return true;
+
+		Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV, TRANSLATE_STR("GS",
+			"The Vulkan renderer was automatically selected, but no compatible devices were found.\n"
+			"       You should update all graphics drivers in your system, including any integrated GPUs\n"
+			"       to use the Vulkan renderer."), Host::OSD_WARNING_DURATION);
+		return false;
+	};
 
 	switch (GetVendorID(adapter.get()))
 	{
@@ -380,7 +401,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
 			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
-				return GSRendererType::VK;
+				return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::OGL;
 			else if (feature_level == D3D_FEATURE_LEVEL_11_0)
 				return GSRendererType::OGL;
 			else
@@ -393,7 +414,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
 			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
-				return GSRendererType::VK;
+				return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX11;
 			else
 				return GSRendererType::DX11;
 		}
@@ -414,7 +435,7 @@ GSRendererType D3D::GetPreferredRenderer()
 					opts.SamplerFeedbackTier >= D3D12_SAMPLER_FEEDBACK_TIER_0_9)
 				{
 					Console.WriteLn("Sampler feedback tier 0.9 found for Intel GPU, defaulting to Vulkan.");
-					return GSRendererType::VK;
+					return check_vulkan_supported() ? GSRendererType::VK : GSRendererType::DX11;
 				}
 			}
 
@@ -430,6 +451,8 @@ GSRendererType D3D::GetPreferredRenderer()
 		}
 	}
 }
+
+#endif // _M_X86
 
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
 	const std::string_view& code, const D3D_SHADER_MACRO* macros /* = nullptr */,

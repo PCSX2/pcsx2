@@ -28,7 +28,7 @@ add_library(pcsx2-zstd
 	zstd/lib/decompress/zstd_decompress.c
 )
 
-if(NOT MSVC AND ${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
+if(_M_X86 AND (NOT MSVC OR USE_CLANG_CL))
 	target_sources(pcsx2-zstd PRIVATE zstd/lib/decompress/huf_decompress_amd64.S)
 endif()
 

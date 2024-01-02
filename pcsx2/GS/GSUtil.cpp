@@ -195,28 +195,35 @@ u32 GSUtil::GetChannelMask(u32 spsm, u32 fbmsk)
 
 GSRendererType GSUtil::GetPreferredRenderer()
 {
+	// Memorize the value, so we don't keep re-querying it.
+	static GSRendererType preferred_renderer = GSRendererType::Auto;
+	if (preferred_renderer == GSRendererType::Auto)
+	{
 #if defined(__APPLE__)
-	// Mac: Prefer Metal hardware.
-	return GSRendererType::Metal;
+		// Mac: Prefer Metal hardware.
+		preferred_renderer = GSRendererType::Metal;
 #elif defined(_WIN32)
-	// Use D3D device info to select renderer.
-	return D3D::GetPreferredRenderer();
+		// Use D3D device info to select renderer.
+		preferred_renderer = D3D::GetPreferredRenderer();
 #else
-	// Linux: Prefer Vulkan if the driver isn't buggy.
+		// Linux: Prefer Vulkan if the driver isn't buggy.
 #if defined(ENABLE_VULKAN)
-	if (GSDeviceVK::IsSuitableDefaultRenderer())
-		return GSRendererType::VK;
+		if (GSDeviceVK::IsSuitableDefaultRenderer())
+			preferred_renderer = GSRendererType::VK;
 #endif
 
-	// Otherwise, whatever is available.
+			// Otherwise, whatever is available.
 #if defined(ENABLE_OPENGL)
-	return GSRendererType::OGL;
+		preferred_renderer = GSRendererType::OGL;
 #elif defined(ENABLE_VULKAN)
-	return GSRendererType::VK;
+		preferred_renderer = GSRendererType::VK;
 #else
-	return GSRendererType::SW;
+		preferred_renderer = GSRendererType::SW;
 #endif
 #endif
+	}
+
+	return preferred_renderer;
 }
 
 const char* psm_str(int psm)

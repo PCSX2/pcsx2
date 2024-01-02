@@ -11,8 +11,7 @@ MULTI_ISA_UNSHARED_IMPL;
 using namespace Xbyak;
 
 #define _rip_local(field) (ptr[_m_local + offsetof(GSScanlineLocalData, field)])
-
-#define _64_m_local _64_t0
+#define _rip_local_di(i, field) (ptr[_m_local + offsetof(GSScanlineLocalData, d[0].field) + (sizeof(GSScanlineLocalData::skip) * (i))])
 
 /// On AVX, does a v-prefixed separate destination operation
 /// On SSE, moves src1 into dst using movdqa, then does the operation
@@ -171,7 +170,7 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 				cvttps2dq(xmm2, xmm2);
 				pshuflw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 				pshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
-				movdqa(_rip_local(d[i].f), xmm2);
+				movdqa(_rip_local_di(i, f), xmm2);
 			}
 		}
 
@@ -194,7 +193,7 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 				// m_local.d[i].z1 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 3]));
 
 				THREEARG(mulps, xmm1, xmm0, XYm(4 + i));
-				movdqa(_rip_local(d[i].z), xmm1);
+				movdqa(_rip_local_di(i, z), xmm1);
 			}
 		}
 	}
@@ -258,7 +257,7 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 				cvttps2dq(ymm0, ymm0);
 				pshuflw(ymm0, ymm0, _MM_SHUFFLE(2, 2, 0, 0));
 				pshufhw(ymm0, ymm0, _MM_SHUFFLE(2, 2, 0, 0));
-				movdqa(_rip_local(d[i].f), ymm0);
+				movdqa(_rip_local_di(i, f), ymm0);
 			}
 		}
 
@@ -283,7 +282,7 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 					vmulps(ymm1, Ymm(4 + i), ymm0);
 				else
 					vmulps(ymm1, ymm0, ptr[g_const.m_shift_256b[i + 1]]);
-				movaps(_rip_local(d[i].z), ymm1);
+				movaps(_rip_local_di(i, z), ymm1);
 			}
 		}
 	}
@@ -367,8 +366,8 @@ void GSSetupPrimCodeGenerator2::Texture()
 
 				switch (j)
 				{
-					case 0: movdqa(_rip_local(d[i].s), xym2); break;
-					case 1: movdqa(_rip_local(d[i].t), xym2); break;
+					case 0: movdqa(_rip_local_di(i, s), xym2); break;
+					case 1: movdqa(_rip_local_di(i, t), xym2); break;
 				}
 			}
 			else
@@ -377,9 +376,9 @@ void GSSetupPrimCodeGenerator2::Texture()
 
 				switch (j)
 				{
-					case 0: movaps(_rip_local(d[i].s), xym2); break;
-					case 1: movaps(_rip_local(d[i].t), xym2); break;
-					case 2: movaps(_rip_local(d[i].q), xym2); break;
+					case 0: movaps(_rip_local_di(i, s), xym2); break;
+					case 1: movaps(_rip_local_di(i, t), xym2); break;
+					case 2: movaps(_rip_local_di(i, q), xym2); break;
 				}
 			}
 		}
@@ -441,7 +440,7 @@ void GSSetupPrimCodeGenerator2::Color()
 			// m_local.d[i].rb = r.upl16(b);
 
 			punpcklwd(xym0, xym1);
-			movdqa(_rip_local(d[i].rb), xym0);
+			movdqa(_rip_local_di(i, rb), xym0);
 		}
 
 		// GSVector4 c = dscan.c;
@@ -477,7 +476,7 @@ void GSSetupPrimCodeGenerator2::Color()
 			// m_local.d[i].ga = g.upl16(a);
 
 			punpcklwd(xym0, xym1);
-			movdqa(_rip_local(d[i].ga), xym0);
+			movdqa(_rip_local_di(i, ga), xym0);
 		}
 	}
 	else

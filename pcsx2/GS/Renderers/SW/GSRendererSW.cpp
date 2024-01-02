@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/SW/GSRendererSW.h"
-#include "GS/Renderers/SW/GSTextureSW.h"
 #include "GS/GSGL.h"
+#include "GS/GSPng.h"
 
 #include "common/StringUtil.h"
 
@@ -1519,17 +1519,17 @@ void GSRendererSW::SharedData::ReleasePages()
 
 void GSRendererSW::SharedData::SetSource(GSTextureCacheSW::Texture* t, const GSVector4i& r, int level)
 {
-	pxAssert(m_tex[level].t == NULL);
+	pxAssert(!m_tex[level].t);
 
 	m_tex[level].t = t;
 	m_tex[level].r = r;
 
-	m_tex[level + 1].t = NULL;
+	m_tex[level + 1].t = nullptr;
 }
 
 void GSRendererSW::SharedData::UpdateSource()
 {
-	for (size_t i = 0; m_tex[i].t != NULL; i++)
+	for (size_t i = 0; m_tex[i].t; i++)
 	{
 		if (m_tex[i].t->Update(m_tex[i].r))
 		{
@@ -1547,13 +1547,13 @@ void GSRendererSW::SharedData::UpdateSource()
 
 	if (GSConfig.DumpGSData)
 	{
-		u64 frame = g_perfmon.GetFrame();
+		const u64 frame = g_perfmon.GetFrame();
 
 		std::string s;
 
 		if (GSConfig.SaveTexture && g_gs_renderer->s_n >= GSConfig.SaveN)
 		{
-			for (size_t i = 0; m_tex[i].t != NULL; i++)
+			for (size_t i = 0; m_tex[i].t; i++)
 			{
 				const GIFRegTEX0& TEX0 = g_gs_renderer->GetTex0Layer(i);
 
@@ -1562,17 +1562,10 @@ void GSRendererSW::SharedData::UpdateSource()
 				m_tex[i].t->Save(s);
 			}
 
-			if (global.clut != NULL)
+			if (global.clut)
 			{
-				GSTextureSW* t = new GSTextureSW(GSTexture::Type::Invalid, 256, 1);
-
-				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(u32) * 256);
-
 				s = GetDrawDumpPath("%05d_f%lld_itexp_%05x_%s.bmp", g_gs_renderer->s_n, frame, (int)g_gs_renderer->m_context->TEX0.CBP, psm_str(g_gs_renderer->m_context->TEX0.CPSM));
-
-				t->Save(s);
-
-				delete t;
+				GSPng::Save(IsDevBuild ? GSPng::RGB_A_PNG : GSPng::RGB_PNG, s, reinterpret_cast<const u8*>(global.clut), 256, 1, sizeof(u32) * 256, GSConfig.PNGCompressionLevel, false);
 			}
 		}
 	}
