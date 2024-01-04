@@ -478,23 +478,6 @@ bool GSHwHack::GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_KnightsOfTheTemple2(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (RTPSM == PSMT8H && RFBMSK == 0)
-		{
-			skip = 1; // Ghosting
-		}
-		else if (RTPSM == 0x00000 && PSMCT24 && RTME && (RFBP == 0x3400 || RFBP == 0x3a00))
-		{
-			skip = 1; // Light source
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1473,7 +1456,6 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 #define CRC_F(name) { #name, &GSHwHack::name }
 
 const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
-	CRC_F(GSC_KnightsOfTheTemple2),
 	CRC_F(GSC_Kunoichi),
 	CRC_F(GSC_Manhunt2),
 	CRC_F(GSC_MidnightClub3),
