@@ -89,8 +89,6 @@ static const TraceLogDescriptor
 
 	TLD_deci2 = {"DECI2", "DECI&2 Console", "Shows DECI2 debugging logs (EE processor)."},
 
-	TLD_sysoutConsole = {"SYSout", "System Out", "Shows strings printed to the system output stream."},
-
 	TLD_Pgif = {"PGIFout", "&PGIF Console", "Shows output from pgif the emulated ps1 gpu"},
 
 	TLD_recordingConsole = {"Input Recording", "Input Recording Console", "Shows recording related logs and information."},
