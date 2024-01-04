@@ -21515,8 +21515,6 @@ SLES-53645:
   name: "Knights of the Temple II"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_KnightsOfTheTemple2"
 SLES-53646:
   name: "World Racing 2"
   region: "PAL-M5"
