@@ -18328,6 +18328,11 @@ SLES-52563:
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes bloom.
+    autoFlush: 1 # Fixes ghosting.
+    textureInsideRT: 1 # Required for offset RTs/textures for post-processing.
+    roundSprite: 2 # Fixes misaligned post-processing.
 SLES-52568:
   name: "Crash Twinsanity"
   region: "PAL-M5"
@@ -60461,6 +60466,11 @@ SLUS-20992:
   name: "Catwoman"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes bloom.
+    autoFlush: 1 # Fixes ghosting.
+    textureInsideRT: 1 # Required for offset RTs/textures for post-processing.
+    roundSprite: 2 # Fixes misaligned post-processing.
 SLUS-20993:
   name: "Ghosthunter"
   region: "NTSC-U"
