@@ -74,6 +74,7 @@ jobs:
         shell: bash
         env:
           OS: linux
+          BUILD_SYSTEM: appimage
           ARCH: ${{ inputs.platform }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
