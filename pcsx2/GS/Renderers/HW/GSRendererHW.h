@@ -217,6 +217,9 @@ public:
 	/// Returns true if the specified texture address matches the frame or Z buffer.
 	bool IsTBPFrameOrZ(u32 tbp) const;
 
+	/// Offsets the current draw, used for RT-in-RT. Offsets are relative to the *current* FBP, not the new FBP.
+	void OffsetDraw(s32 fbp_offset, s32 zbp_offset, s32 xoffset, s32 yoffset);
+
 	/// Replaces vertices with the specified fullscreen quad.
 	void ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, const GSVector4i& unscaled_uv_rect,
 		const GSVector2i& unscaled_size, const GSVector4i& scissor);
