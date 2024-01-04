@@ -1110,8 +1110,8 @@ void SYSCALL()
 						}
 					}
 				}
-
-				sysConLog(fmt,
+				char buf[2048];
+				snprintf(buf, sizeof(buf), fmt,
 					regs[0],
 					regs[1],
 					regs[2],
@@ -1120,6 +1120,8 @@ void SYSCALL()
 					regs[5],
 					regs[6]
 				);
+
+				eeConLog(buf);
 			}
 			break;
 		}

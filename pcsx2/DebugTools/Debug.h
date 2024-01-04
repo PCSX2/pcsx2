@@ -304,7 +304,6 @@ struct SysConsoleLogPack
 {
 	ConsoleLogSource		ELF;
 	ConsoleLogSource		eeRecPerf;
-	ConsoleLogSource		sysoutConsole;
 	ConsoleLogSource		pgifLog;
 
 	ConsoleLogFromVM<Color_Cyan>		eeConsole;
@@ -374,7 +373,6 @@ extern void __Log( const char* fmt, ... );
 #define eeConLog		SysConsole.eeConsole.IsActive()		&& SysConsole.eeConsole.Write
 #define eeDeci2Log		SysConsole.deci2.IsActive()			&& SysConsole.deci2.Write
 #define iopConLog		SysConsole.iopConsole.IsActive()	&& SysConsole.iopConsole.Write
-#define sysConLog		SysConsole.sysoutConsole.IsActive()	&& SysConsole.sysoutConsole.Write
 #define pgifConLog		SysConsole.pgifLog.IsActive()		&& SysConsole.pgifLog.Write
 #define recordingConLog	SysConsole.recordingConsole.IsActive()	&& SysConsole.recordingConsole.Write
 #define controlLog		SysConsole.controlInfo.IsActive()		&& SysConsole.controlInfo.Write
