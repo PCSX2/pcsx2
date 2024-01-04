@@ -3467,7 +3467,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// DX11/12 is a bit lame and can't partial copy depth targets. We could do this with a blit instead,
 	// but so far haven't seen anything which needs it.
-	if (GSConfig.Renderer == GSRendererType::DX11 || GSConfig.Renderer == GSRendererType::DX12)
+	const GSRendererType renderer = GSGetCurrentRenderer();
+	if (renderer == GSRendererType::DX11 || renderer == GSRendererType::DX12)
 	{
 		if (spsm_s.depth || dpsm_s.depth)
 			return false;

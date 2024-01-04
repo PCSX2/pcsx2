@@ -984,7 +984,7 @@ void MTGS::SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool d
 	if (display_message)
 	{
 		Host::AddIconOSDMessage("SwitchRenderer", ICON_FA_MAGIC, software ?
-			TRANSLATE_STR("GS", "Switching to software renderer...") : TRANSLATE_STR("GS", "Switching to hardware renderer..."),
+			TRANSLATE_STR("GS", "Switching to Software Renderer...") : TRANSLATE_STR("GS", "Switching to Hardware Renderer..."),
 			Host::OSD_QUICK_DURATION);
 	}
 
