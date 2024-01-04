@@ -400,7 +400,6 @@ void LogSink::UpdateLogging(SettingsInterface& si)
 
 	const bool ee_console_enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableEEConsole", false);
 	SysConsole.eeConsole.Enabled = ee_console_enabled;
-	SysConsole.sysoutConsole.Enabled = ee_console_enabled;
 
 	SysConsole.iopConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableIOPConsole", false);
 	SysTrace.IOP.R3000A.Enabled = true;

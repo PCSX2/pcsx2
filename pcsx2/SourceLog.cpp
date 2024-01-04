@@ -101,7 +101,6 @@ static const TraceLogDescriptor
 SysConsoleLogPack::SysConsoleLogPack()
 	: ELF(&TLD_ELF, Color_Gray)
 	, eeRecPerf(&TLD_eeRecPerf, Color_Gray)
-	, sysoutConsole(&TLD_sysoutConsole, Color_Gray)
 	, pgifLog(&TLD_Pgif)
 	, eeConsole(&TLD_eeConsole)
 	, iopConsole(&TLD_iopConsole)
