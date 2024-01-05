@@ -40,6 +40,11 @@
               "minimum": 0,
               "maximum": 3
             },
+            "eeDivRoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
             "vuRoundMode": {
               "type": "integer",
               "minimum": 0,
@@ -97,7 +102,6 @@
               "DMABusyHack",
               "EETimingHack",
               "FpuMulHack",
-              "FpuNegDivHack",
               "GIFFIFOHack",
               "GoemonTlbHack",
               "IbitHack",

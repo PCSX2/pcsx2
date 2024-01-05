@@ -4450,7 +4450,12 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
 		DrawIntListSetting(bsi, FSUI_CSTR("Rounding Mode"),
 			FSUI_CSTR("Determines how the results of floating-point operations are rounded. Some games need specific settings."),
-			"EmuCore/CPU", "FPU.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
+			"EmuCore/CPU", "FPU.Roundmode", static_cast<int>(FPRoundMode::ChopZero), ee_rounding_mode_settings,
+			std::size(ee_rounding_mode_settings), true);
+		DrawIntListSetting(bsi, FSUI_CSTR("Division Rounding Mode"),
+			FSUI_CSTR("Determines how the results of floating-point division is rounded. Some games need specific settings."),
+			"EmuCore/CPU", "FPUDiv.Roundmode", static_cast<int>(FPRoundMode::Nearest),
+			ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
 		DrawClampingModeSetting(bsi, FSUI_CSTR("Clamping Mode"),
 			FSUI_CSTR("Determines how out-of-range floating point numbers are handled. Some games need specific settings."), -1);
 
@@ -4470,12 +4475,14 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		MenuHeading(FSUI_CSTR("Vector Units"));
 		DrawIntListSetting(bsi, FSUI_CSTR("VU0 Rounding Mode"),
 			FSUI_CSTR("Determines how the results of floating-point operations are rounded. Some games need specific settings."),
-			"EmuCore/CPU", "VU0.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
+			"EmuCore/CPU", "VU0.Roundmode", static_cast<int>(FPRoundMode::ChopZero),
+			ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
 		DrawClampingModeSetting(bsi, FSUI_CSTR("VU0 Clamping Mode"),
 			FSUI_CSTR("Determines how out-of-range floating point numbers are handled. Some games need specific settings."), 0);
 		DrawIntListSetting(bsi, FSUI_CSTR("VU1 Rounding Mode"),
 			FSUI_CSTR("Determines how the results of floating-point operations are rounded. Some games need specific settings."),
-			"EmuCore/CPU", "VU1.Roundmode", 3, ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
+			"EmuCore/CPU", "VU1.Roundmode", static_cast<int>(FPRoundMode::ChopZero),
+			ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
 		DrawClampingModeSetting(bsi, FSUI_CSTR("VU1 Clamping Mode"),
 			FSUI_CSTR("Determines how out-of-range floating point numbers are handled. Some games need specific settings."), 1);
 		DrawToggleSetting(bsi, FSUI_CSTR("Enable VU0 Recompiler (Micro Mode)"),
@@ -4595,7 +4602,6 @@ void FullscreenUI::DrawGameFixesSettingsPage()
 		FSUI_CSTR("Game fixes should not be modified unless you are aware of what each option does and the implications of doing so."),
 		false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-	DrawToggleSetting(bsi, FSUI_CSTR("FPU Negative Div Hack"), FSUI_CSTR("For Gundam games."), "EmuCore/Gamefixes", "FpuNegDivHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("FPU Multiply Hack"), FSUI_CSTR("For Tales of Destiny."), "EmuCore/Gamefixes", "FpuMulHack", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Use Software Renderer For FMVs"),
 		FSUI_CSTR("Needed for some games with complex FMV rendering."), "EmuCore/Gamefixes", "SoftwareRendererFMVHack", false);

@@ -153,7 +153,6 @@ enum GamefixId
 	GamefixId_FIRST = 0,
 
 	Fix_FpuMultiply = GamefixId_FIRST,
-	Fix_FpuNegDiv,
 	Fix_GoemonTlbMiss,
 	Fix_SoftwareRendererFMV,
 	Fix_SkipMpeg,
@@ -539,6 +538,7 @@ struct Pcsx2Config
 		RecompilerOptions Recompiler;
 
 		FPControlRegister FPUFPCR;
+		FPControlRegister FPUDivFPCR;
 		FPControlRegister VU0FPCR;
 		FPControlRegister VU1FPCR;
 
@@ -899,7 +899,6 @@ struct Pcsx2Config
 		BITFIELD32()
 		bool
 			FpuMulHack : 1, // Tales of Destiny hangs.
-			FpuNegDivHack : 1, // Gundam games messed up camera-view.
 			GoemonTlbHack : 1, // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
 			SoftwareRendererFMVHack : 1, // Switches to software renderer for FMVs
 			SkipMPEGHack : 1, // Skips MPEG videos (Katamari and other games need this)
@@ -1264,7 +1263,6 @@ namespace EmuFolders
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK (EmuConfig.Gamefixes.VuAddSubHack) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
 #define CHECK_FPUMULHACK (EmuConfig.Gamefixes.FpuMulHack) // Special Fix for Tales of Destiny hangs.
-#define CHECK_FPUNEGDIVHACK (EmuConfig.Gamefixes.FpuNegDivHack) // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK (EmuConfig.Gamefixes.XgKickHack) // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
 #define CHECK_EETIMINGHACK (EmuConfig.Gamefixes.EETimingHack) // Fix all scheduled events to happen in 1 cycle.
 #define CHECK_INSTANTDMAHACK (EmuConfig.Gamefixes.InstantDMAHack) // Attempt to finish DMA's instantly, useful for games which rely on cache emulation.
