@@ -272,7 +272,7 @@ void RegisterWidget::customMenuRequested(QPoint pos)
 	m_contextMenu->addAction(action = new QAction(tr("Go to in Disassembly"), this));
 	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoDisasm);
 
-	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory"), this));
+	m_contextMenu->addAction(action = new QAction(tr("Go to in Memory View"), this));
 	connect(action, &QAction::triggered, this, &RegisterWidget::contextGotoMemory);
 
 	m_contextMenu->popup(this->mapToGlobal(pos));

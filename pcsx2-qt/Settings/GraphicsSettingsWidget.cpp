@@ -694,7 +694,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		
 		"<b>If unsure, leave it on default.<b>"));
 
-		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 Kbps"), tr("Sets the video bitrate to be used."
+		dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 kbps"), tr("Sets the video bitrate to be used. "
 		
 		"Larger bitrate generally yields better video quality at the cost of larger resulting file size."));
 
