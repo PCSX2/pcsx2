@@ -29,7 +29,7 @@ static const InputBindingInfo s_bindings[] = {
 };
 
 const Pad::ControllerInfo PadPopn::ControllerInfo = {Pad::ControllerType::Popn, "Popn",
-	TRANSLATE_NOOP("Pad", "Pop'n Music"), ICON_PF_GAMEPAD, s_bindings, {}, Pad::VibrationCapabilities::NoVibration};
+	TRANSLATE_NOOP("Pad", "Pop'n Music"), ICON_PF_POPN_CONTROLLER, s_bindings, {}, Pad::VibrationCapabilities::NoVibration};
 
 void PadPopn::ConfigLog()
 {
