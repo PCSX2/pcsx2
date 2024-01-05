@@ -501,12 +501,17 @@ bool Pcsx2Config::CpuOptions::operator!=(const CpuOptions& right) const
 
 bool Pcsx2Config::CpuOptions::operator==(const CpuOptions& right) const
 {
-	return OpEqu(FPUFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
+	return OpEqu(FPUFPCR) && OpEqu(FPUDivFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
 }
 
 Pcsx2Config::CpuOptions::CpuOptions()
 {
 	FPUFPCR = DEFAULT_FPU_FP_CONTROL_REGISTER;
+
+	// Rounding defaults to nearest to match old behavior.
+	// TODO: Make it default to the same as the rest of the FPU operations, at some point.
+	FPUDivFPCR = FPControlRegister(DEFAULT_FPU_FP_CONTROL_REGISTER).SetRoundMode(FPRoundMode::Nearest);
+
 	VU0FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
 	VU1FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
 	AffinityControlMode = 0;
@@ -536,6 +541,7 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 	};
 
 	read_fpcr(FPUFPCR, "FPU");
+	read_fpcr(FPUDivFPCR, "FPUDiv");
 	read_fpcr(VU0FPCR, "VU0");
 	read_fpcr(VU1FPCR, "VU1");
 
@@ -1284,7 +1290,6 @@ bool Pcsx2Config::DEV9Options::HostEntry::operator!=(const HostEntry& right) con
 static const char* const tbl_GamefixNames[] =
 	{
 		"FpuMul",
-		"FpuNegDiv",
 		"GoemonTlb",
 		"SoftwareRendererFMV",
 		"SkipMPEG",
@@ -1328,7 +1333,6 @@ void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 		// clang-format off
 		case Fix_VuAddSub:            VuAddSubHack            = enabled; break;
 		case Fix_FpuMultiply:         FpuMulHack              = enabled; break;
-		case Fix_FpuNegDiv:           FpuNegDivHack           = enabled; break;
 		case Fix_XGKick:              XgKickHack              = enabled; break;
 		case Fix_EETiming:            EETimingHack            = enabled; break;
 		case Fix_InstantDMA:          InstantDMAHack          = enabled; break;
@@ -1367,7 +1371,6 @@ bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 		// clang-format off
 		case Fix_VuAddSub:            return VuAddSubHack;
 		case Fix_FpuMultiply:         return FpuMulHack;
-		case Fix_FpuNegDiv:           return FpuNegDivHack;
 		case Fix_XGKick:              return XgKickHack;
 		case Fix_EETiming:            return EETimingHack;
 		case Fix_InstantDMA:          return InstantDMAHack;
@@ -1396,7 +1399,6 @@ void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapBitBool(VuAddSubHack);
 	SettingsWrapBitBool(FpuMulHack);
-	SettingsWrapBitBool(FpuNegDivHack);
 	SettingsWrapBitBool(XgKickHack);
 	SettingsWrapBitBool(EETimingHack);
 	SettingsWrapBitBool(InstantDMAHack);

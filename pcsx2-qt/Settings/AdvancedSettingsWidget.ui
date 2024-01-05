@@ -95,13 +95,44 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string extracomment="Rounding refers here to the mathematical term.">Division Rounding Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="eeDivRoundingMode">
+            <item>
+             <property name="text">
+              <string>Nearest (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Negative</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Positive</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Chop/Zero</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="label_12">
             <property name="text">
              <string extracomment="Clamping: Forcing out of bounds things in bounds by changing them to the closest possible value.  In this case, this refers to clamping large PS2 floating point values (which map to infinity or NaN in PCs' IEEE754 floats) to non-infinite ones.">Clamping Mode:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QComboBox" name="eeClampMode">
             <item>
              <property name="text">
@@ -125,7 +156,7 @@
             </item>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="1" column="0">
              <widget class="QCheckBox" name="eeWaitLoopDetection">

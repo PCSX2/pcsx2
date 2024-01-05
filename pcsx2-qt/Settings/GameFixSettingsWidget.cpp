@@ -18,7 +18,6 @@ GameFixSettingsWidget::GameFixSettingsWidget(SettingsWindow* dialog, QWidget* pa
 	m_ui.setupUi(this);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.FpuMulHack, "EmuCore/Gamefixes", "FpuMulHack", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.FpuNegDivHack, "EmuCore/Gamefixes", "FpuNegDivHack", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.GoemonTlbHack, "EmuCore/Gamefixes", "GoemonTlbHack", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.SoftwareRendererFMVHack, "EmuCore/Gamefixes", "SoftwareRendererFMVHack", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.SkipMPEGHack, "EmuCore/Gamefixes", "SkipMPEGHack", false);
@@ -38,7 +37,6 @@ GameFixSettingsWidget::GameFixSettingsWidget(SettingsWindow* dialog, QWidget* pa
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.BlitInternalFPSHack, "EmuCore/Gamefixes", "BlitInternalFPSHack", false);
 
 	dialog->registerWidgetHelp(m_ui.FpuMulHack, tr("FPU Multiply Hack"), tr("Unchecked"), tr("For Tales of Destiny."));
-	dialog->registerWidgetHelp(m_ui.FpuNegDivHack, tr("FPU Negative Divide Hack"), tr("Unchecked"), tr("For Gundam Games."));
 	dialog->registerWidgetHelp(m_ui.GoemonTlbHack, tr("Preload TLB Hack"), tr("Unchecked"), tr("To avoid TLB miss on Goemon."));
 	dialog->registerWidgetHelp(m_ui.SoftwareRendererFMVHack, tr("Use Software Renderer For FMVs"), tr("Unchecked"), tr("Needed for some games with complex FMV rendering."));
 	dialog->registerWidgetHelp(m_ui.SkipMPEGHack, tr("Skip MPEG Hack"), tr("Unchecked"), tr("Skips videos/FMVs in games to avoid game hanging/freezes."));

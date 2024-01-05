@@ -93,6 +93,7 @@ namespace GameDatabaseSchema
 		std::string region;
 		Compatibility compat = Compatibility::Unknown;
 		FPRoundMode eeRoundMode = FPRoundMode::MaxCount;
+		FPRoundMode eeDivRoundMode = FPRoundMode::MaxCount;
 		FPRoundMode vu0RoundMode = FPRoundMode::MaxCount;
 		FPRoundMode vu1RoundMode = FPRoundMode::MaxCount;
 		ClampMode eeClampMode = ClampMode::Undefined;

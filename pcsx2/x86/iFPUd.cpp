@@ -657,35 +657,10 @@ alignas(16) static FPControlRegister roundmode_nearest, roundmode_neg;
 void recDIV_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::DIV_F);
-	bool roundmodeFlag = false;
 	//Console.WriteLn("DIV");
 
-	if (CHECK_FPUNEGDIVHACK)
-	{
-		if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::NegativeInfinity)
-		{
-			// Set roundmode to nearest since it isn't already
-			//Console.WriteLn("div to negative inf");
-
-			roundmode_neg = EmuConfig.Cpu.FPUFPCR;
-			roundmode_neg.SetRoundMode(FPRoundMode::NegativeInfinity);
-			xLDMXCSR(ptr32[&roundmode_neg.bitmask]);
-			roundmodeFlag = true;
-		}
-	}
-	else
-	{
-		if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest)
-		{
-			// Set roundmode to nearest since it isn't already
-			//Console.WriteLn("div to nearest");
-
-			roundmode_nearest = EmuConfig.Cpu.FPUFPCR;
-			roundmode_nearest.SetRoundMode(FPRoundMode::Nearest);
-			xLDMXCSR(ptr32[&roundmode_nearest.bitmask]);
-			roundmodeFlag = true;
-		}
-	}
+	if (EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask)
+		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUDivFPCR.bitmask]);
 
 	int sreg, treg;
 
@@ -698,8 +673,9 @@ void recDIV_S_xmm(int info)
 
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
-	if (roundmodeFlag)
+	if (EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask)
 		xLDMXCSR(ptr32[&EmuConfig.Cpu.FPUFPCR.bitmask]);
+
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
