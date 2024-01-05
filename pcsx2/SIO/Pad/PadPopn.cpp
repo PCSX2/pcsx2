@@ -112,8 +112,6 @@ u8 PadPopn::ButtonQuery(u8 commandByte)
 u8 PadPopn::Poll(u8 commandByte)
 {
 	const u32 buttons = GetButtons();
-	u8 largeMotor = 0x00;
-	u8 smallMotor = 0x00;
 
 	switch (commandBytesReceived)
 	{
