@@ -28,6 +28,7 @@ class GameCheatSettingsWidget : public QWidget
 
 public:
 	GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
+	void disableAllCheats();
 	~GameCheatSettingsWidget();
 
 private Q_SLOTS:

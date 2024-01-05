@@ -6592,6 +6592,24 @@ void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, co
 	ReplaceVerticesWithSprite(unscaled_rect, unscaled_rect, unscaled_size, unscaled_rect);
 }
 
+void GSRendererHW::OffsetDraw(s32 fbp_offset, s32 zbp_offset, s32 xoffset, s32 yoffset)
+{
+	GL_INS("Offseting render target by %d pages [%x -> %x], Z by %d pages [%x -> %x]",
+		fbp_offset, m_cached_ctx.FRAME.FBP << 5, zbp_offset, (m_cached_ctx.FRAME.FBP + fbp_offset) << 5);
+	GL_INS("Offseting vertices by [%d, %d]", xoffset, yoffset);
+
+	m_cached_ctx.FRAME.FBP += fbp_offset;
+	m_cached_ctx.ZBUF.ZBP += zbp_offset;
+
+	const s32 fp_xoffset = xoffset << 4;
+	const s32 fp_yoffset = yoffset << 4;
+	for (u32 i = 0; i < m_vertex.next; i++)
+	{
+		m_vertex.buff[i].XYZ.X += fp_xoffset;
+		m_vertex.buff[i].XYZ.Y += fp_yoffset;
+	}
+}
+
 GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	GSTexture* rt, GSTexture* ds, float rt_scale, GSTexture* tex, float tex_scale, const GSVector4i& unscaled_rect)
 {

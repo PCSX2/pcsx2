@@ -1002,19 +1002,37 @@ std::vector<u32> searchWorker(DebugInterface* cpu, std::vector<u32> searchAddres
 	return hitAddresses;
 }
 
-static bool compareByteArrayAtAddress(DebugInterface* cpu, u32 addr, QByteArray value)
+static bool compareByteArrayAtAddress(DebugInterface* cpu, SearchComparison searchComparison, u32 addr, QByteArray value)
 {
+	const bool isNotOperator = searchComparison == SearchComparison::NotEquals;
 	for (qsizetype i = 0; i < value.length(); i++)
 	{
-		if (static_cast<char>(cpu->read8(addr + i)) != value[i])
+		const char nextByte = cpu->read8(addr + i);
+		switch (searchComparison)
 		{
-			return false;
+			case SearchComparison::Equals:
+			{
+				if (nextByte != value[i])
+					return false;
+				break;
+			}
+			case SearchComparison::NotEquals:
+			{
+				if (nextByte != value[i])
+					return true;
+				break;
+			}
+			default:
+			{
+				Console.Error("Debugger: Unknown search comparison when doing memory search");
+				return false;
+			}
 		}
 	}
-	return true;
+	return !isNotOperator;
 }
 
-static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u32> searchAddresses, u32 start, u32 end, QByteArray value)
+static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, SearchComparison searchComparison, std::vector<u32> searchAddresses, u32 start, u32 end, QByteArray value)
 {
 	std::vector<u32> hitAddresses;
 	const bool isSearchingRange = searchAddresses.size() <= 0;
@@ -1022,7 +1040,7 @@ static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u
 	{
 		for (u32 addr = start; addr < end; addr += 1)
 		{
-			if (compareByteArrayAtAddress(cpu, addr, value))
+			if (compareByteArrayAtAddress(cpu, searchComparison, addr, value))
 			{
 				hitAddresses.emplace_back(addr);
 				addr += value.length() - 1;
@@ -1033,7 +1051,7 @@ static std::vector<u32> searchWorkerByteArray(DebugInterface* cpu, std::vector<u
 	{
 		for (u32 addr : searchAddresses)
 		{
-			if (compareByteArrayAtAddress(cpu, addr, value))
+			if (compareByteArrayAtAddress(cpu, searchComparison, addr, value))
 			{
 				hitAddresses.emplace_back(addr);
 			}
@@ -1060,9 +1078,9 @@ std::vector<u32> startWorker(DebugInterface* cpu, const SearchType type, const S
 		case SearchType::DoubleType:
 			return searchWorker<double>(cpu, searchAddresses, searchComparison, start, end, value.toDouble());
 		case SearchType::StringType:
-			return searchWorkerByteArray(cpu, searchAddresses, start, end, value.toUtf8());
+			return searchWorkerByteArray(cpu, searchComparison, searchAddresses, start, end, value.toUtf8());
 		case SearchType::ArrayType:
-			return searchWorkerByteArray(cpu, searchAddresses, start, end, QByteArray::fromHex(value.toUtf8()));
+			return searchWorkerByteArray(cpu, searchComparison, searchAddresses, start, end, QByteArray::fromHex(value.toUtf8()));
 		default:
 			Console.Error("Debugger: Unknown type when doing memory search!");
 			break;
@@ -1107,7 +1125,13 @@ void CpuWidget::onSearchButtonClicked()
 	unsigned long long value;
 
 	const bool isVariableSize = searchType == SearchType::ArrayType || searchType == SearchType::StringType;
-	if (isVariableSize && searchComparison != SearchComparison::Equals)
+	if (isVariableSize && !isFilterSearch && searchComparison == SearchComparison::NotEquals)
+	{
+		QMessageBox::critical(this, tr("Debugger"), tr("Search types Array and String can use the Not Equals search comparison type with new searches."));
+		return;
+	}
+
+	if (isVariableSize && searchComparison != SearchComparison::Equals && searchComparison != SearchComparison::NotEquals)
 	{
 		QMessageBox::critical(this, tr("Debugger"), tr("Search types Array and String can only be used with Equals search comparisons."));
 		return;

@@ -19,7 +19,6 @@ public:
 	static bool GSC_Kunoichi(GSRendererHW& r, int& skip);
 	static bool GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip);
 	static bool GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip);
-	static bool GSC_KnightsOfTheTemple2(GSRendererHW& r, int& skip);
 	static bool GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip);
 	static bool GSC_TalesofSymphonia(GSRendererHW& r, int& skip);
 	static bool GSC_Simple2000Vol114(GSRendererHW& r, int& skip);

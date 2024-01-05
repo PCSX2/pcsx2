@@ -1541,6 +1541,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							dst = t;
 							tex_merge_rt = false;
 							found_t = true;
+
+							// Catwoman offsets the RT as well as the texture.
+							if (GSRendererHW::GetInstance()->GetCachedCtx()->FRAME.Block() == TEX0.TBP0)
+							{
+								// Should be page aligned.
+								pxAssert(((t->m_TEX0.TBP0 - TEX0.TBP0) % 32) == 0);
+								const s32 page_offset = (t->m_TEX0.TBP0 - TEX0.TBP0) >> 5;
+								GL_CACHE("TC: RT also in front of TBP, offsetting draw by %d pages and [%d,%d].", page_offset, x_offset, y_offset);
+								GSRendererHW::GetInstance()->OffsetDraw(page_offset, page_offset, x_offset, y_offset);
+								break;
+							}
+
 							if (dst->m_TEX0.TBP0 == frame_fbp && possible_shuffle)
 								break;
 							else
@@ -3467,7 +3479,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 	// DX11/12 is a bit lame and can't partial copy depth targets. We could do this with a blit instead,
 	// but so far haven't seen anything which needs it.
-	if (GSConfig.Renderer == GSRendererType::DX11 || GSConfig.Renderer == GSRendererType::DX12)
+	const GSRendererType renderer = GSGetCurrentRenderer();
+	if (renderer == GSRendererType::DX11 || renderer == GSRendererType::DX12)
 	{
 		if (spsm_s.depth || dpsm_s.depth)
 			return false;

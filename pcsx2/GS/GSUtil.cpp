@@ -213,6 +213,7 @@ GSRendererType GSUtil::GetPreferredRenderer()
 #endif
 
 			// Otherwise, whatever is available.
+	if (preferred_renderer == GSRendererType::Auto) // If it's still auto, VK wasn't selected.
 #if defined(ENABLE_OPENGL)
 		preferred_renderer = GSRendererType::OGL;
 #elif defined(ENABLE_VULKAN)

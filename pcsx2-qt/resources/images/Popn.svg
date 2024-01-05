@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Musica_pop" data-name="Musica pop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 550">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: .18;
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        fill: #ffcf1f;
+      }
+
+      .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-9, .cls-10, .cls-11, .cls-12, .cls-13, .cls-14, .cls-15 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3, .cls-6, .cls-7, .cls-8, .cls-10, .cls-11, .cls-12, .cls-13 {
+        stroke-width: 3px;
+      }
+
+      .cls-3, .cls-6, .cls-7, .cls-8, .cls-11, .cls-12, .cls-13 {
+        stroke: #4d4d4d;
+      }
+
+      .cls-4 {
+        stroke: #ff553f;
+      }
+
+      .cls-4, .cls-5, .cls-9, .cls-10, .cls-14, .cls-15 {
+        fill: none;
+      }
+
+      .cls-4, .cls-5, .cls-9, .cls-14, .cls-15 {
+        stroke-width: 17px;
+      }
+
+      .cls-5 {
+        stroke: #109400;
+      }
+
+      .cls-6 {
+        fill: #f40600;
+      }
+
+      .cls-8 {
+        fill: #0028b4;
+      }
+
+      .cls-16 {
+        fill: #bdbdbd;
+      }
+
+      .cls-9 {
+        stroke: #0052f4;
+      }
+
+      .cls-10 {
+        stroke: #8a8a8a;
+      }
+
+      .cls-11 {
+        fill: #f0f0f0;
+      }
+
+      .cls-12 {
+        fill: #00741a;
+      }
+
+      .cls-13 {
+        fill: #f5f5f5;
+      }
+
+      .cls-17 {
+        opacity: .32;
+      }
+
+      .cls-18 {
+        font-family: Roboto-Black, Roboto;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .cls-19 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-14 {
+        stroke: #ffed9f;
+      }
+
+      .cls-20 {
+        letter-spacing: -.06em;
+      }
+
+      .cls-15 {
+        stroke: #f5f5f5;
+      }
+
+      .cls-21 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-22 {
+        fill: #d1d1d1;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 4px;
+      }
+
+      .cls-23 {
+        fill: #7f001c;
+      }
+
+      .cls-24 {
+        letter-spacing: -.03em;
+      }
+    </style>
+  </defs>
+  <g id="By_Maxihplay" data-name="By Maxihplay">
+    <path id="fundo_controle" data-name="fundo controle" class="cls-22" d="m716.42,472.1H123.58c-51.9,0-82.14-46.22-68.5-99.51l61.63-233.75c8.82-34.45,46.61-60.95,84.85-60.95h436.88c38.25,0,76.03,26.49,84.85,60.95l61.63,233.75c13.64,53.29-16.6,99.51-68.5,99.51Z"/>
+    <g id="sombra_inferior" data-name="sombra inferior">
+      <path class="cls-16" d="m759.69,284.59l11.51,69.11c13.13,46-15.97,79.9-65.91,79.9H134.86c-49.94,0-79.03-33.89-65.91-79.9l11.78-68.63-23.56,85.8c-13.57,52.25,16.51,97.56,68.12,97.56h589.56c51.61,0,81.68-45.31,68.12-97.56l-23.28-86.27Z"/>
+      <line class="cls-10" x1="521.91" y1="434.01" x2="318.09" y2="434.01"/>
+    </g>
+    <g id="botoes_cores" data-name="botoes cores">
+      <g id="baixo">
+        <circle class="cls-12" cx="288.13" cy="362.05" r="53.35" transform="translate(-75.47 75.88) rotate(-13.28)"/>
+        <circle class="cls-6" cx="420" cy="362.05" r="53.35" transform="translate(-132.99 403.03) rotate(-45)"/>
+        <circle class="cls-12" cx="551.87" cy="362.05" r="53.35" transform="translate(-94.37 496.27) rotate(-45)"/>
+        <circle class="cls-11" cx="683.74" cy="362.05" r="53.35" transform="translate(-64.89 166.78) rotate(-13.28)"/>
+        <path class="cls-11" d="m156.26,308.7c-17.62,0-33.24,8.54-42.96,21.71-6.53,8.85-10.39,19.8-10.39,31.65,0,29.46,23.89,53.35,53.35,53.35s53.35-23.89,53.35-53.35-23.89-53.35-53.35-53.35Z"/>
+      </g>
+      <g id="cima">
+        <circle class="cls-8" cx="354.07" cy="235.36" r="53.35" transform="translate(-44.6 87.64) rotate(-13.28)"/>
+        <circle class="cls-8" cx="485.93" cy="235.36" r="53.35" transform="translate(-24.1 412.54) rotate(-45)"/>
+        <circle class="cls-3" cx="617.8" cy="235.36" r="53.35" transform="translate(14.53 505.79) rotate(-45)"/>
+        <circle class="cls-3" cx="222.2" cy="235.36" r="53.35" transform="translate(-48.13 57.35) rotate(-13.28)"/>
+      </g>
+    </g>
+    <g id="brilho">
+      <g id="brilho_menor" data-name="brilho menor" class="cls-17">
+        <circle class="cls-15" cx="179.25" cy="370" r="8.58"/>
+        <circle class="cls-5" cx="311.37" cy="370" r="8.58" transform="translate(-76.68 81.44) rotate(-13.28)"/>
+        <circle class="cls-4" cx="443.48" cy="370" r="8.58" transform="translate(-73.14 111.79) rotate(-13.28)"/>
+        <circle class="cls-5" cx="575.6" cy="370" r="8.58" transform="translate(-93.04 515.38) rotate(-45)"/>
+        <circle class="cls-15" cx="707.71" cy="370.63" r="8.58"/>
+        <circle class="cls-14" cx="641.66" cy="251.6" r="8.58"/>
+        <circle class="cls-9" cx="509.54" cy="251.6" r="8.58" transform="translate(-44.18 123.8) rotate(-13.28)"/>
+        <circle class="cls-9" cx="377.42" cy="251.6" r="8.58" transform="translate(-67.36 340.57) rotate(-45)"/>
+        <circle class="cls-14" cx="245.31" cy="251.6" r="8.58"/>
+      </g>
+      <g id="brilho_maior" data-name="brilho maior" class="cls-1">
+        <circle class="cls-2" cx="182.25" cy="372" r="8.58"/>
+        <circle class="cls-2" cx="314.37" cy="372" r="8.58" transform="translate(-77.06 82.18) rotate(-13.28)"/>
+        <circle class="cls-2" cx="446.48" cy="372" r="8.58" transform="translate(-73.52 112.53) rotate(-13.28)"/>
+        <circle class="cls-2" cx="578.6" cy="372" r="8.58" transform="translate(-93.57 518.09) rotate(-45)"/>
+        <circle class="cls-2" cx="710.71" cy="372.63" r="8.58"/>
+        <circle class="cls-2" cx="644.66" cy="253.6" r="8.58"/>
+        <circle class="cls-2" cx="512.54" cy="253.6" r="8.58" transform="translate(-44.55 124.54) rotate(-13.28)"/>
+        <circle class="cls-2" cx="380.42" cy="253.6" r="8.58" transform="translate(-67.9 343.28) rotate(-45)"/>
+        <circle class="cls-2" cx="248.31" cy="253.6" r="8.58"/>
+      </g>
+    </g>
+    <g id="botoes_gota" data-name="botoes gota">
+      <g id="sombra">
+        <path id="B" class="cls-7" d="m320.13,118.15c-6.48-1.76-12.86,1-15.12,9.45-2.61,9.71,3.91,32.34,3.91,32.34,0,0,16.95-16.26,19.56-25.97,1.86-6.94-1.86-14.06-8.35-15.82Z"/>
+        <path id="A" class="cls-7" d="m263.87,144.12c-1.86,6.94,1.86,14.06,8.35,15.82,6.48,1.76,12.86-1,15.12-9.45,2.61-9.71-3.91-32.34-3.91-32.34,0,0-16.95,16.26-19.56,25.97Z"/>
+      </g>
+      <g id="botao">
+        <path id="B-2" data-name="B" class="cls-13" d="m320.13,113.55c-6.48-1.76-12.86,1-15.12,9.45-2.61,9.71,3.91,32.34,3.91,32.34,0,0,16.95-16.26,19.56-25.97,1.86-6.94-1.86-14.06-8.35-15.82Z"/>
+        <path id="A-2" data-name="A" class="cls-13" d="m263.87,139.52c-1.86,6.94,1.86,14.06,8.35,15.82,6.48,1.76,12.86-1,15.12-9.45,2.61-9.71-3.91-32.34-3.91-32.34,0,0-16.95,16.26-19.56,25.97Z"/>
+      </g>
+    </g>
+    <text class="cls-18" transform="translate(222.2 113.55)"><tspan x="0" y="0">SELE</tspan><tspan class="cls-21" x="27.45" y="0">C</tspan><tspan class="cls-24" x="35.15" y="0">T</tspan></text>
+    <text class="cls-18" transform="translate(335.17 159.94)"><tspan x="0" y="0">S</tspan><tspan class="cls-20" x="7.51" y="0">T</tspan><tspan x="14.37" y="0">A</tspan><tspan class="cls-19" x="22.55" y="0">R</tspan><tspan class="cls-24" x="30.08" y="0">T</tspan></text>
+    <path id="marca" class="cls-23" d="m619,112.15l-31.06,30.76c-5.12,5.07-12.87,8.02-21.07,8.02h-114.8v-38.78h166.93Z"/>
+  </g>
+</svg>

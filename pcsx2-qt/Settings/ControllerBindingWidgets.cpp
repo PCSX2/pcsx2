@@ -108,6 +108,10 @@ void ControllerBindingWidget::onTypeChanged()
 	{
 		m_bindings_widget = ControllerBindingWidget_Guitar::createInstance(this);
 	}
+	else if (cinfo->type == Pad::ControllerType::Popn)
+	{
+		m_bindings_widget = ControllerBindingWidget_Popn::createInstance(this);
+	}
 	else
 	{
 		m_bindings_widget = new ControllerBindingWidget_Base(this);
@@ -895,6 +899,27 @@ QIcon ControllerBindingWidget_Guitar::getIcon() const
 ControllerBindingWidget_Base* ControllerBindingWidget_Guitar::createInstance(ControllerBindingWidget* parent)
 {
 	return new ControllerBindingWidget_Guitar(parent);
+}
+
+ControllerBindingWidget_Popn::ControllerBindingWidget_Popn(ControllerBindingWidget* parent)
+	: ControllerBindingWidget_Base(parent)
+{
+	m_ui.setupUi(this);
+	initBindingWidgets();
+}
+
+ControllerBindingWidget_Popn::~ControllerBindingWidget_Popn()
+{
+}
+
+QIcon ControllerBindingWidget_Popn::getIcon() const
+{
+	return QIcon::fromTheme("Popn-line");
+}
+
+ControllerBindingWidget_Base* ControllerBindingWidget_Popn::createInstance(ControllerBindingWidget* parent)
+{
+	return new ControllerBindingWidget_Popn(parent);
 }
 
 //////////////////////////////////////////////////////////////////////////

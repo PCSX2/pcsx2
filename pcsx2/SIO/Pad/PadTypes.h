@@ -64,6 +64,7 @@ namespace Pad
 		NotConnected,
 		DualShock2,
 		Guitar,
+		Popn,
 		Count
 	};
 

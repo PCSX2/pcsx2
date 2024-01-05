@@ -314,6 +314,9 @@ void SettingsWindow::onClearSettingsClicked()
 		return;
 	}
 
+	m_game_cheat_settings_widget->disableAllCheats();
+	m_game_patch_settings_widget->disableAllPatches();
+
 	Pcsx2Config::ClearConfiguration(m_sif.get());
 	m_sif->Save();
 	g_emu_thread->reloadGameSettings();

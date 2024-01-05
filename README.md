@@ -10,51 +10,17 @@ PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to 
 
 ## Project Details
 
-The PCSX2 project has been running for more than twenty years. Past versions could only run a few public domain game demos, but newer versions can run most games at full speed, including popular titles such as Final Fantasy X and Devil May Cry 3. Visit the [PCSX2 compatibility list](https://pcsx2.net/compat/) to check the latest compatibility status of games (with more than 2500 titles tested), or ask for help in the [official forums](https://forums.pcsx2.net/).
+PCSX2 has been in development for more than 20 years. Past versions could only run a few public domain game demos, but newer versions can run most games at full speed, including popular titles such as Final Fantasy X and Devil May Cry 3. Visit the [PCSX2 compatibility list](https://pcsx2.net/compat/) to check the latest compatibility status of games (with more than 2500 titles tested).
 
-The latest officially released stable version is version 1.6.0.
-
-Installers and binaries for both stable and development builds are available from [our website](https://pcsx2.net/downloads/).
+Installers and binaries for both stable and nightly builds are available from [our website](https://pcsx2.net/downloads/).
 
 ## System Requirements
 
-### Minimum
+PCSX2 supports Windows, Linux, and Mac platforms. Our [setup documentation page](https://pcsx2.net/docs/usage/setup/requirements) contains additional details on software and hardware requirements. 
 
-| Operating System                                                                                                               | CPU                                                                                                                                                                                             | GPU                                                                                                                                                                                               | RAM  |
-| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| - Windows 10 Version 1809 or later (64-bit) <br/> - Ubuntu 22.04/Debian or newer, Arch Linux, or other distro (64-bit) <br/> - macOS 11.0 | - Supports SSE4.1 <br/> - [PassMark Thread Performance](https://www.cpubenchmark.net/CPU_mega_page.html) rating near or greater than 1500<br/> - Two physical cores, with hyperthreading | - Direct3D 11 (Feature Level 11.0) support <br/> - OpenGL 3.3 support <br/> - Vulkan 1.1 support <br/> - Metal support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (Geforce GTX 750, Radeon RX 560, Intel Arc A380) <br/> - 2 GB Video Memory | 4 GB |
-
-### Recommended
-
-| Operating System                                                                                                              | CPU                                                                                                                                                                                                       | GPU                                                                                                                                                                                                   | RAM  |
-| ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| - Windows 10 22H2 (64-bit) <br/> - Ubuntu 23.04/Debian or newer, Arch Linux, or other distro (64-bit) <br/> - macOS 11.0 | - Supports AVX2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/CPU_mega_page.html) rating near or greater than 2000<br/> - Four physical cores, with or without hyperthreading | - Direct3D12 support <br/> - OpenGL 4.6 support <br/> - Vulkan 1.3 support <br/> - Metal support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 6000 (GeForce GTX 1650, Radeon RX 570) <br/> - 4 GB Video Memory | 8 GB |
-
-### Heavy
-
-| Operating System                                                                                                              | CPU                                                                                                                                                                                                       | GPU                                                                                                                                                                                                   | RAM  |
-| ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| - Windows 10 22H2 (64-bit) <br/> - Ubuntu 23.04/Debian or newer, Arch Linux, or other distro (64-bit) <br/> - macOS 11.0 | - Supports AVX2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/CPU_mega_page.html) rating near or greater than 2600<br/> - Four physical cores, with or without hyperthreading | - Direct3D12 support <br/> - OpenGL 4.6 support <br/> - Vulkan 1.3 support <br/> - Metal support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 6000 (GeForce GTX 1650, Radeon RX 570) <br/> - 4 GB Video Memory | 8 GB |
-
-_Note1: Recommended Single Thread Performance is based on moderately complex games. Games that pushed the PS2 hardware to its limits will struggle on CPUs at this level. Some release titles and 2D games which underutilized the PS2 hardware may run on CPUs rated as low as 1200. A quick reference for CPU **intensive games**: [Wiki](https://wiki.pcsx2.net/Category:CPU_intensive_games), [Forum](https://forums.pcsx2.net/Thread-LIST-The-Most-CPU-Intensive-Games) and CPU **light** games: [Forum](https://forums.pcsx2.net/Thread-LIST-Games-that-don-t-need-a-strong-CPU-to-emulate)_   
-
-_Note2: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. Higher resolutions will require stronger cards; 6x Internal, ~4K resolution will require a [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 12000 (GeForce RTX 2060 Radeon RX 6600 Intel Arc A750). Just like CPU requirements, this is also highly game dependent. A quick reference for GPU **intensive games**: [Wiki](https://wiki.pcsx2.net/Category:GPU_intensive_games)_   
-
-## Technical Notes
-
--   You need the [Visual C++ 2019 x64 Redistributables](https://support.microsoft.com/en-us/help/2977003/) to run PCSX2 on Windows.
--   Windows XP and Direct3D9 support was dropped after stable release 1.4.0.
--   Windows 7, Windows 8.0, and Windows 8.1 support was dropped after stable release 1.6.0.
--   32-bit and wxWidgets support was dropped after stable release 1.6.0, with the wxWidgets code being removed completely on 25th December 2022.
--   Make sure to update your operating system and drivers to ensure you have the best experience possible. Having a newer GPU is also recommended so you have the latest supported drivers.
--   Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PS2 console to use the emulator. For more information about the BIOS and how to get it from your console, visit [this page](pcsx2/Docs/PCSX2_FAQ.md#question-13-where-do-i-get-a-ps2-bios).
--   PCSX2 uses two CPU cores for emulation by default. A third core can be used via the MTVU speed hack, which is compatible with most games. This can be a significant speedup on CPUs with 3+ cores, but it may be a slowdown on GS-limited games (or on CPUs with fewer than 2 cores). Software renderers will then additionally use however many rendering threads it is set to and will need higher core counts to run efficiently.
--   Requirements benchmarks are based on a statistic from the Passmark CPU bench marking software. When we say "STR", we are referring to Passmark's "Single Thread Rating" statistic. You can look up your CPU on [Passmark's website for CPUs](https://cpubenchmark.net) to see how it compares to PCSX2's requirements.
--   Vulkan requires an up-to-date GPU driver; old drivers may cause graphical problems.
+Please note that a BIOS dump from a legitimately-owned PS2 console is required to use the emulator. For more information, visit [this page](https://pcsx2.net/docs/usage/setup/gather/#how-to-dump-your-ps2-bios).
 
 ## Contributing / Building
-Want to contribute to the development of PCSX2?
+PCSX2 supports translation into other languages using [Crowdin](https://crowdin.com/project/pcsx2-emulator).
 
-See the [Contributing Guidelines](https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md) or visit the [GitHub Wiki](https://github.com/PCSX2/pcsx2/wiki)
-
-Want more? [Check out the PCSX2 website](https://pcsx2.net/).
+See the [Contributing Guidelines](https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md) or visit the [GitHub Wiki](https://github.com/PCSX2/pcsx2/wiki) for more info on how to contribute.

@@ -24,12 +24,12 @@ int GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
 {
-	return (GSConfig.Renderer == GSRendererType::SW) ? GSConfig.AutoFlushSW : (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled);
+	return GSIsHardwareRenderer() ? (GSConfig.UserHacks_AutoFlush != GSHWAutoFlushLevel::Disabled) : GSConfig.AutoFlushSW;
 }
 
 static __fi bool IsFirstProvokingVertex()
 {
-	return (GSConfig.Renderer != GSRendererType::SW && !g_gs_device->Features().provoking_vertex_last);
+	return (GSIsHardwareRenderer() && !g_gs_device->Features().provoking_vertex_last);
 }
 
 constexpr int GSState::GetSaveStateSize()

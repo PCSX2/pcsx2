@@ -188,6 +188,9 @@ static void CloseGSDevice(bool clear_state)
 
 static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 {
+	// Must be done first, initialization routines in GSState use GSIsHardwareRenderer().
+	GSCurrentRenderer = renderer;
+
 	if (renderer == GSRendererType::Null)
 	{
 		g_gs_renderer = std::make_unique<GSRendererNull>();
@@ -205,7 +208,6 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 	g_gs_renderer->ResetPCRTC();
 	g_gs_renderer->UpdateRenderFixes();
 	g_perfmon.Reset();
-	GSCurrentRenderer = renderer;
 	return true;
 }
 
@@ -777,7 +779,10 @@ void GSSetSoftwareRendering(bool software_renderer, GSInterlaceMode new_interlac
 
 	if (!GSIsHardwareRenderer() != software_renderer)
 	{
-		if (!GSreopen(false, software_renderer ? GSRendererType::SW : GSConfig.Renderer, std::nullopt))
+		// Config might be SW, and we're switching to HW -> use Auto.
+		const GSRendererType renderer = (software_renderer ? GSRendererType::SW :
+			(GSConfig.Renderer == GSRendererType::SW ? GSRendererType::Auto : GSConfig.Renderer));
+		if (!GSreopen(false, renderer, std::nullopt))
 			pxFailRel("Failed to reopen GS for renderer switch.");
 	}
 }

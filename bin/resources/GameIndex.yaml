@@ -14514,6 +14514,8 @@ SLES-50880:
 SLES-50882:
   name: "Mary-Kate and Ashley - Sweet 16"
   region: "PAL-E"
+  gameFixes:
+    - EETimingHack # Fixes random crashes in mini games.
 SLES-50886:
   name: "TransWorld Surf"
   region: "PAL-M5"
@@ -18326,6 +18328,11 @@ SLES-52563:
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes bloom.
+    autoFlush: 1 # Fixes ghosting.
+    textureInsideRT: 1 # Required for offset RTs/textures for post-processing.
+    roundSprite: 2 # Fixes misaligned post-processing.
 SLES-52568:
   name: "Crash Twinsanity"
   region: "PAL-M5"
@@ -21513,8 +21520,6 @@ SLES-53645:
   name: "Knights of the Temple II"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_KnightsOfTheTemple2"
 SLES-53646:
   name: "World Racing 2"
   region: "PAL-M5"
@@ -58416,6 +58421,8 @@ SLUS-20603:
   name: "Mary-Kate & Ashley - Sweet Sixteen - Licensed to Drive"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes random crashes in mini games.
 SLUS-20604:
   name: "MTV's Celebrity Deathmatch"
   region: "NTSC-U"
@@ -60457,6 +60464,11 @@ SLUS-20992:
   name: "Catwoman"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes bloom.
+    autoFlush: 1 # Fixes ghosting.
+    textureInsideRT: 1 # Required for offset RTs/textures for post-processing.
+    roundSprite: 2 # Fixes misaligned post-processing.
 SLUS-20993:
   name: "Ghosthunter"
   region: "NTSC-U"
