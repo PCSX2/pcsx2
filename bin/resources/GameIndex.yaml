@@ -8234,6 +8234,9 @@ SCPS-17001:
   compat: 5
   clampModes:
     vuClampMode: 2 # Text in GT mode works.
+  roundModes:
+    eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
+    eeDivRoundMode: 3 # See above.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
