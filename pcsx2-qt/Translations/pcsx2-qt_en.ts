@@ -2745,127 +2745,132 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="189"/>
+        <location filename="../Debugger/CpuWidget.ui" line="343"/>
         <source>End</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="203"/>
+        <location filename="../Debugger/CpuWidget.ui" line="189"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="213"/>
+        <location filename="../Debugger/CpuWidget.ui" line="329"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="227"/>
+        <location filename="../Debugger/CpuWidget.ui" line="199"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="235"/>
+        <location filename="../Debugger/CpuWidget.ui" line="207"/>
         <source>1 Byte (8 bits)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="240"/>
+        <location filename="../Debugger/CpuWidget.ui" line="212"/>
         <source>2 Bytes (16 bits)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="245"/>
+        <location filename="../Debugger/CpuWidget.ui" line="217"/>
         <source>4 Bytes (32 bits)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="250"/>
+        <location filename="../Debugger/CpuWidget.ui" line="222"/>
         <source>8 Bytes (64 bits)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="255"/>
+        <location filename="../Debugger/CpuWidget.ui" line="227"/>
         <source>Float</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="260"/>
+        <location filename="../Debugger/CpuWidget.ui" line="232"/>
         <source>Double</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="265"/>
+        <location filename="../Debugger/CpuWidget.ui" line="237"/>
         <source>String</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="270"/>
+        <location filename="../Debugger/CpuWidget.ui" line="242"/>
         <source>Array of byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="278"/>
+        <location filename="../Debugger/CpuWidget.ui" line="250"/>
         <source>Hex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="295"/>
+        <location filename="../Debugger/CpuWidget.ui" line="267"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="305"/>
+        <location filename="../Debugger/CpuWidget.ui" line="277"/>
         <source>Filter Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="313"/>
+        <location filename="../Debugger/CpuWidget.ui" line="285"/>
         <source>Equals</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="318"/>
+        <location filename="../Debugger/CpuWidget.ui" line="290"/>
         <source>Not Equals</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="323"/>
+        <location filename="../Debugger/CpuWidget.ui" line="295"/>
         <source>Greater Than</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="328"/>
+        <location filename="../Debugger/CpuWidget.ui" line="300"/>
         <source>Greater Than Or Equal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="333"/>
+        <location filename="../Debugger/CpuWidget.ui" line="305"/>
         <source>Less Than</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="338"/>
+        <location filename="../Debugger/CpuWidget.ui" line="310"/>
         <source>Less Than Or Equal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="418"/>
+        <location filename="../Debugger/CpuWidget.ui" line="318"/>
+        <source>Comparison</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/CpuWidget.ui" line="429"/>
         <source>Memory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="473"/>
+        <location filename="../Debugger/CpuWidget.ui" line="484"/>
         <source>Breakpoints</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="505"/>
+        <location filename="../Debugger/CpuWidget.ui" line="516"/>
         <source>Threads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.ui" line="543"/>
+        <location filename="../Debugger/CpuWidget.ui" line="554"/>
         <source>Active Call Stack</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2967,42 +2972,48 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1086"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1094"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1100"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1104"/>
         <location filename="../Debugger/CpuWidget.cpp" line="1112"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1138"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1118"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1130"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1136"/>
         <location filename="../Debugger/CpuWidget.cpp" line="1162"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1186"/>
         <source>Debugger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1086"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1104"/>
         <source>Invalid start address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1094"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1112"/>
         <source>Invalid end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1100"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1118"/>
         <source>Start address can&apos;t be equal to or greater than the end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1112"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1130"/>
+        <source>Search types Array and String can use the Not Equals search comparison type with new searches.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/CpuWidget.cpp" line="1136"/>
         <source>Search types Array and String can only be used with Equals search comparisons.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1138"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1162"/>
         <source>Invalid search value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1162"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1186"/>
         <source>Value is larger than type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8448,12 +8459,12 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GS</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="270"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="272"/>
         <source>Failed to reopen, restoring old configuration.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="978"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="983"/>
         <source>Upscale multiplier set to {}x.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8551,12 +8562,12 @@ Do you want to load this save and continue?</source>
     </message>
     <message>
         <location filename="../../pcsx2/MTGS.cpp" line="987"/>
-        <source>Switching to software renderer...</source>
+        <source>Switching to Software Renderer...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/MTGS.cpp" line="987"/>
-        <source>Switching to hardware renderer...</source>
+        <source>Switching to Hardware Renderer...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8598,12 +8609,17 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.ui" line="103"/>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="90"/>
+        <source>All CRCs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GameCheatSettingsWidget.ui" line="113"/>
         <source>Reload Cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="171"/>
+        <location filename="../Settings/GameCheatSettingsWidget.cpp" line="182"/>
         <source>%1 unlabelled patch codes will automatically activate.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9204,17 +9220,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="27"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="28"/>
         <source>&lt;strong&gt;Author: &lt;/strong&gt;%1&lt;br&gt;%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="28"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="29"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="29"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="30"/>
         <source>No description provided.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9232,12 +9248,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.ui" line="71"/>
+        <location filename="../Settings/GamePatchSettingsWidget.ui" line="61"/>
+        <source>All CRCs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GamePatchSettingsWidget.ui" line="84"/>
         <source>Reload Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="115"/>
+        <location filename="../Settings/GamePatchSettingsWidget.cpp" line="127"/>
         <source>There are no patches available for this game.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11963,135 +11984,135 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>Hotkeys</name>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1001"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1009"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1029"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1036"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1045"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1063"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1006"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1014"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1041"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1050"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1056"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1062"/>
         <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1081"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1104"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1132"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1144"/>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1158"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1109"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1149"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1163"/>
         <source>Graphics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1002"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1007"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1009"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1014"/>
         <source>Toggle Video Capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1029"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1034"/>
         <source>Save Single Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1036"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1041"/>
         <source>Save Multi Frame GS Dump</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1046"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1051"/>
         <source>Toggle Software Rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1052"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1057"/>
         <source>Increase Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1058"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1063"/>
         <source>Decrease Upscale Multiplier</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1063"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
         <source>Toggle On-Screen Display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1068"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1073"/>
         <source>Cycle Aspect Ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1077"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1082"/>
         <source>Aspect ratio set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1081"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1086"/>
         <source>Cycle Hardware Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1093"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1098"/>
         <source>Hardware mipmapping set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1104"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1109"/>
         <source>Cycle Deinterlace Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1126"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1131"/>
         <source>Deinterlace mode set to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1132"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1137"/>
         <source>Toggle Texture Dumping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1138"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1143"/>
         <source>Texture dumping is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1139"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1144"/>
         <source>Texture dumping is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1145"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1150"/>
         <source>Toggle Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1152"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1157"/>
         <source>Texture replacements are now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1153"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1158"/>
         <source>Texture replacements are now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1159"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1164"/>
         <source>Reload Texture Replacements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1166"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1171"/>
         <source>Texture replacements are not enabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1171"/>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1176"/>
         <source>Reloading texture replacements...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15387,7 +15408,7 @@ Do you want to create this directory?</source>
         <location filename="../Settings/SettingsWindow.cpp" line="287"/>
         <location filename="../Settings/SettingsWindow.cpp" line="302"/>
         <location filename="../Settings/SettingsWindow.cpp" line="310"/>
-        <location filename="../Settings/SettingsWindow.cpp" line="321"/>
+        <location filename="../Settings/SettingsWindow.cpp" line="324"/>
         <source>PCSX2 Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15621,12 +15642,12 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.cpp" line="321"/>
+        <location filename="../Settings/SettingsWindow.cpp" line="324"/>
         <source>Per-game configuration cleared.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/SettingsWindow.cpp" line="370"/>
+        <location filename="../Settings/SettingsWindow.cpp" line="373"/>
         <source>Recommended Value</source>
         <translation type="unfinished"></translation>
     </message>
