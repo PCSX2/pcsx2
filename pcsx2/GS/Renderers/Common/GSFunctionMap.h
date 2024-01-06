@@ -8,6 +8,8 @@
 
 #include "common/HostSys.h"
 
+#include <cinttypes>
+
 template <class KEY, class VALUE>
 class GSFunctionMap
 {
@@ -115,7 +117,7 @@ public:
 			{
 				u64 tpf = p->ticks / p->frames;
 
-				printf("%016llx | %6llu | %5llu | %5.2f%% %5.1f %6.1f | %8llu %6llu %5.2f%%\n",
+				printf("%016" PRIx64 " | %6" PRIu64 " | %5" PRIu64 " | %5.2f%% %5.1f %6.1f | %8" PRIu64 " %6" PRIu64 " %5.2f%%\n",
 					(u64)key,
 					p->frames,
 					p->prims / p->frames,

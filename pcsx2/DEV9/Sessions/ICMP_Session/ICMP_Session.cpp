@@ -550,7 +550,7 @@ namespace Sessions
 					{
 						Console.Error("DEV9: ICMP: Failed to bind socket. Error: %d", errno);
 						::close(icmpSocket);
-						icmpSocket == -1;
+						icmpSocket = -1;
 						return false;
 					}
 				}
@@ -561,7 +561,7 @@ namespace Sessions
 				{
 					Console.Error("DEV9: ICMP: Failed to setsockopt IP_RECVERR. Error: %d", errno);
 					::close(icmpSocket);
-					icmpSocket == -1;
+					icmpSocket = -1;
 					return false;
 				}
 #endif
@@ -571,7 +571,7 @@ namespace Sessions
 				{
 					Console.Error("DEV9: ICMP: Failed to set TTL. Error: %d", errno);
 					::close(icmpSocket);
-					icmpSocket == -1;
+					icmpSocket = -1;
 					return false;
 				}
 
@@ -585,7 +585,7 @@ namespace Sessions
 					{
 						Console.Error("DEV9: ICMP: Failed to get id. Error: %d", errno);
 						::close(icmpSocket);
-						icmpSocket == -1;
+						icmpSocket = -1;
 						return false;
 					}
 
@@ -621,7 +621,7 @@ namespace Sessions
 				{
 					Console.Error("DEV9: ICMP: Send Error %d", errno);
 					::close(icmpSocket);
-					icmpSocket == -1;
+					icmpSocket = -1;
 					return false;
 				}
 
