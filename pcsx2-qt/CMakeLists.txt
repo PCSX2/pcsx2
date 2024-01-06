@@ -168,6 +168,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/Models/ThreadModel.h
 	Debugger/Models/StackModel.cpp
 	Debugger/Models/StackModel.h
+	Debugger/Models/SavedAddressesModel.cpp
+	Debugger/Models/SavedAddressesModel.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui

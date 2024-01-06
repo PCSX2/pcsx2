@@ -13,6 +13,7 @@
 #include "Models/BreakpointModel.h"
 #include "Models/ThreadModel.h"
 #include "Models/StackModel.h"
+#include "Models/SavedAddressesModel.h"
 
 #include "QtHost.h"
 #include <QtWidgets/QWidget>
@@ -74,6 +75,11 @@ public slots:
 	void contextBPListEdit();
 	void contextBPListPasteCSV();
 
+	void onSavedAddressesListContextMenu(QPoint pos);
+	void contextSavedAddressesListPasteCSV();
+	void contextSavedAddressesListNew();
+	void addAddressToSavedAddressesList(u32 address);
+
 	void updateThreads();
 	void onThreadListDoubleClick(const QModelIndex& index);
 	void onThreadListContextMenu(QPoint pos);
@@ -128,6 +134,7 @@ private:
 	ThreadModel m_threadModel;
 	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
+	SavedAddressesModel m_savedAddressesModel;
 	QTimer m_resultsLoadTimer;
 
 	bool m_demangleFunctions = true;

@@ -424,6 +424,10 @@ void MemoryViewWidget::customMenuRequested(QPoint pos)
 
 		m_contextMenu->addSeparator();
 
+		action = new QAction((tr("Add to Saved Memory Addresses")));
+		m_contextMenu->addAction(action);
+		connect(action, &QAction::triggered, this, [this]() { emit addToSavedAddresses(m_table.selectedAddress); });
+
 		action = new QAction(tr("Copy Byte"));
 		m_contextMenu->addAction(action);
 		connect(action, &QAction::triggered, this, [this]() { contextCopyByte(); });
