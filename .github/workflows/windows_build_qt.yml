@@ -6,6 +6,9 @@ on:
       jobName:
         required: true
         type: string
+      artifactPrefixName:
+        required: true
+        type: string
       os:
         required: false
         type: string
@@ -62,12 +65,7 @@ jobs:
         id: artifact-metadata
         shell: bash
         env:
-          OS: windows
-          CMAKE_FLAGS: ${{ inputs.cmakeFlags }}
-          BUILD_CONFIGURATION: ${{ inputs.configuration }}
-          BUILD_SYSTEM: ${{ inputs.buildSystem }}
-          ARCH: ${{ inputs.platform }}
-          SIMD: ${{ inputs.simd }}
+          PREFIX: ${{ inputs.artifactPrefixName }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
