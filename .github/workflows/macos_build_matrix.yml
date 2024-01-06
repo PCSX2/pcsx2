@@ -15,4 +15,5 @@ jobs:
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "MacOS Build"
+      artifactPrefixName: "PCSX2-macos-Qt"
     secrets: inherit

@@ -6,6 +6,9 @@ on:
       jobName:
         required: true
         type: string
+      artifactPrefixName:
+        required: true
+        type: string
       os:
         required: false
         type: string
@@ -60,9 +63,7 @@ jobs:
         id: artifact-metadata
         shell: bash
         env:
-          OS: linux
-          BUILD_SYSTEM: flatpak
-          ARCH: ${{ inputs.platform }}
+          PREFIX: ${{ inputs.artifactPrefixName }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
@@ -90,9 +91,11 @@ jobs:
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
 
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6.3
+        # TODO - based on v6.3, switch back to the main action once change is accepted (or they release a breaking change that uses upload-artifact@v4)
+        uses: xTVaser/flatpak-github-actions/flatpak-builder@64267d4cf01f7955a40128039d0abab17bb48aac
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
+          upload-artifact: false
           manifest-path: .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
           arch: x86_64
           build-bundle: true
@@ -130,4 +133,17 @@ jobs:
           flat-manager-url: https://hub.flathub.org/
           repository: stable
           token: ${{ secrets.FLATHUB_TOKEN }}
+
+      # NOTE - this is done after on purpose so the flatpak file is wherever it needs to be for the previous pushes
+      - name: Prepare artifacts folder
+        # NOTE - 'flatpak-builder' dumps the artifact out into the current directory
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
+          mv "./${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak" "$GITHUB_WORKSPACE"/ci-artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}
+          path: ci-artifacts
 
