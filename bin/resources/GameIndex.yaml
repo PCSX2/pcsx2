@@ -21281,8 +21281,8 @@ SLES-53561:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces depth ghosting.
-    roundSprite: 2 # Reduces depth ghosting.
+    halfPixelOffset: 4 # Reduces ghosting.
+    roundSprite: 2 # Reduces ghosting.
 SLES-53563:
   name: "Nickelodeon SpongeBob SquarePants and Friends Unite!"
   region: "PAL-M6"
@@ -54309,8 +54309,8 @@ SLPS-25879:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces depth ghosting.
-    roundSprite: 2 # Reduces depth ghosting.
+    halfPixelOffset: 4 # Reduces ghosting.
+    roundSprite: 2 # Reduces ghosting.
 SLPS-25880:
   name: "True Fortune"
   region: "NTSC-J"
@@ -62076,8 +62076,8 @@ SLUS-21269:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces depth ghosting.
-    roundSprite: 2 # Reduces depth ghosting.
+    halfPixelOffset: 4 # Reduces ghosting.
+    roundSprite: 2 # Reduces ghosting.
 SLUS-21270:
   name: "MS Saga - A New Dawn"
   region: "NTSC-U"
