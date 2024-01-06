@@ -603,7 +603,7 @@ void GSRendererSW::Sync(int reason)
 
 	if constexpr (LOG)
 	{
-		fprintf(s_fp, "sync n=%d r=%d t=%llu p=%d %c\n", s_n, reason, t, pixels, t > 10000000 ? '*' : ' ');
+		fprintf(s_fp, "sync n=%d r=%d t=%" PRIu64 " p=%d %c\n", s_n, reason, t, pixels, t > 10000000 ? '*' : ' ');
 		fflush(s_fp);
 	}
 
@@ -1445,7 +1445,7 @@ GSRendererSW::SharedData::~SharedData()
 
 	if constexpr (LOG)
 	{
-		fprintf(s_fp, "[%d] done t=%lld p=%d | %d %d %d | %08x_%08x\n",
+		fprintf(s_fp, "[%d] done t=%" PRId64 " p=%d | %d %d %d | %08x_%08x\n",
 			counter,
 			GetCPUTicks() - start, pixels,
 			primclass, vertex_count, index_count,

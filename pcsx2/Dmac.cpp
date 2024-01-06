@@ -58,12 +58,12 @@ tDMA_TAG DMACh::dma_tag()
 
 std::string DMACh::cmq_to_str() const
 {
-	return StringUtil::StdStringFromFormat("chcr = %lx, madr = %lx, qwc  = %lx", chcr._u32, madr, qwc);
+	return StringUtil::StdStringFromFormat("chcr = %x, madr = %x, qwc  = %x", chcr._u32, madr, qwc);
 }
 
 std::string DMACh::cmqt_to_str() const
 {
-	return StringUtil::StdStringFromFormat("chcr = %lx, madr = %lx, qwc  = %lx, tadr = %1x", chcr._u32, madr, qwc, tadr);
+	return StringUtil::StdStringFromFormat("chcr = %x, madr = %x, qwc  = %x, tadr = %1x", chcr._u32, madr, qwc, tadr);
 }
 
 __fi void throwBusError(const char *s)

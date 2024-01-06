@@ -51,12 +51,12 @@ void IPU_Fifo::clear()
 
 std::string IPU_Fifo_Input::desc() const
 {
-	return StringUtil::StdStringFromFormat("IPU Fifo Input: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
+	return StringUtil::StdStringFromFormat("IPU Fifo Input: readpos = 0x%x, writepos = 0x%x, data = %p", readpos, writepos, data);
 }
 
 std::string IPU_Fifo_Output::desc() const
 {
-	return StringUtil::StdStringFromFormat("IPU Fifo Output: readpos = 0x%x, writepos = 0x%x, data = 0x%x", readpos, writepos, data);
+	return StringUtil::StdStringFromFormat("IPU Fifo Output: readpos = 0x%x, writepos = 0x%x, data = %p", readpos, writepos, data);
 }
 
 int IPU_Fifo_Input::write(const u32* pMem, int size)
