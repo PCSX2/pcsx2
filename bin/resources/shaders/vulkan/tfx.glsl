@@ -933,6 +933,21 @@ vec4 ps_color()
 	vec4 T = sample_color(st);
 #endif
 
+	#if PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC
+		uvec4 denorm_c_before = uvec4(T);
+		#if PS_READ_BA
+			T.r = float((denorm_c_before.b << 3) & 0xF8);
+			T.g = float(((denorm_c_before.b >> 2) & 0x38) | ((denorm_c_before.a << 6) & 0xC0));
+			T.b = float((denorm_c_before.a << 1) & 0xF8);
+			T.a = float(denorm_c_before.a & 0x80);
+		#else
+			T.r = float((denorm_c_before.r << 3) & 0xF8);
+			T.g = float(((denorm_c_before.r >> 2) & 0x38) | ((denorm_c_before.g << 6) & 0xC0));
+			T.b = float((denorm_c_before.g << 1) & 0xF8);
+			T.a = float(denorm_c_before.g & 0x80);
+		#endif
+	#endif
+	
 	vec4 C = tfx(T, vsIn.c);
 
 	atst(C);
@@ -1184,40 +1199,6 @@ void main()
 
 	vec4 C = ps_color();
 
-	#if PS_SHUFFLE
-		uvec4 denorm_c = uvec4(C);
-		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
-		
-		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
-		#if PS_SHUFFLE_SAME
-			#if (PS_READ_BA)
-				C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
-			#else
-				C.ga = C.rg;
-			#endif
-		// Copy of a 16bit source in to this target
-		#elif PS_READ16_SRC
-			C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
-			if ((denorm_c.a & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
-		// Write RB part. Mask will take care of the correct destination
-		#elif PS_READ_BA
-			C.rb = C.bb;
-			if ((denorm_c.a & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-		#else
-			C.rb = C.rr;
-			if ((denorm_c.g & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
-		#endif // PS_SHUFFLE_SAME
-	#endif // PS_SHUFFLE
-
 	// Must be done before alpha correction
 
 	// AA (Fixed one) will output a coverage of 1.0 as alpha
@@ -1254,8 +1235,52 @@ void main()
 	o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 
 #else
-
 	ps_blend(C, alpha_blend);
+
+#if PS_SHUFFLE
+		#if !PS_SHUFFLE_SAME && !PS_READ16_SRC
+			uvec4 denorm_c_after = uvec4(C);
+			#if PS_READ_BA
+				C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
+				C.a = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
+			#else
+				C.r = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
+				C.g = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
+			#endif
+		#endif
+
+		uvec4 denorm_c = uvec4(C);
+		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
+		
+		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
+		#if PS_SHUFFLE_SAME
+			#if (PS_READ_BA)
+				C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+			#else
+				C.ga = C.rg;
+			#endif
+		// Copy of a 16bit source in to this target
+		#elif PS_READ16_SRC
+			C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
+			if ((denorm_c.a & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+		// Write RB part. Mask will take care of the correct destination
+		#elif PS_READ_BA
+			C.rb = C.bb;
+			if ((denorm_c.a & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+		#else
+			C.rb = C.rr;
+			if ((denorm_c.g & 0x80u) != 0u)
+				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			else
+				C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+		#endif // PS_SHUFFLE_SAME
+	#endif // PS_SHUFFLE
 
 	ps_dither(C.rgb);
 

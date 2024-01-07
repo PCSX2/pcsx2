@@ -5169,7 +5169,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	bool blending_alpha_pass = false;
-	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && (m_conf.colormask.wrgba & 0x7))
+	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
 		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, blending_alpha_pass);
 	}
