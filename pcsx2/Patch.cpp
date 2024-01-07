@@ -246,6 +246,32 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 
 	PatchGroup current_patch_group;
 	const auto add_current_patch = [patch_list, &current_patch_group]() {
+		if (current_patch_group.patches.empty())
+			return;
+
+		// Ungrouped/legacy patches should merge with other ungrouped patches.
+		if (current_patch_group.name.empty())
+		{
+			const PatchList::iterator ungrouped_patch = std::find_if(patch_list->begin(), patch_list->end(),
+				[](const PatchGroup& pg) { return pg.name.empty(); });
+			if (ungrouped_patch != patch_list->end())
+			{
+				Console.WriteLn(Color_Gray, fmt::format(
+												"Patch: Merging {} new patch commands into ungrouped list.", current_patch_group.patches.size()));
+
+				ungrouped_patch->patches.reserve(ungrouped_patch->patches.size() + current_patch_group.patches.size());
+				for (PatchCommand& cmd : current_patch_group.patches)
+					ungrouped_patch->patches.push_back(std::move(cmd));
+			}
+			else
+			{
+				// Always add ungrouped patches, no sense to compare empty names.
+				patch_list->push_back(std::move(current_patch_group));
+			}
+
+			return;
+		}
+
 		// Don't show patches with duplicate names, prefer the first loaded.
 		if (!ContainsPatchName(*patch_list, current_patch_group.name))
 		{
@@ -282,6 +308,9 @@ u32 Patch::LoadPatchesFromString(PatchList* patch_list, const std::string& patch
 			}
 
 			current_patch_group.name = line.substr(1, line.length() - 2);
+			if (current_patch_group.name.empty())
+				Console.Error(fmt::format("Malformed patch name: {}", line));
+
 			continue;
 		}
 
@@ -598,7 +627,8 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 		if (p.override_interlace_mode.has_value())
 			s_override_interlace_mode = p.override_interlace_mode;
 
-		count++;
+		// Count unlabelled patches once per command, or one patch per group.
+		count += p.name.empty() ? static_cast<u32>(p.patches.size()) : 1;
 	}
 
 	return count;
