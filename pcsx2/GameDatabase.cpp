@@ -120,6 +120,15 @@ void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml:
 			else
 				Console.Error(fmt::format("[GameDB] Invalid EE round mode '{}', specified for serial: '{}'.", eeVal, serial));
 		}
+		if (node["roundModes"].has_child("eeDivRoundMode"))
+		{
+			int eeVal = -1;
+			node["roundModes"]["eeDivRoundMode"] >> eeVal;
+			if (eeVal >= 0 && eeVal < static_cast<int>(FPRoundMode::MaxCount))
+				gameEntry.eeDivRoundMode = static_cast<FPRoundMode>(eeVal);
+			else
+				Console.Error(fmt::format("[GameDB] Invalid EE division round mode '{}', specified for serial: '{}'.", eeVal, serial));
+		}
 		if (node["roundModes"].has_child("vuRoundMode"))
 		{
 			int vuVal = -1;
@@ -440,6 +449,19 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 		{
 			Console.WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
 			config.Cpu.FPUFPCR.SetRoundMode(eeRoundMode);
+		}
+		else
+		{
+			Console.Warning("[GameDB] Skipping changing EE/FPU roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeRoundMode)]);
+		}
+	}
+
+	if (eeDivRoundMode < FPRoundMode::MaxCount)
+	{
+		if (applyAuto)
+		{
+			Console.WriteLn("(GameDB) Changing EE/FPU divison roundmode to %d [%s]", eeRoundMode, s_round_modes[static_cast<u8>(eeDivRoundMode)]);
+			config.Cpu.FPUDivFPCR.SetRoundMode(eeDivRoundMode);
 		}
 		else
 		{

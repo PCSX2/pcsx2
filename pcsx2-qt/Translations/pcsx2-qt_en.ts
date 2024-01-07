@@ -2163,37 +2163,33 @@ Unread messages: {2}</source>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="104"/>
         <source>Select</source>
-        <extracomment>Leave this button name as-is.</extracomment>
+        <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="138"/>
         <source>Yellow (Left)</source>
-        <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="172"/>
         <source>Yellow (Right)</source>
-        <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="206"/>
         <source>Blue (Right)</source>
-        <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="240"/>
         <source>Blue (Left)</source>
-        <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="274"/>
         <source>Start</source>
-        <extracomment>Leave this button name as-is.</extracomment>
+        <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2204,25 +2200,21 @@ Unread messages: {2}</source>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="359"/>
         <source>Green (Right)</source>
-        <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="399"/>
         <source>White (Left)</source>
-        <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="439"/>
         <source>Green (Left)</source>
-        <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/ControllerBindingWidget_Popn.ui" line="479"/>
         <source>White (Right)</source>
-        <extracomment>Leave this button name as-is.</extracomment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3856,7 +3848,7 @@ Enter function name</source>
     </message>
     <message>
         <location filename="../QtHost.cpp" line="1417"/>
-        <source>Download failed with HTTP status code {}.</source>
+        <source>Download failed with HTTP status code %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

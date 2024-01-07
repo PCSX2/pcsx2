@@ -57,13 +57,6 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QCheckBox" name="FpuNegDivHack">
-            <property name="text">
-             <string extracomment="FPU = Floating Point Unit. A part of the PS2's CPU. Do not translate.\nNegative Divide: mathematical term.\nGundam: a multimedia franchise name. Leave as-is or use an official translation.">FPU Negative Divide Hack</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="FpuMulHack">
             <property name="text">
              <string extracomment="FPU = Floating Point Unit. A part of the PS2's CPU. Do not translate.\nMultiply: mathematical term.\nTales of Destiny: a game's name. Leave as-is or use an official translation.">FPU Multiply Hack</string>
