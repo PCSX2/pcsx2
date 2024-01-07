@@ -193,8 +193,8 @@ set(pcsx2Headers
 	SIO/Memcard/MemoryCardFolder.h
 	SIO/Memcard/MemoryCardProtocol.h
 	SPR.h
+	SupportURLs.h
 	StateWrapper.h
-	SysForwardDefs.h
 	Vif_Dma.h
 	Vif.h
 	Vif_Unpack.h

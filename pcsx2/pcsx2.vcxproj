@@ -672,6 +672,7 @@
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="ps2\pgif.h" />
     <ClInclude Include="StateWrapper.h" />
+    <ClInclude Include="SupportURLs.h" />
     <ClInclude Include="USB\deviceproxy.h" />
     <ClInclude Include="USB\qemu-usb\desc.h" />
     <ClInclude Include="USB\qemu-usb\hid.h" />

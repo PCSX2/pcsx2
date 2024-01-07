@@ -17,7 +17,7 @@
 #include "Input/InputManager.h"
 #include "MTGS.h"
 #include "Patch.h"
-#include "SysForwardDefs.h"
+#include "SupportURLs.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
