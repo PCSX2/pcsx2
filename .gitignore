@@ -85,6 +85,13 @@ oprofile_data/
 /bin/textures
 /bin/translations
 /bin/inputprofiles
+
+# Resources that are runtime downloaded.
+/bin/resources/NotoSansJP-Regular.ttf
+/bin/resources/NotoSansKR-Regular.ttf
+/bin/resources/NotoSansSC-Regular.ttf
+/bin/resources/NotoSansTC-Regular.ttf
+
 /deps
 /ipch
 

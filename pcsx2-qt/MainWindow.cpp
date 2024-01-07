@@ -1644,7 +1644,10 @@ void MainWindow::reloadThemeSpecificImages()
 
 void MainWindow::updateLanguage()
 {
-	QtHost::InstallTranslator();
+	// Remove the settings window, so it doesn't mess with any popups that happen (e.g. font download).
+	destroySubWindows();
+
+	QtHost::InstallTranslator(this);
 	recreate();
 }
 
@@ -2885,6 +2888,12 @@ MainWindow::VMLock MainWindow::pauseAndLockVM()
 	// Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
 	QWidget* dialog_parent = getDisplayContainer();
 
+	// Ensure main window is visible.
+	if (!g_main_window->isVisible())
+		g_main_window->show();
+	g_main_window->raise();
+	g_main_window->activateWindow();
+
 	return VMLock(dialog_parent, was_paused, was_fullscreen);
 }
 
@@ -2920,6 +2929,19 @@ MainWindow::VMLock::~VMLock()
 
 	if (!m_was_paused)
 		g_emu_thread->setVMPaused(false);
+}
+
+MainWindow::VMLock& MainWindow::VMLock::operator=(VMLock&& lock)
+{
+	m_dialog_parent = lock.m_dialog_parent;
+	m_was_paused = lock.m_was_paused;
+	m_was_fullscreen = lock.m_was_fullscreen;
+
+	lock.m_dialog_parent = nullptr;
+	lock.m_was_paused = true;
+	lock.m_was_fullscreen = false;
+
+	return *this;
 }
 
 void MainWindow::VMLock::cancelResume()
