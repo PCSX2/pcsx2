@@ -33,7 +33,7 @@ static bool shouldUseCDrawScanline(u64 key)
 			{
 				u64 key;
 				char yn;
-				if (sscanf(str.c_str(), "%llx %c", &key, &yn) == 2)
+				if (sscanf(str.c_str(), "%" PRIx64 " %c", &key, &yn) == 2)
 				{
 					if (yn != 'Y' && yn != 'N' && yn != 'y' && yn != 'n')
 						Console.Warning("Failed to parse %s: Not y/n", str.c_str());
@@ -57,7 +57,7 @@ static bool shouldUseCDrawScanline(u64 key)
 		{
 			for (const auto& pair : s_use_c_draw_scanline)
 			{
-				fprintf(file, "%016llX %c %s\n", pair.first, pair.second ? 'Y' : 'N', GSScanlineSelector(pair.first).to_string().c_str());
+				fprintf(file, "%016" PRIX64 " %c %s\n", pair.first, pair.second ? 'Y' : 'N', GSScanlineSelector(pair.first).to_string().c_str());
 			}
 			fclose(file);
 		}

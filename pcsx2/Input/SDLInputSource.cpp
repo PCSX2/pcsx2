@@ -231,7 +231,7 @@ void SDLInputSource::SetHints()
 		Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: Using Controller DB from user directory: '{}'", upath));
 		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, upath.c_str());
 	}
-	else if (const std::string rpath = Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME); FileSystem::FileExists(rpath.c_str()))
+	else if (const std::string rpath = EmuFolders::GetOverridableResourcePath(CONTROLLER_DB_FILENAME); FileSystem::FileExists(rpath.c_str()))
 	{
 		Console.WriteLn(Color_StrongGreen, "SDLInputSource: Using Controller DB from resources.");
 		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, rpath.c_str());
@@ -245,13 +245,11 @@ void SDLInputSource::SetHints()
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	// Enable Wii U Pro Controller support
-	// New as of SDL 2.26, so use string
-	SDL_SetHint("SDL_JOYSTICK_HIDAPI_WII", "1");
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
 #ifndef _WIN32
 	// Gets us pressure sensitive button support on Linux
 	// Apparently doesn't work on Windows, so leave it off there
-	// New as of SDL 2.26, so use string
-	SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS3", "1");
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
 #endif
 
 	for (const std::pair<std::string, std::string>& hint : m_sdl_hints)
@@ -630,7 +628,6 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!gcontroller && !joystick)
 	{
 		Console.Error("(SDLInputSource) Failed to open controller %d", index);
-
 		return false;
 	}
 
@@ -689,6 +686,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			mark_bind(SDL_GameControllerGetBindForAxis(gcontroller, static_cast<SDL_GameControllerAxis>(i)));
 		for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
 			mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
+
+		Console.WriteLn("(SDLInputSource) Controller %d has %d axes and %d buttons", player_id, num_axes, num_buttons);
 	}
 	else
 	{
@@ -696,6 +695,9 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		const int num_hats = SDL_JoystickNumHats(joystick);
 		if (num_hats > 0)
 			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
+
+		Console.WriteLn("(SDLInputSource) Joystick %d has %d axes, %d buttons and %d hats", player_id,
+			SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick), num_hats);
 	}
 
 	cd.use_game_controller_rumble = (gcontroller && SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);

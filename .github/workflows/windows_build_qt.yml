@@ -6,6 +6,9 @@ on:
       jobName:
         required: true
         type: string
+      artifactPrefixName:
+        required: true
+        type: string
       os:
         required: false
         type: string
@@ -62,10 +65,7 @@ jobs:
         id: artifact-metadata
         shell: bash
         env:
-          OS: windows
-          BUILD_SYSTEM: ${{ inputs.buildSystem }}
-          ARCH: ${{ inputs.platform }}
-          SIMD: ${{ inputs.simd }}
+          PREFIX: ${{ inputs.artifactPrefixName }}
           EVENT_NAME: ${{ github.event_name }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUM: ${{ github.event.pull_request.number }}
@@ -122,7 +122,7 @@ jobs:
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: |
@@ -136,7 +136,7 @@ jobs:
             !./bin/**/*.lib
 
       - name: Upload artifact - with symbols
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}-symbols
           path: ./bin/**/*.pdb

@@ -28,14 +28,19 @@ class GameCheatSettingsWidget : public QWidget
 
 public:
 	GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
-	void disableAllCheats();
 	~GameCheatSettingsWidget();
+
+	void disableAllCheats();
+
+protected:
+	void resizeEvent(QResizeEvent* event) override;
 
 private Q_SLOTS:
 	void onCheatListItemDoubleClicked(QTreeWidgetItem* item, int column);
 	void onCheatListItemChanged(QTreeWidgetItem* item, int column);
 	void onReloadClicked();
 	void updateListEnabled();
+	void reloadList();
 
 private:
 	QTreeWidgetItem* getTreeWidgetParent(const std::string_view& parent);
@@ -43,7 +48,6 @@ private:
 	void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
 	void setStateForAll(bool enabled);
 	void setStateRecursively(QTreeWidgetItem* parent, bool enabled);
-	void reloadList();
 
 	Ui::GameCheatSettingsWidget m_ui;
 	SettingsWindow* m_dialog;

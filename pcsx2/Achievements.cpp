@@ -1027,7 +1027,7 @@ void Achievements::DisplayAchievementSummary()
 
 	// Technically not going through the resource API, but since we're passing this to something else, we can't.
 	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, INFO_SOUND_NAME).c_str());
+		Common::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(INFO_SOUND_NAME).c_str());
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
@@ -1079,7 +1079,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 	}
 
 	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, UNLOCK_SOUND_NAME).c_str());
+		Common::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(UNLOCK_SOUND_NAME).c_str());
 }
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
@@ -1170,7 +1170,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 	}
 
 	if (EmuConfig.Achievements.SoundEffects)
-		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, LBSUBMIT_SOUND_NAME).c_str());
+		Common::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(LBSUBMIT_SOUND_NAME).c_str());
 }
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)

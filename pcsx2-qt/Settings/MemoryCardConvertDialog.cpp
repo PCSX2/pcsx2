@@ -259,7 +259,7 @@ void MemoryCardConvertDialog::ConvertCard()
 		while (m_srcCardInfo.type == MemoryCardType::File ? FileSystem::DirectoryExists(Path::Combine(EmuFolders::MemoryCards, destName.toStdString()).c_str()) : FileSystem::FileExists(Path::Combine(EmuFolders::MemoryCards, destName.toStdString()).c_str()))
 		{
 			destName = baseName;
-			destName.append(StringUtil::StdStringFromFormat("_%02d.ps2", ++num).c_str());
+			destName.append(StringUtil::StdStringFromFormat("_%02zd.ps2", ++num).c_str());
 		}
 		
 		m_destCardName = destName;

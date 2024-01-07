@@ -81,6 +81,7 @@ jobs:
     uses: ./.github/workflows/linux_build_qt.yml
     with:
       jobName: "AppImage Build"
+      artifactPrefixName: "PCSX2-linux-Qt-x64-appimage"
       compiler: clang
       cmakeflags: ""
       buildAppImage: true
@@ -95,6 +96,7 @@ jobs:
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:
       jobName: "Flatpak Build"
+      artifactPrefixName: "PCSX2-linux-Qt-x64-flatpak"
       compiler: clang
       cmakeflags: ""
       branch: "stable"
@@ -111,6 +113,7 @@ jobs:
     uses: ./.github/workflows/windows_build_qt.yml
     with:
       jobName: "Windows Build"
+      artifactPrefixName: "PCSX2-windows-Qt-x64"
       configuration: CMake
       buildSystem: cmake
       cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
@@ -126,6 +129,7 @@ jobs:
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "MacOS Build"
+      artifactPrefixName: "PCSX2-macos-Qt"
       fetchTags: true
     secrets: inherit
 
@@ -146,7 +150,7 @@ jobs:
       - name: Prepare Artifact Folder
         run: mkdir ./ci-artifacts/
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         name: Download all Artifacts
         with:
           path: ./ci-artifacts/

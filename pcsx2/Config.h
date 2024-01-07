@@ -1225,6 +1225,7 @@ namespace EmuFolders
 	extern std::string Cheats;
 	extern std::string Patches;
 	extern std::string Resources;
+	extern std::string UserResources;
 	extern std::string Cache;
 	extern std::string Covers;
 	extern std::string GameSettings;
@@ -1241,7 +1242,10 @@ namespace EmuFolders
 	bool EnsureFoldersExist();
 
 	/// Opens the specified log file for writing.
-	std::FILE* OpenLogFile(const std::string_view& name, const char* mode);
+	std::FILE* OpenLogFile(std::string_view name, const char* mode);
+
+	/// Returns the path to a resource file, allowing the user to override it.
+	std::string GetOverridableResourcePath(std::string_view name);
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////
