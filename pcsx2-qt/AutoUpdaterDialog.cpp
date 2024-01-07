@@ -79,8 +79,13 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 // Available release channels.
 static const char* UPDATE_TAGS[] = {"stable", "nightly"};
 
-// Bit annoying, because PCSX2_isReleaseVersion is a bool, but whatever.
-#define THIS_RELEASE_TAG (PCSX2_isReleaseVersion ? "stable" : "nightly")
+// TODO: Make manual releases create this file, and make it contain `#define DEFAULT_UPDATER_CHANNEL "stable"`.
+#if __has_include("DefaultUpdaterChannel.h")
+#include "DefaultUpdaterChannel.h"
+#endif
+#ifndef DEFAULT_UPDATER_CHANNEL
+#define DEFAULT_UPDATER_CHANNEL "nightly"
+#endif
 
 #endif
 
@@ -135,7 +140,7 @@ QStringList AutoUpdaterDialog::getTagList()
 std::string AutoUpdaterDialog::getDefaultTag()
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-	return THIS_RELEASE_TAG;
+	return DEFAULT_UPDATER_CHANNEL;
 #else
 	return {};
 #endif
@@ -154,7 +159,7 @@ QString AutoUpdaterDialog::getCurrentVersionDate()
 QString AutoUpdaterDialog::getCurrentUpdateTag() const
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-	return QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG));
+	return QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", DEFAULT_UPDATER_CHANNEL));
 #else
 	return QString();
 #endif
