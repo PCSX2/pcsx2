@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -7,6 +7,8 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <string>
+#include <string_view>
 
 #include "pcsx2/Host.h"
 #include "pcsx2/Input/InputManager.h"
@@ -21,6 +23,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 #include <QtCore/QThread>
+
+#include <QtGui/QIcon>
 
 class SettingsInterface;
 
@@ -263,8 +267,17 @@ namespace QtHost
 	/// Returns the debug/devel config indicator.
 	QString GetAppConfigSuffix();
 
+	/// Returns the main application icon.
+	QIcon GetAppIcon();
+
 	/// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 	QString GetResourcesBasePath();
+
+	/// Returns the URL to a runtime-downloaded resource.
+	std::string GetRuntimeDownloadedResourceURL(std::string_view name);
+
+	/// Downloads the specified URL to the provided path.
+	bool DownloadFile(QWidget* parent, const QString& title, std::string url, const std::string& path);
 
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();

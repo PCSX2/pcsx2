@@ -6,6 +6,7 @@
 #include "GameList/GameListWidget.h"
 #include "MainWindow.h"
 #include "QtHost.h"
+#include "QtProgressCallback.h"
 #include "QtUtils.h"
 #include "SetupWizardDialog.h"
 #include "svnrev.h"
@@ -35,6 +36,7 @@
 #include "common/Console.h"
 #include "common/CrashHandler.h"
 #include "common/FileSystem.h"
+#include "common/HTTPDownloader.h"
 #include "common/Path.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
@@ -52,6 +54,8 @@
 #include <csignal>
 
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
+static constexpr const char* RUNTIME_RESOURCES_URL =
+	"https://github.com/PCSX2/pcsx2-windows-dependencies/releases/download/runtime-resources/";
 
 EmuThread* g_emu_thread = nullptr;
 
@@ -69,6 +73,7 @@ namespace QtHost
 	static void HookSignals();
 	static void RegisterTypes();
 	static bool RunSetupWizard();
+	static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 } // namespace QtHost
 
 //////////////////////////////////////////////////////////////////////////
@@ -1365,9 +1370,97 @@ QString QtHost::GetAppConfigSuffix()
 #endif
 }
 
+QIcon QtHost::GetAppIcon()
+{
+	return QIcon(QStringLiteral(":/icons/AppIcon64.png"));
+}
+
 QString QtHost::GetResourcesBasePath()
 {
 	return QString::fromStdString(EmuFolders::Resources);
+}
+
+std::string QtHost::GetRuntimeDownloadedResourceURL(std::string_view name)
+{
+	return fmt::format("{}/{}", RUNTIME_RESOURCES_URL, HTTPDownloader::URLEncode(name));
+}
+
+std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
+{
+	static constexpr u32 HTTP_POLL_INTERVAL = 10;
+
+	std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+	if (!http)
+	{
+		QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"), qApp->translate("EmuThread", "Failed to create HTTPDownloader."));
+		return false;
+	}
+
+	std::optional<bool> download_result;
+	const std::string::size_type url_file_part_pos = url.rfind('/');
+	QtModalProgressCallback progress(parent);
+	progress.GetDialog().setLabelText(
+		qApp->translate("EmuThread", "Downloading %1...").arg(QtUtils::StringViewToQString(
+			std::string_view(url).substr((url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0))));
+	progress.GetDialog().setWindowTitle(title);
+	progress.GetDialog().setWindowIcon(GetAppIcon());
+	progress.SetCancellable(true);
+
+	http->CreateRequest(
+		std::move(url), [parent, data, &download_result, &progress](s32 status_code, const std::string&, std::vector<u8> hdata) {
+			if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+				return;
+
+			if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+			{
+				QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
+					qApp->translate("EmuThread", "Download failed with HTTP status code {}.").arg(status_code));
+				download_result = false;
+				return;
+			}
+
+			if (hdata.empty())
+			{
+				QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
+					qApp->translate("EmuThread", "Download failed: Data is empty.").arg(status_code));
+
+			download_result = false;
+			return;
+			}
+
+			*data = std::move(hdata);
+			download_result = true;
+		},
+		&progress);
+
+	// Block until completion.
+	while (http->HasAnyRequests())
+	{
+		QApplication::processEvents(QEventLoop::AllEvents, HTTP_POLL_INTERVAL);
+		http->PollRequests();
+	}
+
+	return download_result;
+}
+
+bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, const std::string& path)
+{
+	std::vector<u8> data;
+	if (!DownloadFile(parent, title, std::move(url), &data).value_or(false) || data.empty())
+		return false;
+
+	// Directory may not exist. Create it.
+	const std::string directory(Path::GetDirectory(path));
+	if ((!directory.empty() && !FileSystem::DirectoryExists(directory.c_str()) &&
+			!FileSystem::CreateDirectoryPath(directory.c_str(), true)) ||
+		!FileSystem::WriteBinaryFile(path.c_str(), data.data(), data.size()))
+	{
+		QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
+			qApp->translate("EmuThread", "Failed to write '%1'.").arg(QString::fromStdString(path)));
+		return false;
+	}
+
+	return true;
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
