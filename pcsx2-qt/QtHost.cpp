@@ -1414,7 +1414,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 			if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			{
 				QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
-					qApp->translate("EmuThread", "Download failed with HTTP status code {}.").arg(status_code));
+					qApp->translate("EmuThread", "Download failed with HTTP status code %1.").arg(status_code));
 				download_result = false;
 				return;
 			}
