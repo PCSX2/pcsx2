@@ -2025,9 +2025,10 @@ SCAJ-30005:
     halfPixelOffset: 2 # Corrects fullscreen bloom misalignment.
 SCAJ-30006:
   name: "Gran Turismo 4"
-  region: "NTSC-Unk"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
+  region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
+    eeDivRoundMode: 3 # See above.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -2046,10 +2047,11 @@ SCAJ-30006:
     - "SCPS-55007"
 SCAJ-30007:
   name: "Gran Turismo 4"
-  region: "NTSC-Unk"
+  region: "NTSC-C"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
+  roundModes:
+    eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
+    eeDivRoundMode: 3 # See above.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -2057,9 +2059,10 @@ SCAJ-30007:
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCAJ-30008:
   name: "Gran Turismo 4 [PS2 The Best]"
-  region: "NTSC-Unk"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
+  region: "NTSC-C"
+  roundModes:
+    eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
+    eeDivRoundMode: 3 # See above.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
@@ -5188,8 +5191,6 @@ SCES-53285:
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
-  gameFixes:
-    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -10489,8 +10490,6 @@ SCUS-97429:
   name: "Jak X - Combat Racing"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -10771,8 +10770,6 @@ SCUS-97485:
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
-  gameFixes:
-    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -10795,8 +10792,6 @@ SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -11133,8 +11128,6 @@ SCUS-97572:
 SCUS-97574:
   name: "Jak X - Combat Racing [Greatest Hits]"
   region: "NTSC-U"
-  gameFixes:
-    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
@@ -21015,7 +21008,6 @@ SLES-53523:
     minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
     trilinearFiltering: 1
-    textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
     halfPixelOffset: 2 # Fixes misalgined bloom.
     autoFlush: 2 # Fixes missing bloom intensity and alignment.
 SLES-53524:
@@ -21293,6 +21285,7 @@ SLES-53561:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes door transitions.
     halfPixelOffset: 4 # Reduces ghosting.
     roundSprite: 2 # Reduces ghosting.
 SLES-53563:
@@ -21544,7 +21537,6 @@ SLES-53647:
     minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
     trilinearFiltering: 1
-    textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
     halfPixelOffset: 2 # Fixes misalgined bloom.
     autoFlush: 2 # Fixes missing bloom intensity and alignment.
 SLES-53651:
@@ -25719,8 +25711,6 @@ SLES-55170:
 SLES-55172:
   name: "Code Lyoko - Quest for Infinity"
   region: "PAL-M4"
-  roundModes:
-    eeDivRoundMode: 1 # Fixes missing texts on in-game textboxes.
   gsHWFixes:
     deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
     halfPixelOffset: 1 # Reduces ghosting effects.
@@ -50881,6 +50871,8 @@ SLPS-25264:
   name-sort: らーぜふぉん そうきゅうげんそうきょく PLUSCULUS
   name-en: "RAhXEPhON - Soukyuu Gensoukyoku [Plusculus]"
   region: "NTSC-J"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes floating chairs.
   gsHWFixes:
     autoFlush: 2 # Fixes DOF effect.
 SLPS-25265:
@@ -50888,6 +50880,8 @@ SLPS-25265:
   name-sort: らーぜふぉん そうきゅうげんそうきょく [つうじょうばん]
   name-en: "RAhXEPhON - Soukyuu Gensoukyoku"
   region: "NTSC-J"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes floating chairs.
   gsHWFixes:
     autoFlush: 2 # Fixes DOF effect.
 SLPS-25266:
@@ -54339,6 +54333,7 @@ SLPS-25879:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes door transitions.
     halfPixelOffset: 4 # Reduces ghosting.
     roundSprite: 2 # Reduces ghosting.
 SLPS-25880:
@@ -54634,8 +54629,9 @@ SLPS-25950:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces depth ghosting.
-    roundSprite: 2 # Reduces depth ghosting.
+    recommendedBlendingLevel: 2 # Fixes door transitions.
+    halfPixelOffset: 4 # Reduces ghosting.
+    roundSprite: 2 # Reduces ghosting.
 SLPS-25953:
   name: "Daisenryaku VII - Exceed"
   region: "NTSC-J"
@@ -61325,7 +61321,6 @@ SLUS-21139:
     minimumBlendingLevel: 3 # Fixes broken light and shadow rendering.
     mipmap: 2 # Mipmap + trilinear, improves ground textures and water textures and reflections.
     trilinearFiltering: 1
-    textureInsideRT: 1 # Fixes rainbow artifacting around edges of screen.
     halfPixelOffset: 2 # Fixes misalgined bloom.
     autoFlush: 2 # Fixes missing bloom intensity and alignment.
 SLUS-21140:
@@ -62112,6 +62107,7 @@ SLUS-21269:
   clampModes:
     eeClampMode: 3 # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
   gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes door transitions.
     halfPixelOffset: 4 # Reduces ghosting.
     roundSprite: 2 # Reduces ghosting.
 SLUS-21270:
@@ -64668,8 +64664,6 @@ SLUS-21743:
   name: "Code Lyoko - Quest for Infinity"
   region: "NTSC-U"
   compat: 5
-  roundModes:
-    eeDivRoundMode: 1 # Fixes missing texts on in-game textboxes.
   gsHWFixes:
     deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
     halfPixelOffset: 1 # Reduces ghosting effects.
@@ -66694,8 +66688,6 @@ TCES-53286:
   name: "Jak X Beta Trial Code"
   region: "PAL-E"
   compat: 5
-  gameFixes:
-    - InstantDMAHack # Fixes bad IPU DMA timing.
   gsHWFixes:
     roundSprite: 1 # Fix lines in the sky.
     autoFlush: 2 # Fixes lighting.
