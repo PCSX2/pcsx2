@@ -630,7 +630,6 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!gcontroller && !joystick)
 	{
 		Console.Error("(SDLInputSource) Failed to open controller %d", index);
-
 		return false;
 	}
 
@@ -689,6 +688,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			mark_bind(SDL_GameControllerGetBindForAxis(gcontroller, static_cast<SDL_GameControllerAxis>(i)));
 		for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
 			mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
+
+		Console.WriteLn("(SDLInputSource) Controller %d has %d axes and %d buttons", player_id, num_axes, num_buttons);
 	}
 	else
 	{
@@ -696,6 +697,9 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		const int num_hats = SDL_JoystickNumHats(joystick);
 		if (num_hats > 0)
 			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
+
+		Console.WriteLn("(SDLInputSource) Joystick %d has %d axes, %d buttons and %d hats", player_id,
+			SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick), num_hats);
 	}
 
 	cd.use_game_controller_rumble = (gcontroller && SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
