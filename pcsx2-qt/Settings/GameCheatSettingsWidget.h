@@ -28,8 +28,12 @@ class GameCheatSettingsWidget : public QWidget
 
 public:
 	GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
-	void disableAllCheats();
 	~GameCheatSettingsWidget();
+
+	void disableAllCheats();
+
+protected:
+	void resizeEvent(QResizeEvent* event) override;
 
 private Q_SLOTS:
 	void onCheatListItemDoubleClicked(QTreeWidgetItem* item, int column);

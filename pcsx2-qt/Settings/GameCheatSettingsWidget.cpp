@@ -17,7 +17,6 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 	: m_dialog(dialog)
 {
 	m_ui.setupUi(this);
-	QtUtils::ResizeColumnsForTreeView(m_ui.cheatList, {300, 100, -1});
 
 	reloadList();
 
@@ -88,6 +87,12 @@ void GameCheatSettingsWidget::disableAllCheats()
 	SettingsInterface* si = m_dialog->getSettingsInterface();
 	si->ClearSection(Patch::CHEATS_CONFIG_SECTION);
 	si->Save();
+}
+
+void GameCheatSettingsWidget::resizeEvent(QResizeEvent* event)
+{
+	QWidget::resizeEvent(event);
+	QtUtils::ResizeColumnsForTreeView(m_ui.cheatList, {320, 100, -1});
 }
 
 void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings)
