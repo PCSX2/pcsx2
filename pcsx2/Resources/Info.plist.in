@@ -30,9 +30,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>${PCSX2_VERSION_SHORT}</string>
+	<string>${PCSX2_GIT_REV}</string>
 	<key>CFBundleVersion</key>
-	<string>${PCSX2_VERSION_LONG}</string>
+	<string>${PCSX2_GIT_REV}</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Licensed under GPL version 3</string>
 	<key>LSMinimumSystemVersion</key>

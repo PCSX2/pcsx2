@@ -29,7 +29,6 @@
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
-#include "pcsx2/SysForwardDefs.h"
 #include "pcsx2/VMManager.h"
 
 #include "common/Assertions.h"
@@ -1337,24 +1336,7 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 
 QString QtHost::GetAppNameAndVersion()
 {
-	QString ret;
-	if constexpr (!PCSX2_isReleaseVersion && GIT_TAGGED_COMMIT)
-	{
-		ret = QStringLiteral("PCSX2 Nightly - " GIT_TAG);
-	}
-	else if constexpr (PCSX2_isReleaseVersion)
-	{
-#define APPNAME_STRINGIZE(x) #x
-		ret = QStringLiteral(
-			"PCSX2 " APPNAME_STRINGIZE(PCSX2_VersionHi) "." APPNAME_STRINGIZE(PCSX2_VersionMid) "." APPNAME_STRINGIZE(PCSX2_VersionLo));
-#undef APPNAME_STRINGIZE
-	}
-	else
-	{
-		return QStringLiteral("PCSX2 " GIT_REV);
-	}
-
-	return ret;
+	return QStringLiteral("PCSX2 " GIT_REV);
 }
 
 QString QtHost::GetAppConfigSuffix()

@@ -231,11 +231,6 @@ endif()
 
 set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
 
-if(DISABLE_BUILD_DATE)
-	message(STATUS "Disabling the inclusion of the binary compile date.")
-	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
-endif()
-
 #-------------------------------------------------------------------------------
 # MacOS-specific things
 #-------------------------------------------------------------------------------

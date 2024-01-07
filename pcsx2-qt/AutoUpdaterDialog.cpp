@@ -8,7 +8,6 @@
 #include "QtUtils.h"
 
 #include "pcsx2/Host.h"
-#include "pcsx2/SysForwardDefs.h"
 #include "svnrev.h"
 
 #include "updater/UpdaterExtractor.h"
@@ -50,7 +49,7 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
 // Logic to detect whether we can use the auto updater.
 // We use tagged commit, because this gets set on nightly builds.
-#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && defined(GIT_TAG_LO)
+#if (defined(_WIN32) || defined(__linux__) || defined(__APPLE__)) && GIT_TAGGED_COMMIT
 
 #define AUTO_UPDATER_SUPPORTED 1
 
@@ -149,9 +148,7 @@ QString AutoUpdaterDialog::getCurrentVersion()
 
 QString AutoUpdaterDialog::getCurrentVersionDate()
 {
-	// 20220403235450ll
-	const QDateTime current_build_date(QDateTime::fromString(QStringLiteral("%1").arg(SVN_REV), "yyyyMMddhhmmss"));
-	return current_build_date.toString();
+	return QStringLiteral(GIT_DATE);
 }
 
 QString AutoUpdaterDialog::getCurrentUpdateTag() const

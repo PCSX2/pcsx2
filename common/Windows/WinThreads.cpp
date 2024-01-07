@@ -6,6 +6,9 @@
 #include "common/Threading.h"
 #include "common/Assertions.h"
 #include "common/RedtapeWindows.h"
+
+#include <memory>
+
 #include <mmsystem.h>
 #include <process.h>
 #include <timeapi.h>

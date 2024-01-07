@@ -2323,6 +2323,7 @@
     <ClInclude Include="SIO\Pad\PadPopn.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
+    <ClInclude Include="SupportURLs.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">
