@@ -231,7 +231,7 @@ void SDLInputSource::SetHints()
 		Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: Using Controller DB from user directory: '{}'", upath));
 		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, upath.c_str());
 	}
-	else if (const std::string rpath = Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME); FileSystem::FileExists(rpath.c_str()))
+	else if (const std::string rpath = EmuFolders::GetOverridableResourcePath(CONTROLLER_DB_FILENAME); FileSystem::FileExists(rpath.c_str()))
 	{
 		Console.WriteLn(Color_StrongGreen, "SDLInputSource: Using Controller DB from resources.");
 		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, rpath.c_str());
