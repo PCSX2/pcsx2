@@ -18,7 +18,13 @@ public:
 	static QString getSupportForumsUrl();
 	static QString getGitHubRepositoryUrl();
 	static QString getLicenseUrl();
+	static QString getThirdPartyLicensesUrl();
 	static QString getDiscordServerUrl();
+
+	static void showHTMLDialog(QWidget* parent, const QString& title, const QString& url);
+
+private Q_SLOTS:
+	void linksLinkActivated(const QString& link);
 
 private:
 	Ui::AboutDialog m_ui;
