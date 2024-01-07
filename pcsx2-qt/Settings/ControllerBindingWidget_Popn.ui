@@ -101,7 +101,7 @@
      <item row="0" column="0">
       <widget class="QGroupBox" name="groupBox_21">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">Select</string>
+        <string extracomment="Leave this button name as-is or uppercase it entirely.">Select</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_21">
         <property name="leftMargin">
@@ -135,7 +135,7 @@
      <item row="1" column="0">
       <widget class="QGroupBox" name="groupBox_22">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">Yellow (Left)</string>
+        <string>Yellow (Left)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_22">
         <property name="leftMargin">
@@ -169,7 +169,7 @@
      <item row="1" column="3">
       <widget class="QGroupBox" name="groupBox_24">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">Yellow (Right)</string>
+        <string>Yellow (Right)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_24">
         <property name="leftMargin">
@@ -203,7 +203,7 @@
      <item row="1" column="2">
       <widget class="QGroupBox" name="groupBox_26">
        <property name="title">
-        <string extracomment="Leave this button name as-is or uppercase it entirely.">Blue (Right)</string>
+        <string>Blue (Right)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_26">
         <property name="leftMargin">
@@ -237,7 +237,7 @@
      <item row="1" column="1">
       <widget class="QGroupBox" name="groupBox_25">
        <property name="title">
-        <string extracomment="Leave this button name as-is or uppercase it entirely.">Blue (Left)</string>
+        <string>Blue (Left)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_25">
         <property name="leftMargin">
@@ -271,7 +271,7 @@
      <item row="0" column="1">
       <widget class="QGroupBox" name="groupBox_23">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">Start</string>
+        <string extracomment="Leave this button name as-is or uppercase it entirely.">Start</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_23">
         <property name="leftMargin">
@@ -356,7 +356,7 @@
      <item row="0" column="3">
       <widget class="QGroupBox" name="groupBox_28">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">Green (Right)</string>
+        <string>Green (Right)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_29">
         <property name="leftMargin">
@@ -396,7 +396,7 @@
      <item row="0" column="0">
       <widget class="QGroupBox" name="groupBox_27">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">White (Left)</string>
+        <string>White (Left)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_28">
         <property name="leftMargin">
@@ -436,7 +436,7 @@
      <item row="0" column="1">
       <widget class="QGroupBox" name="groupBox_29">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">Green (Left)</string>
+        <string>Green (Left)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_30">
         <property name="leftMargin">
@@ -476,7 +476,7 @@
      <item row="0" column="4">
       <widget class="QGroupBox" name="groupBox_30">
        <property name="title">
-        <string extracomment="Leave this button name as-is.">White (Right)</string>
+        <string>White (Right)</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_31">
         <property name="leftMargin">
