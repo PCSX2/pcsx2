@@ -11729,6 +11729,7 @@ SLED-50359:
     vuClampMode: 3 # Fixes out of place polys (COP2).
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLED-50439:
   name: "MX 2002 featuring Ricky Carmichael [Demo]"
   region: "PAL-E"
@@ -13274,6 +13275,7 @@ SLES-50358:
   compat: 5
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLES-50362:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-E"
@@ -30693,10 +30695,11 @@ SLPM-61007:
   speedHacks:
     mvuFlag: 0
 SLPM-61008:
-  name: "Devil May Cry [Trial]"
+  name: "Devil May Cry [Trial Edition Ver 2]"
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -30704,10 +30707,11 @@ SLPM-61009:
     instantVU1: 0 # Fixes hang on FMV's when CDVD timing is accurate.
     mtvu: 0
 SLPM-61010:
-  name: "Devil May Cry [Trial Version]"
+  name: "Devil May Cry [Trial Edition Ver 2]"
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-61011:
   name: "Silent Hill 2 (Black Ribbon) [Video Trial]"
   region: "NTSC-J"
@@ -35079,6 +35083,7 @@ SLPM-65023:
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-65024:
   name: バイオハザード コード:ベロニカ 完全版 [ディスク1/2]
   name-sort: ばいおはざーど こーど:べろにか かんぜんばん [でぃすく1/2]
@@ -35152,6 +35157,7 @@ SLPM-65038:
   compat: 5
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-65039:
   name: 電車でGO!新幹線 山陽新幹線編
   name-sort: でんしゃでGO!しんかんせん さんようしんかんせんへん
@@ -43343,6 +43349,7 @@ SLPM-66502:
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-66503:
   name: METAL GEAR SOLID 2 SONS OF LIBERTY MEGA HITS!
   name-sort: METAL GEAR SOLID 2 SONS OF LIBERTY MEGA HITS!
@@ -46228,6 +46235,7 @@ SLPM-67502:
   compat: 5
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-67503:
   name: "FIFA 2002"
   region: "NTSC-K"
@@ -46763,6 +46771,7 @@ SLPM-74230:
   region: "NTSC-J"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLPM-74231:
   name: 決戦III PS2 the Best
   name-sort: けっせんIII PS2 the Best
@@ -56501,6 +56510,7 @@ SLUS-20216:
   compat: 5
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
   patches:
     79B8A95F:
       content: |-
@@ -65878,6 +65888,7 @@ SLUS-29009:
   region: "NTSC-U"
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
+    halfPixelOffset: 2 # Alleviates blur from upscaling.
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
