@@ -245,13 +245,11 @@ void SDLInputSource::SetHints()
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
 	// Enable Wii U Pro Controller support
-	// New as of SDL 2.26, so use string
-	SDL_SetHint("SDL_JOYSTICK_HIDAPI_WII", "1");
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
 #ifndef _WIN32
 	// Gets us pressure sensitive button support on Linux
 	// Apparently doesn't work on Windows, so leave it off there
-	// New as of SDL 2.26, so use string
-	SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS3", "1");
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
 #endif
 
 	for (const std::pair<std::string, std::string>& hint : m_sdl_hints)
