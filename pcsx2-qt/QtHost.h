@@ -259,7 +259,7 @@ namespace QtHost
 	std::vector<std::pair<QString, QString>> GetAvailableLanguageList();
 
 	/// Call when the language changes.
-	void InstallTranslator();
+	void InstallTranslator(QWidget* dialog_parent);
 
 	/// Returns the application name and version, optionally including debug/devel config indicator.
 	QString GetAppNameAndVersion();

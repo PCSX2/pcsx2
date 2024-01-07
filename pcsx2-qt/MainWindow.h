@@ -54,6 +54,9 @@ public:
 		VMLock(const VMLock&) = delete;
 		~VMLock();
 
+		VMLock& operator=(VMLock&& lock);
+		VMLock& operator=(const VMLock&) = delete;
+
 		/// Returns the parent widget, which can be used for any popup dialogs.
 		__fi QWidget* getDialogParent() const { return m_dialog_parent; }
 

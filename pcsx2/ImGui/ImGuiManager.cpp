@@ -393,10 +393,8 @@ bool ImGuiManager::LoadFontData()
 {
 	if (s_standard_font_data.empty())
 	{
-		std::optional<std::vector<u8>> font_data =
-			s_font_path.empty() ? FileSystem::ReadBinaryFile(
-									  EmuFolders::GetOverridableResourcePath("fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf").c_str()) :
-								  FileSystem::ReadBinaryFile(s_font_path.c_str());
+		pxAssertRel(!s_font_path.empty(), "Font path has not been set.");
+		std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(s_font_path.c_str());
 		if (!font_data.has_value())
 			return false;
 

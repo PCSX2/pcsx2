@@ -1242,7 +1242,7 @@ bool QtHost::InitializeConfig()
 
 	LogSink::SetBlockSystemConsole(QtHost::InNoGUIMode());
 	VMManager::Internal::LoadStartupSettings();
-	InstallTranslator();
+	InstallTranslator(nullptr);
 	return true;
 }
 
