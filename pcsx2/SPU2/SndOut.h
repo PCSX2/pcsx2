@@ -57,11 +57,7 @@ struct StereoOut32
 	s32 Left;
 	s32 Right;
 
-	StereoOut32()
-		: Left(0)
-		, Right(0)
-	{
-	}
+	StereoOut32() = default;
 
 	StereoOut32(s32 left, s32 right)
 		: Left(left)
@@ -101,11 +97,7 @@ struct StereoOut16
 	s16 Left;
 	s16 Right;
 
-	__fi StereoOut16()
-		: Left(0)
-		, Right(0)
-	{
-	}
+	StereoOut16() = default;
 
 	__fi StereoOut16(const StereoOut32& src)
 		: Left((s16)src.Left)
