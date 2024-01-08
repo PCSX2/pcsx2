@@ -133,7 +133,7 @@ void SavedAddressesModel::addRow(SavedAddress addresstoSave)
 
 bool SavedAddressesModel::removeRows(int row, int count, const QModelIndex& parent)
 {
-	if (row + count > m_savedAddresses.size() || row < 0 || count < 1)
+	if (row < 0 || count < 1 || static_cast<size_t>(row + count) > m_savedAddresses.size())
 		return false;
 	beginRemoveRows(parent, row, row + count - 1);
 	m_savedAddresses.erase(m_savedAddresses.begin() + row, m_savedAddresses.begin() + row + count);
