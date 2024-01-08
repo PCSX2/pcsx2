@@ -26,27 +26,6 @@ struct alignas(32) GSVertex
 #endif
 		__m128i m[2];
 	};
-
-	GSVertex() = default; // Warning object is potentially used in hot path
-
-#if _M_SSE >= 0x500
-	GSVertex(const GSVertex& v)
-	{
-		mx = v.mx;
-	}
-	void operator=(const GSVertex& v) { mx = v.mx; }
-#else
-	GSVertex(const GSVertex& v)
-	{
-		m[0] = v.m[0];
-		m[1] = v.m[1];
-	}
-	void operator=(const GSVertex& v)
-	{
-		m[0] = v.m[0];
-		m[1] = v.m[1];
-	}
-#endif
 };
 
 static_assert(sizeof(GSVertex) == 32);
