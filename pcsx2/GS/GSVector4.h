@@ -55,8 +55,6 @@ public:
 
 	GSVector4() = default;
 
-	constexpr GSVector4(const GSVector4&) = default;
-
 	constexpr static GSVector4 cxpr(float x, float y, float z, float w)
 	{
 		return GSVector4(cxpr_init, x, y, z, w);
@@ -175,11 +173,6 @@ public:
 	__forceinline static GSVector4 f64(double x, double y)
 	{
 		return GSVector4(_mm_castpd_ps(_mm_set_pd(y, x)));
-	}
-
-	__forceinline void operator=(const GSVector4& v)
-	{
-		m = v.m;
 	}
 
 	__forceinline void operator=(float f)
