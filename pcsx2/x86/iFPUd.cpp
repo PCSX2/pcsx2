@@ -652,7 +652,7 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 	ToPS2FPU(regd, false, regt, false);
 }
 
-alignas(16) static FPControlRegister roundmode_nearest, roundmode_neg;
+alignas(16) static FPControlRegister roundmode_nearest;
 
 void recDIV_S_xmm(int info)
 {
