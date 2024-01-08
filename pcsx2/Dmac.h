@@ -83,7 +83,7 @@ union tDMA_TAG {
 	};
 	u32 _u32;
 
-	tDMA_TAG() {}
+	tDMA_TAG() = default;
 
 	tDMA_TAG(u32 val) { _u32 = val; }
 	u16 upper() const { return (_u32 >> 16); }
@@ -121,6 +121,7 @@ union tDMA_CHCR {
 	};
 	u32 _u32;
 
+	tDMA_CHCR() = default;
 	tDMA_CHCR( u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -143,6 +144,7 @@ union tDMA_SADR {
 	};
 	u32 _u32;
 
+	tDMA_SADR() = default;
 	tDMA_SADR(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -156,6 +158,7 @@ union tDMA_QWC {
 	};
 	u32 _u32;
 
+	tDMA_QWC() = default;
 	tDMA_QWC(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -264,6 +267,7 @@ union tDMAC_QUEUE
 	};
 	u16 _u16;
 
+	tDMAC_QUEUE() = default;
 	tDMAC_QUEUE(u16 val) { _u16 = val; }
 	void reset() { _u16 = 0; }
 	bool empty() const { return (_u16 == 0); }
@@ -322,6 +326,7 @@ union tDMAC_CTRL {
 	};
 	u32 _u32;
 
+	tDMAC_CTRL() = default;
 	tDMAC_CTRL(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -348,6 +353,7 @@ union tDMAC_STAT {
 	u32 _u32;
 	u16 _u16[2];
 
+	tDMAC_STAT() = default;
 	tDMAC_STAT(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -372,6 +378,7 @@ union tDMAC_PCR {
 	};
 	u32 _u32;
 
+	tDMAC_PCR() = default;
 	tDMAC_PCR(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -390,6 +397,7 @@ union tDMAC_SQWC {
 	};
 	u32 _u32;
 
+	tDMAC_SQWC() = default;
 	tDMAC_SQWC(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -406,6 +414,7 @@ union tDMAC_RBSR {
 	};
 	u32 _u32;
 
+	tDMAC_RBSR() = default;
 	tDMAC_RBSR(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -419,6 +428,7 @@ union tDMAC_RBOR {
 	};
 	u32 _u32;
 
+	tDMAC_RBOR() = default;
 	tDMAC_RBOR(u32 val) { _u32 = val; }
 
 	void reset() { _u32 = 0; }
@@ -440,7 +450,7 @@ union tDMAC_ADDR
 	};
 	u32 _u32;
 
-	tDMAC_ADDR() {}
+	tDMAC_ADDR() = default;
 	tDMAC_ADDR(u32 val) { _u32 = val; }
 
 	void clear() { _u32 = 0; }
@@ -490,6 +500,7 @@ union tINTC_STAT {
 	};
 	u32 _u32;
 
+	tINTC_STAT() = default;
 	tINTC_STAT(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -506,6 +517,7 @@ union tINTC_MASK {
 	};
 	u32 _u32;
 
+	tINTC_MASK() = default;
 	tINTC_MASK(u32 val) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
