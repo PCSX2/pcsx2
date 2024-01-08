@@ -1223,6 +1223,18 @@ function(setup_main_executable target)
 		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 	endforeach()
 
+	# Add docs to resources for not-Windows, since they don't use the bin directory.
+	if(NOT WIN32)
+		file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/bin/docs/*)
+		foreach(path IN LISTS DOCS_FILES)
+			get_filename_component(file ${path} NAME)
+			if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+				continue()
+			endif()
+			pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/)
+		endforeach()
+	endif()
+
 	get_property(PCSX2_SOURCE_DIR GLOBAL PROPERTY PCSX2_SOURCE_DIR)
 	get_property(PCSX2_METAL_SHADERS GLOBAL PROPERTY PCSX2_METAL_SHADERS)
 
