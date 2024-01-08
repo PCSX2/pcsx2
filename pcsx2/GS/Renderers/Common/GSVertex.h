@@ -8,8 +8,6 @@
 #include "GS/Renderers/HW/GSVertexHW.h"
 #include "GS/Renderers/SW/GSVertexSW.h"
 
-#pragma pack(push, 1)
-
 struct alignas(32) GSVertex
 {
 	union
@@ -51,10 +49,7 @@ struct alignas(32) GSVertex
 #endif
 };
 
-struct GSVertexP
-{
-	GSVector4 p;
-};
+static_assert(sizeof(GSVertex) == 32);
 
 struct alignas(32) GSVertexPT1
 {
@@ -64,10 +59,5 @@ struct alignas(32) GSVertexPT1
 	union { u32 c; struct { u8 r, g, b, a; }; };
 };
 
-struct GSVertexPT2
-{
-	GSVector4 p;
-	GSVector2 t[2];
-};
+static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex));
 
-#pragma pack(pop)
