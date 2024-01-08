@@ -346,11 +346,11 @@ __ri static void IDCT_Copy(s16* block, u8* dest, const int stride)
 
 
 // stride = increment for dest in 16-bit units (typically either 8 [128 bits] or 16 [256 bits]).
-__ri static void IDCT_Add(const int last, s16* block, s16* dest, const int stride)
+__ri static void IDCT_Add(s16* block, s16* dest, const int stride)
 {
 	// on the IPU, stride is always assured to be multiples of QWC (bottom 3 bits are 0).
 
-	if (last != 129 || (block[0] & 7) == 4)
+	if ((block[0] & 7) == 4)
 	{
 		IDCT_Block(block);
 
@@ -954,7 +954,7 @@ __ri static bool slice_non_intra_DCT(s16 * const dest, const int stride, const b
 		return false;
 	}
 
-	IDCT_Add(last, decoder.DCTblock, dest, stride);
+	IDCT_Add(decoder.DCTblock, dest, stride);
 
 	return true;
 }
