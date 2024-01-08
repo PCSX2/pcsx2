@@ -23,6 +23,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ignoreSDLInversion, "InputSources", "IgnoreSDLInversion", false);
 	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
+	connect(m_ui.ignoreSDLInversion, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::ignoreInversionClicked);
+	connect(m_ui.ignoreDInputInversion, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::ignoreInversionClicked);
 
 #ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
@@ -111,6 +113,11 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 {
 	ControllerLEDSettingsDialog dialog(this, m_dialog);
 	dialog.exec();
+}
+
+void ControllerGlobalSettingsWidget::ignoreInversionClicked()
+{
+	QMessageBox::information(this, tr("Ignore Inversion Changed"), tr("This setting will not automatically modify inversion flags (~) for any existing mappings. You will need to redo any affected mappings for the changes to take effect."));
 }
 
 void ControllerGlobalSettingsWidget::mouseSettingsClicked()

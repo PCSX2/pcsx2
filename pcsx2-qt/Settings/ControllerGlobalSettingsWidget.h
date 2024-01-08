@@ -33,6 +33,7 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void updateSDLOptionsEnabled();
 	void ledSettingsClicked();
+	void ignoreInversionClicked();
 	void mouseSettingsClicked();
 
 private:
