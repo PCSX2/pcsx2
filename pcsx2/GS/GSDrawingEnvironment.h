@@ -23,10 +23,6 @@ public:
 	GIFRegTRXREG     TRXREG;
 	GSDrawingContext CTXT[2];
 
-	GSDrawingEnvironment()
-	{
-	}
-
 	void Reset()
 	{
 		memset(&PRIM, 0, sizeof(PRIM));
