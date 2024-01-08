@@ -189,6 +189,7 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
 	m_controller_raw_mode = si.GetBoolValue("InputSources", "SDLRawInput", false);
 	m_sdl_hints = si.GetKeyValueList("SDLHints");
+	m_ignore_inversion = si.GetBoolValue("InputSources", "IgnoreSDLInversion", false);
 
 	for (u32 i = 0; i < MAX_LED_COLORS; i++)
 	{
@@ -452,7 +453,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
 			if (key.data < std::size(s_sdl_axis_names))
 				ret.fmt("SDL-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_names[key.data]);
 			else
-				ret.fmt("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier, key.data, key.invert ? "~" : "");
+				ret.fmt("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier, key.data, (key.invert && !m_ignore_inversion) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{

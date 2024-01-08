@@ -89,4 +89,5 @@ private:
 	bool m_controller_raw_mode = false;
 	std::array<u32, MAX_LED_COLORS> m_led_colors{};
 	std::vector<std::pair<std::string, std::string>> m_sdl_hints;
+	bool m_ignore_inversion = false;
 };
