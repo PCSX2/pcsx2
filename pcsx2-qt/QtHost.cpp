@@ -1398,7 +1398,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 	QtModalProgressCallback progress(parent);
 	progress.GetDialog().setLabelText(
 		qApp->translate("EmuThread", "Downloading %1...").arg(QtUtils::StringViewToQString(
-			std::string_view(url).substr((url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0))));
+			std::string_view(url).substr((url_file_part_pos != std::string::npos) ? (url_file_part_pos + 1) : 0))));
 	progress.GetDialog().setWindowTitle(title);
 	progress.GetDialog().setWindowIcon(GetAppIcon());
 	progress.SetCancellable(true);
