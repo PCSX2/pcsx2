@@ -781,7 +781,7 @@ REG_END2
 	__forceinline bool DoFirstPass() const { return !ATE || ATST != ATST_NEVER; } // not all pixels fail automatically
 	__forceinline bool DoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; } // pixels may fail, write fb/z
 	__forceinline bool NoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP; } // pixels may fail, no output
-	__forceinline u32 GetAFAIL(u32 fpsm) const { return (AFAIL == AFAIL_RGB_ONLY && (fpsm & 0xF) != 0) ? AFAIL_FB_ONLY : AFAIL; } // FB Only when not 32bit Framebuffer
+	__forceinline u32 GetAFAIL(u32 fpsm) const { return (AFAIL == AFAIL_RGB_ONLY && (fpsm & 0xF) != 0) ? static_cast<u32>(AFAIL_FB_ONLY) : AFAIL; } // FB Only when not 32bit Framebuffer
 REG_END2
 
 REG64_(GIFReg, TEX0)
