@@ -3174,18 +3174,16 @@ const std::vector<u32>& VMManager::GetSortedProcessorList()
 
 void VMManager::ReloadPINE()
 {
-	if (EmuConfig.EnablePINE && (s_pine_server.m_slot != EmuConfig.PINESlot || s_pine_server.m_end))
-	{
-		if (!s_pine_server.m_end)
-		{
-			s_pine_server.Deinitialize();
-		}
-		s_pine_server.Initialize(EmuConfig.PINESlot);
-	}
-	else if ((!EmuConfig.EnablePINE && !s_pine_server.m_end))
-	{
+	const bool needs_reinit = (EmuConfig.EnablePINE != s_pine_server.IsInitialized() ||
+							   s_pine_server.m_slot != EmuConfig.PINESlot);
+	if (!needs_reinit)
+		return;
+
+	if (s_pine_server.IsInitialized())
 		s_pine_server.Deinitialize();
-	}
+
+	if (EmuConfig.EnablePINE)
+		s_pine_server.Initialize();
 }
 
 void VMManager::InitializeDiscordPresence()
