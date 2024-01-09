@@ -38,11 +38,13 @@ protected:
 #else
 	// absolute path of the socket. Stored in XDG_RUNTIME_DIR, if unset /tmp
 	std::string m_socket_name;
-	int m_sock = 0;
+	int m_sock = -1;
 	// the message socket used in thread's accept().
-	int m_msgsock = 0;
+	int m_msgsock = -1;
 #endif
 
+	// Whether the socket processing thread should stop executing/is stopped.
+	std::atomic_bool m_end{true};
 
 	/**
 	 * Maximum memory used by an IPC message request.
@@ -131,6 +133,7 @@ protected:
 
 	// Thread used to relay IPC commands.
 	void MainLoop();
+	void ClientLoop();
 
 	/**
 	 * Internal function, Parses an IPC command.
@@ -153,9 +156,8 @@ protected:
 
 	/**
 	 * Initializes an open socket for IPC communication.
-	 * return value: -1 if a fatal failure happened, 0 otherwise.
 	 */
-	int StartSocket();
+	bool AcceptClient();
 
 	/**
 	 * Converts a primitive value to bytes in little endian
@@ -190,18 +192,18 @@ protected:
 	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0, u32 buf_size = MAX_IPC_SIZE - 1)
 	{
 		return !((command_len + command_size) > buf_size ||
-					(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
+				 (reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
 	}
 
 public:
-	// Whether the socket processing thread should stop executing/is stopped.
-	std::atomic_bool m_end{ false };
 	int m_slot;
 
 	/* Initializers */
 	PINEServer();
-	virtual ~PINEServer();
+	~PINEServer();
+
+	__fi bool IsInitialized() const { return !m_end.load(std::memory_order_acquire); }
+
 	bool Initialize(int slot = PINE_DEFAULT_SLOT);
 	void Deinitialize();
-
 }; // class SocketIPC
