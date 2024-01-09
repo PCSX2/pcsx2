@@ -15311,9 +15311,6 @@ SLES-51220:
   name: "TY the Tasmanian Tiger"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    cpuSpriteRenderBW: 1 # Fixes rendering of the moon.
-    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-51222:
   name: "Rayman 3 - Hoodlum Havoc"
   region: "PAL-M5"
@@ -58244,9 +58241,6 @@ SLUS-20571:
   name: "TY the Tasmanian Tiger"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    cpuSpriteRenderBW: 1 # Fixes rendering of the moon.
-    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-20572:
   name: "Tiger Woods PGA Tour 2003"
   region: "NTSC-U"
