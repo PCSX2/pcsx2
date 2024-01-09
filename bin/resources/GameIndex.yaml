@@ -46126,6 +46126,8 @@ SLPM-67003:
   name-en: "Sakura Taisen - Atsuki Chishioni"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    mergeSprite: 1 # Removes blur from the image.
 SLPM-67004:
   name: メダル オブ オナー ライジングサン
   name-sort: めだる おぶ おなー らいじんぐさん
