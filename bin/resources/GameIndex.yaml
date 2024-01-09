@@ -1619,8 +1619,6 @@ SCAJ-20143:
   name: "Armored Core - Last Raven"
   region: "NTSC-Unk"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SCAJ-20144:
@@ -22070,8 +22068,6 @@ SLES-53820:
   name: "Armored Core - Last Raven"
   region: "PAL-E"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLES-53821:
@@ -31006,16 +31002,12 @@ SLPM-61118:
   name: "Armored Core - Last Raven [Famitsu Special Trial Version]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-61119:
   name: "Armored Core - Last Raven [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-61120:
@@ -46523,8 +46515,6 @@ SLPM-68520:
   name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPM-68521:
@@ -52011,8 +52001,6 @@ SLPS-25462:
   name-en: "Armored Core - Last Raven"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
   memcardFilters:
@@ -53548,18 +53536,16 @@ SLPS-25730:
   name-en: "Armored Core - Last Raven [Machine Side Box]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLPS-25731:
   name: アーマード・コア 2 -MACHINE SIDE BOX-
-  name-sort: アーマード・コア 2 -MACHINE SIDE BOX-
+  name-sort: あーまーど・こあ 2 -MACHINE SIDE BOX-
   name-en: "Armored Core 2 [Machine Side Box]"
   region: "NTSC-J"
 SLPS-25732:
   name: アーマード・コア 3 -MACHINE SIDE BOX-
-  name-sort: アーマード・コア 3 -MACHINE SIDE BOX-
+  name-sort: あーまーど・こあ 3 -MACHINE SIDE BOX-
   name-en: "Armored Core 3 [Machine Side Box]"
   region: "NTSC-J"
 SLPS-25733:
@@ -55310,8 +55296,6 @@ SLPS-73247:
   name-en: "Armored Core - Last Raven [PS2 The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
   memcardFilters:
@@ -62546,8 +62530,6 @@ SLUS-21338:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuSpriteRenderBW: 2 # Fixes glow effects, but breaks shadows of certain objects.
-    cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
 SLUS-21339:
