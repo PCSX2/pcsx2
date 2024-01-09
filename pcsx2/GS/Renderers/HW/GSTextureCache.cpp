@@ -1078,7 +1078,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				const bool overlaps = t->Overlaps(bp, bw, psm, req_rect);
 
 				// Try to make sure the target has available what we need, be careful of self referencing frames with font in the alpha.
-				if (!overlaps || (overlaps && !t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)))
+				if (!overlaps)
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
@@ -1292,6 +1292,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				const u32 tex_color_psm = ((t->m_TEX0.PSM & 0x30) == 0x30) ? (t->m_TEX0.PSM & ~0x30) : t->m_TEX0.PSM;
 				const bool can_convert = (GSUtil::HasCompatibleBits(psm, t_psm) && ((bw == t->m_TEX0.TBW) || (bw <= 1 && req_rect.w < GSLocalMemory::m_psm[psm].pgs.y))) ||
 										(possible_shuffle && ((bw == t->m_TEX0.TBW) || (bw == (t->m_TEX0.TBW * 2) || bw <= 2)) && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32);
+
 				// Match if we haven't already got a tex in rt
 				if (((!t_clean && can_convert) || t_clean || !overlapping_dirty) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm))
 				{
@@ -1329,9 +1330,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							}
 							else
 							{
-								if (!t_clean)
-									t->Update();
-
 								if ((psm == PSMT4 || psm == PSMT8) && t->m_was_dst_matched && !t->m_valid_rgb)
 								{
 
@@ -1352,6 +1350,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 								}
 
+								if (overlaps && !t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+									continue;
+
 								dst = t;
 
 								found_t = true;
@@ -1371,11 +1372,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				}
 				else if ((t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM))
 				{
-					if (!t_clean)
-						t->Update();
 					// Detect half of the render target (fix snow engine game)
 					// Target Page (8KB) have always a width of 64 pixels
 					// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
+					if (overlaps && !t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+						continue;
+
 					half_right = true;
 					dst = t;
 					found_t = true;
@@ -1392,6 +1394,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					(t->Overlaps(bp, bw, psm, req_rect) || t->Wraps()) &&
 					t->m_age <= 1 && (!found_t || dst->m_TEX0.TBW < bw))
 				{
+					if (overlaps && !t->HasValidBitsForFormat(psm, req_color, req_alpha) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
+						continue;
+
 					// PSM equality needed because CreateSource does not handle PSM conversion.
 					// Only inclusive hit to limit false hits.
 					GSVector4i rect = req_rect;
@@ -1471,13 +1476,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							if (!t->m_dirty.empty())
 							{
 								const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(rect.z, rect.w)).rintersect(rect);
-								if (!dirty_rect.eq(rect))
-								{
-									// Only update if the rect isn't empty
-									if (!dirty_rect.rempty())
-										t->Update();
-								}
-								else
+								if (dirty_rect.eq(rect))
 									continue;
 							}
 
@@ -2748,11 +2747,8 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 				GL_CACHE("TC: Remove dirty rect (%d,%d=>%d,%d) from %s[%x, %s] due to incoming depth.", drc.left,
 					drc.top, drc.right, drc.bottom, to_string(dst->m_type), dst->m_TEX0.TBP0, psm_str(dst->m_TEX0.PSM));
 				dst->m_dirty.erase(dst->m_dirty.begin() + i);
-				continue;
 			}
 		}
-
-		i++;
 	}
 
 	// Depth source should be up to date.
@@ -4105,6 +4101,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		const int w = static_cast<int>(std::ceil(scale * tw));
 		const int h = static_cast<int>(std::ceil(scale * th));
 
+		dst->Update();
+
 		// If we have a source larger than the target (from tex-in-rt), texelFetch() for target region will return black.
 		if constexpr (force_target_copy)
 		{
@@ -4237,6 +4235,9 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
 
+		// Do this first as we could be adding in alpha from an upgraded 24bit target.
+		dst->Update();
+
 		if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 		{
 			src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
@@ -4257,8 +4258,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 		}
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
-
-		dst->Update();
 
 		// Rounding up should never exceed the texture size (since it itself should be rounded up), but just in case.
 		GSVector2i new_size(
@@ -5932,13 +5931,19 @@ bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool
 			return m_valid_alpha_high;
 		case PSMT8: // Down here because of channel shuffles.
 		default:
-			alpha_valid = ((m_TEX0.PSM & 0xF) == 0x1) ? true : (m_valid_alpha_low || m_valid_alpha_high);
+			alpha_valid = m_valid_alpha_low || m_valid_alpha_high;
 			color_valid = m_valid_rgb;
-			if (req_alpha && !alpha_valid && color_valid)
+
+			if (req_alpha && !alpha_valid && color_valid && (m_TEX0.PSM & 0xF) <= PSMCT24 && (psm & 0xF) == PSMCT32)
 			{
+			
 				RGBAMask mask;
 				mask._u32 = 0x8;
-				AddDirtyRectTarget(this, this->m_valid, m_TEX0.PSM, m_TEX0.TBW, mask, false);
+				m_TEX0.PSM &= ~PSMCT24;
+
+				if (!(m_dirty.GetDirtyChannels() & 0x8))
+					AddDirtyRectTarget(this, m_valid, m_TEX0.PSM, m_TEX0.TBW, mask, false);
+
 				alpha_valid = true; // This is going to get resolved going forward.
 				m_valid_alpha_low = true;
 				m_valid_alpha_high = true;
