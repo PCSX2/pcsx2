@@ -251,20 +251,20 @@ bool GSTextureCache::CanTranslate(u32 bp, u32 bw, u32 spsm, GSVector4i r, u32 db
 }
 
 
-GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
+GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw, u32 tpsm, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
 {
 	const GSVector2i src_page_size = GSLocalMemory::m_psm[spsm].pgs;
-	const GSVector2i dst_page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
+	const GSVector2i dst_page_size = GSLocalMemory::m_psm[tpsm].pgs;
 	const int src_bw = static_cast<int>(std::max(1U, sbw) * 64);
-	const int dst_bw = static_cast<int>(std::max(1U, t->m_TEX0.TBW) * 64);
+	const int dst_bw = static_cast<int>(std::max(1U, tbw) * 64);
 	const int src_pgw = std::max(1, src_bw / src_page_size.x);
 	const int dst_pgw = std::max(1, dst_bw / dst_page_size.x);
 	GSVector4i in_rect = src_r;
 
-	if (sbp < t->m_end_block && t->m_end_block < t->m_TEX0.TBP0)
+	if (sbp < tebp && tebp < tbp)
 		sbp += 0x4000;
 
-	int page_offset = (static_cast<int>(sbp) - static_cast<int>(t->m_TEX0.TBP0)) >> 5;
+	int page_offset = (static_cast<int>(sbp) - static_cast<int>(tbp)) >> 5;
 	bool single_page = (in_rect.width() / src_page_size.x) <= 1 && (in_rect.height() / src_page_size.y) <= 1;
 	if (!single_page)
 	{
@@ -278,7 +278,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 	const int vertical_offset = (page_offset / dst_pgw) * dst_page_size.y;
 	int horizontal_offset = (page_offset % dst_pgw) * dst_page_size.x;
 	const GSVector4i rect_pages = GSVector4i(in_rect.x / src_page_size.x, in_rect.y / src_page_size.y, (in_rect.z + src_page_size.x - 1) / src_page_size.x, (in_rect.w + (src_page_size.y - 1)) / src_page_size.y);
-	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp;
+	const bool block_layout_match = GSLocalMemory::m_psm[spsm].bpp == GSLocalMemory::m_psm[tpsm].bpp;
 	GSVector4i new_rect = {};
 
 	if (src_pgw != dst_pgw || sbw == 0)
@@ -325,7 +325,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 				// Results won't be square, if it's not invalidation, it's a texture, which is problematic to translate, so let's not (FIFA 2005).
 				if (!is_invalidation)
 				{
-					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d", sbp, t->m_TEX0.TBP0, src_pgw, dst_pgw);
+					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d", sbp, tbp, src_pgw, dst_pgw);
 					return GSVector4i::zero();
 				}
 
@@ -392,13 +392,18 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 sp
 	new_rect = (new_rect + GSVector4i(0, vertical_offset).xyxy()).max_i32(GSVector4i(0));
 	new_rect = (new_rect + GSVector4i(horizontal_offset, 0).xyxy()).max_i32(GSVector4i(0));
 
-	if (new_rect.z > (static_cast<int>(t->m_TEX0.TBW) * dst_page_size.x))
+	if (new_rect.z > (static_cast<int>(tbw) * dst_page_size.x))
 	{
 		new_rect.z = (dst_pgw * dst_page_size.x);
 		new_rect.w += dst_page_size.y;
 	}
 
 	return new_rect;
+}
+
+GSVector4i GSTextureCache::TranslateAlignedRectByPage(Target* t, u32 sbp, u32 spsm, u32 sbw, GSVector4i src_r, bool is_invalidation)
+{
+	return TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, t->m_TEX0.TBW, t->m_TEX0.PSM, sbp, spsm, sbw, src_r, is_invalidation);
 }
 
 void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVector4i src_r)
@@ -3486,6 +3491,27 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			return false;
 	}
 
+	if (m_expected_src_bp == SBP && m_expected_dst_bp == DBP)
+	{
+		// Get the new position so we can work out the offset.
+		GSVector4i rect_offset = TranslateAlignedRectByPage(m_remembered_src_bp, m_remembered_src_bp + 1, SBW, SPSM, SBP, SPSM, SBW, GSVector4i(sx, sy, sx + w, sy + h), false);
+		rect_offset.x = rect_offset.x - sx;
+		rect_offset.y = rect_offset.y - sy;
+		sx += rect_offset.x;
+		sy += rect_offset.y;
+		dx += rect_offset.x;
+		dy += rect_offset.y;
+
+		GL_INS("Detected striped move, realigning from SBP %x->%x DBP %x->%x", SBP, m_remembered_src_bp, DBP, m_remembered_dst_bp);
+
+		SBP = m_remembered_src_bp;
+		DBP = m_remembered_dst_bp;
+
+		m_expected_src_bp = -1;
+		m_remembered_src_bp = -1;
+		m_expected_dst_bp = -1;
+		m_remembered_dst_bp = -1;
+	}
 	// Look for an exact match on the targets.
 	GSTextureCache::Target* src = GetExactTarget(SBP, SBW, spsm_s.depth ? DepthStencil : RenderTarget, SBP);
 	GSTextureCache::Target* dst = GetExactTarget(DBP, DBW, dpsm_s.depth ? DepthStencil : RenderTarget, DBP);
@@ -3647,6 +3673,33 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		dst->m_alpha_min = src->m_alpha_min;
 	}
 
+	if (GSLocalMemory::IsPageAligned(src->m_TEX0.PSM, GSVector4i(sx, sy, sx + w, sy + h)) && (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x || h == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.y))
+	{
+		// Vertical Strips
+		if (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x)
+		{
+			m_expected_src_bp = GSLocalMemory::GetStartBlockAddress(src->m_TEX0.TBP0, src->m_TEX0.TBW, src->m_TEX0.PSM, GSVector4i(sx + w, 0, sx + w + w, h));
+			m_expected_dst_bp = GSLocalMemory::GetStartBlockAddress(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, GSVector4i(dx + w, 0, dx + w + w, h));
+		}
+		else
+		{
+			m_expected_src_bp = GSLocalMemory::GetStartBlockAddress(src->m_TEX0.TBP0, src->m_TEX0.TBW, src->m_TEX0.PSM, GSVector4i(0, sy + h, w, sy + h + h));
+			m_expected_dst_bp = GSLocalMemory::GetStartBlockAddress(dst->m_TEX0.TBP0, dst->m_TEX0.TBW, dst->m_TEX0.PSM, GSVector4i(0, dy + h, w, dy + h + h));
+		}
+		
+		if (static_cast<u32>(m_expected_src_bp) < src->UnwrappedEndBlock() && static_cast<u32>(m_expected_src_bp) >= src->m_TEX0.TBP0)
+		{
+			m_remembered_src_bp = src->m_TEX0.TBP0;
+			m_remembered_dst_bp = dst->m_TEX0.TBP0;
+		}
+		else // If the expected BP is not inside the source, don't bother
+		{
+			m_expected_src_bp = -1;
+			m_remembered_src_bp = -1;
+			m_expected_dst_bp = -1;
+			m_remembered_dst_bp = -1;
+		}
+	}
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
 	// Invalidate any sources that overlap with the target (since they're now stale).
