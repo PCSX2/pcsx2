@@ -1912,6 +1912,13 @@ void GSRendererHW::Draw()
 	m_r = m_r.blend8(m_r + GSVector4i::cxpr(0, 0, 1, 1), (m_r.xyxy() == m_r.zwzw()));
 	m_r = m_r.rintersect(context->scissor.in);
 
+	// Draw is too small, just skip it.
+	if (m_r.rempty())
+	{
+		GL_INS("Draw %d skipped due to having an empty rect");
+		return;
+	}
+
 	// We want to fix up the context if we're doing a double half clear, regardless of whether we do the CPU fill.
 	const bool is_possible_mem_clear = IsConstantDirectWriteMemClear();
 	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear)
