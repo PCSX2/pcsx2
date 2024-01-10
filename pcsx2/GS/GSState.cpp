@@ -1853,16 +1853,16 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 		const bool frame_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && (prev_ctx.TEST.AFAIL == 2 || prev_ctx.TEST.AFAIL == 0)) && ((prev_ctx.FRAME.FBMSK & frame_mask) != frame_mask)) || prev_ctx.TEST.DATE;
 		if (frame_required)
 		{
-			if ((req_write && GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW, prev_ctx.FRAME.PSM, temp_draw_rect)) || 
-				(req_read && GSLocalMemory::HasOverlap(blit.SBP, blit.SBW, blit.SPSM, read_rect, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW, prev_ctx.FRAME.PSM, temp_draw_rect)))
+			if ((req_write && (blit.DBP == prev_ctx.FRAME.Block() || GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW, prev_ctx.FRAME.PSM, temp_draw_rect))) ||
+				(req_read && (blit.DBP == prev_ctx.FRAME.Block() || GSLocalMemory::HasOverlap(blit.SBP, blit.SBW, blit.SPSM, read_rect, prev_ctx.FRAME.Block(), prev_ctx.FRAME.FBW, prev_ctx.FRAME.PSM, temp_draw_rect))))
 				Flush(GSFlushReason::UPLOADDIRTYFRAME);
 		}
 
 		const bool zbuf_required = (!(prev_ctx.TEST.ATE && prev_ctx.TEST.ATST == 0 && prev_ctx.TEST.AFAIL != 2) && !prev_ctx.ZBUF.ZMSK) || (prev_ctx.TEST.ZTE && prev_ctx.TEST.ZTST > ZTST_ALWAYS);
 		if (zbuf_required)
 		{
-			if ((req_write && GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW, prev_ctx.ZBUF.PSM, temp_draw_rect)) ||
-				(req_read && GSLocalMemory::HasOverlap(blit.SBP, blit.SBW, blit.SPSM, read_rect, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW, prev_ctx.ZBUF.PSM, temp_draw_rect)))
+			if ((req_write && (blit.DBP == prev_ctx.ZBUF.Block() || GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW, prev_ctx.ZBUF.PSM, temp_draw_rect))) ||
+				(req_read && (blit.DBP == prev_ctx.ZBUF.Block() || GSLocalMemory::HasOverlap(blit.SBP, blit.SBW, blit.SPSM, read_rect, prev_ctx.ZBUF.Block(), prev_ctx.FRAME.FBW, prev_ctx.ZBUF.PSM, temp_draw_rect))))
 				Flush(GSFlushReason::UPLOADDIRTYZBUF);
 		}
 	}
