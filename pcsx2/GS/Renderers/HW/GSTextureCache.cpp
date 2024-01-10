@@ -1670,6 +1670,31 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0,
 			psm_str(TEX0.PSM));
 
+		// If it's from a target, we need to make sure the alpha information is up to date, especially in 16/24 bit formats where it can change draw to draw.
+		// Guard against merged targets which don't actually link.
+		if (src->m_target && src->m_from_target)
+		{
+			if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
+			{
+				src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
+				src->m_alpha_minmax.second = TEXA.TA0;
+			}
+			else
+			{
+				src->m_alpha_minmax.first = src->m_from_target->m_alpha_min;
+				src->m_alpha_minmax.second = src->m_from_target->m_alpha_max;
+
+				if (!src->m_32_bits_fmt)
+				{
+					const bool using_both = (src->m_alpha_minmax.first ^ src->m_alpha_minmax.second) & 128;
+					const bool using_ta1 = (src->m_alpha_minmax.second & 128);
+
+					src->m_alpha_minmax.first = TEXA.AEM ? 0 : (using_both ? std::min(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+					src->m_alpha_minmax.second = (using_both ? std::max(TEXA.TA1, TEXA.TA0) : (using_ta1 ? TEXA.TA1 : TEXA.TA0));
+				}
+			}
+		}
+
 		if (gpu_clut)
 			AttachPaletteToSource(src, gpu_clut);
 		else if (src->m_palette && (!src->m_palette_obj || !src->ClutMatch({ clut, psm_s.pal })))
