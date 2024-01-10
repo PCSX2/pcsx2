@@ -1093,12 +1093,11 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 	ClampValues(regd);
 }
 
-alignas(16) static FPControlRegister roundmode_nearest, roundmode_neg;
+alignas(16) static FPControlRegister roundmode_nearest;
 
 void recDIV_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::DIV_F);
-	bool roundmodeFlag = false;
 	int t0reg = _allocTempXMMreg(XMMT_FPS);
 	//Console.WriteLn("DIV");
 

@@ -3,4 +3,4 @@
 
 /// Version number for GS and other shaders. Increment whenever any of the contents of the
 /// shaders change, to invalidate the cache.
-static constexpr u32 SHADER_CACHE_VERSION = 37;
+static constexpr u32 SHADER_CACHE_VERSION = 38;

@@ -5169,7 +5169,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	bool blending_alpha_pass = false;
-	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && (m_conf.colormask.wrgba & 0x7))
+	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
 		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, blending_alpha_pass);
 	}
@@ -5863,7 +5863,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		return false;
 
 	GSTextureCache::Target* half_point = g_texture_cache->GetExactTarget(half << 5, m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::RenderTarget : GSTextureCache::DepthStencil, half << 5);
-	if (half_point)
+	if (half_point && half_point->m_age <= 1)
 		return false;
 
 	// Don't allow double half clear to go through when the number of bits written through FRAME and Z are different.
@@ -5901,7 +5901,9 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// Match either because we got here early or the information is the same on the next draw and the next draw is not a clear.
 	// Likely a misdetection.
 	if (next_draw_match && !possible_next_clear)
+	{
 		return false;
+	}
 	else
 	{
 		// Check for a target matching the starting point. It might be in Z or FRAME...
@@ -5915,7 +5917,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 
 		u32 end_block = ((half + written_pages) * BLOCKS_PER_PAGE) - 1;
 
-		if (tgt)
+		if (tgt && tgt->m_age <= 1)
 		{
 			// Games generally write full pages when doing half clears, so if the half of the buffer doesn't match, we need to round it up to the page edge.
 			// Dropship does this with half buffers of 128 high (32 * 4) when the final buffer is only actually 224 high (112 is half, centre of a page).
@@ -5930,10 +5932,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 				end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(tgt->m_TEX0.TBP0, tgt->m_TEX0.TBW + 1, tgt->m_TEX0.PSM, target_rect);
 			else
 				end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(tgt->m_TEX0.TBP0, (m_cached_ctx.FRAME.FBW == (tgt->m_TEX0.TBW / 2)) ? tgt->m_TEX0.TBW : m_cached_ctx.FRAME.FBW, tgt->m_TEX0.PSM, target_rect);
-		}
 
-		if (tgt)
-		{
 			// Siren double half clears horizontally with half FBW instead of vertically.
 			// We could use the FBW here, but using the rectangle seems a bit safer, because changing FBW
 			// from one RT to another isn't uncommon.
@@ -5941,7 +5940,9 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 			horizontal = (vr.z < vr.w);
 		}
 		else if (((m_env.CTXT[next_ctx].FRAME.FBW + 1) & ~1) == m_cached_ctx.FRAME.FBW * 2)
+		{
 			horizontal = true;
+		}
 
 		// Are we clearing over the middle of this target?
 		if ((((half + written_pages) * BLOCKS_PER_PAGE) - 1) > end_block)

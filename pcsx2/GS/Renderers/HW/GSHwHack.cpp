@@ -1416,8 +1416,11 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 
 	if (dst->GetUnscaledWidth() < static_cast<int>(RWIDTH) || dst->GetUnscaledHeight() < static_cast<int>(RHEIGHT))
 	{
-		if (!dst->ResizeTexture(dst->GetUnscaledWidth(), static_cast<int>(RWIDTH), std::max(dst->GetUnscaledHeight(), static_cast<int>(RHEIGHT))))
+		if (!dst->ResizeTexture(std::max(dst->GetUnscaledWidth(), static_cast<int>(RWIDTH)),
+				std::max(dst->GetUnscaledHeight(), static_cast<int>(RHEIGHT))))
+		{
 			return false;
+		}
 	}
 
 	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT).rintersect(dst->GetUnscaledRect());
