@@ -11,6 +11,8 @@
 #define bzero(b, len) (memset((b), '\0', (len)), (void)0)
 #include <WinSock2.h>
 #include <windows.h>
+#include <Ws2tcpip.h>
+#include <tchar.h>
 #else
 #define read_portable(a, b, c) (read(a, b, c))
 #define write_portable(a, b, c) (write(a, b, c))
@@ -63,7 +65,7 @@ bool PINEServer::Initialize(int slot)
 	// yes very good windows s/sun/sin/g sure is fine
 	server.sin_family = AF_INET;
 	// localhost only
-	server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	InetPton(AF_INET, _T("127.0.0.1"), &server.sin_addr.s_addr);
 	server.sin_port = htons(slot);
 
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
