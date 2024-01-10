@@ -14,9 +14,12 @@ on:
     inputs:
       is_prelease:
         description: 'Should be a pre-release?'
-        type: boolean
         required: true
-        default: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
       tag_value:
         description: 'Create a new release from latest master with the given tag, if this is left blank it will bump the patch version. You dont need to include the "v" prefix'
         required: false
@@ -70,7 +73,7 @@ jobs:
         with:
           body_path: ./release-notes.md
           draft: true
-          prerelease: ${{ inputs.is_prelease == true || inputs.is_prelease == 'true' }}
+          prerelease: ${{ github.event_name != 'workflow_dispatch' || inputs.is_prelease == 'true' }}
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
 
       - name: Create a GitHub Release (Push)
@@ -97,6 +100,7 @@ jobs:
       cmakeflags: ""
       buildAppImage: true
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   build_linux_flatpak:
@@ -113,6 +117,7 @@ jobs:
       branch: "stable"
       publish: false
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   # Windows
@@ -129,6 +134,7 @@ jobs:
       buildSystem: cmake
       cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   # MacOS
@@ -142,6 +148,7 @@ jobs:
       jobName: "MacOS Build"
       artifactPrefixName: "PCSX2-macos-Qt"
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   # Upload the Artifacts

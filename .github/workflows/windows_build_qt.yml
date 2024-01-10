@@ -40,6 +40,10 @@ on:
         required: false
         type: boolean
         default: false
+      stableBuild:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build_windows_qt:
@@ -60,6 +64,13 @@ jobs:
       - name: Fetch Tags
         if: ${{ inputs.fetchTags }}
         run: git fetch --tags --no-recurse-submodules
+
+      - name: Add stable release identifier file
+        if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
+        shell: bash
+        run: |
+          echo "#define DEFAULT_UPDATER_CHANNEL \"stable\"" > ./pcsx2-qt/DefaultUpdaterChannel.h
+          cat ./pcsx2-qt/DefaultUpdaterChannel.h
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
