@@ -124,6 +124,8 @@ namespace VMManager
 	static void LoadCoreSettings(SettingsInterface* si);
 	static void ApplyCoreSettings();
 	static void UpdateInhibitScreensaver(bool allow);
+	static void AccumulateSessionPlaytime();
+	static void ResetResumeTimestamp();
 	static void SaveSessionTime(const std::string& prev_serial);
 	static void ReloadPINE();
 
@@ -183,7 +185,8 @@ static float s_target_speed = 0.0f;
 static bool s_use_vsync_for_timing = false;
 
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
-static u64 s_session_start_time = 0;
+static u64 s_session_resume_timestamp = 0;
+static u64 s_session_accumulated_playtime = 0;
 
 static bool s_screensaver_inhibited = false;
 
@@ -232,6 +235,16 @@ VMState VMManager::GetState()
 	return s_state.load(std::memory_order_acquire);
 }
 
+void VMManager::AccumulateSessionPlaytime()
+{
+	s_session_accumulated_playtime += static_cast<u64>(Common::Timer::GetCurrentValue()) - s_session_resume_timestamp;
+}
+
+void VMManager::ResetResumeTimestamp()
+{
+	s_session_resume_timestamp = static_cast<u64>(Common::Timer::GetCurrentValue());
+}
+
 void VMManager::SetState(VMState state)
 {
 	// Some state transitions aren't valid.
@@ -261,10 +274,16 @@ void VMManager::SetState(VMState state)
 
 		UpdateInhibitScreensaver(!paused && EmuConfig.InhibitScreensaver);
 
-		if (state == VMState::Paused)
+		if (paused)
+		{
 			Host::OnVMPaused();
+			AccumulateSessionPlaytime();
+		}
 		else
+		{
 			Host::OnVMResumed();
+			ResetResumeTimestamp();
+		}
 	}
 	else if (state == VMState::Stopping && old_state == VMState::Running)
 	{
@@ -2975,23 +2994,19 @@ void VMManager::SaveSessionTime(const std::string& prev_serial)
 	if (GSDumpReplayer::IsReplayingDump())
 		return;
 
-	const u64 ctime = Common::Timer::GetCurrentValue();
 	if (!prev_serial.empty())
 	{
 		// round up to seconds
 		const std::time_t etime =
-			static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+			static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(std::exchange(s_session_accumulated_playtime, 0))));
 		const std::time_t wtime = std::time(nullptr);
 		GameList::AddPlayedTimeForSerial(prev_serial, wtime, etime);
 	}
-
-	s_session_start_time = ctime;
 }
 
 u64 VMManager::GetSessionPlayedTime()
 {
-	const u64 ctime = Common::Timer::GetCurrentValue();
-	return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+	return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(s_session_accumulated_playtime)));
 }
 
 #ifdef _WIN32
