@@ -293,13 +293,6 @@ private:
 
 	QMenu* m_settings_toolbar_menu = nullptr;
 
-	QString m_current_title;
-	QString m_current_elf_override;
-	QString m_current_disc_path;
-	QString m_current_disc_serial;
-	quint32 m_current_disc_crc;
-	quint32 m_current_running_crc;
-
 	bool m_display_created = false;
 	bool m_relative_mouse_mode = false;
 	bool m_hide_mouse_cursor = false;

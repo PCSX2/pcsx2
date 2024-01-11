@@ -283,6 +283,11 @@ namespace QtHost
 	bool IsVMValid();
 	bool IsVMPaused();
 
+	/// Accessors for game information.
+	const QString& GetCurrentGameTitle();
+	const QString& GetCurrentGameSerial();
+	const QString& GetCurrentGamePath();
+
 	/// Compare strings in the locale of the current UI language
 	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);
 } // namespace QtHost
