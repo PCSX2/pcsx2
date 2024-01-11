@@ -26,7 +26,6 @@
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/ImGui/ImGuiOverlays.h"
 #include "pcsx2/Input/InputManager.h"
-#include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/SysForwardDefs.h"
@@ -64,6 +63,7 @@ EmuThread* g_emu_thread = nullptr;
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost
 {
+	static void InitializeEarlyConsole();
 	static void PrintCommandLineVersion();
 	static void PrintCommandLineHelp(const std::string_view& progname);
 	static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
@@ -1240,7 +1240,8 @@ bool QtHost::InitializeConfig()
 	s_run_setup_wizard =
 		s_run_setup_wizard || s_base_settings_interface->GetBoolValue("UI", "SetupWizardIncomplete", false);
 
-	LogSink::SetBlockSystemConsole(QtHost::InNoGUIMode());
+	// TODO: -nogui console block?
+
 	VMManager::Internal::LoadStartupSettings();
 	InstallTranslator(nullptr);
 	return true;
@@ -1575,12 +1576,27 @@ static void SignalHandler(int signal)
 #endif
 }
 
+#ifdef _WIN32
+
+static BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType)
+{
+	if (dwCtrlType != CTRL_C_EVENT)
+		return FALSE;
+
+	SignalHandler(SIGTERM);
+	return TRUE;
+}
+
+#endif
+
 void QtHost::HookSignals()
 {
 	std::signal(SIGINT, SignalHandler);
 	std::signal(SIGTERM, SignalHandler);
 
-#ifdef __linux__
+#if defined(_WIN32)
+	SetConsoleCtrlHandler(ConsoleCtrlHandler, FALSE);
+#elif defined(__linux__)
 	// Ignore SIGCHLD by default on Linux, since we kick off aplay asynchronously.
 	struct sigaction sa_chld = {};
 	sigemptyset(&sa_chld.sa_mask);
@@ -1589,9 +1605,14 @@ void QtHost::HookSignals()
 #endif
 }
 
+void QtHost::InitializeEarlyConsole()
+{
+	Log::SetConsoleOutputLevel(LOGLEVEL_DEBUG);
+}
+
 void QtHost::PrintCommandLineVersion()
 {
-	LogSink::InitializeEarlyConsole();
+	InitializeEarlyConsole();
 	std::fprintf(stderr, "%s\n", (GetAppNameAndVersion() + GetAppConfigSuffix()).toUtf8().constData());
 	std::fprintf(stderr, "https://pcsx2.net/\n");
 	std::fprintf(stderr, "\n");
@@ -1715,7 +1736,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if (CHECK_ARG_PARAM(QStringLiteral("-logfile")))
 			{
-				LogSink::SetFileLogPath((++it)->toStdString());
+				VMManager::Internal::SetFileLogPath((++it)->toStdString());
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-bios")))
@@ -1736,7 +1757,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if (CHECK_ARG(QStringLiteral("-earlyconsolelog")))
 			{
-				LogSink::InitializeEarlyConsole();
+				InitializeEarlyConsole();
 				continue;
 			}
 			else if (CHECK_ARG(QStringLiteral("-bigpicture")))
@@ -1798,7 +1819,6 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 	// or disc, we don't want to actually start.
 	if (autoboot && !autoboot->source_type.has_value() && autoboot->filename.empty() && autoboot->elf_override.empty())
 	{
-		LogSink::InitializeEarlyConsole();
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}
@@ -1955,9 +1975,6 @@ shutdown_and_exit:
 	// Ensure config is written. Prevents destruction order issues.
 	if (s_base_settings_interface->IsDirty())
 		s_base_settings_interface->Save();
-
-	// Ensure emulog is flushed.
-	LogSink::CloseFileLog();
 
 	return result;
 }

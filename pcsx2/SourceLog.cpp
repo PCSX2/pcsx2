@@ -25,7 +25,6 @@
 using namespace R5900;
 
 FILE* emuLog;
-std::string emuLogName;
 
 SysTraceLogPack SysTrace;
 SysConsoleLogPack SysConsole;

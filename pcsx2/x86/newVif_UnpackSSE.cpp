@@ -370,9 +370,9 @@ void VifUnpackSSE_Init()
 				nVifGen(a, b, c);
 
 	DevCon.WriteLn("Unpack function generation complete.  Generated function statistics:");
-	DevCon.Indent().WriteLn(
-		"Reserved buffer    : %zu bytes @ 0x%016" PRIXPTR "\n"
-		"x86 code generated : %zu bytes\n",
+	DevCon.WriteLn(
+		"  Reserved buffer    : %zu bytes @ 0x%016" PRIXPTR "\n"
+		"  x86 code generated : %zu bytes\n",
 		SysMemory::GetVIFUnpackRecEnd() - SysMemory::GetVIFUnpackRec(),
 		SysMemory::GetVIFUnpackRec(),
 		xGetPtr() - SysMemory::GetVIFUnpackRec()

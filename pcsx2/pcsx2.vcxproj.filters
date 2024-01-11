@@ -1331,9 +1331,6 @@
     <ClCompile Include="Host.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="LogSink.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="windows\Optimus.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -2252,9 +2249,6 @@
     </ClInclude>
     <ClInclude Include="Host.h">
       <Filter>System</Filter>
-    </ClInclude>
-    <ClInclude Include="LogSink.h">
-      <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="GameList.h">
       <Filter>Misc</Filter>

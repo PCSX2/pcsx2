@@ -183,7 +183,15 @@ public:
 		return false;
 	}
 
-	bool WriteV(const char* fmt, va_list list) const;
+	bool WriteV(const char* fmt, va_list list) const
+	{
+		Console.FormatV(fmt, list);
+		return false;
+	}
 
-	bool WriteV(ConsoleColors color, const char* fmt, va_list list) const;
+	bool WriteV(ConsoleColors color, const char* fmt, va_list list) const
+	{
+		Console.FormatV(color, fmt, list);
+		return false;
+	}
 };

@@ -31,36 +31,6 @@ static constexpr size_t kInputBufSize = ((size_t)1 << 18);
 static constexpr ISzAlloc g_Alloc = {SzAlloc, SzFree};
 #endif
 
-static std::FILE* s_file_console_stream;
-static constexpr IConsoleWriter s_file_console_writer = {
-	[](const char* fmt) { // WriteRaw
-		std::fputs(fmt, s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[](const char* fmt) { // DoWriteLn
-		std::fputs(fmt, s_file_console_stream);
-		std::fputc('\n', s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[](ConsoleColors) { // DoSetColor
-	},
-	[](const char* fmt) { // DoWriteFromStdout
-		std::fputs(fmt, s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[]() { // Newline
-		std::fputc('\n', s_file_console_stream);
-		std::fflush(s_file_console_stream);
-	},
-	[](const char*) { // SetTitle
-	}};
-
-static void CloseConsoleFile()
-{
-	if (s_file_console_stream)
-		std::fclose(s_file_console_stream);
-}
-
 Updater::Updater(ProgressCallback* progress)
 	: m_progress(progress)
 {
@@ -74,16 +44,11 @@ Updater::~Updater()
 
 void Updater::SetupLogging(ProgressCallback* progress, const std::string& destination_directory)
 {
-	const std::string log_path(Path::Combine(destination_directory, "updater.log"));
-	s_file_console_stream = FileSystem::OpenCFile(log_path.c_str(), "w");
-	if (!s_file_console_stream)
-	{
-		progress->DisplayFormattedModalError("Failed to open log file '%s'", log_path.c_str());
-		return;
-	}
+	Log::SetDebugOutputLevel(LOGLEVEL_DEBUG);
 
-	Console_SetActiveHandler(s_file_console_writer);
-	std::atexit(CloseConsoleFile);
+	std::string log_path = Path::Combine(destination_directory, "updater.log");
+	if (!Log::SetFileOutputLevel(LOGLEVEL_DEBUG, std::move(log_path)))
+		progress->DisplayFormattedModalError("Failed to open log file '%s'", log_path.c_str());
 }
 
 bool Updater::Initialize(std::string destination_directory)
