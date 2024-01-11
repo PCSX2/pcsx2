@@ -222,6 +222,12 @@ namespace VMManager
 		/// Loads early settings. Call once on startup.
 		void LoadStartupSettings();
 
+		/// Overrides the filename used for the file log.
+		void SetFileLogPath(std::string path);
+
+		/// Prevents the system console from being displayed.
+		void SetBlockSystemConsole(bool block);
+
 		/// Initializes common host state, called on the CPU thread.
 		bool CPUThreadInitialize();
 

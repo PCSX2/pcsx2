@@ -27,7 +27,6 @@
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
-#include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"

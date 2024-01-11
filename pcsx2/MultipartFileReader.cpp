@@ -93,7 +93,6 @@ void MultipartFileReader::FindParts()
 		return;
 
 	DevCon.WriteLn( Color_Blue, "isoFile: multi-part %s detected...", StringUtil::toUpper(curext).c_str() );
-	ConsoleIndentScope indent;
 
 	int bsize = m_parts[0].reader->GetBlockSize();
 	int blocks = m_parts[0].end;

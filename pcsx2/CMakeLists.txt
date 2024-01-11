@@ -77,7 +77,6 @@ set(pcsx2Sources
 	HwRead.cpp
 	HwWrite.cpp
 	LayeredSettingsInterface.cpp
-	LogSink.cpp
 	INISettingsInterface.cpp
 	Interpreter.cpp
 	IopBios.cpp
@@ -169,7 +168,6 @@ set(pcsx2Headers
 	IopHw.h
 	IopMem.h
 	LayeredSettingsInterface.h
-	LogSink.h
 	PINE.h
 	Mdec.h
 	MTGS.h

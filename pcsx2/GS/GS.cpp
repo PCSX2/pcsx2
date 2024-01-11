@@ -171,7 +171,7 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	GSConfig.OsdShowGPU = GSConfig.OsdShowGPU && g_gs_device->SetGPUTimingEnabled(true);
 
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(new_api));
-	Console.Indent().WriteLn(g_gs_device->GetDriverInfo());
+	Console.WriteLn(g_gs_device->GetDriverInfo());
 
 	return true;
 }

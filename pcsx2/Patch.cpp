@@ -7,6 +7,7 @@
 #include "common/ByteSwap.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/ZipHelpers.h"
 
@@ -99,9 +100,9 @@ namespace Patch
 		bool operator==(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) == 0; }
 		bool operator!=(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) != 0; }
 
-		std::string ToString() const
+		SmallString ToString() const
 		{
-			return fmt::format("{},{},{},{:08x},{:x}", s_place_to_string[static_cast<u8>(placetopatch)],
+			return SmallString::from_fmt("{},{},{},{:08x},{:x}", s_place_to_string[static_cast<u8>(placetopatch)],
 				s_cpu_to_string[static_cast<u8>(cpu)], s_type_to_string[static_cast<u8>(type)], addr, data);
 		}
 	};
@@ -616,8 +617,8 @@ u32 Patch::EnablePatches(const PatchList& patches, const EnablePatchList& enable
 		for (const PatchCommand& ip : p.patches)
 		{
 			// print the actual patch lines only in verbose mode (even in devel)
-			if (DevConWriterEnabled)
-				DevCon.Indent().WriteLn(ip.ToString());
+			if (Log::GetMaxLevel() >= LOGLEVEL_DEV)
+				DevCon.WriteLnFmt("  {}", ip.ToString());
 
 			s_active_patches.push_back(&ip);
 		}

@@ -115,7 +115,7 @@ void ReportIPU()
 	Console.WriteLn("coded_block_pattern = 0x%x.", coded_block_pattern);
 	Console.WriteLn("g_decoder = 0x%x.", &decoder);
 	Console.WriteLn(ipu_cmd.desc());
-	Console.Newline();
+	Console.WriteLn();
 }
 
 bool SaveStateBase::ipuFreeze()
