@@ -10,16 +10,19 @@ on:
   push:
     branches:
       - master
-  # TODO - future work
-  # workflow_dispatch:
-  #   inputs:
-  #     isStable:
-  #       description: 'Should it be a stable release?'
-  #       required: true
-  #       default: 'false'
-  #     versionTag:
-  #       description: 'The version to tag with'
-  #       required: true
+  workflow_dispatch:
+    inputs:
+      is_prelease:
+        description: 'Should be a pre-release?'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      tag_value:
+        description: 'Create a new release from latest master with the given tag, if this is left blank it will bump the patch version. You dont need to include the "v" prefix'
+        required: false
 
 permissions:
   contents: write
@@ -42,6 +45,8 @@ jobs:
           github_token: ${{ github.token }}
           tag_prefix: v
           default_bump: patch
+          # if set, it will overwrite the bump settings
+          custom_tag: ${{ github.event.inputs.tag_value == '' && null || github.event.inputs.tag_value }}
 
       # TODO - we could do this and remove the node.js script, but auto-generated notes only work
       # with PRs -- not commits (determine how much we care).
@@ -62,9 +67,18 @@ jobs:
           node index.js
           mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
 
-      - name: Create a GitHub Release
+      - name: Create a GitHub Release (Manual)
         uses: softprops/action-gh-release@v1
-        if: steps.tag_version.outputs.new_tag
+        if: steps.tag_version.outputs.new_tag && github.event_name == 'workflow_dispatch'
+        with:
+          body_path: ./release-notes.md
+          draft: true
+          prerelease: ${{ github.event_name != 'workflow_dispatch' || inputs.is_prelease == 'true' }}
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+
+      - name: Create a GitHub Release (Push)
+        uses: softprops/action-gh-release@v1
+        if: steps.tag_version.outputs.new_tag && github.event_name != 'workflow_dispatch'
         with:
           body_path: ./release-notes.md
           draft: true
@@ -86,6 +100,7 @@ jobs:
       cmakeflags: ""
       buildAppImage: true
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   build_linux_flatpak:
@@ -102,6 +117,7 @@ jobs:
       branch: "stable"
       publish: false
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   # Windows
@@ -118,6 +134,7 @@ jobs:
       buildSystem: cmake
       cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   # MacOS
@@ -131,6 +148,7 @@ jobs:
       jobName: "MacOS Build"
       artifactPrefixName: "PCSX2-macos-Qt"
       fetchTags: true
+      stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prelease == 'false' }}
     secrets: inherit
 
   # Upload the Artifacts
@@ -163,9 +181,6 @@ jobs:
         working-directory: ./ci-artifacts/
         run: for d in *windows*/; do 7z a "${d}asset.7z" ./$d/*; done
 
-      # Artifact Naming:
-      # MacOS: PCSX2-<tag>-macOS-[additional hyphen seperated tags]
-      # Windows|Linux: PCSX2-<tag>-<windows|linux>-<32bit|64bit>--[additional hyphen seperated tags]
       - name: Name and Upload the Release Assets
         env:
           GITHUB_TOKEN: ${{ github.token }}

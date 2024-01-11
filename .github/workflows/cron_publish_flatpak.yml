@@ -33,6 +33,7 @@ jobs:
     uses: ./.github/workflows/linux_build_flatpak.yml
     with:
       jobName: "Qt"
+      artifactPrefixName: "PCSX2-linux-Qt-x64-flatpak"
       compiler: clang
       cmakeflags: ""
       publish: true
