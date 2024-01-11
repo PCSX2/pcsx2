@@ -23833,8 +23833,9 @@ SLES-54483:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes car reflections.
     mergeSprite: 1 # Fixes bluriness.
-    halfPixelOffset: 1 # Fixes bluriness.
+    halfPixelOffset: 4 # Fixes bluriness.
 SLES-54485:
   name: "Cinderella"
   region: "PAL-M3"
@@ -63251,8 +63252,9 @@ SLUS-21449:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes car reflections.
     mergeSprite: 1 # Fixes bluriness.
-    halfPixelOffset: 1 # Fixes bluriness.
+    halfPixelOffset: 4 # Fixes bluriness.
 SLUS-21450:
   name: "Super PickUps"
   region: "NTSC-U"
