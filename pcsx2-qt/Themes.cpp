@@ -476,9 +476,14 @@ void QtHost::SetStyleFromSettings()
 	}
 }
 
-void QtHost::SetIconThemeFromStyle()
+bool QtHost::IsDarkApplicationTheme()
 {
 	QPalette palette = qApp->palette();
-	bool dark = palette.windowText().color().value() > palette.window().color().value();
+	return (palette.windowText().color().value() > palette.window().color().value());
+}
+
+void QtHost::SetIconThemeFromStyle()
+{
+	const bool dark = IsDarkApplicationTheme();
 	QIcon::setThemeName(dark ? QStringLiteral("white") : QStringLiteral("black"));
 }

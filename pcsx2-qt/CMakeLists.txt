@@ -21,6 +21,8 @@ target_sources(pcsx2-qt PRIVATE
 	DisplayWidget.cpp
 	DisplayWidget.h
 	EarlyHardwareCheck.cpp
+	LogWindow.cpp
+	LogWindow.h
 	MainWindow.cpp
 	MainWindow.h
 	MainWindow.ui
