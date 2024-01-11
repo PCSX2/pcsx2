@@ -4,6 +4,7 @@
 #include "AutoUpdaterDialog.h"
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
+#include "LogWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtProgressCallback.h"
@@ -100,11 +101,6 @@ EmuThread::EmuThread(QThread* ui_thread)
 }
 
 EmuThread::~EmuThread() = default;
-
-bool EmuThread::isOnEmuThread() const
-{
-	return QThread::currentThread() == this;
-}
 
 void EmuThread::start()
 {
@@ -1918,6 +1914,9 @@ int main(int argc, char* argv[])
 	// Set theme before creating any windows.
 	QtHost::UpdateApplicationTheme();
 
+	// Start logging early.
+	LogWindow::updateSettings();
+
 	// Start up the CPU thread.
 	QtHost::HookSignals();
 	EmuThread::start();
@@ -1942,7 +1941,11 @@ int main(int argc, char* argv[])
 
 	// Don't bother showing the window in no-gui mode.
 	if (!s_nogui_mode)
+	{
 		g_main_window->show();
+		g_main_window->raise();
+		g_main_window->activateWindow();
+	}
 
 	// Initialize big picture mode if requested.
 	if (s_start_fullscreen_ui)

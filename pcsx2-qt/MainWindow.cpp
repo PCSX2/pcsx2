@@ -7,6 +7,7 @@
 #include "DisplayWidget.h"
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
+#include "LogWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -255,7 +256,7 @@ void MainWindow::setupAdditionalUi()
 #ifdef ENABLE_RAINTEGRATION
 	if (Achievements::IsUsingRAIntegration())
 	{
-		QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menu_Tools);
+		QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menuTools);
 		connect(raMenu, &QMenu::aboutToShow, this, [this, raMenu]() {
 			raMenu->clear();
 
@@ -279,7 +280,7 @@ void MainWindow::setupAdditionalUi()
 					[id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }, false); });
 			}
 		});
-		m_ui.menu_Tools->insertMenu(m_ui.menuInput_Recording->menuAction(), raMenu);
+		m_ui.menuTools->insertMenu(m_ui.menuInputRecording->menuAction(), raMenu);
 	}
 #endif
 }
@@ -366,6 +367,14 @@ void MainWindow::connectSignals()
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionViewStatusBarVerbose, "UI", "VerboseStatusBar", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSystemConsole, "Logging", "EnableSystemConsole", false);
+#ifdef _WIN32
+	// Debug console only exists on Windows.
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableDebugConsole, "Logging", "EnableDebugConsole", false);
+#else
+	m_ui.menuTools->removeAction(m_ui.actionEnableDebugConsole);
+	m_ui.actionEnableDebugConsole->deleteLater();
+	m_ui.actionEnableDebugConsole = nullptr;
+#endif
 #ifndef PCSX2_DEVBUILD
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableVerboseLogging, "Logging", "EnableVerbose", false);
 #else
@@ -375,6 +384,7 @@ void MainWindow::connectSignals()
 #endif
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableEEConsoleLogging, "Logging", "EnableEEConsole", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableIOPConsoleLogging, "Logging", "EnableIOPConsole", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableLogWindow, "Logging", "EnableLogWindow", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableFileLogging, "Logging", "EnableFileLogging", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableLogTimestamps, "Logging", "EnableTimestamps", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableCDVDVerboseReads, "EmuCore", "CdvdVerboseReads", false);
@@ -508,6 +518,11 @@ void MainWindow::recreate()
 	new_main_window->show();
 	deleteLater();
 
+	// Recreate log window as well. Then make sure we're still on top.
+	LogWindow::updateSettings();
+	new_main_window->raise();
+	new_main_window->activateWindow();
+
 	// Reload the sources we just closed.
 	g_emu_thread->reloadInputSources();
 
@@ -579,6 +594,8 @@ void MainWindow::destroySubWindows()
 	}
 
 	SettingsWindow::closeGamePropertiesDialogs();
+
+	LogWindow::destroy();
 }
 
 void MainWindow::onScreenshotActionTriggered()
@@ -920,6 +937,9 @@ void MainWindow::updateWindowTitle()
 		if (container->windowTitle() != display_title)
 			container->setWindowTitle(display_title);
 	}
+
+	if (g_log_window)
+		g_log_window->updateWindowTitle();
 }
 
 void MainWindow::updateWindowState(bool force_visible)
@@ -1192,6 +1212,8 @@ void MainWindow::checkForSettingChanges()
 		updateDisplayWidgetCursor();
 
 	updateWindowState();
+
+	LogWindow::updateSettings();
 }
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
@@ -2039,6 +2061,22 @@ void MainWindow::dropEvent(QDropEvent* event)
 		g_emu_thread->changeGSDump(filename);
 		switchToEmulationView();
 	}
+}
+
+void MainWindow::moveEvent(QMoveEvent* event)
+{
+	QMainWindow::moveEvent(event);
+
+	if (g_log_window && g_log_window->isAttachedToMainWindow())
+		g_log_window->reattachToMainWindow();
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+	QMainWindow::resizeEvent(event);
+
+	if (g_log_window && g_log_window->isAttachedToMainWindow())
+		g_log_window->reattachToMainWindow();
 }
 
 void MainWindow::registerForDeviceNotifications()

@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClCompile Include="ColorPickerButton.cpp" />
     <ClCompile Include="EarlyHardwareCheck.cpp" />
+    <ClCompile Include="LogWindow.cpp" />
     <ClCompile Include="QtProgressCallback.cpp" />
     <ClCompile Include="Settings\DebugSettingsWidget.cpp" />
     <ClCompile Include="Settings\FolderSettingsWidget.cpp" />
@@ -172,6 +173,7 @@
     <QtMoc Include="Settings\DEV9UiCommon.h" />
     <QtMoc Include="QtProgressCallback.h" />
     <QtMoc Include="ColorPickerButton.h" />
+    <QtMoc Include="LogWindow.h" />
     <ClInclude Include="Settings\ControllerSettingWidgetBinder.h" />
     <QtMoc Include="Settings\FolderSettingsWidget.h" />
     <QtMoc Include="Settings\DebugSettingsWidget.h" />
@@ -262,6 +264,7 @@
     <ClCompile Include="$(IntDir)moc_ColorPickerButton.cpp" />
     <ClCompile Include="$(IntDir)moc_CoverDownloadDialog.cpp" />
     <ClCompile Include="$(IntDir)moc_DisplayWidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_LogWindow.cpp" />
     <ClCompile Include="$(IntDir)moc_MainWindow.cpp" />
     <ClCompile Include="$(IntDir)moc_QtHost.cpp" />
     <ClCompile Include="$(IntDir)moc_QtProgressCallback.cpp" />
