@@ -178,11 +178,8 @@ QWidget* MainWindow::getContentParent()
 
 void MainWindow::setupAdditionalUi()
 {
-	const bool show_advanced_settings = QtHost::ShouldShowAdvancedSettings();
-
 	makeIconsMasks(menuBar());
-
-	m_ui.menuDebug->menuAction()->setVisible(show_advanced_settings);
+	updateAdvancedSettingsVisibility();
 
 	const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
 	m_ui.actionViewToolbar->setChecked(toolbar_visible);
@@ -367,14 +364,18 @@ void MainWindow::connectSignals()
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionViewStatusBarVerbose, "UI", "VerboseStatusBar", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSystemConsole, "Logging", "EnableSystemConsole", false);
-#ifdef _WIN32
-	// Debug console only exists on Windows.
-	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableDebugConsole, "Logging", "EnableDebugConsole", false);
-#else
-	m_ui.menuTools->removeAction(m_ui.actionEnableDebugConsole);
-	m_ui.actionEnableDebugConsole->deleteLater();
-	m_ui.actionEnableDebugConsole = nullptr;
-#endif
+
+	if (Log::IsDebugOutputAvailable())
+	{
+		SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableDebugConsole, "Logging", "EnableDebugConsole", false);
+	}
+	else
+	{
+		m_ui.menuTools->removeAction(m_ui.actionEnableDebugConsole);
+		m_ui.actionEnableDebugConsole->deleteLater();
+		m_ui.actionEnableDebugConsole = nullptr;
+	}
+
 #ifndef PCSX2_DEVBUILD
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableVerboseLogging, "Logging", "EnableVerbose", false);
 #else
@@ -669,11 +670,23 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 	Host::SetBaseBoolSettingValue("UI", "ShowAdvancedSettings", checked);
 	Host::CommitBaseSettingChanges();
 
-	m_ui.menuDebug->menuAction()->setVisible(checked);
+	updateAdvancedSettingsVisibility();
 
 	// just recreate the entire settings window, it's easier.
 	if (m_settings_window)
 		recreateSettings();
+}
+
+void MainWindow::updateAdvancedSettingsVisibility()
+{
+	const bool enabled = QtHost::ShouldShowAdvancedSettings();
+
+	m_ui.menuDebug->menuAction()->setVisible(enabled);
+
+	m_ui.actionEnableSystemConsole->setVisible(enabled);
+	if (m_ui.actionEnableDebugConsole)
+		m_ui.actionEnableDebugConsole->setVisible(enabled);
+	m_ui.actionEnableVerboseLogging->setVisible(enabled);
 }
 
 void MainWindow::onToolsVideoCaptureToggled(bool checked)
