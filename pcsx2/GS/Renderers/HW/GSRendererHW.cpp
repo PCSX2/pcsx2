@@ -2799,6 +2799,16 @@ void GSRendererHW::Draw()
 			}
 		}
 	}
+	else
+	{
+		// RT and DS sizes need to match, even if we're not doing any resizing.
+		const int new_w = std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds->m_unscaled_size.x : 0);
+		const int new_h = std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds->m_unscaled_size.y : 0);
+		if (rt)
+			rt->ResizeTexture(new_w, new_h);
+		if (ds)
+			ds->ResizeTexture(new_w, new_h);
+	}
 
 	if (rt)
 	{
