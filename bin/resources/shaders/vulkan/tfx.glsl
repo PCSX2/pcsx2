@@ -787,7 +787,7 @@ vec4 sample_color(vec2 st)
 
 		#if PS_LTF
 		{
-			uv = st.xyxy + HalfTexel;
+			uv = st.xyxy + HalfTexel * RcpScaleFactor;
 			dd = fract(uv.xy * WH.zw);
 
 			#if PS_FST == 0

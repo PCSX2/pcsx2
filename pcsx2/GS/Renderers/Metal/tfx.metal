@@ -674,7 +674,7 @@ struct PSMain
 			float4 uv;
 			if (PS_LTF)
 			{
-				uv = st.xyxy + cb.half_texel;
+				uv = st.xyxy + cb.half_texel * cb.scale_factor.y;
 				dd = fract(uv.xy * cb.wh.zw);
 				if (!FST)
 				{

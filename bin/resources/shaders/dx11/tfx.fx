@@ -600,7 +600,7 @@ float4 sample_color(float2 st, float uv_w)
 
 		if(PS_LTF)
 		{
-			uv = st.xyxy + HalfTexel;
+			uv = st.xyxy + HalfTexel * RcpScaleFactor;
 			dd = frac(uv.xy * WH.zw);
 
 			if(PS_FST == 0)
