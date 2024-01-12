@@ -836,6 +836,11 @@ bool ImGuiManager::WantsTextInput()
 	return s_imgui_wants_text.load(std::memory_order_acquire);
 }
 
+bool ImGuiManager::WantsMouseInput()
+{
+	return s_imgui_wants_mouse.load(std::memory_order_acquire);
+}
+
 void ImGuiManager::AddTextInput(std::string str)
 {
 	if (!s_imgui_wants_text.load(std::memory_order_acquire))
