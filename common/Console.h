@@ -73,6 +73,7 @@ namespace Log
 	void SetConsoleOutputLevel(LOGLEVEL level);
 
 	// adds a debug console output
+	bool IsDebugOutputAvailable();
 	bool IsDebugOutputEnabled();
 	void SetDebugOutputLevel(LOGLEVEL level);
 

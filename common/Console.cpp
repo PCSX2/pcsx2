@@ -271,6 +271,15 @@ cleanup:
 #endif
 }
 
+bool Log::IsDebugOutputAvailable()
+{
+#ifdef _WIN32
+	return IsDebuggerPresent();
+#else
+	return false;
+#endif
+}
+
 bool Log::IsDebugOutputEnabled()
 {
 	return (s_console_level > LOGLEVEL_NONE);
