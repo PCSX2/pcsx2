@@ -15,7 +15,6 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3
 	GSTexture::Type type, GSTexture::Format format)
 	: m_texture(std::move(texture))
 	, m_desc(desc)
-	, m_mapped_subresource(0)
 {
 	m_size.x = static_cast<int>(desc.Width);
 	m_size.y = static_cast<int>(desc.Height);
