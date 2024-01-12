@@ -1,7 +1,12 @@
 function(detect_operating_system)
+	message(STATUS "CMake Version: ${CMAKE_VERSION}")
+	message(STATUS "CMake System Name: ${CMAKE_SYSTEM_NAME}")
+
 	# LINUX wasn't added until CMake 3.25.
 	if (CMAKE_VERSION VERSION_LESS 3.25.0 AND CMAKE_SYSTEM_NAME MATCHES "Linux")
+		# Have to make it visible in this scope as well for below.
 		set(LINUX TRUE PARENT_SCOPE)
+		set(LINUX TRUE)
 	endif()
 
 	if(WIN32)
