@@ -51,6 +51,7 @@ namespace ImGuiManager
 	static void DrawSettingsOverlay();
 	static void DrawInputsOverlay();
 	static void DrawInputRecordingOverlay(float& position_y);
+	static void DrawVideoCaptureOverlay(float& position_y);
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -629,24 +630,54 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
-	// TODO - icon list that would be nice to add
-	// - 'video' when screen capturing
-	if (g_InputRecording.isActive())
+	if (g_InputRecording.isActive() && !FullscreenUI::HasActiveWindow())
 	{
 		// Status Indicators
 		if (g_InputRecording.getControls().isRecording())
 		{
-			DRAW_LINE(standard_font, fmt::format("{} Recording", ICON_FA_RECORD_VINYL).c_str(), IM_COL32(255, 0, 0, 255));
+			DRAW_LINE(standard_font, TinyString::from_fmt("{} Recording Input", ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
 		}
 		else
 		{
-			DRAW_LINE(standard_font, fmt::format("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
+			DRAW_LINE(standard_font, TinyString::from_fmt("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
 		}
 
 		// Input Recording Metadata
-		DRAW_LINE(fixed_font, fmt::format("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
-		DRAW_LINE(fixed_font, fmt::format("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(), g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
-		DRAW_LINE(fixed_font, fmt::format("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+		DRAW_LINE(fixed_font, TinyString::from_fmt("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
+		DRAW_LINE(fixed_font, TinyString::from_fmt("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(), g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
+		DRAW_LINE(fixed_font, TinyString::from_fmt("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+	}
+
+#undef DRAW_LINE
+}
+
+void ImGuiManager::DrawVideoCaptureOverlay(float& position_y)
+{
+	const float scale = ImGuiManager::GetGlobalScale();
+	const float shadow_offset = std::ceil(1.0f * scale);
+	const float margin = std::ceil(10.0f * scale);
+	const float spacing = std::ceil(5.0f * scale);
+	position_y += margin;
+
+	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+	ImVec2 text_size;
+
+#define DRAW_LINE(font, text, color) \
+	do \
+	{ \
+		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
+		dl->AddText(font, font->FontSize, \
+			ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
+			IM_COL32(0, 0, 0, 100), (text)); \
+		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
+		position_y += text_size.y + spacing; \
+	} while (0)
+
+	if (GSCapture::IsCapturing() && !FullscreenUI::HasActiveWindow())
+	{
+		DRAW_LINE(standard_font, TinyString::from_fmt("{} {}", ICON_FA_RECORDING, GSCapture::GetElapsedTime()).c_str(), IM_COL32(255, 0, 0, 255));
 	}
 
 #undef DRAW_LINE
@@ -1041,6 +1072,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 void ImGuiManager::RenderOverlays()
 {
 	float position_y = 0;
+	DrawVideoCaptureOverlay(position_y);
 	DrawInputRecordingOverlay(position_y);
 	DrawPerformanceOverlay(position_y);
 	DrawSettingsOverlay();

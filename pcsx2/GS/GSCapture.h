@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "common/SmallString.h"
 #include "GSVector.h"
 
 namespace Threading
@@ -26,6 +27,7 @@ namespace GSCapture
 	bool IsCapturing();
 	bool IsCapturingVideo();
 	bool IsCapturingAudio();
+	TinyString GetElapsedTime();
 	const Threading::ThreadHandle& GetEncoderThreadHandle();
 	GSVector2i GetSize();
 	std::string GetNextCaptureFileName();

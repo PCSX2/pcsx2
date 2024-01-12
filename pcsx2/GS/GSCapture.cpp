@@ -19,6 +19,7 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
+#include "common/Timer.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -160,6 +161,7 @@ namespace GSCapture
 	static std::mutex s_lock;
 	static GSVector2i s_size{};
 	static std::string s_filename;
+	static Common::Timer s_capture_start_time;
 	static std::atomic_bool s_capturing{false};
 	static std::atomic_bool s_encoding_error{false};
 
@@ -806,6 +808,9 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	lock.unlock();
 	Host::OnCaptureStarted(s_filename);
+
+	s_capture_start_time.Reset();
+
 	return true;
 }
 
@@ -1337,6 +1342,12 @@ bool GSCapture::IsCapturingVideo()
 bool GSCapture::IsCapturingAudio()
 {
 	return (s_audio_stream != nullptr);
+}
+
+TinyString GSCapture::GetElapsedTime() 
+{
+  const u32 seconds = static_cast<u32>(s_capture_start_time.GetTimeSeconds());
+  return TinyString::from_fmt("{:02d}:{:02d}:{:02d}", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
 }
 
 const Threading::ThreadHandle& GSCapture::GetEncoderThreadHandle()
