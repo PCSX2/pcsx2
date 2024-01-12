@@ -497,7 +497,7 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 	MTGS::WaitGS();
 
 	// If we're using exclusive fullscreen, the refresh rate may have changed.
-	UpdateVSyncRate(true);
+	VMManager::UpdateTargetSpeed();
 }
 
 void EmuThread::setSurfaceless(bool surfaceless)
