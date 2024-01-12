@@ -2741,6 +2741,9 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	EmuConfig.Speedhacks.EECycleRate =
 		std::max<decltype(EmuConfig.Speedhacks.EECycleRate)>(EmuConfig.Speedhacks.EECycleRate, 0);
 	EmuConfig.Speedhacks.EECycleSkip = 0;
+
+	// Async mix breaks games.
+	EmuConfig.SPU2.SynchMode = Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch;
 }
 
 void VMManager::LogUnsafeSettingsToConsole(const std::string& messages)
