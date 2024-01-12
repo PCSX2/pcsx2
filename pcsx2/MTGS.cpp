@@ -9,6 +9,7 @@
 #include "IconsFontAwesome5.h"
 #include "VMManager.h"
 
+#include "common/FPControl.h"
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/WrappedMemCopy.h"
@@ -143,6 +144,10 @@ void MTGS::ShutdownThread()
 void MTGS::ThreadEntryPoint()
 {
 	Threading::SetNameOfCurrentThread("GS");
+
+	// Explicitly set rounding mode to default (nearest, FTZ off).
+	// Otherwise it appears to get inherited from the EE thread on Linux.
+	FPControlRegister::SetCurrent(FPControlRegister::GetDefault());
 
 	for (;;)
 	{
