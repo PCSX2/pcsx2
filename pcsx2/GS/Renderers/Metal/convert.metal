@@ -77,6 +77,11 @@ fragment float4 ps_copy_fs(float4 p [[position]], DirectReadTextureIn<float> tex
 	return tex.read(p);
 }
 
+fragment float4 ps_clear(float4 p [[position]], constant float4& color [[buffer(GSMTLBufferIndexUniforms)]])
+{
+	return color;
+}
+
 fragment void ps_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	if (tex.read(p).a < (127.5f / 255.f))

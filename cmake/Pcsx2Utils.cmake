@@ -1,7 +1,12 @@
 function(detect_operating_system)
+	message(STATUS "CMake Version: ${CMAKE_VERSION}")
+	message(STATUS "CMake System Name: ${CMAKE_SYSTEM_NAME}")
+
 	# LINUX wasn't added until CMake 3.25.
 	if (CMAKE_VERSION VERSION_LESS 3.25.0 AND CMAKE_SYSTEM_NAME MATCHES "Linux")
+		# Have to make it visible in this scope as well for below.
 		set(LINUX TRUE PARENT_SCOPE)
+		set(LINUX TRUE)
 	endif()
 
 	if(WIN32)
@@ -56,10 +61,23 @@ function(get_git_version_info)
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
 
-		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD
-			OUTPUT_VARIABLE PCSX2_GIT_TAG
+		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD --sort=version:refname
+			OUTPUT_VARIABLE PCSX2_GIT_TAG_LIST
+			RESULT_VARIABLE TAG_RESULT
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
+
+		# CAUTION: There is a race here, this solves the problem of a commit being tagged multiple times (take the last tag)
+		# however, if simultaneous builds are pushing tags to the same commit you might get inconsistent results (it's a race)
+		#
+		# The easy solution is, don't do that, but just something to be aware of.
+		if(PCSX2_GIT_TAG_LIST AND TAG_RESULT EQUAL 0)
+			string(REPLACE "\n" ";" PCSX2_GIT_TAG_LIST "${PCSX2_GIT_TAG_LIST}")
+			if (PCSX2_GIT_TAG_LIST)
+				list(GET PCSX2_GIT_TAG_LIST -1 PCSX2_GIT_TAG)
+				message("Using tag: ${PCSX2_GIT_TAG}")
+			endif()
+		endif()
 
 		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
 			OUTPUT_VARIABLE PCSX2_GIT_HASH
@@ -111,7 +129,7 @@ function(write_svnrev_h)
 			)
 		endif()
 	else()
-		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h 
+		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
 			"#define SVN_REV ${PCSX2_WC_TIME}ll\n"
 			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 0\n"

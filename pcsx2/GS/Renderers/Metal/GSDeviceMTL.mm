@@ -1043,6 +1043,7 @@ bool GSDeviceMTL::Create()
 	m_clut_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_convert_clut_8"), @"8-bit CLUT Update");
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::HDRColor);
 	m_hdr_init_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_hdr_init"), @"HDR Init");
+	m_hdr_clear_pipeline = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_clear"), @"HDR Clear");
 	pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
 	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
@@ -2139,11 +2140,27 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	if (config.ps.hdr)
 	{
 		GSVector2i size = config.rt->GetSize();
-		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::HDRColor);
-		BeginRenderPass(@"HDR Init", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-		RenderCopy(config.rt, m_hdr_init_pipeline, config.drawarea);
-		rt = hdr_rt;
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+		rt = hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::HDRColor, false);
+		switch (config.rt->GetState())
+		{
+			case GSTexture::State::Dirty:
+				BeginRenderPass(@"HDR Init", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+				RenderCopy(config.rt, m_hdr_init_pipeline, config.drawarea);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				break;
+
+			case GSTexture::State::Cleared:
+			{
+				BeginRenderPass(@"HDR Clear", hdr_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+				GSVector4 color = GSVector4::rgba32(config.rt->GetClearColor()) / GSVector4::cxpr(65535, 65535, 65535, 255);
+				[m_current_render.encoder setFragmentBytes:&color length:sizeof(color) atIndex:GSMTLBufferIndexUniforms];
+				RenderCopy(nullptr, m_hdr_clear_pipeline, config.drawarea);
+				break;
+			}
+
+			case GSTexture::State::Invalidated:
+				break;
+		}
 	}
 
 	// Try to reduce render pass restarts

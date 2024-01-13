@@ -342,6 +342,10 @@
     <ClCompile Include="$(IntDir)moc_SetupWizardDialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="LogWindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_LogWindow.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -499,6 +503,7 @@
     <QtMoc Include="Settings\GamePatchSettingsWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
+    <QtMoc Include="LogWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">

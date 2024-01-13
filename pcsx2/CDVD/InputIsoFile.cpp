@@ -260,14 +260,12 @@ bool InputIsoFile::Open(std::string srcfile, Error* error, bool testOnly)
 
 	Console.WriteLn(Color_StrongBlue, "isoFile open ok: %s", m_filename.c_str());
 
-	ConsoleIndentScope indent;
-
-	Console.WriteLn("Image type  = %s", nameFromType(m_type));
-	//Console.WriteLn("Fileparts   = %u", m_numparts); // Pointless print, it's 1 unless it says otherwise above
-	DevCon.WriteLn("blocks      = %u", m_blocks);
-	DevCon.WriteLn("offset      = %d", m_offset);
-	DevCon.WriteLn("blocksize   = %u", m_blocksize);
-	DevCon.WriteLn("blockoffset = %d", m_blockofs);
+	Console.WriteLn("  Image type  = %s", nameFromType(m_type));
+	//Console.WriteLn("  Fileparts   = %u", m_numparts); // Pointless print, it's 1 unless it says otherwise above
+	DevCon.WriteLn("  blocks      = %u", m_blocks);
+	DevCon.WriteLn("  offset      = %d", m_offset);
+	DevCon.WriteLn("  blocksize   = %u", m_blocksize);
+	DevCon.WriteLn("  blockoffset = %d", m_blockofs);
 
 	return true;
 }

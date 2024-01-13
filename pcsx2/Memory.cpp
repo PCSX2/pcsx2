@@ -180,7 +180,7 @@ bool SysMemory::AllocateMemoryMap()
 void SysMemory::DumpMemoryMap()
 {
 #define DUMP_REGION(name, base, offset, size) \
-	DevCon.WriteLn(Color_Gray, "%-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name, \
+	DevCon.WriteLn(Color_Gray, "  %-32s @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " %s", name, \
 		(uptr)(base + offset), (uptr)(base + offset + size), fmt::format("[{}mb]", size / _1mb).c_str());
 
 	DUMP_REGION("EE Main Memory", s_data_memory, HostMemoryMap::EEmemOffset, HostMemoryMap::EEmemSize);
@@ -227,8 +227,6 @@ bool SysMemory::Allocate()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
 
-	ConsoleIndentScope indent(1);
-
 	if (!AllocateMemoryMap())
 		return false;
 
@@ -245,7 +243,6 @@ bool SysMemory::Allocate()
 void SysMemory::Reset()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Resetting host memory for virtual systems...");
-	ConsoleIndentScope indent(1);
 
 	memReset();
 	iopMemReset();
@@ -258,7 +255,6 @@ void SysMemory::Reset()
 void SysMemory::Release()
 {
 	Console.WriteLn(Color_Blue, "Releasing host memory for virtual systems...");
-	ConsoleIndentScope indent(1);
 
 	vtlb_Core_Free(); // Just to be sure... (calling order could result in it getting missed during Decommit).
 

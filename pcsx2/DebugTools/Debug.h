@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -7,8 +7,10 @@
 #include "Config.h"
 #include "Memory.h"
 
+#include <string>
+
+// TODO: Purge emuLog and all this other nonsense, just go through Log with LOGLEVEL_TRACE.
 extern FILE *emuLog;
-extern std::string emuLogName;
 
 extern char* disVU0MicroUF(u32 code, u32 pc);
 extern char* disVU0MicroLF(u32 code, u32 pc);
@@ -214,23 +216,34 @@ class ConsoleLogFromVM : public BaseTraceLogSource
 public:
 	ConsoleLogFromVM( const TraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	bool Write( const char* msg ) const
+	bool Write(std::string_view msg)
 	{
-		ConsoleColorScope cs(conColor);
-		Console.WriteRaw(msg);
-
-		// Buffered output isn't compatible with the testsuite. The end of test
-		// doesn't always get flushed. Let's just flush all the output if EE/IOP
-		// print anything.
-		fflush(NULL);
+		for (const char ch : msg)
+		{
+			if (ch == '\n')
+			{
+				if (!m_buffer.empty())
+				{
+					Console.WriteLn(conColor, m_buffer);
+					m_buffer.clear();
+				}
+			}
+			else if (ch < 0x20)
+			{
+				// Ignore control characters.
+				// Otherwise you get fun bells going off.
+			}
+			else
+			{
+				m_buffer.push_back(ch);
+			}
+		}
 
 		return false;
 	}
 
-	bool Write(const std::string& msg) const
-	{
-		return Write(msg.c_str());
-	}
+private:
+	std::string m_buffer;
 };
 
 // --------------------------------------------------------------------------------------

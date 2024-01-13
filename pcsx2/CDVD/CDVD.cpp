@@ -539,7 +539,7 @@ static CDVDDiscType GetPS2ElfName(IsoReader& isor, std::string* name, std::strin
 		if (value.empty() && (lineno == (lines.size() - 1)))
 		{
 			Console.Warning("(SYSTEM.CNF) Unusual or malformed entry in SYSTEM.CNF ignored:");
-			Console.Indent().WriteLn(std::string(line));
+			Console.WarningFmt("  {}", line);
 			continue;
 		}
 

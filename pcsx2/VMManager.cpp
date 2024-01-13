@@ -21,7 +21,6 @@
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "IopBios.h"
-#include "LogSink.h"
 #include "MTGS.h"
 #include "MTVU.h"
 #include "PINE.h"
@@ -79,6 +78,9 @@
 
 namespace VMManager
 {
+	static void SetDefaultLoggingSettings(SettingsInterface& si);
+	static void UpdateLoggingSettings(SettingsInterface& si);
+
 	static void LogCPUCapabilities();
 	static void InitializeCPUProviders();
 	static void ShutdownCPUProviders();
@@ -122,6 +124,8 @@ namespace VMManager
 	static void LoadCoreSettings(SettingsInterface* si);
 	static void ApplyCoreSettings();
 	static void UpdateInhibitScreensaver(bool allow);
+	static void AccumulateSessionPlaytime();
+	static void ResetResumeTimestamp();
 	static void SaveSessionTime(const std::string& prev_serial);
 	static void ReloadPINE();
 
@@ -144,6 +148,9 @@ static constexpr u32 SETTINGS_VERSION = 1;
 
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
+
+static bool s_log_block_system_console = false;
+static bool s_log_force_file_log = false;
 
 static std::atomic<VMState> s_state{VMState::Shutdown};
 static bool s_cpu_implementation_changed = false;
@@ -178,11 +185,10 @@ static float s_target_speed = 0.0f;
 static bool s_use_vsync_for_timing = false;
 
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
-static u64 s_session_start_time = 0;
+static u64 s_session_resume_timestamp = 0;
+static u64 s_session_accumulated_playtime = 0;
 
 static bool s_screensaver_inhibited = false;
-
-static PINEServer s_pine_server;
 
 static bool s_discord_presence_active = false;
 static time_t s_discord_presence_time_epoch;
@@ -229,6 +235,16 @@ VMState VMManager::GetState()
 	return s_state.load(std::memory_order_acquire);
 }
 
+void VMManager::AccumulateSessionPlaytime()
+{
+	s_session_accumulated_playtime += static_cast<u64>(Common::Timer::GetCurrentValue()) - s_session_resume_timestamp;
+}
+
+void VMManager::ResetResumeTimestamp()
+{
+	s_session_resume_timestamp = static_cast<u64>(Common::Timer::GetCurrentValue());
+}
+
 void VMManager::SetState(VMState state)
 {
 	// Some state transitions aren't valid.
@@ -258,10 +274,16 @@ void VMManager::SetState(VMState state)
 
 		UpdateInhibitScreensaver(!paused && EmuConfig.InhibitScreensaver);
 
-		if (state == VMState::Paused)
+		if (paused)
+		{
 			Host::OnVMPaused();
+			AccumulateSessionPlaytime();
+		}
 		else
+		{
 			Host::OnVMResumed();
+			ResetResumeTimestamp();
+		}
 	}
 	else if (state == VMState::Stopping && old_state == VMState::Running)
 	{
@@ -390,7 +412,7 @@ void VMManager::Internal::CPUThreadShutdown()
 {
 	ShutdownDiscordPresence();
 
-	s_pine_server.Deinitialize();
+	PINEServer::Deinitialize();
 
 	Achievements::Shutdown(false);
 
@@ -411,6 +433,80 @@ void VMManager::Internal::CPUThreadShutdown()
 #ifdef _WIN32
 	CoUninitialize();
 #endif
+
+	// Ensure emulog gets flushed.
+	Log::SetFileOutputLevel(LOGLEVEL_NONE, std::string());
+}
+
+void VMManager::Internal::SetFileLogPath(std::string path)
+{
+	s_log_force_file_log = Log::SetFileOutputLevel(LOGLEVEL_DEBUG, std::move(path));
+	emuLog = Log::GetFileLogHandle();
+}
+
+void VMManager::Internal::SetBlockSystemConsole(bool block)
+{
+	s_log_block_system_console = block;
+}
+
+void VMManager::UpdateLoggingSettings(SettingsInterface& si)
+{
+#ifdef _DEBUG
+	constexpr LOGLEVEL level = LOGLEVEL_DEBUG;
+#else
+	const LOGLEVEL level = (IsDevBuild || si.GetBoolValue("Logging", "EnableVerbose", false)) ? LOGLEVEL_DEV : LOGLEVEL_INFO;
+#endif
+
+	const bool system_console_enabled = !s_log_block_system_console && si.GetBoolValue("Logging", "EnableSystemConsole", false);
+	const bool log_window_enabled = !s_log_block_system_console && si.GetBoolValue("Logging", "EnableLogWindow", false);
+	const bool file_logging_enabled = s_log_force_file_log || si.GetBoolValue("Logging", "EnableFileLogging", false);
+
+	if (system_console_enabled != Log::IsConsoleOutputEnabled())
+		Log::SetConsoleOutputLevel(system_console_enabled ? level : LOGLEVEL_NONE);
+
+	if (file_logging_enabled != Log::IsFileOutputEnabled())
+	{
+		std::string path = Path::Combine(EmuFolders::Logs, "emulog.txt");
+		Log::SetFileOutputLevel(file_logging_enabled ? level : LOGLEVEL_NONE, std::move(path));
+	}
+
+	// Debug console only exists on Windows.
+#ifdef _WIN32
+	const bool debug_console_enabled = IsDebuggerPresent() && si.GetBoolValue("Logging", "EnableDebugConsole", false);
+	Log::SetDebugOutputLevel(debug_console_enabled ? level : LOGLEVEL_NONE);
+#else
+	constexpr bool debug_console_enabled = false;
+#endif
+
+	const bool timestamps_enabled = si.GetBoolValue("Logging", "EnableTimestamps", true);
+	Log::SetTimestampsEnabled(timestamps_enabled);
+
+	const bool any_logging_sinks = system_console_enabled || log_window_enabled || file_logging_enabled || debug_console_enabled;
+
+	const bool ee_console_enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableEEConsole", false);
+	SysConsole.eeConsole.Enabled = ee_console_enabled;
+
+	SysConsole.iopConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableIOPConsole", false);
+	SysTrace.IOP.R3000A.Enabled = true;
+	SysTrace.IOP.COP2.Enabled = true;
+	SysTrace.IOP.Memory.Enabled = true;
+	SysTrace.SIF.Enabled = true;
+
+	// Input Recording Logs
+	SysConsole.recordingConsole.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableInputRecordingLogs", true);
+	SysConsole.controlInfo.Enabled = any_logging_sinks && si.GetBoolValue("Logging", "EnableControllerLogs", false);
+}
+
+void VMManager::SetDefaultLoggingSettings(SettingsInterface& si)
+{
+	si.SetBoolValue("Logging", "EnableSystemConsole", false);
+	si.SetBoolValue("Logging", "EnableFileLogging", false);
+	si.SetBoolValue("Logging", "EnableTimestamps", true);
+	si.SetBoolValue("Logging", "EnableVerbose", false);
+	si.SetBoolValue("Logging", "EnableEEConsole", false);
+	si.SetBoolValue("Logging", "EnableIOPConsole", false);
+	si.SetBoolValue("Logging", "EnableInputRecordingLogs", true);
+	si.SetBoolValue("Logging", "EnableControllerLogs", false);
 }
 
 bool VMManager::Internal::CheckSettingsVersion()
@@ -426,7 +522,9 @@ void VMManager::Internal::LoadStartupSettings()
 	SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
 	EmuFolders::LoadConfig(*bsi);
 	EmuFolders::EnsureFoldersExist();
-	LogSink::UpdateLogging(*bsi);
+
+	// We need to create the console window early, otherwise it appears behind the main window.
+	UpdateLoggingSettings(*bsi);
 
 #ifdef ENABLE_RAINTEGRATION
 	// RAIntegration switch must happen before the UI is created.
@@ -455,7 +553,7 @@ void VMManager::SetDefaultSettings(
 		si.SetBoolValue("EmuCore", "EnableFastBoot", true);
 
 		SetHardwareDependentDefaultSettings(si);
-		LogSink::SetDefaultLoggingSettings(si);
+		SetDefaultLoggingSettings(si);
 	}
 	if (controllers)
 	{
@@ -482,7 +580,7 @@ void VMManager::LoadSettings()
 	Host::LoadSettings(*si, lock);
 	InputManager::ReloadSources(*si, lock);
 	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
-	LogSink::UpdateLogging(*si);
+	UpdateLoggingSettings(*si);
 
 	if (HasValidOrInitializingVM())
 	{
@@ -2152,26 +2250,22 @@ void VMManager::LogCPUCapabilities()
 			SVN_REV);
 	}
 
-	Console.WriteLn("Savestate version: 0x%x", g_SaveVersion);
-	Console.Newline();
+	Console.WriteLnFmt("Savestate version: 0x{:x}\n", g_SaveVersion);
 
 	Console.WriteLn(Color_StrongBlack, "Host Machine Init:");
 
-	Console.Indent().WriteLn(
-		"Operating System = %s\n"
-		"Physical RAM     = %u MB",
+	Console.WriteLnFmt(
+		"  Operating System = {}\n"
+		"  Physical RAM     = {} MB",
+		GetOSVersionString(),
+		GetPhysicalMemory() / _1mb);
 
-		GetOSVersionString().c_str(),
-		(u32)(GetPhysicalMemory() / _1mb));
-
-	Console.Indent().WriteLn("Processor        = %s", cpuinfo_get_package(0)->name);
-	Console.Indent().WriteLn("Core Count       = %u cores", cpuinfo_get_cores_count());
-	Console.Indent().WriteLn("Thread Count     = %u threads", cpuinfo_get_processors_count());
-
-	Console.Newline();
+	Console.WriteLnFmt("  Processor        = {}", cpuinfo_get_package(0)->name);
+	Console.WriteLnFmt("  Core Count       = {} cores", cpuinfo_get_cores_count());
+	Console.WriteLnFmt("  Thread Count     = {} threads", cpuinfo_get_processors_count());
+	Console.WriteLn();
 
 	std::string features;
-
 	if (cpuinfo_has_x86_avx())
 		features += "AVX ";
 	if (cpuinfo_has_x86_avx2())
@@ -2180,9 +2274,8 @@ void VMManager::LogCPUCapabilities()
 	StringUtil::StripWhitespace(&features);
 
 	Console.WriteLn(Color_StrongBlack, "x86 Features Detected:");
-	Console.Indent().WriteLn("%s", features.c_str());
-
-	Console.Newline();
+	Console.WriteLnFmt("  {}", features);
+	Console.WriteLn();
 }
 
 
@@ -2667,6 +2760,9 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	EmuConfig.Speedhacks.EECycleRate =
 		std::max<decltype(EmuConfig.Speedhacks.EECycleRate)>(EmuConfig.Speedhacks.EECycleRate, 0);
 	EmuConfig.Speedhacks.EECycleSkip = 0;
+
+	// Async mix breaks games.
+	EmuConfig.SPU2.SynchMode = Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch;
 }
 
 void VMManager::LogUnsafeSettingsToConsole(const std::string& messages)
@@ -2898,23 +2994,19 @@ void VMManager::SaveSessionTime(const std::string& prev_serial)
 	if (GSDumpReplayer::IsReplayingDump())
 		return;
 
-	const u64 ctime = Common::Timer::GetCurrentValue();
 	if (!prev_serial.empty())
 	{
 		// round up to seconds
 		const std::time_t etime =
-			static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+			static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(std::exchange(s_session_accumulated_playtime, 0))));
 		const std::time_t wtime = std::time(nullptr);
 		GameList::AddPlayedTimeForSerial(prev_serial, wtime, etime);
 	}
-
-	s_session_start_time = ctime;
 }
 
 u64 VMManager::GetSessionPlayedTime()
 {
-	const u64 ctime = Common::Timer::GetCurrentValue();
-	return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+	return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(s_session_accumulated_playtime)));
 }
 
 #ifdef _WIN32
@@ -3174,18 +3266,15 @@ const std::vector<u32>& VMManager::GetSortedProcessorList()
 
 void VMManager::ReloadPINE()
 {
-	if (EmuConfig.EnablePINE && (s_pine_server.m_slot != EmuConfig.PINESlot || s_pine_server.m_end))
-	{
-		if (!s_pine_server.m_end)
-		{
-			s_pine_server.Deinitialize();
-		}
-		s_pine_server.Initialize(EmuConfig.PINESlot);
-	}
-	else if ((!EmuConfig.EnablePINE && !s_pine_server.m_end))
-	{
-		s_pine_server.Deinitialize();
-	}
+	const bool needs_reinit = (EmuConfig.EnablePINE != PINEServer::IsInitialized() ||
+							   PINEServer::GetSlot() != EmuConfig.PINESlot);
+	if (!needs_reinit)
+		return;
+
+	PINEServer::Deinitialize();
+
+	if (EmuConfig.EnablePINE)
+		PINEServer::Initialize();
 }
 
 void VMManager::InitializeDiscordPresence()

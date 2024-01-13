@@ -152,11 +152,10 @@ bool SaveStateBase::FreezeBios()
 
 	if (bioscheck != BiosChecksum)
 	{
-		Console.Newline();
-		Console.Indent(1).Error( "Warning: BIOS Version Mismatch, savestate may be unstable!" );
-		Console.Indent(2).Error(
-			"Current BIOS:   %s (crc=0x%08x)\n"
-			"Savestate BIOS: %s (crc=0x%08x)\n",
+		Console.Error("\n  Warning: BIOS Version Mismatch, savestate may be unstable!");
+		Console.Error(
+			"    Current BIOS:   %s (crc=0x%08x)\n"
+			"    Savestate BIOS: %s (crc=0x%08x)\n",
 			BiosDescription.c_str(), BiosChecksum,
 			biosdesc, bioscheck
 		);
@@ -355,7 +354,7 @@ static bool SysState_ComponentFreezeIn(zip_file_t* zf, SysState_Component comp)
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		fP.size = 0;
 
-	Console.Indent().WriteLn("Loading %s", comp.name);
+	Console.WriteLn("  Loading %s", comp.name);
 
 	std::unique_ptr<u8[]> data;
 	if (fP.size > 0)
@@ -394,7 +393,7 @@ static bool SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Componen
 	const int size = fP.size;
 	writer.PrepBlock(size);
 
-	Console.Indent().WriteLn("Saving %s", comp.name);
+	Console.WriteLn("  Saving %s", comp.name);
 
 	fP.data = writer.GetBlockPtr();
 	if (comp.freeze(FreezeAction::Save, &fP) != 0)

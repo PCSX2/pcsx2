@@ -63,7 +63,8 @@ public:
 	__fi bool isSurfaceless() const { return m_is_surfaceless; }
 	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
-	bool isOnEmuThread() const;
+	__fi bool isOnEmuThread() const { return (QThread::currentThread() == this); }
+	__fi bool isOnUIThread() const { return (QThread::currentThread() == m_ui_thread); }
 	bool shouldRenderToMain() const;
 
 	/// Called back from the GS thread when the display state changes (e.g. fullscreen, render to main).
@@ -237,6 +238,9 @@ namespace QtHost
 	/// Sets application theme according to settings.
 	void UpdateApplicationTheme();
 
+	/// Returns true if the application theme is using dark colours.
+	bool IsDarkApplicationTheme();
+
 	/// Sets the icon theme, based on the current style (light/dark).
 	void SetIconThemeFromStyle();
 
@@ -282,6 +286,11 @@ namespace QtHost
 	/// VM state, safe to access on UI thread.
 	bool IsVMValid();
 	bool IsVMPaused();
+
+	/// Accessors for game information.
+	const QString& GetCurrentGameTitle();
+	const QString& GetCurrentGameSerial();
+	const QString& GetCurrentGamePath();
 
 	/// Compare strings in the locale of the current UI language
 	int LocaleSensitiveCompare(QStringView lhs, QStringView rhs);

@@ -35,7 +35,6 @@
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
-#include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "pcsx2/PerformanceMetrics.h"
@@ -94,6 +93,8 @@ bool GSRunner::InitializeConfig()
 	const char* error;
 	if (!VMManager::PerformEarlyHardwareChecks(&error))
 		return false;
+
+	ImGuiManager::SetFontPathAndRange(Path::Combine(EmuFolders::Resources, "fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf"), {});
 
 	// don't provide an ini path, or bother loading. we'll store everything in memory.
 	MemorySettingsInterface& si = s_settings_interface;
@@ -440,7 +441,7 @@ void GSRunner::InitializeConsole()
 	const char* var = std::getenv("PCSX2_NOCONSOLE");
 	s_no_console = (var && StringUtil::FromChars<bool>(var).value_or(false));
 	if (!s_no_console)
-		LogSink::InitializeEarlyConsole();
+		Log::SetConsoleOutputLevel(LOGLEVEL_DEBUG);
 }
 
 bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params)
@@ -566,7 +567,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				{
 					// disable timestamps, since we want to be able to diff the logs
 					Console.WriteLn("Logging to %s...", logfile);
-					LogSink::SetFileLogPath(logfile);
+					VMManager::Internal::SetFileLogPath(logfile);
 					s_settings_interface.SetBoolValue("Logging", "EnableFileLogging", true);
 					s_settings_interface.SetBoolValue("Logging", "EnableTimestamps", false);
 				}
@@ -696,7 +697,6 @@ int main(int argc, char* argv[])
 
 	VMManager::Internal::CPUThreadShutdown();
 	GSRunner::DestroyPlatformWindow();
-	LogSink::CloseFileLog();
 
 	return EXIT_SUCCESS;
 }

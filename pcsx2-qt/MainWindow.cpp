@@ -7,6 +7,7 @@
 #include "DisplayWidget.h"
 #include "GameList/GameListRefreshThread.h"
 #include "GameList/GameListWidget.h"
+#include "LogWindow.h"
 #include "MainWindow.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -27,7 +28,6 @@
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
-#include "pcsx2/LogSink.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/Recording/InputRecording.h"
@@ -91,6 +91,12 @@ static bool s_use_central_widget = false;
 // UI thread VM validity.
 static bool s_vm_valid = false;
 static bool s_vm_paused = false;
+static QString s_current_title;
+static QString s_current_elf_override;
+static QString s_current_disc_path;
+static QString s_current_disc_serial;
+static quint32 s_current_disc_crc;
+static quint32 s_current_running_crc;
 
 MainWindow::MainWindow()
 {
@@ -172,11 +178,8 @@ QWidget* MainWindow::getContentParent()
 
 void MainWindow::setupAdditionalUi()
 {
-	const bool show_advanced_settings = QtHost::ShouldShowAdvancedSettings();
-
 	makeIconsMasks(menuBar());
-
-	m_ui.menuDebug->menuAction()->setVisible(show_advanced_settings);
+	updateAdvancedSettingsVisibility();
 
 	const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
 	m_ui.actionViewToolbar->setChecked(toolbar_visible);
@@ -250,7 +253,7 @@ void MainWindow::setupAdditionalUi()
 #ifdef ENABLE_RAINTEGRATION
 	if (Achievements::IsUsingRAIntegration())
 	{
-		QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menu_Tools);
+		QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menuTools);
 		connect(raMenu, &QMenu::aboutToShow, this, [this, raMenu]() {
 			raMenu->clear();
 
@@ -274,7 +277,7 @@ void MainWindow::setupAdditionalUi()
 					[id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }, false); });
 			}
 		});
-		m_ui.menu_Tools->insertMenu(m_ui.menuInput_Recording->menuAction(), raMenu);
+		m_ui.menuTools->insertMenu(m_ui.menuInputRecording->menuAction(), raMenu);
 	}
 #endif
 }
@@ -361,6 +364,18 @@ void MainWindow::connectSignals()
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionViewStatusBarVerbose, "UI", "VerboseStatusBar", false);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSystemConsole, "Logging", "EnableSystemConsole", false);
+
+	if (Log::IsDebugOutputAvailable())
+	{
+		SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableDebugConsole, "Logging", "EnableDebugConsole", false);
+	}
+	else
+	{
+		m_ui.menuTools->removeAction(m_ui.actionEnableDebugConsole);
+		m_ui.actionEnableDebugConsole->deleteLater();
+		m_ui.actionEnableDebugConsole = nullptr;
+	}
+
 #ifndef PCSX2_DEVBUILD
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableVerboseLogging, "Logging", "EnableVerbose", false);
 #else
@@ -370,6 +385,7 @@ void MainWindow::connectSignals()
 #endif
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableEEConsoleLogging, "Logging", "EnableEEConsole", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableIOPConsoleLogging, "Logging", "EnableIOPConsole", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableLogWindow, "Logging", "EnableLogWindow", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableFileLogging, "Logging", "EnableFileLogging", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableLogTimestamps, "Logging", "EnableTimestamps", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableCDVDVerboseReads, "EmuCore", "CdvdVerboseReads", false);
@@ -503,6 +519,11 @@ void MainWindow::recreate()
 	new_main_window->show();
 	deleteLater();
 
+	// Recreate log window as well. Then make sure we're still on top.
+	LogWindow::updateSettings();
+	new_main_window->raise();
+	new_main_window->activateWindow();
+
 	// Reload the sources we just closed.
 	g_emu_thread->reloadInputSources();
 
@@ -574,6 +595,8 @@ void MainWindow::destroySubWindows()
 	}
 
 	SettingsWindow::closeGamePropertiesDialogs();
+
+	LogWindow::destroy();
 }
 
 void MainWindow::onScreenshotActionTriggered()
@@ -647,11 +670,23 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 	Host::SetBaseBoolSettingValue("UI", "ShowAdvancedSettings", checked);
 	Host::CommitBaseSettingChanges();
 
-	m_ui.menuDebug->menuAction()->setVisible(checked);
+	updateAdvancedSettingsVisibility();
 
 	// just recreate the entire settings window, it's easier.
 	if (m_settings_window)
 		recreateSettings();
+}
+
+void MainWindow::updateAdvancedSettingsVisibility()
+{
+	const bool enabled = QtHost::ShouldShowAdvancedSettings();
+
+	m_ui.menuDebug->menuAction()->setVisible(enabled);
+
+	m_ui.actionEnableSystemConsole->setVisible(enabled);
+	if (m_ui.actionEnableDebugConsole)
+		m_ui.actionEnableDebugConsole->setVisible(enabled);
+	m_ui.actionEnableVerboseLogging->setVisible(enabled);
 }
 
 void MainWindow::onToolsVideoCaptureToggled(bool checked)
@@ -899,9 +934,9 @@ void MainWindow::updateWindowTitle()
 {
 	QString suffix(QtHost::GetAppConfigSuffix());
 	QString main_title(QtHost::GetAppNameAndVersion() + suffix);
-	QString display_title(m_current_title + suffix);
+	QString display_title(s_current_title + suffix);
 
-	if (!s_vm_valid || m_current_title.isEmpty())
+	if (!s_vm_valid || s_current_title.isEmpty())
 		display_title = main_title;
 	else if (isRenderingToMain())
 		main_title = display_title;
@@ -915,6 +950,9 @@ void MainWindow::updateWindowTitle()
 		if (container->windowTitle() != display_title)
 			container->setWindowTitle(display_title);
 	}
+
+	if (g_log_window)
+		g_log_window->updateWindowTitle();
 }
 
 void MainWindow::updateWindowState(bool force_visible)
@@ -1109,7 +1147,7 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 		return true;
 
 	// If we don't have a crc, we can't save state.
-	allow_save_to_state &= (m_current_disc_crc != 0);
+	allow_save_to_state &= (s_current_disc_crc != 0);
 	bool save_state = allow_save_to_state && default_save_to_state;
 	VMLock lock(pauseAndLockVM());
 
@@ -1187,6 +1225,8 @@ void MainWindow::checkForSettingChanges()
 		updateDisplayWidgetCursor();
 
 	updateWindowState();
+
+	LogWindow::updateSettings();
 }
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
@@ -1408,13 +1448,13 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 void MainWindow::onLoadStateMenuAboutToShow()
 {
 	m_ui.menuLoadState->clear();
-	populateLoadStateMenu(m_ui.menuLoadState, m_current_disc_path, m_current_disc_serial, m_current_disc_crc);
+	populateLoadStateMenu(m_ui.menuLoadState, s_current_disc_path, s_current_disc_serial, s_current_disc_crc);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
 	m_ui.menuSaveState->clear();
-	populateSaveStateMenu(m_ui.menuSaveState, m_current_disc_serial, m_current_disc_crc);
+	populateSaveStateMenu(m_ui.menuSaveState, s_current_disc_serial, s_current_disc_crc);
 }
 
 void MainWindow::onStartFullscreenUITriggered()
@@ -1476,36 +1516,36 @@ void MainWindow::onViewGamePropertiesActionTriggered()
 		return;
 
 	// prefer to use a game list entry, if we have one, that way the summary is populated
-	if (!m_current_disc_path.isEmpty() || !m_current_elf_override.isEmpty())
+	if (!s_current_disc_path.isEmpty() || !s_current_elf_override.isEmpty())
 	{
 		auto lock = GameList::GetLock();
-		const QString& path = (m_current_elf_override.isEmpty() ? m_current_disc_path : m_current_elf_override);
+		const QString& path = (s_current_elf_override.isEmpty() ? s_current_disc_path : s_current_elf_override);
 		const GameList::Entry* entry = GameList::GetEntryForPath(path.toUtf8().constData());
 		if (entry)
 		{
 			SettingsWindow::openGamePropertiesDialog(
-				entry, entry->title, m_current_elf_override.isEmpty() ? entry->serial : std::string(), entry->crc);
+				entry, entry->title, s_current_elf_override.isEmpty() ? entry->serial : std::string(), entry->crc);
 			return;
 		}
 	}
 
 	// open properties for the current running file (isn't in the game list)
-	if (m_current_disc_crc == 0)
+	if (s_current_disc_crc == 0)
 	{
 		QMessageBox::critical(this, tr("Game Properties"), tr("Game properties is unavailable for the current game."));
 		return;
 	}
 
 	// can't use serial for ELFs, because they might have a disc set
-	if (m_current_elf_override.isEmpty())
+	if (s_current_elf_override.isEmpty())
 	{
 		SettingsWindow::openGamePropertiesDialog(
-			nullptr, m_current_title.toStdString(), m_current_disc_serial.toStdString(), m_current_disc_crc);
+			nullptr, s_current_title.toStdString(), s_current_disc_serial.toStdString(), s_current_disc_crc);
 	}
 	else
 	{
 		SettingsWindow::openGamePropertiesDialog(
-			nullptr, m_current_title.toStdString(), std::string(), m_current_disc_crc);
+			nullptr, s_current_title.toStdString(), std::string(), s_current_disc_crc);
 	}
 }
 
@@ -1607,10 +1647,10 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 
 void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
 {
-	if (m_current_disc_serial.isEmpty() || m_current_running_crc == 0)
+	if (s_current_disc_serial.isEmpty() || s_current_running_crc == 0)
 		return;
 
-	const std::string path = Patch::GetPnachFilename(m_current_disc_serial.toStdString(), m_current_running_crc, cheats);
+	const std::string path = Patch::GetPnachFilename(s_current_disc_serial.toStdString(), s_current_running_crc, cheats);
 	if (!FileSystem::FileExists(path.c_str()))
 	{
 		if (QMessageBox::question(this, tr("Confirm File Creation"),
@@ -1877,12 +1917,12 @@ void MainWindow::onVMStopped()
 void MainWindow::onGameChanged(const QString& title, const QString& elf_override, const QString& disc_path,
 	const QString& serial, quint32 disc_crc, quint32 crc)
 {
-	m_current_title = title;
-	m_current_elf_override = elf_override;
-	m_current_disc_path = disc_path;
-	m_current_disc_serial = serial;
-	m_current_disc_crc = disc_crc;
-	m_current_running_crc = crc;
+	s_current_title = title;
+	s_current_elf_override = elf_override;
+	s_current_disc_path = disc_path;
+	s_current_disc_serial = serial;
+	s_current_disc_crc = disc_crc;
+	s_current_running_crc = crc;
 	updateWindowTitle();
 	updateGameDependentActions();
 }
@@ -2034,6 +2074,22 @@ void MainWindow::dropEvent(QDropEvent* event)
 		g_emu_thread->changeGSDump(filename);
 		switchToEmulationView();
 	}
+}
+
+void MainWindow::moveEvent(QMoveEvent* event)
+{
+	QMainWindow::moveEvent(event);
+
+	if (g_log_window && g_log_window->isAttachedToMainWindow())
+		g_log_window->reattachToMainWindow();
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+	QMainWindow::resizeEvent(event);
+
+	if (g_log_window && g_log_window->isAttachedToMainWindow())
+		g_log_window->reattachToMainWindow();
 }
 
 void MainWindow::registerForDeviceNotifications()
@@ -2646,8 +2702,8 @@ void MainWindow::loadSaveStateFile(const QString& filename, const QString& state
 {
 	if (s_vm_valid)
 	{
-		if (!filename.isEmpty() && m_current_disc_path != filename)
-			g_emu_thread->changeDisc(CDVD_SourceType::Iso, m_current_disc_path);
+		if (!filename.isEmpty() && s_current_disc_path != filename)
+			g_emu_thread->changeDisc(CDVD_SourceType::Iso, s_current_disc_path);
 		g_emu_thread->loadState(state_filename);
 	}
 	else
@@ -2772,13 +2828,13 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 
 void MainWindow::updateGameDependentActions()
 {
-	const bool valid_serial_and_crc = (s_vm_valid && !m_current_disc_serial.isEmpty() && m_current_disc_crc != 0);
+	const bool valid_serial_and_crc = (s_vm_valid && !s_current_disc_serial.isEmpty() && s_current_disc_crc != 0);
 	m_ui.menuLoadState->setEnabled(valid_serial_and_crc);
 	m_ui.actionToolbarLoadState->setEnabled(valid_serial_and_crc);
 	m_ui.menuSaveState->setEnabled(valid_serial_and_crc);
 	m_ui.actionToolbarSaveState->setEnabled(valid_serial_and_crc);
 
-	const bool can_use_pnach = (s_vm_valid && !m_current_disc_serial.isEmpty() && m_current_running_crc != 0);
+	const bool can_use_pnach = (s_vm_valid && !s_current_disc_serial.isEmpty() && s_current_running_crc != 0);
 	m_ui.actionEditCheats->setEnabled(can_use_pnach);
 	m_ui.actionEditPatches->setEnabled(can_use_pnach);
 	m_ui.actionReloadPatches->setEnabled(s_vm_valid);
@@ -2841,7 +2897,7 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 	if (reset_system)
 	{
 		// Clearing ELF override will reset the system.
-		if (!m_current_elf_override.isEmpty())
+		if (!s_current_elf_override.isEmpty())
 			g_emu_thread->setELFOverride(QString());
 		else
 			g_emu_thread->resetVM();
@@ -2959,4 +3015,19 @@ bool QtHost::IsVMValid()
 bool QtHost::IsVMPaused()
 {
 	return s_vm_paused;
+}
+
+const QString& QtHost::GetCurrentGameTitle()
+{
+	return s_current_title;
+}
+
+const QString& QtHost::GetCurrentGameSerial()
+{
+	return s_current_disc_serial;
+}
+
+const QString& QtHost::GetCurrentGamePath()
+{
+	return s_current_disc_path;
 }

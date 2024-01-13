@@ -146,7 +146,7 @@
     <addaction name="actionEnableIOPConsoleLogging"/>
     <addaction name="actionEnableCDVDVerboseReads"/>
    </widget>
-   <widget class="QMenu" name="menu_View">
+   <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
@@ -176,11 +176,11 @@
     <addaction name="actionGridViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
    </widget>
-   <widget class="QMenu" name="menu_Tools">
+   <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>&amp;Tools</string>
     </property>
-    <widget class="QMenu" name="menuInput_Recording">
+    <widget class="QMenu" name="menuInputRecording">
      <property name="title">
       <string>Input Recording</string>
      </property>
@@ -206,10 +206,12 @@
     <addaction name="actionReloadPatches"/>
     <addaction name="separator"/>
     <addaction name="actionToggleSoftwareRendering"/>
-    <addaction name="menuInput_Recording"/>
+    <addaction name="menuInputRecording"/>
     <addaction name="actionToolsVideoCapture"/>
     <addaction name="separator"/>
     <addaction name="actionEnableSystemConsole"/>
+    <addaction name="actionEnableDebugConsole"/>
+    <addaction name="actionEnableLogWindow"/>
     <addaction name="actionEnableFileLogging"/>
     <addaction name="actionEnableVerboseLogging"/>
     <addaction name="separator"/>
@@ -219,8 +221,8 @@
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
-   <addaction name="menu_View"/>
-   <addaction name="menu_Tools"/>
+   <addaction name="menuView"/>
+   <addaction name="menuTools"/>
    <addaction name="menuDebug"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -899,6 +901,22 @@
    </property>
    <property name="text">
     <string>Enable System Console</string>
+   </property>
+  </action>
+  <action name="actionEnableDebugConsole">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Debug Console</string>
+   </property>
+  </action>
+  <action name="actionEnableLogWindow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Log Window</string>
    </property>
   </action>
   <action name="actionEnableVerboseLogging">

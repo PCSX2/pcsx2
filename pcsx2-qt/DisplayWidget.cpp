@@ -6,6 +6,7 @@
 #include "QtHost.h"
 #include "QtUtils.h"
 
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 
 #include "common/Assertions.h"
@@ -323,8 +324,9 @@ bool DisplayWidget::event(QEvent* event)
 			// don't toggle fullscreen when we're bound.. that wouldn't end well.
 			if (event->type() == QEvent::MouseButtonDblClick &&
 				static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton &&
-				QtHost::IsVMValid() && !QtHost::IsVMPaused() &&
-				!InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) &&
+				QtHost::IsVMValid() && !FullscreenUI::HasActiveWindow() &&
+				((!QtHost::IsVMPaused() && !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
+					(QtHost::IsVMPaused() && !ImGuiManager::WantsMouseInput())) &&
 				Host::GetBoolSettingValue("UI", "DoubleClickTogglesFullscreen", true))
 			{
 				g_emu_thread->toggleFullscreen();
