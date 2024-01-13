@@ -6023,8 +6023,6 @@ bool GSTextureCache::Target::HasValidBitsForFormat(u32 psm, bool req_color, bool
 					AddDirtyRectTarget(this, m_valid, m_TEX0.PSM, m_TEX0.TBW, mask, false);
 
 				alpha_valid = true; // This is going to get resolved going forward.
-				m_valid_alpha_low = true;
-				m_valid_alpha_high = true;
 			}
 			break;
 	}
