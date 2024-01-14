@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -60,7 +60,8 @@ private:
 
 	bool processUpdate(const std::vector<u8>& data, QProgressDialog& progress);
 #if defined(_WIN32)
-	bool doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path);
+	bool doesUpdaterNeedElevation(const std::string& application_dir) const;
+	bool doUpdate(const std::string& application_dir, const std::string& zip_path, const std::string& updater_path);
 #endif
 
 	Ui::AutoUpdaterDialog m_ui;

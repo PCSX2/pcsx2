@@ -5716,7 +5716,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 		// If this is the first draw to the target as a feedback loop, make sure we re-generate the texture descriptor.
 		// Otherwise, we might have a previous descriptor left over, that has the RT in a different state.
-		m_dirty_flags |= (skip_first_barrier ? DIRTY_FLAG_TFX_TEXTURE_RT : 0);
+		m_dirty_flags |= (skip_first_barrier ? static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_RT) : 0);
 	}
 
 	// Begin render pass if new target or out of the area.

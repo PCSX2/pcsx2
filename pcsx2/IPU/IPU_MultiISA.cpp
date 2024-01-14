@@ -354,11 +354,11 @@ __ri static void IDCT_Add(const int last, s16* block, s16* dest, const int strid
 	{
 		IDCT_Block(block);
 
-		__m128 zero = _mm_setzero_ps();
+		const r128 zero = r128_zero();
 		for (int i = 0; i < 8; i++)
 		{
-			_mm_store_ps((float*)dest, _mm_load_ps((float*)block));
-			_mm_store_ps((float*)block, zero);
+			r128_store(dest, r128_load(block));
+			r128_store(block, zero);
 
 			dest += stride;
 			block += 8;
@@ -366,14 +366,12 @@ __ri static void IDCT_Add(const int last, s16* block, s16* dest, const int strid
 	}
 	else
 	{
-		s16 DC = ((int)block[0] + 4) >> 3;
-		s16 dcf[2] = {DC, DC};
+		const u16 DC = static_cast<u16>((static_cast<s32>(block[0]) + 4) >> 3);
+		const r128 dc128 = r128_from_u32_dup(static_cast<u32>(DC) | (static_cast<u32>(DC) << 16));
 		block[0] = block[63] = 0;
 
-		__m128 dc128 = _mm_set_ps1(*(float*)dcf);
-
 		for (int i = 0; i < 8; ++i)
-			_mm_store_ps((float*)(dest + (stride * i)), dc128);
+			r128_store((dest + (stride * i)), dc128);
 	}
 }
 
@@ -942,20 +940,14 @@ __ri static bool slice_intra_DCT(const int cc, u8 * const dest, const int stride
 
 __ri static bool slice_non_intra_DCT(s16 * const dest, const int stride, const bool skip)
 {
-	int last;
-
 	if (!skip)
-	{
 		std::memset(decoder.DCTblock, 0, sizeof(decoder.DCTblock));
-	}
 
+	int last = 0;
 	if (!get_non_intra_block(&last))
-	{
 		return false;
-	}
 
 	IDCT_Add(last, decoder.DCTblock, dest, stride);
-
 	return true;
 }
 

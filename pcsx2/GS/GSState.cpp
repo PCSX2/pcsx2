@@ -3337,6 +3337,12 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	pxAssert(m_vertex.tail < m_vertex.maxcount + 3);
 
+	if constexpr (prim == GS_INVALID)
+	{
+		m_vertex.tail = m_vertex.head;
+		return;
+	}
+
 	if (auto_flush && skip == 0 && m_index.tail > 0 && ((m_vertex.tail + 1) - m_vertex.head) >= n)
 	{
 		HandleAutoFlush<prim, index_swap>();
@@ -3454,7 +3460,6 @@ __forceinline void GSState::VertexKick(u32 skip)
 			case GS_LINELIST:
 			case GS_TRIANGLELIST:
 			case GS_SPRITE:
-			case GS_INVALID:
 				m_vertex.tail = head; // no need to check or grow the buffer length
 				break;
 			case GS_LINESTRIP:
@@ -3561,9 +3566,6 @@ __forceinline void GSState::VertexKick(u32 skip)
 			m_vertex.next = head + 2;
 			m_index.tail += 2;
 			break;
-		case GS_INVALID:
-			m_vertex.tail = head;
-			return;
 		default:
 			ASSUME(0);
 	}

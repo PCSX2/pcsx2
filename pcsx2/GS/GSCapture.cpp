@@ -25,11 +25,13 @@
 #include <mutex>
 #include <string>
 
+// We're using deprecated fields because we're targeting multiple ffmpeg versions.
 #if defined(_MSC_VER)
 #pragma warning(disable:4996) // warning C4996: 'AVCodecContext::channels': was declared deprecated
 #elif defined (__clang__)
-// We're using deprecated fields because we're targeting multiple ffmpeg versions.
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined (__GNUC__)
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 extern "C" {
@@ -1359,7 +1361,7 @@ std::string GSCapture::GetNextCaptureFileName()
 	// Should end with a number.
 	int partnum = 2;
 	std::string_view::size_type pos = name.rfind("_part");
-	if (pos >= 0)
+	if (pos != std::string_view::npos)
 	{
 		std::string_view::size_type cpos = pos + 5;
 		for (; cpos < name.length(); cpos++)

@@ -52,6 +52,7 @@ union tIPU_CTRL {
 	};
 	u32 _u32;
 
+	tIPU_CTRL() = default;
 	tIPU_CTRL( u32 val ) { _u32 = val; }
 
     // CTRL = the first 16 bits of ctrl [0x8000ffff], + value for the next 16 bits,
@@ -153,6 +154,7 @@ union tIPU_CMD_IDEC
 
 	u32 _u32;
 
+	tIPU_CMD_IDEC() = default;
 	tIPU_CMD_IDEC( u32 val ) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -177,6 +179,7 @@ union tIPU_CMD_BDEC
 	};
 	u32 _u32;
 
+	tIPU_CMD_BDEC() = default;
 	tIPU_CMD_BDEC( u32 val ) { _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }
@@ -198,6 +201,7 @@ union tIPU_CMD_CSC
 	};
 	u32 _u32;
 
+	tIPU_CMD_CSC() = default;
 	tIPU_CMD_CSC( u32 val ){ _u32 = val; }
 
 	bool test(u32 flags) const { return !!(_u32 & flags); }

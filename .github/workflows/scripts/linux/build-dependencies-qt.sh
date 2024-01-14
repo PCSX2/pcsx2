@@ -2,7 +2,12 @@
 
 set -e
 
-INSTALLDIR="$HOME/deps"
+if [ "$#" -ne 1 ]; then
+    echo "Syntax: $0 <output directory>"
+    exit 1
+fi
+
+INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.28.5
 QT=6.6.1

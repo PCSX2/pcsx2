@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Updater.h"
@@ -406,7 +406,6 @@ void Win32ProgressCallback::ModalInformation(const char* message)
 	MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Information", MB_ICONINFORMATION | MB_OK);
 }
 
-
 static void WaitForProcessToExit(int process_id)
 {
 	HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, process_id);
@@ -416,8 +415,6 @@ static void WaitForProcessToExit(int process_id)
 	WaitForSingleObject(hProcess, INFINITE);
 	CloseHandle(hProcess);
 }
-
-#include "UpdaterExtractor.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
@@ -512,6 +509,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	progress.DisplayFormattedInformation("Launching '%s'...",
 		StringUtil::WideStringToUTF8String(program_to_launch).c_str());
-	ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), L"-updatecleanup", nullptr, SW_SHOWNORMAL);
 	return 0;
 }
