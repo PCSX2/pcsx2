@@ -49598,6 +49598,8 @@ SLPS-25034:
   name-sort: はなとたいようとあめと
   name-en: "Flower, Sun and Rain"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes some of the many graphical issues.
 SLPS-25035:
   name: モンスターファーム
   name-sort: もんすたーふぁーむ
@@ -50262,6 +50264,8 @@ SLPS-25154:
   name-sort: はなとたいようとあめと Victor the Best
   name-en: "Flower, Sun and Rain [Victor The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes some of the many graphical issues.
 SLPS-25155:
   name: ウルトラマン Fighting Evolution 2
   name-sort: うるとらまん Fighting Evolution 2
@@ -51934,6 +51938,8 @@ SLPS-25451:
   name-sort: はなとたいようとあめと Super Best Collection
   name-en: "Hana to Taiyou to Ame to [Super Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes some of the many graphical issues.
 SLPS-25452:
   name: キノの旅 -the Beautiful World- 電撃SP
   name-sort: きののたび -the Beautiful World- でんげきSP
