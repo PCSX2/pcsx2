@@ -1089,10 +1089,18 @@
    <property name="text">
     <string>Edit Cheats...</string>
    </property>
+   <property name="icon">
+    <iconset theme="pencil-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
   </action>
   <action name="actionEditPatches">
    <property name="text">
     <string>Edit Patches...</string>
+   </property>
+   <property name="icon">
+    <iconset theme="pencil-line">
+     <normaloff>.</normaloff>.</iconset>
    </property>
   </action>
  </widget>

@@ -1,1 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?><svg id="Bios_-_Pcsx2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><style>.cls-1{stroke-width:7px;}.cls-1,.cls-2{fill:#fff;}.cls-1,.cls-3{stroke:#fff;stroke-linecap:round;stroke-linejoin:round;}.cls-3{stroke-width:12px;}.cls-3,.cls-4{fill:none;}</style></defs><g id="tela"><rect id="tela-2" class="cls-4" width="150" height="150"/></g><g id="By_Kam"><g id="B"><g id="B-2"><path class="cls-2" d="M132.56,110.12h-24.25c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h24.25c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/></g><g id="B-3"><path class="cls-2" d="M132.51,79.33h-25.52c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h25.52c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/></g><g id="B-4"><path class="cls-2" d="M132.47,48.88h-26.34c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h26.34c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/></g></g><g id="A"><g id="A-2"><path class="cls-2" d="M43.78,110.12H17.44c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h26.34c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/></g><g id="A-3"><path class="cls-2" d="M43.78,79.33H17.44c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h26.34c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/></g><g id="A-4"><path class="cls-2" d="M43.84,48.88H17.5c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h26.34c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/></g></g><rect id="chip" class="cls-3" x="46.94" y="18.87" width="56.13" height="112.26"/><ellipse id="ball" class="cls-1" cx="65.94" cy="37.27" rx="2.75" ry="2.47"/></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Bios_-_Pcsx2" data-name="Bios - Pcsx2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2, .cls-3 {
+        fill: none;
+        stroke: #fff;
+        stroke-linecap: round;
+        stroke-width: 12px;
+      }
+
+      .cls-3 {
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <g id="paletas">
+    <g id="B">
+      <line class="cls-2" x1="129.96" y1="105.62" x2="105.25" y2="105.62"/>
+      <line class="cls-2" x1="130.32" y1="75" x2="105.61" y2="75"/>
+      <line class="cls-2" x1="129.6" y1="44.38" x2="104.88" y2="44.38"/>
+    </g>
+    <g id="A">
+      <line class="cls-2" x1="20.04" y1="44.38" x2="44.75" y2="44.38"/>
+      <line class="cls-2" x1="19.68" y1="75" x2="44.39" y2="75"/>
+      <line class="cls-2" x1="20.4" y1="105.62" x2="45.12" y2="105.62"/>
+    </g>
+  </g>
+  <g id="By_Kam" data-name="By Kam">
+    <path id="chip" class="cls-3" d="m52,20.94h46c2.8,0,5.07,2.19,5.07,4.88v98.36c0,2.7-2.27,4.88-5.07,4.88h-46c-2.8,0-5.07-2.19-5.07-4.88V25.82c0-2.7,2.27-4.88,5.07-4.88Z"/>
+    <g id="ball">
+      <path class="cls-1" d="m66.46,45.81c-3.48,0-6.31-2.81-6.31-6.26s2.83-6.26,6.31-6.26,6.31,2.81,6.31,6.26-2.83,6.26-6.31,6.26Z"/>
+    </g>
+  </g>
+</svg>
