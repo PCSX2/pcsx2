@@ -702,7 +702,7 @@ struct PSMain
 			if (PS_AEM_FMT == FMT_24)
 				c[i].a = !PS_AEM || any(c[i].rgb != 0) ? cb.ta.x : 0.f;
 			else if (PS_AEM_FMT == FMT_16)
-				c[i].a = c[i].a >= 0.5 ? cb.ta.y : !PS_AEM || any(c[i].rgb != 0) ? cb.ta.x : 0.f;
+				c[i].a = c[i].a >= 0.5 ? cb.ta.y : !PS_AEM || any((int3(c[i].rgb * 255.0f) & 0xF8) != 0) ? cb.ta.x : 0.f;
 		}
 
 		if (PS_LTF)
