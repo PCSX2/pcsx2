@@ -111,6 +111,10 @@ private:
 	bool ContinueSplitClear();
 	void FinishSplitClear();
 
+	bool IsRTWritten();
+	bool IsUsingCsInBlend();
+	bool IsUsingAsInBlend();
+
 	GSVector4i m_r = {};
 	
 	// We modify some of the context registers to optimize away unnecessary operations.
@@ -215,7 +219,7 @@ public:
 	bool TestChannelShuffle(GSTextureCache::Target* src);
 
 	/// Returns true if the specified texture address matches the frame or Z buffer.
-	bool IsTBPFrameOrZ(u32 tbp) const;
+	bool IsTBPFrameOrZ(u32 tbp);
 
 	/// Offsets the current draw, used for RT-in-RT. Offsets are relative to the *current* FBP, not the new FBP.
 	void OffsetDraw(s32 fbp_offset, s32 zbp_offset, s32 xoffset, s32 yoffset);
