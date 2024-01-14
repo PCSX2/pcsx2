@@ -614,13 +614,13 @@ void MainWindow::onBlockDumpActionToggled(bool checked)
 	if (!checked)
 		return;
 
-	std::string old_directory(Host::GetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", ""));
+	std::string old_directory = Host::GetBaseStringSettingValue("EmuCore", "BlockDumpSaveDirectory", "");
 	if (old_directory.empty())
 		old_directory = FileSystem::GetWorkingDirectory();
 
 	// prompt for a location to save
-	const QString new_dir(
-		QFileDialog::getExistingDirectory(this, tr("Select location to save block dump:"), QString::fromStdString(old_directory)));
+	const QString new_dir(QDir::toNativeSeparators(
+		QFileDialog::getExistingDirectory(this, tr("Select location to save block dump:"), QString::fromStdString(old_directory))));
 	if (new_dir.isEmpty())
 	{
 		// disable it again
