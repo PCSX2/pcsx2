@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "AutoUpdaterDialog.h"
@@ -16,8 +16,10 @@
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/HTTPDownloader.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
 #include "cpuinfo.h"
@@ -37,6 +39,11 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
+
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#include <shellapi.h>
+#endif
 
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;
@@ -566,70 +573,74 @@ void AutoUpdaterDialog::remindMeLaterClicked()
 
 #if defined(_WIN32)
 
+bool AutoUpdaterDialog::doesUpdaterNeedElevation(const std::string& application_dir) const
+{
+	// Try to create a dummy text file in the PCSX2 updater directory. If it fails, we probably won't have write permission.
+	const std::string dummy_path = Path::Combine(application_dir, "update.txt");
+	auto fp = FileSystem::OpenManagedCFile(dummy_path.c_str(), "wb");
+	if (!fp)
+		return true;
+
+	fp.reset();
+	FileSystem::DeleteFilePath(dummy_path.c_str());
+	return false;
+}
+
 bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDialog&)
 {
-	const QString update_directory = QCoreApplication::applicationDirPath();
-	const QString update_zip_path = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(update_directory).arg(UPDATER_ARCHIVE_NAME);
-	const QString updater_path = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(update_directory).arg(UPDATER_EXECUTABLE);
+	const std::string& application_dir = EmuFolders::AppRoot;
+	const std::string update_zip_path = Path::Combine(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
+	const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
 
-	Q_ASSERT(!update_zip_path.isEmpty() && !updater_path.isEmpty() && !update_directory.isEmpty());
-	if ((QFile::exists(update_zip_path) && !QFile::remove(update_zip_path)) ||
-		(QFile::exists(updater_path) && !QFile::remove(updater_path)))
+	if ((FileSystem::FileExists(update_zip_path.c_str()) && !FileSystem::DeleteFilePath(update_zip_path.c_str())))
 	{
-		reportError("Removing existing update zip/updater failed");
+		reportError("Removing existing update zip failed");
 		return false;
 	}
 
+	if (!FileSystem::WriteBinaryFile(update_zip_path.c_str(), data.data(), data.size()))
 	{
-		QFile update_zip_file(update_zip_path);
-		if (!update_zip_file.open(QIODevice::WriteOnly) ||
-			update_zip_file.write(reinterpret_cast<const char*>(data.data()), static_cast<qint64>(data.size())) != static_cast<qint64>(data.size()))
-		{
-			reportError("Writing update zip to '%s' failed", update_zip_path.toUtf8().constData());
-			return false;
-		}
-		update_zip_file.close();
+		reportError("Writing update zip to '%s' failed", update_zip_path.c_str());
+		return false;
 	}
 
 	std::string updater_extract_error;
-	if (!ExtractUpdater(update_zip_path.toUtf8().constData(), updater_path.toUtf8().constData(), &updater_extract_error))
+	if (!ExtractUpdater(update_zip_path.c_str(), updater_path.c_str(), &updater_extract_error))
 	{
 		reportError("Extracting updater failed: %s", updater_extract_error.c_str());
 		return false;
 	}
 
-	if (!doUpdate(update_zip_path, updater_path, update_directory))
-	{
-		reportError("Launching updater failed");
-		return false;
-	}
-
-	return true;
+	return doUpdate(application_dir, update_zip_path, updater_path);
 }
 
-bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path)
+bool AutoUpdaterDialog::doUpdate(const std::string& application_dir, const std::string& zip_path, const std::string& updater_path)
 {
-	const QString program_path = QCoreApplication::applicationFilePath();
-	if (program_path.isEmpty())
+	const std::string program_path = QDir::toNativeSeparators(QCoreApplication::applicationFilePath()).toStdString();
+	if (program_path.empty())
 	{
 		reportError("Failed to get current application path");
 		return false;
 	}
 
-	QStringList arguments;
-	arguments << QString::number(QCoreApplication::applicationPid());
-	arguments << destination_path;
-	arguments << zip_path;
-	arguments << program_path;
+	const std::wstring wupdater_path = StringUtil::UTF8StringToWideString(updater_path);
+	const std::wstring wapplication_dir = StringUtil::UTF8StringToWideString(application_dir);
+	const std::wstring arguments = StringUtil::UTF8StringToWideString(fmt::format("{} \"{}\" \"{}\" \"{}\"",
+		QCoreApplication::applicationPid(), application_dir, zip_path, program_path));
 
-	// this will leak, but not sure how else to handle it...
-	QProcess* updater_process = new QProcess();
-	updater_process->setProgram(updater_path);
-	updater_process->setArguments(arguments);
-	updater_process->start(QIODevice::NotOpen);
-	if (!updater_process->waitForStarted())
+	const bool needs_elevation = doesUpdaterNeedElevation(application_dir);
+
+	SHELLEXECUTEINFOW sei = {};
+	sei.cbSize = sizeof(sei);
+	sei.lpVerb = needs_elevation ? L"runas" : nullptr; // needed to trigger elevation
+	sei.lpFile = wupdater_path.c_str();
+	sei.lpParameters = arguments.c_str();
+	sei.lpDirectory = wapplication_dir.c_str();
+	sei.nShow = SW_SHOWNORMAL;
+	if (!ShellExecuteExW(&sei))
 	{
-		reportError("Failed to start updater");
+		reportError("Failed to start %s: %s", needs_elevation ? "elevated updater" : "updater",
+			Error::CreateWin32(GetLastError()).GetDescription().c_str());
 		return false;
 	}
 
@@ -638,7 +649,21 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
 
 void AutoUpdaterDialog::cleanupAfterUpdate()
 {
-	// Nothing to do on Windows for now, the updater stub cleans everything up.
+	QMessageBox::critical(nullptr, "CLEANUP", "CLEANUP");
+
+	// If we weren't portable, then updater executable gets left in the application directory.
+	if (EmuFolders::AppRoot == EmuFolders::DataRoot)
+		return;
+
+	const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
+	if (!FileSystem::FileExists(updater_path.c_str()))
+		return;
+
+	if (!FileSystem::DeleteFilePath(updater_path.c_str()))
+	{
+		QMessageBox::critical(nullptr, tr("Updater Error"), tr("Failed to remove updater exe after update."));
+		return;
+	}
 }
 
 #elif defined(__linux__)

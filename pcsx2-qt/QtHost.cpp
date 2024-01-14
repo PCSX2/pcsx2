@@ -88,6 +88,7 @@ static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
 static bool s_test_config_and_exit = false;
 static bool s_run_setup_wizard = false;
+static bool s_cleanup_after_update = false;
 static bool s_boot_and_debug = false;
 
 //////////////////////////////////////////////////////////////////////////
@@ -1778,9 +1779,7 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			}
 			else if (CHECK_ARG(QStringLiteral("-updatecleanup")))
 			{
-				if (AutoUpdaterDialog::isSupported())
-					AutoUpdaterDialog::cleanupAfterUpdate();
-
+				s_cleanup_after_update = AutoUpdaterDialog::isSupported();
 				continue;
 			}
 #ifdef ENABLE_RAINTEGRATION
@@ -1910,6 +1909,10 @@ int main(int argc, char* argv[])
 	// Are we just setting up the configuration?
 	if (s_test_config_and_exit)
 		return EXIT_SUCCESS;
+
+	// Remove any previous-version remanants.
+	if (s_cleanup_after_update)
+		AutoUpdaterDialog::cleanupAfterUpdate();
 
 	// Set theme before creating any windows.
 	QtHost::UpdateApplicationTheme();
