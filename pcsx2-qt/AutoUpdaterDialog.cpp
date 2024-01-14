@@ -649,8 +649,6 @@ bool AutoUpdaterDialog::doUpdate(const std::string& application_dir, const std::
 
 void AutoUpdaterDialog::cleanupAfterUpdate()
 {
-	QMessageBox::critical(nullptr, "CLEANUP", "CLEANUP");
-
 	// If we weren't portable, then updater executable gets left in the application directory.
 	if (EmuFolders::AppRoot == EmuFolders::DataRoot)
 		return;
