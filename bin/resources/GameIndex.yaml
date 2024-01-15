@@ -1598,6 +1598,7 @@ SCAJ-20138:
   region: "NTSC-Unk"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -1908,6 +1909,7 @@ SCAJ-20195:
   region: "NTSC-C"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -5332,6 +5334,7 @@ SCES-53642:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -6621,6 +6624,7 @@ SCKA-20062:
   region: "NTSC-K"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -8801,6 +8805,7 @@ SCPS-19327:
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -10852,6 +10857,7 @@ SCUS-97501:
   compat: 5
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
@@ -11056,6 +11062,7 @@ SCUS-97548:
   region: "NTSC-U"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
+    - InstantDMAHack # Improves performance on specific stages.
   gsHWFixes:
     preloadFrameData: 1 # Fixes black background in the pause menu.
     mipmap: 2 # Fixes miptrick texture effects.
