@@ -501,7 +501,8 @@ PBPX-95516:
   roundModes:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -885,7 +886,8 @@ SCAJ-20001:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20002:
   name: "Gallop Racer 6 - Revolution"
   region: "NTSC-Unk"
@@ -1105,7 +1107,9 @@ SCAJ-20052:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    autoFlush: 2
   memcardFilters:
     - "SCAJ-20052"
     - "SCAJ-20001"
@@ -1402,7 +1406,8 @@ SCAJ-20109:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -1696,7 +1701,8 @@ SCAJ-20157:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -2500,7 +2506,8 @@ SCED-50916:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCED-50932:
   name: "Smash Court Tennis - Pro Tournament [Demo]"
   region: "PAL-M5"
@@ -2524,7 +2531,8 @@ SCED-51075:
   roundModes:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCED-51111:
   name: "Magazine Ufficiale PlayStation 2 Demo Italia 08-02"
   region: "PAL-M5"
@@ -4366,7 +4374,8 @@ SCES-50916:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-50917:
   name: "Sly Raccoon"
   region: "PAL-M5"
@@ -4617,7 +4626,8 @@ SCES-51607:
   gameFixes:
     - EETimingHack # Fixes DMA errors.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
   dynaPatches:
     - pattern:
@@ -4960,7 +4970,8 @@ SCES-52456:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -5182,7 +5193,8 @@ SCES-53285:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -6291,7 +6303,9 @@ SCKA-20011:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    autoFlush: 2
 SCKA-20012:
   name: "Arc the Lad - Jeongryeongui Hwanghon"
   region: "NTSC-K"
@@ -6447,7 +6461,8 @@ SCKA-20037:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -6599,7 +6614,8 @@ SCKA-20060:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -6664,6 +6680,11 @@ SCKA-20067:
 SCKA-20068:
   name: "Disney-Pixar's Cars"
   region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCKA-20069:
   name: "Siren 2"
   region: "NTSC-K"
@@ -6891,7 +6912,8 @@ SCKA-20120:
   name: "Ratchet & Clank - Size Matters"
   region: "NTSC-K"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCKA-20124:
   name: "Piposarugetchu 3" # Ape Escape 3
   region: "NTSC-K"
@@ -7544,7 +7566,8 @@ SCPS-15037:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-15038:
   name: OPERATOR’S SIDE マイク同梱版
   name-sort: OPERATOR’S SIDE まいくどうこんばん
@@ -7676,7 +7699,9 @@ SCPS-15056:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    autoFlush: 2
   memcardFilters:
     - "SCPS-15056"
     - "SCPS-15037"
@@ -7878,7 +7903,8 @@ SCPS-15084:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -8028,7 +8054,8 @@ SCPS-15099:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -8040,7 +8067,8 @@ SCPS-15100:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -8224,7 +8252,8 @@ SCPS-15120:
   name-en: "Ratchet & Clank 5 Gekitotsu! Dodeka Ginga no Mirimiri Gundan"
   region: "NTSC-J"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-17001:
   name: グランツーリスモ4
   name-sort: ぐらんつーりすも4
@@ -8449,7 +8478,8 @@ SCPS-19211:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-19213:
   name: OPERATOR’S SIDE マイク同梱版 PS2 the Best
   name-sort: OPERATOR’S SIDE まいくどうこんばん PS2 the Best
@@ -8533,7 +8563,9 @@ SCPS-19302:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    autoFlush: 2
 SCPS-19303:
   name: ぼくのなつやすみ2 海の冒険篇 PS2 the Best
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん PS2 the Best
@@ -8606,7 +8638,8 @@ SCPS-19309:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -8618,7 +8651,8 @@ SCPS-19310:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-19311:
   name: サルゲッチュ3 PS2 the Best
   name-sort: さるげっちゅ3 PS2 the Best
@@ -8673,7 +8707,8 @@ SCPS-19316:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-19317:
   name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす PS2 the Best
   name-sort: らちぇっと＆くらんく2 ががが！ぎんがのこまんどーっす PS2 the Best
@@ -8682,7 +8717,8 @@ SCPS-19317:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
   memcardFilters:
     - "SCAJ-20001"
@@ -8724,7 +8760,8 @@ SCPS-19321:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -8815,7 +8852,8 @@ SCPS-19328:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -9729,7 +9767,8 @@ SCUS-97199:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97200:
   name: "Kiosk Demo Disc 2.05"
   region: "NTSC-U"
@@ -9772,7 +9811,8 @@ SCUS-97209:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97210:
   name: "Sly Cooper and the Thievius Raccoonus [Demo]"
   region: "NTSC-U"
@@ -9901,7 +9941,8 @@ SCUS-97240:
   roundModes:
     eeRoundMode: 0 # Fixes Hydrodisplacer behaviour.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97241:
   name: "Official U.S. PlayStation Magazine Demo Disc 066"
   region: "NTSC-U"
@@ -10006,7 +10047,8 @@ SCUS-97268:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
   memcardFilters:
     - "SCUS-97268"
@@ -10105,7 +10147,8 @@ SCUS-97322:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SCUS-97323:
   name: "Ratchet & Clank 2 - Going Commando [Retail Employees Demo]"
@@ -10113,7 +10156,8 @@ SCUS-97323:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SCUS-97324:
   name: "Kiosk Demo Disc 2.11"
@@ -10212,7 +10256,8 @@ SCUS-97353:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -10310,7 +10355,8 @@ SCUS-97381:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     autoFlush: 2
 SCUS-97382:
   name: "NBA Shootout 2004 [Demo]"
@@ -10410,7 +10456,8 @@ SCUS-97411:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -10431,7 +10478,8 @@ SCUS-97413:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -10637,7 +10685,8 @@ SCUS-97465:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -10761,7 +10810,8 @@ SCUS-97485:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -10782,7 +10832,8 @@ SCUS-97487:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes broken textures.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -10958,7 +11009,8 @@ SCUS-97518:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -11204,7 +11256,8 @@ SCUS-97615:
   name: "Ratchet & Clank - Size Matters"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97616:
   name: "SingStar 80's"
   region: "NTSC-U"
@@ -11251,6 +11304,8 @@ SCUS-97623:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97625:
   name: "NBA 09 - The Inside"
   region: "NTSC-U"
@@ -12314,8 +12369,12 @@ SLED-54312:
     halfPixelOffset: 2 # Fixes blurriness.
     roundSprite: 2 # Fixes blurriness.
 SLED-54315:
-  name: "LEGO Star Wars II - The Original Trilogy"
-  region: "PAL-Unk"
+  name: "LEGO Star Wars II - The Original Trilogy [Demo]"
+  region: "PAL-M5"
+  gsHWFixes:
+    cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLED-54327:
   name: "FIFA 07"
   region: "PAL-Unk"
@@ -12543,6 +12602,9 @@ SLES-50052:
   name: "Pool Master"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50053:
   name: "Aqua Aqua - Wetrix 2"
   region: "PAL-M5"
@@ -14253,12 +14315,30 @@ SLES-50809:
 SLES-50812:
   name: "Spider-Man"
   region: "PAL-E"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lens flares.
+    mipmap: 2 # Fixes texture flickering during movement.
+    trilinearFiltering: 1
+    gpuTargetCLUT: 1 # Fixes lens flares going through objects.
+    bilinearUpscale: 2 # Smooths out sun glare textures.
 SLES-50813:
   name: "Spider-Man"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lens flares.
+    mipmap: 2 # Fixes texture flickering during movement.
+    trilinearFiltering: 1
+    gpuTargetCLUT: 1 # Fixes lens flares going through objects.
+    bilinearUpscale: 2 # Smooths out sun glare textures.
 SLES-50814:
   name: "Spider-Man"
   region: "PAL-G"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lens flares.
+    mipmap: 2 # Fixes texture flickering during movement.
+    trilinearFiltering: 1
+    gpuTargetCLUT: 1 # Fixes lens flares going through objects.
+    bilinearUpscale: 2 # Smooths out sun glare textures.
   compat: 5
 SLES-50815:
   name: "Blood Omen 2 - The Legacy of Kain"
@@ -14667,6 +14747,12 @@ SLES-50964:
 SLES-50965:
   name: "Spider-Man"
   region: "PAL-S"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lens flares.
+    mipmap: 2 # Fixes texture flickering during movement.
+    trilinearFiltering: 1
+    gpuTargetCLUT: 1 # Fixes lens flares going through objects.
+    bilinearUpscale: 2 # Smooths out sun glare textures.
 SLES-50972:
   name: "Barbarian"
   region: "PAL-M5"
@@ -16300,9 +16386,11 @@ SLES-51697:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51698:
   name: "Mobile Light Force 2"
   region: "PAL-M5"
@@ -17487,6 +17575,8 @@ SLES-52219:
     mtvu: 0
   gsHWFixes:
     halfPixelOffset: 3 # Reduces ghosting.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52230:
   name: "Muppets Party Cruise"
   region: "PAL-E-F"
@@ -17839,30 +17929,35 @@ SLES-52379:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLES-52380:
   name: "Shrek 2"
   region: "PAL-F"
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLES-52381:
   name: "Shrek 2"
   region: "PAL-G"
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLES-52382:
   name: "Shrek 2"
   region: "PAL-S"
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLES-52383:
   name: "Shrek 2"
   region: "PAL-I"
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLES-52384:
@@ -18015,6 +18110,7 @@ SLES-52457:
   name: "Shrek 2"
   region: "PAL-SW"
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLES-52458:
@@ -18521,6 +18617,9 @@ SLES-52630:
   name: "Conflict - Vietnam"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52631:
   name: "Digimon Rumble Arena 2"
   region: "PAL-M5"
@@ -19613,6 +19712,8 @@ SLES-53007:
   name: "Tom Clancy's Splinter Cell - Chaos Theory"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lights especially in NVGs.
 SLES-53008:
   name: "Mercenaries - Playground of Destruction"
   region: "PAL-I-S"
@@ -20325,6 +20426,8 @@ SLES-53284:
 SLES-53287:
   name: "Tom Clancy's Splinter Cell - Chaos Theory"
   region: "PAL-M3"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lights especially in NVGs.
 SLES-53296:
   name: "Ford Mustang - The Legend Lives"
   region: "PAL-M4"
@@ -20567,6 +20670,9 @@ SLES-53386:
   name: "Charlie and the Chocolate Factory"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53387:
   name: "Batman Begins"
   region: "PAL-M7"
@@ -20913,16 +21019,22 @@ SLES-53501:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53502:
   name: "Star Wars - Battlefront II"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53503:
   name: "Star Wars - Battlefront II"
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53504:
   name: "Agent Hugo"
   region: "PAL-M11"
@@ -21449,6 +21561,11 @@ SLES-53624:
   name: "Disney-Pixar's Cars"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53626:
   name: "The Suffering - Ties that Bind"
   name-sort: "Suffering, The - Ties that Bind"
@@ -22535,27 +22652,62 @@ SLES-54003:
 SLES-54004:
   name: "Disney-Pixar's Cars"
   region: "PAL-NL-P"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54006:
   name: "Disney-Pixar's Cars"
   region: "PAL-F"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54007:
   name: "Disney-Pixar's Cars"
   region: "PAL-S"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54010:
   name: "Disney-Pixar's Cars"
   region: "PAL-I"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54011:
   name: "Disney-Pixar's Cars"
   region: "PAL-SW"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54012:
   name: "Disney-Pixar's Cars"
   region: "PAL-G"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54013:
   name: "World Snooker Championship 2007"
   region: "PAL-E"
 SLES-54015:
   name: "Disney-Pixar's Cars"
   region: "PAL-SC"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     B36778F5:
       content: |-
@@ -23107,6 +23259,8 @@ SLES-54221:
   region: "PAL-M6"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   memcardFilters: # Allows import of characters from Lego Star Wars 1.
     - "SLES-54221"
     - "SLES-53194"
@@ -23728,6 +23882,8 @@ SLES-54455:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54456:
   name: "Beverly Hills Cop"
   region: "PAL-M11"
@@ -23899,12 +24055,16 @@ SLES-54516:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54517:
   name: "Thrillville"
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54518:
   name: "Clumsy Shumsy"
   region: "PAL-E"
@@ -24697,11 +24857,15 @@ SLES-54806:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54807:
   name: "Thrillville - Off the Rails"
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54809:
   name: "Charlotte's Web"
   region: "PAL-A"
@@ -24936,6 +25100,8 @@ SLES-54887:
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54888:
   name: "Pro Biker 2"
   region: "PAL-E"
@@ -25000,6 +25166,8 @@ SLES-54904:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects misaligned cel shading.
     roundSprite: 1 # Further corrects misaligned cel shading.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54905:
   name: "The Simpsons Game"
   name-sort: "Simpsons Game, The"
@@ -25008,6 +25176,8 @@ SLES-54905:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects misaligned cel shading.
     roundSprite: 1 # Further corrects misaligned cel shading.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54906:
   name: "The Simpsons Game"
   name-sort: "Simpsons Game, The"
@@ -25015,6 +25185,8 @@ SLES-54906:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects misaligned cel shading.
     roundSprite: 1 # Further corrects misaligned cel shading.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54913:
   name: "Pro Evolution Soccer 2008"
   region: "PAL-E-S"
@@ -25337,11 +25509,15 @@ SLES-55010:
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55011:
   name: "Thrillville - Fuera de Control"
   region: "PAL-S"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55012:
   name: "The Golden Compass"
   name-sort: "Golden Compass, The"
@@ -25379,13 +25555,16 @@ SLES-55019:
   name: "Ratchet & Clank - Size Matters"
   region: "PAL-M13"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55020:
   name: "Die Simpsons - Das Spiel"
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects misaligned cel shading.
     roundSprite: 1 # Further corrects misaligned cel shading.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55021:
   name: "Pro Evolution Soccer 2008"
   region: "PAL-F-G"
@@ -26561,6 +26740,8 @@ SLES-55496:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55499:
   name: "Disney G-Force"
   region: "PAL-M4"
@@ -26954,6 +27135,8 @@ SLES-82013:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurry characters.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82018:
   name: "Cy Girls [Ice Disc]"
@@ -26980,6 +27163,8 @@ SLES-82024:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurry characters.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82026:
   name: "Metal Gear Solid 3 - Snake Eater"
@@ -26990,6 +27175,8 @@ SLES-82026:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurry characters.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82028:
   name: "Star Ocean 3 - Till the End of Time [Disc 1 of 2]"
@@ -27040,6 +27227,8 @@ SLES-82032:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurry characters.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82034:
   name: "Xenosaga Episode II [Disc 1 of 2]"
@@ -27103,6 +27292,8 @@ SLES-82042:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82043:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -27114,6 +27305,8 @@ SLES-82043:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82042"
@@ -27127,6 +27320,8 @@ SLES-82044:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82045:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -27138,6 +27333,8 @@ SLES-82045:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82044"
@@ -27151,6 +27348,8 @@ SLES-82046:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82047:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -27162,6 +27361,8 @@ SLES-82047:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82046"
@@ -27175,6 +27376,8 @@ SLES-82048:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLES-82049:
   name: "Metal Gear Solid 3 - Subsistence [Disc 2 of 3]"
@@ -27186,6 +27389,8 @@ SLES-82049:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82048"
@@ -27199,6 +27404,8 @@ SLES-82050:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82042"
@@ -27212,6 +27419,8 @@ SLES-82051:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82044"
@@ -27225,6 +27434,8 @@ SLES-82052:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82046"
@@ -27238,6 +27449,8 @@ SLES-82053:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLES-82048"
@@ -27787,9 +28000,11 @@ SLKA-25118:
   name: "SSX 3"
   region: "NTSC-K"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-25120:
   name: "Prince of Persia - The Sands of Time"
   region: "NTSC-K"
@@ -28071,9 +28286,11 @@ SLKA-25200:
   name: "SSX 3 [PlayStation 2 - Big Hit Series]"
   region: "NTSC-K"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-25201:
   name: "Armored Core - Nexus [Disc 1]"
   region: "NTSC-K"
@@ -28309,6 +28526,8 @@ SLKA-25251:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLKA-25252:
   name: "Forgotten Realms - Demon Stone"
@@ -28724,6 +28943,8 @@ SLKA-25353:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLKA-25354:
   name: "Metal Gear Solid 3 - Subsistence [Limited Edition] [Disc 2 of 3]"
@@ -28736,6 +28957,8 @@ SLKA-25354:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLKA-25353"
@@ -28750,6 +28973,8 @@ SLKA-25355:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLKA-25353"
@@ -29138,6 +29363,12 @@ SLKA-35005:
 SLKA-90502:
   name: "SSX 3"
   region: "NTSC-K"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-90503:
   name: "Need for Speed - Underground"
   region: "NTSC-K"
@@ -29425,6 +29656,17 @@ SLPM-55072:
 SLPM-55076:
   name: "Medal of Honor - Vanguard"
   region: "NTSC-J"
+SLPM-55077:
+  name: SSX3 [EASY 1980]
+  name-sort: SSX3 [EASY 1980]
+  name-en: "SSX 3 [EASY 1980]"
+  region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
+    halfPixelOffset: 2 # Fixes depth lines.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-55079:
   name: "Scarlet - Nichijou no Kyoukaisen"
   region: "NTSC-J"
@@ -32215,6 +32457,14 @@ SLPM-62241:
     mipmap: 2 # Fixes blurry textures.
     trilinearFiltering: 1 # Fixes blurry textures.
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
+SLPM-62242:
+  name: 撞球 ビリヤードマスター2
+  name-sort: どうきゅう びりやーどますたー2
+  name-en: "Doukyu Billiards [LowPrice Version]"
+  region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-62244:
   name: チョロQHG3
   name-sort: ちょろQHG3
@@ -35951,6 +36201,12 @@ SLPM-65205:
   name-sort: すぱいだーまん
   name-en: "Spider-Man"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes lens flares.
+    mipmap: 2 # Fixes texture flickering during movement.
+    trilinearFiltering: 1
+    gpuTargetCLUT: 1 # Fixes lens flares going through objects.
+    bilinearUpscale: 2 # Smooths out sun glare textures.
 SLPM-65206:
   name: キング オブ コロシアム(緑) 〜ノア×ZERO-ONE ディスク〜
   name-sort: きんぐ おぶ ころしあむ(みどり) 〜のあ×ZERO-ONE でぃすく〜
@@ -37333,9 +37589,11 @@ SLPM-65449:
   name-en: "SSX 3"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65450:
   name: 探偵学園Q 〜奇翁館の殺意〜 [初回生産分]
   name-sort: たんていがくえんQ 〜きおきなかんのさつい〜 [しょかいせいさんぶん]
@@ -38616,6 +38874,7 @@ SLPM-65697:
   name-en: "Shrek 2"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLPM-65698:
@@ -39126,6 +39385,8 @@ SLPM-65789:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-65790:
   name: METAL GEAR SOLID 3 SNAKE EATER
@@ -39138,6 +39399,8 @@ SLPM-65790:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-65791:
   name: S.L.A.I -STEEL LANCER ARENA INTERNATIONAL-
@@ -39150,9 +39413,11 @@ SLPM-65793:
   name-en: "SSX 3 [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65794:
   name: カプコン ファイティング ジャム
   name-sort: かぷこん ふぁいてぃんぐ じゃむ
@@ -40979,6 +41244,8 @@ SLPM-66117:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-66118:
   name: METAL GEAR SOLID 3 SUBSISTENCE [ヘッドセット同梱版] [ディスク2/3]
@@ -40992,6 +41259,8 @@ SLPM-66118:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-66119:
   name: METAL GEAR SOLID 3 SUBSISTENCE [ヘッドセット同梱版] [ディスク2/3]
@@ -41005,6 +41274,8 @@ SLPM-66119:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-66121:
   name: "Spider-Man 2 [Taito Best]"
@@ -41062,6 +41333,8 @@ SLPM-66130:
   name-sort: とむ・くらんしーしりーず すぷりんたーせる かおすせおりー
   name-en: "Tom Clancy's Splinter Cell - Chaos Theory"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lights especially in NVGs.
 SLPM-66131:
   name: ティム・バートン ナイトメアー・ビフォア・クリスマス ブギーの逆襲 プレミアムパック
   name-sort: てぃむ・ばーとん ないとめあー・びふぉあ・くりすます ぶぎーのぎゃくしゅう ぷれみあむぱっく
@@ -41434,6 +41707,8 @@ SLPM-66190:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66191:
   name: タイガー・ウッズ PGA TOUR 06
   name-sort: たいがー・うっず PGA TOUR 06
@@ -41608,6 +41883,8 @@ SLPM-66220:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLPM-66117"
@@ -41623,6 +41900,8 @@ SLPM-66221:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLPM-66117"
@@ -41638,6 +41917,8 @@ SLPM-66222:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLPM-66117"
@@ -41653,6 +41934,8 @@ SLPM-66223:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLPM-66117"
@@ -41668,6 +41951,8 @@ SLPM-66224:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLPM-66117"
@@ -43075,6 +43360,11 @@ SLPM-66462:
   name-sort: かーず
   name-en: "Disney-Pixar's Cars"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66463:
   name: デフジャム・ファイト・フォー・NY [EA BEST HITS]
   name-sort: でふじゃむ・ふぁいと・ふぉー・NY [EA BEST HITS]
@@ -43285,6 +43575,8 @@ SLPM-66496:
   name-sort: とむ・くらんしーしりーず すぷりんたーせる かおすせおりー [ゆーびーあいそふと べすと]
   name-en: "Tom Clancy's Splinter Cell - Chaos Theory"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lights especially in NVGs.
 SLPM-66497:
   name: アイスエイジ2
   name-sort: あいすえいじ2
@@ -43715,6 +44007,8 @@ SLPM-66572:
   region: "NTSC-J"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   memcardFilters:
     - "SLPM-66572"
     - "SLPS-20423"
@@ -45054,6 +45348,8 @@ SLPM-66794:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-66795:
   name: "Metal Gear & Metal Gear 2 - Solid Snake"
@@ -46499,6 +46795,8 @@ SLPM-68516:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-68519:
   name: "Enthusia Professional Racing - Subaru Impreza WRX STI"
@@ -47184,6 +47482,9 @@ SLPS-20002:
   name-en: "Doukyu Billiards"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-20003:
   name: ストリートファイターEX3
   name-sort: すとりーとふぁいたーEX3
@@ -55887,6 +56188,9 @@ SLUS-20069:
 SLUS-20070:
   name: "Q-Ball Billiards Master"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20071:
   name: "DOA 2 - Hardcore"
   region: "NTSC-U"
@@ -57056,6 +57360,12 @@ SLUS-20336:
   name: "Spider-Man - The Movie"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes lens flares.
+    mipmap: 2 # Fixes texture flickering during movement.
+    trilinearFiltering: 1
+    gpuTargetCLUT: 1 # Fixes lens flares going through objects.
+    bilinearUpscale: 2 # Smooths out sun glare textures.
 SLUS-20337:
   name: "X2 - Wolverine's Revenge"
   region: "NTSC-U"
@@ -59135,6 +59445,7 @@ SLUS-20745:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes blue seam in ground.
     mipmap: 2 # Partially fixes the sun effects, but the game suffers from depth/blending issues.
     trilinearFiltering: 1
 SLUS-20746:
@@ -59320,9 +59631,11 @@ SLUS-20772:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
-    recommendedBlendingLevel: 4 # Fixes missing lighting and makes snow not look like snow sludge.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20773:
   name: "Legacy of Kain - Defiance"
   region: "NTSC-U"
@@ -59710,6 +60023,8 @@ SLUS-20858:
     mtvu: 0
   gsHWFixes:
     halfPixelOffset: 3 # Reduces ghosting.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20859:
   name: "Future Tactics - The Uprising"
   region: "NTSC-U"
@@ -60038,6 +60353,8 @@ SLUS-20915:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     halfPixelOffset: 2 # Fixes blurriness.
     autoFlush: 2 # Fixes lens flare.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLUS-20916:
   name: "Dance Dance Revolution EXTREME"
@@ -60828,6 +61145,9 @@ SLUS-21045:
   name: "Conflict Vietnam"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21046:
   name: "King Arthur"
   region: "NTSC-U"
@@ -61294,6 +61614,8 @@ SLUS-21137:
   name: "Tom Clancy's Splinter Cell - Chaos Theory"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes missing lights especially in NVGs.
 SLUS-21138:
   name: "X-Men Legends II - Rise of Apocalypse"
   region: "NTSC-U"
@@ -61360,6 +61682,11 @@ SLUS-21151:
   name: "Disney-Pixar's Cars"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
+    autoFlush: 1 # Fixes lens flares and missing sun.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     F2A25D7B:
       content: |-
@@ -61888,6 +62215,8 @@ SLUS-21240:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21241:
   name: "NHL '06"
   region: "NTSC-U"
@@ -61923,6 +62252,8 @@ SLUS-21243:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLUS-21359"
@@ -61943,6 +62274,9 @@ SLUS-21246:
   name: "Charlie and the Chocolate Factory"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21247:
   name: "Jackie Chan Adventures"
   region: "NTSC-U"
@@ -62674,6 +63008,8 @@ SLUS-21359:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLUS-21360:
   name: "Metal Gear Solid 3 - Subsistence [Disc 3 of 3]"
@@ -62685,6 +63021,8 @@ SLUS-21360:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
   memcardFilters:
     - "SLUS-21359"
@@ -62999,6 +63337,8 @@ SLUS-21409:
   region: "NTSC-U"
   gsHWFixes:
     cpuCLUTRender: 1 # Fixes ghosting on objects and people.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   memcardFilters:
     - "SLUS-21409"
     - "SLUS-21083"
@@ -63020,6 +63360,8 @@ SLUS-21413:
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned bloom effects.
     mergeSprite: 1 # Fixes blurriness but removes bloom + Recommended to use Shadeboost brightness 80.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21414:
   name: "Delta Force - Black Hawk Down - Team Sabre"
   region: "NTSC-U"
@@ -63964,6 +64306,8 @@ SLUS-21611:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom effects, 1 is technically more correct compared to software but looks worse.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21612:
   name: "Legend of the Dragon"
   region: "NTSC-U"
@@ -64258,6 +64602,8 @@ SLUS-21665:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects misaligned cel shading.
     roundSprite: 1 # Further corrects misaligned cel shading.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21666:
   name: "Mountain Bike Adrenaline"
   region: "NTSC-U"
@@ -66400,6 +66746,8 @@ SLUS-29164:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes bloom misalignment.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-29167:
   name: "007 - From Russia with Love, Need for Speed - Most Wanted, SSX World Tour [Demo]"
   region: "NTSC-U"
@@ -66652,7 +67000,8 @@ TCES-52456:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -66938,6 +67287,9 @@ TLES-82043:
     recommendedBlendingLevel: 3 # Fixes skin colour and banding.
     autoFlush: 2 # Fixes lens flare.
     halfPixelOffset: 2 # Fixes blurriness.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 VW067-J1:
   name: "Crash Bandicoot 4 - Sakuretsu! Majin Power!"
   region: "NTSC-J"
