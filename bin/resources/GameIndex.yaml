@@ -22808,9 +22808,9 @@ SLES-54137:
   name: "Just Cause"
   region: "PAL-M3"
   gsHWFixes:
-  	mipmap: 2 # Helps clean up water
+    mipmap: 2 # Helps clean up water
     trilinearFiltering: 1 # Helps clean up water
-	recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
+    recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
     halfPixelOffset: 1 # Fixes ghosting.
 SLES-54138:
   name: "Steambot Chronicles"
@@ -23051,7 +23051,7 @@ SLES-54200:
   gsHWFixes:
     mipmap: 2 # Helps clean up water
     trilinearFiltering: 1 # Helps clean up water
-	recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
+    recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
     halfPixelOffset: 1 # Fixes ghosting.
 SLES-54203:
   name: "Pro Evolution Soccer 6"
@@ -63182,7 +63182,7 @@ SLUS-21436:
   gsHWFixes:
     mipmap: 2 # Helps clean up water
     trilinearFiltering: 1 # Helps clean up water
-	recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
+    recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
     halfPixelOffset: 1 # Fixes ghosting.
 SLUS-21437:
   name: "Disney's Kim Possible - What's the Switch"
