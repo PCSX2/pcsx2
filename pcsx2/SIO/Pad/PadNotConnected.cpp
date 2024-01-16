@@ -76,6 +76,11 @@ void PadNotConnected::SetAnalogInvertR(bool x, bool y)
 
 }
 
+u8 PadNotConnected::GetEffectiveInput(u32 index) const
+{
+	return 0;
+}
+
 u8 PadNotConnected::GetRawInput(u32 index) const
 {
 	return 0;
