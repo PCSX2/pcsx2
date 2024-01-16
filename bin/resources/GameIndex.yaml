@@ -22808,6 +22808,9 @@ SLES-54137:
   name: "Just Cause"
   region: "PAL-M3"
   gsHWFixes:
+    mipmap: 2 # Helps clean up water
+    trilinearFiltering: 1 # Helps clean up water
+    recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
     halfPixelOffset: 1 # Fixes ghosting.
 SLES-54138:
   name: "Steambot Chronicles"
@@ -23046,6 +23049,9 @@ SLES-54200:
   name: "Just Cause"
   region: "PAL-F-G"
   gsHWFixes:
+    mipmap: 2 # Helps clean up water
+    trilinearFiltering: 1 # Helps clean up water
+    recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
     halfPixelOffset: 1 # Fixes ghosting.
 SLES-54203:
   name: "Pro Evolution Soccer 6"
@@ -49598,6 +49604,8 @@ SLPS-25034:
   name-sort: はなとたいようとあめと
   name-en: "Flower, Sun and Rain"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes some of the many graphical issues.
 SLPS-25035:
   name: モンスターファーム
   name-sort: もんすたーふぁーむ
@@ -50262,6 +50270,8 @@ SLPS-25154:
   name-sort: はなとたいようとあめと Victor the Best
   name-en: "Flower, Sun and Rain [Victor The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes some of the many graphical issues.
 SLPS-25155:
   name: ウルトラマン Fighting Evolution 2
   name-sort: うるとらまん Fighting Evolution 2
@@ -51934,6 +51944,8 @@ SLPS-25451:
   name-sort: はなとたいようとあめと Super Best Collection
   name-en: "Hana to Taiyou to Ame to [Super Best Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes some of the many graphical issues.
 SLPS-25452:
   name: キノの旅 -the Beautiful World- 電撃SP
   name-sort: きののたび -the Beautiful World- でんげきSP
@@ -63168,6 +63180,9 @@ SLUS-21436:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    mipmap: 2 # Helps clean up water
+    trilinearFiltering: 1 # Helps clean up water
+    recommendedBlendingLevel: 3 # High blending accuracy fixes notoriously broken water.
     halfPixelOffset: 1 # Fixes ghosting.
 SLUS-21437:
   name: "Disney's Kim Possible - What's the Switch"

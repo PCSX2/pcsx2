@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "pcsx2/SysForwardDefs.h"
+#include "pcsx2/SupportURLs.h"
 
 #include "AboutDialog.h"
 #include "QtHost.h"

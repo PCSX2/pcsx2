@@ -4,7 +4,6 @@
 #include "Common.h"
 #include "Memory.h"
 #include "Elfheader.h"
-#include "SysForwardDefs.h"
 #include "PINE.h"
 #include "VMManager.h"
 #include "svnrev.h"
@@ -15,6 +14,8 @@
 #include <span>
 #include <sys/types.h>
 #include <thread>
+
+#include "fmt/format.h"
 
 #if _WIN32
 #define read_portable(a, b, c) (recv(a, (char*)b, c, 0))
@@ -47,8 +48,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 #endif
-
-#include "fmt/format.h"
 
 #define PINE_EMULATOR_NAME "pcsx2"
 
@@ -607,23 +606,14 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			{
 				if (!VMManager::HasValidVM())
 					goto error;
-				std::string version;
-				if (GIT_TAGGED_COMMIT) // Nightly builds
-				{
-					// tagged commit - more modern implementation of dev build versioning
-					// - there is no need to include the commit - that is associated with the tag, git is implied
-					version = fmt::format("PCSX2 Nightly - {}", GIT_TAG);
-				}
-				else
-				{
-					version = fmt::format("PCSX2 {}.{}.{}-{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
-				}
-				const u32 size = version.size() + 1;
+
+				static constexpr const char* version = "PCSX2 " GIT_REV;
+				static constexpr u32 size = sizeof(version) + 1;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
 				ToResultVector(ret_buffer, size, ret_cnt);
 				ret_cnt += 4;
-				memcpy(&ret_buffer[ret_cnt], version.c_str(), size);
+				memcpy(&ret_buffer[ret_cnt], version, size);
 				ret_cnt += size;
 				break;
 			}

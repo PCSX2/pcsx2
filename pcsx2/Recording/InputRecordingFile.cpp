@@ -9,7 +9,6 @@
 #include "DebugTools/Debug.h"
 #include "MemoryTypes.h"
 #include "svnrev.h"
-#include "SysForwardDefs.h"
 
 #include <fmt/format.h>
 
@@ -23,13 +22,7 @@ void InputRecordingFile::InputRecordingFileHeader::init() noexcept
 
 void InputRecordingFile::setEmulatorVersion()
 {
-	std::string emuVersion;
-	if (!PCSX2_isReleaseVersion && GIT_TAGGED_COMMIT)
-		emuVersion = fmt::format("PCSX2-Nightly-{}", GIT_TAG);
-	else
-		emuVersion = fmt::format("PCSX2-{}.{}.{}", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
-
-	StringUtil::Strlcpy(m_header.m_emulatorVersion, emuVersion.c_str(), sizeof(m_header.m_emulatorVersion));
+	StringUtil::Strlcpy(m_header.m_emulatorVersion, "PCSX2-" GIT_REV, sizeof(m_header.m_emulatorVersion));
 }
 
 void InputRecordingFile::setAuthor(const std::string& _author)

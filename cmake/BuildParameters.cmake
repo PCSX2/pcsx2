@@ -4,7 +4,6 @@ set(PCSX2_DEFS "")
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
-option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
@@ -230,11 +229,6 @@ if(USE_CLANG AND TIMETRACE)
 endif()
 
 set(PCSX2_WARNINGS ${DEFAULT_WARNINGS})
-
-if(DISABLE_BUILD_DATE)
-	message(STATUS "Disabling the inclusion of the binary compile date.")
-	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
-endif()
 
 #-------------------------------------------------------------------------------
 # MacOS-specific things
