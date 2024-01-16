@@ -19503,6 +19503,8 @@ SLES-52939:
 SLES-52940:
   name: "S.L.A.I. Steel Lancer Arena International"
   region: "PAL-M3"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
 SLES-52941:
   name: "Gungrave - Overdose"
   region: "PAL-M3"
@@ -39413,6 +39415,8 @@ SLPM-65791:
   name-sort: S.L.A.I -STEEL LANCER ARENA INTERNATIONAL-
   name-en: "S.L.A.I. - Steel Lancer Arena International"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
 SLPM-65793:
   name: SSX3 [EA BEST HITS]
   name-sort: SSX3 [EA BEST HITS]
@@ -60681,6 +60685,8 @@ SLUS-20969:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
 SLUS-20970:
   name: "Rumble Roses"
   region: "NTSC-U"
@@ -66607,6 +66613,8 @@ SLUS-29131:
 SLUS-29132:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash [Public Beta Vol.1.0]"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
 SLUS-29133:
   name: "Namco Transmission v2"
   region: "NTSC-U"
