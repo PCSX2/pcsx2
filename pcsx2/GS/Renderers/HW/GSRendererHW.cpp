@@ -1212,6 +1212,11 @@ void GSRendererHW::FinishSplitClear()
 
 bool GSRendererHW::IsRTWritten()
 {
+	const GIFRegTEST TEST = m_cached_ctx.TEST;
+	const bool only_z_written = (TEST.ATE && TEST.ATST == ATST_NEVER && TEST.AFAIL == AFAIL_ZB_ONLY);
+	if (only_z_written)
+		return false;
+
 	const u32 written_bits = (~m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
 	const GIFRegALPHA ALPHA = m_context->ALPHA;
 	return (
@@ -1828,7 +1833,10 @@ void GSRendererHW::Draw()
 	// skip alpha test if possible
 	// Note: do it first so we know if frame/depth writes are masked
 	u32 fm = m_cached_ctx.FRAME.FBMSK;
-	u32 zm = m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTE == 0 ? 0xffffffff : 0;
+	u32 zm = (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTE == 0 ||
+				 (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ZTST_NEVER && m_cached_ctx.TEST.AFAIL != AFAIL_ZB_ONLY)) ?
+				 0xffffffffu :
+				 0;
 	const u32 fm_mask = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
 
 	// Note required to compute TryAlphaTest below. So do it now.
@@ -2323,7 +2331,10 @@ void GSRendererHW::Draw()
 				CalcAlphaMinMax(src->m_alpha_minmax.first, src->m_alpha_minmax.second);
 
 				u32 new_fm = m_context->FRAME.FBMSK;
-				u32 new_zm = m_context->ZBUF.ZMSK || m_context->TEST.ZTE == 0 ? 0xffffffff : 0;
+				u32 new_zm = (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTE == 0 ||
+							 (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ZTST_NEVER && m_cached_ctx.TEST.AFAIL != AFAIL_ZB_ONLY)) ?
+							 0xffffffffu :
+							 0;
 				if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, new_zm))
 				{
 					m_cached_ctx.TEST.ATE = false;
@@ -2331,8 +2342,12 @@ void GSRendererHW::Draw()
 					m_cached_ctx.ZBUF.ZMSK = (new_zm != 0);
 					fm = new_fm;
 					zm = new_zm;
-					no_rt = no_rt || (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
-					no_ds = no_ds || (zm != 0 && all_depth_tests_pass);
+					no_rt = no_rt || (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
+					no_ds = no_ds || (zm != 0 && all_depth_tests_pass) ||
+									// Depth will be written through the RT
+									(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE) ||
+									// No color or Z being written.
+									(no_rt && zm != 0);
 					if (no_rt && no_ds)
 					{
 						GL_INS("Late draw cancel because no pixels pass alpha test.");
