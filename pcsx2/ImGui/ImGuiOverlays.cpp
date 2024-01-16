@@ -509,22 +509,14 @@ void ImGuiManager::DrawInputsOverlay()
 			{
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
-				{
-					// axes are always shown
-					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
-					if (value >= (254.0f / 255.0f))
-						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
-					else if (value > (1.0f / 255.0f))
-						text.append_fmt(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
-				}
-				break;
-
 				case InputBindingInfo::Type::Button:
 				{
-					// buttons only shown when active
-					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
-					if (value >= 0.5f)
+					// axes are only shown if not resting/past deadzone
+					const u8 value = pad->GetEffectiveInput(bind);
+					if (value >= 254)
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
+					else if (value >= 1)
+						text.append_fmt(" {}: {}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
