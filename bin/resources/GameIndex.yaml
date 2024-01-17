@@ -1837,8 +1837,7 @@ SCAJ-20177:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SCAJ-20178:
@@ -1941,8 +1940,7 @@ SCAJ-20197:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SCAJ-20198:
@@ -6743,8 +6741,7 @@ SCKA-20079:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SCKA-20081:
@@ -18620,6 +18617,7 @@ SLES-52630:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes missing lights.
 SLES-52631:
   name: "Digimon Rumble Arena 2"
   region: "PAL-M5"
@@ -24388,8 +24386,7 @@ SLES-54644:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLES-54645:
@@ -24398,8 +24395,7 @@ SLES-54645:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLES-54646:
@@ -24409,8 +24405,7 @@ SLES-54646:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLES-54647:
@@ -24420,8 +24415,7 @@ SLES-54647:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLES-54648:
@@ -24430,8 +24424,7 @@ SLES-54648:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLES-54653:
@@ -32955,6 +32948,8 @@ SLPM-62349:
   name-sort: WELCOME TO UNIVERSAL STUDIOS JAPAN(TM)
   name-en: "Welcome to Universal Studios Japan"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes being unable to move.
 SLPM-62350:
   name: ハドソンセレクションVOL.2 スターソルジャー
   name-sort: はどそんせれくしょんVOL.2 すたーそるじゃー
@@ -43084,8 +43079,7 @@ SLPM-66419:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLPM-66420:
@@ -45278,8 +45272,7 @@ SLPM-66782:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLPM-66783:
@@ -52906,6 +52899,9 @@ SLPS-25574:
   name-sort: ぱちぱら12 〜たいかいとなつのおもいで〜
   name-en: "Sanyo Pachinko Paradise 12"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken minimap.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPS-25575:
   name: ケロロ軍曹 メロメロバトルロイヤルZ
   name-sort: けろろぐんそう めろめろばとるろいやるZ
@@ -53581,6 +53577,9 @@ SLPS-25682:
   name-sort: ぱちぱら13〜すーぱーうみとぱちぷろふううんろく〜
   name-en: "Sanyo Pachinko Paradise 13"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken minimap.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPS-25683:
   name: ポンコツ浪漫大活劇バンピートロット [アイレム コレクション]
   name-sort: ぽんこつろまんだいかつげきばんぴーとろっと [あいれむ これくしょん]
@@ -54159,6 +54158,9 @@ SLPS-25787:
   name-en: "Sanyo Pachinko Paradise 14"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken minimap.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPS-25788:
   name: メタルスラッグ [SNK BEST COLLECTION]
   name-sort: めたるすらっぐ [SNK BEST COLLECTION]
@@ -54526,6 +54528,9 @@ SLPS-25852:
   name-sort: ぱちぱら13 〜すーぱーうみとぱちぷろふううんろく〜 [あいれむこれくしょん]
   name-en: "Sanyo Pachinko Paradise 13 [Irem Collection]"
   region: "NTSC-J"
+  gsHWFixes:
+    cpuSpriteRenderBW: 2 # Fixes broken minimap.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPS-25853:
   name: パチってちょんまげ達人 14 ぱちんこ仮面ライダー ショッカー全滅大作戦
   name-sort: ぱちってちょんまげたつじん 14 ぱちんこかめんらいだー しょっかーぜんめつだいさくせん
@@ -61160,6 +61165,7 @@ SLUS-21045:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
+    autoFlush: 1 # Fixes missing lights.
 SLUS-21046:
   name: "King Arthur"
   region: "NTSC-U"
@@ -63627,8 +63633,7 @@ SLUS-21452:
   gameFixes:
     - VuAddSubHack
   gsHWFixes:
-    halfPixelOffset: 2 # Reduces bloom misalignment.
-    roundSprite: 1 # Fixes area transition vertical lines and lessens red forest vertical lines.
+    halfPixelOffset: 4 # Reduces bloom misalignment.
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
 SLUS-21453:
