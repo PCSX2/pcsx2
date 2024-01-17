@@ -785,7 +785,7 @@ void PadDualshock2::SetAnalogInvertR(bool x, bool y)
 	this->analogs.ryInvert = y;
 }
 
-u8 PadDualshock2::GetEffectiveInput(u32 index) const
+float PadDualshock2::GetEffectiveInput(u32 index) const
 {
 	if (!IsAnalogKey(index))
 		return GetRawInput(index);
@@ -793,28 +793,28 @@ u8 PadDualshock2::GetEffectiveInput(u32 index) const
 	switch (index)
 	{
 	case Inputs::PAD_L_LEFT:
-		return (analogs.lx > 0 && analogs.lx < 127) ? analogs.lx : 0;
+		return (analogs.lx < 127) ? -((127 - analogs.lx) / 127.0f) : 0;
 
 	case Inputs::PAD_L_RIGHT:
-		return (analogs.lx >= 128) ? analogs.lx : 0;
+		return (analogs.lx > 127) ? ((analogs.lx - 127) / 128.0f) : 0;
 
 	case Inputs::PAD_L_UP:
-		return (analogs.ly > 0 && analogs.ly < 127) ? analogs.ly : 0;
+		return (analogs.ly < 127) ? -((127 - analogs.ly) / 127.0f) : 0;
 
 	case Inputs::PAD_L_DOWN:
-		return (analogs.ly >= 128) ? analogs.ly : 0;
+		return (analogs.ly > 127) ? ((analogs.ly - 127) / 128.0f) : 0;
 
 	case Inputs::PAD_R_LEFT:
-		return (analogs.rx > 0 && analogs.rx < 127) ? analogs.rx : 0;
+		return (analogs.rx < 127) ? -((127 - analogs.rx) / 127.0f) : 0;
 
 	case Inputs::PAD_R_RIGHT:
-		return (analogs.rx >= 128) ? analogs.rx : 0;
+		return (analogs.rx > 127) ? ((analogs.rx - 127) / 128.0f) : 0;
 
 	case Inputs::PAD_R_UP:
-		return (analogs.ry > 0 && analogs.ry < 127) ? analogs.ry : 0;
+		return (analogs.ry < 127) ? -((127 - analogs.ry) / 127.0f) : 0;
 
 	case Inputs::PAD_R_DOWN:
-		return (analogs.ry >= 128) ? analogs.ry : 0;
+		return (analogs.ry > 127) ? ((analogs.ry - 127) / 128.0f) : 0;
 
 	default:
 		return 0;
