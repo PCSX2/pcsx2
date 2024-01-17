@@ -97,9 +97,18 @@ void Pad::LoadConfig(const SettingsInterface& si)
 		// then reconstruct a new pad.
 		if (!pad || pad->GetType() != ci->type || (mtapPort0Changed && (i <= 4 && i != 1)) || (mtapPort1Changed && (i >= 5 || i == 1)))
 		{
-			// Create the new pad. If the VM is in any kind of running state at all, set eject ticks so the PS2 will think
-			// there was some kind of pad ejection event and properly detect the new one, and properly initiate its config sequence.
-			pad = Pad::CreatePad(i, ci->type, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
+			// If the slot is a multitap slot, and the multitap is not plugged in, then the pad should be forced to Not Connected.
+			if (i > 1 && ((i <= 4 && !EmuConfig.Pad.MultitapPort0_Enabled) || (i > 4 && !EmuConfig.Pad.MultitapPort1_Enabled)))
+			{
+				pad = Pad::CreatePad(i, Pad::ControllerType::NotConnected, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
+			}
+			else
+			{
+				// Create the new pad. If the VM is in any kind of running state at all, set eject ticks so the PS2 will think
+				// there was some kind of pad ejection event and properly detect the new one, and properly initiate its config sequence.
+				pad = Pad::CreatePad(i, ci->type, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
+			}
+			
 			pxAssert(pad);
 		}
 
