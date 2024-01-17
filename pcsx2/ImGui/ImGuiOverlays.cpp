@@ -38,6 +38,7 @@
 #include <chrono>
 #include <cmath>
 #include <deque>
+#include <limits>
 #include <mutex>
 #include <span>
 #include <tuple>
@@ -509,14 +510,25 @@ void ImGuiManager::DrawInputsOverlay()
 			{
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
+				{
+					// axes are only shown if not resting/past deadzone. values are normalized.
+					const float value = pad->GetEffectiveInput(bind);
+					const float abs_value = std::abs(value);
+					if (abs_value >= (254.0f / 255.0f))
+						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
+					else if (abs_value >= (1.0f / 255.0f))
+						text.append_fmt(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
+				}
+				break;
+
 				case InputBindingInfo::Type::Button:
 				{
-					// axes are only shown if not resting/past deadzone
-					const u8 value = pad->GetEffectiveInput(bind);
-					if (value >= 254)
+					// buttons display the value from 0 through 255.
+					const float value = pad->GetEffectiveInput(bind);
+					if (value >= 254.0f)
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
-					else if (value >= 1)
-						text.append_fmt(" {}: {}", bi.icon_name ? bi.icon_name : bi.name, value);
+					else if (value > 0.0f)
+						text.append_fmt(" {}: {:.0f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
@@ -554,7 +566,7 @@ void ImGuiManager::DrawInputsOverlay()
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
 				{
-					// axes are always shown
+					// axes are only shown if not resting/past deadzone. values are normalized.
 					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
 					if (value >= (254.0f / 255.0f))
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
@@ -565,10 +577,12 @@ void ImGuiManager::DrawInputsOverlay()
 
 				case InputBindingInfo::Type::Button:
 				{
-					// buttons only shown when active
-					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
-					if (value >= 0.5f)
+					// buttons display the value from 0 through 255. values are normalized, so denormalize them.
+					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index)) * 255.0f;
+					if (value >= 254.0f)
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
+					else if (value > 0.0f)
+						text.append_fmt(" {}: {:.0f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 

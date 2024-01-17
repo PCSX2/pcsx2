@@ -355,9 +355,9 @@ void PadGuitar::SetAnalogInvertR(bool x, bool y)
 {
 }
 
-u8 PadGuitar::GetEffectiveInput(u32 index) const
+float PadGuitar::GetEffectiveInput(u32 index) const
 {
-	return GetRawInput(index);
+	return GetRawInput(index) / 255.0f;
 }
 
 u8 PadGuitar::GetRawInput(u32 index) const
