@@ -33,6 +33,7 @@
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/MTGS.h"
@@ -387,6 +388,11 @@ void Host::OnAchievementsRefreshed()
 }
 
 void Host::OnCoverDownloaderOpenRequested()
+{
+	// noop
+}
+
+void Host::OnCreateMemoryCardOpenRequested()
 {
 	// noop
 }
