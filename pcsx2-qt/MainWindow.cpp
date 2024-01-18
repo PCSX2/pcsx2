@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "AboutDialog.h"
@@ -16,6 +16,7 @@
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/GameListSettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
+#include "Settings/MemoryCardCreateDialog.h"
 #include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
 #include "svnrev.h"
@@ -439,6 +440,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onAchievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
 	connect(thread, &EmuThread::onAchievementsHardcoreModeChanged, this, &MainWindow::onAchievementsHardcoreModeChanged);
 	connect(thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
+	connect(thread, &EmuThread::onCreateMemoryCardOpenRequested, this, &MainWindow::onCreateMemoryCardOpenRequested);
 
 	connect(m_ui.actionReset, &QAction::triggered, this, &MainWindow::requestReset);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
@@ -1640,7 +1642,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 {
 	// This can be invoked via big picture, so exit fullscreen.
 	VMLock lock(pauseAndLockVM());
-	CoverDownloadDialog dlg(this);
+	CoverDownloadDialog dlg(lock.getDialogParent());
 	connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
 	dlg.exec();
 }
@@ -1669,6 +1671,14 @@ void MainWindow::onToolsEditCheatsPatchesTriggered(bool cheats)
 	}
 
 	QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(path)));
+}
+
+void MainWindow::onCreateMemoryCardOpenRequested()
+{
+	// This can be invoked via big picture, so exit fullscreen.
+	VMLock lock(pauseAndLockVM());
+	MemoryCardCreateDialog dlg(lock.getDialogParent());
+	dlg.exec();
 }
 
 void MainWindow::updateTheme()

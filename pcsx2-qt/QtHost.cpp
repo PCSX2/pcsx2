@@ -1117,6 +1117,11 @@ void Host::OnCoverDownloaderOpenRequested()
 	emit g_emu_thread->onCoverDownloaderOpenRequested();
 }
 
+void Host::OnCreateMemoryCardOpenRequested()
+{
+	emit g_emu_thread->onCreateMemoryCardOpenRequested();
+}
+
 void Host::VSyncOnCPUThread()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);

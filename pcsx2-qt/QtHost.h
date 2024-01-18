@@ -168,8 +168,9 @@ Q_SIGNALS:
 	/// Called when hardcore mode is enabled or disabled.
 	void onAchievementsHardcoreModeChanged(bool enabled);
 
-	/// Called when cover download is requested.
+	/// Big Picture UI requests.
 	void onCoverDownloaderOpenRequested();
+	void onCreateMemoryCardOpenRequested();
 
 	/// Called when video capture starts/stops.
 	void onCaptureStarted(const QString& filename);

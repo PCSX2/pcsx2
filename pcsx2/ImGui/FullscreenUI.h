@@ -37,3 +37,10 @@ namespace FullscreenUI
 	void InvalidateCoverCache();
 	TinyString TimeToPrintableString(time_t t);
 } // namespace FullscreenUI
+
+// Host UI triggers from Big Picture mode.
+namespace Host
+{
+void OnCoverDownloaderOpenRequested();
+void OnCreateMemoryCardOpenRequested();
+}

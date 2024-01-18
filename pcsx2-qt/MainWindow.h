@@ -158,6 +158,7 @@ private Q_SLOTS:
 	void onToolsOpenDataDirectoryTriggered();
 	void onToolsCoverDownloaderTriggered();
 	void onToolsEditCheatsPatchesTriggered(bool cheats);
+	void onCreateMemoryCardOpenRequested();
 	void updateTheme();
 	void reloadThemeSpecificImages();
 	void updateLanguage();
