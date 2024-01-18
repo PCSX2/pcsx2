@@ -90,7 +90,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Default Num of heads (Retired)
 	WriteUInt16(identifyData, &index, defHeads); //word 3
 	//Number of unformatted bytes per track (Retired)
-	WriteUInt16(identifyData, &index, static_cast<u16>(sectorSize * defSectors)); //word 4
+	WriteUInt16(identifyData, &index, sectorSize * defSectors); //word 4
 	//Number of unformatted bytes per sector (Retired)
 	WriteUInt16(identifyData, &index, sectorSize); //word 5
 	//Default Number of sectors per track (Retired)
@@ -129,7 +129,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Capabilities (0-Shall be set to one to indicate a device specific Standby timer value minimum)
 	WriteUInt16(identifyData, &index, 1 << 14); //word 50
 	//PIO data transfer cycle timing mode (Obsolete)
-	WriteUInt16(identifyData, &index, static_cast<u16>((pioMode > 2 ? pioMode : 2) << 8)); //word 51
+	WriteUInt16(identifyData, &index, (pioMode > 2 ? pioMode : 2) << 8); //word 51
 	//DMA data transfer cycle timing mode (Obsolete)
 	WriteUInt16(identifyData, &index, 0); //word 52
 	//
@@ -146,14 +146,14 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	//Number of current sectors per track
 	WriteUInt16(identifyData, &index, curSectors); //word 56
 	//Current capacity in sectors
-	WriteUInt32(identifyData, &index, static_cast<u32>(curOldsize)); //word 57-58
+	WriteUInt32(identifyData, &index, curOldsize); //word 57-58
 	//PIO READ/WRITE Multiple setting
 	/*
 	 * bit 7-0: Current setting for number of logical sectors that shall be transferred per DRQ
 	 *			data block on READ/WRITE Multiple commands
 	 * bit 8: Multiple sector setting is valid
 	 */
-	WriteUInt16(identifyData, &index, static_cast<u16>(curMultipleSectorsSetting | (1 << 8))); //word 59
+	WriteUInt16(identifyData, &index, curMultipleSectorsSetting | (1 << 8)); //word 59
 	//Total number of user addressable logical sectors
 	WriteUInt32(identifyData, &index, nbSectors); //word 60-61
 	//SDMA modes (Unsupported by original HDD)
@@ -164,7 +164,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bits 8-15: Transfer mode active
 	 */
 	if (mdmaMode >= 0)
-		WriteUInt16(identifyData, &index, static_cast<u16>(0x07 | (1 << (mdmaMode + 8)))); //word 63
+		WriteUInt16(identifyData, &index, 0x07 | (1 << (mdmaMode + 8))); //word 63
 	else
 		WriteUInt16(identifyData, &index, 0x07); //word 63
 	//Bits 0-1 PIO modes supported (3,4)
@@ -284,7 +284,7 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	 * bits 8-15: Transfer mode active
 	 */
 	if (udmaMode >= 0)
-		WriteUInt16(identifyData, &index, static_cast<u16>(0x7f | (1 << (udmaMode + 8)))); //word 88
+		WriteUInt16(identifyData, &index, 0x7f | (1 << (udmaMode + 8))); //word 88
 	else
 		WriteUInt16(identifyData, &index, 0x7f); //word 88
 	//Time required for security erase unit completion
