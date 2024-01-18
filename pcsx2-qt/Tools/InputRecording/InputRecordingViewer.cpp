@@ -43,7 +43,7 @@ QTableWidgetItem* InputRecordingViewer::createRowItem(std::tuple<bool, u8> butto
 
 void InputRecordingViewer::loadTable()
 {
-	static const auto headers = QStringList({tr("Left Analog"), tr("Right Analog"), tr("Cross"), tr("Square"), tr("Triangle"), tr("Circle"), tr("L1"), tr("R1"), tr("L2"), tr("R2"), tr("D-Pad Down"), tr("D-Pad Right️"), tr("D-Pad Up️"), tr("D-Pad Left️"), tr("L3"), tr("R3"), tr("Select"), tr("Start")});
+	static const auto headers = QStringList({tr("Left Analog"), tr("Right Analog"), tr("Cross"), tr("Square"), tr("Triangle"), tr("Circle"), tr("L1"), tr("R1"), tr("L2"), tr("R2"), tr("D-Pad Down"), tr("D-Pad Right"), tr("D-Pad Up"), tr("D-Pad Left"), tr("L3"), tr("R3"), tr("Select"), tr("Start")});
 	m_ui.tableWidget->setColumnCount(headers.length());
 	m_ui.tableWidget->setHorizontalHeaderLabels(headers);
 
