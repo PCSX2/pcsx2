@@ -20,7 +20,7 @@ public:
 		QString description;
 	};
 
-	enum HeaderColumns : int
+	enum HeaderColumns: int
 	{
 		ADDRESS = 0,
 		LABEL,
@@ -45,6 +45,8 @@ public:
 	void addRow(SavedAddress addresstoSave);
 	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 	bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+	void loadSavedAddressFromFieldList(QStringList fields);
+	void clear();
 
 private:
 	DebugInterface& m_cpu;

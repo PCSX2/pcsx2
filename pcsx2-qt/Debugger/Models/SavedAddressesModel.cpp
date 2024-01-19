@@ -4,6 +4,8 @@
 #include "PrecompiledHeader.h"
 #include "SavedAddressesModel.h"
 
+#include "common/Console.h"
+
 SavedAddressesModel::SavedAddressesModel(DebugInterface& cpu, QObject* parent)
 	: QAbstractTableModel(parent)
 	, m_cpu(cpu)
@@ -96,20 +98,38 @@ bool SavedAddressesModel::setData(const QModelIndex& index, const QVariant& valu
 
 QVariant SavedAddressesModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	if ((role != Qt::DisplayRole && role != Qt::EditRole) || orientation != Qt::Horizontal)
+	if (orientation != Qt::Horizontal)
 		return QVariant();
 
-	switch (section)
+	if (role == Qt::DisplayRole)
 	{
-		case SavedAddressesModel::ADDRESS:
-			return tr("MEMORY ADDRESS");
-		case SavedAddressesModel::LABEL:
-			return tr("LABEL");
-		case SavedAddressesModel::DESCRIPTION:
-			return tr("DESCRIPTION");
-		default:
-			return QVariant();
+		switch (section)
+		{
+			case SavedAddressesModel::ADDRESS:
+				return tr("MEMORY ADDRESS");
+			case SavedAddressesModel::LABEL:
+				return tr("LABEL");
+			case SavedAddressesModel::DESCRIPTION:
+				return tr("DESCRIPTION");
+			default:
+				return QVariant();
+		}
 	}
+	if (role == Qt::UserRole)
+	{
+		switch (section)
+		{
+			case SavedAddressesModel::ADDRESS:
+				return "MEMORY ADDRESS";
+			case SavedAddressesModel::LABEL:
+				return "LABEL";
+			case SavedAddressesModel::DESCRIPTION:
+				return "DESCRIPTION";
+			default:
+				return QVariant();
+		}
+	}
+	return QVariant();
 }
 
 Qt::ItemFlags SavedAddressesModel::flags(const QModelIndex& index) const
@@ -149,4 +169,33 @@ int SavedAddressesModel::rowCount(const QModelIndex&) const
 int SavedAddressesModel::columnCount(const QModelIndex&) const
 {
 	return HeaderColumns::COLUMN_COUNT;
+}
+
+void SavedAddressesModel::loadSavedAddressFromFieldList(QStringList fields)
+{
+	if (fields.size() != SavedAddressesModel::HeaderColumns::COLUMN_COUNT)
+	{
+		Console.WriteLn("Debugger Saved Addresses Model: Invalid number of columns, skipping");
+		return;
+	}
+
+	bool ok;
+	const u32 address = fields[SavedAddressesModel::HeaderColumns::ADDRESS].toUInt(&ok, 16);
+	if (!ok)
+	{
+		Console.WriteLn("Debugger Saved Addresses Model: Failed to parse address '%s', skipping", fields[SavedAddressesModel::HeaderColumns::ADDRESS].toUtf8().constData());
+		return;
+	}
+
+	const QString label = fields[SavedAddressesModel::HeaderColumns::LABEL];
+	const QString description = fields[SavedAddressesModel::HeaderColumns::DESCRIPTION];
+	const SavedAddressesModel::SavedAddress importedAddress = {address, label, description};
+	addRow(importedAddress);
+}
+
+void SavedAddressesModel::clear()
+{
+	beginResetModel();
+	m_savedAddresses.clear();
+	endResetModel();
 }

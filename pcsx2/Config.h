@@ -1210,6 +1210,7 @@ namespace EmuFolders
 	extern std::string AppRoot;
 	extern std::string DataRoot;
 	extern std::string Settings;
+	extern std::string DebuggerSettings;
 	extern std::string Bios;
 	extern std::string Snapshots;
 	extern std::string Savestates;

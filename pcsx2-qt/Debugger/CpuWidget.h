@@ -118,6 +118,9 @@ public slots:
 	void contextRemoveSearchResult();
 	void onListSearchResultsContextMenu(QPoint pos);
 
+	void saveBreakpointsToDebuggerSettings();
+	void saveSavedAddressesToDebuggerSettings();
+
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
 	std::vector<u32> m_searchResults;
