@@ -56,6 +56,7 @@
 
 extern u8 FRAME_BUFFER_COPY[];
 extern int FRAME_BUFFER_COPY_ACTIVE;
+extern bool g_eeRecExecuting;
 
 int g_pine_slot = 0;
 int g_disable_rendering = 0;
@@ -547,7 +548,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 
 			ToResultVector(ret_buffer, status, ret_cnt);
 			ToResultVector(ret_buffer, g_FrameCount, ret_cnt + 4);
-			ret_cnt += 8;
+			ToResultVector(ret_buffer, g_eeRecExecuting, ret_cnt + 8);
+			ret_cnt += 9;
 			break;
 		}
 

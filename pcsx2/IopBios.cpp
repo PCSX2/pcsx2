@@ -95,15 +95,23 @@ typedef struct
 
 static std::string hostRoot;
 
+void Hle_SetLocalHostRoot()
+{
+	hostRoot = Path::RealPath(Path::Combine(EmuFolders::DataRoot, "hostfs"));
+	Console.WriteLn(Color_StrongBlack, hostRoot);
+}
+
 void Hle_SetHostRoot(const char* bootFilename)
 {
-	hostRoot = Path::ToNativePath(Path::GetDirectory(bootFilename));
-	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
+	Hle_SetLocalHostRoot();
+	//hostRoot = Path::ToNativePath(Path::GetDirectory(bootFilename));
+	//Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
 void Hle_ClearHostRoot()
 {
-	hostRoot = {};
+	Hle_SetLocalHostRoot();
+	//hostRoot = {};
 }
 
 namespace R3000A
