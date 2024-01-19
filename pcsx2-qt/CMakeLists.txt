@@ -149,6 +149,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/CpuWidget.cpp
 	Debugger/CpuWidget.h
 	Debugger/CpuWidget.ui
+	Debugger/DebuggerSettingsManager.cpp
+	Debugger/DebuggerSettingsManager.h
 	Debugger/DebuggerWindow.cpp
 	Debugger/DebuggerWindow.h
 	Debugger/DebuggerWindow.ui

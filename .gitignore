@@ -80,6 +80,7 @@ oprofile_data/
 /bin/gamesettings
 /bin/help
 /bin/inis
+/bin/inis/debuggersettings
 /bin/logs
 /bin/memcards
 /bin/plugins
