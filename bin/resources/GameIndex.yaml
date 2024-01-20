@@ -16872,6 +16872,9 @@ SLES-51877:
 SLES-51879:
   name: "Hot Wheels World Race"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51881:
   name: "Mercedes Bens World Racing"
   region: "PAL-F-G"
@@ -17060,6 +17063,9 @@ SLES-51954:
 SLES-51956:
   name: "Bionicle"
   region: "PAL-M6"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51957:
   name: "Terminator 3 - Rise of the Machines"
   region: "PAL-F"
@@ -17114,10 +17120,16 @@ SLES-51967:
 SLES-51968:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51970:
   name: "Spongebob Schwammkopf - Schlacht um Bikini Bottom"
   region: "PAL-G"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51972:
   name: "NBA Jam 2004"
   region: "PAL-M3"
@@ -17912,6 +17924,8 @@ SLES-52372:
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
+    mipmap: 2 # Building textures align more closely with SW mode.
+    trilinearFiltering: 1
 SLES-52373:
   name: "Champions of Norrath"
   region: "PAL-E-S"
@@ -18090,6 +18104,8 @@ SLES-52447:
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
+    mipmap: 2 # Building textures align more closely with SW mode.
+    trilinearFiltering: 1
 SLES-52448:
   name: "Knights of the Temple"
   region: "PAL-M4"
@@ -18206,6 +18222,8 @@ SLES-52493:
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
+    mipmap: 2 # Building textures align more closely with SW mode.
+    trilinearFiltering: 1
 SLES-52495:
   name: "Bujingai - Swordmaster"
   region: "PAL-M5"
@@ -21560,6 +21578,9 @@ SLES-53621:
 SLES-53623:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "PAL-F"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53624:
   name: "Disney-Pixar's Cars"
   region: "PAL-E"
@@ -21766,6 +21787,9 @@ SLES-53696:
   name: "Zathura"
   region: "PAL-M6"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53697:
   name: "Dora the Explorer"
   region: "PAL-M3"
@@ -23148,6 +23172,8 @@ SLES-54182:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54183:
   name: "Scarface - The World is Yours"
   region: "PAL-G"
@@ -23157,6 +23183,8 @@ SLES-54183:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54184:
   name: "Scarface - The World is Yours"
   region: "PAL-R"
@@ -23166,6 +23194,8 @@ SLES-54184:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
@@ -23423,6 +23453,8 @@ SLES-54271:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54305:
   name: "Demon Chaos"
   region: "PAL-M5"
@@ -24114,6 +24146,8 @@ SLES-54534:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54536:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "PAL-I"
@@ -38679,6 +38713,8 @@ SLPM-65662:
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
+    mipmap: 2 # Building textures align more closely with SW mode.
+    trilinearFiltering: 1
 SLPM-65663:
   name: ツヴァイ!!
   name-sort: つゔぁい!!
@@ -41304,6 +41340,8 @@ SLPM-66121:
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
+    mipmap: 2 # Building textures align more closely with SW mode.
+    trilinearFiltering: 1
 SLPM-66122:
   name: キングダム ハーツ [アルティメットヒッツ]
   name-sort: きんぐだむ はーつ [あるてぃめっとひっつ]
@@ -59161,6 +59199,9 @@ SLUS-20680:
   name: "SpongeBob SquarePants - Battle for Bikini Bottom"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20681:
   name: "Disney's The Haunted Mansion"
   region: "NTSC-U"
@@ -59446,6 +59487,9 @@ SLUS-20737:
   name: "Hot Wheels - World Race"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20738:
   name: "Van Helsing"
   region: "NTSC-U"
@@ -59689,6 +59733,8 @@ SLUS-20776:
     autoFlush: 2 # Fixes the position of the shadow and makes it not blocky.
     halfPixelOffset: 2 # Fixes shadows.
     gpuPaletteConversion: 0 # Stops potential crashes from too many palette textures.
+    mipmap: 2 # Building textures align more closely with SW mode.
+    trilinearFiltering: 1
 SLUS-20777:
   name: "Obscure"
   region: "NTSC-U"
@@ -59865,6 +59911,9 @@ SLUS-20818:
   name: "Bionicle"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20820:
   name: "Tom Clancy's Ghost Recon - Jungle Storm"
   region: "NTSC-U"
@@ -61523,6 +61572,8 @@ SLUS-21111:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21112:
   name: "L.A. Rush"
   region: "NTSC-U"
@@ -62893,6 +62944,9 @@ SLUS-21336:
   name: "Zathura"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21337:
   name: "Arena Football"
   region: "NTSC-U"
@@ -63900,6 +63954,8 @@ SLUS-21492:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
     wildArmsHack: 1 # Fixes chromatic fringing.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21493:
   name: "Need for Speed - Carbon"
   region: "NTSC-U"
