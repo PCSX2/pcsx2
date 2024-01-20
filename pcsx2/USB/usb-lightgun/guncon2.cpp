@@ -427,7 +427,6 @@ namespace usb_lightgun
 
 	void GunCon2State::UpdateSoftwarePointerPosition()
 	{
-		pxAssert(has_relative_binds);
 		if (cursor_path.empty())
 			return;
 
