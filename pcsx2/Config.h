@@ -1219,7 +1219,6 @@ namespace EmuFolders
 	extern std::string Snapshots;
 	extern std::string Savestates;
 	extern std::string MemoryCards;
-	extern std::string Langs;
 	extern std::string Logs;
 	extern std::string Cheats;
 	extern std::string Patches;

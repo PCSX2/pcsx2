@@ -154,7 +154,6 @@ namespace EmuFolders
 	std::string Snapshots;
 	std::string Savestates;
 	std::string MemoryCards;
-	std::string Langs;
 	std::string Logs;
 	std::string Cheats;
 	std::string Patches;
