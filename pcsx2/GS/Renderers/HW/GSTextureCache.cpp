@@ -4166,7 +4166,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	{
 		// lod won't contain the full range when using basic mipmapping, only that
 		// which is hashed, so we just allocate the full thing.
-		tlevels = (GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : (lod->y - lod->x + 1);
+		tlevels = (GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : std::min(lod->y - lod->x + 1, GSDevice::GetMipmapLevelsForSize(tw, th));
 		src->m_lod = *lod;
 	}
 
@@ -5069,7 +5069,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	// expand/upload texture
 	const int tw = region.HasX() ? region.GetWidth() : (1 << TEX0.TW);
 	const int th = region.HasY() ? region.GetHeight() : (1 << TEX0.TH);
-	const int tlevels = lod ? ((GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : (lod->y - lod->x + 1)) : 1;
+	const int tlevels = lod ? ((GSConfig.HWMipmap != HWMipmapLevel::Full) ? -1 : std::min(lod->y - lod->x + 1, GSDevice::GetMipmapLevelsForSize(tw, th))) : 1;
 	GSTexture* tex = g_gs_device->CreateTexture(tw, th, tlevels, paltex ? GSTexture::Format::UNorm8 : GSTexture::Format::Color);
 	if (!tex)
 	{
