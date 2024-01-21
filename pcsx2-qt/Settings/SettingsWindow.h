@@ -105,7 +105,7 @@ private Q_SLOTS:
 
 protected:
 	void closeEvent(QCloseEvent*) override;
-	void wheelEvent(QWheelEvent* event);
+	void wheelEvent(QWheelEvent* event) override;
 
 private:
 	enum : u32
