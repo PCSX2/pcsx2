@@ -815,6 +815,9 @@ public:
 	/// Reads the specified shader source file.
 	static std::optional<std::string> ReadShaderSource(const char* filename);
 
+	/// Returns the maximum number of mipmap levels for a given texture size.
+	static int GetMipmapLevelsForSize(int width, int height);
+
 	__fi u64 GetPoolMemoryUsage() const { return m_pool_memory_usage; }
 
 	__fi FeatureSupport Features() const { return m_features; }

@@ -74,11 +74,6 @@ const char* shaderName(PresentShader value)
 	}
 }
 
-static int MipmapLevelsForSize(int width, int height)
-{
-	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
-}
-
 #ifdef PCSX2_DEVBUILD
 
 enum class TextureLabel
@@ -283,6 +278,11 @@ void GSDevice::GenerateExpansionIndexBuffer(void* buffer)
 std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
 {
 	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());
+}
+
+int GSDevice::GetMipmapLevelsForSize(int width, int height)
+{
+	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
 }
 
 bool GSDevice::Create()
@@ -546,7 +546,8 @@ GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format, 
 
 GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
-	const int levels = mipmap_levels < 0 ? MipmapLevelsForSize(w, h) : mipmap_levels;
+	pxAssert(mipmap_levels != 0 && (mipmap_levels < 0 || mipmap_levels <= GetMipmapLevelsForSize(w, h)));
+	const int levels = mipmap_levels < 0 ? GetMipmapLevelsForSize(w, h) : mipmap_levels;
 	return FetchSurface(GSTexture::Type::Texture, w, h, levels, format, false, m_features.prefer_new_textures && !prefer_reuse);
 }
 
