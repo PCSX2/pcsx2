@@ -54,7 +54,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidg
 
 	connect(m_ui.refreshCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::refresh);
 	connect(m_ui.createCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::createCard);
-	connect(m_ui.duplicateCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::duplicateCard);
 	connect(m_ui.renameCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::renameCard);
 	connect(m_ui.convertCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::convertCard);
 	connect(m_ui.deleteCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::deleteCard);
@@ -193,18 +192,8 @@ void MemoryCardSettingsWidget::updateCardActions()
 	bool isPS1 = (cardInfo.has_value() ? cardInfo.value().file_type == MemoryCardFileType::PS1 : false);
 
 	m_ui.convertCard->setEnabled(hasSelection && !isPS1);
-	m_ui.duplicateCard->setEnabled(hasSelection);
 	m_ui.renameCard->setEnabled(hasSelection);
 	m_ui.deleteCard->setEnabled(hasSelection);
-}
-
-void MemoryCardSettingsWidget::duplicateCard()
-{
-	const QString selectedCard(getSelectedCard());
-	if (selectedCard.isEmpty())
-		return;
-
-	QMessageBox::critical(this, tr("Error"), tr("Not yet implemented."));
 }
 
 void MemoryCardSettingsWidget::deleteCard()
@@ -294,7 +283,6 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		}
 		menu.addSeparator();
 
-		connect(menu.addAction(tr("Duplicate")), &QAction::triggered, this, &MemoryCardSettingsWidget::duplicateCard);
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
 		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);

@@ -147,13 +147,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="duplicateCard">
-          <property name="text">
-           <string>Duplicate</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="renameCard">
           <property name="text">
            <string>Rename</string>
