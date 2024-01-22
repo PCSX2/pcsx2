@@ -2504,7 +2504,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								continue;
 							}
 
-							if (preserve_target || preload)
+							if (!hw_clear && (preserve_target || preload))
 							{
 								const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
 								const int copy_height = overlapping_pages_height * t->m_scale;
