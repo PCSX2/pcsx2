@@ -3651,7 +3651,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 	for (u32 port = 0; port < NUM_MEMORY_CARD_PORTS; port++)
 	{
 		SmallString str;
-		str.fmt(FSUI_FSTR("Console Port {}"), port + 1);
+		str.fmt(FSUI_FSTR("Slot {}"), port + 1);
 		MenuHeading(str.c_str());
 
 		std::string enable_key(fmt::format("Slot{}_Enable", port + 1));
@@ -3926,9 +3926,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 #endif
 
 	MenuHeading(FSUI_CSTR("Multitap"));
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_SQUARE, "Enable Console Port 1 Multitap"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_SQUARE, "Enable Port 1 Multitap"),
 		FSUI_CSTR("Enables an additional three controller slots. Not supported in all games."), "Pad", "MultitapPort1", false, true, false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_SQUARE, "Enable Console Port 2 Multitap"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_SQUARE, "Enable Port 2 Multitap"),
 		FSUI_CSTR("Enables an additional three controller slots. Not supported in all games."), "Pad", "MultitapPort2", false, true, false);
 
 	const std::array<bool, 2> mtap_enabled = {
