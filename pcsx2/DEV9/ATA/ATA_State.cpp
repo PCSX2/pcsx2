@@ -94,6 +94,8 @@ int ATA::Open(const std::string& hddPath)
 
 	//Store HddImage size for later use
 	hddImageSize = static_cast<u64>(size);
+	lba48Supported = (hddImageSize > ((static_cast<s64>(1) << 28) - 1) * 512);
+
 	CreateHDDinfo(hddImageSize / 512);
 
 	InitSparseSupport(hddPath);

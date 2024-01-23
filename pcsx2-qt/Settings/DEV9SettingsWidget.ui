@@ -365,6 +365,20 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="hddLBA48Label">
+        <property name="text">
+         <string>48-bit LBA:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="hddLBA48">
+        <property name="text">
+         <string>Enabled</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

@@ -14,11 +14,27 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0x20:
 			HDD_ReadSectors(false);
 			break;
-			//0x21
+		case 0x24:
+			if (lba48Supported)
+				HDD_ReadSectors(true);
+			else
+				HDD_Unk();
+			break;
+		case 0x29:
+			if (lba48Supported)
+				HDD_ReadMultiple(true);
+			else
+				HDD_Unk();
+			break;
 		case 0x40:
 			HDD_ReadVerifySectors(false);
 			break;
-			//0x41
+		case 0x42:
+			if (lba48Supported)
+				HDD_ReadVerifySectors(true);
+			else
+				HDD_Unk();
+			break;
 		case 0x70:
 			HDD_SeekCmd();
 			break;
@@ -37,13 +53,21 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0xC8:
 			HDD_ReadDMA(false);
 			break;
-			//0xC9
 		case 0xCA:
 			HDD_WriteDMA(false);
 			break;
-			//0xCB
-			//0x25 = HDDreadDMA48;
-			//0x35 = HDDwriteDMA48;*/
+		case 0x25:
+			if (lba48Supported)
+				HDD_ReadDMA(true);
+			else
+				HDD_Unk();
+			break;
+		case 0x35:
+			if (lba48Supported)
+				HDD_WriteDMA(true);
+			else
+				HDD_Unk();
+			break;
 		case 0xE1:
 			HDD_IdleImmediate();
 			break;
@@ -53,7 +77,12 @@ void ATA::IDE_ExecCmd(u16 value)
 		case 0xE7:
 			HDD_FlushCache();
 			break;
-			//0xEA = HDDflushCache48
+		case 0xEA:
+			if (lba48Supported)
+				HDD_FlushCache();
+			else
+				HDD_Unk();
+			break;
 		case 0xEC:
 			HDD_IdentifyDevice();
 			break;
