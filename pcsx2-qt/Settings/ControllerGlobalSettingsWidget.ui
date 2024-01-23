@@ -45,14 +45,14 @@
       <item row="1" column="0">
        <widget class="QCheckBox" name="multitapPort1">
         <property name="text">
-         <string>Multitap on Console Port 1</string>
+         <string>Multitap on Port 1</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
        <widget class="QCheckBox" name="multitapPort2">
         <property name="text">
-         <string>Multitap on Console Port 2</string>
+         <string>Multitap on Port 2</string>
         </property>
        </widget>
       </item>
