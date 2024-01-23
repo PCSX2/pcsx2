@@ -770,7 +770,8 @@ PCPX-96653:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -3258,12 +3259,13 @@ SCED-52846:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SCED-52847:
-  name: "Ratchet & Clank 3"
+  name: "Ratchet & Clank 3 [Demo]"
   region: "PAL-E"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
-    mipmap: 1 # Fixes garbage textures in the distance.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
     halfPixelOffset: 2 # Fixes misaligned bloom.
     autoFlush: 2 # Helps fix misaligned bloom.
@@ -24331,6 +24333,11 @@ SLES-54606:
 SLES-54607:
   name: "MTV Pimp My Ride"
   region: "PAL-A"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns bloom as best it can be.
+    autoFlush: 1 # Fixes bloom rendering.
+    mipmap: 2 # Mipmap + trilinear, improves ground and building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54608:
   name: "Barbie in The 12 Dancing Princesses"
   region: "PAL-M4"
@@ -24411,6 +24418,11 @@ SLES-54631:
 SLES-54632:
   name: "MTV Pimp My Ride"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns bloom as best it can be.
+    autoFlush: 1 # Fixes bloom rendering.
+    mipmap: 2 # Mipmap + trilinear, improves ground and building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54633:
   name: "Premier Manager 08"
   region: "PAL-M4"
@@ -64232,6 +64244,11 @@ SLUS-21579:
 SLUS-21580:
   name: "MTV Pimp my Ride"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 4 # Aligns bloom as best it can be.
+    autoFlush: 1 # Fixes bloom rendering.
+    mipmap: 2 # Mipmap + trilinear, improves ground and building textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21581:
   name: "UEFA Champions League 2006-2007"
   region: "NTSC-U"
