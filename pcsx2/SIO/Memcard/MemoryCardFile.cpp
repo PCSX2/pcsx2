@@ -305,10 +305,6 @@ void FileMemoryCard::Open()
 		// [TODO] : Add memcard size detection and report it to the console log.
 		//   (8MB, 256Mb, formatted, unformatted, etc ...)
 
-#ifdef _WIN32
-		FileSystem::SetPathCompression(fname.c_str(), EmuConfig.McdCompressNTFS);
-#endif
-
 		if (fname.ends_with(".bin"))
 		{
 			std::string newname(fname + "x");

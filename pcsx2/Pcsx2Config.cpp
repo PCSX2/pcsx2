@@ -1697,11 +1697,6 @@ Pcsx2Config::Pcsx2Config()
 	InhibitScreensaver = true;
 	BackupSavestate = true;
 	SavestateZstdCompression = true;
-
-#ifdef _WIN32
-	McdCompressNTFS = true;
-#endif
-
 	WarnAboutUnsafeSettings = true;
 
 	// To be moved to FileMemoryCard pluign (someday)
@@ -1769,10 +1764,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	BaseFilenames.LoadSave(wrap);
 	EmulationSpeed.LoadSave(wrap);
 	LoadSaveMemcards(wrap);
-
-#ifdef _WIN32
-	SettingsWrapEntry(McdCompressNTFS);
-#endif
 
 	if (wrap.IsLoading())
 	{
