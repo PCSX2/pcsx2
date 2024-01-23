@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "common/FileSystem.h"
@@ -36,7 +36,13 @@ MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 	connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &MemoryCardCreateDialog::restoreDefaults);
 
 #ifndef _WIN32
-	m_ui.ntfsCompression->setEnabled(false);
+	m_ui.ntfsCompressionLayout->removeWidget(m_ui.ntfsCompression);
+	safe_delete(m_ui.ntfsCompression);
+	m_ui.ntfsCompressionLayout->removeWidget(m_ui.ntfsCompressionLabel);
+	safe_delete(m_ui.ntfsCompressionLabel);
+	m_ui.mainLayout->removeItem(m_ui.ntfsCompressionLayout);
+	safe_delete(m_ui.ntfsCompressionLayout);
+	resize(600, 480);
 #endif
 
 	updateState();
