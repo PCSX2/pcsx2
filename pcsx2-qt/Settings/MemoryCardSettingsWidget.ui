@@ -44,7 +44,7 @@
       </size>
      </property>
      <property name="title">
-      <string>Console Ports</string>
+      <string>Slots</string>
      </property>
      <layout class="QGridLayout" name="gridLayout"/>
     </widget>
