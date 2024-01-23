@@ -1146,11 +1146,6 @@ struct Pcsx2Config
 		HostFs : 1,
 
 		WarnAboutUnsafeSettings : 1;
-
-	// uses automatic ntfs compression when creating new memory cards (Win32 only)
-#ifdef _WIN32
-	bool McdCompressNTFS;
-#endif
 	BITFIELD_END
 
 	CpuOptions Cpu;
