@@ -39,6 +39,7 @@ private Q_SLOTS:
 	void onHddFileEdit();
 	void onHddSizeSlide(int i);
 	void onHddSizeAccessorSpin();
+	void onHddLBA48Changed(int state);
 	void onHddCreateClicked();
 
 public:
