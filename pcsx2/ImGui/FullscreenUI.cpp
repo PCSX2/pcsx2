@@ -3651,7 +3651,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 	for (u32 port = 0; port < NUM_MEMORY_CARD_PORTS; port++)
 	{
 		SmallString str;
-		str.fmt(FSUI_FSTR("Console Port {}"), port + 1);
+		str.fmt(FSUI_FSTR("Slot {}"), port + 1);
 		MenuHeading(str.c_str());
 
 		std::string enable_key(fmt::format("Slot{}_Enable", port + 1));
