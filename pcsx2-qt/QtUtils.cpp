@@ -172,8 +172,8 @@ namespace QtUtils
 	{
 		if (!QDesktopServices::openUrl(qurl))
 		{
-			QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
-				QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
+			QMessageBox::critical(parent, QCoreApplication::translate("FileOperations", "Failed to open URL"),
+				QCoreApplication::translate("FileOperations", "Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
 		}
 	}
 
