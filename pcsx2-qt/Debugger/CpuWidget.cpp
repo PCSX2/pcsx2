@@ -592,6 +592,17 @@ void CpuWidget::contextRemoveSearchResult()
 	delete rowToRemove;
 }
 
+void CpuWidget::contextCopySearchResultAddress()
+{
+	if (!m_ui.listSearchResults->selectionModel()->hasSelection())
+		return;
+
+	const u32 selectedResultIndex = m_ui.listSearchResults->row(m_ui.listSearchResults->selectedItems().first());
+	const u32 rowAddress = m_ui.listSearchResults->item(selectedResultIndex)->data(Qt::UserRole).toUInt();
+	const QString addressString = FilledQStringFromValue(rowAddress, 16);
+	QApplication::clipboard()->setText(addressString);
+}
+
 void CpuWidget::updateFunctionList(bool whenEmpty)
 {
 	if (!m_cpu.isAlive())
@@ -894,6 +905,10 @@ void CpuWidget::onListSearchResultsContextMenu(QPoint pos)
 
 	if (selModel->hasSelection())
 	{
+		QAction* copyAddressAction = new QAction(tr("Copy Address"), m_ui.listSearchResults);
+		connect(copyAddressAction, &QAction::triggered, this, &CpuWidget::contextCopySearchResultAddress);
+		contextMenu->addAction(copyAddressAction);
+
 		QAction* goToDisassemblyAction = new QAction(tr("Go to in Disassembly"), m_ui.listSearchResults);
 		connect(goToDisassemblyAction, &QAction::triggered, this, &CpuWidget::contextSearchResultGoToDisassembly);
 		contextMenu->addAction(goToDisassemblyAction);
