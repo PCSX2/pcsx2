@@ -523,7 +523,7 @@ public:
 
 	void IncAge();
 
-	const char* to_string(int type)
+	static const char* to_string(int type)
 	{
 		return (type == DepthStencil) ? "Depth" : "Color";
 	}
