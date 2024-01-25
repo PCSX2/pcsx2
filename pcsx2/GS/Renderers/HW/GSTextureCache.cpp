@@ -1039,6 +1039,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 	if (!src)
 		src = FindSourceInMap(TEX0, TEXA, psm_s, clut, gpu_clut, compare_lod, region, is_fixed_tex0, m_src.m_map[lookup_page]);
 
+	if (src && src->m_from_target && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::MergeTargets && GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, r) > src->m_from_target->m_end_block)
+	{
+		m_src.RemoveAt(src);
+		src = nullptr;
+	}
+
 	Target* dst = nullptr;
 	bool half_right = false;
 	int x_offset = 0;
