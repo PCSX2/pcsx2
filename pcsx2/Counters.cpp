@@ -498,6 +498,9 @@ static __fi void VSyncStart(u32 sCycle)
 
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
 
+	// Poll input after MTGS frame push, just in case it has to stall to catch up.
+	VMManager::Internal::PollInputOnCPUThread();
+
 	if (EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write("    ================  EE COUNTER VSYNC START (frame: %d)  ================", g_FrameCount);
 

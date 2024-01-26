@@ -707,7 +707,7 @@ int main(int argc, char* argv[])
 	return EXIT_SUCCESS;
 }
 
-void Host::VSyncOnCPUThread()
+void Host::PumpMessagesOnCPUThread()
 {
 	// update GS thread copy of frame number
 	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
