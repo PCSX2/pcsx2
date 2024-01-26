@@ -1134,6 +1134,9 @@ SCAJ-20058:
 SCAJ-20059:
   name: "Minna no Golf 4"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20060:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
@@ -1339,6 +1342,9 @@ SCAJ-20093:
 SCAJ-20094:
   name: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20095:
   name: "Digital Devil Saga - Avatar Tuner"
   region: "NTSC-Unk"
@@ -1912,6 +1918,9 @@ SCAJ-20193:
 SCAJ-20194:
   name: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20195:
   name: "Ape Escape 3 [PS2 The Best]"
   region: "NTSC-C"
@@ -5019,7 +5028,7 @@ SCES-52582:
   name: "Everybody's Golf"
   region: "PAL-M5"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SCES-52586:
   name: "Death by Degrees"
@@ -6598,6 +6607,9 @@ SCKA-20056:
 SCKA-20057:
   name: "Minna no Golf 4 - Everybody's Golf"
   region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCKA-20058:
   name: "Bumpy Trot"
   region: "NTSC-K"
@@ -7735,6 +7747,9 @@ SCPS-15059:
   name-sort: みんなのGOLF 4
   name-en: "Minna no Golf 4"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-15060:
   name: 幸福操作官
   name-sort: こうふくそうさかん
@@ -8564,6 +8579,9 @@ SCPS-19301:
   name-sort: みんなのGOLF 4 PS2 the Best
   name-en: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-19302:
   name: ラチェット＆クランク2 ガガガ！銀河のコマンドーっす PS2 the Best
   name-sort: らちぇっと＆くらんく2 ががが！ぎんがのこまんどーっす PS2 the Best
@@ -8745,6 +8763,9 @@ SCPS-19319:
   name-sort: みんなのGOLF 4 PS2 the Best
   name-en: "Minna no Golf 4 [PS2 The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-19320:
   name: ワンダと巨像 PS2 the Best
   name-sort: わんだと巨像 PS2 the Best
@@ -10416,7 +10437,7 @@ SCUS-97401:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SCUS-97402:
   name: "Killzone"
@@ -10536,7 +10557,7 @@ SCUS-97427:
   name: "Hot Shots Golf FORE! [Online Public Beta]"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SCUS-97428:
   name: "Kiosk Demo Disc Q3-Q4 2004"
@@ -10560,7 +10581,7 @@ SCUS-97430:
   name: "Hot Shots Golf FORE! [Regular Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SCUS-97431:
   name: "Killzone Public Beta V1.0"
@@ -10992,7 +11013,7 @@ SCUS-97515:
   name: "Hot Shots Golf FORE! [Greatest Hits]"
   region: "NTSC-U"
   gsHWFixes:
-    mipmap: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
@@ -67163,6 +67184,9 @@ TCES-52456:
 TCES-52582:
   name: "Everybody's Golf 4 Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 TCES-53033:
   name: "Formula One 05 Beta Trial Code"
   region: "PAL-E"
