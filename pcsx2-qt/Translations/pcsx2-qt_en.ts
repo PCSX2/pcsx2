@@ -1806,81 +1806,81 @@ Unread messages: {2}</source>
 <context>
     <name>BreakpointModel</name>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="45"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="46"/>
         <source>Execute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="56"/>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="79"/>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="81"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="57"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="80"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="82"/>
         <source>--</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="64"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="65"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="64"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="65"/>
         <source>Disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="68"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="69"/>
         <source>Read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="71"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="72"/>
         <source>Write(C)</source>
         <extracomment>(C) = changes, as in &quot;look for changes&quot;.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="71"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="72"/>
         <source>Write</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="206"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="207"/>
         <source>TYPE</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="209"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="210"/>
         <source>OFFSET</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="212"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="213"/>
         <source>SIZE / LABEL</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="215"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="216"/>
         <source>INSTRUCTION</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="218"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="219"/>
         <source>CONDITION</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="221"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="222"/>
         <source>HITS</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/BreakpointModel.cpp" line="224"/>
+        <location filename="../Debugger/Models/BreakpointModel.cpp" line="225"/>
         <source>X</source>
         <extracomment>Warning: limited space available. Abbreviate if needed.</extracomment>
         <translation type="unfinished"></translation>
@@ -2994,166 +2994,179 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="307"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="317"/>
         <source>Breakpoint List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="309"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="517"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="321"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="456"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="317"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="329"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="323"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="755"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="986"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="335"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="702"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="937"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="328"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="568"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="340"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="519"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="334"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="553"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="768"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="999"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="349"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="492"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="715"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="950"/>
         <source>Copy all as CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="341"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="560"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="359"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="499"/>
         <source>Paste from CSV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="753"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="700"/>
         <source>Thread List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="838"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="911"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="785"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="858"/>
         <source>Demangle Symbols</source>
         <extracomment>&quot;Demangling&quot; is the opposite of &quot;Name mangling&quot;, which is a process where a compiler takes function names and combines them with other characteristics of the function (e.g. what types of data it accepts) to ensure they stay unique even when multiple functions exist with the same name (but different inputs / const-ness). See here: https://en.wikipedia.org/wiki/Name_mangling#C++</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="800"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="882"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="747"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="829"/>
         <source>Copy Function Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="811"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="888"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="758"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="835"/>
         <source>Copy Function Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="536"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="821"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="897"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="961"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="475"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="768"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="844"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="912"/>
         <source>Go to in Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="528"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="828"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="903"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="363"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="505"/>
+        <source>Load from Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/CpuWidget.cpp" line="370"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="512"/>
+        <source>Save to Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Debugger/CpuWidget.cpp" line="467"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="775"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="850"/>
         <source>Go to in Memory View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="544"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="483"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="908"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="544"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="483"/>
         <source>Copy Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="852"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="925"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="799"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="872"/>
         <source>Module Tree</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="955"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="902"/>
         <source>Search Results List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="965"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="916"/>
         <source>Add to Saved Memory Addresses</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="971"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="922"/>
         <source>Remove Result</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="984"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="935"/>
         <source>Stack List Context Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1253"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1261"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1267"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1279"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1285"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1311"/>
-        <location filename="../Debugger/CpuWidget.cpp" line="1335"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1204"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1212"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1218"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1230"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1236"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1262"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1286"/>
         <source>Debugger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1253"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1204"/>
         <source>Invalid start address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1261"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1212"/>
         <source>Invalid end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1267"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1218"/>
         <source>Start address can&apos;t be equal to or greater than the end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1279"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1230"/>
         <source>Search types Array and String can use the Not Equals search comparison type with new searches.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1285"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1236"/>
         <source>Search types Array and String can only be used with Equals search comparisons.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1311"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1262"/>
         <source>Invalid search value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/CpuWidget.cpp" line="1335"/>
+        <location filename="../Debugger/CpuWidget.cpp" line="1286"/>
         <source>Value is larger than type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3229,6 +3242,12 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="371"/>
+        <source>48-bit LBA:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DEV9SettingsWidget.ui" line="378"/>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="219"/>
         <source>Enabled</source>
         <translation type="unfinished"></translation>
@@ -3329,11 +3348,13 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../Settings/DEV9SettingsWidget.ui" line="289"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="735"/>
         <source>40</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/DEV9SettingsWidget.ui" line="318"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="731"/>
         <source>120</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3390,7 +3411,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="123"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="308"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="310"/>
         <source>Use Global Setting [%1]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3410,100 +3431,110 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="491"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="525"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="493"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="527"/>
         <source>Hosts File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="492"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="526"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="494"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="528"/>
         <source>ini (*.ini)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="515"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="535"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="564"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="585"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="517"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="537"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="566"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="587"/>
         <source>DNS Hosts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="516"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="518"/>
         <source>Exported Successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="536"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="538"/>
         <source>Failed to open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="565"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="567"/>
         <source>No Hosts in file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="586"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="588"/>
         <source>Imported Successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="595"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="623"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="597"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="625"/>
         <source>Per Game Host list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="596"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="598"/>
         <source>Copy global settings?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="624"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="626"/>
         <source>Delete per game host list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="677"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="679"/>
         <source>HDD Image File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="679"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="681"/>
         <source>HDD (*.raw)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="745"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="731"/>
+        <source>2000</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="735"/>
+        <source>100</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="762"/>
         <source>Overwrite File?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="746"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="763"/>
         <source>HDD image &quot;%1&quot; already exists.
 
 Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="763"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="780"/>
         <source>HDD Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="764"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="781"/>
         <source>HDD image created</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="892"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="914"/>
         <source>Use Global</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="898"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="920"/>
         <source>Override</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4306,6 +4337,51 @@ Enter function name</source>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="206"/>
         <source>Enter Custom Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>FileOperations</name>
+    <message>
+        <location filename="../QtUtils.cpp" line="152"/>
+        <source>Failed to show file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtUtils.cpp" line="153"/>
+        <source>Failed to show file in file explorer.
+
+The file was: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtUtils.cpp" line="161"/>
+        <source>Show in Folder</source>
+        <extracomment>Windows action to show a file in Windows Explorer</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtUtils.cpp" line="164"/>
+        <source>Show in Finder</source>
+        <extracomment>macOS action to show a file in Finder</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtUtils.cpp" line="167"/>
+        <source>Open Containing Directory</source>
+        <extracomment>Opens the system file manager to the directory containing a selected file</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtUtils.cpp" line="175"/>
+        <source>Failed to open URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../QtUtils.cpp" line="176"/>
+        <source>Failed to open URL.
+
+The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12520,7 +12596,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1037"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1068"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12528,48 +12604,48 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>ImGuiOverlays</name>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="675"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="706"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="701"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="732"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="783"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="814"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="785"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="816"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="787"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="818"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="789"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="820"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="842"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="864"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="873"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="895"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="865"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="896"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1034"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1065"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13304,14 +13380,14 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="40"/>
-        <location filename="../MainWindow.cpp" line="1368"/>
-        <location filename="../MainWindow.cpp" line="1429"/>
+        <location filename="../MainWindow.cpp" line="1367"/>
+        <location filename="../MainWindow.cpp" line="1428"/>
         <source>Change Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="55"/>
-        <location filename="../MainWindow.cpp" line="2665"/>
+        <location filename="../MainWindow.cpp" line="2664"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13826,13 +13902,13 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="1046"/>
-        <location filename="../MainWindow.cpp" line="1472"/>
+        <location filename="../MainWindow.cpp" line="1471"/>
         <source>Start Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../MainWindow.ui" line="1055"/>
-        <location filename="../MainWindow.cpp" line="1473"/>
+        <location filename="../MainWindow.cpp" line="1472"/>
         <source>Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
@@ -13865,7 +13941,7 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1095"/>
+        <location filename="../MainWindow.ui" line="1099"/>
         <source>Edit Patches...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13937,11 +14013,11 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
     </message>
     <message>
         <location filename="../MainWindow.cpp" line="1278"/>
-        <location filename="../MainWindow.cpp" line="1668"/>
-        <location filename="../MainWindow.cpp" line="2080"/>
-        <location filename="../MainWindow.cpp" line="2208"/>
-        <location filename="../MainWindow.cpp" line="2577"/>
-        <location filename="../MainWindow.cpp" line="2684"/>
+        <location filename="../MainWindow.cpp" line="1667"/>
+        <location filename="../MainWindow.cpp" line="2079"/>
+        <location filename="../MainWindow.cpp" line="2207"/>
+        <location filename="../MainWindow.cpp" line="2576"/>
+        <location filename="../MainWindow.cpp" line="2683"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13956,235 +14032,229 @@ Do you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?</sour
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1322"/>
-        <source>Open Containing Directory...</source>
-        <extracomment>Refers to the directory where a game is contained.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../MainWindow.cpp" line="1328"/>
+        <location filename="../MainWindow.cpp" line="1327"/>
         <source>Set Cover Image...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1331"/>
+        <location filename="../MainWindow.cpp" line="1330"/>
         <source>Exclude From List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1334"/>
+        <location filename="../MainWindow.cpp" line="1333"/>
         <source>Reset Play Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1340"/>
+        <location filename="../MainWindow.cpp" line="1339"/>
         <source>Default Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1347"/>
+        <location filename="../MainWindow.cpp" line="1346"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1350"/>
+        <location filename="../MainWindow.cpp" line="1349"/>
         <source>Full Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1355"/>
+        <location filename="../MainWindow.cpp" line="1354"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1379"/>
+        <location filename="../MainWindow.cpp" line="1378"/>
         <source>Add Search Directory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1388"/>
+        <location filename="../MainWindow.cpp" line="1387"/>
         <source>Start File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1397"/>
+        <location filename="../MainWindow.cpp" line="1396"/>
         <source>Start Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1414"/>
+        <location filename="../MainWindow.cpp" line="1413"/>
         <source>Select Disc Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1582"/>
+        <location filename="../MainWindow.cpp" line="1581"/>
         <source>Updater Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1587"/>
+        <location filename="../MainWindow.cpp" line="1586"/>
         <source>&lt;p&gt;Sorry, you are trying to update a PCSX2 version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please download from the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://pcsx2.net/downloads/&quot;&gt;https://pcsx2.net/downloads/&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1592"/>
+        <location filename="../MainWindow.cpp" line="1591"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1658"/>
+        <location filename="../MainWindow.cpp" line="1657"/>
         <source>Confirm File Creation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1659"/>
+        <location filename="../MainWindow.cpp" line="1658"/>
         <source>The pnach file &apos;%1&apos; does not currently exist. Do you want to create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1668"/>
+        <location filename="../MainWindow.cpp" line="1667"/>
         <source>Failed to create &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1751"/>
+        <location filename="../MainWindow.cpp" line="1750"/>
         <source>Input Recording Files (*.p2m2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1867"/>
+        <location filename="../MainWindow.cpp" line="1866"/>
         <source>Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2037"/>
+        <location filename="../MainWindow.cpp" line="2036"/>
         <source>Load State Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2037"/>
+        <location filename="../MainWindow.cpp" line="2036"/>
         <source>Cannot load a save state without a running VM.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2065"/>
+        <location filename="../MainWindow.cpp" line="2064"/>
         <source>The new ELF cannot be loaded without resetting the virtual machine. Do you want to reset the virtual machine now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2080"/>
+        <location filename="../MainWindow.cpp" line="2079"/>
         <source>Cannot change from game to GS dump without shutting down first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2208"/>
+        <location filename="../MainWindow.cpp" line="2207"/>
         <source>Failed to get window info from widget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1472"/>
+        <location filename="../MainWindow.cpp" line="1471"/>
         <source>Stop Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1473"/>
+        <location filename="../MainWindow.cpp" line="1472"/>
         <source>Exit Big Picture</source>
         <comment>In Toolbar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1537"/>
+        <location filename="../MainWindow.cpp" line="1536"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1537"/>
+        <location filename="../MainWindow.cpp" line="1536"/>
         <source>Game properties is unavailable for the current game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2535"/>
+        <location filename="../MainWindow.cpp" line="2534"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2553"/>
+        <location filename="../MainWindow.cpp" line="2552"/>
         <source>Select disc drive:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2577"/>
+        <location filename="../MainWindow.cpp" line="2576"/>
         <source>This save state does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2590"/>
+        <location filename="../MainWindow.cpp" line="2589"/>
         <source>Select Cover Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2607"/>
+        <location filename="../MainWindow.cpp" line="2606"/>
         <source>Cover Already Exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2608"/>
+        <location filename="../MainWindow.cpp" line="2607"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2603"/>
-        <location filename="../MainWindow.cpp" line="2617"/>
-        <location filename="../MainWindow.cpp" line="2623"/>
-        <location filename="../MainWindow.cpp" line="2629"/>
+        <location filename="../MainWindow.cpp" line="2602"/>
+        <location filename="../MainWindow.cpp" line="2616"/>
+        <location filename="../MainWindow.cpp" line="2622"/>
+        <location filename="../MainWindow.cpp" line="2628"/>
         <source>Copy Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2617"/>
+        <location filename="../MainWindow.cpp" line="2616"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2623"/>
+        <location filename="../MainWindow.cpp" line="2622"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2629"/>
+        <location filename="../MainWindow.cpp" line="2628"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2064"/>
-        <location filename="../MainWindow.cpp" line="2638"/>
+        <location filename="../MainWindow.cpp" line="2063"/>
+        <location filename="../MainWindow.cpp" line="2637"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2590"/>
+        <location filename="../MainWindow.cpp" line="2589"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2603"/>
+        <location filename="../MainWindow.cpp" line="2602"/>
         <source>You must select a different file to the current cover image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2639"/>
+        <location filename="../MainWindow.cpp" line="2638"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2660"/>
+        <location filename="../MainWindow.cpp" line="2659"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2662"/>
+        <location filename="../MainWindow.cpp" line="2661"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -14193,43 +14263,43 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2666"/>
+        <location filename="../MainWindow.cpp" line="2665"/>
         <source>Fresh Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2667"/>
+        <location filename="../MainWindow.cpp" line="2666"/>
         <source>Delete And Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2684"/>
+        <location filename="../MainWindow.cpp" line="2683"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2742"/>
+        <location filename="../MainWindow.cpp" line="2741"/>
         <source>Load State File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2742"/>
+        <location filename="../MainWindow.cpp" line="2741"/>
         <source>Load From File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2744"/>
-        <location filename="../MainWindow.cpp" line="2814"/>
+        <location filename="../MainWindow.cpp" line="2743"/>
+        <location filename="../MainWindow.cpp" line="2813"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2814"/>
+        <location filename="../MainWindow.cpp" line="2813"/>
         <source>Save States (*.p2s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2751"/>
+        <location filename="../MainWindow.cpp" line="2750"/>
         <source>Delete Save States...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14244,75 +14314,75 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2744"/>
+        <location filename="../MainWindow.cpp" line="2743"/>
         <source>Save States (*.p2s *.p2s.backup)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2756"/>
+        <location filename="../MainWindow.cpp" line="2755"/>
         <source>Undo Load State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2770"/>
+        <location filename="../MainWindow.cpp" line="2769"/>
         <source>Resume (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2786"/>
+        <location filename="../MainWindow.cpp" line="2785"/>
         <source>Load Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2795"/>
-        <location filename="../MainWindow.cpp" line="2803"/>
+        <location filename="../MainWindow.cpp" line="2794"/>
+        <location filename="../MainWindow.cpp" line="2802"/>
         <source>Delete Save States</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2796"/>
+        <location filename="../MainWindow.cpp" line="2795"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2803"/>
+        <location filename="../MainWindow.cpp" line="2802"/>
         <source>%1 save states deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2813"/>
+        <location filename="../MainWindow.cpp" line="2812"/>
         <source>Save To File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2832"/>
+        <location filename="../MainWindow.cpp" line="2831"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2834"/>
+        <location filename="../MainWindow.cpp" line="2833"/>
         <source>Save Slot %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2891"/>
+        <location filename="../MainWindow.cpp" line="2890"/>
         <source>Confirm Disc Change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2892"/>
+        <location filename="../MainWindow.cpp" line="2891"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2893"/>
+        <location filename="../MainWindow.cpp" line="2892"/>
         <source>Swap Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2894"/>
+        <location filename="../MainWindow.cpp" line="2893"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14335,7 +14405,7 @@ The saves will not be recoverable.</source>
 <context>
     <name>MemoryCard</name>
     <message>
-        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="529"/>
+        <location filename="../../pcsx2/SIO/Memcard/MemoryCardFile.cpp" line="513"/>
         <location filename="../../pcsx2/SIO/Memcard/MemoryCardFolder.cpp" line="2346"/>
         <source>Memory Card &apos;{}&apos; was saved to storage.</source>
         <translation type="unfinished"></translation>
@@ -14473,10 +14543,10 @@ The saves will not be recoverable.</source>
     <name>MemoryCardCreateDialog</name>
     <message>
         <location filename="../Settings/MemoryCardCreateDialog.ui" line="14"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="100"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="127"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="106"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="113"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="120"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
         <source>Create Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14557,22 +14627,22 @@ The saves will not be recoverable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="101"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="107"/>
         <source>Failed to create the Memory Card, because the name &apos;%1&apos; contains one or more invalid characters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="108"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="114"/>
         <source>Failed to create the Memory Card, because another card with the name &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="115"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="121"/>
         <source>Failed to create the Memory Card, the log may contain more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="127"/>
+        <location filename="../Settings/MemoryCardCreateDialog.cpp" line="133"/>
         <source>Memory Card &apos;%1&apos; created.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14580,12 +14650,12 @@ The saves will not be recoverable.</source>
 <context>
     <name>MemoryCardListWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="455"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="443"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="455"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="443"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14594,7 +14664,7 @@ The saves will not be recoverable.</source>
     <name>MemoryCardSettingsWidget</name>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="47"/>
-        <source>Console Ports</source>
+        <source>Memory Card Slots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14619,7 +14689,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="87"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="115"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="114"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14650,176 +14720,164 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="145"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="304"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="292"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="152"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="297"/>
-        <source>Duplicate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="159"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="298"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="166"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="299"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="159"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="287"/>
         <source>Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="173"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="300"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="166"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="288"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="185"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="178"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="191"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="64"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.ui" line="184"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="63"/>
         <source>Automatically manage saves based on running game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="65"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="64"/>
         <source>Checked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="66"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="65"/>
         <source>(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids running out of space for saves.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="95"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="94"/>
         <source>Swap Memory Cards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="107"/>
-        <source>Port %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="115"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="114"/>
         <source>Eject Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="154"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="207"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="339"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="153"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="207"/>
-        <source>Not yet implemented.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="216"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="226"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="205"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="215"/>
         <source>Delete Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="241"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="248"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="255"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="262"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="230"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="237"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="244"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="251"/>
         <source>Rename Memory Card</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="241"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="230"/>
         <source>New Card Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="248"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="237"/>
         <source>New name is invalid, it must end with .ps2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="256"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
         <source>New name is invalid, a card with this name already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="154"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="153"/>
         <source>This Memory Card is unknown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="217"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="106"/>
+        <source>Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="206"/>
         <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
 
 This action cannot be reversed, and you will lose any saves on the card.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="227"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="216"/>
         <source>Failed to delete the Memory Card. The log may have more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="263"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="252"/>
         <source>Failed to rename Memory Card. The log may contain more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="292"/>
-        <source>Use for Port %1</source>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="281"/>
+        <source>Use for Slot %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="339"/>
-        <source>Both ports must have a card selected to swap.</source>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
+        <source>Both slots must have a card selected to swap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="355"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="343"/>
         <source>PS2 (8MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="358"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="346"/>
         <source>PS2 (16MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="361"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="349"/>
         <source>PS2 (32MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="364"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="352"/>
         <source>PS2 (64MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="367"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="355"/>
         <source>PS1 (128KB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="371"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="380"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="359"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="376"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="364"/>
         <source>PS2 (Folder)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14827,12 +14885,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
 <context>
     <name>MemoryCardSlotWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="508"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="496"/>
         <source>%1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="514"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="502"/>
         <source>%1 [Missing]</source>
         <extracomment>Ignore Crowdin&apos;s warning for [Missing], the text should be translated.</extracomment>
         <translation type="unfinished"></translation>
@@ -15417,25 +15475,13 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../QtUtils.cpp" line="136"/>
-        <source>Failed to open URL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../QtUtils.cpp" line="137"/>
-        <source>Failed to open URL.
-
-The URL was: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="732"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="749"/>
         <location filename="../Settings/HddCreateQt.cpp" line="34"/>
         <source>HDD Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="733"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="750"/>
         <location filename="../Settings/HddCreateQt.cpp" line="35"/>
         <source>Failed to create HDD image</source>
         <translation type="unfinished"></translation>
@@ -15635,17 +15681,17 @@ Otherwise delete the savestate and do a fresh boot.</source>
 <context>
     <name>SavedAddressesModel</name>
     <message>
-        <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="105"/>
+        <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="109"/>
         <source>MEMORY ADDRESS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="107"/>
+        <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="111"/>
         <source>LABEL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="109"/>
+        <location filename="../Debugger/Models/SavedAddressesModel.cpp" line="113"/>
         <source>DESCRIPTION</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16026,129 +16072,129 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="243"/>
+        <location filename="../SetupWizardDialog.ui" line="249"/>
         <source>BIOS Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="253"/>
+        <location filename="../SetupWizardDialog.ui" line="259"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="260"/>
+        <location filename="../SetupWizardDialog.ui" line="266"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="279"/>
+        <location filename="../SetupWizardDialog.ui" line="285"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="284"/>
+        <location filename="../SetupWizardDialog.ui" line="290"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="307"/>
+        <location filename="../SetupWizardDialog.ui" line="313"/>
         <source>Open BIOS Folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="314"/>
+        <location filename="../SetupWizardDialog.ui" line="320"/>
         <source>Refresh List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="339"/>
+        <location filename="../SetupWizardDialog.ui" line="345"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 will automatically scan and identify games from the selected directories below, and populate the game list.&lt;br&gt;These games should be dumped from discs you own. Guides for dumping discs can be found at &lt;a href=&quot;https://pcsx2.net/docs/usage/setup/#dumping-ps2-discs-via-imgburn&quot;&gt;pcsx2.net&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include:&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (ISO Disc Images)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.gz (Gzip Compressed ISO)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="354"/>
+        <location filename="../SetupWizardDialog.ui" line="366"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="380"/>
+        <location filename="../SetupWizardDialog.ui" line="392"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="400"/>
+        <location filename="../SetupWizardDialog.ui" line="412"/>
         <location filename="../SetupWizardDialog.cpp" line="283"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="417"/>
+        <location filename="../SetupWizardDialog.ui" line="429"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="422"/>
+        <location filename="../SetupWizardDialog.ui" line="434"/>
         <source>Scan Recursively</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="449"/>
+        <location filename="../SetupWizardDialog.ui" line="461"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, PCSX2 will map your keyboard to the virtual PS2 controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="459"/>
+        <location filename="../SetupWizardDialog.ui" line="471"/>
         <source>Controller Port 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="468"/>
-        <location filename="../SetupWizardDialog.ui" line="539"/>
+        <location filename="../SetupWizardDialog.ui" line="480"/>
+        <location filename="../SetupWizardDialog.ui" line="551"/>
         <source>Controller Mapped To:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="475"/>
-        <location filename="../SetupWizardDialog.ui" line="529"/>
+        <location filename="../SetupWizardDialog.ui" line="487"/>
+        <location filename="../SetupWizardDialog.ui" line="541"/>
         <source>Controller Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="484"/>
-        <location filename="../SetupWizardDialog.ui" line="548"/>
+        <location filename="../SetupWizardDialog.ui" line="496"/>
+        <location filename="../SetupWizardDialog.ui" line="560"/>
         <location filename="../SetupWizardDialog.cpp" line="408"/>
         <source>Default (Keyboard)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="504"/>
-        <location filename="../SetupWizardDialog.ui" line="568"/>
+        <location filename="../SetupWizardDialog.ui" line="516"/>
+        <location filename="../SetupWizardDialog.ui" line="580"/>
         <source>Automatic Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="523"/>
+        <location filename="../SetupWizardDialog.ui" line="535"/>
         <source>Controller Port 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="616"/>
+        <location filename="../SetupWizardDialog.ui" line="628"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using PCSX2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="651"/>
+        <location filename="../SetupWizardDialog.ui" line="663"/>
         <source>&amp;Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="658"/>
+        <location filename="../SetupWizardDialog.ui" line="670"/>
         <location filename="../SetupWizardDialog.cpp" line="140"/>
         <source>&amp;Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="668"/>
+        <location filename="../SetupWizardDialog.ui" line="680"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17843,32 +17889,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1722"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1738"/>
         <source>Failed to back up old save state {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1707"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1723"/>
         <source>Failed to save save state: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="949"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="965"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1010"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1026"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1250"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1266"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1251"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1267"/>
         <source>PCSX2 requires a PS2 BIOS in order to run.
 
 For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn&apos;t count).
@@ -17879,241 +17925,241 @@ Please consult the FAQs and Guides for further instructions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1321"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1329"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1337"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1345"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1754"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1770"/>
         <source>State saved to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1761"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1777"/>
         <source>Failed to save save state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1829"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1866"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1845"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1882"/>
         <source>Loading state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1840"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1856"/>
         <source>Failed to load state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1859"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1875"/>
         <source>There is no save state in slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1877"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1893"/>
         <source>Failed to load state from slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1883"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1899"/>
         <source>Loading state from slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1892"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1908"/>
         <source>Failed to save state (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1909"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1925"/>
         <source>Failed to save state to slot {} (Memory card is busy)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1916"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1932"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2085"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2101"/>
         <source>Frame advancing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2113"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2129"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2119"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2135"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2128"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2144"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2137"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2153"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2716"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2732"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2772"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2788"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2776"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2792"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2781"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2797"/>
         <source>Audio is using async mix, expect desynchronization in FMVs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2784"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2800"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2788"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2804"/>
         <source>Mipmapping is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2793"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2809"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2799"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2815"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2805"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2821"/>
         <source>Blending is below basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2810"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2826"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2816"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2832"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2822"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2838"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2827"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2843"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2832"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2848"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2839"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2855"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2844"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2860"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2849"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2865"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2853"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2869"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2855"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2871"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2874"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2890"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2879"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2895"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2884"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2900"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2889"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2905"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2894"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2910"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2899"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2915"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2904"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2920"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2909"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2925"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2914"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2930"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2919"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2935"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2924"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2940"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2929"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2945"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
