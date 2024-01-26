@@ -724,8 +724,6 @@ void DEV9SettingsWidget::onHddSizeAccessorSpin()
 
 void DEV9SettingsWidget::onHddLBA48Changed(int state)
 {
-	const bool enabled = state;
-
 	m_ui.hddSizeSlider->setMaximum(state ? 2000 : 120);
 	m_ui.hddSizeSpinBox->setMaximum(state ? 2000 : 120);
 	m_ui.hddSizeMaxLabel->setText(state ? tr("2000") : tr("120"));

@@ -141,15 +141,15 @@ void DebuggerSettingsManager::saveGameSettings(QAbstractTableModel* abstractTabl
 	QJsonObject loadedSettings = loadGameSettingsJSON();
 	QJsonArray rowsArray;
 	QStringList keys;
-	for (u32 col = 0; col < abstractTableModel->columnCount(); ++col)
+	for (int col = 0; col < abstractTableModel->columnCount(); ++col)
 	{
 		keys << abstractTableModel->headerData(col, Qt::Horizontal, Qt::UserRole).toString();
 	}
 
-	for (u32 row = 0; row < abstractTableModel->rowCount(); row++)
+	for (int row = 0; row < abstractTableModel->rowCount(); row++)
 	{
 		QJsonObject rowObject;
-		for (u32 col = 0; col < abstractTableModel->columnCount(); col++)
+		for (int col = 0; col < abstractTableModel->columnCount(); col++)
 		{
 			const QModelIndex index = abstractTableModel->index(row, col);
 			const QString data = abstractTableModel->data(index, role).toString();
