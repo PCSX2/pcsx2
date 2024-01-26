@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Config.h"
@@ -452,7 +452,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
 			if (key.data < std::size(s_sdl_axis_names))
 				ret.fmt("SDL-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_names[key.data]);
 			else
-				ret.fmt("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier, key.data, key.invert ? "~" : "");
+				ret.fmt("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier, key.data, (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{

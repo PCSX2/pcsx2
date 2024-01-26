@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Settings/ControllerGlobalSettingsWidget.h"
@@ -40,7 +40,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ignoreDInputInversion, "InputSources", "IgnoreDInputInversion", false);
 #else
 	m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
 	m_ui.xinputGroup->deleteLater();
@@ -176,3 +175,19 @@ ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, Co
 }
 
 ControllerMouseSettingsDialog::~ControllerMouseSettingsDialog() = default;
+
+ControllerMappingSettingsDialog::ControllerMappingSettingsDialog(ControllerSettingsWindow* parent)
+	: QDialog(parent)
+{
+	m_ui.setupUi(this);
+
+	SettingsInterface* sif = parent->getProfileSettingsInterface();
+
+	m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("settings-3-line")).pixmap(32, 32));
+
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ignoreInversion, "InputSources", "IgnoreInversion", false);
+
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
+}
+
+ControllerMappingSettingsDialog::~ControllerMappingSettingsDialog() = default;

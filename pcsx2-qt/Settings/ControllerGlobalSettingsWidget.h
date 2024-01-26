@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -12,6 +12,7 @@
 
 #include "ui_ControllerGlobalSettingsWidget.h"
 #include "ui_ControllerLEDSettingsDialog.h"
+#include "ui_ControllerMappingSettingsDialog.h"
 #include "ui_ControllerMouseSettingsDialog.h"
 
 class ControllerSettingsWindow;
@@ -65,4 +66,16 @@ public:
 
 private:
 	Ui::ControllerMouseSettingsDialog m_ui;
+};
+
+class ControllerMappingSettingsDialog : public QDialog
+{
+	Q_OBJECT
+
+public:
+	ControllerMappingSettingsDialog(ControllerSettingsWindow* parent);
+	~ControllerMappingSettingsDialog();
+
+private:
+	Ui::ControllerMappingSettingsDialog m_ui;
 };
