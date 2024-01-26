@@ -661,6 +661,9 @@
     <None Include="Settings\ControllerBindingWidget_Popn.ui">
       <Filter>Settings</Filter>
     </None>
+    <None Include="Settings\ControllerMappingSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtTs Include="Translations\pcsx2-qt_en.ts">

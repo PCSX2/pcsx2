@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Input/InputSource.h"
+#include "Host.h"
+
 #include "common/StringUtil.h"
 
 InputSource::InputSource() = default;
@@ -143,4 +145,10 @@ std::string InputSource::ConvertGenericControllerKeyToString(InputBindingKey key
 	{
 		return {};
 	}
+}
+
+bool InputSource::ShouldIgnoreInversion()
+{
+	// This is only called when binding controllers, so the lookup is fine.
+	return Host::GetBaseBoolSettingValue("InputSources", "IgnoreInversion", false);
 }

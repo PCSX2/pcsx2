@@ -76,6 +76,7 @@ private Q_SLOTS:
 	void onNewProfileClicked();
 	void onLoadProfileClicked();
 	void onDeleteProfileClicked();
+	void onMappingSettingsClicked();
 	void onRestoreDefaultsClicked();
 
 	void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
