@@ -272,6 +272,7 @@ namespace VMManager
 		void ELFLoadingOnCPUThread(std::string elf_path);
 		void EntryPointCompilingOnCPUThread();
 		void VSyncOnCPUThread();
+		void PollInputOnCPUThread();
 	} // namespace Internal
 } // namespace VMManager
 
@@ -317,5 +318,5 @@ namespace Host
 		const std::string& disc_serial, u32 disc_crc, u32 current_crc);
 
 	/// Provided by the host; called once per frame at guest vsync.
-	void VSyncOnCPUThread();
+	void PumpMessagesOnCPUThread();
 } // namespace Host

@@ -1122,7 +1122,7 @@ void Host::OnCreateMemoryCardOpenRequested()
 	emit g_emu_thread->onCreateMemoryCardOpenRequested();
 }
 
-void Host::VSyncOnCPUThread()
+void Host::PumpMessagesOnCPUThread()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
 }

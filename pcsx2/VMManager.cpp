@@ -2484,10 +2484,12 @@ void VMManager::Internal::VSyncOnCPUThread()
 	Achievements::FrameUpdate();
 
 	PollDiscordPresence();
+}
 
+void VMManager::Internal::PollInputOnCPUThread()
+{
+	Host::PumpMessagesOnCPUThread();
 	InputManager::PollSources();
-
-	Host::VSyncOnCPUThread();
 
 	if (EmuConfig.EnableRecordingTools)
 	{
