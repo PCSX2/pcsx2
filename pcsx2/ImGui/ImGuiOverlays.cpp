@@ -47,11 +47,11 @@
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
-	static void DrawPerformanceOverlay(float& position_y);
-	static void DrawSettingsOverlay();
-	static void DrawInputsOverlay();
-	static void DrawInputRecordingOverlay(float& position_y);
-	static void DrawVideoCaptureOverlay(float& position_y);
+	static void DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawSettingsOverlay(float scale, float margin, float spacing);
+	static void DrawInputsOverlay(float scale, float margin, float spacing);
+	static void DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -80,7 +80,7 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
 	return std::tie(min, max);
 }
 
-void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
+__ri void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
 {
 	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
 	// which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
@@ -91,12 +91,9 @@ void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, doub
 		text.append_fmt("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-void ImGuiManager::DrawPerformanceOverlay(float& position_y)
+__ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = std::ceil(1.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);
+	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -322,7 +319,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 #undef DRAW_LINE
 }
 
-void ImGuiManager::DrawSettingsOverlay()
+__ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
 {
 	if (!GSConfig.OsdShowSettings || VMManager::GetState() != VMState::Running)
 		return;
@@ -436,9 +433,7 @@ void ImGuiManager::DrawSettingsOverlay()
 	else if (text.back() == ' ')
 		text.pop_back();
 
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = 1.0f * scale;
-	const float margin = 10.0f * scale;
+	const float shadow_offset = std::ceil(scale);
 	ImFont* font = ImGuiManager::GetFixedFont();
 	const float position_y = GetWindowHeight() - margin - font->FontSize;
 
@@ -452,16 +447,13 @@ void ImGuiManager::DrawSettingsOverlay()
 		text.c_str(), text.c_str() + text.length());
 }
 
-void ImGuiManager::DrawInputsOverlay()
+__ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spacing)
 {
 	// Technically this is racing the CPU thread.. but it doesn't really matter, at worst, the inputs get displayed onscreen late.
 	if (!GSConfig.OsdShowInputs || VMManager::GetState() != VMState::Running)
 		return;
 
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = 1.0f * scale;
-	const float margin = 10.0f * scale;
-	const float spacing = 5.0f * scale;
+	const float shadow_offset = std::ceil(scale);
 	ImFont* font = ImGuiManager::GetStandardFont();
 
 	static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
@@ -604,13 +596,9 @@ void ImGuiManager::DrawInputsOverlay()
 	}
 }
 
-void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
+__ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = std::ceil(1.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);
-	position_y += margin;
+	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -651,13 +639,9 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 #undef DRAW_LINE
 }
 
-void ImGuiManager::DrawVideoCaptureOverlay(float& position_y)
+__ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = std::ceil(1.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);
-	position_y += margin;
+	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
 
@@ -1071,12 +1055,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 
 void ImGuiManager::RenderOverlays()
 {
-	float position_y = 0;
-	DrawVideoCaptureOverlay(position_y);
-	DrawInputRecordingOverlay(position_y);
-	DrawPerformanceOverlay(position_y);
-	DrawSettingsOverlay();
-	DrawInputsOverlay();
+	const float scale = ImGuiManager::GetGlobalScale();
+	const float margin = std::ceil(10.0f * scale);
+	const float spacing = std::ceil(5.0f * scale);
+	float position_y = margin;
+	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);
+	DrawInputRecordingOverlay(position_y, scale, margin, spacing);
+	DrawPerformanceOverlay(position_y, scale, margin, spacing);
+	DrawSettingsOverlay(scale, margin, spacing);
+	DrawInputsOverlay(scale, margin, spacing);
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();
 }
