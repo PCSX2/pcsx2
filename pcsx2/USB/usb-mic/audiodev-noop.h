@@ -12,9 +12,8 @@ namespace usb_mic
 		class NoopAudioDevice : public AudioDevice
 		{
 		public:
-			NoopAudioDevice(
-				u32 port, AudioDir dir, u32 channels)
-				: AudioDevice(port, dir, channels)
+			NoopAudioDevice(AudioDir dir, u32 channels)
+				: AudioDevice(dir, channels)
 			{
 			}
 			~NoopAudioDevice() override {}
