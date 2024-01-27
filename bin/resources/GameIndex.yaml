@@ -26996,6 +26996,9 @@ SLES-55577:
 SLES-55578:
   name: "Band Hero"
   region: "PAL-M5"
+  gsHWFixes:
+    autoFlush: 1 # Fixes character shadow misalignment.
+    preloadFrameData: 1 # Fixes icons.
 SLES-55579:
   name: "Bakugan - Battle Brawlers"
   region: "PAL-M7"
@@ -65917,6 +65920,9 @@ SLUS-21898:
   name: "Band Hero"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes character shadow misalignment.
+    preloadFrameData: 1 # Fixes icons.
 SLUS-21899:
   name: "Silent Hill - Shattered Memories"
   region: "NTSC-U"
