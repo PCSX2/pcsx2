@@ -720,11 +720,11 @@ namespace usb_mic
 			{
 				// Try to open a single device with two channels. This might not work if it's only a mono mic.
 				Console.WriteLn("USB-Mic: Trying to open stereo single source dual mic: '%s'", dev0.c_str());
-				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 2, dev0, latency);
+				s->audsrc[0] = AudioDevice::CreateDevice(AUDIODIR_SOURCE, 2, dev0, latency);
 				if (!s->audsrc[0])
 				{
 					Console.Error("USB-Mic: Failed to get stereo source, mic '%s' might only be mono", dev0.c_str());
-					s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency);
+					s->audsrc[0] = AudioDevice::CreateDevice(AUDIODIR_SOURCE, 1, std::move(dev0), latency);
 				}
 
 				s->f.mode = MIC_MODE_SHARED;
@@ -732,9 +732,9 @@ namespace usb_mic
 			else
 			{
 				if (!dev0.empty())
-					s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency);
+					s->audsrc[0] = AudioDevice::CreateDevice(AUDIODIR_SOURCE, 1, std::move(dev0), latency);
 				if (!dev1.empty())
-					s->audsrc[1] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev1), latency);
+					s->audsrc[1] = AudioDevice::CreateDevice(AUDIODIR_SOURCE, 1, std::move(dev1), latency);
 
 				s->f.mode = (s->audsrc[0] && s->audsrc[1]) ? MIC_MODE_SEPARATE : MIC_MODE_SINGLE;
 			}
@@ -744,7 +744,7 @@ namespace usb_mic
 			std::string dev0(USB::GetConfigString(si, port, devtype, "input_device_name"));
 			const s32 latency0 = USB::GetConfigInt(si, port, devtype, "input_latency", AudioDevice::DEFAULT_LATENCY);
 			if (!dev0.empty())
-				s->audsrc[0] = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(dev0), latency0);
+				s->audsrc[0] = AudioDevice::CreateDevice(AUDIODIR_SOURCE, 1, std::move(dev0), latency0);
 
 			s->f.mode = MIC_MODE_SINGLE;
 		}
@@ -890,14 +890,14 @@ namespace usb_mic
 	}
 } // namespace usb_mic
 
-std::unique_ptr<AudioDevice> AudioDevice::CreateNoopDevice(u32 port, AudioDir dir, u32 channels)
+std::unique_ptr<AudioDevice> AudioDevice::CreateNoopDevice(AudioDir dir, u32 channels)
 {
-	return std::make_unique<usb_mic::audiodev_noop::NoopAudioDevice>(port, dir, channels);
+	return std::make_unique<usb_mic::audiodev_noop::NoopAudioDevice>(dir, channels);
 }
 
-std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
+std::unique_ptr<AudioDevice> AudioDevice::CreateDevice(AudioDir dir, u32 channels, std::string devname, s32 latency)
 {
-	return std::make_unique<usb_mic::audiodev_cubeb::CubebAudioDevice>(port, dir, channels, std::move(devname), latency);
+	return std::make_unique<usb_mic::audiodev_cubeb::CubebAudioDevice>(dir, channels, std::move(devname), latency);
 }
 
 std::vector<std::pair<std::string, std::string>> AudioDevice::GetInputDeviceList()

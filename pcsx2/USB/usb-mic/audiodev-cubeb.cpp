@@ -85,8 +85,8 @@ namespace usb_mic
 {
 	namespace audiodev_cubeb
 	{
-		CubebAudioDevice::CubebAudioDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
-			: AudioDevice(port, dir, channels)
+		CubebAudioDevice::CubebAudioDevice(AudioDir dir, u32 channels, std::string devname, s32 latency)
+			: AudioDevice(dir, channels)
 			, mLatency(latency)
 			, mDeviceName(std::move(devname))
 		{
