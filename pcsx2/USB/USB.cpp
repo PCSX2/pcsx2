@@ -250,15 +250,19 @@ void USB::DoDeviceState(USBDevice* dev, StateWrapper& sw)
 	sw.Do(&dev->setup_index);
 
 	sw.Do(&dev->configuration);
-	usb_desc_set_config(dev, dev->configuration);
+	if (sw.IsReading())
+		usb_desc_set_config(dev, dev->configuration);
 
 	int altsetting[USB_MAX_INTERFACES];
 	std::memcpy(altsetting, dev->altsetting, sizeof(altsetting));
 	sw.DoPODArray(altsetting, std::size(altsetting));
-	for (u32 i = 0; i < USB_MAX_INTERFACES; i++)
+	if (sw.IsReading())
 	{
-		dev->altsetting[i] = altsetting[i];
-		usb_desc_set_interface(dev, i, altsetting[i]);
+		for (u32 i = 0; i < USB_MAX_INTERFACES; i++)
+		{
+			dev->altsetting[i] = altsetting[i];
+			usb_desc_set_interface(dev, i, altsetting[i]);
+		}
 	}
 
 	DoEndpointState(&dev->ep_ctl, sw);
