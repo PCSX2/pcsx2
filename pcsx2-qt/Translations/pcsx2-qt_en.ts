@@ -2293,32 +2293,32 @@ Unread messages: {2}</source>
 <context>
     <name>ControllerGlobalSettingsWidget</name>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="137"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="127"/>
         <source>SDL Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="150"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="140"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="143"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="133"/>
         <source>Enable SDL Input Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="162"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="152"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="232"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="222"/>
         <source>XInput Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="248"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="238"/>
         <source>Enable XInput Input Source</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2328,7 +2328,7 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="98"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="88"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended, but DirectInput can be used if they are not compatible with SDL.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2338,43 +2338,33 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="88"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Some third party controllers incorrectly flag their analog sticks as inverted on the positive component, but not negative.&lt;/p&gt;&lt;p&gt;As a result, the analog stick will be &amp;quot;stuck on&amp;quot; even while resting at neutral position. &lt;/p&gt;&lt;p&gt;Enabling this setting will tell PCSX2 to ignore inversion flags when creating mappings, allowing such controllers to function normally.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="91"/>
-        <source>Ignore Inversion</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="111"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="101"/>
         <source>Profile Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="117"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="107"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="127"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="117"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="169"/>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="217"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="159"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="207"/>
         <source>Controller LED Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="182"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="172"/>
         <source>Enable SDL Raw Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="238"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="228"/>
         <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2399,27 +2389,27 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="192"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="182"/>
         <source>Mouse/Pointer Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="198"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="188"/>
         <source>PCSX2 allows you to use your mouse to simulate analog stick movement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="220"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="210"/>
         <source>Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="210"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="200"/>
         <source>Enable Mouse Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="258"/>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="248"/>
         <source>Detected Devices</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2561,6 +2551,29 @@ Not Configured/Buttons configured</extracomment>
     </message>
 </context>
 <context>
+    <name>ControllerMappingSettingsDialog</name>
+    <message>
+        <location filename="../Settings/ControllerMappingSettingsDialog.ui" line="14"/>
+        <source>Controller Mapping Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerMappingSettingsDialog.ui" line="38"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Controller Mapping Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior when mapping physical controllers to the emulated controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerMappingSettingsDialog.ui" line="62"/>
+        <source>Ignore Inversion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerMappingSettingsDialog.ui" line="69"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Some third party controllers incorrectly flag their analog sticks as inverted on the positive component, but not negative.&lt;/p&gt;&lt;p&gt;As a result, the analog stick will be &amp;quot;stuck on&amp;quot; even while resting at neutral position. &lt;/p&gt;&lt;p&gt;Enabling this setting will tell PCSX2 to ignore inversion flags when creating mappings, allowing such controllers to function normally.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ControllerMouseSettingsDialog</name>
     <message>
         <location filename="../Settings/ControllerMouseSettingsDialog.ui" line="14"/>
@@ -2636,18 +2649,23 @@ Not Configured/Buttons configured</extracomment>
     </message>
     <message>
         <location filename="../Settings/ControllerSettingsWindow.ui" line="129"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="191"/>
+        <source>Mapping Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerSettingsWindow.ui" line="139"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="198"/>
         <source>Restore Defaults</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="90"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="104"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="91"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="105"/>
         <source>Create Input Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="91"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="92"/>
         <source>Custom input profiles are used to override the Shared input profile for specific games.
 To apply a custom input profile to a game, go to its Game Properties, then change the &apos;Input Profile&apos; on the Summary tab.
 
@@ -2655,35 +2673,35 @@ Enter the name for the new input profile:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="100"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="135"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="180"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="508"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="136"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="515"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="100"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="101"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="105"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="106"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="135"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="136"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="145"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
         <source>Load Input Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="146"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="147"/>
         <source>Are you sure you want to load the input profile named &apos;%1&apos;?
 
 All current global bindings will be removed, and the profile bindings loaded.
@@ -2692,24 +2710,24 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="169"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="170"/>
         <source>Delete Input Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="170"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="171"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="180"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="181"/>
         <source>Failed to delete &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="192"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="199"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All shared bindings and configuration will be lost, but your input profiles will remain.
@@ -2718,46 +2736,46 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="364"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="371"/>
         <source>Global Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="397"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="452"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="404"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="459"/>
         <source>Controller Port %1%2
 %3</source>
         <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="399"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="454"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="406"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="461"/>
         <source>Controller Port %1
 %2</source>
         <extracomment>Controller Port is an official term from Sony. Find the official translation for your language inside the console&apos;s manual.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="415"/>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="472"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="422"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="479"/>
         <source>USB Port %1
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="425"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="432"/>
         <source>Hotkeys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="486"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="493"/>
         <source>Shared</source>
         <extracomment>&quot;Shared&quot; refers here to the shared input profile.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerSettingsWindow.cpp" line="508"/>
+        <location filename="../Settings/ControllerSettingsWindow.cpp" line="515"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3348,13 +3366,13 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../Settings/DEV9SettingsWidget.ui" line="289"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="735"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="733"/>
         <source>40</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/DEV9SettingsWidget.ui" line="318"/>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="731"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="729"/>
         <source>120</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3497,44 +3515,44 @@ You cannot undo this action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="731"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="729"/>
         <source>2000</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="735"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="733"/>
         <source>100</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="762"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="760"/>
         <source>Overwrite File?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="763"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="761"/>
         <source>HDD image &quot;%1&quot; already exists.
 
 Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="780"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="778"/>
         <source>HDD Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="781"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="779"/>
         <source>HDD image created</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="914"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="912"/>
         <source>Use Global</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="920"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="918"/>
         <source>Override</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12596,7 +12614,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1068"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1052"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12604,48 +12622,48 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>ImGuiOverlays</name>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="706"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="690"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="732"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="716"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="814"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="798"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="816"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="800"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="818"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="802"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="820"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="804"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="873"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="895"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="857"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="879"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="896"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="880"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1065"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1049"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15475,13 +15493,13 @@ Ejecting {3} and replacing it with {2}.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="749"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="747"/>
         <location filename="../Settings/HddCreateQt.cpp" line="34"/>
         <source>HDD Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/DEV9SettingsWidget.cpp" line="750"/>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="748"/>
         <location filename="../Settings/HddCreateQt.cpp" line="35"/>
         <source>Failed to create HDD image</source>
         <translation type="unfinished"></translation>
@@ -18009,157 +18027,157 @@ Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2732"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2734"/>
         <source>Cheats have been disabled due to achievements hardcore mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2788"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2790"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2792"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2794"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2797"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2799"/>
         <source>Audio is using async mix, expect desynchronization in FMVs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2800"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2802"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2804"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2806"/>
         <source>Mipmapping is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2809"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2811"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2815"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2817"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2821"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2823"/>
         <source>Blending is below basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2826"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2828"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2832"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2834"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2838"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2840"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2843"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2845"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2848"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2850"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2855"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2857"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2860"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2862"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2865"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2867"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2869"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2871"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2871"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2873"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2890"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2892"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2895"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2897"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2900"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2902"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2905"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2907"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2910"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2912"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2915"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2917"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2920"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2922"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2925"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2927"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2930"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2932"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2935"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2937"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2940"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2942"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2945"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2947"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
