@@ -273,7 +273,7 @@ namespace usb_eyetoy
 	static void webcam_handle_data_eyetoy(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
-		static const int max_ep_size = 896;
+		static const unsigned int max_ep_size = 896;
 		uint8_t devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
@@ -326,7 +326,7 @@ namespace usb_eyetoy
 						s->frame_step = 0;
 					}
 
-					usb_packet_copy(p, data, max_ep_size);
+					usb_packet_copy(p, data, std::min(max_ep_size, p->buffer_size));
 				}
 				else if (devep == 2)
 				{
@@ -346,7 +346,7 @@ namespace usb_eyetoy
 	static void webcam_handle_data_ov511p(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
-		static const int max_ep_size = 960; // 961
+		static const unsigned int max_ep_size = 960; // 961
 		uint8_t devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
@@ -397,7 +397,7 @@ namespace usb_eyetoy
 						s->frame_step = 0;
 					}
 
-					usb_packet_copy(p, data, max_ep_size);
+					usb_packet_copy(p, data, std::min(max_ep_size, p->buffer_size));
 				}
 				break;
 			case USB_TOKEN_OUT:
