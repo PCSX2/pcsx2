@@ -892,8 +892,8 @@ namespace usb_mic
 	{
 		HeadsetState* s = new HeadsetState();
 
-		std::string input_devname(USB::GetConfigString(si, port, TypeName(), "input_device"));
-		std::string output_devname(USB::GetConfigString(si, port, TypeName(), "output_device"));
+		std::string input_devname(USB::GetConfigString(si, port, TypeName(), "input_device_name"));
+		std::string output_devname(USB::GetConfigString(si, port, TypeName(), "output_device_name"));
 		const s32 input_latency = USB::GetConfigInt(si, port, TypeName(), "input_latency", AudioDevice::DEFAULT_LATENCY);
 		const s32 output_latency = USB::GetConfigInt(si, port, TypeName(), "output_latency", AudioDevice::DEFAULT_LATENCY);
 
