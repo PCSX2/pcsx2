@@ -598,6 +598,9 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 
 __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing)
 {
+	if (!g_InputRecording.isActive() || FullscreenUI::HasActiveWindow())
+		return;
+
 	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
@@ -618,23 +621,21 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
-	if (g_InputRecording.isActive() && !FullscreenUI::HasActiveWindow())
-	{
-		// Status Indicators
-		if (g_InputRecording.getControls().isRecording())
-		{
-			DRAW_LINE(standard_font, TinyString::from_fmt("{} Recording Input", ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
-		}
-		else
-		{
-			DRAW_LINE(standard_font, TinyString::from_fmt("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
-		}
 
-		// Input Recording Metadata
-		DRAW_LINE(fixed_font, TinyString::from_fmt("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
-		DRAW_LINE(fixed_font, TinyString::from_fmt("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(), g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
-		DRAW_LINE(fixed_font, TinyString::from_fmt("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+	// Status Indicators
+	if (g_InputRecording.getControls().isRecording())
+	{
+		DRAW_LINE(standard_font, TinyString::from_fmt("{} Recording Input", ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
 	}
+	else
+	{
+		DRAW_LINE(standard_font, TinyString::from_fmt("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
+	}
+
+	// Input Recording Metadata
+	DRAW_LINE(fixed_font, TinyString::from_fmt("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(),g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
 
 #undef DRAW_LINE
 }
