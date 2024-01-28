@@ -4,6 +4,7 @@
 #pragma once
 
 #include "USB/qemu-usb/qusb.h"
+#include "common/Pcsx2Types.h"
 
 /* Dump packet contents.  */
 //#define DEBUG_PACKET
@@ -15,59 +16,59 @@
 #define OHCI_MAX_PORTS 15 // status regs from 0x0c54 but usb snooping
 						  // reg is at 0x0c80, so only 11 ports?
 
-extern int64_t g_usb_frame_time;
-extern int64_t g_usb_bit_time;
+extern s64 g_usb_frame_time;
+extern s64 g_usb_bit_time;
 
 typedef struct OHCIPort
 {
 	USBPort port;
-	uint32_t ctrl;
+	u32 ctrl;
 } OHCIPort;
 
-typedef uint32_t target_phys_addr_t;
+typedef u32 target_phys_addr_t;
 
 typedef struct OHCIState
 {
 	target_phys_addr_t mem_base;
-	uint32_t num_ports;
+	u32 num_ports;
 
-	uint64_t eof_timer;
-	int64_t sof_time;
+	u64 eof_timer;
+	s64 sof_time;
 
 	/* OHCI state */
 	/* Control partition */
-	uint32_t ctl, status;
-	uint32_t intr_status;
-	uint32_t intr;
+	u32 ctl, status;
+	u32 intr_status;
+	u32 intr;
 
 	/* memory pointer partition */
-	uint32_t hcca;
-	uint32_t ctrl_head, ctrl_cur;
-	uint32_t bulk_head, bulk_cur;
-	uint32_t per_cur;
-	uint32_t done;
-	int32_t done_count;
+	u32 hcca;
+	u32 ctrl_head, ctrl_cur;
+	u32 bulk_head, bulk_cur;
+	u32 per_cur;
+	u32 done;
+	s32 done_count;
 
 	/* Frame counter partition */
-	uint32_t fsmps : 15;
-	uint32_t fit : 1;
-	uint32_t fi : 14;
-	uint32_t frt : 1;
+	u32 fsmps : 15;
+	u32 fit : 1;
+	u32 fi : 14;
+	u32 frt : 1;
 	uint16_t frame_number;
 	uint16_t padding;
-	uint32_t pstart;
-	uint32_t lst;
+	u32 pstart;
+	u32 lst;
 
 	/* Root Hub partition */
-	uint32_t rhdesc_a, rhdesc_b;
-	uint32_t rhstatus;
+	u32 rhdesc_a, rhdesc_b;
+	u32 rhstatus;
 	OHCIPort rhport[OHCI_MAX_PORTS];
 
 	/* Active packets.  */
-	uint32_t old_ctl;
+	u32 old_ctl;
 	USBPacket usb_packet;
 	uint8_t usb_buf[8192];
-	uint32_t async_td;
+	u32 async_td;
 	bool async_complete;
 
 } OHCIState;
@@ -75,9 +76,9 @@ typedef struct OHCIState
 /* Host Controller Communications Area */
 struct ohci_hcca
 {
-	uint32_t intr[32];
-	uint16_t frame, pad;
-	uint32_t done;
+	u32 intr[32];
+	u16 frame, pad;
+	u32 done;
 };
 
 //ISO C++ forbids declaration of ‘typeof’ with no type
@@ -158,29 +159,29 @@ struct ohci_hcca
 /* endpoint descriptor */
 struct ohci_ed
 {
-	uint32_t flags;
-	uint32_t tail;
-	uint32_t head;
-	uint32_t next;
+	u32 flags;
+	u32 tail;
+	u32 head;
+	u32 next;
 };
 
 /* General transfer descriptor */
 struct ohci_td
 {
-	uint32_t flags;
-	uint32_t cbp;
-	uint32_t next;
-	uint32_t be;
+	u32 flags;
+	u32 cbp;
+	u32 next;
+	u32 be;
 };
 
 /* Isochronous transfer descriptor */
 struct ohci_iso_td
 {
-	uint32_t flags;
-	uint32_t bp;
-	uint32_t next;
-	uint32_t be;
-	uint16_t offset[8];
+	u32 flags;
+	u32 bp;
+	u32 next;
+	u32 be;
+	u16 offset[8];
 };
 
 #define USB_HZ 12000000
@@ -276,10 +277,10 @@ struct ohci_iso_td
 #define OHCI_CC_BUFFEROVERRUN 0xc
 #define OHCI_CC_BUFFERUNDERRUN 0xd
 
-OHCIState* ohci_create(uint32_t base, int ports);
+OHCIState* ohci_create(u32 base, int ports);
 
-uint32_t ohci_mem_read(OHCIState* ohci, uint32_t addr);
-void ohci_mem_write(OHCIState* ohci, uint32_t addr, uint32_t value);
+u32 ohci_mem_read(OHCIState* ohci, u32 addr);
+void ohci_mem_write(OHCIState* ohci, u32 addr, u32 value);
 void ohci_frame_boundary(void* opaque);
 
 void ohci_hard_reset(OHCIState* ohci);

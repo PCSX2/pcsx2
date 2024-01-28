@@ -14,10 +14,10 @@
 #define DMA_DIRECTION_FROM_DEVICE 1
 #define ED_LINK_LIMIT 32
 
-extern int64_t g_usb_last_cycle;
+extern s64 g_usb_last_cycle;
 #define MIN_IRQ_INTERVAL 64 /* hack */
 
-extern int64_t usb_get_clock();
+extern s64 usb_get_clock();
 extern int usb_get_ticks_per_second();
 extern void usbIrq(int);
 
@@ -26,21 +26,21 @@ extern void usbIrq(int);
 
 static void ohci_async_cancel_device(OHCIState* ohci, USBDevice* dev);
 
-static uint64_t muldiv64(uint64_t a, uint32_t b, uint32_t c)
+static u64 muldiv64(u64 a, u32 b, u32 c)
 {
 	union
 	{
-		uint64_t ll;
+		u64 ll;
 		struct
 		{
-			uint32_t low, high;
+			u32 low, high;
 		} l;
 	} u, res;
-	uint64_t rl, rh;
+	u64 rl, rh;
 
 	u.ll = a;
-	rl = (uint64_t)u.l.low * (uint64_t)b;
-	rh = (uint64_t)u.l.high * (uint64_t)b;
+	rl = static_cast<u64>(u.l.low) * static_cast<u64>(b);
+	rh = static_cast<u64>(u.l.high) * static_cast<u64>(b);
 	rh += (rl >> 32);
 	res.l.high = rh / c;
 	res.l.low = (((rh % c) << 32) + (rl & 0xffffffff)) / c;
@@ -68,7 +68,7 @@ static inline void ohci_intr_update(OHCIState* ohci)
 }
 
 /* Set an interrupt */
-static inline void ohci_set_interrupt(OHCIState* ohci, uint32_t intr)
+static inline void ohci_set_interrupt(OHCIState* ohci, u32 intr)
 {
 	ohci->intr_status |= intr;
 	ohci_intr_update(ohci);
@@ -86,68 +86,12 @@ static void ohci_die(OHCIState* ohci)
 	//             PCI_STATUS_DETECTED_PARITY);
 }
 
-#if 0
-/* Attach or detach a device on a root hub port.  */
-// Unused
-static void ohci_attach2(USBPort* port1, USBDevice* dev)
-{
-	OHCIState* s = (OHCIState*)port1->opaque;
-	OHCIPort* port = (OHCIPort*)&s->rhport[port1->index];
-	uint32_t old_state = port->ctrl;
-
-	if (dev)
-	{
-		if (port1->dev)
-		{
-			ohci_attach2(port1, NULL);
-		}
-		/* set connect status */
-		port->ctrl |= OHCI_PORT_CCS | OHCI_PORT_CSC;
-
-		/* update speed */
-		if (dev->speed == USB_SPEED_LOW)
-			port->ctrl |= OHCI_PORT_LSDA;
-		else
-			port->ctrl &= ~OHCI_PORT_LSDA;
-		dev->port = port1;
-		port1->dev = dev;
-		dev->state = USB_STATE_ATTACHED;
-	}
-	else
-	{
-		/* set connect status */
-		if (port->ctrl & OHCI_PORT_CCS)
-		{
-			port->ctrl &= ~OHCI_PORT_CCS;
-			port->ctrl |= OHCI_PORT_CSC;
-		}
-		/* disable port */
-		if (port->ctrl & OHCI_PORT_PES)
-		{
-			port->ctrl &= ~OHCI_PORT_PES;
-			port->ctrl |= OHCI_PORT_PESC;
-		}
-		dev = port1->dev;
-		if (dev)
-		{
-			dev->port = NULL;
-			/* send the detach message */
-			dev->state = USB_STATE_NOTATTACHED;
-		}
-		port1->dev = NULL;
-	}
-
-	if (old_state != port->ctrl)
-		ohci_set_interrupt(s, OHCI_INTR_RHSC);
-}
-#endif
-
 /* Attach or detach a device on a root hub port.  */
 static void ohci_attach(USBPort* port1)
 {
 	OHCIState* s = (OHCIState*)port1->opaque;
 	OHCIPort* port = &s->rhport[port1->index];
-	uint32_t old_state = port->ctrl;
+	const u32 old_state = port->ctrl;
 
 	port1->dev->port = port1;
 
@@ -182,7 +126,7 @@ static void ohci_detach(USBPort* port1)
 {
 	OHCIState* s = (OHCIState*)port1->opaque;
 	OHCIPort* port = &s->rhport[port1->index];
-	uint32_t old_state = port->ctrl;
+	const u32 old_state = port->ctrl;
 
 	if (port1->dev)
 		ohci_async_cancel_device(s, port1->dev);
@@ -211,7 +155,7 @@ static void ohci_wakeup(USBPort* port1)
 {
 	OHCIState* s = (OHCIState*)port1->opaque;
 	OHCIPort* port = (OHCIPort*)&s->rhport[port1->index];
-	uint32_t intr = 0;
+	u32 intr = 0;
 	if (port->ctrl & OHCI_PORT_PSS)
 	{
 		//trace_usb_ohci_port_wakeup(port1->index);
@@ -282,7 +226,7 @@ static void ohci_roothub_reset(OHCIState* ohci)
 	ohci->rhdesc_b = 0x0; /* Impl. specific */
 	ohci->rhstatus = 0;
 
-	for (uint32_t i = 0; i < ohci->num_ports; i++)
+	for (u32 i = 0; i < ohci->num_ports; i++)
 	{
 		port = &ohci->rhport[i];
 		port->ctrl = 0;
@@ -336,89 +280,88 @@ void ohci_hard_reset(OHCIState* ohci)
 }
 
 /* Get an array of dwords from main memory */
-__fi static int get_dwords(uint32_t addr, uint32_t* buf, uint32_t num)
+__fi static int get_dwords(u32 addr, u32* buf, u32 num)
 {
-	if ((addr + (num * sizeof(uint32_t))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u32))) > sizeof(iopMem->Main))
 		return 0;
 
-	std::memcpy(buf, iopMem->Main + addr, num * sizeof(uint32_t));
+	std::memcpy(buf, iopMem->Main + addr, num * sizeof(u32));
 	return 1;
 }
 
 /* Get an array of words from main memory */
-__fi static int get_words(uint32_t addr, uint16_t* buf, uint32_t num)
+__fi static int get_words(u32 addr, u16* buf, u32 num)
 {
-	if ((addr + (num * sizeof(uint16_t))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u16))) > sizeof(iopMem->Main))
 		return 0;
 
-	std::memcpy(buf, iopMem->Main + addr, num * sizeof(uint16_t));
+	std::memcpy(buf, iopMem->Main + addr, num * sizeof(u16));
 	return 1;
 }
 
 /* Put an array of dwords in to main memory */
-__fi static int put_dwords(uint32_t addr, uint32_t* buf, uint32_t num)
+__fi static int put_dwords(u32 addr, u32* buf, u32 num)
 {
-	if ((addr + (num * sizeof(uint32_t))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u32))) > sizeof(iopMem->Main))
 		return 0;
 
-	std::memcpy(iopMem->Main + addr, buf, num * sizeof(uint32_t));
+	std::memcpy(iopMem->Main + addr, buf, num * sizeof(u32));
 	return 1;
 }
 
 /* Put an array of dwords in to main memory */
-__fi static int put_words(uint32_t addr, uint16_t* buf, uint32_t num)
+__fi static int put_words(u32 addr, u16* buf, u32 num)
 {
-	if ((addr + (num * sizeof(uint16_t))) > sizeof(iopMem->Main))
+	if ((addr + (num * sizeof(u16))) > sizeof(iopMem->Main))
 		return 0;
 
-	std::memcpy(iopMem->Main + addr, buf, num * sizeof(uint16_t));
+	std::memcpy(iopMem->Main + addr, buf, num * sizeof(u16));
 	return 1;
 }
 
-static inline int ohci_read_ed(OHCIState* ohci, uint32_t addr, struct ohci_ed* ed)
+static inline int ohci_read_ed(OHCIState* ohci, u32 addr, struct ohci_ed* ed)
 {
-	return get_dwords(addr, (uint32_t*)ed, sizeof(*ed) >> 2);
+	return get_dwords(addr, (u32*)ed, sizeof(*ed) >> 2);
 }
 
-static inline int ohci_read_td(OHCIState* ohci, uint32_t addr, struct ohci_td* td)
+static inline int ohci_read_td(OHCIState* ohci, u32 addr, struct ohci_td* td)
 {
-	return get_dwords(addr, (uint32_t*)td, sizeof(*td) >> 2);
+	return get_dwords(addr, (u32*)td, sizeof(*td) >> 2);
 }
 
-static inline int ohci_read_iso_td(OHCIState* ohci, uint32_t addr, struct ohci_iso_td* td)
+static inline int ohci_read_iso_td(OHCIState* ohci, u32 addr, struct ohci_iso_td* td)
 {
-	return get_dwords(addr, (uint32_t*)td, 4) &&
+	return get_dwords(addr, (u32*)td, 4) &&
 		   get_words(addr + 16, td->offset, 8);
 }
 
-static inline int ohci_put_ed(OHCIState* ohci, uint32_t addr, struct ohci_ed* ed)
+static inline int ohci_put_ed(OHCIState* ohci, u32 addr, struct ohci_ed* ed)
 {
 	/* ed->tail is under control of the HCD.
      * Since just ed->head is changed by HC, just write back this
      */
 	return put_dwords(addr + ED_WBACK_OFFSET,
-					  (uint32_t*)((char*)ed + ED_WBACK_OFFSET),
+					  (u32*)((char*)ed + ED_WBACK_OFFSET),
 					  ED_WBACK_SIZE >> 2);
 }
 
-static inline int ohci_put_td(OHCIState* ohci, uint32_t addr, struct ohci_td* td)
+static inline int ohci_put_td(OHCIState* ohci, u32 addr, struct ohci_td* td)
 {
-	return put_dwords(addr, (uint32_t*)td, sizeof(*td) >> 2);
+	return put_dwords(addr, (u32*)td, sizeof(*td) >> 2);
 }
 
-static inline int ohci_put_iso_td(OHCIState* ohci, uint32_t addr, struct ohci_iso_td* td)
+static inline int ohci_put_iso_td(OHCIState* ohci, u32 addr, struct ohci_iso_td* td)
 {
-	return put_dwords(addr, (uint32_t*)td, 4) &&
+	return put_dwords(addr, (u32*)td, 4) &&
 		   put_words(addr + 16, td->offset, 8);
 }
 
 /* Read/Write the contents of a TD from/to main memory.  */
-static int ohci_copy_td(OHCIState* ohci, struct ohci_td* td, uint8_t* buf, uint32_t len, int write)
+static int ohci_copy_td(OHCIState* ohci, struct ohci_td* td, uint8_t* buf, u32 len, int write)
 {
-	uint32_t ptr, n;
+	u32 ptr = td->cbp;
+	const u32 n = std::min<u32>(0x1000 - (ptr & 0xfff), len);
 
-	ptr = td->cbp;
-	n = std::min<uint32_t>(0x1000 - (ptr & 0xfff), len);
 	if ((ptr + n) > sizeof(iopMem->Main))
 		return 1;
 
@@ -445,13 +388,11 @@ static int ohci_copy_td(OHCIState* ohci, struct ohci_td* td, uint8_t* buf, uint3
 }
 
 /* Read/Write the contents of an ISO TD from/to main memory.  */
-static int ohci_copy_iso_td(OHCIState* ohci, uint32_t start_addr, uint32_t end_addr,
-							uint8_t* buf, uint32_t len, int write)
+static int ohci_copy_iso_td(OHCIState* ohci, u32 start_addr, u32 end_addr,
+							uint8_t* buf, u32 len, int write)
 {
-	uint32_t ptr, n;
-
-	ptr = start_addr;
-	n = std::min<uint32_t>(0x1000 - (ptr & 0xfff), len);
+	u32 ptr = start_addr;
+	const u32 n = std::min<u32>(0x1000 - (ptr & 0xfff), len);
 
 	if ((ptr + n) > sizeof(iopMem->Main))
 		return 1;
@@ -489,24 +430,21 @@ static void ohci_async_complete_packet(USBPort* port, USBPacket* packet)
 	ohci_process_lists(ohci, 1);
 }
 
-#define USUB(a, b) ((int16_t)((uint16_t)(a) - (uint16_t)(b)))
+#define USUB(a, b) ((int16_t)((u16)(a) - (u16)(b)))
 
 static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 							   int completion)
 {
-	int dir;
-	uint32_t len = 0;
-	[[maybe_unused]] const char* str = NULL;
+	u32 len = 0;
+	[[maybe_unused]] const char* str = nullptr;
 	int pid;
 	int ret;
 	int i;
 	struct ohci_iso_td iso_td;
-	uint32_t addr;
-	int16_t relative_frame_number;
-	uint32_t next_offset;
-	uint32_t start_addr, end_addr;
+	u32 next_offset;
+	u32 start_addr, end_addr;
 
-	addr = ed->head & OHCI_DPTR_MASK;
+	const u32 addr = ed->head & OHCI_DPTR_MASK;
 
 	if (!ohci_read_iso_td(ohci, addr, &iso_td))
 	{
@@ -515,9 +453,9 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 		return 1;
 	}
 
-	const uint16_t starting_frame = OHCI_BM(iso_td.flags, TD_SF);
+	const u16 starting_frame = OHCI_BM(iso_td.flags, TD_SF);
 	const int frame_count = OHCI_BM(iso_td.flags, TD_FC);
-	relative_frame_number = USUB(ohci->frame_number, starting_frame);
+	const s16 relative_frame_number = USUB(ohci->frame_number, starting_frame);
 
 	/*trace_usb_ohci_iso_td_head(
            ed->head & OHCI_DPTR_MASK, ed->tail & OHCI_DPTR_MASK,
@@ -562,7 +500,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 		return 0;
 	}
 
-	dir = OHCI_BM(ed->flags, ED_D);
+	const int dir = OHCI_BM(ed->flags, ED_D);
 	switch (dir)
 	{
 		case OHCI_TD_DIR_IN:
@@ -588,7 +526,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 		return 1;
 	}
 
-	const uint32_t start_offset = iso_td.offset[relative_frame_number];
+	const u32 start_offset = iso_td.offset[relative_frame_number];
 	if (relative_frame_number < frame_count)
 	{
 		next_offset = iso_td.offset[relative_frame_number + 1];
@@ -625,7 +563,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 
 	if (relative_frame_number < frame_count)
 	{
-		const uint32_t end_offset = next_offset - 1;
+		const u32 end_offset = next_offset - 1;
 		if ((end_offset & 0x1000) == 0)
 		{
 			end_addr = (iso_td.bp & OHCI_PAGE_MASK) |
@@ -677,7 +615,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 		const bool int_req = relative_frame_number == frame_count &&
 					   OHCI_BM(iso_td.flags, TD_DI) == 0;
 		USBDevice* dev = ohci_find_device(ohci, OHCI_BM(ed->flags, ED_FA));
-		if (dev == NULL)
+		if (dev == nullptr)
 		{
 			//trace_usb_ohci_td_dev_error();
 			return 1;
@@ -793,22 +731,18 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 
 static int ohci_service_td(OHCIState* ohci, struct ohci_ed* ed)
 {
-	int dir;
-	uint32_t len = 0, pktlen = 0;
-	[[maybe_unused]]const char* str = NULL;
+	u32 len = 0, pktlen = 0;
+	[[maybe_unused]]const char* str = nullptr;
 	int pid;
 	int ret;
 	int i;
 	USBDevice* dev;
 	USBEndpoint* ep;
 	struct ohci_td td;
-	uint32_t addr;
-	int flag_r;
-	int completion;
 
-	addr = ed->head & OHCI_DPTR_MASK;
+	const u32 addr = ed->head & OHCI_DPTR_MASK;
 	/* See if this TD has already been submitted to the device.  */
-	completion = (addr == ohci->async_td);
+	const int completion = (addr == ohci->async_td);
 	if (completion && !ohci->async_complete)
 	{
 		//trace_usb_ohci_td_skip_async();
@@ -821,7 +755,7 @@ static int ohci_service_td(OHCIState* ohci, struct ohci_ed* ed)
 		return 1;
 	}
 
-	dir = OHCI_BM(ed->flags, ED_D);
+	int dir = OHCI_BM(ed->flags, ED_D);
 	switch (dir)
 	{
 		case OHCI_TD_DIR_OUT:
@@ -892,8 +826,8 @@ static int ohci_service_td(OHCIState* ohci, struct ohci_ed* ed)
 		}
 	}
 
-	flag_r = (td.flags & OHCI_TD_R) != 0;
-	//trace_usb_ohci_td_pkt_hdr(addr, (int64_t)pktlen, (int64_t)len, str,
+	const int flag_r = (td.flags & OHCI_TD_R) != 0;
+	//trace_usb_ohci_td_pkt_hdr(addr, (s64)pktlen, (s64)len, str,
 	//                          flag_r, td.cbp, td.be);
 	//ohci_td_pkt("OUT", ohci->usb_buf, pktlen);
 
@@ -915,7 +849,7 @@ static int ohci_service_td(OHCIState* ohci, struct ohci_ed* ed)
 			return 1;
 		}
 		dev = ohci_find_device(ohci, OHCI_BM(ed->flags, ED_FA));
-		if (dev == NULL)
+		if (dev == nullptr)
 		{
 			//trace_usb_ohci_td_dev_error();
 			return 1;
@@ -1053,13 +987,13 @@ exit_no_retire:
 }
 
 /* Service an endpoint list.  Returns nonzero if active TD were found.  */
-static int ohci_service_ed_list(OHCIState* ohci, uint32_t head, int completion)
+static int ohci_service_ed_list(OHCIState* ohci, u32 head, int completion)
 {
 	struct ohci_ed ed;
-	uint32_t next_ed;
-	uint32_t cur;
+	u32 next_ed = 0;
+	u32 cur;
 	int active;
-	uint32_t link_cnt = 0;
+	u32 link_cnt = 0;
 	active = 0;
 
 	if (head == 0)
@@ -1078,7 +1012,7 @@ static int ohci_service_ed_list(OHCIState* ohci, uint32_t head, int completion)
 
 		if ((ed.head & OHCI_ED_H) || (ed.flags & OHCI_ED_K))
 		{
-			uint32_t addr;
+			u32 addr;
 			/* Cancel pending packets for ED that have been paused.  */
 			addr = ed.head & OHCI_DPTR_MASK;
 			if (ohci->async_td && addr == ohci->async_td)
@@ -1254,7 +1188,7 @@ void ohci_bus_stop(OHCIState* ohci)
  * connected, if not set ConnectStatusChange flag. If flag is enabled
  * return 1.
  */
-static int ohci_port_set_if_connected(OHCIState* ohci, int i, uint32_t val)
+static int ohci_port_set_if_connected(OHCIState* ohci, int i, u32 val)
 {
 	int ret = 1;
 
@@ -1285,7 +1219,7 @@ static int ohci_port_set_if_connected(OHCIState* ohci, int i, uint32_t val)
 }
 
 /* Set the frame interval - frame interval toggle is manipulated by the hcd only */
-static void ohci_set_frame_interval(OHCIState* ohci, uint16_t val)
+static void ohci_set_frame_interval(OHCIState* ohci, u16 val)
 {
 	val &= OHCI_FMI_FI;
 
@@ -1312,14 +1246,11 @@ static void ohci_port_power(OHCIState* ohci, int i, int p)
 }
 
 /* Set HcControlRegister */
-static void ohci_set_ctl(OHCIState* ohci, uint32_t val)
+static void ohci_set_ctl(OHCIState* ohci, u32 val)
 {
-	uint32_t old_state;
-	uint32_t new_state;
-
-	old_state = ohci->ctl & OHCI_CTL_HCFS;
+	const u32 old_state = ohci->ctl & OHCI_CTL_HCFS;
 	ohci->ctl = val;
-	new_state = ohci->ctl & OHCI_CTL_HCFS;
+	const u32 new_state = ohci->ctl & OHCI_CTL_HCFS;
 
 	/* no state change */
 	if (old_state == new_state)
@@ -1346,10 +1277,10 @@ static void ohci_set_ctl(OHCIState* ohci, uint32_t val)
 	//ohci_intr_update(ohci);
 }
 
-static uint32_t ohci_get_frame_remaining(OHCIState* ohci)
+static u32 ohci_get_frame_remaining(OHCIState* ohci)
 {
-	uint16_t fr;
-	int64_t tks;
+	u16 fr;
+	s64 tks;
 
 	if ((ohci->ctl & OHCI_CTL_HCFS) != OHCI_USB_OPERATIONAL)
 		return (ohci->frt << 31);
@@ -1364,18 +1295,16 @@ static uint32_t ohci_get_frame_remaining(OHCIState* ohci)
 		return (ohci->frt << 31);
 
 	tks = muldiv64(1, tks, g_usb_bit_time);
-	fr = (uint16_t)(ohci->fi - tks);
+	fr = (u16)(ohci->fi - tks);
 
 	return (ohci->frt << 31) | fr;
 }
 
 
 /* Set root hub status */
-static void ohci_set_hub_status(OHCIState* ohci, uint32_t val)
+static void ohci_set_hub_status(OHCIState* ohci, u32 val)
 {
-	uint32_t old_state;
-
-	old_state = ohci->rhstatus;
+	const u32 old_state = ohci->rhstatus;
 
 	/* write 1 to clear OCIC */
 	if (val & OHCI_RHS_OCIC)
@@ -1404,13 +1333,10 @@ static void ohci_set_hub_status(OHCIState* ohci, uint32_t val)
 }
 
 /* Set root hub port status */
-static void ohci_port_set_status(OHCIState* ohci, int portnum, uint32_t val)
+static void ohci_port_set_status(OHCIState* ohci, int portnum, u32 val)
 {
-	uint32_t old_state;
-	OHCIPort* port;
-
-	port = &ohci->rhport[portnum];
-	old_state = port->ctrl;
+	OHCIPort* port = &ohci->rhport[portnum];
+	const u32 old_state = port->ctrl;
 
 	/* Write to clear CSC, PESC, PSSC, OCIC, PRSC */
 	if (val & OHCI_PORT_WTC)
@@ -1470,8 +1396,8 @@ static const char* reg_names[] = {
 	"HcRhStatus",
 };
 
-uint32_t ohci_mem_read_impl(OHCIState* ptr, uint32_t addr);
-uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
+u32 ohci_mem_read_impl(OHCIState* ptr, u32 addr);
+u32 ohci_mem_read(OHCIState* ptr, u32 addr)
 {
 	auto val = ohci_mem_read_impl(ptr, addr);
 	int idx = (addr - ptr->mem_base) >> 2;
@@ -1482,9 +1408,9 @@ uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
 	return val;
 }
 
-uint32_t ohci_mem_read_impl(OHCIState* ptr, uint32_t addr)
+u32 ohci_mem_read_impl(OHCIState* ptr, u32 addr)
 #else
-uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
+u32 ohci_mem_read(OHCIState* ptr, u32 addr)
 #endif
 {
 	OHCIState* ohci = ptr;
@@ -1571,8 +1497,8 @@ uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
 }
 
 #ifdef DEBUG_OHCI
-void ohci_mem_write_impl(OHCIState* ptr, uint32_t addr, uint32_t val);
-void ohci_mem_write(OHCIState* ptr, uint32_t addr, uint32_t val)
+void ohci_mem_write_impl(OHCIState* ptr, u32 addr, u32 val);
+void ohci_mem_write(OHCIState* ptr, u32 addr, u32 val)
 {
 	int idx = (addr - ptr->mem_base) >> 2;
 	if (idx < countof(reg_names))
@@ -1582,9 +1508,9 @@ void ohci_mem_write(OHCIState* ptr, uint32_t addr, uint32_t val)
 	ohci_mem_write_impl(ptr, addr, val);
 }
 
-void ohci_mem_write_impl(OHCIState* ptr, uint32_t addr, uint32_t val)
+void ohci_mem_write_impl(OHCIState* ptr, u32 addr, u32 val)
 #else
-void ohci_mem_write(OHCIState* ptr, uint32_t addr, uint32_t val)
+void ohci_mem_write(OHCIState* ptr, u32 addr, u32 val)
 #endif
 {
 	OHCIState* ohci = ptr;
@@ -1706,7 +1632,7 @@ static USBPortOps ohci_port_ops = {
 	/*.complete =*/ohci_async_complete_packet,
 };
 
-OHCIState* ohci_create(uint32_t base, int ports)
+OHCIState* ohci_create(u32 base, int ports)
 {
 	OHCIState* ohci = (OHCIState*)malloc(sizeof(OHCIState));
 	if (!ohci)
