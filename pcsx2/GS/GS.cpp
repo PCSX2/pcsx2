@@ -20,6 +20,7 @@
 #include "GS/Renderers/Null/GSRendererNull.h"
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
+#include "VMManager.h"
 
 #ifdef ENABLE_OPENGL
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
@@ -333,6 +334,9 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 
 void GSclose()
 {
+	if (GSCapture::IsCapturing())
+		GSCapture::EndCapture();
+
 	CloseGSRenderer();
 	CloseGSDevice(true);
 	Host::ReleaseRenderWindow();
@@ -492,6 +496,9 @@ void GSGameChanged()
 {
 	if (GSIsHardwareRenderer())
 		GSTextureReplacements::GameChanged();
+
+	if (!VMManager::HasValidVM() && GSCapture::IsCapturing())
+		GSCapture::EndCapture();
 }
 
 bool GSHasDisplayWindow()

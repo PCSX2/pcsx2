@@ -1537,6 +1537,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	{
 		MTGS::WaitGS(false, false, false);
 		MTGS::ResetGS(true);
+		MTGS::GameChanged();
 	}
 	else
 	{
