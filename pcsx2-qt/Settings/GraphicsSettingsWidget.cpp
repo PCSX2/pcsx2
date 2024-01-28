@@ -300,6 +300,26 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	}
 #endif
 
+	// Get rid of widescreen/no-interlace checkboxes from per-game settings, unless the user previously had them set.
+	if (m_dialog->isPerGameSettings())
+	{
+		if ((m_dialog->containsSettingValue("EmuCore", "EnableWideScreenPatches") || m_dialog->containsSettingValue("EmuCore", "EnableNoInterlacingPatches")) &&
+			QMessageBox::question(QtUtils::GetRootWidget(this), tr("Remove Unsupported Settings"),
+				tr("You currently have the <strong>Enable Widescreen Patches</strong> or <strong>Enable No-Interlacing Patches</strong> options enabled for this game.<br><br>"
+				   "We no longer support these options, instead <strong>you should select the \"Patches\" section, and explicitly enable the patches you want.</strong><br><br>"
+				   "Do you want to remove these options from your game configuration now?"),
+				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+		{
+			m_dialog->removeSettingValue("EmuCore", "EnableWideScreenPatches");
+			m_dialog->removeSettingValue("EmuCore", "EnableNoInterlacingPatches");
+		}
+
+		m_ui.gridLayout->removeWidget(m_ui.widescreenPatches);
+		m_ui.gridLayout->removeWidget(m_ui.noInterlacingPatches);
+		safe_delete(m_ui.widescreenPatches);
+		safe_delete(m_ui.noInterlacingPatches);		
+	}
+
 	// Hide advanced options by default.
 	if (!QtHost::ShouldShowAdvancedSettings())
 	{
