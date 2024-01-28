@@ -61,7 +61,7 @@ void usb_attach(USBPort* port)
 {
 	USBDevice* dev = port->dev;
 
-	assert(dev != NULL);
+	assert(dev != nullptr);
 	assert(dev->attached);
 	assert(dev->state == USB_STATE_NOTATTACHED);
 	usb_pick_speed(port);
@@ -74,7 +74,7 @@ void usb_detach(USBPort* port)
 {
 	USBDevice* dev = port->dev;
 
-	assert(dev != NULL);
+	assert(dev != nullptr);
 	assert(dev->state != USB_STATE_NOTATTACHED);
 	port->ops->detach(port);
 	dev->state = USB_STATE_NOTATTACHED;
@@ -90,7 +90,7 @@ void usb_port_reset(USBPort* port)
 {
 	USBDevice* dev = port->dev;
 
-	assert(dev != NULL);
+	assert(dev != nullptr);
 	usb_detach(port);
 	usb_attach(port);
 	usb_device_reset(dev);
@@ -98,7 +98,7 @@ void usb_port_reset(USBPort* port)
 
 void usb_device_reset(USBDevice* dev)
 {
-	if (dev == NULL || !dev->attached)
+	if (dev == nullptr || !dev->attached)
 	{
 		return;
 	}
@@ -381,13 +381,13 @@ void usb_generic_async_ctrl_complete(USBDevice* s, USBPacket* p)
 	usb_packet_complete(s, p);
 }
 
-USBDevice* usb_find_device(USBPort* port, uint8_t addr)
+USBDevice* usb_find_device(USBPort* port, u8 addr)
 {
 	USBDevice* dev = port->dev;
 
-	if (dev == NULL || !dev->attached || dev->state != USB_STATE_DEFAULT)
+	if (dev == nullptr || !dev->attached || dev->state != USB_STATE_DEFAULT)
 	{
-		return NULL;
+		return nullptr;
 	}
 	if (dev->addr == addr)
 	{
@@ -449,7 +449,7 @@ static void usb_queue_one(USBPacket* p)
    driver will call usb_packet_complete() when done processing it. */
 void usb_handle_packet(USBDevice* dev, USBPacket* p)
 {
-	if (dev == NULL)
+	if (dev == nullptr)
 	{
 		p->status = USB_RET_NODEV;
 		return;
@@ -457,7 +457,7 @@ void usb_handle_packet(USBDevice* dev, USBPacket* p)
 	assert(dev == p->ep->dev);
 	assert(dev->state == USB_STATE_DEFAULT);
 	usb_packet_check_state(p, USB_PACKET_SETUP);
-	assert(p->ep != NULL);
+	assert(p->ep != nullptr);
 
 	/* Submitting a new packet clears halt */
 	if (p->ep->halted)
@@ -632,7 +632,7 @@ void usb_packet_setup(USBPacket* p, int pid,
 	p->parameter = 0;
 	p->short_not_ok = short_not_ok;
 	p->int_req = int_req;
-	p->buffer_ptr = NULL;
+	p->buffer_ptr = nullptr;
 	p->buffer_size = 0;
 	usb_packet_set_state(p, USB_PACKET_SETUP);
 }
@@ -640,7 +640,7 @@ void usb_packet_setup(USBPacket* p, int pid,
 void usb_packet_addbuf(USBPacket* p, void* ptr, size_t len)
 {
 	assert(!p->buffer_ptr);
-	p->buffer_ptr = static_cast<uint8_t*>(ptr);
+	p->buffer_ptr = static_cast<u8*>(ptr);
 	p->buffer_size = static_cast<unsigned int>(len);
 }
 
@@ -785,9 +785,9 @@ struct USBEndpoint* usb_ep_get(USBDevice* dev, int pid, int ep)
 {
 	struct USBEndpoint* eps;
 
-	if (dev == NULL)
+	if (dev == nullptr)
 	{
-		return NULL;
+		return nullptr;
 	}
 	eps = (pid == USB_TOKEN_IN) ? dev->ep_in : dev->ep_out;
 	if (ep == 0)
@@ -799,19 +799,19 @@ struct USBEndpoint* usb_ep_get(USBDevice* dev, int pid, int ep)
 	return eps + ep - 1;
 }
 
-uint8_t usb_ep_get_type(USBDevice* dev, int pid, int ep)
+u8 usb_ep_get_type(USBDevice* dev, int pid, int ep)
 {
 	struct USBEndpoint* uep = usb_ep_get(dev, pid, ep);
 	return uep->type;
 }
 
-void usb_ep_set_type(USBDevice* dev, int pid, int ep, uint8_t type)
+void usb_ep_set_type(USBDevice* dev, int pid, int ep, u8 type)
 {
 	struct USBEndpoint* uep = usb_ep_get(dev, pid, ep);
 	uep->type = type;
 }
 
-void usb_ep_set_ifnum(USBDevice* dev, int pid, int ep, uint8_t ifnum)
+void usb_ep_set_ifnum(USBDevice* dev, int pid, int ep, u8 ifnum)
 {
 	struct USBEndpoint* uep = usb_ep_get(dev, pid, ep);
 	uep->ifnum = ifnum;
@@ -839,7 +839,7 @@ void usb_ep_set_max_packet_size(USBDevice* dev, int pid, int ep,
 	uep->max_packet_size = size * microframes;
 }
 
-void usb_ep_set_max_streams(USBDevice* dev, int pid, int ep, uint8_t raw)
+void usb_ep_set_max_streams(USBDevice* dev, int pid, int ep, u8 raw)
 {
 	struct USBEndpoint* uep = usb_ep_get(dev, pid, ep);
 	int MaxStreams;
@@ -875,7 +875,7 @@ USBPacket* usb_ep_find_packet_by_id(USBDevice* dev, int pid, int ep,
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void usb_wakeup(USBDevice* dev)

@@ -6,19 +6,6 @@
 
 #define USB_DEVICE_GET_CLASS(p) (&p->klass)
 
-#if 0
-// Unused
-static void usb_device_realize(USBDevice* dev /*, Error **errp*/)
-{
-	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
-
-	if (klass->realize)
-	{
-		klass->realize(dev /*, errp*/);
-	}
-}
-#endif
-
 USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr)
 {
 	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
@@ -26,21 +13,8 @@ USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr)
 	{
 		return klass->find_device(dev, addr);
 	}
-	return NULL;
+	return nullptr;
 }
-
-#if 0
-// Unused
-static void usb_device_unrealize(USBDevice* dev /*, Error **errp*/)
-{
-	USBDeviceClass* klass = USB_DEVICE_GET_CLASS(dev);
-
-	if (klass->unrealize)
-	{
-		klass->unrealize(dev /*, errp*/);
-	}
-}
-#endif
 
 void usb_device_cancel_packet(USBDevice* dev, USBPacket* p)
 {
@@ -87,12 +61,6 @@ void usb_device_handle_data(USBDevice* dev, USBPacket* p)
 		klass->handle_data(dev, p);
 	}
 }
-
-/*const char *usb_device_get_product_desc(USBDevice *dev)
-{
-    USBDeviceClass *klass = USB_DEVICE_GET_CLASS(dev);
-    return klass->product_desc;
-}*/
 
 const USBDesc* usb_device_get_usb_desc(USBDevice* dev)
 {
