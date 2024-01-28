@@ -17220,6 +17220,9 @@ SLES-51997:
   compat: 5
   clampModes:
     eeClampMode: 3 # For grey screen ingame.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51998:
   name: "Kao the Kangaroo - Round 2"
   region: "PAL-M5"
@@ -17401,6 +17404,9 @@ SLES-52097:
   compat: 5
   clampModes:
     eeClampMode: 3 # For grey screen ingame.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52100:
   name: "NRL Rugby League"
   region: "PAL-E"
@@ -58003,6 +58009,9 @@ SLUS-20433:
   compat: 5
   clampModes:
     eeClampMode: 3 # For grey screen ingame.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20434:
   name: "Myst III - Exile"
   region: "NTSC-U"
