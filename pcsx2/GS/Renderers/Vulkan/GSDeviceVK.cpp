@@ -1058,6 +1058,13 @@ void GSDeviceVK::ScanForCommandBufferCompletion()
 
 void GSDeviceVK::WaitForCommandBufferCompletion(u32 index)
 {
+	// We might be waiting for the buffer we just submitted to the worker thread.
+	if (m_queued_present.command_buffer_index == index && !m_present_done.load(std::memory_order_acquire))
+	{
+		Console.WarningFmt("Waiting for threaded submission of cmdbuffer {}", index);
+		WaitForPresentComplete();
+	}
+
 	// Wait for this command buffer to be completed.
 	const VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
 	if (res != VK_SUCCESS)
@@ -1174,7 +1181,7 @@ void GSDeviceVK::SubmitCommandBuffer(
 	m_queued_present.command_buffer_index = m_current_frame;
 	m_queued_present.swap_chain = present_swap_chain;
 	m_queued_present.spin_cycles = spin_cycles;
-	m_present_done.store(false);
+	m_present_done.store(false, std::memory_order_release);
 	m_present_queued_cv.notify_one();
 }
 
@@ -1253,7 +1260,7 @@ void GSDeviceVK::DoPresent(VKSwapChain* present_swap_chain)
 
 void GSDeviceVK::WaitForPresentComplete()
 {
-	if (m_present_done.load())
+	if (m_present_done.load(std::memory_order_acquire))
 		return;
 
 	std::unique_lock<std::mutex> lock(m_present_mutex);
@@ -1262,27 +1269,30 @@ void GSDeviceVK::WaitForPresentComplete()
 
 void GSDeviceVK::WaitForPresentComplete(std::unique_lock<std::mutex>& lock)
 {
-	if (m_present_done.load())
+	if (m_present_done.load(std::memory_order_acquire))
 		return;
 
-	m_present_done_cv.wait(lock, [this]() { return m_present_done.load(); });
+	m_present_done_cv.wait(lock, [this]() { return m_present_done.load(std::memory_order_acquire); });
 }
 
 void GSDeviceVK::PresentThread()
 {
 	std::unique_lock<std::mutex> lock(m_present_mutex);
-	while (!m_present_thread_done.load())
+	while (!m_present_thread_done.load(std::memory_order_acquire))
 	{
-		m_present_queued_cv.wait(lock, [this]() { return !m_present_done.load() || m_present_thread_done.load(); });
+		m_present_queued_cv.wait(lock, [this]() {
+			return !m_present_done.load(std::memory_order_acquire) ||
+				   m_present_thread_done.load(std::memory_order_acquire);
+		});
 
-		if (m_present_done.load())
+		if (m_present_done.load(std::memory_order_acquire))
 			continue;
 
 		DoSubmitCommandBuffer(
 			m_queued_present.command_buffer_index, m_queued_present.swap_chain, m_queued_present.spin_cycles);
 		if (m_queued_present.swap_chain)
 			DoPresent(m_queued_present.swap_chain);
-		m_present_done.store(true);
+		m_present_done.store(true, std::memory_order_release);
 		m_present_done_cv.notify_one();
 	}
 }
@@ -1290,7 +1300,7 @@ void GSDeviceVK::PresentThread()
 void GSDeviceVK::StartPresentThread()
 {
 	pxAssert(!m_present_thread.joinable());
-	m_present_thread_done.store(false);
+	m_present_thread_done.store(false, std::memory_order_release);
 	m_present_thread = std::thread(&GSDeviceVK::PresentThread, this);
 }
 
@@ -1302,7 +1312,7 @@ void GSDeviceVK::StopPresentThread()
 	{
 		std::unique_lock<std::mutex> lock(m_present_mutex);
 		WaitForPresentComplete(lock);
-		m_present_thread_done.store(true);
+		m_present_thread_done.store(true, std::memory_order_acquire);
 		m_present_queued_cv.notify_one();
 	}
 
@@ -1366,9 +1376,6 @@ void GSDeviceVK::MoveToNextCommandBuffer()
 void GSDeviceVK::ActivateCommandBuffer(u32 index)
 {
 	FrameResources& resources = m_frame_resources[index];
-
-	if (!m_present_done.load() && m_queued_present.command_buffer_index == index)
-		WaitForPresentComplete();
 
 	// Wait for the GPU to finish with all resources for this command buffer.
 	if (resources.fence_counter > m_completed_fence_counter)
