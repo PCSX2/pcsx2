@@ -641,30 +641,36 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 
 __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing)
 {
+	if (!GSCapture::IsCapturing() || FullscreenUI::HasActiveWindow())
+		return;
+
 	const float shadow_offset = std::ceil(scale);
-
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
-
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
-	ImVec2 text_size;
 
-#define DRAW_LINE(font, text, color) \
-	do \
-	{ \
-		text_size = font->CalcTextSizeA(font->FontSize, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr); \
-		dl->AddText(font, font->FontSize, \
-			ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset), \
-			IM_COL32(0, 0, 0, 100), (text)); \
-		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
-		position_y += text_size.y + spacing; \
-	} while (0)
+	static constexpr const char* ICON = ICON_FA_RECORDING;
+	const TinyString text_msg = TinyString::from_fmt(" {}", GSCapture::GetElapsedTime());
+	const ImVec2 icon_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
+		-1.0f, ICON, nullptr, nullptr);
+	const ImVec2 text_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
+		-1.0f, text_msg.c_str(), text_msg.end_ptr(), nullptr);
 
-	if (GSCapture::IsCapturing() && !FullscreenUI::HasActiveWindow())
-	{
-		DRAW_LINE(standard_font, TinyString::from_fmt("{} {}", ICON_FA_RECORDING, GSCapture::GetElapsedTime()).c_str(), IM_COL32(255, 0, 0, 255));
-	}
+	// Shadow
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x + shadow_offset, position_y + shadow_offset),
+		IM_COL32(0, 0, 0, 100), ICON);
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset),
+		IM_COL32(0, 0, 0, 100), text_msg.c_str(), text_msg.end_ptr());
 
-#undef DRAW_LINE
+	// Text
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x, position_y), IM_COL32(255, 0, 0, 255), ICON);
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x, position_y), IM_COL32(255, 255, 255, 255), text_msg.c_str(),
+		text_msg.end_ptr());
+
+	position_y += std::max(icon_size.y, text_size.y) + spacing;
 }
 
 namespace SaveStateSelectorUI
