@@ -15,10 +15,10 @@
 		<file>icons/black/svg/close-line.svg</file>
 		<file>icons/black/svg/controller-line.svg</file>
 		<file>icons/black/svg/controller-strike-line.svg</file>
-		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/debug-step-into-line.svg</file>
 		<file>icons/black/svg/debug-step-out-line.svg</file>
 		<file>icons/black/svg/debug-step-over-line.svg</file>
+		<file>icons/black/svg/debugger-line.svg</file>
 		<file>icons/black/svg/delete-back-2-line.svg</file>
 		<file>icons/black/svg/disc-2-line.svg</file>
 		<file>icons/black/svg/disc-eject-line.svg</file>
@@ -67,6 +67,7 @@
 		<file>icons/black/svg/msd-line.svg</file>
 		<file>icons/black/svg/pause-line.svg</file>
 		<file>icons/black/svg/pencil-line.svg</file>
+		<file>icons/black/svg/pin-filled.svg</file>
 		<file>icons/black/svg/play-line.svg</file>
 		<file>icons/black/svg/plus-line.svg</file>
 		<file>icons/black/svg/Popn-line.svg</file>
@@ -110,10 +111,10 @@
 		<file>icons/white/svg/close-line.svg</file>
 		<file>icons/white/svg/controller-line.svg</file>
 		<file>icons/white/svg/controller-strike-line.svg</file>
-		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/debug-step-into-line.svg</file>
 		<file>icons/white/svg/debug-step-out-line.svg</file>
 		<file>icons/white/svg/debug-step-over-line.svg</file>
+		<file>icons/white/svg/debugger-line.svg</file>
 		<file>icons/white/svg/delete-back-2-line.svg</file>
 		<file>icons/white/svg/disc-2-line.svg</file>
 		<file>icons/white/svg/disc-eject-line.svg</file>
@@ -162,6 +163,7 @@
 		<file>icons/white/svg/msd-line.svg</file>
 		<file>icons/white/svg/pause-line.svg</file>
 		<file>icons/white/svg/pencil-line.svg</file>
+		<file>icons/white/svg/pin-filled.svg</file>
 		<file>icons/white/svg/play-line.svg</file>
 		<file>icons/white/svg/plus-line.svg</file>
 		<file>icons/white/svg/Popn-line.svg</file>
