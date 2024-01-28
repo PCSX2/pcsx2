@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GSCapture.h"
@@ -19,7 +19,6 @@
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
-#include "common/Timer.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -161,7 +160,6 @@ namespace GSCapture
 	static std::mutex s_lock;
 	static GSVector2i s_size{};
 	static std::string s_filename;
-	static Common::Timer s_capture_start_time;
 	static std::atomic_bool s_capturing{false};
 	static std::atomic_bool s_encoding_error{false};
 
@@ -809,8 +807,6 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	lock.unlock();
 	Host::OnCaptureStarted(s_filename);
 
-	s_capture_start_time.Reset();
-
 	return true;
 }
 
@@ -1344,10 +1340,29 @@ bool GSCapture::IsCapturingAudio()
 	return (s_audio_stream != nullptr);
 }
 
-TinyString GSCapture::GetElapsedTime() 
+TinyString GSCapture::GetElapsedTime()
 {
-  const u32 seconds = static_cast<u32>(s_capture_start_time.GetTimeSeconds());
-  return TinyString::from_fmt("{:02d}:{:02d}:{:02d}", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+	std::unique_lock<std::mutex> lock(s_lock);
+	s64 seconds;
+	if (s_video_stream)
+	{
+		seconds = (s_next_video_pts * static_cast<s64>(s_video_codec_context->time_base.num)) /
+				  static_cast<s64>(s_video_codec_context->time_base.den);
+	}
+	else if (s_audio_stream)
+	{
+		seconds = (s_next_audio_pts * static_cast<s64>(s_audio_codec_context->time_base.num)) /
+				  static_cast<s64>(s_audio_codec_context->time_base.den);
+	}
+	else
+	{
+		seconds = -1;
+	}
+
+	TinyString ret;
+	if (seconds >= 0)
+		ret.fmt("{:02d}:{:02d}:{:02d}", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+	return ret;
 }
 
 const Threading::ThreadHandle& GSCapture::GetEncoderThreadHandle()
