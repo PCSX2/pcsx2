@@ -95,6 +95,9 @@
    </property>
   </action>
   <action name="actionOnTop">
+   <property name="icon">
+    <iconset theme="pin-filled"/>
+   </property>
    <property name="checkable">
     <bool>true</bool>
    </property>
