@@ -86,7 +86,7 @@ jobs:
 
       - name: Cache Dependencies
         id: cache-deps
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/deps
           key: ${{ inputs.os }} deps ${{ hashFiles('.github/workflows/scripts/macos/build-dependencies.sh') }}
@@ -107,7 +107,7 @@ jobs:
         run: echo "timestamp=$(date -u "+%Y-%m-%d-%H;%M;%S")" >> $GITHUB_OUTPUT
 
       - name: Cache ccache cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .ccache
           key: ${{ inputs.os }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
