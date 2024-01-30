@@ -1336,8 +1336,12 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if (!skip)
 	{
-		const bool recursive_copy = (BITBLTBUF.SBP == BITBLTBUF.DBP) && (m_env.TRXDIR.XDIR == 2);
-		g_texture_cache->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r, recursive_copy);
+		const int sx = m_env.TRXPOS.DSAX;
+		const int sy = m_env.TRXPOS.DSAY;
+		const int w = m_env.TRXREG.RRW;
+		const int h = m_env.TRXREG.RRH;
+		const bool recursive_copy = (BITBLTBUF.DBP <= BITBLTBUF.SBP) && GSLocalMemory::GetEndBlockAddress(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM, GSVector4i(sx, sy, sx + w, sy + h)) >= BITBLTBUF.SBP && (m_env.TRXDIR.XDIR == 2);
+		g_texture_cache->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r, true);
 	}
 }
 
