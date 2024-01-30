@@ -1990,8 +1990,6 @@ SCAJ-25012:
 SCAJ-25026:
   name: "Kunoichi Shinobi"
   region: "NTSC-Unk"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SCAJ-25034:
   name: "Sakura Taisen Monogatari"
   region: "NTSC-Unk"
@@ -11471,8 +11469,6 @@ SLAJ-25023:
 SLAJ-25026:
   name: "Kunoichi Shinobi"
   region: "NTSC-Unk"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLAJ-25027:
   name: "Sonic Heroes"
   region: "NTSC-Unk"
@@ -11485,8 +11481,6 @@ SLAJ-25030:
 SLAJ-25031:
   name: "Kunoichi - Shinobu"
   region: "NTSC-C-J"
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLAJ-25033:
   name: "Puyo Puyo Fever"
   region: "NTSC-Unk"
@@ -17650,8 +17644,6 @@ SLES-52238:
   name: "Nightshade"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLES-52240:
   name: "International Pool Championship"
   region: "PAL-M5"
@@ -28169,8 +28161,6 @@ SLKA-25135:
   name: "Kunoichi"
   region: "NTSC-K"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLKA-25136:
   name: "Need for Speed - Underground"
   region: "NTSC-K"
@@ -37704,8 +37694,6 @@ SLPM-65447:
   name-en: "Kunoichi"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLPM-65448:
   name: カンブリアンQTS 〜化石になっても〜
   name-sort: かんぶりあんQTS 〜かせきになっても〜
@@ -59959,8 +59947,6 @@ SLUS-20810:
   name: "Nightshade"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    getSkipCount: "GSC_Kunoichi"
 SLUS-20811:
   name: "Need for Speed - Underground"
   region: "NTSC-U"

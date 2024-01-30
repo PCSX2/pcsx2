@@ -389,31 +389,6 @@ bool GSHwHack::GSC_TalesOfLegendia(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_Kunoichi(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!RTME && (RFBP == 0x0 || RFBP == 0x00700 || RFBP == 0x00800) && RFPSM == PSMCT32 && RFBMSK == 0x00FFFFFF)
-		{
-			// Removes depth effects(shadows) not rendered correctly on all renders.
-			skip = 3;
-		}
-		if (RTME && (RFBP == 0x0700 || RFBP == 0) && RTBP0 == 0x0e00 && RTPSM == 0 && RFBMSK == 0)
-		{
-			skip = 1; // Removes black screen (not needed anymore maybe)?
-		}
-	}
-	else
-	{
-		if (RTME && (RFBP == 0x0e00) && RFPSM == PSMCT32 && RFBMSK == 0xFF000000)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_ZettaiZetsumeiToshi2(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1465,7 +1440,6 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 #define CRC_F(name) { #name, &GSHwHack::name }
 
 const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_functions[] = {
-	CRC_F(GSC_Kunoichi),
 	CRC_F(GSC_Manhunt2),
 	CRC_F(GSC_MidnightClub3),
 	CRC_F(GSC_SacredBlaze),
