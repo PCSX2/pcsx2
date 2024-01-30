@@ -599,14 +599,18 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
-	if ((static_cast<u64>(address) + num_bytes) >= EXPOSED_EE_MEMORY_SIZE)
+	if ((static_cast<u64>(address) + num_bytes) >= EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
 		return 0u;
 	}
 
+	// RA uses a fake memory map with the scratchpad directly above physical memory.
+	// The scratchpad is not meant to be accessible via physical addressing, only virtual.
+	// This also means that the upper 96MB of memory will never be accessible to achievements.
+	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+
 	// Fast paths for known data sizes.
-	const u8* ptr = reinterpret_cast<u8*>(eeMem) + address;
 	switch (num_bytes)
 	{
 		// clang-format off
@@ -3100,32 +3104,44 @@ unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int add
 	}
 
 	unsigned char value;
-	std::memcpy(&value, reinterpret_cast<u8*>(eeMem) + address, sizeof(value));
+	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	std::memcpy(&value, ptr, sizeof(value));
 	return value;
 }
 
 unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int address, unsigned char* buffer, unsigned int bytes)
 {
-	if ((address >= EXPOSED_EE_MEMORY_SIZE))
+	if ((address >= EXPOSED_EE_MEMORY_SIZE)) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds block memory read for %u bytes at %08X.", bytes, address);
 		return 0u;
 	}
 
+	if (address < Ps2MemSize::MainRam && (address + bytes) > Ps2MemSize::MainRam) [[unlikely]]
+	{
+		// Split across RAM+Scratch.
+		const unsigned int bytes_from_ram = Ps2MemSize::MainRam - address;
+		const unsigned int bytes_from_scratch = bytes - bytes_from_ram;
+		return (RACallbackReadBlock(address, buffer, bytes_from_ram) +
+				RACallbackReadBlock(address + bytes_from_ram, buffer + bytes_from_ram, bytes_from_scratch));
+	}
+
 	const unsigned int read_byte_count = std::min<unsigned int>(EXPOSED_EE_MEMORY_SIZE - address, bytes);
-	std::memcpy(buffer, reinterpret_cast<u8*>(eeMem) + address, read_byte_count);
+	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	std::memcpy(buffer, ptr, read_byte_count);
 	return read_byte_count;
 }
 
 void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-	if ((static_cast<u64>(address) + sizeof(value)) >= EXPOSED_EE_MEMORY_SIZE)
+	if ((static_cast<u64>(address) + sizeof(value)) >= EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory poke at %08X (value %08X).", address, value);
 		return;
 	}
 
-	std::memcpy(reinterpret_cast<u8*>(eeMem) + address, &value, sizeof(value));
+	u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	std::memcpy(ptr, &value, sizeof(value));
 }
 
 #else
