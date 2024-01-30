@@ -221,6 +221,9 @@ public:
 	/// Returns true if the specified texture address matches the frame or Z buffer.
 	bool IsTBPFrameOrZ(u32 tbp);
 
+	//// Returns true if the draws appear to be a manual deswizzle.
+	void HandleManualDeswizzle();
+
 	/// Offsets the current draw, used for RT-in-RT. Offsets are relative to the *current* FBP, not the new FBP.
 	void OffsetDraw(s32 fbp_offset, s32 zbp_offset, s32 xoffset, s32 yoffset);
 
