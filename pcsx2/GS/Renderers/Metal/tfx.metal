@@ -604,7 +604,9 @@ struct PSMain
 			t.a = (!PS_AEM || any(t.rgb != 0)) ? 255.f * cb.ta.x : 0.f;
 		else if (PS_AEM_FMT == FMT_16)
 			t.a = t.a >= 128.f ? 255.f * cb.ta.y : (!PS_AEM || any(t.rgb != 0)) ? 255.f * cb.ta.x : 0.f;
-
+		else if (PS_PAL_FMT != 0 && !PS_TALES_OF_ABYSS_HLE && !PS_URBAN_CHAOS_HLE)
+			t = trunc(sample_4p(uint4(t.aaaa))[0] * 255.0f + 0.05f);
+			
 		return t;
 	}
 
