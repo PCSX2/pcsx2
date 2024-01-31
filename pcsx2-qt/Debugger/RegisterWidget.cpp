@@ -202,6 +202,19 @@ void RegisterWidget::wheelEvent(QWheelEvent* event)
 	this->repaint();
 }
 
+void RegisterWidget::mouseDoubleClickEvent(QMouseEvent* event)
+{
+	if (!m_cpu->isAlive())
+		return;
+	if (m_selectedRow > m_rowEnd) // Unsigned underflow; selectedRow will be > m_rowEnd (technically negative)
+		return;
+	const int categoryIndex = ui.registerTabs->currentIndex();
+	if (m_cpu->getRegisterSize(categoryIndex) == 128)
+		contextChangeSegment();
+	else
+		contextChangeValue();
+}
+
 void RegisterWidget::customMenuRequested(QPoint pos)
 {
 	if (!m_cpu->isAlive())
