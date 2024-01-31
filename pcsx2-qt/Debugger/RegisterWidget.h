@@ -26,6 +26,7 @@ public:
 protected:
 	void paintEvent(QPaintEvent* event);
 	void mousePressEvent(QMouseEvent* event);
+	void mouseDoubleClickEvent(QMouseEvent* event);
 	void wheelEvent(QWheelEvent* event);
 
 public slots:
