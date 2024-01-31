@@ -85,8 +85,8 @@ namespace usb_mic
 {
 	namespace audiodev_cubeb
 	{
-		CubebAudioDevice::CubebAudioDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency)
-			: AudioDevice(port, dir, channels)
+		CubebAudioDevice::CubebAudioDevice(AudioDir dir, u32 channels, std::string devname, s32 latency)
+			: AudioDevice(dir, channels)
 			, mLatency(latency)
 			, mDeviceName(std::move(devname))
 		{
@@ -182,24 +182,12 @@ namespace usb_mic
 		uint32_t CubebAudioDevice::GetBuffer(short* buff, uint32_t frames)
 		{
 			if (!mStream)
-				return frames;
+				return 0;
 
 			std::lock_guard<std::mutex> lk(mMutex);
-			u32 samples_to_read = frames * GetChannels();
-			short* pDst = (short*)buff;
-			pxAssert(samples_to_read <= mBuffer.size<short>());
-
-			while (samples_to_read > 0)
-			{
-				u32 samples = std::min(samples_to_read, static_cast<u32>(mBuffer.peek_read<short>()));
-				if (!samples)
-					break;
-				memcpy(pDst, mBuffer.front(), samples * sizeof(short));
-				mBuffer.read<short>(samples);
-				pDst += samples;
-				samples_to_read -= samples;
-			}
-			return (frames - (samples_to_read / GetChannels()));
+			const size_t read_size = frames * sizeof(buff[0]) * GetChannels();
+			const size_t bytes_read = mBuffer.read(buff, read_size);
+			return (bytes_read / sizeof(buff[0]) / GetChannels());
 		}
 
 		uint32_t CubebAudioDevice::SetBuffer(short* buff, uint32_t frames)
@@ -220,7 +208,7 @@ namespace usb_mic
 				return true;
 
 			std::lock_guard<std::mutex> lk(mMutex);
-			*size = mBuffer.size<short>() / GetChannels();
+			*size = mBuffer.size() / sizeof(short) / GetChannels();
 			return true;
 		}
 
@@ -242,7 +230,7 @@ namespace usb_mic
 		{
 			std::lock_guard<std::mutex> lk(mMutex);
 			const u32 samples = std::max(((mSampleRate * mChannels) * mLatency) / 1000u, mStreamLatency * mChannels);
-			mBuffer.reserve(sizeof(u16) * samples);
+			mBuffer.reset(sizeof(u16) * samples);
 		}
 
 		long CubebAudioDevice::DataCallback(
@@ -253,9 +241,15 @@ namespace usb_mic
 
 			std::lock_guard<std::mutex> lk(ad->mMutex);
 			if (ad->mAudioDir == AUDIODIR_SOURCE)
-				ad->mBuffer.write((u8*)input_buffer, bytes);
+			{
+				ad->mBuffer.write(input_buffer, bytes);
+			}
 			else
-				ad->mBuffer.read((u8*)output_buffer, bytes);
+			{
+				const size_t written = ad->mBuffer.read(output_buffer, bytes);
+				if (written < bytes)
+					std::memset(static_cast<u8*>(output_buffer) + written, 0, bytes - written);
+			}
 
 			return nframes;
 		}

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Common.h"
+#include "Host.h"
 #include "Memory.h"
 #include "Elfheader.h"
 #include "PINE.h"
@@ -623,7 +624,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
-				VMManager::SaveStateToSlot(FromSpan<u8>(buf, buf_cnt));
+				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] { VMManager::SaveStateToSlot(slot); });
 				buf_cnt += 1;
 				break;
 			}
@@ -633,7 +634,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					goto error;
 				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
-				VMManager::LoadStateFromSlot(FromSpan<u8>(buf, buf_cnt));
+				Host::RunOnCPUThread([slot = FromSpan<u8>(buf, buf_cnt)] { VMManager::LoadStateFromSlot(slot); });
 				buf_cnt += 1;
 				break;
 			}

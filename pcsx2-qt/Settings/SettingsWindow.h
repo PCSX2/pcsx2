@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -9,12 +9,14 @@
 #include <array>
 #include <memory>
 
+class QWheelEvent;
+
 class INISettingsInterface;
 class SettingsInterface;
 
 namespace GameList
 {
-struct Entry;
+	struct Entry;
 }
 
 class InterfaceSettingsWidget;
@@ -103,6 +105,7 @@ private Q_SLOTS:
 
 protected:
 	void closeEvent(QCloseEvent*) override;
+	void wheelEvent(QWheelEvent* event) override;
 
 private:
 	enum : u32
@@ -113,6 +116,7 @@ private:
 	void setupUi(const GameList::Entry* game);
 
 	void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
+	bool handleWheelEvent(QWheelEvent* event);
 
 	SettingsWindow* reopen();
 

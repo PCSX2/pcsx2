@@ -8,6 +8,7 @@
 #include "Models/BreakpointModel.h"
 #include "Models/ThreadModel.h"
 #include "Models/SavedAddressesModel.h"
+#include "Debugger/DebuggerSettingsManager.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
@@ -45,6 +46,15 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	m_ui.setupUi(this);
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &CpuWidget::onVMPaused);
+	connect(g_emu_thread, &EmuThread::onGameChanged, [this](const QString& title) {
+		if (title.isEmpty())
+			return;
+		// Don't overwrite users BPs/Saved Addresses unless they have a clean state.
+		if (m_bpModel.rowCount() == 0)
+			DebuggerSettingsManager::loadGameSettings(&m_bpModel);
+		if (m_savedAddressesModel.rowCount() == 0)
+			DebuggerSettingsManager::loadGameSettings(&m_savedAddressesModel);
+	});
 
 	connect(m_ui.registerWidget, &RegisterWidget::gotoInDisasm, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddress);
 	connect(m_ui.memoryviewWidget, &MemoryViewWidget::gotoInDisasm, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddress);
@@ -143,9 +153,12 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 		m_ui.savedAddressesList->horizontalHeader()->setSectionResizeMode(i++, mode);
 	}
 	QTableView* savedAddressesTableView = m_ui.savedAddressesList;
-	connect(m_ui.savedAddressesList->model(), &QAbstractItemModel::dataChanged,	[savedAddressesTableView](const QModelIndex& topLeft) {
+	connect(m_ui.savedAddressesList->model(), &QAbstractItemModel::dataChanged, [savedAddressesTableView](const QModelIndex& topLeft) {
 		savedAddressesTableView->resizeColumnToContents(topLeft.column());
 	});
+
+	DebuggerSettingsManager::loadGameSettings(&m_bpModel);
+	DebuggerSettingsManager::loadGameSettings(&m_savedAddressesModel);
 }
 
 CpuWidget::~CpuWidget() = default;
@@ -301,46 +314,63 @@ void CpuWidget::onBPListDoubleClicked(const QModelIndex& index)
 
 void CpuWidget::onBPListContextMenu(QPoint pos)
 {
-	if (!m_cpu.isAlive())
-		return;
-
 	QMenu* contextMenu = new QMenu(tr("Breakpoint List Context Menu"), m_ui.breakpointList);
-
-	QAction* newAction = new QAction(tr("New"), m_ui.breakpointList);
-	connect(newAction, &QAction::triggered, this, &CpuWidget::contextBPListNew);
-	contextMenu->addAction(newAction);
-
-	const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
-
-	if (selModel->hasSelection())
+	if (m_cpu.isAlive())
 	{
-		QAction* editAction = new QAction(tr("Edit"), m_ui.breakpointList);
-		connect(editAction, &QAction::triggered, this, &CpuWidget::contextBPListEdit);
-		contextMenu->addAction(editAction);
 
-		if (selModel->selectedIndexes().count() == 1)
+		QAction* newAction = new QAction(tr("New"), m_ui.breakpointList);
+		connect(newAction, &QAction::triggered, this, &CpuWidget::contextBPListNew);
+		contextMenu->addAction(newAction);
+
+		const QItemSelectionModel* selModel = m_ui.breakpointList->selectionModel();
+
+		if (selModel->hasSelection())
 		{
-			QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
-			connect(copyAction, &QAction::triggered, this, &CpuWidget::contextBPListCopy);
-			contextMenu->addAction(copyAction);
-		}
+			QAction* editAction = new QAction(tr("Edit"), m_ui.breakpointList);
+			connect(editAction, &QAction::triggered, this, &CpuWidget::contextBPListEdit);
+			contextMenu->addAction(editAction);
 
-		QAction* deleteAction = new QAction(tr("Delete"), m_ui.breakpointList);
-		connect(deleteAction, &QAction::triggered, this, &CpuWidget::contextBPListDelete);
-		contextMenu->addAction(deleteAction);
+			if (selModel->selectedIndexes().count() == 1)
+			{
+				QAction* copyAction = new QAction(tr("Copy"), m_ui.breakpointList);
+				connect(copyAction, &QAction::triggered, this, &CpuWidget::contextBPListCopy);
+				contextMenu->addAction(copyAction);
+			}
+
+			QAction* deleteAction = new QAction(tr("Delete"), m_ui.breakpointList);
+			connect(deleteAction, &QAction::triggered, this, &CpuWidget::contextBPListDelete);
+			contextMenu->addAction(deleteAction);
+		}
 	}
 
 	contextMenu->addSeparator();
-	QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.breakpointList);
-	connect(actionExport, &QAction::triggered, [this]() {
-		// It's important to use the Export Role here to allow pasting to be translation agnostic
-		QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), BreakpointModel::ExportRole, true));
-	});
-	contextMenu->addAction(actionExport);
+	if (m_bpModel.rowCount() > 0)
+	{
+		QAction* actionExport = new QAction(tr("Copy all as CSV"), m_ui.breakpointList);
+		connect(actionExport, &QAction::triggered, [this]() {
+			// It's important to use the Export Role here to allow pasting to be translation agnostic
+			QGuiApplication::clipboard()->setText(QtUtils::AbstractItemModelToCSV(m_ui.breakpointList->model(), BreakpointModel::ExportRole, true));
+		});
+		contextMenu->addAction(actionExport);
+	}
 
-	QAction* actionImport = new QAction(tr("Paste from CSV"), m_ui.breakpointList);
-	connect(actionImport, &QAction::triggered, this, &CpuWidget::contextBPListPasteCSV);
-	contextMenu->addAction(actionImport);
+	if (m_cpu.isAlive())
+	{
+		QAction* actionImport = new QAction(tr("Paste from CSV"), m_ui.breakpointList);
+		connect(actionImport, &QAction::triggered, this, &CpuWidget::contextBPListPasteCSV);
+		contextMenu->addAction(actionImport);
+
+		QAction* actionLoad = new QAction(tr("Load from Settings"), m_ui.breakpointList);
+		connect(actionLoad, &QAction::triggered, [this]() {
+			m_bpModel.clear();
+			DebuggerSettingsManager::loadGameSettings(&m_bpModel);
+		});
+		contextMenu->addAction(actionLoad);
+
+		QAction* actionSave = new QAction(tr("Save to Settings"), m_ui.breakpointList);
+		connect(actionSave, &QAction::triggered, this, &CpuWidget::saveBreakpointsToDebuggerSettings);
+		contextMenu->addAction(actionSave);
+	}
 
 	contextMenu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
 }
@@ -407,7 +437,7 @@ void CpuWidget::contextBPListPasteCSV()
 		// In order to handle text with commas in them we must wrap values in quotes to mark
 		// where a value starts and end so that text commas aren't identified as delimiters.
 		// So matches each quote pair, parse it out, and removes the quotes to get the value.
-		QRegularExpression eachQuotePair(R"("([^"]|\\.)*")"); 
+		QRegularExpression eachQuotePair(R"("([^"]|\\.)*")");
 		QRegularExpressionMatchIterator it = eachQuotePair.globalMatch(line);
 		while (it.hasNext())
 		{
@@ -415,98 +445,7 @@ void CpuWidget::contextBPListPasteCSV()
 			QString matchedValue = match.captured(0);
 			fields << matchedValue.mid(1, matchedValue.length() - 2);
 		}
-
-		if (fields.size() != BreakpointModel::BreakpointColumns::COLUMN_COUNT)
-		{
-			Console.WriteLn("Debugger CSV Import: Invalid number of columns, skipping");
-			continue;
-		}
-
-		bool ok;
-		const int type = fields[BreakpointModel::BreakpointColumns::TYPE].toUInt(&ok);
-		if (!ok)
-		{
-			Console.WriteLn("Debugger CSV Import: Failed to parse type '%s', skipping", fields[BreakpointModel::BreakpointColumns::TYPE].toUtf8().constData());
-			continue;
-		}
-
-		// This is how we differentiate between breakpoints and memchecks
-		if (type == MEMCHECK_INVALID)
-		{
-			BreakPoint bp;
-
-			// Address
-			bp.addr = fields[BreakpointModel::BreakpointColumns::OFFSET].toUInt(&ok, 16);
-			if (!ok)
-			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[BreakpointModel::BreakpointColumns::OFFSET].toUtf8().constData());
-				continue;
-			}
-
-			// Condition
-			if (!fields[BreakpointModel::BreakpointColumns::CONDITION].isEmpty())
-			{
-				PostfixExpression expr;
-				bp.hasCond = true;
-				bp.cond.debug = &m_cpu;
-
-				if (!m_cpu.initExpression(fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData(), expr))
-				{
-					Console.WriteLn("Debugger CSV Import: Failed to parse cond '%s', skipping", fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData());
-					continue;
-				}
-				bp.cond.expression = expr;
-				strncpy(&bp.cond.expressionString[0], fields[BreakpointModel::BreakpointColumns::CONDITION].toUtf8().constData(), sizeof(bp.cond.expressionString));
-			}
-
-			// Enabled
-			bp.enabled = fields[BreakpointModel::BreakpointColumns::ENABLED].toUInt(&ok);
-			if (!ok)
-			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse enable flag '%s', skipping", fields[BreakpointModel::BreakpointColumns::ENABLED].toUtf8().constData());
-				continue;
-			}
-
-			m_bpModel.insertBreakpointRows(0, 1, {bp});
-		}
-		else
-		{
-			MemCheck mc;
-			// Mode
-			if (type >= MEMCHECK_INVALID)
-			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse cond type '%s', skipping", fields [BreakpointModel::BreakpointColumns::TYPE].toUtf8().constData());
-				continue;
-			}
-			mc.cond = static_cast<MemCheckCondition>(type);
-
-			// Address
-			mc.start = fields[BreakpointModel::BreakpointColumns::OFFSET].toUInt(&ok, 16);
-			if (!ok)
-			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[BreakpointModel::BreakpointColumns::OFFSET].toUtf8().constData());
-				continue;
-			}
-
-			// Size
-			mc.end = fields[BreakpointModel::BreakpointColumns::SIZE_LABEL].toUInt(&ok) + mc.start;
-			if (!ok)
-			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse length '%s', skipping", fields[BreakpointModel::BreakpointColumns::SIZE_LABEL].toUtf8().constData());
-				continue;
-			}
-
-			// Result
-			const int result = fields [BreakpointModel::BreakpointColumns::ENABLED].toUInt(&ok);
-			if (!ok)
-			{
-				Console.WriteLn("Debugger CSV Import: Failed to parse result flag '%s', skipping", fields [BreakpointModel::BreakpointColumns::ENABLED].toUtf8().constData());
-				continue;
-			}
-			mc.result = static_cast<MemCheckResult>(result);
-
-			m_bpModel.insertBreakpointRows(0, 1, {mc});
-		}
+		m_bpModel.loadBreakpointFromFieldList(fields);
 	}
 }
 
@@ -561,7 +500,19 @@ void CpuWidget::onSavedAddressesListContextMenu(QPoint pos)
 	connect(actionImportCSV, &QAction::triggered, this, &CpuWidget::contextSavedAddressesListPasteCSV);
 	contextMenu->addAction(actionImportCSV);
 
-	contextMenu->popup(m_ui.savedAddressesList->viewport()->mapToGlobal(pos));
+	if (m_cpu.isAlive())
+	{
+		QAction* actionLoad = new QAction(tr("Load from Settings"), m_ui.savedAddressesList);
+		connect(actionLoad, &QAction::triggered, [this]() {
+			m_savedAddressesModel.clear();
+			DebuggerSettingsManager::loadGameSettings(&m_savedAddressesModel);
+		});
+		contextMenu->addAction(actionLoad);
+
+		QAction* actionSave = new QAction(tr("Save to Settings"), m_ui.savedAddressesList);
+		connect(actionSave, &QAction::triggered, this, &CpuWidget::saveSavedAddressesToDebuggerSettings);
+		contextMenu->addAction(actionSave);
+	}
 
 	if (isIndexValid)
 	{
@@ -571,6 +522,8 @@ void CpuWidget::onSavedAddressesListContextMenu(QPoint pos)
 		});
 		contextMenu->addAction(deleteAction);
 	}
+
+	contextMenu->popup(m_ui.savedAddressesList->viewport()->mapToGlobal(pos));
 }
 
 void CpuWidget::contextSavedAddressesListPasteCSV()
@@ -594,24 +547,7 @@ void CpuWidget::contextSavedAddressesListPasteCSV()
 			fields << matchedValue.mid(1, matchedValue.length() - 2);
 		}
 
-		if (fields.size() != SavedAddressesModel::HeaderColumns::COLUMN_COUNT)
-		{
-			Console.WriteLn("Debugger CSV Import: Invalid number of columns, skipping");
-			continue;
-		}
-
-		bool ok;
-		const u32 address = fields[SavedAddressesModel::HeaderColumns::ADDRESS].toUInt(&ok, 16);
-		if (!ok)
-		{
-			Console.WriteLn("Debugger CSV Import: Failed to parse address '%s', skipping", fields[SavedAddressesModel::HeaderColumns::ADDRESS].toUtf8().constData());
-			continue;
-		}
-
-		const QString label = fields[SavedAddressesModel::HeaderColumns::LABEL];
-		const QString description = fields[SavedAddressesModel::HeaderColumns::DESCRIPTION];
-		const SavedAddressesModel::SavedAddress importedAddress = {address, label, description};
-		m_savedAddressesModel.addRow(importedAddress);
+		m_savedAddressesModel.loadSavedAddressFromFieldList(fields);
 	}
 }
 
@@ -654,6 +590,17 @@ void CpuWidget::contextRemoveSearchResult()
 		m_searchResults.erase(m_searchResults.begin() + selectedResultIndex);
 	}
 	delete rowToRemove;
+}
+
+void CpuWidget::contextCopySearchResultAddress()
+{
+	if (!m_ui.listSearchResults->selectionModel()->hasSelection())
+		return;
+
+	const u32 selectedResultIndex = m_ui.listSearchResults->row(m_ui.listSearchResults->selectedItems().first());
+	const u32 rowAddress = m_ui.listSearchResults->item(selectedResultIndex)->data(Qt::UserRole).toUInt();
+	const QString addressString = FilledQStringFromValue(rowAddress, 16);
+	QApplication::clipboard()->setText(addressString);
 }
 
 void CpuWidget::updateFunctionList(bool whenEmpty)
@@ -958,6 +905,10 @@ void CpuWidget::onListSearchResultsContextMenu(QPoint pos)
 
 	if (selModel->hasSelection())
 	{
+		QAction* copyAddressAction = new QAction(tr("Copy Address"), m_ui.listSearchResults);
+		connect(copyAddressAction, &QAction::triggered, this, &CpuWidget::contextCopySearchResultAddress);
+		contextMenu->addAction(copyAddressAction);
+
 		QAction* goToDisassemblyAction = new QAction(tr("Go to in Disassembly"), m_ui.listSearchResults);
 		connect(goToDisassemblyAction, &QAction::triggered, this, &CpuWidget::contextSearchResultGoToDisassembly);
 		contextMenu->addAction(goToDisassemblyAction);
@@ -1392,3 +1343,12 @@ void CpuWidget::loadSearchResults()
 	}
 }
 
+void CpuWidget::saveBreakpointsToDebuggerSettings()
+{
+	DebuggerSettingsManager::saveGameSettings(&m_bpModel);
+}
+
+void CpuWidget::saveSavedAddressesToDebuggerSettings()
+{
+	DebuggerSettingsManager::saveGameSettings(&m_savedAddressesModel);
+}

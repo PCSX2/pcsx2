@@ -1,1 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?><svg id="Memory_Card_-_Pcsx2_W" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><style>.cls-1,.cls-2{fill:#fff;}.cls-3{stroke:#fff;stroke-width:9px;}.cls-3,.cls-4{fill:none;}.cls-2{fill-rule:evenodd;}</style></defs><g id="tela"><rect id="tela-2" class="cls-4" x="0" width="150" height="150"/></g><g id="By_Maxihplay"><g id="Formato"><path class="cls-1" d="M145.26,129.29H23.78c-10.53,0-19.09-8.56-19.09-19.09V39.8c0-10.53,8.56-19.09,19.09-19.09h121.53l-.05,108.59ZM23.78,32.71c-3.91,0-7.09,3.18-7.09,7.09V110.2c0,3.91,3.18,7.09,7.09,7.09h109.48l.04-84.59H23.78Z"/></g><g id="seta"><polygon class="cls-2" points="111.66 67.01 119.89 75.72 111.66 83.64 111.66 67.01"/><polygon class="cls-1" points="107.66 56.95 107.66 93.05 125.51 75.85 107.66 56.95 107.66 56.95"/></g><path id="etiqueta" class="cls-3" d="M63.7,49.76v50.49c0,2.65-2.15,4.81-4.81,4.81h-21.6c-2.65,0-4.81-2.15-4.81-4.81h0V49.76c0-2.65,2.15-4.81,4.81-4.81h21.6c2.65,0,4.81,2.15,4.81,4.81Z"/></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="memory_card_-_PCSX2" data-name="memory card - PCSX2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill-rule: evenodd;
+      }
+
+      .cls-3 {
+        stroke: #fff;
+        stroke-width: 9px;
+      }
+    </style>
+  </defs>
+  <g id="by_Maxihplay" data-name="by Maxihplay">
+    <g id="seta">
+      <polygon class="cls-2" points="111.66 67.01 119.89 75.72 111.66 83.64 111.66 67.01"/>
+      <polygon class="cls-1" points="106.66 57.97 106.66 92.03 124.51 75.8 106.66 57.97 106.66 57.97"/>
+    </g>
+    <g id="Formato-2">
+      <path class="cls-1" d="m145.26,129.28H23.78c-10.53,0-19.09-8.56-19.09-19.09V39.8c0-10.53,8.56-19.09,19.09-19.09h121.53l-.05,108.59h0v-.02h0ZM23.78,33.71c-3.91,0-7.09,3.18-7.09,7.09v68.4c0,3.91,3.18,7.09,7.09,7.09h109.48l.04-82.59H23.78Z"/>
+    </g>
+    <path id="etiqueta-2" class="cls-3" d="m59.28,53.8v42.4c0,2.23-1.76,4.04-3.94,4.04h-17.68c-2.17,0-3.94-1.81-3.94-4.04h0v-42.4c0-2.23,1.76-4.04,3.94-4.04h17.68c2.17,0,3.94,1.81,3.94,4.04Z"/>
+  </g>
+</svg>

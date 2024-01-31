@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "MainWindow.h"
@@ -32,7 +32,9 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include <QtGui/QWheelEvent>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTextEdit>
 
 static QList<SettingsWindow*> s_open_game_properties_dialogs;
@@ -110,7 +112,7 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
 		QStringLiteral("interface-line"),
 		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option "
-		   "for additional information."));
+		   "for additional information, and Shift+Wheel to scroll this panel."));
 
 	// We don't include game list/bios settings in per-game settings.
 	if (!isPerGameSettings())
@@ -120,14 +122,15 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate "
 			   "the game list. Search directories can be added, removed, and switched to recursive/non-recursive."));
 		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
-			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information."));
+			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information, "
+			   "and Shift+Wheel to scroll this panel."));
 	}
 
 	// Common to both per-game and global settings.
 	addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
 		QStringLiteral("emulation-line"),
 		tr("<strong>Emulation Settings</strong><hr>These options determine the configuration of frame pacing and game "
-		   "settings.<br><br>Mouse over an option for additional information."));
+		   "settings.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
 	if (isPerGameSettings())
 	{
@@ -153,19 +156,19 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("image-fill"),
 		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an "
-		   "option for additional information."));
+		   "option for additional information, and Shift+Wheel to scroll this panel."));
 	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
 		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for "
-		   "additional information."));
+		   "additional information, and Shift+Wheel to scroll this panel."));
 
 	addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
 		QStringLiteral("memcard-line"),
 		tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
-		   "additional information."));
+		   "additional information, and Shift+Wheel to scroll this panel."));
 
 	addWidget(m_dev9_settings = new DEV9SettingsWidget(this, m_ui.settingsContainer), tr("Network & HDD"), QStringLiteral("global-line"),
 		tr("<strong>Network & HDD Settings</strong><hr>These options control the network connectivity and internal HDD storage of the "
-		   "console.<br><br>Mouse over an option for additional information."));
+		   "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
 	if (!isPerGameSettings())
 	{
@@ -199,9 +202,9 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 		addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
 			QStringLiteral("warning-line"),
 			tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated "
-			   "console.<br><br>Mouse over an option for additional information."));
+			   "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 		addWidget(m_debug_settings = new DebugSettingsWidget(this, m_ui.settingsContainer), tr("Debug"),
-			QStringLiteral("heart-monitor-line"),
+			QStringLiteral("debugger-line"),
 			tr("<strong>Debug Settings</strong><hr>These are options which can be used to log internal information about the application. "
 			   "<strong>Do not modify unless you know what you are doing</strong>, it will cause significant slowdown, and can waste large "
 			   "amounts of disk space."));
@@ -399,8 +402,36 @@ bool SettingsWindow::eventFilter(QObject* object, QEvent* event)
 			m_ui.helpText->setText(m_category_help_text[m_ui.settingsCategory->currentRow()]);
 		}
 	}
+	else if (event->type() == QEvent::Wheel)
+	{
+		if (handleWheelEvent(static_cast<QWheelEvent*>(event)))
+			return true;
+	}
 
 	return QWidget::eventFilter(object, event);
+}
+
+bool SettingsWindow::handleWheelEvent(QWheelEvent* event)
+{
+	if (!(event->modifiers() & Qt::ShiftModifier))
+		return false;
+
+	const int amount = event->hasPixelDelta() ? event->pixelDelta().y() : (event->angleDelta().y() / 20);
+
+	QScrollBar* sb = m_ui.helpText->verticalScrollBar();
+	if (!sb)
+		return false;
+
+	sb->setSliderPosition(std::max(sb->sliderPosition() - amount, 0));
+	return true;
+}
+
+void SettingsWindow::wheelEvent(QWheelEvent* event)
+{
+	if (handleWheelEvent(event))
+		return;
+
+	QWidget::wheelEvent(event);
 }
 
 void SettingsWindow::setWindowTitle(const QString& title)

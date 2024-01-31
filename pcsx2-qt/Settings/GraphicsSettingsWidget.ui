@@ -324,7 +324,7 @@
         </layout>
        </item>
        <item row="8" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout_5">
+        <layout class="QGridLayout" name="displayGridLayout">
          <item row="3" column="0">
           <widget class="QCheckBox" name="PCRTCOffsets">
            <property name="text">

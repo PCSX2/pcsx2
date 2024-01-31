@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "SIO/Memcard/MemoryCardFile.h"
@@ -257,6 +257,9 @@ void FileMemoryCard::Open()
 	{
 		m_filenames[slot] = {};
 
+		if (EmuConfig.Mcd[slot].Type != MemoryCardType::File)
+			continue;
+
 		if (FileMcd_IsMultitapSlot(slot))
 		{
 			if (!EmuConfig.Pad.MultitapPort0_Enabled && (FileMcd_GetMtapPort(slot) == 0))
@@ -265,29 +268,13 @@ void FileMemoryCard::Open()
 				continue;
 		}
 
-		std::string fname(EmuConfig.FullpathToMcd(slot));
-		std::string_view str(fname);
-		bool cont = false;
+		const std::string fname = EmuConfig.FullpathToMcd(slot);
 
-		if (fname.empty())
+		if (!EmuConfig.Mcd[slot].Enabled || fname.empty())
 		{
-			str = "[empty filename]";
-			cont = true;
-		}
-
-		if (!EmuConfig.Mcd[slot].Enabled)
-		{
-			str = "[disabled]";
-			cont = true;
-		}
-
-		if (EmuConfig.Mcd[slot].Type == MemoryCardType::File)
-			Console.WriteLn(cont ? Color_Gray : Color_Green, fmt::format("McdSlot {} [File]: {}", slot, str));
-		else
-			cont = true;
-
-		if (cont)
+			Console.WriteLnFmt("McdSlot {} [File]: [disabled/empty filename]", slot);
 			continue;
+		}
 
 		if (FileSystem::GetPathFileSize(fname.c_str()) <= 0)
 		{
@@ -301,13 +288,6 @@ void FileMemoryCard::Open()
 					fname.c_str());
 			}
 		}
-
-		// [TODO] : Add memcard size detection and report it to the console log.
-		//   (8MB, 256Mb, formatted, unformatted, etc ...)
-
-#ifdef _WIN32
-		FileSystem::SetPathCompression(fname.c_str(), EmuConfig.McdCompressNTFS);
-#endif
 
 		if (fname.ends_with(".bin"))
 		{
@@ -343,6 +323,10 @@ void FileMemoryCard::Open()
 		}
 		else // Load checksum
 		{
+			Console.WriteLnFmt(Color_Green, "McdSlot {} [File]: {} [{} MB, {}]", slot, Path::GetFileName(fname),
+				(FileSystem::FSize64(m_file[slot]) + (MCD_SIZE + 1)) / MC2_MBSIZE,
+				FileMcd_IsMemoryCardFormatted(m_file[slot]) ? "Formatted" : "UNFORMATTED");
+
 			m_filenames[slot] = std::move(fname);
 			m_ispsx[slot] = FileSystem::FSize64(m_file[slot]) == 0x20000;
 			m_chkaddr = 0x210;
@@ -831,18 +815,27 @@ static bool IsMemoryCardFolder(const std::string& path)
 	return FileSystem::FileExists(superblock_path.c_str());
 }
 
-static bool IsMemoryCardFormatted(const std::string& path)
+bool FileMcd_IsMemoryCardFormatted(const std::string& path)
 {
 	auto fp = FileSystem::OpenManagedSharedCFile(path.c_str(), "rb", FileSystem::FileShareMode::DenyNone);
 	if (!fp)
 		return false;
 
+	return FileMcd_IsMemoryCardFormatted(fp.get());
+}
+
+bool FileMcd_IsMemoryCardFormatted(std::FILE* fp)
+{
 	static const char formatted_psx[] = "MC";
 	static const char formatted_string[] = "Sony PS2 Memory Card Format";
 	static constexpr size_t read_length = sizeof(formatted_string) - 1;
 
+	const s64 pos = FileSystem::FTell64(fp);
+
 	u8 data[read_length];
-	if (std::fread(data, read_length, 1, fp.get()) != 1)
+	const bool okay = (FileSystem::FSeek64(fp, 0, SEEK_SET) == 0 && std::fread(data, read_length, 1, fp) == 1);
+	FileSystem::FSeek64(fp, pos, SEEK_SET);
+	if (!okay)
 		return false;
 
 	return (std::memcmp(data, formatted_string, sizeof(formatted_string) - 1) == 0 ||
@@ -894,7 +887,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 			if (fd.Size < MCD_SIZE)
 				continue;
 
-			const bool formatted = IsMemoryCardFormatted(fd.FileName);
+			const bool formatted = FileMcd_IsMemoryCardFormatted(fd.FileName);
 			mcds.push_back({std::move(basename), std::move(fd.FileName), fd.ModificationTime,
 				MemoryCardType::File, GetMemoryCardFileTypeFromSize(fd.Size),
 				static_cast<u32>(fd.Size), formatted});
@@ -927,7 +920,7 @@ std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name
 	{
 		if (sd.Size >= MCD_SIZE)
 		{
-			const bool formatted = IsMemoryCardFormatted(path);
+			const bool formatted = FileMcd_IsMemoryCardFormatted(path);
 			ret = {std::move(basename), std::move(path), sd.ModificationTime,
 				MemoryCardType::File, GetMemoryCardFileTypeFromSize(sd.Size),
 				static_cast<u32>(sd.Size), formatted};

@@ -34,15 +34,13 @@ public:
 	static constexpr s32 DEFAULT_LATENCY = 100;
 	static constexpr const char* DEFAULT_LATENCY_STR = "100";
 
-	AudioDevice(u32 port, AudioDir dir, u32 channels)
-		: mPort(port)
-		, mAudioDir(dir)
+	AudioDevice(AudioDir dir, u32 channels)
+		: mAudioDir(dir)
 		, mChannels(channels)
 	{
 	}
 
 protected:
-	u32 mPort;
 	s32 mSubDevice;
 	AudioDir mAudioDir;
 	u32 mChannels;
@@ -64,8 +62,8 @@ public:
 	virtual bool Start() = 0;
 	virtual void Stop() = 0;
 
-	static std::unique_ptr<AudioDevice> CreateDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency);
-	static std::unique_ptr<AudioDevice> CreateNoopDevice(u32 port, AudioDir dir, u32 channels);
+	static std::unique_ptr<AudioDevice> CreateDevice(AudioDir dir, u32 channels, std::string devname, s32 latency);
+	static std::unique_ptr<AudioDevice> CreateNoopDevice(AudioDir dir, u32 channels);
 	static std::vector<std::pair<std::string, std::string>> GetInputDeviceList();
 	static std::vector<std::pair<std::string, std::string>> GetOutputDeviceList();
 };

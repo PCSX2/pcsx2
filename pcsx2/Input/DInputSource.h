@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -36,7 +36,6 @@ public:
 
 	bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
 	void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
-	void LoadSettings(SettingsInterface& si);
 	bool ReloadDevices() override;
 	void Shutdown() override;
 
@@ -81,5 +80,4 @@ private:
 	HWND m_toplevel_window = nullptr;
 
 	ControllerDataArray m_controllers;
-	bool m_ignore_inversion = false;
 };

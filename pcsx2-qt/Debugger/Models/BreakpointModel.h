@@ -55,10 +55,12 @@ public:
 	bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 	bool removeRows(int row, int count, const QModelIndex& index = QModelIndex()) override;
 	bool insertBreakpointRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index = QModelIndex());
+	void loadBreakpointFromFieldList(QStringList breakpointFields);
 
 	BreakpointMemcheck at(int row) const { return m_breakpoints.at(row); };
 
 	void refreshData();
+	void clear();
 
 private:
 	DebugInterface& m_cpu;

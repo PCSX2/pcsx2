@@ -591,7 +591,11 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	Console.WriteLn("Scanning %s%s", path, recursive ? " (recursively)" : "");
 
 	progress->PushState();
-	progress->SetFormattedStatusText(fmt::format(recursive ? TRANSLATE_FS("GameList","Scanning directory {} (recursively)...") : TRANSLATE_FS("GameList","Scanning directory {}..."), path).c_str());
+	progress->SetStatusText(fmt::format(
+		recursive ? TRANSLATE_FS("GameList", "Scanning directory {} (recursively)...") :
+					TRANSLATE_FS("GameList", "Scanning directory {}..."),
+		path)
+								.c_str());
 
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(path, "*",

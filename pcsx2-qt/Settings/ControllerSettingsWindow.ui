@@ -124,6 +124,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="mappingSettings">
+         <property name="text">
+          <string>Mapping Settings</string>
+         </property>
+         <property name="icon">
+          <iconset theme="settings-3-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="restoreDefaults">
          <property name="text">
           <string>Restore Defaults</string>

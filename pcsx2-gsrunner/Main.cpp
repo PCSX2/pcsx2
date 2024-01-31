@@ -33,6 +33,7 @@
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/MTGS.h"
@@ -391,6 +392,11 @@ void Host::OnCoverDownloaderOpenRequested()
 	// noop
 }
 
+void Host::OnCreateMemoryCardOpenRequested()
+{
+	// noop
+}
+
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
 	return std::nullopt;
@@ -701,7 +707,7 @@ int main(int argc, char* argv[])
 	return EXIT_SUCCESS;
 }
 
-void Host::VSyncOnCPUThread()
+void Host::PumpMessagesOnCPUThread()
 {
 	// update GS thread copy of frame number
 	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });

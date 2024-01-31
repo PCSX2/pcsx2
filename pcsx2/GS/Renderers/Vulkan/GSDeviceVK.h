@@ -303,7 +303,7 @@ private:
 		u32 spin_cycles;
 	};
 
-	QueuedPresent m_queued_present = {};
+	QueuedPresent m_queued_present = {nullptr, 0xFFFFFFFFu, 0};
 
 	std::map<u32, VkRenderPass> m_render_pass_cache;
 

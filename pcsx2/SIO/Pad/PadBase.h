@@ -47,6 +47,7 @@ public: // Public members
 	virtual void SetButtonDeadzone(float deadzone) = 0;
 	virtual void SetAnalogInvertL(bool x, bool y) = 0;
 	virtual void SetAnalogInvertR(bool x, bool y) = 0;
+	virtual float GetEffectiveInput(u32 index) const = 0;
 	virtual u8 GetRawInput(u32 index) const = 0;
 	virtual std::tuple<u8, u8> GetRawLeftAnalog() const = 0;
 	virtual std::tuple<u8, u8> GetRawRightAnalog() const = 0;

@@ -106,6 +106,7 @@
     <ClCompile Include="Debugger\MemoryViewWidget.cpp" />
     <ClCompile Include="Debugger\RegisterWidget.cpp" />
     <ClCompile Include="Debugger\BreakpointDialog.cpp" />
+    <ClCompile Include="Debugger\DebuggerSettingsManager.cpp" />
     <ClCompile Include="Debugger\Models\BreakpointModel.cpp" />
     <ClCompile Include="Debugger\Models\ThreadModel.cpp" />
     <ClCompile Include="Debugger\Models\StackModel.cpp" />
@@ -196,6 +197,7 @@
     <QtMoc Include="Debugger\MemoryViewWidget.h" />
     <QtMoc Include="Debugger\RegisterWidget.h" />
     <QtMoc Include="Debugger\BreakpointDialog.h" />
+    <ClInclude Include="Debugger\DebuggerSettingsManager.h" />
     <QtMoc Include="Debugger\Models\BreakpointModel.h" />
     <QtMoc Include="Debugger\Models\ThreadModel.h" />
     <QtMoc Include="Debugger\Models\StackModel.h" />
@@ -426,6 +428,7 @@
       <FileType>Document</FileType>
     </QtUi>
     <None Include="Settings\ControllerBindingWidget_Popn.ui" />
+    <None Include="Settings\ControllerMappingSettingsDialog.ui" />
     <None Include="Settings\FolderSettingsWidget.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

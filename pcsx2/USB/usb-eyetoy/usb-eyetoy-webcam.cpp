@@ -273,7 +273,7 @@ namespace usb_eyetoy
 	static void webcam_handle_data_eyetoy(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
-		static const int max_ep_size = 896;
+		static const unsigned int max_ep_size = 896;
 		uint8_t devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
@@ -286,11 +286,10 @@ namespace usb_eyetoy
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				uint8_t data[max_ep_size];
+				u8 data[max_ep_size];
+				pxAssert(p->buffer_size <= max_ep_size);
 				if (devep == 1)
 				{
-					memset(data, 0xff, sizeof(data));
-
 					if (s->frame_step == 0)
 					{
 						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data.get(), 640 * 480 * 3);
@@ -300,40 +299,39 @@ namespace usb_eyetoy
 							break;
 						}
 
-						uint8_t header[] = {0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+						u8 header[] = {0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
 						header[0x0A] = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? 0x03 : 0x01;
-						memcpy(data, header, sizeof(header));
+						std::memcpy(data, header, sizeof(header));
 
-						int data_pk = max_ep_size - sizeof(header);
-						memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
+						const u32 data_pk = std::min(p->buffer_size - static_cast<u32>(sizeof(header)), s->mpeg_frame_size);
+						std::memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
+						usb_packet_copy(p, data, sizeof(header) + data_pk);
+
 						s->mpeg_frame_offset = data_pk;
 						s->frame_step++;
 					}
 					else if (s->mpeg_frame_offset < s->mpeg_frame_size)
 					{
-						int data_pk = s->mpeg_frame_size - s->mpeg_frame_offset;
-						if (data_pk > max_ep_size)
-							data_pk = max_ep_size;
-						memcpy(data, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
+						const u32 data_pk = std::min(s->mpeg_frame_size - s->mpeg_frame_offset, p->buffer_size);
+						usb_packet_copy(p, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
+
 						s->mpeg_frame_offset += data_pk;
 						s->frame_step++;
 					}
 					else
 					{
-						uint8_t footer[] = {0xFF, 0xFF, 0xFF, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+						u8 footer[] = {0xFF, 0xFF, 0xFF, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
 						footer[0x0A] = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? 0x03 : 0x01;
-						memcpy(data, footer, sizeof(footer));
+						usb_packet_copy(p, footer, sizeof(footer));
 						s->frame_step = 0;
 					}
-
-					usb_packet_copy(p, data, max_ep_size);
 				}
 				else if (devep == 2)
 				{
 					// get audio
 					//Console.Warning("get audio %d\n", len);
-					memset(data, 0, p->buffer_size);
-					usb_packet_copy(p, data, p->buffer_size);
+					memset(data, 0, std::min(p->buffer_size, max_ep_size));
+					usb_packet_copy(p, data, std::min(p->buffer_size, max_ep_size));
 				}
 				break;
 			case USB_TOKEN_OUT:
@@ -346,7 +344,6 @@ namespace usb_eyetoy
 	static void webcam_handle_data_ov511p(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = USB_CONTAINER_OF(dev, EYETOYState, dev);
-		static const int max_ep_size = 960; // 961
 		uint8_t devep = p->ep->nr;
 
 		if (!s->hw_camera_running)
@@ -361,9 +358,6 @@ namespace usb_eyetoy
 			case USB_TOKEN_IN:
 				if (devep == 1)
 				{
-					uint8_t data[max_ep_size];
-					memset(data, 0x00, sizeof(data));
-
 					if (s->frame_step == 0)
 					{
 						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data.get(), 640 * 480 * 3);
@@ -373,31 +367,34 @@ namespace usb_eyetoy
 							break;
 						}
 
-						uint8_t header[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28}; // 28 <> 29
-						memcpy(data, header, sizeof(header));
+						static const unsigned int max_ep_size = 960; // 961
+						u8 data[max_ep_size];
+						pxAssert(p->buffer_size <= max_ep_size);
 
-						int data_pk = max_ep_size - sizeof(header);
-						memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
+						static constexpr const u8 header[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28}; // 28 <> 29
+						std::memcpy(data, header, sizeof(header));
+
+						const u32 data_pk = std::min(p->buffer_size - static_cast<u32>(sizeof(header)), s->mpeg_frame_size);
+						std::memcpy(data + sizeof(header), s->mpeg_frame_data.get(), data_pk);
+						usb_packet_copy(p, data, sizeof(header) + data_pk);
+
 						s->mpeg_frame_offset = data_pk;
 						s->frame_step++;
 					}
 					else if (s->mpeg_frame_offset < s->mpeg_frame_size)
 					{
-						int data_pk = s->mpeg_frame_size - s->mpeg_frame_offset;
-						if (data_pk > max_ep_size)
-							data_pk = max_ep_size;
-						memcpy(data, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
+						const u32 data_pk = std::min(s->mpeg_frame_size - s->mpeg_frame_offset, p->buffer_size);
+						usb_packet_copy(p, s->mpeg_frame_data.get() + s->mpeg_frame_offset, data_pk);
+
 						s->mpeg_frame_offset += data_pk;
 						s->frame_step++;
 					}
 					else
 					{
-						uint8_t footer[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA8, 0x09, 0x07};
-						memcpy(data, footer, sizeof(footer));
+						static constexpr const u8 footer[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA8, 0x09, 0x07};
+						usb_packet_copy(p, const_cast<u8*>(footer), sizeof(footer));
 						s->frame_step = 0;
 					}
-
-					usb_packet_copy(p, data, max_ep_size);
 				}
 				break;
 			case USB_TOKEN_OUT:

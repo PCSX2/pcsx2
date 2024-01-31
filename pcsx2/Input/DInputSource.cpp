@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #define INITGUID
@@ -49,8 +49,6 @@ static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat
 
 bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	LoadSettings(si);
-
 	m_dinput_module.reset(LoadLibraryW(L"dinput8"));
 	if (!m_dinput_module)
 	{
@@ -91,12 +89,6 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
 void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	LoadSettings(si);
-}
-
-void DInputSource::LoadSettings(SettingsInterface& si)
-{
-	m_ignore_inversion = si.GetBoolValue("InputSources", "IgnoreDInputInversion", false);
 }
 
 static BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
@@ -392,7 +384,7 @@ TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
 			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			ret.fmt("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !m_ignore_inversion) ? "~" : "");
+			ret.fmt("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{

@@ -39,6 +39,7 @@ ControllerSettingsWindow::ControllerSettingsWindow()
 	connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
 	connect(m_ui.loadProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onLoadProfileClicked);
 	connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
+	connect(m_ui.mappingSettings, &QPushButton::clicked, this, &ControllerSettingsWindow::onMappingSettingsClicked);
 	connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
 
 	connect(g_emu_thread, &EmuThread::onInputDevicesEnumerated, this, &ControllerSettingsWindow::onInputDevicesEnumerated);
@@ -184,6 +185,12 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
 	// switch back to global
 	refreshProfileList();
 	switchProfile({});
+}
+
+void ControllerSettingsWindow::onMappingSettingsClicked()
+{
+	ControllerMappingSettingsDialog dialog(this);
+	dialog.exec();
 }
 
 void ControllerSettingsWindow::onRestoreDefaultsClicked()

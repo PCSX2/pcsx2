@@ -94,6 +94,8 @@ int ATA::Open(const std::string& hddPath)
 
 	//Store HddImage size for later use
 	hddImageSize = static_cast<u64>(size);
+	lba48Supported = (hddImageSize > ((static_cast<s64>(1) << 28) - 1) * 512);
+
 	CreateHDDinfo(hddImageSize / 512);
 
 	InitSparseSupport(hddPath);
@@ -304,7 +306,6 @@ void ATA::ResetEnd(bool hard)
 	if (hard)
 	{
 		pioMode = 4;
-		sdmaMode = -1;
 		mdmaMode = 2;
 		udmaMode = -1;
 	}
@@ -312,10 +313,7 @@ void ATA::ResetEnd(bool hard)
 	{
 		pioMode = 4;
 		if (udmaMode == -1)
-		{
-			sdmaMode = -1;
 			mdmaMode = 2;
-		}
 	}
 
 	regControlEnableIRQ = false;

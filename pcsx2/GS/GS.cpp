@@ -15,11 +15,13 @@
 #include "GS/MultiISA.h"
 #include "Host.h"
 #include "Input/InputManager.h"
+#include "Recording/InputRecording.h"
 #include "MTGS.h"
 #include "pcsx2/GS.h"
 #include "GS/Renderers/Null/GSRendererNull.h"
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
+#include "VMManager.h"
 
 #ifdef ENABLE_OPENGL
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
@@ -333,6 +335,12 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 
 void GSclose()
 {
+	if (GSCapture::IsCapturing())
+		GSCapture::EndCapture();
+
+	if (g_InputRecording.isActive())
+		g_InputRecording.stop();
+
 	CloseGSRenderer();
 	CloseGSDevice(true);
 	Host::ReleaseRenderWindow();
@@ -492,6 +500,12 @@ void GSGameChanged()
 {
 	if (GSIsHardwareRenderer())
 		GSTextureReplacements::GameChanged();
+
+	if (!VMManager::HasValidVM() && GSCapture::IsCapturing())
+		GSCapture::EndCapture();
+
+	if (!VMManager::HasValidVM() && g_InputRecording.isActive())
+		g_InputRecording.stop();
 }
 
 bool GSHasDisplayWindow()

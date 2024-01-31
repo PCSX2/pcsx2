@@ -729,6 +729,22 @@ std::string VMManager::GetInputProfilePath(const std::string_view& name)
 	return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
 }
 
+std::string VMManager::GetDebuggerSettingsFilePath(const std::string_view& game_serial, u32 game_crc)
+{
+	std::string path;
+	if (!game_serial.empty() && game_crc != 0)
+	{
+		auto lock = Host::GetSettingsLock();
+		return Path::Combine(EmuFolders::DebuggerSettings, fmt::format("{}_{:08X}.json", game_serial, game_crc));
+	}
+	return path;
+}
+
+std::string VMManager::GetDebuggerSettingsFilePathForCurrentGame()
+{
+	return GetDebuggerSettingsFilePath(s_disc_serial, s_current_crc);
+}
+
 void VMManager::Internal::UpdateEmuFolders()
 {
 	const std::string old_cheats_directory(EmuFolders::Cheats);
@@ -1521,6 +1537,7 @@ void VMManager::Shutdown(bool save_resume_state)
 	{
 		MTGS::WaitGS(false, false, false);
 		MTGS::ResetGS(true);
+		MTGS::GameChanged();
 	}
 	else
 	{
@@ -2468,10 +2485,12 @@ void VMManager::Internal::VSyncOnCPUThread()
 	Achievements::FrameUpdate();
 
 	PollDiscordPresence();
+}
 
+void VMManager::Internal::PollInputOnCPUThread()
+{
+	Host::PumpMessagesOnCPUThread();
 	InputManager::PollSources();
-
-	Host::VSyncOnCPUThread();
 
 	if (EmuConfig.EnableRecordingTools)
 	{

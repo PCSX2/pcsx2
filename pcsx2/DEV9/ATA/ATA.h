@@ -22,7 +22,7 @@ public:
 	int nsector = 0;     //sector count
 	int nsectorLeft = 0; //sectors left to transfer
 private:
-	const bool lba48Supported = false;
+	bool lba48Supported = false;
 
 	std::FILE* hddImage = nullptr;
 	u64 hddImageSize;
@@ -40,7 +40,6 @@ private:
 #endif
 
 	int pioMode;
-	int sdmaMode;
 	int mdmaMode;
 	int udmaMode;
 

@@ -1,1 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?><svg id="DJ_Hero_-_Pcsx2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><style>.cls-1{fill:#fff;}.cls-2,.cls-3,.cls-4{fill:none;}.cls-3{stroke-width:12px;}.cls-3,.cls-4{stroke:#fff;stroke-miterlimit:10;}.cls-4{stroke-width:9px;}</style></defs><g id="tela"><rect class="cls-2" width="150" height="150"/></g><g id="By_Maxihplay"><rect id="mesa" class="cls-3" x="12.77" y="38.27" width="124.46" height="73.47" rx="5.5" ry="5.5"/><g id="Disco"><path class="cls-1" d="M99.8,81.63c-3.66,0-6.63-2.97-6.63-6.63s2.97-6.63,6.63-6.63,6.63,2.97,6.63,6.63-2.97,6.63-6.63,6.63Z"/><circle class="cls-4" cx="99.8" cy="75" r="23.7"/></g><g id="botoes"><path class="cls-1" d="M58.86,87.54h-26.82c-2.49,0-4.5-2.01-4.5-4.5s2.01-4.5,4.5-4.5h26.82c2.49,0,4.5,2.01,4.5,4.5s-2.01,4.5-4.5,4.5Z"/><path class="cls-1" d="M50.85,92.31c-2.49,0-4.5-2.01-4.5-4.5v-9.53c0-2.49,2.01-4.5,4.5-4.5s4.5,2.01,4.5,4.5v9.53c0,2.49-2.01,4.5-4.5,4.5Z"/><path class="cls-1" d="M58.14,68.07c-2.86,0-5.19-2.33-5.19-5.19s2.33-5.19,5.19-5.19,5.19,2.33,5.19,5.19-2.33,5.19-5.19,5.19Z"/><path class="cls-1" d="M32.59,68.07c-2.86,0-5.19-2.33-5.19-5.19s2.33-5.19,5.19-5.19,5.19,2.33,5.19,5.19-2.33,5.19-5.19,5.19Z"/></g></g></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="DJ_Hero" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 150 150" style="enable-background:new 0 0 150 150;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#FFFFFF;stroke-width:12;stroke-miterlimit:10;}
+	.st1{fill:#FFFFFF;}
+	.st2{fill:none;stroke:#FFFFFF;stroke-width:12;stroke-linecap:round;stroke-linejoin:bevel;}
+</style>
+<g id="By_Maxihplay">
+	<path id="corpo" class="st0" d="M122.7,16.1c8.9,0,16.2,7.1,16.2,15.9v86c0,8.8-7.2,15.9-16.2,15.9H27.3c-8.9,0-16.2-7.1-16.2-15.9
+		V32c0-8.8,7.2-15.9,16.2-15.9L122.7,16.1L122.7,16.1z"/>
+	<g id="botoes">
+		<ellipse id="b" class="st1" cx="48.2" cy="115.4" rx="6.6" ry="6.5"/>
+		<ellipse id="a" class="st1" cx="31.2" cy="115.4" rx="6.6" ry="6.5"/>
+	</g>
+	<g>
+		<polyline class="st2" points="116.7,40.1 116.7,99.5 100.7,113.7 		"/>
+		<ellipse class="st1" cx="116.7" cy="43.2" rx="11.4" ry="11.2"/>
+	</g>
+	<g id="disco">
+		<path class="st1" d="M63.4,78.6c-6,0-10.9-4.9-10.9-10.8s4.9-10.8,10.9-10.8s10.9,4.9,10.9,10.8S69.4,78.6,63.4,78.6z"/>
+		<ellipse class="st0" cx="63.4" cy="67.8" rx="32.2" ry="31.7"/>
+	</g>
+</g>
+</svg>

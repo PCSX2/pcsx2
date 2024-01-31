@@ -77,7 +77,7 @@ void ATA::PostCmdDMADataFromHost()
 
 void ATA::ATAreadDMA8Mem(u8* pMem, int size)
 {
-	if ((udmaMode >= 0) &&
+	if ((udmaMode >= 0 || mdmaMode >= 0) &&
 		(dev9.if_ctrl & SPD_IF_ATA_DMAEN) != 0)
 	{
 		if (size == 0 || nsector == -1)
@@ -103,7 +103,7 @@ void ATA::ATAreadDMA8Mem(u8* pMem, int size)
 
 void ATA::ATAwriteDMA8Mem(u8* pMem, int size)
 {
-	if ((udmaMode >= 0) &&
+	if ((udmaMode >= 0 || mdmaMode >= 0) &&
 		(dev9.if_ctrl & SPD_IF_ATA_DMAEN) != 0)
 	{
 		if (nsector == -1)
@@ -133,7 +133,7 @@ void ATA::HDD_ReadDMA(bool isLBA48)
 {
 	if (!PreCmd())
 		return;
-	DevCon.WriteLn("DEV9: HDD_ReadDMA");
+	DevCon.WriteLn(isLBA48 ? "DEV9: HDD_ReadDMA48" : "DEV9: HDD_ReadDMA");
 
 	IDE_CmdLBA48Transform(isLBA48);
 
@@ -155,7 +155,7 @@ void ATA::HDD_WriteDMA(bool isLBA48)
 {
 	if (!PreCmd())
 		return;
-	DevCon.WriteLn("DEV9: HDD_WriteDMA");
+	DevCon.WriteLn(isLBA48 ? "DEV9: HDD_WriteDMA48" : "DEV9: HDD_WriteDMA");
 
 	IDE_CmdLBA48Transform(isLBA48);
 

@@ -54,6 +54,9 @@ oprofile_data/
 /Backup*
 /UpgradeLog*.htm
 
+# Jetbrains Rider
+/.idea*
+
 # KDevelop 4 Workspace Configuration Files
 *.kdev4
 /.kdev4*
@@ -78,6 +81,7 @@ oprofile_data/
 /bin/gamesettings
 /bin/help
 /bin/inis
+/bin/inis/debuggersettings
 /bin/logs
 /bin/memcards
 /bin/plugins
@@ -86,12 +90,17 @@ oprofile_data/
 /bin/textures
 /bin/translations
 /bin/inputprofiles
+/bin/videos
+/bin/portable.ini
+
+# Manually added by user.
+/bin/resources/patches.zip
 
 # Resources that are runtime downloaded.
-/bin/resources/NotoSansJP-Regular.ttf
-/bin/resources/NotoSansKR-Regular.ttf
-/bin/resources/NotoSansSC-Regular.ttf
-/bin/resources/NotoSansTC-Regular.ttf
+/bin/resources/fonts/NotoSansJP-Regular.ttf
+/bin/resources/fonts/NotoSansKR-Regular.ttf
+/bin/resources/fonts/NotoSansSC-Regular.ttf
+/bin/resources/fonts/NotoSansTC-Regular.ttf
 
 /deps
 /deps-build

@@ -154,6 +154,12 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 		{
 			pxAssertMsg((RTBP0 & 31) == 0, "TEX0 should be page aligned");
 
+			GSVertex* v = &r.m_vertex.buff[0];
+
+			// Make sure we're detecting the right effect.
+			if (((v[1].XYZ.X - v[0].XYZ.X) >> 4) != 8 || ((v[1].XYZ.Y - v[0].XYZ.Y) >> 4) != 14)
+				return false;
+
 			GSTextureCache::Target* rt = g_texture_cache->LookupTarget(GIFRegTEX0::Create(RTBP0, RFBW, RFPSM),
 				GSVector2i(1, 1), r.GetTextureScaleFactor(), GSTextureCache::RenderTarget);
 			if (!rt)
@@ -180,13 +186,13 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 			return true;
 		}
 
-		if (!s_nativeres && RTME && (RFBP == 0x02d60 || RFBP == 0x02d80 || RFBP == 0x02ea0 || RFBP == 0x03620 || RFBP == 0x03640) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSMCT32)
+		if (!s_nativeres && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && std::abs(static_cast<int>(RFBP - RTBP0)) == 0x180 && RTPSM == PSMCT32 && RFBMSK == 0xFF000000)
 		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
-			// Downside is it also removes the channel effect which is fixed.
-			// Let's enable this hack for Aggressive only since it's an upscaling issue for both renders.
-			skip = 95;
+			// Don't enable hack on native res.
+			// Fixes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
+			const GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y, r.m_vt.m_max.p.x + 1.0f, r.m_vt.m_max.p.y + 1.0f);
+			const GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y, r.m_vt.m_max.t.x + 0.5f, r.m_vt.m_max.t.y + 0.5f);
+			r.ReplaceVerticesWithSprite(draw_size, read_size, GSVector2i(read_size.width(), read_size.height()), draw_size);
 		}
 		else if (RZTST == 1 && RTME && (RFBP == 0x02bc0 || RFBP == 0x02be0 || RFBP == 0x02d00 || RFBP == 0x03480 || RFBP == 0x034a0) && RFPSM == RTPSM && RTBP0 == 0x00000 && RTPSM == PSMCT32)
 		{

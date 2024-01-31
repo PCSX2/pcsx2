@@ -5,6 +5,7 @@
 #include "pcsx2/GS.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
+#include "pcsx2/ImGui/FullscreenUI.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/VMManager.h"
@@ -168,7 +169,7 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 {
 }
 
-void Host::VSyncOnCPUThread()
+void Host::PumpMessagesOnCPUThread()
 {
 }
 
@@ -201,6 +202,10 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 }
 
 void Host::OnCoverDownloaderOpenRequested()
+{
+}
+
+void Host::OnCreateMemoryCardOpenRequested()
 {
 }
 

@@ -441,6 +441,11 @@ void PadPopn::SetAnalogInvertR(bool x, bool y)
 {
 }
 
+float PadPopn::GetEffectiveInput(u32 index) const
+{
+	return GetRawInput(index) / 255.0f;
+}
+
 u8 PadPopn::GetRawInput(u32 index) const
 {
 	return rawInputs[index];

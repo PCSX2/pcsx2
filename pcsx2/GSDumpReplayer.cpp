@@ -308,6 +308,7 @@ void GSDumpReplayerCpuStep()
 			VMManager::Internal::VSyncOnCPUThread();
 			if (VMManager::Internal::IsExecutionInterrupted())
 				GSDumpReplayerExitExecution();
+			Host::PumpMessagesOnCPUThread();
 		}
 		break;
 

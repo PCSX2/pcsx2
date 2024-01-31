@@ -1210,7 +1210,43 @@ void GSRendererHW::FinishSplitClear()
 	m_split_clear_color = 0;
 }
 
-bool GSRendererHW::IsTBPFrameOrZ(u32 tbp) const
+bool GSRendererHW::IsRTWritten()
+{
+	const GIFRegTEST TEST = m_cached_ctx.TEST;
+	const bool only_z_written = (TEST.ATE && TEST.ATST == ATST_NEVER && TEST.AFAIL == AFAIL_ZB_ONLY);
+	if (only_z_written)
+		return false;
+
+	const u32 written_bits = (~m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
+	const GIFRegALPHA ALPHA = m_context->ALPHA;
+	return (
+			   // A not masked
+			   (written_bits & 0xFF000000u) != 0) ||
+		   (
+			   // RGB not entirely masked
+			   ((written_bits & 0x00FFFFFFu) != 0) &&
+			   // RGB written through no-blending, or blend result being non-zero
+			   (!PRIM->ABE || // not blending
+				   ALPHA.D != 1 || // additive to Cs
+				   (ALPHA.A != ALPHA.B && // left side is not zero
+					   (ALPHA.C == 1 || // multiply by Ad
+						   (ALPHA.C == 2 && ALPHA.FIX != 0) || // multiply by 0
+						   (ALPHA.C == 0 && GetAlphaMinMax().max != 0)))));
+}
+
+bool GSRendererHW::IsUsingCsInBlend()
+{
+	const GIFRegALPHA ALPHA = m_context->ALPHA;
+	const bool blend_zero = (ALPHA.A == ALPHA.B || (ALPHA.C == 2 && ALPHA.FIX == 0) || (ALPHA.C == 0 && GetAlphaMinMax().max == 0));
+	return (PRIM->ABE && ((ALPHA.IsUsingCs() && !blend_zero) || m_context->ALPHA.D == 0));
+}
+
+bool GSRendererHW::IsUsingAsInBlend()
+{
+	return (PRIM->ABE && m_context->ALPHA.IsUsingAs() && GetAlphaMinMax().max != 0);
+}
+
+bool GSRendererHW::IsTBPFrameOrZ(u32 tbp)
 {
 	const bool is_frame = (m_cached_ctx.FRAME.Block() == tbp);
 	const bool is_z = (m_cached_ctx.ZBUF.Block() == tbp);
@@ -1222,15 +1258,16 @@ bool GSRendererHW::IsTBPFrameOrZ(u32 tbp) const
 	const u32 fm_mask = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
 
 	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8));
-	const bool no_rt = (m_context->ALPHA.IsCd() && PRIM->ABE && (m_cached_ctx.FRAME.PSM == 1))
-		|| (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
+	const bool no_rt = (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
 	const bool no_ds = (
-		// Depth is always pass/fail (no read) and write are discarded.
-		(zm != 0 && m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
-		// Depth test will always pass
-		(zm != 0 && m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z) ||
-		// Depth will be written through the RT
-		(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE));
+						   // Depth is always pass/fail (no read) and write are discarded.
+						   (zm != 0 && m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
+						   // Depth test will always pass
+						   (zm != 0 && m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z) ||
+						   // Depth will be written through the RT
+						   (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE)) ||
+					   // No color or Z being written.
+					   (no_rt && zm != 0);
 
 	// Relying a lot on the optimizer here... I don't like it.
 	return (is_frame && !no_rt) || (is_z && !no_ds);
@@ -1796,7 +1833,10 @@ void GSRendererHW::Draw()
 	// skip alpha test if possible
 	// Note: do it first so we know if frame/depth writes are masked
 	u32 fm = m_cached_ctx.FRAME.FBMSK;
-	u32 zm = m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTE == 0 ? 0xffffffff : 0;
+	u32 zm = (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTE == 0 ||
+				 (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ZTST_NEVER && m_cached_ctx.TEST.AFAIL != AFAIL_ZB_ONLY)) ?
+				 0xffffffffu :
+				 0;
 	const u32 fm_mask = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
 
 	// Note required to compute TryAlphaTest below. So do it now.
@@ -1857,16 +1897,17 @@ void GSRendererHW::Draw()
 	// 3/ 50cents really draws (0,0,0,128) color and a (0) 24 bits depth
 	// Note: FF DoC has both buffer at same location but disable the depth test (write?) with ZTE = 0
 	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8));
-	bool no_rt = (context->ALPHA.IsCd() && PRIM->ABE && (m_cached_ctx.FRAME.PSM == 1))
-						|| (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
+	bool no_rt = (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
 	const bool all_depth_tests_pass =
 		// Depth is always pass/fail (no read) and write are discarded.
 		(!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
 		// Depth test will always pass
 		(m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z);
 	bool no_ds = (zm != 0 && all_depth_tests_pass) ||
-					   // Depth will be written through the RT
-					   (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE);
+				 // Depth will be written through the RT
+				 (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE) ||
+				 // No color or Z being written.
+				 (no_rt && zm != 0);
 
 	// No Z test if no z buffer.
 	if (no_ds || all_depth_tests_pass)
@@ -1927,7 +1968,8 @@ void GSRendererHW::Draw()
 			DetectDoubleHalfClear(no_rt, no_ds);
 	}
 
-	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC);
+	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC) && !(no_rt && (!m_cached_ctx.TEST.ATE || m_cached_ctx.TEST.ATST <= ATST_ALWAYS));
+
 	const bool no_gaps = PrimitiveCoversWithoutGaps();
 	const bool not_writing_to_all = (!no_gaps || AreAnyPixelsDiscarded() || !all_depth_tests_pass);
 	bool preserve_depth =
@@ -2259,10 +2301,13 @@ void GSRendererHW::Draw()
 
 			tgt = nullptr;
 		}
-		const bool possible_shuffle = ((shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && ((m_cached_ctx.TEX0.PSM & 0x6) || m_cached_ctx.FRAME.PSM != m_cached_ctx.TEX0.PSM))) || IsPossibleChannelShuffle();
+		const bool possible_shuffle = !no_rt && (((shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && ((m_cached_ctx.TEX0.PSM & 0x6) || m_cached_ctx.FRAME.PSM != m_cached_ctx.TEX0.PSM))) || IsPossibleChannelShuffle());
 		const bool need_aem_color = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 24 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal == 0 && m_context->ALPHA.C == 0 && m_env.TEXA.AEM;
-		const bool req_color = (!PRIM->ABE || (PRIM->ABE && (m_context->ALPHA.IsUsingCs() || need_aem_color))) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF));
-		const bool alpha_used = m_context->TEX0.TCC && ((PRIM->ABE && m_context->ALPHA.IsUsingAs()) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
+		const u32 color_mask = (m_vt.m_max.c > GSVector4i::zero()).mask();
+		const bool texture_function_color = m_cached_ctx.TEX0.TFX == TFX_DECAL || (color_mask & 0xFFF) || (m_cached_ctx.TEX0.TFX > TFX_DECAL && (color_mask & 0xF000));
+		const bool texture_function_alpha = m_cached_ctx.TEX0.TFX != TFX_MODULATE || (color_mask & 0xF000);
+		const bool req_color = texture_function_color && (!PRIM->ABE || (PRIM->ABE && (IsUsingCsInBlend() || need_aem_color))) && (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0x00FFFFFF)) != (fm_mask & 0x00FFFFFF));
+		const bool alpha_used = (m_context->TEX0.TCC && texture_function_alpha) && ((PRIM->ABE && IsUsingAsInBlend()) || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > ATST_ALWAYS) || (possible_shuffle || (m_cached_ctx.FRAME.FBMSK & (fm_mask & 0xFF000000)) != (fm_mask & 0xFF000000)));
 		const bool req_alpha = (GSUtil::GetChannelMask(m_context->TEX0.PSM) & 0x8) && alpha_used;
 
 		// TODO: Be able to send an alpha of 1.0 (blended with vertex alpha maybe?) so we can avoid sending the texture, since we don't always need it.
@@ -2290,7 +2335,10 @@ void GSRendererHW::Draw()
 				CalcAlphaMinMax(src->m_alpha_minmax.first, src->m_alpha_minmax.second);
 
 				u32 new_fm = m_context->FRAME.FBMSK;
-				u32 new_zm = m_context->ZBUF.ZMSK || m_context->TEST.ZTE == 0 ? 0xffffffff : 0;
+				u32 new_zm = (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTE == 0 ||
+							 (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ZTST_NEVER && m_cached_ctx.TEST.AFAIL != AFAIL_ZB_ONLY)) ?
+							 0xffffffffu :
+							 0;
 				if (m_cached_ctx.TEST.ATE && GSRenderer::TryAlphaTest(new_fm, new_zm))
 				{
 					m_cached_ctx.TEST.ATE = false;
@@ -2298,8 +2346,12 @@ void GSRendererHW::Draw()
 					m_cached_ctx.ZBUF.ZMSK = (new_zm != 0);
 					fm = new_fm;
 					zm = new_zm;
-					no_rt = no_rt || (!m_cached_ctx.TEST.DATE && (fm & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
-					no_ds = no_ds || (zm != 0 && all_depth_tests_pass);
+					no_rt = no_rt || (!IsRTWritten() && !m_cached_ctx.TEST.DATE);
+					no_ds = no_ds || (zm != 0 && all_depth_tests_pass) ||
+									// Depth will be written through the RT
+									(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE) ||
+									// No color or Z being written.
+									(no_rt && zm != 0);
 					if (no_rt && no_ds)
 					{
 						GL_INS("Late draw cancel because no pixels pass alpha test.");
@@ -5860,15 +5912,19 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		return false;
 
 	// Z and color must be constant and the same
-	GSVertex* v = &m_vertex.buff[0];
-	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.U32[0])
+	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z)
+		return false;
+
+	const u32 write_color = GetConstantDirectWriteMemClearColor();
+	const u32 write_depth = GetConstantDirectWriteMemClearDepth();
+	if (write_color != write_depth)
 		return false;
 
 	// Frame and depth pointer can be inverted
 	const bool clear_depth = (m_cached_ctx.FRAME.FBP > m_cached_ctx.ZBUF.ZBP);
 	const u32 base = clear_depth ? m_cached_ctx.ZBUF.ZBP : m_cached_ctx.FRAME.FBP;
 	const u32 half = clear_depth ? m_cached_ctx.FRAME.FBP : m_cached_ctx.ZBUF.ZBP;
-	const bool enough_bits = clear_depth ? (frame_psm.trbpp >= zbuf_psm.trbpp) : (zbuf_psm.trbpp >= frame_psm.trbpp);
+	const bool enough_bits = (frame_psm.trbpp == zbuf_psm.trbpp);
 
 	// Size of the current draw
 	const u32 w_pages = (m_r.z + (frame_psm.pgs.x - 1)) / frame_psm.pgs.x;
@@ -5879,7 +5935,11 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	if (half > (base + written_pages) || half <= base)
 		return false;
 
+	// CoD: World at War draws a shadow map with RGB masked at the same page as the depth buffer, which is
+	// double-half cleared. For testing, ignore any targets that don't have the bits we're drawing to.
+	const bool req_valid_alpha = ((frame_psm.fmsk & zbuf_psm.fmsk) & 0xFF000000u) != 0;
 	GSTextureCache::Target* half_point = g_texture_cache->GetExactTarget(half << 5, m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::RenderTarget : GSTextureCache::DepthStencil, half << 5);
+	half_point = (half_point && half_point->m_valid_rgb && half_point->HasValidAlpha() == req_valid_alpha) ? half_point : nullptr;
 	if (half_point && half_point->m_age <= 1)
 		return false;
 
@@ -5890,8 +5950,30 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	if ((!enough_bits && frame_psm.fmt != zbuf_psm.fmt && m_cached_ctx.FRAME.FBMSK != ((zbuf_psm.fmt == 1) ? 0xFF000000u : 0)) ||
 		!GSUtil::HasCompatibleBits(m_cached_ctx.FRAME.PSM & ~0x30, m_cached_ctx.ZBUF.PSM & ~0x30)) // Bit depth is not the same (i.e. 32bit + 16bit).
 	{
-		GL_INS("Inconsistent FRAME [%s, %08x] and ZBUF [%s] formats, not using double-half clear.",
+		GL_INS("DetectDoubleHalfClear(): Inconsistent FRAME [%s, %08x] and ZBUF [%s] formats, not using double-half clear.",
 			psm_str(m_cached_ctx.FRAME.PSM), m_cached_ctx.FRAME.FBMSK, psm_str(m_cached_ctx.ZBUF.PSM));
+
+		// Spiderman: Web of Shadows clears its depth buffer with 32-bit FRAME and 24-bit Z. So the upper 8 bits of half
+		// the depth buffer are not cleared, yay. We can't turn this into a 32-bit clear, because then it'll zero out
+		// those bits, which other games need (e.g. Jak 2). We can't do a 24-bit clear, because something might rely
+		// on half those bits actually getting zeroed. So, instead, we toss the depth buffer, and let the mem clear
+		// path write out FRAME and Z separately, with their associated masks. Limit it to black to avoid false positives.
+		if (write_color == 0)
+		{
+			const GSTextureCache::Target* base_tgt = g_texture_cache->GetExactTarget(base * BLOCKS_PER_PAGE,
+				m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget,
+				GSLocalMemory::GetEndBlockAddress(half * BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r));
+			if (base_tgt)
+			{
+				GL_INS("DetectDoubleHalfClear(): Invalidating targets at 0x%x/0x%x due to different formats, and clear to black.",
+					base * BLOCKS_PER_PAGE, half * BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, base * BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, base * BLOCKS_PER_PAGE);
+				g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * BLOCKS_PER_PAGE);
+			}
+		}
+
 		return false;
 	}
 
@@ -5926,10 +6008,12 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		// Check for a target matching the starting point. It might be in Z or FRAME...
 		GSTextureCache::Target* tgt = g_texture_cache->GetTargetWithSharedBits(
 			base * BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.ZBUF.PSM : m_cached_ctx.FRAME.PSM);
+		tgt = (tgt && tgt->m_valid_rgb && tgt->HasValidAlpha() == req_valid_alpha) ? tgt : nullptr;
 		if (!tgt)
 		{
 			tgt = g_texture_cache->GetTargetWithSharedBits(
 				base * BLOCKS_PER_PAGE, clear_depth ? m_cached_ctx.FRAME.PSM : m_cached_ctx.ZBUF.PSM);
+			tgt = (tgt && tgt->m_valid_rgb && tgt->HasValidAlpha() == req_valid_alpha) ? tgt : nullptr;
 		}
 
 		u32 end_block = ((half + written_pages) * BLOCKS_PER_PAGE) - 1;
@@ -5977,9 +6061,15 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	if (horizontal)
 	{
 		const int width = m_r.width();
-		m_cached_ctx.FRAME.FBW *= 2;
 		m_r.z = (w_pages * frame_psm.pgs.x);
 		m_r.z += m_r.x + width;
+
+		const u32 new_w_pages = (m_r.z + 63) / 64;
+		if (new_w_pages > m_cached_ctx.FRAME.FBW)
+		{
+			GL_INS("DetectDoubleHalfClear(): Doubling FBW because %u pages wide is less than FBW %u", new_w_pages, m_cached_ctx.FRAME.FBW);
+			m_cached_ctx.FRAME.FBW *= 2;
+		}
 	}
 	else
 	{
@@ -6149,7 +6239,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
-				current_page &= 0x7ff;
+				current_page &= (MAX_PAGES - 1);
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
@@ -6164,7 +6254,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
-				current_page &= 0x7ff;
+				current_page &= (MAX_PAGES - 1);
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)
@@ -6183,7 +6273,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 			pxAssert((off.bp() & (BLOCKS_PER_PAGE - 1)) == 0);
 			for (u32 current_page = off.bp() >> 5; top < page_aligned_bottom; top += pgs.y, current_page += fbw)
 			{
-				current_page &= 0x7ff;
+				current_page &= (MAX_PAGES - 1);
 				GSVector4i* ptr = reinterpret_cast<GSVector4i*>(m_mem.vm8() + current_page * PAGE_SIZE);
 				GSVector4i* const ptr_end = ptr + iterations_per_page;
 				while (ptr != ptr_end)

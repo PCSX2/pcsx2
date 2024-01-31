@@ -38,6 +38,7 @@
 #include <chrono>
 #include <cmath>
 #include <deque>
+#include <limits>
 #include <mutex>
 #include <span>
 #include <tuple>
@@ -46,10 +47,11 @@
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
-	static void DrawPerformanceOverlay(float& position_y);
-	static void DrawSettingsOverlay();
-	static void DrawInputsOverlay();
-	static void DrawInputRecordingOverlay(float& position_y);
+	static void DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawSettingsOverlay(float scale, float margin, float spacing);
+	static void DrawInputsOverlay(float scale, float margin, float spacing);
+	static void DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -78,7 +80,7 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
 	return std::tie(min, max);
 }
 
-void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
+__ri void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
 {
 	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
 	// which the processor time is divided by to get a utilization percentage. Let's clamp it at 100%,
@@ -89,12 +91,9 @@ void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, doub
 		text.append_fmt("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-void ImGuiManager::DrawPerformanceOverlay(float& position_y)
+__ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = std::ceil(1.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);
+	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -320,7 +319,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y)
 #undef DRAW_LINE
 }
 
-void ImGuiManager::DrawSettingsOverlay()
+__ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
 {
 	if (!GSConfig.OsdShowSettings || VMManager::GetState() != VMState::Running)
 		return;
@@ -434,9 +433,7 @@ void ImGuiManager::DrawSettingsOverlay()
 	else if (text.back() == ' ')
 		text.pop_back();
 
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = 1.0f * scale;
-	const float margin = 10.0f * scale;
+	const float shadow_offset = std::ceil(scale);
 	ImFont* font = ImGuiManager::GetFixedFont();
 	const float position_y = GetWindowHeight() - margin - font->FontSize;
 
@@ -450,16 +447,13 @@ void ImGuiManager::DrawSettingsOverlay()
 		text.c_str(), text.c_str() + text.length());
 }
 
-void ImGuiManager::DrawInputsOverlay()
+__ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spacing)
 {
 	// Technically this is racing the CPU thread.. but it doesn't really matter, at worst, the inputs get displayed onscreen late.
 	if (!GSConfig.OsdShowInputs || VMManager::GetState() != VMState::Running)
 		return;
 
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = 1.0f * scale;
-	const float margin = 10.0f * scale;
-	const float spacing = 5.0f * scale;
+	const float shadow_offset = std::ceil(scale);
 	ImFont* font = ImGuiManager::GetStandardFont();
 
 	static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
@@ -510,21 +504,24 @@ void ImGuiManager::DrawInputsOverlay()
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
 				{
-					// axes are always shown
-					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
-					if (value >= (254.0f / 255.0f))
+					// axes are only shown if not resting/past deadzone. values are normalized.
+					const float value = pad->GetEffectiveInput(bind);
+					const float abs_value = std::abs(value);
+					if (abs_value >= (254.0f / 255.0f))
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
-					else if (value > (1.0f / 255.0f))
+					else if (abs_value >= (1.0f / 255.0f))
 						text.append_fmt(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
 				case InputBindingInfo::Type::Button:
 				{
-					// buttons only shown when active
-					const float value = static_cast<float>(pad->GetRawInput(bind)) * (1.0f / 255.0f);
-					if (value >= 0.5f)
+					// buttons display the value from 0 through 255.
+					const float value = pad->GetEffectiveInput(bind);
+					if (value >= 254.0f)
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
+					else if (value > 0.0f)
+						text.append_fmt(" {}: {:.0f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
@@ -562,7 +559,7 @@ void ImGuiManager::DrawInputsOverlay()
 				case InputBindingInfo::Type::Axis:
 				case InputBindingInfo::Type::HalfAxis:
 				{
-					// axes are always shown
+					// axes are only shown if not resting/past deadzone. values are normalized.
 					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
 					if (value >= (254.0f / 255.0f))
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
@@ -573,10 +570,12 @@ void ImGuiManager::DrawInputsOverlay()
 
 				case InputBindingInfo::Type::Button:
 				{
-					// buttons only shown when active
-					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index));
-					if (value >= 0.5f)
+					// buttons display the value from 0 through 255. values are normalized, so denormalize them.
+					const float value = static_cast<float>(USB::GetDeviceBindValue(port, bi.bind_index)) * 255.0f;
+					if (value >= 254.0f)
 						text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
+					else if (value > 0.0f)
+						text.append_fmt(" {}: {:.0f}", bi.icon_name ? bi.icon_name : bi.name, value);
 				}
 				break;
 
@@ -597,13 +596,12 @@ void ImGuiManager::DrawInputsOverlay()
 	}
 }
 
-void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
+__ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing)
 {
-	const float scale = ImGuiManager::GetGlobalScale();
-	const float shadow_offset = std::ceil(1.0f * scale);
-	const float margin = std::ceil(10.0f * scale);
-	const float spacing = std::ceil(5.0f * scale);
-	position_y += margin;
+	if (!g_InputRecording.isActive() || FullscreenUI::HasActiveWindow())
+		return;
+
+	const float shadow_offset = std::ceil(scale);
 
 	ImFont* const fixed_font = ImGuiManager::GetFixedFont();
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
@@ -623,27 +621,57 @@ void ImGuiManager::DrawInputRecordingOverlay(float& position_y)
 		dl->AddText(font, font->FontSize, ImVec2(GetWindowWidth() - margin - text_size.x, position_y), color, (text)); \
 		position_y += text_size.y + spacing; \
 	} while (0)
-	// TODO - icon list that would be nice to add
-	// - 'video' when screen capturing
-	if (g_InputRecording.isActive())
-	{
-		// Status Indicators
-		if (g_InputRecording.getControls().isRecording())
-		{
-			DRAW_LINE(standard_font, fmt::format("{} Recording", ICON_FA_RECORD_VINYL).c_str(), IM_COL32(255, 0, 0, 255));
-		}
-		else
-		{
-			DRAW_LINE(standard_font, fmt::format("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
-		}
 
-		// Input Recording Metadata
-		DRAW_LINE(fixed_font, fmt::format("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
-		DRAW_LINE(fixed_font, fmt::format("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(), g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
-		DRAW_LINE(fixed_font, fmt::format("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+	// Status Indicators
+	if (g_InputRecording.getControls().isRecording())
+	{
+		DRAW_LINE(standard_font, TinyString::from_fmt("{} Recording Input", ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
+	}
+	else
+	{
+		DRAW_LINE(standard_font, TinyString::from_fmt("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
 	}
 
+	// Input Recording Metadata
+	DRAW_LINE(fixed_font, TinyString::from_fmt("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(),g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+
 #undef DRAW_LINE
+}
+
+__ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, float margin, float spacing)
+{
+	if (!GSCapture::IsCapturing() || FullscreenUI::HasActiveWindow())
+		return;
+
+	const float shadow_offset = std::ceil(scale);
+	ImFont* const standard_font = ImGuiManager::GetStandardFont();
+	ImDrawList* dl = ImGui::GetBackgroundDrawList();
+
+	static constexpr const char* ICON = ICON_FA_RECORDING;
+	const TinyString text_msg = TinyString::from_fmt(" {}", GSCapture::GetElapsedTime());
+	const ImVec2 icon_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
+		-1.0f, ICON, nullptr, nullptr);
+	const ImVec2 text_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
+		-1.0f, text_msg.c_str(), text_msg.end_ptr(), nullptr);
+
+	// Shadow
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x + shadow_offset, position_y + shadow_offset),
+		IM_COL32(0, 0, 0, 100), ICON);
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x + shadow_offset, position_y + shadow_offset),
+		IM_COL32(0, 0, 0, 100), text_msg.c_str(), text_msg.end_ptr());
+
+	// Text
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x - icon_size.x, position_y), IM_COL32(255, 0, 0, 255), ICON);
+	dl->AddText(standard_font, standard_font->FontSize,
+		ImVec2(GetWindowWidth() - margin - text_size.x, position_y), IM_COL32(255, 255, 255, 255), text_msg.c_str(),
+		text_msg.end_ptr());
+
+	position_y += std::max(icon_size.y, text_size.y) + spacing;
 }
 
 namespace SaveStateSelectorUI
@@ -1034,11 +1062,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 
 void ImGuiManager::RenderOverlays()
 {
-	float position_y = 0;
-	DrawInputRecordingOverlay(position_y);
-	DrawPerformanceOverlay(position_y);
-	DrawSettingsOverlay();
-	DrawInputsOverlay();
+	const float scale = ImGuiManager::GetGlobalScale();
+	const float margin = std::ceil(10.0f * scale);
+	const float spacing = std::ceil(5.0f * scale);
+	float position_y = margin;
+	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);
+	DrawInputRecordingOverlay(position_y, scale, margin, spacing);
+	DrawPerformanceOverlay(position_y, scale, margin, spacing);
+	DrawSettingsOverlay(scale, margin, spacing);
+	DrawInputsOverlay(scale, margin, spacing);
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();
 }

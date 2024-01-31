@@ -98,7 +98,6 @@ private:
 
 	QString getSelectedCard() const;
 	void updateCardActions();
-	void duplicateCard();
 	void deleteCard();
 	void renameCard();
 	void convertCard();

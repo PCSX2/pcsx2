@@ -17,6 +17,7 @@
 
 #include "IconsFontAwesome5.h"
 
+#include <appmodel.h>
 #include <array>
 #include <d3d11.h>
 #include <d3d12.h>
@@ -380,7 +381,28 @@ GSRendererType D3D::GetPreferredRenderer()
 			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
 		return device;
 	};
-	const auto check_vulkan_supported = []() {
+	static constexpr auto check_for_mapping_layers = []() {
+		PCWSTR familyName = L"Microsoft.D3DMappingLayers_8wekyb3d8bbwe";
+		UINT32 numPackages = 0, bufferLength = 0;
+		const DWORD error = GetPackagesByPackageFamily(familyName, &numPackages, nullptr, &bufferLength, nullptr);
+		if (error == ERROR_INSUFFICIENT_BUFFER || numPackages > 0)
+		{
+			Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV,
+				TRANSLATE_STR("GS",
+					"Your system has the \"OpenCL and OpenGL Compatibility Pack\" installed. This Vulkan driver crashes\n"
+					"PCSX2 on some GPUs. To use the Vulkan renderer, you should remove this app package."),
+				Host::OSD_WARNING_DURATION);
+			return true;
+		}
+
+		return false;
+	};
+	static constexpr auto check_vulkan_supported = []() {
+		// Don't try to enumerate Vulkan devices if the DX12 Vulkan driver is present.
+		// It crashes on AMD GPUs.
+		if (check_for_mapping_layers())
+			return false;
+
 		std::vector<std::string> vk_adapter_names;
 		GSDeviceVK::GetAdaptersAndFullscreenModes(&vk_adapter_names, nullptr);
 		if (!vk_adapter_names.empty())

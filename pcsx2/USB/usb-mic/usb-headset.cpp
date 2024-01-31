@@ -892,20 +892,20 @@ namespace usb_mic
 	{
 		HeadsetState* s = new HeadsetState();
 
-		std::string input_devname(USB::GetConfigString(si, port, TypeName(), "input_device"));
-		std::string output_devname(USB::GetConfigString(si, port, TypeName(), "output_device"));
+		std::string input_devname(USB::GetConfigString(si, port, TypeName(), "input_device_name"));
+		std::string output_devname(USB::GetConfigString(si, port, TypeName(), "output_device_name"));
 		const s32 input_latency = USB::GetConfigInt(si, port, TypeName(), "input_latency", AudioDevice::DEFAULT_LATENCY);
 		const s32 output_latency = USB::GetConfigInt(si, port, TypeName(), "output_latency", AudioDevice::DEFAULT_LATENCY);
 
 		if (!input_devname.empty())
-			s->audsrc = AudioDevice::CreateDevice(port, AUDIODIR_SOURCE, 1, std::move(input_devname), input_latency);
+			s->audsrc = AudioDevice::CreateDevice(AUDIODIR_SOURCE, 1, std::move(input_devname), input_latency);
 		else
-			s->audsrc = AudioDevice::CreateNoopDevice(port, AUDIODIR_SOURCE, 1);
+			s->audsrc = AudioDevice::CreateNoopDevice(AUDIODIR_SOURCE, 1);
 
 		if (!output_devname.empty())
-			s->audsink = AudioDevice::CreateDevice(port, AUDIODIR_SINK, 2, std::move(output_devname), output_latency);
+			s->audsink = AudioDevice::CreateDevice(AUDIODIR_SINK, 2, std::move(output_devname), output_latency);
 		else
-			s->audsink = AudioDevice::CreateNoopDevice(port, AUDIODIR_SINK, 2);
+			s->audsink = AudioDevice::CreateNoopDevice(AUDIODIR_SINK, 2);
 
 		s->f.mode = MIC_MODE_SINGLE;
 

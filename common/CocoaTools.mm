@@ -17,6 +17,11 @@
 
 // MARK: - Metal Layers
 
+static NSString*_Nonnull NSStringFromStringView(std::string_view sv)
+{
+	return [[NSString alloc] initWithBytes:sv.data() length:sv.size() encoding:NSUTF8StringEncoding];
+}
+
 bool CocoaTools::CreateMetalLayer(WindowInfo* wi)
 {
 	if (![NSThread isMainThread])
@@ -156,7 +161,7 @@ std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
 
 std::optional<std::string> CocoaTools::MoveToTrash(std::string_view file)
 {
-	NSURL* url = [NSURL fileURLWithPath:[[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding]];
+	NSURL* url = [NSURL fileURLWithPath:NSStringFromStringView(file)];
 	NSURL* new_url;
 	if (![[NSFileManager defaultManager] trashItemAtURL:url resultingItemURL:&new_url error:nil])
 		return std::nullopt;
@@ -170,9 +175,17 @@ bool CocoaTools::DelayedLaunch(std::string_view file)
 		[task setExecutableURL:[NSURL fileURLWithPath:@"/bin/sh"]];
 		[task setEnvironment:@{
 			@"WAITPID": [NSString stringWithFormat:@"%d", [[NSProcessInfo processInfo] processIdentifier]],
-			@"LAUNCHAPP": [[NSString alloc] initWithBytes:file.data() length:file.size() encoding:NSUTF8StringEncoding],
+			@"LAUNCHAPP": NSStringFromStringView(file),
 		}];
 		[task setArguments:@[@"-c", @"while /bin/ps -p $WAITPID > /dev/null; do /bin/sleep 0.1; done; exec /usr/bin/open \"$LAUNCHAPP\";"]];
 		return [task launchAndReturnError:nil];
 	}
+}
+
+// MARK: - Directory Services
+
+bool CocoaTools::ShowInFinder(std::string_view file)
+{
+	return [[NSWorkspace sharedWorkspace] selectFile:NSStringFromStringView(file)
+	                        inFileViewerRootedAtPath:nil];
 }

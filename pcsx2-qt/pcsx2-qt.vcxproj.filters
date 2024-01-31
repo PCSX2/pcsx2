@@ -346,6 +346,9 @@
     <ClCompile Include="$(IntDir)moc_LogWindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\DebuggerSettingsManager.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -364,6 +367,9 @@
     </ClInclude>
     <ClInclude Include="Settings\MemoryCardConvertWorker.h">
       <Filter>Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebuggerSettingsManager.h">
+      <Filter>Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -653,6 +659,9 @@
       <Filter>Settings</Filter>
     </None>
     <None Include="Settings\ControllerBindingWidget_Popn.ui">
+      <Filter>Settings</Filter>
+    </None>
+    <None Include="Settings\ControllerMappingSettingsDialog.ui">
       <Filter>Settings</Filter>
     </None>
   </ItemGroup>

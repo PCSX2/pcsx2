@@ -66,6 +66,7 @@ public:
 	void SetButtonDeadzone(float deadzone) override;
 	void SetAnalogInvertL(bool x, bool y) override;
 	void SetAnalogInvertR(bool x, bool y) override;
+	float GetEffectiveInput(u32 index) const override;
 	u8 GetRawInput(u32 index) const override;
 	std::tuple<u8, u8> GetRawLeftAnalog() const override;
 	std::tuple<u8, u8> GetRawRightAnalog() const override;

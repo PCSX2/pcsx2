@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>593</width>
-    <height>545</height>
+    <width>600</width>
+    <height>535</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,13 +16,13 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_9">
+  <layout class="QVBoxLayout" name="mainLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
-     <property name="bottomMargin">
+     <property name="spacing">
       <number>10</number>
      </property>
-	 <property name="spacing">
+     <property name="bottomMargin">
       <number>10</number>
      </property>
      <item>
@@ -39,8 +39,8 @@
          <height>48</height>
         </size>
        </property>
-	   <property name="pixmap">
-        <pixmap resource="resources/resources.qrc">:/icons/black/svg/memcard-line.svg</pixmap>
+       <property name="pixmap">
+        <pixmap resource="../resources/resources.qrc">:/icons/black/svg/memcard-line.svg</pixmap>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -227,7 +227,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_8">
+    <layout class="QVBoxLayout" name="ntfsCompressionLayout">
      <item>
       <widget class="QCheckBox" name="ntfsCompression">
        <property name="text">
@@ -239,7 +239,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_10">
+      <widget class="QLabel" name="ntfsCompressionLabel">
        <property name="text">
         <string>NTFS compression is built-in, fast, and completely reliable. Typically compresses Memory Cards (highly recommended).</string>
        </property>

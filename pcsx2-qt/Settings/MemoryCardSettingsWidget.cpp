@@ -54,7 +54,6 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* dialog, QWidg
 
 	connect(m_ui.refreshCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::refresh);
 	connect(m_ui.createCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::createCard);
-	connect(m_ui.duplicateCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::duplicateCard);
 	connect(m_ui.renameCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::renameCard);
 	connect(m_ui.convertCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::convertCard);
 	connect(m_ui.deleteCard, &QPushButton::clicked, this, &MemoryCardSettingsWidget::deleteCard);
@@ -89,22 +88,22 @@ void MemoryCardSettingsWidget::setupAdditionalUi()
 		createSlotWidgets(&m_slots[i], i);
 
 	// button to swap Memory Cards
-	QToolButton* swap_button = new QToolButton(m_ui.portGroupBox);
+	QToolButton* swap_button = new QToolButton(m_ui.slotGroupBox);
 	swap_button->setIcon(QIcon::fromTheme("arrow-left-right-line"));
 	swap_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 	swap_button->setToolTip(tr("Swap Memory Cards"));
 	connect(swap_button, &QToolButton::clicked, this, &MemoryCardSettingsWidget::swapCards);
-	static_cast<QGridLayout*>(m_ui.portGroupBox->layout())->addWidget(swap_button, 0, 1);
+	static_cast<QGridLayout*>(m_ui.slotGroupBox->layout())->addWidget(swap_button, 0, 1);
 }
 
 void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 {
 	const bool perGame = m_dialog->isPerGameSettings();
 
-	port->root = new QWidget(m_ui.portGroupBox);
+	port->root = new QWidget(m_ui.slotGroupBox);
 
 	SettingsInterface* sif = m_dialog->getSettingsInterface();
-	port->enable = new QCheckBox(tr("Port %1").arg(slot + 1), port->root);
+	port->enable = new QCheckBox(tr("Slot %1").arg(slot + 1), port->root);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, port->enable, CONFIG_SECTION, StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1), true);
 	connect(port->enable, &QCheckBox::stateChanged, this, &MemoryCardSettingsWidget::refresh);
@@ -129,7 +128,7 @@ void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 	vert_layout->addWidget(port->enable, 0);
 	vert_layout->addLayout(bottom_layout, 1);
 
-	static_cast<QGridLayout*>(m_ui.portGroupBox->layout())->addWidget(port->root, 0, (slot != 0) ? 2 : 0);
+	static_cast<QGridLayout*>(m_ui.slotGroupBox->layout())->addWidget(port->root, 0, (slot != 0) ? 2 : 0);
 }
 
 void MemoryCardSettingsWidget::autoSizeUI()
@@ -193,18 +192,8 @@ void MemoryCardSettingsWidget::updateCardActions()
 	bool isPS1 = (cardInfo.has_value() ? cardInfo.value().file_type == MemoryCardFileType::PS1 : false);
 
 	m_ui.convertCard->setEnabled(hasSelection && !isPS1);
-	m_ui.duplicateCard->setEnabled(hasSelection);
 	m_ui.renameCard->setEnabled(hasSelection);
 	m_ui.deleteCard->setEnabled(hasSelection);
-}
-
-void MemoryCardSettingsWidget::duplicateCard()
-{
-	const QString selectedCard(getSelectedCard());
-	if (selectedCard.isEmpty())
-		return;
-
-	QMessageBox::critical(this, tr("Error"), tr("Not yet implemented."));
 }
 
 void MemoryCardSettingsWidget::deleteCard()
@@ -289,12 +278,11 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 	{
 		for (u32 slot = 0; slot < MAX_SLOTS; slot++)
 		{
-			connect(menu.addAction(tr("Use for Port %1").arg(slot + 1)), &QAction::triggered, this,
+			connect(menu.addAction(tr("Use for Slot %1").arg(slot + 1)), &QAction::triggered, this,
 				[this, &selectedCard, slot]() { tryInsertCard(slot, selectedCard); });
 		}
 		menu.addSeparator();
 
-		connect(menu.addAction(tr("Duplicate")), &QAction::triggered, this, &MemoryCardSettingsWidget::duplicateCard);
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
 		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);
@@ -336,7 +324,7 @@ void MemoryCardSettingsWidget::swapCards()
 	if (!card1Name.has_value() || card1Name->empty() || !card2Name.has_value() || card2Name->empty())
 	{
 		QMessageBox::critical(
-			QtUtils::GetRootWidget(this), tr("Error"), tr("Both ports must have a card selected to swap."));
+			QtUtils::GetRootWidget(this), tr("Error"), tr("Both slots must have a card selected to swap."));
 		return;
 	}
 

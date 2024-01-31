@@ -75,6 +75,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/ControllerGlobalSettingsWidget.ui
 	Settings/ControllerMacroEditWidget.ui
 	Settings/ControllerMacroWidget.ui
+	Settings/ControllerMappingSettingsDialog.ui
 	Settings/ControllerMouseSettingsDialog.ui
 	Settings/ControllerSettingsWindow.cpp
 	Settings/ControllerSettingsWindow.h
@@ -149,6 +150,8 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/CpuWidget.cpp
 	Debugger/CpuWidget.h
 	Debugger/CpuWidget.ui
+	Debugger/DebuggerSettingsManager.cpp
+	Debugger/DebuggerSettingsManager.h
 	Debugger/DebuggerWindow.cpp
 	Debugger/DebuggerWindow.h
 	Debugger/DebuggerWindow.ui
@@ -247,4 +250,5 @@ if(WIN32)
 	)
 endif()
 
+fixup_file_properties(pcsx2-qt)
 setup_main_executable(pcsx2-qt)

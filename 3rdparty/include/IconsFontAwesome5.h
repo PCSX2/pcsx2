@@ -706,6 +706,7 @@
 #define ICON_FA_RANDOM "\xef\x81\xb4"	// U+f074
 #define ICON_FA_RECEIPT "\xef\x95\x83"	// U+f543
 #define ICON_FA_RECORD_VINYL "\xef\xa3\x99"	// U+f8d9
+#define ICON_FA_RECORDING "\xef\xa3\x9a"	// U+f8da
 #define ICON_FA_RECYCLE "\xef\x86\xb8"	// U+f1b8
 #define ICON_FA_REDO "\xef\x80\x9e"	// U+f01e
 #define ICON_FA_REDO_ALT "\xef\x8b\xb9"	// U+f2f9

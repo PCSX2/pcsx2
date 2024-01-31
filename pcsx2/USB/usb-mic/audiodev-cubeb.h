@@ -19,7 +19,7 @@ namespace usb_mic
 		class CubebAudioDevice final : public AudioDevice
 		{
 		public:
-			CubebAudioDevice(u32 port, AudioDir dir, u32 channels, std::string devname, s32 latency);
+			CubebAudioDevice(AudioDir dir, u32 channels, std::string devname, s32 latency);
 			~CubebAudioDevice();
 
 			static std::vector<std::pair<std::string, std::string>> GetDeviceList(bool input);

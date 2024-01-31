@@ -1,37 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   viewBox="0 0 448 512"
-   version="1.1"
-   id="svg1"
-   sodipodi:docname="trash-fill-w.svg"
-   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs1" />
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#505050"
-     bordercolor="#ffffff"
-     borderopacity="1"
-     inkscape:showpageshadow="0"
-     inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="1"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.6386719"
-     inkscape:cx="223.96186"
-     inkscape:cy="256"
-     inkscape:window-width="1920"
-     inkscape:window-height="990"
-     inkscape:window-x="0"
-     inkscape:window-y="42"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg1" />
-  <!--! Font Awesome Pro 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-  <path
-     d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"
-     id="path1"
-     style="fill:#ffffff;fill-opacity:1" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="svg1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <path id="path1" class="cls-1" d="m52.64,15l-1.81,3.6h-24.17c-4.46,0-8.06,3.6-8.06,8.06s3.6,8.06,8.06,8.06h96.68c4.46,0,8.06-3.6,8.06-8.06s-3.6-8.06-8.06-8.06h-24.17l-1.81-3.6c-1.36-2.74-4.15-4.46-7.2-4.46h-30.31c-3.05,0-5.84,1.71-7.2,4.46Zm70.7,34.47H26.66l5.34,78.65c.4,6.37,5.69,11.33,12.06,11.33h61.89c6.37,0,11.66-4.96,12.06-11.33l5.34-78.65Z"/>
 </svg>

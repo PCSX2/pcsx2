@@ -66,4 +66,7 @@ public:
 
 	/// Converts a generic controller key to a string.
 	static std::string ConvertGenericControllerKeyToString(InputBindingKey key);
+
+	/// Returns true if inversion/negation should be ignored when binding axes.
+	static bool ShouldIgnoreInversion();
 };
