@@ -277,9 +277,11 @@ bool MemoryViewTable::KeyPress(int key, QChar keychar)
 
 		if (keyCharIsText)
 		{
-			InsertIntoSelectedHexView(((u8)QString(QChar(key)).toInt(&pressHandled, 16)));
+			// Check if key pressed is hex before insertion (QString conversion fails otherwise)
+			const u8 keyPressed = (u8)QString(QChar(key)).toInt(&pressHandled, 16);
 			if (pressHandled)
 			{
+				InsertIntoSelectedHexView(keyPressed);
 				// Increment to the next nibble or byte
 				if ((selectedNibbleHI = !selectedNibbleHI))
 					UpdateSelectedAddress(selectedAddress + 1);
