@@ -357,6 +357,7 @@ u16 DEV9read16(u32 addr)
 	{
 		return dev9.ata->Read16(addr);
 	}
+	
 	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
@@ -419,16 +420,18 @@ u16 DEV9read16(u32 addr)
 			return hard;
 
 		case SPD_R_REV_3:
-			if (EmuConfig.DEV9.HddEnable)
-				hard |= SPD_CAPS_ATA;
+			// The Expansion bay always says HDD and Ethernet are supported, we need to keep HDD enabled and we handle it elsewhere.
+			// Ethernet we will turn off as not sure on what that would do right now, but no known game cares if it's off.
 			if (EmuConfig.DEV9.EthEnable)
 				hard |= SPD_CAPS_SMAP;
-			hard |= SPD_CAPS_FLASH;
+
+			// TODO: Do we need flash? my 50003 model doesn't report this, but it does report DVR capable aka (1<<4), was that intended?
+			hard |= SPD_CAPS_ATA | SPD_CAPS_FLASH;
 			//DevCon.WriteLn("DEV9: SPD_R_REV_3 16bit read %x", hard);
 			return hard;
 
 		case SPD_R_0e:
-			hard = 0x0002; //Have HDD inserted
+			hard = 0x0002; //Have HDD module inserted
 			DevCon.WriteLn("DEV9: SPD_R_0e 16bit read %x", hard);
 			return hard;
 		case SPD_R_XFR_CTRL:
