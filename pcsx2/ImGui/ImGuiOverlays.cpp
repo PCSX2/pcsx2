@@ -625,17 +625,17 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 	// Status Indicators
 	if (g_InputRecording.getControls().isRecording())
 	{
-		DRAW_LINE(standard_font, TinyString::from_fmt("{} Recording Input", ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
+		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","{} Recording Input"), ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
 	}
 	else
 	{
-		DRAW_LINE(standard_font, TinyString::from_fmt("{} Replaying", ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
+		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","{} Replaying"), ICON_FA_PLAY).c_str(), IM_COL32(97, 240, 84, 255));
 	}
 
 	// Input Recording Metadata
-	DRAW_LINE(fixed_font, TinyString::from_fmt("Input Recording Active: {}", g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
-	DRAW_LINE(fixed_font, TinyString::from_fmt("Frame: {}/{} ({})", g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(),g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
-	DRAW_LINE(fixed_font, TinyString::from_fmt("Undo Count: {}", g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Input Recording Active: {}"), g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Frame: {}/{} ({})"), g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(),g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Undo Count: {}"), g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
 
 #undef DRAW_LINE
 }
