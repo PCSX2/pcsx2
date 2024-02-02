@@ -389,8 +389,9 @@ GSRendererType D3D::GetPreferredRenderer()
 		{
 			Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV,
 				TRANSLATE_STR("GS",
-					"Your system has the \"OpenCL and OpenGL Compatibility Pack\" installed. This Vulkan driver crashes\n"
-					"PCSX2 on some GPUs. To use the Vulkan renderer, you should remove this app package."),
+					"Your system has the \"OpenCL, OpenGL, and Vulkan Compatibility Pack\" installed.\n"
+					"This Vulkan driver crashes PCSX2 on some GPUs.\n" 
+					"To use the Vulkan renderer, you should remove this app package."),
 				Host::OSD_WARNING_DURATION);
 			return true;
 		}

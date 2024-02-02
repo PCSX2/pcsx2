@@ -600,7 +600,7 @@ namespace usb_lightgun
 	std::span<const SettingInfo> GunCon2Device::Settings(u32 subtype) const
 	{
 		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::Path, "cursor_path", "Cursor Path",
+			{SettingInfo::Type::Path, "cursor_path", TRANSLATE_NOOP("USB", "Cursor Path"),
 				TRANSLATE_NOOP("USB", "Sets the crosshair image that this lightgun will use. Setting a crosshair image "
 									  "will disable the system cursor."),
 				""},
