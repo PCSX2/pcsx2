@@ -11,7 +11,7 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 
 INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SDL=SDL2-2.28.5
+SDL=SDL2-2.30.0
 XZ=5.4.5
 ZSTD=1.5.5
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
@@ -29,7 +29,7 @@ export CFLAGS="-I$INSTALLDIR/include $CFLAGS"
 export CXXFLAGS="-I$INSTALLDIR/include $CXXFLAGS"
 
 cat > SHASUMS <<EOF
-332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4  $SDL.tar.gz
+36e2e41557e0fa4a1519315c0f5958a87ccb27e25c51776beb6f1239526447b0  $SDL.tar.gz
 135c90b934aee8fbc0d467de87a05cb70d627da36abe518c357a873709e5b7d6  xz-$XZ.tar.gz
 9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
@@ -62,24 +62,6 @@ shasum -a 256 --check SHASUMS
 echo "Installing SDL..."
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-
-# MFI causes multiple joystick connection events, I'm guessing because both the HIDAPI and MFI interfaces
-# race each other, and sometimes both end up getting through. So, just force MFI off.
-patch -u CMakeLists.txt <<EOF
---- CMakeLists.txt	2023-08-03 01:33:11
-+++ CMakeLists.txt	2023-08-26 12:58:53
-@@ -2105,7 +2105,7 @@
-           #import <Foundation/Foundation.h>
-           #import <CoreHaptics/CoreHaptics.h>
-           int main() { return 0; }" HAVE_FRAMEWORK_COREHAPTICS)
--      if(HAVE_FRAMEWORK_GAMECONTROLLER AND HAVE_FRAMEWORK_COREHAPTICS)
-+      if(HAVE_FRAMEWORK_GAMECONTROLLER AND HAVE_FRAMEWORK_COREHAPTICS AND FALSE)
-         # Only enable MFI if we also have CoreHaptics to ensure rumble works
-         set(SDL_JOYSTICK_MFI 1)
-         set(SDL_FRAMEWORK_GAMECONTROLLER 1)
-
-EOF
-
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install
