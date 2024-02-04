@@ -26,9 +26,21 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #ifdef _WIN32
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
 #else
-	m_ui.gridLayout_2->removeWidget(m_ui.enableSDLRawInput);
+	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLRawInput);
 	m_ui.enableSDLRawInput->deleteLater();
 	m_ui.enableSDLRawInput = nullptr;
+#endif
+
+#ifdef __APPLE__
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
+#else
+	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
+	m_ui.enableSDLIOKitDriver->deleteLater();
+	m_ui.enableSDLIOKitDriver = nullptr;
+	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLMFIDriver);
+	m_ui.enableSDLMFIDriver->deleteLater();
+	m_ui.enableSDLMFIDriver = nullptr;
 #endif
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
@@ -102,6 +114,10 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
 	m_ui.ledSettings->setEnabled(enabled);
 #ifdef _WIN32
 	m_ui.enableSDLRawInput->setEnabled(enabled);
+#endif
+#ifdef __APPLE__
+	m_ui.enableSDLIOKitDriver->setEnabled(enabled);
+	m_ui.enableSDLMFIDriver->setEnabled(enabled);
 #endif
 }
 

@@ -126,7 +126,7 @@
      <property name="title">
       <string>SDL Input Source</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
+     <layout class="QGridLayout" name="sdlGridLayout">
       <item row="1" column="0">
        <widget class="QCheckBox" name="enableSDLSource">
         <property name="text">
@@ -170,6 +170,20 @@
        <widget class="QCheckBox" name="enableSDLRawInput">
         <property name="text">
          <string>Enable SDL Raw Input</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="enableSDLIOKitDriver">
+        <property name="text">
+         <string>Enable IOKit Driver</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="enableSDLMFIDriver">
+        <property name="text">
+         <string>Enable MFI Driver</string>
         </property>
        </widget>
       </item>
