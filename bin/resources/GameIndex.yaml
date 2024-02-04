@@ -65283,6 +65283,11 @@ SLUS-21726:
   name: "Samurai Warriors 2 - Xtreme Legends"
   region: "NTSC-U"
   compat: 5
+  patches:
+    3C93E16A:
+      content: |-
+        // Fixes the AI in Sugoroku.
+        patch=1,EE,00102230,word,00000000
 SLUS-21727:
   name: "Naruto - Ultimate Ninja 3"
   region: "NTSC-U"
