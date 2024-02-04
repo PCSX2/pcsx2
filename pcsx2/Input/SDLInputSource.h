@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
 #include "Input/InputSource.h"
-#include "SDL.h"
+
+#include <SDL.h>
+
 #include <array>
 #include <functional>
 #include <mutex>
@@ -84,9 +87,15 @@ private:
 
 	ControllerDataVector m_controllers;
 
+	std::array<u32, MAX_LED_COLORS> m_led_colors{};
+	std::vector<std::pair<std::string, std::string>> m_sdl_hints;
+
 	bool m_sdl_subsystem_initialized = false;
 	bool m_controller_enhanced_mode = false;
 	bool m_controller_raw_mode = false;
-	std::array<u32, MAX_LED_COLORS> m_led_colors{};
-	std::vector<std::pair<std::string, std::string>> m_sdl_hints;
+
+#ifdef __APPLE__
+	bool m_enable_iokit_driver = false;
+	bool m_enable_mfi_driver = false;
+#endif
 };

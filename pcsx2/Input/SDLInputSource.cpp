@@ -160,9 +160,23 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 	const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
 	const bool old_controller_raw_mode = m_controller_raw_mode;
 
+#ifdef __APPLE__
+	const bool old_enable_iokit_driver = m_enable_iokit_driver;
+	const bool old_enable_mfi_driver = m_enable_mfi_driver;
+#endif
+
 	LoadSettings(si);
 
-	if (m_controller_enhanced_mode != old_controller_enhanced_mode || m_controller_raw_mode != old_controller_raw_mode)
+#ifdef __APPLE__
+	const bool drivers_changed =
+		(m_enable_iokit_driver != old_enable_iokit_driver || m_enable_mfi_driver != old_enable_mfi_driver);
+#else
+	constexpr bool drivers_changed = false;
+#endif
+
+	if (m_controller_enhanced_mode != old_controller_enhanced_mode ||
+		m_controller_raw_mode != old_controller_raw_mode ||
+		drivers_changed)
 	{
 		settings_lock.unlock();
 		ShutdownSubsystem();
@@ -186,10 +200,6 @@ void SDLInputSource::Shutdown()
 
 void SDLInputSource::LoadSettings(SettingsInterface& si)
 {
-	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-	m_controller_raw_mode = si.GetBoolValue("InputSources", "SDLRawInput", false);
-	m_sdl_hints = si.GetKeyValueList("SDLHints");
-
 	for (u32 i = 0; i < MAX_LED_COLORS; i++)
 	{
 		const u32 color = GetRGBForPlayerId(si, i);
@@ -204,6 +214,16 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 
 		SetControllerRGBLED(it->game_controller, color);
 	}
+
+	m_sdl_hints = si.GetKeyValueList("SDLHints");
+
+	m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+	m_controller_raw_mode = si.GetBoolValue("InputSources", "SDLRawInput", false);
+
+#ifdef __APPLE__
+	m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);
+	m_enable_mfi_driver = si.GetBoolValue("InputSources", "SDLMFIDriver", true);
+#endif
 }
 
 u32 SDLInputSource::GetRGBForPlayerId(SettingsInterface& si, u32 player_id)
@@ -250,6 +270,12 @@ void SDLInputSource::SetHints()
 	// Gets us pressure sensitive button support on Linux
 	// Apparently doesn't work on Windows, so leave it off there
 	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
+#endif
+
+#ifdef __APPLE__
+	Console.WriteLnFmt("IOKit is {}, MFI is {}.", m_enable_iokit_driver ? "enabled" : "disabled", m_enable_mfi_driver ? "enabled" : "disabled");
+	SDL_SetHint(SDL_HINT_JOYSTICK_IOKIT, m_enable_iokit_driver ? "1" : "0");
+	SDL_SetHint(SDL_HINT_JOYSTICK_MFI, m_enable_mfi_driver ? "1" : "0");
 #endif
 
 	for (const std::pair<std::string, std::string>& hint : m_sdl_hints)
