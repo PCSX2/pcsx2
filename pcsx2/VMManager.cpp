@@ -1496,6 +1496,10 @@ void VMManager::Shutdown(bool save_resume_state)
 			Console.Error("Failed to save resume state");
 	}
 
+	// end input recording before clearing state
+	if (g_InputRecording.isActive())
+		g_InputRecording.stop();
+
 	SaveSessionTime(s_disc_serial);
 	s_elf_override = {};
 	ClearELFInfo();
