@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1305</width>
-    <height>680</height>
+    <height>690</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -129,7 +129,8 @@
           <string>Mapping Settings</string>
          </property>
          <property name="icon">
-          <iconset theme="settings-3-line"/>
+          <iconset theme="settings-3-line">
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
