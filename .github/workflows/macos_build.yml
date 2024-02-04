@@ -150,7 +150,6 @@ jobs:
 
       - name: Prepare Build Artifacts
         run: |
-          cp /usr/local/lib/libMoltenVK.dylib build/pcsx2*/PCSX2.app/Contents/Frameworks/
           TAG="$(git tag --points-at HEAD)"
           if [ -z "$TAG" ]; then
             APPNAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
