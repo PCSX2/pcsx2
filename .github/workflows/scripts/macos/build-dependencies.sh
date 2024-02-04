@@ -18,6 +18,7 @@ LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 PNG=1.6.37
 WEBP=1.3.2
 FFMPEG=6.0
+MOLTENVK=1.2.8
 QT=6.6.2
 
 if [ "${INSTALLDIR:0:1}" != "/" ]; then
@@ -47,6 +48,7 @@ cat > SHASUMS <<EOF
 505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca  libpng-$PNG.tar.xz
 2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$WEBP.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
+85beaf8abfcc54d9da0ff0257ae311abd9e7aa96e53da37e1c37d6bc04ac83cd  v$MOLTENVK.tar.gz
 b89b426b9852a17d3e96230ab0871346574d635c7914480a2a27f98ff942677b  qtbase-everywhere-src-$QT.tar.xz
 71584c9136d4983ad19fa2d017abbae57b055eb90c62a36bf3f45d6d21a87cb3  qtimageformats-everywhere-src-$QT.tar.xz
 5a231d59ef1b42bfbaa5174d4ff39f8e1b4ba070ef984a70b069b4b2576d8181  qtsvg-everywhere-src-$QT.tar.xz
@@ -62,6 +64,7 @@ curl -L \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$PNG/libpng-$PNG.tar.xz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$WEBP.tar.gz" \
 	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
+	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
@@ -135,6 +138,15 @@ cmake "${CMAKE_COMMON[@]}" -B build \
 	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install
+cd ..
+
+# MoltenVK already builds universal binaries, nothing special to do here.
+echo "Installing MoltenVK..."
+tar xf "v$MOLTENVK.tar.gz"
+cd "MoltenVK-${MOLTENVK}"
+./fetchDependencies --macos
+make macos
+cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
 cd ..
 
 echo "Installing Qt Base..."
