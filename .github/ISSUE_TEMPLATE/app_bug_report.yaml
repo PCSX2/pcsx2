@@ -67,11 +67,10 @@ body:
       - Windows 11
       - Windows 10 (64bit)
       - Linux (64bit) - Specify distro below
+      - macOS 14 (Sonoma)
       - macOS 13 (Ventura)
       - macOS 12 (Monterey)
       - macOS 11 (Big Sur)
-      - macOS 10.15 (Catalina)
-      - macOS 10.14 (Mojave)
     validations:
       required: true
   - type: input
