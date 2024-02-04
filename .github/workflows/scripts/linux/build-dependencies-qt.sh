@@ -50,7 +50,7 @@ cd ..
 echo "Building libbacktrace..."
 unzip "$LIBBACKTRACE.zip"
 cd "libbacktrace-$LIBBACKTRACE"
-./configure --prefix="$HOME/deps"
+./configure --prefix="$INSTALLDIR"
 make
 make install
 cd ..
