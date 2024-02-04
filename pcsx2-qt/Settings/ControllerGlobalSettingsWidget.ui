@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>902</width>
-    <height>593</height>
+    <height>665</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="mainLayout" columnstretch="1,0">
@@ -31,7 +31,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>45</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>
