@@ -1046,10 +1046,10 @@ bool MainWindow::shouldAbortForMemcardBusy(const VMLock& lock)
 {
 	if (MemcardBusy::IsBusy() && !GSDumpReplayer::IsReplayingDump())
 	{
-		const QMessageBox::StandardButton res = QMessageBox::question(
+		const QMessageBox::StandardButton res = QMessageBox::critical(
 			lock.getDialogParent(),
 			tr("WARNING: Memory Card Busy"),
-			tr("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"));
+			tr("WARNING: Your memory card is still writing data. Shutting down now <b>WILL IRREVERSIBLY DESTROY YOUR MEMORY CARD.</b> It is strongly recommended to resume your game and let it finish writing to your memory card.<br><br>Do you wish to shutdown anyways and <b>IRREVERSIBLY DESTROY YOUR MEMORY CARD?</b>"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
 		if (res != QMessageBox::Yes)
 		{
