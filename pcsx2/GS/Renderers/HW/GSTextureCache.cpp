@@ -1626,8 +1626,17 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							depth_TEX0.U32[1] = TEX0.U32[1];
 							src = LookupDepthSource(false, depth_TEX0, TEXA, CLAMP, req_rect, possible_shuffle, linear, frame_fbp, req_color, req_alpha);
 
-							if(src != nullptr)
+							if (src != nullptr)
+							{
+
+								if (TEX0.PSM == PSMT8H)
+								{
+									// Attach palette for GPU texture conversion
+									AttachPaletteToSource(src, psm_s.pal, true);
+								}
+
 								return src;
+							}
 						}
 						else
 						{
@@ -1640,7 +1649,15 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								src = LookupDepthSource(false, TEX0, TEXA, CLAMP, req_rect, possible_shuffle, linear, frame_fbp, req_color, req_alpha, true);
 
 								if (src != nullptr)
+								{
+									if (TEX0.PSM == PSMT8H)
+									{
+										// Attach palette for GPU texture conversion
+										AttachPaletteToSource(src, psm_s.pal, true);
+									}
+
 									return src;
+								}
 							}
 						}
 					}

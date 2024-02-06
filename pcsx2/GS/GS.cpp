@@ -15,7 +15,6 @@
 #include "GS/MultiISA.h"
 #include "Host.h"
 #include "Input/InputManager.h"
-#include "Recording/InputRecording.h"
 #include "MTGS.h"
 #include "pcsx2/GS.h"
 #include "GS/Renderers/Null/GSRendererNull.h"
@@ -338,9 +337,6 @@ void GSclose()
 	if (GSCapture::IsCapturing())
 		GSCapture::EndCapture();
 
-	if (g_InputRecording.isActive())
-		g_InputRecording.stop();
-
 	CloseGSRenderer();
 	CloseGSDevice(true);
 	Host::ReleaseRenderWindow();
@@ -503,9 +499,6 @@ void GSGameChanged()
 
 	if (!VMManager::HasValidVM() && GSCapture::IsCapturing())
 		GSCapture::EndCapture();
-
-	if (!VMManager::HasValidVM() && g_InputRecording.isActive())
-		g_InputRecording.stop();
 }
 
 bool GSHasDisplayWindow()

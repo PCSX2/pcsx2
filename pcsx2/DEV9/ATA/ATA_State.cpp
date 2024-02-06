@@ -381,6 +381,10 @@ u16 ATA::Read16(u32 addr)
 			[[fallthrough]];
 		case ATA_R_ALT_STATUS:
 			//DevCon.WriteLn("DEV9: *ATA_R_ALT_STATUS 16bit read at address % x, value % x, Active %s", addr, regStatus, (GetSelectedDevice() == 0) ? " True " : " False ");
+
+			if (!EmuConfig.DEV9.HddEnable)
+				return 0xff7f; // PS2 confirmed response when no HDD is actually connected. The Expansion bay always says HDD support is connected.
+
 			//raise IRQ?
 			if (GetSelectedDevice() != 0)
 				return 0;

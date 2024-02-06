@@ -53,7 +53,7 @@ static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
 }
 #endif
 
-static inline bool FileSystemCharacterIsSane(char c, bool strip_slashes)
+static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 {
 #ifdef _WIN32
 	// https://docs.microsoft.com/en-gb/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN#naming-conventions

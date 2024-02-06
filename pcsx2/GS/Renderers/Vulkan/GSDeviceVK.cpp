@@ -1312,7 +1312,7 @@ void GSDeviceVK::StopPresentThread()
 	{
 		std::unique_lock<std::mutex> lock(m_present_mutex);
 		WaitForPresentComplete(lock);
-		m_present_thread_done.store(true, std::memory_order_acquire);
+		m_present_thread_done.store(true, std::memory_order_release);
 		m_present_queued_cv.notify_one();
 	}
 

@@ -9,7 +9,7 @@ fi
 
 INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SDL=SDL2-2.28.5
+SDL=SDL2-2.30.0
 QT=6.6.1
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 
@@ -17,7 +17,7 @@ mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
-332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4  $SDL.tar.gz
+36e2e41557e0fa4a1519315c0f5958a87ccb27e25c51776beb6f1239526447b0  $SDL.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
 450c5b4677b2fe40ed07954d7f0f40690068e80a94c9df86c2c905ccd59d02f7  qtbase-everywhere-src-$QT.tar.xz
 ac4ed08950072e375be662cfa64fdb447dd6e935cf29c56a4128d1500492188f  qtimageformats-everywhere-src-$QT.tar.xz
@@ -50,7 +50,7 @@ cd ..
 echo "Building libbacktrace..."
 unzip "$LIBBACKTRACE.zip"
 cd "libbacktrace-$LIBBACKTRACE"
-./configure --prefix="$HOME/deps"
+./configure --prefix="$INSTALLDIR"
 make
 make install
 cd ..

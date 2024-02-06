@@ -440,14 +440,14 @@ vec4 sample_depth(vec2 st)
 
 #endif
 
-
 	// warning t ranges from 0 to 255
 #if (PS_AEM_FMT == FMT_24)
 	t.a = ( (PS_AEM == 0) || any(bvec3(t.rgb))  ) ? 255.0f * TA.x : 0.0f;
 #elif (PS_AEM_FMT == FMT_16)
 	t.a = t.a >= 128.0f ? 255.0f * TA.y : ( (PS_AEM == 0) || any(bvec3(t.rgb)) ) ? 255.0f * TA.x : 0.0f;
+#elif PS_PAL_FMT != 0 && !PS_TALES_OF_ABYSS_HLE && !PS_URBAN_CHAOS_HLE
+	t = trunc(sample_4p(uvec4(t.aaaa))[0] * 255.0f + 0.05f);
 #endif
-
 
 	return t;
 }
