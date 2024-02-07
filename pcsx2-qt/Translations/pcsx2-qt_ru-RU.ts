@@ -2352,7 +2352,7 @@ Unread messages: {2}</source>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="81"/>
       <source>Enable DInput Input Source</source>
-      <translation>Включить источник ввода XInput</translation>
+      <translation>Включить источник ввода DInput</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="101"/>
