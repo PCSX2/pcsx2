@@ -559,7 +559,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 		if (bindings.empty())
 			continue;
 
-		text.fmt("USB{} |", port + 1u);
+		text.fmt("{} {} ", ICON_PF_USB, port + 1u);
 
 		for (const InputBindingInfo& bi : bindings)
 		{
