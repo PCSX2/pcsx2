@@ -282,6 +282,7 @@ PAPX-90330:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 PAPX-90501:
@@ -1137,7 +1138,9 @@ SCAJ-20034:
   region: "NTSC-Unk"
 SCAJ-20035:
   name: "Dead to Rights"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes sky lighting.
 SCAJ-20037:
   name: "Monster Farm 4"
   region: "NTSC-Unk"
@@ -2213,6 +2216,7 @@ SCCS-40001:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCCS-40002:
@@ -2744,6 +2748,7 @@ SCED-51366:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCED-51375:
@@ -4466,8 +4471,21 @@ SCES-50885:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+  patches:
+    "09B3AD4D":
+      content: |-
+        // Fixes COP2 CFC2 timing.
+        patch=1,EE,0027dbc4,word,48429000
+        patch=1,EE,0027dbd4,word,4BC109FF
+        patch=1,EE,0027dc10,word,48429000
+        patch=1,EE,0027dc20,word,4BC109FF
+        patch=1,EE,0027dd90,word,48429000
+        patch=1,EE,0027dda0,word,4BC109FF
+        patch=1,EE,0027dddc,word,48429000
+        patch=1,EE,0027ddec,word,4BC109FF
 SCES-50887:
   name: "Alpine Racer 3"
   region: "PAL-M5"
@@ -4589,6 +4607,7 @@ SCES-51102:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51103:
@@ -4597,6 +4616,7 @@ SCES-51103:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51104:
@@ -4605,6 +4625,7 @@ SCES-51104:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51105:
@@ -4613,6 +4634,7 @@ SCES-51105:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCES-51135:
@@ -7619,8 +7641,21 @@ SCPS-15025:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+  patches:
+    "FE0A6AB6":
+      content: |-
+        // Fixes COP2 CFC2 timing.
+        patch=1,EE,00275f44,word,48429000
+        patch=1,EE,00275f54,word,4BC109FF
+        patch=1,EE,00275f90,word,48429000
+        patch=1,EE,00275fa0,word,4BC109FF
+        patch=1,EE,00276110,word,48429000
+        patch=1,EE,00276120,word,4BC109FF
+        patch=1,EE,0027615c,word,48429000
+        patch=1,EE,0027616c,word,4BC109FF
 SCPS-15026:
   name: ぼくのなつやすみ2 海の冒険篇
   name-sort: ぼくのなつやすみ2 うみのぼうけんへん
@@ -8532,6 +8567,7 @@ SCPS-19152:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19153:
@@ -8588,6 +8624,7 @@ SCPS-19206:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19207:
@@ -8776,6 +8813,7 @@ SCPS-19308:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-19309:
@@ -9173,7 +9211,10 @@ SCPS-55015:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-55016:
   name: "Jet de Go! 2"
   region: "NTSC-J"
@@ -9264,6 +9305,7 @@ SCPS-55035:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
 SCPS-55038:
@@ -9440,11 +9482,13 @@ SCPS-56011:
   name: "U - Underwater Unit"
   region: "NTSC-K"
 SCPS-56012:
-  name: "Raw Danger"
+  name: "Jeolche Jeolmyeong Dosi"
   region: "NTSC-K"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes some shading/shadows.
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-56013:
   name: "This is Football 2003"
   region: "NTSC-K"
@@ -12049,7 +12093,11 @@ SLED-51342:
     mipmap: 1 # Fixes broken player textures.
 SLED-51364:
   name: "ATV - Quad Power Racing 2"
-  region: "PAL-Unk"
+  region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes dither patterns.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLED-51380:
   name: "Zone of the Enders - The 2nd Runner [Demo]"
   region: "PAL"
@@ -12312,6 +12360,8 @@ SLED-53327:
   region: "PAL-E"
   clampModes:
     vuClampMode: 2 # Fixes rainbow graphics.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes lighting.
 SLED-53330:
   name: "Enthusia - Professional Racing [Demo]"
   region: "PAL"
@@ -14684,6 +14734,10 @@ SLES-50849:
 SLES-50850:
   name: "ATV - Quad Power Racing 2"
   region: "PAL-M5"
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes dither patterns.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-50852:
   name: "Sven-Goran Eriksson's World Challenge"
   region: "PAL-E"
@@ -15038,6 +15092,8 @@ SLES-51038:
 SLES-51042:
   name: "Disney Golf"
   region: "PAL-E"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes random game crashing.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
     trilinearFiltering: 1
@@ -15072,7 +15128,6 @@ SLES-51053:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
     trilinearFiltering: 1
-    disableDepthSupport: 1 # Fixes shadow flicker.
 SLES-51054:
   name: "Midnight Club 2"
   region: "PAL-M5"
@@ -15596,10 +15651,11 @@ SLES-51229:
   region: "PAL-M5"
   compat: 5
 SLES-51230:
-  name: "Minority Report"
+  name: "Minority Report - Everybody Runs"
   region: "PAL-E"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
 SLES-51232:
   name: "Virtua Tennis 2"
@@ -15813,7 +15869,10 @@ SLES-51301:
   name: "SOS - The Final Escape"
   region: "PAL-M3"
   gsHWFixes:
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51302:
   name: "Bomberman Kart"
   region: "PAL-M3"
@@ -15852,16 +15911,18 @@ SLES-51316:
   name: "Grand Theft Auto - Vice City"
   region: "PAL-E"
 SLES-51317:
-  name: "Minority Report"
+  name: "Minority Report - Le Futur vous Rattrape"
   region: "PAL-F"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
 SLES-51318:
-  name: "Minority Report"
+  name: "Minority Report - Everybody Runs"
   region: "PAL-G"
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
 SLES-51322:
   name: "Robotech Battlecry"
@@ -15879,6 +15940,8 @@ SLES-51340:
 SLES-51341:
   name: "NHL 2K3"
   region: "PAL-E"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes icerink color.
 SLES-51343:
   name: "Galerians - Ash"
   region: "PAL-M5"
@@ -15943,6 +16006,8 @@ SLES-51355:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_BigMuthaTruckers"
 SLES-51356:
   name: "Road Trip Adventure"
@@ -16016,6 +16081,9 @@ SLES-51381:
 SLES-51382:
   name: "Shrek - Super Party"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51383:
   name: "Beach King Stunt Racer"
   region: "PAL-M4"
@@ -16170,6 +16238,9 @@ SLES-51461:
 SLES-51462:
   name: "Shrek Super Party"
   region: "PAL-M4"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51466:
   name: "Tom Clancy's Splinter Cell"
   region: "PAL-M5"
@@ -16349,6 +16420,8 @@ SLES-51581:
   name: "Dead to Rights"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes sky lighting.
 SLES-51584:
   name: "F1 Career Challenge"
   region: "PAL-M4"
@@ -17381,6 +17454,8 @@ SLES-52001:
 SLES-52002:
   name: "Rogue Ops"
   region: "PAL-M6"
+  speedHacks:
+    eeCycleRate: 2 # Fixes hang on opening memory card screen.
 SLES-52005:
   name: "007 - Everything or Nothing"
   region: "PAL-M5"
@@ -19589,26 +19664,29 @@ SLES-52894:
   gsHWFixes:
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
 SLES-52895:
-  name: "Spongebob SquarePants - The Movie"
+  name: "Nickelodeon SpongeBob SquarePants - The Movie"
   region: "PAL-E"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
     mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52896:
-  name: "Spongebob SquarePants - The Movie"
+  name: "Nickelodeon SpongeBob SquarePants - The Movie"
   region: "PAL-F-G"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
     mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52897:
-  name: "Spongebob SquarePants - The Movie"
+  name: "Nickelodeon SpongeBob - Il Film"
   region: "PAL-I"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
     mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
@@ -19795,6 +19873,8 @@ SLES-52963:
   region: "PAL-M4"
   clampModes:
     vuClampMode: 2 # Fixes rainbow graphics.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes lighting.
 SLES-52964:
   name: "NanoBreaker"
   region: "PAL-M5"
@@ -19861,17 +19941,19 @@ SLES-52984:
   name: "Panzer Front Ausf B"
   region: "PAL-E"
 SLES-52985:
-  name: "Spongebob SquarePants - The Movie"
+  name: "Nickelodeon SpongeBob Schwammkopf - Der Film"
   region: "PAL-G"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
     mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
     cpuCLUTRender: 1 # Fixes duplicated bloom when upscaling.
 SLES-52986:
-  name: "Bob Esponja - La Película"
+  name: "Nickelodeon Bob Esponja - La Película"
   region: "PAL-S"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
     mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
@@ -20265,6 +20347,8 @@ SLES-53093:
   region: "PAL-G"
   clampModes:
     vuClampMode: 2 # Fixes rainbow graphics.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes lighting.
 SLES-53094:
   name: "Rugby 2005"
   region: "PAL-E"
@@ -25827,6 +25911,11 @@ SLES-55015:
 SLES-55016:
   name: "DreamWorks Bee Movie Game"
   region: "PAL-M6"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes hive color.
+    halfPixelOffset: 4 # Fixes bloom on sunlight.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55017:
   name: "Yu-Gi-Oh! GX - Tag Force Evolution"
   region: "PAL-M5"
@@ -27148,10 +27237,6 @@ SLES-55569:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes missing graphics.
     halfPixelOffset: 2 # Fixes ghosting.
-SLES-55571:
-  name: "Ghostbusters"
-  region: "PAL-M6"
-  compat: 5
 SLES-55572:
   name: "Marvel Super Hero Squad"
   region: "PAL-M6"
@@ -30881,6 +30966,11 @@ SLPM-60172:
 SLPM-60174:
   name: "Zettai Zetsumei Toshi"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-60175:
   name: "Wangan Midnight [Trial]"
   region: "NTSC-J"
@@ -30899,6 +30989,8 @@ SLPM-60179:
 SLPM-60180:
   name: "Disney Golf Classics [Trial]"
   region: "NTSC-J"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes random game crashing.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
     trilinearFiltering: 1
@@ -32458,6 +32550,8 @@ SLPM-62168:
   name-sort: でぃずにーごるふ くらしっく
   name-en: "Disney Golf Classics"
   region: "NTSC-J"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes random game crashing.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
     trilinearFiltering: 1
@@ -33410,6 +33504,11 @@ SLPM-62378:
   name-sort: ばくそうこんぼいでんせつ おとこはなみちあめりかろまん
   name-en: "Bakusou Convoy Densetsu"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes inside RT shuffling.
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
+    getSkipCount: "GSC_BigMuthaTruckers"
 SLPM-62379:
   name: カラオケレボリューション (J-POPベストVol.2)
   name-sort: からおけれぼりゅーしょん J-POPべすとVol.2
@@ -33745,7 +33844,6 @@ SLPM-62449:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
     trilinearFiltering: 1
-    disableDepthSupport: 1 # Fixes shadow flicker.
 SLPM-62450:
   name: カラオケレボリューション 〜アニメソングコレクション〜
   name-sort: からおけれぼりゅーしょん あにめそんぐこれくしょん
@@ -33975,6 +34073,8 @@ SLPM-62491:
   name-sort: ろっくまん ぱわーばとるふぁいたーず
   name-en: "RockMan Power Battle Fighters"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes whole screen grid artifacts.
 SLPM-62492:
   name: カラオケレボリューション キッズソングセレクション
   name-sort: からおけれぼりゅーしょん きっずそんぐせれくしょん
@@ -38371,6 +38471,8 @@ SLPM-65534:
   name-sort: ろーぐおぷす
   name-en: "Rogue Ops"
   region: "NTSC-J"
+  speedHacks:
+    eeCycleRate: 2 # Fixes hang on opening memory card screen.
 SLPM-65535:
   name: おしえて! ぽぽたん
   name-sort: おしえて! ぽぽたん
@@ -49996,7 +50098,8 @@ SLPS-20489:
   name-en: "Simple 2000 Series Vol. 114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
   region: "NTSC-J"
   gsHWFixes:
-    disableDepthSupport: 1 # Fixes black screen in-game.
+    mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
+    trilinearFiltering: 1
     getSkipCount: "GSC_Simple2000Vol114"
 SLPS-20490:
   name: パチスロ倶楽部コレクション アイムジャグラーEX〜ジャグラーセレクション〜
@@ -50758,7 +50861,10 @@ SLPS-25113:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25114:
   name: 機甲武装Gブレイカー 第三次クラウディア大戦
   name-sort: きこうぶそうGぶれいかー だいさんじくらうでぃあたいせん
@@ -51420,6 +51526,8 @@ SLPS-25235:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes double image.
+    halfPixelOffset: 1 # Fixes ghosting.
+    roundSprite: 1 # Fixes font artifacts.
 SLPS-25236:
   name: ファンタスティックフォーチュン2
   name-sort: ふぁんたすてぃっくふぉーちゅん2
@@ -51611,6 +51719,8 @@ SLPS-25267:
 SLPS-25268:
   name: "Dead to Rights"
   region: "NTSC-J"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes sky lighting.
 SLPS-25269:
   name: "Hitman - Silent Assassin"
   region: "NTSC-J"
@@ -55691,7 +55801,10 @@ SLPS-73204:
   name-en: "Zettai Zetsumei Toshi [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-73205:
   name: エースコンバット04 シャッタードスカイ PlayStation 2 the Best
   name-sort: えーすこんばっと04 しゃったーどすかい PlayStation 2 the Best
@@ -57272,6 +57385,8 @@ SLUS-20220:
   name: "Dead to Rights"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes sky lighting.
 SLUS-20221:
   name: "Vampire Night"
   region: "NTSC-U"
@@ -57599,6 +57714,8 @@ SLUS-20291:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_BigMuthaTruckers"
 SLUS-20292:
   name: "Tsugunai - Atonement"
@@ -57788,7 +57905,8 @@ SLUS-20331:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuCLUTRender: 1 # Fixes light bleed through objects.
+    gpuTargetCLUT: 1 # Fixes light bleed through objects.
+    halfPixelOffset: 1 # Fixes light bleed through objects.
     autoFlush: 1 # Fixes light bloom intensity.
 SLUS-20332:
   name: "NCAA March Madness 2002"
@@ -57913,7 +58031,6 @@ SLUS-20355:
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, cleans up texture detail.
     trilinearFiltering: 1
-    disableDepthSupport: 1 # Fixes shadow flicker.
 SLUS-20356:
   name: "Transworld SURF"
   region: "NTSC-U"
@@ -58551,6 +58668,8 @@ SLUS-20476:
 SLUS-20477:
   name: "NHL 2K3 - Sega Sports"
   region: "NTSC-U"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes icerink color.
 SLUS-20478:
   name: "Disney's PK - Out of the Shadows"
   region: "NTSC-U"
@@ -58738,6 +58857,9 @@ SLUS-20516:
   name: "Shrek - Super Party"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves building textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20517:
   name: "Haven - Call of the King"
   region: "NTSC-U"
@@ -58814,6 +58936,8 @@ SLUS-20532:
   name: "Disney Golf"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeDivRoundMode: 3 # Fixes random game crashing.
   gsHWFixes:
     mipmap: 2 # Mipmap + trilinear, improves grass rendering to match software.
     trilinearFiltering: 1
@@ -58968,7 +59092,10 @@ SLUS-20561:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20562:
   name: ".hack Mutation Part 2"
   region: "NTSC-U"
@@ -59023,6 +59150,10 @@ SLUS-20570:
   name: "ATV Quad Power Racing 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes dither patterns.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20571:
   name: "TY the Tasmanian Tiger"
   region: "NTSC-U"
@@ -59229,6 +59360,8 @@ SLUS-20605:
   region: "NTSC-U"
   gsHWFixes:
     textureInsideRT: 1 # Fixes inside RT shuffling.
+    mipmap: 2 # Mipmap + trilinear, improves road and grass textures to match sw renderer.
+    trilinearFiltering: 1
     getSkipCount: "GSC_BigMuthaTruckers"
 SLUS-20606:
   name: "Bounty Hunter - Seek & Destroy"
@@ -59624,8 +59757,21 @@ SLUS-20685:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes interlacing.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves shine on surfaces and lights.
     mipmap: 2 # Fixes miptrick texture effects.
     trilinearFiltering: 1 # Fixes miptrick blending.
+  patches:
+    BDD9F5E1:
+      content: |-
+        // Fixes COP2 CFC2 timing.
+        patch=1,EE,0027caf4,word,48429000
+        patch=1,EE,0027cb04,word,4BC109FF
+        patch=1,EE,0027cb40,word,48429000
+        patch=1,EE,0027cb50,word,4BC109FF
+        patch=1,EE,0027ccc0,word,48429000
+        patch=1,EE,0027ccd0,word,4BC109FF
+        patch=1,EE,0027cd0c,word,48429000
+        patch=1,EE,0027cd1c,word,4BC109FF
 SLUS-20686:
   name: "Splashdown - Rides Gone Wild"
   region: "NTSC-U"
@@ -59925,6 +60071,8 @@ SLUS-20746:
   name: "Rogue Ops"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    eeCycleRate: 2 # Fixes hang on opening memory card screen.
 SLUS-20748:
   name: "Super Trucks Racing"
   region: "NTSC-U"
@@ -60420,6 +60568,8 @@ SLUS-20845:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes rainbow graphics.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes lighting.
 SLUS-20846:
   name: "Strike Force Bowling"
   region: "NTSC-U"
@@ -60768,6 +60918,7 @@ SLUS-20904:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes missing lights.
     mipmap: 2 # Mipmap + trilinear, improves the street's textures to match sw renderer.
     trilinearFiltering: 1
     halfPixelOffset: 2 # Fixes bloom misalignment when upscaling.
@@ -64914,9 +65065,14 @@ SLUS-21621:
     - "SLUS-21621"
     - "SLUS-21569"
 SLUS-21622:
-  name: "Bee Movie Game"
+  name: "DreamWorks Bee Movie Game"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes hive color.
+    halfPixelOffset: 4 # Fixes bloom on sunlight.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21623:
   name: "The Bigs"
   name-sort: "Bigs, The"
@@ -66607,7 +66763,10 @@ SLUS-28025:
   name: "Disaster Report [Trade Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    autoFlush: 2 # Fixes incorrect blur effect.
+    autoFlush: 1 # Fixes incorrect blur effect.
+    halfPixelOffset: 4 # Improves blur.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-28026:
   name: "Everquest Online Adventures [Beta Vol.3.0]"
   region: "NTSC-U"
@@ -66638,6 +66797,8 @@ SLUS-28037:
 SLUS-28039:
   name: "Rogue Ops [Trade Demo]"
   region: "NTSC-U"
+  speedHacks:
+    eeCycleRate: 2 # Fixes hang on opening memory card screen.
 SLUS-28040:
   name: "Transformers [Trade Demo]"
   region: "NTSC-U"
