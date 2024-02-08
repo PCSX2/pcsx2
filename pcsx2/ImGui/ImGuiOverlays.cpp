@@ -44,6 +44,8 @@
 #include <tuple>
 #include <unordered_map>
 
+InputRecordingUI::InputRecordingData g_InputRecordingData;
+
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
@@ -623,7 +625,7 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 	} while (0)
 
 	// Status Indicators
-	if (g_InputRecording.getControls().isRecording())
+	if (g_InputRecordingData.is_recording)
 	{
 		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","{} Recording Input"), ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
 	}
@@ -633,9 +635,9 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 	}
 
 	// Input Recording Metadata
-	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Input Recording Active: {}"), g_InputRecording.getData().getFilename()).c_str(), IM_COL32(117, 255, 241, 255));
-	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Frame: {}/{} ({})"), g_InputRecording.getFrameCounter() + 1, g_InputRecording.getData().getTotalFrames(),g_FrameCount).c_str(), IM_COL32(117, 255, 241, 255));
-	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Undo Count: {}"), g_InputRecording.getData().getUndoCount()).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Input Recording Active: {}"), g_InputRecordingData.filename).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Frame: {}/{} ({})"), g_InputRecordingData.current_frame, g_InputRecordingData.total_frames, g_InputRecordingData.frame_count).c_str(), IM_COL32(117, 255, 241, 255));
+	DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays","Undo Count: {}"), g_InputRecordingData.undo_count).c_str(), IM_COL32(117, 255, 241, 255));
 
 #undef DRAW_LINE
 }
@@ -1074,3 +1076,16 @@ void ImGuiManager::RenderOverlays()
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();
 }
+
+// Currently unused, but can be used to update the InputRecordingData struct if ever needed
+void InputRecordingUI::UpdateInputRecordingData(InputRecordingData* ird, bool is_recording, std::string filename, u32 current_frame, u32 total_frames, u32 frame_count, u32 undo_count)
+{
+	ird->is_recording = is_recording;
+	ird->filename = filename;
+	ird->current_frame = current_frame;
+	ird->total_frames = total_frames;
+	ird->frame_count = frame_count;
+	ird->undo_count = undo_count;
+}
+
+

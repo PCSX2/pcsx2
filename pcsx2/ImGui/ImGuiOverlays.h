@@ -27,3 +27,20 @@ namespace SaveStateSelectorUI
 	void LoadCurrentSlot();
 	void SaveCurrentSlot();
 } // namespace SaveStateSelectorUI
+
+namespace InputRecordingUI
+{
+	struct InputRecordingData
+	{
+		bool is_recording = false;
+		std::string filename = "";
+		u32 current_frame = 0;
+		u32 total_frames = 0;
+		u32 frame_count = 0;
+		u32 undo_count = 0;
+	};
+
+	static void UpdateInputRecordingData(InputRecordingData *ird, bool is_recording, std::string filename, u32 current_frame, u32 total_frames, u32 frame_count, u32 undo_count);
+}
+
+extern InputRecordingUI::InputRecordingData g_InputRecordingData;
