@@ -1075,10 +1075,15 @@ void ps_main()
 	ps_fbmask(C);
 
 #if !PS_NO_COLOR
-	#if PS_HDR == 1
-		SV_Target0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
+	#if PS_RTA_CORRECTION
+		SV_Target0.a = C.a / 128.0f;
 	#else
-		SV_Target0 = C / 255.0f;
+		SV_Target0.a = C.a / 255.0f;
+	#endif
+	#if PS_HDR == 1
+		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
+	#else
+		SV_Target0.rgb = C.rgb / 255.0f;
 	#endif
 	#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;

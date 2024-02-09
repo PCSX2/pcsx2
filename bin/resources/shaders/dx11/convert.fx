@@ -113,6 +113,22 @@ PS_OUTPUT ps_datm0(PS_INPUT input)
 	return output;
 }
 
+PS_OUTPUT ps_rta_correction(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	float4 value = sample_c(input.t);
+	output.c = float4(value.rgb, (value.a * 255.0f) / 127.5f);
+	return output;
+}
+
+PS_OUTPUT ps_rta_decorrection(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	float4 value = sample_c(input.t);
+	output.c = float4(value.rgb, (value.a * 127.5f) / 255.0f);
+	return output;
+}
+
 PS_OUTPUT ps_hdr_init(PS_INPUT input)
 {
 	PS_OUTPUT output;

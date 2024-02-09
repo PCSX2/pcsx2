@@ -104,6 +104,18 @@ fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<
 	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
 }
 
+fragment float4 ps_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	float4 in = tex.read(p);
+	return float4(in.rgb, (in.a * 255.f) / 127.5f);
+}
+
+fragment float4 ps_rta_decorrection(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	float4 in = tex.read(p);
+	return float4(in.rgb, (in.a * 127.5f) / 255.f);
+}
+
 fragment float4 ps_hdr_init(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	float4 in = tex.read(p);

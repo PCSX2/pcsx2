@@ -41,6 +41,7 @@ constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_BLEND_HW           [[function_constant(GSMTLConstantIndex_PS_BLEND_HW)]];
 constant bool PS_A_MASKED           [[function_constant(GSMTLConstantIndex_PS_A_MASKED)]];
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
+constant bool PS_RTA_CORRECTION     [[function_constant(GSMTLConstantIndex_PS_RTA_CORRECTION)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
 constant bool PS_ROUND_INV          [[function_constant(GSMTLConstantIndex_PS_ROUND_INV)]];
@@ -1130,7 +1131,8 @@ struct PSMain
 		ps_fbmask(C);
 
 		if (PS_COLOR0)
-			out.c0 = PS_HDR ? float4(C.rgb / 65535.f, C.a / 255.f) : C / 255.f;
+			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
+			out.c0.rgb = PS_HDR ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
 		if (PS_COLOR0 && PS_ONLY_ALPHA)
 			out.c0.rgb = 0;
 		if (PS_COLOR1)

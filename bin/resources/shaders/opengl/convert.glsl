@@ -313,6 +313,22 @@ void ps_datm0()
 }
 #endif
 
+#ifdef ps_rta_correction
+void ps_rta_correction()
+{
+	vec4 value = sample_c();
+	SV_Target0 = vec4(value.rgb, (value.a * 255.0f) / 127.5f);
+}
+#endif
+
+#ifdef ps_rta_decorrection
+void ps_rta_decorrection()
+{
+	vec4 value = sample_c();
+	SV_Target0 = vec4(value.rgb, (value.a * 127.5f) / 255.0f);
+}
+#endif
+
 #ifdef ps_hdr_init
 void ps_hdr_init()
 {

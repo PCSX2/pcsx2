@@ -3729,7 +3729,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	return true;
 }
 
-void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass)
+void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass, GSTextureCache::Target* rt)
 {
 	{
 		// AA1: Blending needs to be enabled on draw.
@@ -3895,7 +3895,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	const bool one_barrier = m_conf.require_one_barrier || blend_ad_alpha_masked;
 
 	// Blend can be done on hw. As and F cases should be accurate.
-	// BLEND_HW_CLR1 with Ad, BLEND_HW_CLR3  Cs > 0.5f will require sw blend.
+	// BLEND_HW_CLR1 with Ad, BLEND_HW_CLR3 might require sw blend.
 	// BLEND_HW_CLR1 with As/F and BLEND_HW_CLR2 can be done in hw.
 	const bool clr_blend = !!(blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2 | BLEND_HW_CLR3));
 	bool clr_blend1_2 = (blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
@@ -4137,6 +4137,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d,
 		m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, m_drawlist.size(), sw_blending);
 #endif
+
 	if (color_dest_blend)
 	{
 		// Blend output will be Cd, disable hw/sw blending.
@@ -4300,6 +4301,16 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
+		// TODO: Make it work on DATE, switch to new shaders with Ad doubled.
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || rt_alpha_max > 128;
+		const bool rta_correction = !rta_decorrection && !m_cached_ctx.TEST.DATE && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1;
+		if (rta_correction)
+		{
+			rt->RTACorrect(rt);
+			m_conf.ps.rta_correction = rt->m_rt_alpha_scale && m_conf.colormask.wa;
+			m_conf.rt = rt->m_texture;
+		}
+
 		// Care for hw blend value, 6 is for hw/sw, sw blending used.
 		if (blend_flag & BLEND_HW_CLR1)
 		{
@@ -4312,7 +4323,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 
 			m_conf.ps.blend_hw = 2;
 		}
-		else if (blend_flag & BLEND_HW_CLR3)
+		else if (!rta_correction && (blend_flag & BLEND_HW_CLR3))
 		{
 			m_conf.ps.blend_hw = 3;
 		}
@@ -5291,11 +5302,22 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			ds->m_alpha_min &= 128;
 		}
 	}
+	
+	{
+		const bool rta_decorrection = m_cached_ctx.TEST.DATE || m_channel_shuffle || m_texture_shuffle || blend_alpha_max > 128;
+		if (rt && rta_decorrection)
+		{
+			rt->RTADecorrect(rt);
+			m_conf.rt = rt->m_texture;
+		}
+		else if (rt)
+			m_conf.ps.rta_correction = rt->m_rt_alpha_scale && m_conf.colormask.wa;
+	}
 
 	bool blending_alpha_pass = false;
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
-		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, blending_alpha_pass);
+		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, blending_alpha_pass, rt);
 	}
 	else
 	{

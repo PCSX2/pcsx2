@@ -1105,6 +1105,8 @@ bool GSDeviceMTL::Create()
 				break;
 			case ShaderConvert::COPY:
 			case ShaderConvert::RGBA_TO_8I: // Yes really
+			case ShaderConvert::RTA_CORRECTION:
+			case ShaderConvert::RTA_DECORRECTION:
 			case ShaderConvert::TRANSPARENCY_FILTER:
 			case ShaderConvert::FLOAT32_TO_RGBA8:
 			case ShaderConvert::FLOAT32_TO_RGB8:
@@ -1810,6 +1812,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantI(m_fn_constants, pssel.blend_hw,           GSMTLConstantIndex_PS_BLEND_HW);
 		setFnConstantB(m_fn_constants, pssel.a_masked,           GSMTLConstantIndex_PS_A_MASKED);
 		setFnConstantB(m_fn_constants, pssel.hdr,                GSMTLConstantIndex_PS_HDR);
+		setFnConstantB(m_fn_constants, pssel.rta_correction,     GSMTLConstantIndex_PS_RTA_CORRECTION);
 		setFnConstantB(m_fn_constants, pssel.colclip,            GSMTLConstantIndex_PS_COLCLIP);
 		setFnConstantI(m_fn_constants, pssel.blend_mix,          GSMTLConstantIndex_PS_BLEND_MIX);
 		setFnConstantB(m_fn_constants, pssel.round_inv,          GSMTLConstantIndex_PS_ROUND_INV);

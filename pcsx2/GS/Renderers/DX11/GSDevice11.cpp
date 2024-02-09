@@ -1688,6 +1688,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 		sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
 		sm.AddMacro("PS_HDR", sel.hdr);
+		sm.AddMacro("PS_RTA_CORRECTION", sel.rta_correction);
 		sm.AddMacro("PS_COLCLIP", sel.colclip);
 		sm.AddMacro("PS_BLEND_A", sel.blend_a);
 		sm.AddMacro("PS_BLEND_B", sel.blend_b);
