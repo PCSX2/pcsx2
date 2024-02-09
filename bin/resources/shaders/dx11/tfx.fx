@@ -50,6 +50,7 @@
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
 #define PS_HDR 0
+#define PS_RTA_CORRECTION 0
 #define PS_COLCLIP 0
 #define PS_BLEND_A 0
 #define PS_BLEND_B 0
@@ -1078,7 +1079,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	ps_fbmask(C, input.p.xy);
 
 #if !PS_NO_COLOR
-	output.c0 = PS_HDR ? float4(C.rgb / 65535.0f, C.a / 255.0f) : C / 255.0f;
+	output.c0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;
+	output.c0.rgb = PS_HDR ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif

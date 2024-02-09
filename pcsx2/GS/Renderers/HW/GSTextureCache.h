@@ -216,6 +216,7 @@ public:
 		bool m_valid_alpha_low = false;
 		bool m_valid_alpha_high = false;
 		bool m_valid_rgb = false;
+		bool m_rt_alpha_scale = false;
 
 		bool m_is_frame = false;
 		bool m_used = false;
@@ -238,6 +239,9 @@ public:
 		void UpdateDrawn(const GSVector4i& rect, bool can_resize = true);
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
+
+		void RTACorrect(Target* rt);
+		void RTADecorrect(Target* rt);
 
 		void Update();
 

@@ -21,6 +21,8 @@ enum class ShaderConvert
 	DATM_0,
 	HDR_INIT,
 	HDR_RESOLVE,
+	RTA_CORRECTION,
+	RTA_DECORRECTION,
 	TRANSPARENCY_FILTER,
 	FLOAT32_TO_16_BITS,
 	FLOAT32_TO_32_BITS,
@@ -307,22 +309,23 @@ struct alignas(16) GSHWDrawConfig
 				u32 fbmask   : 1;
 
 				// Blend and Colclip
-				u32 blend_a     : 2;
-				u32 blend_b     : 2;
-				u32 blend_c     : 2;
-				u32 blend_d     : 2;
-				u32 fixed_one_a : 1;
-				u32 blend_hw    : 2;
-				u32 a_masked    : 1;
-				u32 hdr         : 1;
-				u32 colclip     : 1;
-				u32 blend_mix   : 2;
-				u32 round_inv   : 1; // Blending will invert the value, so rounding needs to go the other way
-				u32 pabe        : 1;
-				u32 no_color    : 1; // disables color output entirely (depth only)
-				u32 no_color1   : 1; // disables second color output (when unnecessary)
-				u32 no_ablend   : 1; // output alpha blend in col0 (for no-DSB)
-				u32 only_alpha  : 1; // don't bother computing RGB
+				u32 blend_a        : 2;
+				u32 blend_b        : 2;
+				u32 blend_c        : 2;
+				u32 blend_d        : 2;
+				u32 fixed_one_a    : 1;
+				u32 blend_hw       : 2;
+				u32 a_masked       : 1;
+				u32 hdr            : 1;
+				u32 rta_correction : 1;
+				u32 colclip        : 1;
+				u32 blend_mix      : 2;
+				u32 round_inv      : 1; // Blending will invert the value, so rounding needs to go the other way
+				u32 pabe           : 1;
+				u32 no_color       : 1; // disables color output entirely (depth only)
+				u32 no_color1      : 1; // disables second color output (when unnecessary)
+				u32 no_ablend      : 1; // output alpha blend in col0 (for no-DSB)
+				u32 only_alpha     : 1; // don't bother computing RGB
 
 				// Others ways to fetch the texture
 				u32 channel : 3;

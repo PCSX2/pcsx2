@@ -1307,10 +1307,15 @@ void main()
 	ps_fbmask(C);
 
 	#if !PS_NO_COLOR
-		#if PS_HDR == 1
-			o_col0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
+		#if PS_RTA_CORRECTION
+			o_col0.a = C.a / 128.0f;
 		#else
-			o_col0 = C / 255.0f;
+			o_col0.a = C.a / 255.0f;
+		#endif
+		#if PS_HDR == 1
+			o_col0.rgb = vec3(C.rgb / 65535.0f);
+		#else
+			o_col0.rgb = C.rgb / 255.0f;
 		#endif
 		#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 			o_col1 = alpha_blend;

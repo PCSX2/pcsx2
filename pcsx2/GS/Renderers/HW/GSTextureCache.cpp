@@ -1689,6 +1689,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
+
+		 if (dst && dst->m_rt_alpha_scale)
+			dst->RTADecorrect(dst);
+
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
 		if (!src) [[unlikely]]
 			return nullptr;
@@ -2643,6 +2647,42 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	}
 
 	return can_create ? CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true) : nullptr;
+}
+
+void GSTextureCache::Target::RTACorrect(Target* rt)
+{
+	if (!rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	{
+		const GSVector2i rtsize(rt->m_texture->GetSize());
+		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, false))
+		{
+			const GSVector4 dRect(rt->m_texture->GetRect());
+			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+			g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION, false);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			g_gs_device->Recycle(rt->m_texture);
+			rt->m_texture = temp_rt;
+			rt->m_rt_alpha_scale = true;
+		}
+	}
+}
+
+void GSTextureCache::Target::RTADecorrect(Target* rt)
+{
+	if (rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	{
+		const GSVector2i rtsize(rt->m_texture->GetSize());
+		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, false))
+		{
+			const GSVector4 dRect(rt->m_texture->GetRect());
+			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+			g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION, false);
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			g_gs_device->Recycle(rt->m_texture);
+			rt->m_texture = temp_rt;
+			rt->m_rt_alpha_scale = false;
+		}
+	}
 }
 
 void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h)
