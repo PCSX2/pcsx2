@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Common.h"
@@ -40,7 +40,7 @@ void intUpdateCPUCycles()
 	else if (cyclerate == 1)
 		scale_cycles = (cpuBlockCycles >> 3) / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
 
-	else if (cyclerate == -1) // the mildest value which is also used by the "balanced" preset.
+	else if (cyclerate == -1) // the mildest value.
 		// These values were manually tuned to yield mild speedup with high compatibility
 		scale_cycles = (cpuBlockCycles <= 80 || cpuBlockCycles > 168 ? 5 : 7) * cpuBlockCycles / 32;
 
