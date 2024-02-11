@@ -22,7 +22,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="valueLabel">
        <property name="text">
         <string>Value</string>
        </property>
@@ -32,7 +32,7 @@
       <widget class="QLineEdit" name="txtSearchValue"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="typeLabel">
        <property name="text">
         <string>Type</string>
        </property>
@@ -83,7 +83,7 @@
       </widget>
      </item>
      <item row="2" column="2">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="hexLabel">
        <property name="text">
         <string>Hex</string>
        </property>
@@ -162,7 +162,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="0" alignment="Qt::AlignLeft">
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="startLabel">
        <property name="text">
         <string>Start</string>
        </property>
@@ -176,7 +176,7 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="endLabel">
        <property name="text">
         <string>End</string>
        </property>
@@ -193,6 +193,16 @@
    </item>
    <item>
     <widget class="QListWidget" name="listSearchResults"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="resultsCountLabel">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -33,7 +33,6 @@
 using namespace QtUtils;
 using namespace MipsStackWalk;
 
-
 CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	: m_cpu(cpu)
 	, m_bpModel(cpu)

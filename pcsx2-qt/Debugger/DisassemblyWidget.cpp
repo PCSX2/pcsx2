@@ -410,7 +410,6 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 	std::vector<BranchLine> branchLines = m_disassemblyManager.getBranchLines(m_visibleStart, visibleEnd - m_visibleStart);
 
 	s32 branchCount = 0;
-	s32 skippedBranches = 0;
 	for (const auto& branchLine : branchLines)
 	{
 		if (branchCount == (m_showInstructionOpcode ? 3 : 5))
@@ -451,12 +450,6 @@ void DisassemblyWidget::paintEvent(QPaintEvent* event)
 		else
 		{
 			bottom = (((branchLine.second - m_visibleStart) / 4) * m_rowHeight) + (m_rowHeight / 2);
-		}
-
-		if ((top < 0 && bottom < 0) || (top > winBottom && bottom > winBottom) || (top < 0 && bottom > winBottom) || (top > winBottom && bottom < 0))
-		{
-			skippedBranches++;
-			continue;
 		}
 
 		branchCount++;
