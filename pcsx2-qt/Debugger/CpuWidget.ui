@@ -180,7 +180,7 @@
           <attribute name="title">
            <string>Memory Search</string>
           </attribute>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
            <property name="spacing">
             <number>0</number>
            </property>
