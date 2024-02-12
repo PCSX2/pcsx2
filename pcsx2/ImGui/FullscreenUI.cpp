@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -3418,7 +3418,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 			DrawToggleSetting(bsi, FSUI_CSTR("CPU Framebuffer Conversion"),
 				FSUI_CSTR("Convert 4-bit and 8-bit framebuffer on the CPU instead of the GPU."), "EmuCore/GS",
 				"UserHacks_CPU_FB_Conversion", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, FSUI_CSTR("Disable Depth Emulation"),
+			DrawToggleSetting(bsi, FSUI_CSTR("Disable Depth Conversion"),
 				FSUI_CSTR("Disable the support of depth buffers in the texture cache."), "EmuCore/GS", "UserHacks_DisableDepthSupport",
 				false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("Disable Safe Features"), FSUI_CSTR("This option disables multiple safe features."),

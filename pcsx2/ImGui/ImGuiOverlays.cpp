@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Config.h"
@@ -418,7 +418,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			APPEND("FTC ");
 		if (GSConfig.UserHacks_DisableDepthSupport)
-			APPEND("DDE ");
+			APPEND("DDC ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
 			APPEND("DPIV ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
@@ -429,6 +429,10 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("PLFD ");
 		if (GSConfig.UserHacks_EstimateTextureRegion)
 			APPEND("ETR ");
+		if (GSConfig.HWSpinGPUForReadbacks)
+			APPEND("RBSG ");
+		if (GSConfig.HWSpinCPUForReadbacks)
+			APPEND("RBSC ");
 	}
 
 #undef APPEND
