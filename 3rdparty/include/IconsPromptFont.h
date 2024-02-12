@@ -340,3 +340,4 @@
 #define ICON_PF_POPN_WHITE_LEFT "\xE2\x8B\x86"
 #define ICON_PF_POPN_WHITE_RIGHT "\xE2\x8B\x87"
 #define ICON_PF_POPN_RED "\xE2\x8B\x88"
+#define ICON_PF_SLOW_MOTION "\xE2\x8D\xBA"
