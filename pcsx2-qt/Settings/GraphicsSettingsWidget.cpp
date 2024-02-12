@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GraphicsSettingsWidget.h"
@@ -513,11 +513,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 		dialog->registerWidgetHelp(m_ui.spinCPUDuringReadbacks, tr("Spin CPU During Readbacks"), tr("Unchecked"),
 			tr("Does useless work on the CPU during readbacks to prevent it from going to into powersave modes. "
-			   "May improve performance but with a significant increase in power usage."));
+			   "May improve performance during readbacks but with a significant increase in power usage."));
 
 		dialog->registerWidgetHelp(m_ui.spinGPUDuringReadbacks, tr("Spin GPU During Readbacks"), tr("Unchecked"),
 			tr("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. "
-			   "May improve performance but with a significant increase in power usage."));
+			   "May improve performance during readbacks but with a significant increase in power usage."));
 
 		// Software
 		dialog->registerWidgetHelp(m_ui.extraSWThreads, tr("Software Rendering Threads"), tr("2 threads"),
@@ -555,9 +555,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			tr("Force a primitive flush when a framebuffer is also an input texture. "
 			   "Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA."));
 
-		dialog->registerWidgetHelp(m_ui.disableDepthEmulation, tr("Disable Depth Emulation"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.disableDepthEmulation, tr("Disable Depth Conversion"), tr("Unchecked"),
 			tr("Disable the support of depth buffers in the texture cache. "
-			   "It can help to increase speed but it will likely create various glitches."));
+			   "Will likely create various glitches and is only useful for debugging."));
 
 		dialog->registerWidgetHelp(m_ui.disableSafeFeatures, tr("Disable Safe Features"), tr("Unchecked"),
 			tr("This option disables multiple safe features. "
