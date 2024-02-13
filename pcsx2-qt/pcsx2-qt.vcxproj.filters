@@ -272,6 +272,9 @@
     <ClCompile Include="Debugger\RegisterWidget.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\MemorySearchWidget.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
     <ClCompile Include="Debugger\MemoryViewWidget.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
@@ -300,6 +303,9 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_RegisterWidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)Debugger\moc_MemorySearchWidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)Debugger\moc_MemoryViewWidget.cpp">
@@ -483,6 +489,9 @@
     <QtMoc Include="Debugger\RegisterWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
+    <QtMoc Include="Debugger\MemorySearchWidget.h">
+      <Filter>Debugger</Filter>
+    </QtMoc>
     <QtMoc Include="Debugger\MemoryViewWidget.h">
       <Filter>Debugger</Filter>
     </QtMoc>
@@ -623,6 +632,9 @@
       <Filter>Debugger</Filter>
     </QtUi>
     <QtUi Include="Debugger\RegisterWidget.ui">
+      <Filter>Debugger</Filter>
+    </QtUi>
+    <QtUi Include="Debugger\MemorySearchWidget.ui">
       <Filter>Debugger</Filter>
     </QtUi>
     <QtUi Include="Debugger\MemoryViewWidget.ui">

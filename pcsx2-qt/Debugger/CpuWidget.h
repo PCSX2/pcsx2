@@ -33,28 +33,8 @@ public:
 	CpuWidget(QWidget* parent, DebugInterface& cpu);
 	~CpuWidget();
 
-	enum class SearchType
-	{
-		ByteType,
-		Int16Type,
-		Int32Type,
-		Int64Type,
-		FloatType,
-		DoubleType,
-		StringType,
-		ArrayType
-	};
 
 	// Note: The order of these enum values must reflect the order in thee Search Comparison combobox.
-	enum class SearchComparison
-	{
-		Equals,
-		NotEquals,
-		GreaterThan,
-		GreaterThanOrEqual,
-		LessThan,
-		LessThanOrEqual
-	};
 
 public slots:
 	void paintEvent(QPaintEvent* event);
@@ -111,20 +91,12 @@ public slots:
 		m_ui.memoryviewWidget->update();
 	};
 
-	void onSearchButtonClicked();
-	void onSearchResultsListScroll(u32 value);
-	void loadSearchResults();
-	void contextSearchResultGoToDisassembly();
-	void contextRemoveSearchResult();
-	void contextCopySearchResultAddress();
-	void onListSearchResultsContextMenu(QPoint pos);
 
 	void saveBreakpointsToDebuggerSettings();
 	void saveSavedAddressesToDebuggerSettings();
 
 private:
 	std::vector<QTableWidget*> m_registerTableViews;
-	std::vector<u32> m_searchResults;
 
 	QMenu* m_stacklistContextMenu = 0;
 	QMenu* m_funclistContextMenu = 0;
@@ -139,10 +111,7 @@ private:
 	QSortFilterProxyModel m_threadProxyModel;
 	StackModel m_stackModel;
 	SavedAddressesModel m_savedAddressesModel;
-	QTimer m_resultsLoadTimer;
 
 	bool m_demangleFunctions = true;
 	bool m_moduleView = true;
-	u32 m_initialResultsLoadLimit = 20000;
-	u32 m_numResultsAddedPerLoad = 10000;
 };
