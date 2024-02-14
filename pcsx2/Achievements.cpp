@@ -599,7 +599,7 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
-	if ((static_cast<u64>(address) + num_bytes) >= EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
+	if ((static_cast<u64>(address) + num_bytes) > EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
 		return 0u;
@@ -3097,7 +3097,7 @@ void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
 
 unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
 {
-	if ((static_cast<u64>(address) + sizeof(unsigned char)) >= EXPOSED_EE_MEMORY_SIZE)
+	if ((static_cast<u64>(address) + sizeof(unsigned char)) > EXPOSED_EE_MEMORY_SIZE)
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek at %08X.", address);
 		return 0u;
@@ -3134,7 +3134,7 @@ unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int addre
 
 void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-	if ((static_cast<u64>(address) + sizeof(value)) >= EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
+	if ((static_cast<u64>(address) + sizeof(value)) > EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory poke at %08X (value %08X).", address, value);
 		return;
