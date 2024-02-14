@@ -401,14 +401,15 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	return ret;
 }
 
-static GSVector4i CalculateDrawSrcRect(const GSTexture* src)
+static GSVector4i CalculateDrawSrcRect(const GSTexture* src, const GSVector2i real_size)
 {
-	const float upscale = GSConfig.UpscaleMultiplier;
 	const GSVector2i size(src->GetSize());
-	const int left = static_cast<int>(static_cast<float>(GSConfig.Crop[0]) * upscale);
-	const int top = static_cast<int>(static_cast<float>(GSConfig.Crop[1]) * upscale);
-	const int right =  size.x - static_cast<int>(static_cast<float>(GSConfig.Crop[2]) * upscale);
-	const int bottom = size.y - static_cast<int>(static_cast<float>(GSConfig.Crop[3]) * upscale);
+	const GSVector2 scale = GSVector2(size.x, size.y) / GSVector2(real_size.x, real_size.y).max(GSVector2(0.1f, 0.1f));
+	const float upscale = GSIsHardwareRenderer() ? GSConfig.UpscaleMultiplier : 1;
+	const int left = static_cast<int>(static_cast<float>(GSConfig.Crop[0] * scale.x) * upscale);
+	const int top = static_cast<int>(static_cast<float>(GSConfig.Crop[1] * scale.y) * upscale);
+	const int right =  size.x - static_cast<int>(static_cast<float>(GSConfig.Crop[2] * scale.x) * upscale);
+	const int bottom = size.y - static_cast<int>(static_cast<float>(GSConfig.Crop[3] * scale.y) * upscale);
 	return GSVector4i(left, top, right, bottom);
 }
 
@@ -602,7 +603,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	GSTexture* current = g_gs_device->GetCurrent();
 	if (current && !blank_frame)
 	{
-		src_rect = CalculateDrawSrcRect(current);
+		src_rect = CalculateDrawSrcRect(current, m_real_size);
 		src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
 		draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
 			src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
@@ -866,7 +867,7 @@ void GSRenderer::PresentCurrentFrame()
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current)
 		{
-			const GSVector4i src_rect(CalculateDrawSrcRect(current));
+			const GSVector4i src_rect(CalculateDrawSrcRect(current, m_real_size));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
 			const GSVector4 draw_rect(CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
@@ -946,7 +947,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 		return false;
 	}
 
-	const GSVector4i src_rect(CalculateDrawSrcRect(current));
+	const GSVector4i src_rect(CalculateDrawSrcRect(current, m_real_size));
 	const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
 
 	const bool is_progressive = (GetVideoMode() == GSVideoMode::SDTV_480P);
