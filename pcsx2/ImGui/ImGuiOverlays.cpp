@@ -22,6 +22,7 @@
 #include "Recording/InputRecording.h"
 #include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadBase.h"
+#include "svnrev.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 
@@ -121,8 +122,13 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 	{
 		bool first = true;
 		const float speed = PerformanceMetrics::GetSpeed();
+
+		if (GSConfig.OsdShowVersion)
+			DRAW_LINE(fixed_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays", "PCSX2 {}"), GIT_REV).c_str(), IM_COL32(255, 255, 255, 255));
+
 		if (GSConfig.OsdShowFPS)
 		{
+			text.clear();
 			switch (PerformanceMetrics::GetInternalFPSMethod())
 			{
 				case PerformanceMetrics::InternalFPSMethod::GSPrivilegedRegister:

@@ -1037,8 +1037,7 @@ void FullscreenUI::ConfirmShutdownIfMemcardBusy(std::function<void(bool)> callba
 
 	OpenConfirmMessageDialog(FSUI_ICONSTR(ICON_FA_SD_CARD, "WARNING: Memory Card Busy"),
 		FSUI_STR("WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?"),
-		std::move(callback)
-	);
+		std::move(callback));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2787,6 +2786,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER_HORIZONTAL, "Show Frame Times"),
 		FSUI_CSTR("Shows a visual history of frame times in the upper-left corner of the display."), "EmuCore/GS", "OsdShowFrameTimes",
 		false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_INFO, "Show PCSX2 Version"),
+		FSUI_CSTR("Shows the current PCSX2 version on the top-right corner of the display."), "EmuCore/GS",
+		"OsdShowVersion", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXCLAMATION_CIRCLE, "Warn About Unsafe Settings"),
 		FSUI_CSTR("Displays warnings when settings are enabled which may break games."), "EmuCore", "WarnAboutUnsafeSettings", true);
 
@@ -4745,7 +4747,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				}
 
 				if (ActiveButton(GSIsHardwareRenderer() ? (FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Switch To Software Renderer")) :
-																  (FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Switch To Hardware Renderer")),
+														  (FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Switch To Hardware Renderer")),
 						false))
 				{
 					ClosePauseMenu();

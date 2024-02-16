@@ -609,7 +609,8 @@ struct Pcsx2Config
 					OsdShowIndicators : 1,
 					OsdShowSettings : 1,
 					OsdShowInputs : 1,
-					OsdShowFrameTimes : 1;
+					OsdShowFrameTimes : 1,
+					OsdShowVersion : 1;
 
 				bool
 					HWSpinGPUForReadbacks : 1,
