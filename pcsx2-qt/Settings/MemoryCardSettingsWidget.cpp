@@ -150,7 +150,7 @@ void MemoryCardSettingsWidget::tryInsertCard(u32 slot, const QString& newCard)
 	if (std::none_of(
 			mcds.begin(), mcds.end(), [&newCardStr](const AvailableMcdInfo& mcd) { return mcd.name == newCardStr; }))
 	{
-		QMessageBox::critical(this, tr("Error"), tr("This Memory Card is unknown."));
+		QMessageBox::critical(this, tr("Error"), tr("This Memory Card cannot be recognized or is not a valid file type."));
 		return;
 	}
 

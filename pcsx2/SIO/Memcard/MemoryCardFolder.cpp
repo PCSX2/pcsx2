@@ -511,7 +511,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 				dirEntry->entry.data.length++;
 
 				// set metadata
-				const std::string metaFileName(Path::Combine(Path::Combine(dirPath, "_pcsx2_meta_directory"), file.m_fileName));
+				const std::string metaFileName(Path::Combine(Path::Combine(dirPath, file.m_fileName), "_pcsx2_meta_directory"));
 				if (auto metaFile = FileSystem::OpenManagedCFile(metaFileName.c_str(), "rb"); metaFile)
 				{
 					if (std::fread(&newDirEntry->entry.raw, 1, sizeof(newDirEntry->entry.raw), metaFile.get()) < 0x60)
