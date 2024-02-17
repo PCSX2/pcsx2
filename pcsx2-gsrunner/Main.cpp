@@ -118,9 +118,6 @@ bool GSRunner::InitializeConfig()
 	Pad::ClearPortBindings(si, 0);
 	si.ClearSection("Hotkeys");
 
-	// make sure any gamesettings inis in your tree don't get loaded
-	si.SetBoolValue("EmuCore", "EnablePerGameSettings", false);
-
 	// force logging
 	si.SetBoolValue("Logging", "EnableSystemConsole", !s_no_console);
 	si.SetBoolValue("Logging", "EnableTimestamps", true);
