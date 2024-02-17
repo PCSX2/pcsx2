@@ -2731,12 +2731,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left "
 				  "off next time."),
 		"EmuCore", "SaveStateOnShutdown", false);
-	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WRENCH, "Enable Per-Game Settings"),
-			FSUI_CSTR("When enabled, custom per-game settings will be applied. Disable to always use the global configuration."), "EmuCore", "EnablePerGameSettings",
-			IsEditingGameSettings(bsi)))
-	{
-		Host::RunOnCPUThread(&VMManager::ReloadGameSettings);
-	}
 	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Use Light Theme"),
 			FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "UI", "UseLightFullscreenUITheme", false))
 	{
