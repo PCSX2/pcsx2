@@ -18724,6 +18724,7 @@ SLES-52568:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    PCRTCOverscan: 1 # Fixes offscreen image.
 SLES-52569:
   name: "Spyro - A Hero's Tail"
   region: "PAL-M6"
