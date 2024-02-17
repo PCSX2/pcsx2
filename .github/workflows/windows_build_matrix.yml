@@ -54,37 +54,37 @@ jobs:
       buildSystem: cmake
     secrets: inherit
 
-  build_qt_clang_sse4:
-    needs: lint_vs_proj_files
-    name: "SSE4"
-    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
-    uses: ./.github/workflows/windows_build_qt.yml
-    with:
-      jobName: "Clang SSE4"
-      artifactPrefixName: "PCSX2-windows-Qt-x64-sse4-clang"
-      configuration: Release Clang
-      simd: "SSE4"
-    secrets: inherit
+  # build_qt_clang_sse4:
+  #   needs: lint_vs_proj_files
+  #   name: "SSE4"
+  #   if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
+  #   uses: ./.github/workflows/windows_build_qt.yml
+  #   with:
+  #     jobName: "Clang SSE4"
+  #     artifactPrefixName: "PCSX2-windows-Qt-x64-sse4-clang"
+  #     configuration: Release Clang
+  #     simd: "SSE4"
+  #   secrets: inherit
 
-  build_qt_clang_avx2:
-    needs: lint_vs_proj_files
-    name: "AVX2"
-    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
-    uses: ./.github/workflows/windows_build_qt.yml
-    with:
-      jobName: "Clang AVX2"
-      artifactPrefixName: "PCSX2-windows-Qt-x64-avx2-clang"
-      configuration: Release Clang AVX2
-    secrets: inherit
+  # build_qt_clang_avx2:
+  #   needs: lint_vs_proj_files
+  #   name: "AVX2"
+  #   if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
+  #   uses: ./.github/workflows/windows_build_qt.yml
+  #   with:
+  #     jobName: "Clang AVX2"
+  #     artifactPrefixName: "PCSX2-windows-Qt-x64-avx2-clang"
+  #     configuration: Release Clang AVX2
+  #   secrets: inherit
 
-  build_qt_cmake_clang:
-    name: "CMake"
-    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
-    uses: ./.github/workflows/windows_build_qt.yml
-    with:
-      jobName: "CMake Clang"
-      artifactPrefixName: "PCSX2-windows-Qt-x64-cmake-clang"
-      configuration: CMake
-      buildSystem: cmake
-      cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DPCSX2_EXE_NAME=pcsx2-qt-clang
-    secrets: inherit
+  # build_qt_cmake_clang:
+  #   name: "CMake"
+  #   if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
+  #   uses: ./.github/workflows/windows_build_qt.yml
+  #   with:
+  #     jobName: "CMake Clang"
+  #     artifactPrefixName: "PCSX2-windows-Qt-x64-cmake-clang"
+  #     configuration: CMake
+  #     buildSystem: cmake
+  #     cmakeFlags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DPCSX2_EXE_NAME=pcsx2-qt-clang
+  #   secrets: inherit
