@@ -20,6 +20,35 @@
 
 #include <libchdr/cdrom.h>
 
+const char* cdrom_get_subtype_string(uint32_t subtype)
+{
+	switch (subtype)
+	{
+	case CD_SUB_RAW:              return "RW";
+	case CD_SUB_RAW_INTERLEAVED:  return "RW_RAW";
+	default:                      return "NONE";
+	}
+}
+
+bool cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint32_t* subsize)
+{
+	// https://github.com/mamedev/mame/blob/d2d54fb8ed53a2e86d308067da8414f85b5929b0/src/lib/util/cdrom.cpp#L767
+  if (!strcmp(typestring, "RW"))
+  {
+    *subtype = CD_SUB_RAW;
+    *subsize = 96;
+		return true;
+  }
+  else if (!strcmp(typestring, "RW_RAW"))
+  {
+    *subtype = CD_SUB_RAW_INTERLEAVED;
+    *subsize = 96;
+		return true;
+  }
+
+	return false;
+}
+
 #ifdef WANT_RAW_DATA_SECTOR
 
 /***************************************************************************

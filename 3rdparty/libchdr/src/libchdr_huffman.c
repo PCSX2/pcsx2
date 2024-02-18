@@ -295,6 +295,9 @@ enum huffman_error huffman_import_tree_huffman(struct huffman_decoder* decoder, 
 		}
 	}
 
+    /* make sure we free the local huffman decoder */
+    delete_huffman_decoder(smallhuff);
+
 	/* make sure we ended up with the right number */
 	if (curcode != decoder->numcodes)
 		return HUFFERR_INVALID_DATA;
