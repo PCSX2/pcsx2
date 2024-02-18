@@ -29,6 +29,15 @@
   <PropertyGroup>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="include\glad\gl.h" />
+    <ClInclude Include="include\glad\wgl.h" />
+    <ClInclude Include="include\KHR\khrplatform.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\gl.c" />
+    <ClCompile Include="src\wgl.c" />
+  </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -36,15 +45,6 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="src\glad.c" />
-    <ClCompile Include="src\glad_wgl.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\glad.h" />
-    <ClInclude Include="include\glad_wgl.h" />
-    <ClInclude Include="include\khrplatform.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

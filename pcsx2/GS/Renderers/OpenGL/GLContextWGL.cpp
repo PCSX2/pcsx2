@@ -1,26 +1,30 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContextWGL.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/ScopedGuard.h"
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wmicrosoft-cast"
+#endif
 
 static void* GetProcAddressCallback(const char* name)
 {
-	void* addr = reinterpret_cast<void*>(wglGetProcAddress(name));
+	void* addr = wglGetProcAddress(name);
 	if (addr)
 		return addr;
 
 	// try opengl32.dll
-	return reinterpret_cast<void*>(::GetProcAddress(GetModuleHandleA("opengl32.dll"), name));
+	return ::GetProcAddress(GetModuleHandleA("opengl32.dll"), name);
 }
 
 static bool ReloadWGL(HDC dc)
 {
-	if (!gladLoadWGLLoader(
-			[](const char* name) -> void* { return reinterpret_cast<void*>(wglGetProcAddress(name)); }, dc))
+	if (!gladLoadWGL(dc, [](const char* name) { return (GLADapiproc)wglGetProcAddress(name); }))
 	{
 		Console.Error("Loading GLAD WGL functions failed");
 		return false;
@@ -45,41 +49,43 @@ GLContextWGL::~GLContextWGL()
 	ReleaseDC();
 }
 
-std::unique_ptr<GLContext> GLContextWGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextWGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+	Error* error)
 {
 	std::unique_ptr<GLContextWGL> context = std::make_unique<GLContextWGL>(wi);
-	if (!context->Initialize(versions_to_try))
+	if (!context->Initialize(versions_to_try, error))
 		return nullptr;
 
 	return context;
 }
 
-bool GLContextWGL::Initialize(std::span<const Version> versions_to_try)
+bool GLContextWGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
 	if (m_wi.type == WindowInfo::Type::Win32)
 	{
-		if (!InitializeDC())
+		if (!InitializeDC(error))
 			return false;
 	}
 	else
 	{
-		if (!CreatePBuffer())
+		if (!CreatePBuffer(error))
 			return false;
 	}
 
 	// Everything including core/ES requires a dummy profile to load the WGL extensions.
-	if (!CreateAnyContext(nullptr, true))
+	if (!CreateAnyContext(nullptr, true, error))
 		return false;
 
 	for (const Version& cv : versions_to_try)
 	{
-		if (CreateVersionContext(cv, nullptr, true))
+		if (CreateVersionContext(cv, nullptr, true, error))
 		{
 			m_version = cv;
 			return true;
 		}
 	}
 
+	Error::SetStringView(error, "Failed to create any contexts.");
 	return false;
 }
 
@@ -91,16 +97,21 @@ void* GLContextWGL::GetProcAddress(const char* name)
 bool GLContextWGL::ChangeSurface(const WindowInfo& new_wi)
 {
 	const bool was_current = (wglGetCurrentContext() == m_rc);
+	Error error;
 
 	ReleaseDC();
 
 	m_wi = new_wi;
-	if (!InitializeDC())
+	if (!InitializeDC(&error))
+	{
+		Console.ErrorFmt("Failed to change surface: {}", error.GetDescription());
 		return false;
+	}
 
 	if (was_current && !wglMakeCurrent(m_dc, m_rc))
 	{
-		Console.Error("Failed to make context current again after surface change: 0x%08X", GetLastError());
+		error.SetWin32(GetLastError());
+		Console.ErrorFmt("Failed to make context current again after surface change: {}", error.GetDescription());
 		return false;
 	}
 
@@ -120,11 +131,16 @@ bool GLContextWGL::SwapBuffers()
 	return ::SwapBuffers(m_dc);
 }
 
+bool GLContextWGL::IsCurrent()
+{
+	return (m_rc && wglGetCurrentContext() == m_rc);
+}
+
 bool GLContextWGL::MakeCurrent()
 {
 	if (!wglMakeCurrent(m_dc, m_rc))
 	{
-		Console.Error("wglMakeCurrent() failed: 0x%08X", GetLastError());
+		Console.ErrorFmt("wglMakeCurrent() failed: {}", GetLastError());
 		return false;
 	}
 
@@ -144,28 +160,28 @@ bool GLContextWGL::SetSwapInterval(s32 interval)
 	return wglSwapIntervalEXT(interval);
 }
 
-std::unique_ptr<GLContext> GLContextWGL::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<GLContext> GLContextWGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
 	std::unique_ptr<GLContextWGL> context = std::make_unique<GLContextWGL>(wi);
 	if (wi.type == WindowInfo::Type::Win32)
 	{
-		if (!context->InitializeDC())
+		if (!context->InitializeDC(error))
 			return nullptr;
 	}
 	else
 	{
-		if (!context->CreatePBuffer())
+		if (!context->CreatePBuffer(error))
 			return nullptr;
 	}
 
-	if (!context->CreateVersionContext(m_version, m_rc, false))
+	if (!context->CreateVersionContext(m_version, m_rc, false, error))
 		return nullptr;
 
 	context->m_version = m_version;
 	return context;
 }
 
-HDC GLContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
+HDC GLContextWGL::GetDCAndSetPixelFormat(HWND hwnd, Error* error)
 {
 	PIXELFORMATDESCRIPTOR pfd = {};
 	pfd.nSize = sizeof(pfd);
@@ -181,7 +197,7 @@ HDC GLContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 	HDC hDC = ::GetDC(hwnd);
 	if (!hDC)
 	{
-		Console.Error("GetDC() failed: 0x%08X", GetLastError());
+		Error::SetWin32(error, "GetDC() failed: ", GetLastError());
 		return {};
 	}
 
@@ -190,7 +206,7 @@ HDC GLContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 		const int pf = ChoosePixelFormat(hDC, &pfd);
 		if (pf == 0)
 		{
-			Console.Error("ChoosePixelFormat() failed: 0x%08X", GetLastError());
+			Error::SetWin32(error, "ChoosePixelFormat() failed: ", GetLastError());
 			::ReleaseDC(hwnd, hDC);
 			return {};
 		}
@@ -200,7 +216,7 @@ HDC GLContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 
 	if (!SetPixelFormat(hDC, m_pixel_format.value(), &pfd))
 	{
-		Console.Error("SetPixelFormat() failed: 0x%08X", GetLastError());
+		Error::SetWin32(error, "SetPixelFormat() failed: ", GetLastError());
 		::ReleaseDC(hwnd, hDC);
 		return {};
 	}
@@ -208,26 +224,23 @@ HDC GLContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 	return hDC;
 }
 
-bool GLContextWGL::InitializeDC()
+bool GLContextWGL::InitializeDC(Error* error)
 {
 	if (m_wi.type == WindowInfo::Type::Win32)
 	{
-		m_dc = GetDCAndSetPixelFormat(GetHWND());
+		m_dc = GetDCAndSetPixelFormat(GetHWND(), error);
 		if (!m_dc)
-		{
-			Console.Error("Failed to get DC for window");
 			return false;
-		}
 
 		return true;
 	}
 	else if (m_wi.type == WindowInfo::Type::Surfaceless)
 	{
-		return CreatePBuffer();
+		return CreatePBuffer(error);
 	}
 	else
 	{
-		Console.Error("Unknown window info type %u", static_cast<unsigned>(m_wi.type));
+		Error::SetStringFmt(error, "Unknown window info type {}", static_cast<unsigned>(m_wi.type));
 		return false;
 	}
 }
@@ -255,7 +268,7 @@ void GLContextWGL::ReleaseDC()
 	}
 }
 
-bool GLContextWGL::CreatePBuffer()
+bool GLContextWGL::CreatePBuffer(Error* error)
 {
 	static bool window_class_registered = false;
 	static const wchar_t* window_class_name = L"ContextWGLPBuffer";
@@ -278,7 +291,7 @@ bool GLContextWGL::CreatePBuffer()
 
 		if (!RegisterClassExW(&wc))
 		{
-			Console.Error("(ContextWGL::CreatePBuffer) RegisterClassExW() failed");
+			Error::SetStringView(error, "(ContextWGL::CreatePBuffer) RegisterClassExW() failed");
 			return false;
 		}
 
@@ -288,13 +301,13 @@ bool GLContextWGL::CreatePBuffer()
 	HWND hwnd = CreateWindowExW(0, window_class_name, window_class_name, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
 	if (!hwnd)
 	{
-		Console.Error("(ContextWGL::CreatePBuffer) CreateWindowEx() failed");
+		Error::SetStringView(error, "(ContextWGL::CreatePBuffer) CreateWindowEx() failed");
 		return false;
 	}
 
 	ScopedGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
 
-	HDC hdc = GetDCAndSetPixelFormat(hwnd);
+	HDC hdc = GetDCAndSetPixelFormat(hwnd, error);
 	if (!hdc)
 		return false;
 
@@ -317,13 +330,13 @@ bool GLContextWGL::CreatePBuffer()
 		temp_rc = wglCreateContext(hdc);
 		if (!temp_rc || !wglMakeCurrent(hdc, temp_rc))
 		{
-			Console.Error("Failed to create temporary context to load WGL for pbuffer.");
+			Error::SetStringView(error, "Failed to create temporary context to load WGL for pbuffer.");
 			return false;
 		}
 
 		if (!ReloadWGL(hdc) || !GLAD_WGL_ARB_pbuffer)
 		{
-			Console.Error("Missing WGL_ARB_pbuffer");
+			Error::SetStringView(error, "Missing WGL_ARB_pbuffer");
 			return false;
 		}
 	}
@@ -332,7 +345,7 @@ bool GLContextWGL::CreatePBuffer()
 	HPBUFFERARB pbuffer = wglCreatePbufferARB(hdc, m_pixel_format.value(), 1, 1, pb_attribs);
 	if (!pbuffer)
 	{
-		Console.Error("(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
+		Error::SetStringView(error, "(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
 		return false;
 	}
 
@@ -341,7 +354,7 @@ bool GLContextWGL::CreatePBuffer()
 	m_dc = wglGetPbufferDCARB(pbuffer);
 	if (!m_dc)
 	{
-		Console.Error("(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
+		Error::SetStringView(error, "(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
 		return false;
 	}
 
@@ -356,12 +369,12 @@ bool GLContextWGL::CreatePBuffer()
 	return true;
 }
 
-bool GLContextWGL::CreateAnyContext(HGLRC share_context, bool make_current)
+bool GLContextWGL::CreateAnyContext(HGLRC share_context, bool make_current, Error* error)
 {
 	m_rc = wglCreateContext(m_dc);
 	if (!m_rc)
 	{
-		Console.Error("wglCreateContext() failed: 0x%08X", GetLastError());
+		Error::SetWin32(error, "wglCreateContext() failed: ", GetLastError());
 		return false;
 	}
 
@@ -369,50 +382,54 @@ bool GLContextWGL::CreateAnyContext(HGLRC share_context, bool make_current)
 	{
 		if (!wglMakeCurrent(m_dc, m_rc))
 		{
-			Console.Error("wglMakeCurrent() failed: 0x%08X", GetLastError());
+			Error::SetWin32(error, "wglMakeCurrent() failed: ", GetLastError());
 			return false;
 		}
 
 		// re-init glad-wgl
-		if (!gladLoadWGLLoader(
-				[](const char* name) -> void* { return reinterpret_cast<void*>(wglGetProcAddress(name)); }, m_dc))
+		if (!gladLoadWGL(m_dc, [](const char* name) { return (GLADapiproc)wglGetProcAddress(name); }))
 		{
-			Console.Error("Loading GLAD WGL functions failed");
+			Error::SetStringView(error, "Loading GLAD WGL functions failed");
 			return false;
 		}
 	}
 
 	if (share_context && !wglShareLists(share_context, m_rc))
 	{
-		Console.Error("wglShareLists() failed: 0x%08X", GetLastError());
+		Error::SetWin32(error, "wglShareLists() failed: ", GetLastError());
 		return false;
 	}
 
 	return true;
 }
 
-bool GLContextWGL::CreateVersionContext(const Version& version, HGLRC share_context, bool make_current)
+bool GLContextWGL::CreateVersionContext(const Version& version, HGLRC share_context, bool make_current,
+	Error* error)
 {
 	// we need create context attribs
 	if (!GLAD_WGL_ARB_create_context)
 	{
-		Console.Error("Missing GLAD_WGL_ARB_create_context.");
+		Error::SetStringView(error, "Missing GLAD_WGL_ARB_create_context.");
 		return false;
 	}
 
-	HGLRC new_rc;
-
-	const int attribs[] = {WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-		WGL_CONTEXT_MAJOR_VERSION_ARB, version.major_version, WGL_CONTEXT_MINOR_VERSION_ARB, version.minor_version,
+	const int attribs[] = {WGL_CONTEXT_PROFILE_MASK_ARB,
+		WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		WGL_CONTEXT_MAJOR_VERSION_ARB,
+		version.major_version,
+		WGL_CONTEXT_MINOR_VERSION_ARB,
+		version.minor_version,
 #ifdef _DEBUG
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | WGL_CONTEXT_DEBUG_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB,
+		WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | WGL_CONTEXT_DEBUG_BIT_ARB,
 #else
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB,
+		WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 #endif
-		0, 0};
+		0,
+		0};
 
-	new_rc = wglCreateContextAttribsARB(m_dc, share_context, attribs);
-
+	HGLRC new_rc = wglCreateContextAttribsARB(m_dc, share_context, attribs);
 	if (!new_rc)
 		return false;
 
@@ -421,7 +438,7 @@ bool GLContextWGL::CreateVersionContext(const Version& version, HGLRC share_cont
 	{
 		if (!wglMakeCurrent(m_dc, make_current ? new_rc : nullptr))
 		{
-			Console.Error("wglMakeCurrent() failed: 0x%08X", GetLastError());
+			Error::SetWin32(error, "wglMakeCurrent() failed: ", GetLastError());
 			wglDeleteContext(new_rc);
 			return false;
 		}

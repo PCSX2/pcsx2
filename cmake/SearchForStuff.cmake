@@ -47,10 +47,6 @@ else()
 	include(CheckLib)
 
 	if(UNIX AND NOT APPLE)
-		if(USE_OPENGL)
-			check_lib(EGL EGL EGL/egl.h)
-		endif()
-
 		if(LINUX)
 			check_lib(AIO aio libaio.h)
 			check_lib(LIBUDEV libudev libudev.h)

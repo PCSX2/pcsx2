@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContext.h"
@@ -11,6 +11,7 @@
 #include "Host.h"
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -31,17 +32,17 @@ static constexpr u32 TEXTURE_UPLOAD_BUFFER_SIZE = 128 * 1024 * 1024;
 
 namespace ReplaceGL
 {
-	static void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
+	static void GLAPIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 	{
 		glScissor(left, bottom, width, height);
 	}
 
-	static void APIENTRY ViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
+	static void GLAPIENTRY ViewportIndexedf(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 	{
 		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
 	}
 
-	static void APIENTRY TextureBarrier()
+	static void GLAPIENTRY TextureBarrier()
 	{
 	}
 
@@ -50,59 +51,59 @@ namespace ReplaceGL
 namespace Emulate_DSA
 {
 	// Texture entry point
-	static void APIENTRY BindTextureUnit(GLuint unit, GLuint texture)
+	static void GLAPIENTRY BindTextureUnit(GLuint unit, GLuint texture)
 	{
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 
-	static void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint* textures)
+	static void GLAPIENTRY CreateTexture(GLenum target, GLsizei n, GLuint* textures)
 	{
 		glGenTextures(1, textures);
 	}
 
-	static void APIENTRY TextureStorage(
+	static void GLAPIENTRY TextureStorage(
 		GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 	{
 		BindTextureUnit(7, texture);
 		glTexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
 	}
 
-	static void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+	static void GLAPIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
 		GLsizei height, GLenum format, GLenum type, const void* pixels)
 	{
 		BindTextureUnit(7, texture);
 		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
 	}
 
-	static void APIENTRY CompressedTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset,
+	static void GLAPIENTRY CompressedTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset,
 		GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
 	{
 		BindTextureUnit(7, texture);
 		glCompressedTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, imageSize, data);
 	}
 
-	static void APIENTRY GetTexureImage(
+	static void GLAPIENTRY GetTexureImage(
 		GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void* pixels)
 	{
 		BindTextureUnit(7, texture);
 		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
 	}
 
-	static void APIENTRY TextureParameteri(GLuint texture, GLenum pname, GLint param)
+	static void GLAPIENTRY TextureParameteri(GLuint texture, GLenum pname, GLint param)
 	{
 		BindTextureUnit(7, texture);
 		glTexParameteri(GL_TEXTURE_2D, pname, param);
 	}
 
-	static void APIENTRY GenerateTextureMipmap(GLuint texture)
+	static void GLAPIENTRY GenerateTextureMipmap(GLuint texture)
 	{
 		BindTextureUnit(7, texture);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
 	// Misc entry point
-	static void APIENTRY CreateSamplers(GLsizei n, GLuint* samplers)
+	static void GLAPIENTRY CreateSamplers(GLsizei n, GLuint* samplers)
 	{
 		glGenSamplers(n, samplers);
 	}
@@ -171,10 +172,11 @@ bool GSDeviceOGL::Create()
 	if (!AcquireWindow(true))
 		return false;
 
-	m_gl_context = GLContext::Create(m_window_info);
+	Error error;
+	m_gl_context = GLContext::Create(m_window_info, &error);
 	if (!m_gl_context)
 	{
-		Console.Error("Failed to create any GL context");
+		Console.ErrorFmt("Failed to create any GL context: {}", error.GetDescription());
 		return false;
 	}
 

@@ -1,12 +1,11 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
 #include "GS/Renderers/OpenGL/GLContextEGL.h"
 
-struct wl_egl_window;
-struct wl_surface;
+#include <wayland-egl.h>
 
 class GLContextEGLWayland final : public GLContextEGL
 {
@@ -14,16 +13,17 @@ public:
 	GLContextEGLWayland(const WindowInfo& wi);
 	~GLContextEGLWayland() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
-	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
+	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 
 protected:
-	EGLNativeWindowType GetNativeWindow(EGLConfig config) override;
+	EGLDisplay GetPlatformDisplay(Error* error) override;
+	EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error) override;
 
 private:
-	bool LoadModule();
+	bool LoadModule(Error* error);
 
 	wl_egl_window* m_wl_window = nullptr;
 
