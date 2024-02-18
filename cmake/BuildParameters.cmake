@@ -11,7 +11,9 @@ option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(USE_OPENGL "Enable OpenGL GS renderer" ON)
+if(NOT APPLE)
+	option(USE_OPENGL "Enable OpenGL GS renderer" ON)
+endif()
 option(USE_VULKAN "Enable Vulkan GS renderer" ON)
 
 #-------------------------------------------------------------------------------

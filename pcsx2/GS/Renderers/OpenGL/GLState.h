@@ -5,7 +5,7 @@
 
 #include "GS/GSVector.h"
 
-#include "glad.h"
+#include "glad/gl.h"
 
 class GSTextureOGL;
 

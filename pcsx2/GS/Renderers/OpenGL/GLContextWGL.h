@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -7,8 +7,7 @@
 
 #include "common/RedtapeWindows.h"
 
-#include "glad_wgl.h"
-#include "glad.h"
+#include "glad/wgl.h"
 
 #include <optional>
 #include <span>
@@ -19,28 +18,29 @@ public:
 	GLContextWGL(const WindowInfo& wi);
 	~GLContextWGL() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
 	void* GetProcAddress(const char* name) override;
 	bool ChangeSurface(const WindowInfo& new_wi) override;
 	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 	bool SwapBuffers() override;
+	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
 	bool SetSwapInterval(s32 interval) override;
-	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
+	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 private:
 	__fi HWND GetHWND() const { return static_cast<HWND>(m_wi.window_handle); }
 
-	HDC GetDCAndSetPixelFormat(HWND hwnd);
+	HDC GetDCAndSetPixelFormat(HWND hwnd, Error* error);
 
-	bool Initialize(std::span<const Version> versions_to_try);
-	bool InitializeDC();
+	bool Initialize(std::span<const Version> versions_to_try, Error* error);
+	bool InitializeDC(Error* error);
 	void ReleaseDC();
-	bool CreatePBuffer();
-	bool CreateAnyContext(HGLRC share_context, bool make_current);
-	bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current);
+	bool CreatePBuffer(Error* error);
+	bool CreateAnyContext(HGLRC share_context, bool make_current, Error* error);
+	bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current, Error* error);
 
 	HDC m_dc = {};
 	HGLRC m_rc = {};

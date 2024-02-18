@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -11,11 +11,11 @@ public:
 	GLContextEGLX11(const WindowInfo& wi);
 	~GLContextEGLX11() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
-	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
-	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
+	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 protected:
-	EGLNativeWindowType GetNativeWindow(EGLConfig config) override;
+	EGLDisplay GetPlatformDisplay(Error* error) override;
+	EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error) override;
 };

@@ -5,7 +5,7 @@
 
 #include "common/Pcsx2Defs.h"
 
-#include "glad.h"
+#include "glad/gl.h"
 
 #include <memory>
 #include <tuple>

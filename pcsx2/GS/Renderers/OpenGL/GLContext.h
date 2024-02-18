@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -9,6 +9,8 @@
 #include <array>
 #include <memory>
 #include <vector>
+
+class Error;
 
 class GLContext
 {
@@ -30,12 +32,13 @@ public:
 	virtual bool ChangeSurface(const WindowInfo& new_wi) = 0;
 	virtual void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) = 0;
 	virtual bool SwapBuffers() = 0;
+	virtual bool IsCurrent() = 0;
 	virtual bool MakeCurrent() = 0;
 	virtual bool DoneCurrent() = 0;
 	virtual bool SetSwapInterval(s32 interval) = 0;
-	virtual std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) = 0;
+	virtual std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) = 0;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, Error* error);
 
 protected:
 	WindowInfo m_wi;
