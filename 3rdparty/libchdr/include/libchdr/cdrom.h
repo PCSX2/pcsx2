@@ -10,10 +10,12 @@
 
 #pragma once
 
-#ifndef __CDROM_H__
-#define __CDROM_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <libchdr/chdconfig.h>
 
 /***************************************************************************
@@ -47,10 +49,14 @@ enum
 
 enum
 {
-	CD_SUB_NORMAL = 0,          /* "cooked" 96 bytes per sector */
-	CD_SUB_RAW,                 /* raw uninterleaved 96 bytes per sector */
-	CD_SUB_NONE                 /* no subcode data stored */
+	CD_SUB_NONE = 0,            /* no subcode data stored */
+	CD_SUB_RAW_INTERLEAVED,     /* raw interleaved 96 bytes per sector */
+	CD_SUB_RAW,                 /* raw non-interleaved 96 bytes per sector */
 };
+
+const char* cdrom_get_subtype_string(uint32_t subtype);
+bool cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint32_t* subsize);
+
 
 #define CD_FLAG_GDROM   0x00000001  /* disc is a GD-ROM, all tracks should be stored with GD-ROM metadata */
 #define CD_FLAG_GDROMLE 0x00000002  /* legacy GD-ROM, with little-endian CDDA data */
@@ -81,10 +87,10 @@ static inline uint32_t lba_to_msf(uint32_t lba)
 {
 	uint8_t m, s, f;
 
-	m = lba / (60 * 75);
+	m = (uint8_t)(lba / (60 * 75));
 	lba -= m * (60 * 75);
-	s = lba / 75;
-	f = lba % 75;
+	s = (uint8_t)(lba / 75);
+	f = (uint8_t)(lba % 75);
 
 	return ((m / 10) << 20) | ((m % 10) << 16) |
 			((s / 10) << 12) | ((s % 10) <<  8) |
@@ -107,4 +113,6 @@ static inline uint32_t lba_to_msf_alt(int lba)
 	return ret;
 }
 
-#endif  /* __CDROM_H__ */
+#ifdef __cplusplus
+} // extern "C"
+#endif
