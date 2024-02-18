@@ -522,9 +522,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		// Software
 		dialog->registerWidgetHelp(m_ui.extraSWThreads, tr("Software Rendering Threads"), tr("2 threads"),
 			tr("Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). "
-			   "If you have 4 threads on your CPU pick 2 or 3. You can calculate how to get the best performance (amount of CPU threads - "
-			   "2). "
-			   "7+ threads will not give much more performance and could perhaps even lower it."));
+			   "2 to 4 threads is recommended, any more than that is likely to be slower instead of faster."));
 
 		dialog->registerWidgetHelp(m_ui.swAutoFlush, tr("Auto Flush"), tr("Checked"),
 			tr("Force a primitive flush when a framebuffer is also an input texture. "
