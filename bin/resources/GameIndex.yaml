@@ -3057,6 +3057,9 @@ SCED-51940:
 SCED-51941:
   name: "Bonus Demo 5"
   region: "PAL-M5"
+SCED-51962:
+  name: "Nordic Fall 2003 Demo"
+  region: "PAL-SC"
 SCED-52037:
   name: "Official PlayStation 2 Magazine Demo 39" # German
   region: "PAL-E-G"
@@ -6237,7 +6240,14 @@ SCES-55510:
   name: "Jak and Daxter - The Lost Frontier"
   region: "PAL-M12"
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes object glow.
     roundSprite: 1 # Fix lines in the sky.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    autoFlush: 2 # Fixes shadow definition.
+    cpuSpriteRenderBW: 4 # Fixes shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    bilinearUpscale: 1 # Smoothes out shadow textures.
 SCES-55513:
   name: "SingStar Polskie Hity"
   region: "PAL-PL"
@@ -11345,7 +11355,14 @@ SCUS-97558:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes object glow.
     roundSprite: 1 # Fix lines in the sky.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
+    autoFlush: 2 # Fixes shadow definition.
+    cpuSpriteRenderBW: 4 # Fixes shadow rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    bilinearUpscale: 1 # Smoothes out shadow textures.
 SCUS-97560:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault [Demo]"
   region: "NTSC-U"
@@ -18358,7 +18375,7 @@ SLES-52445:
   speedHacks:
     mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes dark sides.
+    halfPixelOffset: 2 # Fixes offset shadow from player character.
 SLES-52446:
   name: "Mashed"
   region: "PAL-M5"
@@ -20813,30 +20830,40 @@ SLES-53332:
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53333:
   name: "Medal of Honor - Les Faucons de Guerre"
   region: "PAL-F"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53334:
   name: "Medal of Honor - European Assault"
   region: "PAL-G"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53335:
   name: "Medal of Honor - European Assault"
   region: "PAL-I"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53336:
   name: "Medal of Honor - European Assault"
   region: "PAL-S"
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53338:
   name: "Victorious Boxers 2 - Fighting Spirit"
   region: "PAL-M3"
@@ -28502,7 +28529,7 @@ SLKA-25149:
   speedHacks:
     mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes dark sides.
+    halfPixelOffset: 2 # Fixes offset shadow from player character.
 SLKA-25150:
   name: "Bujingai"
   region: "NTSC-K"
@@ -28884,6 +28911,8 @@ SLKA-25243:
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25244:
   name: "WWE SmackDown! vs. Raw"
   region: "NTSC-K"
@@ -29930,6 +29959,8 @@ SLPM-55037:
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-55038:
   name: "Grand Theft Auto - Liberty City Stories"
   region: "NTSC-J"
@@ -30278,7 +30309,7 @@ SLPM-55140:
   speedHacks:
     mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes dark sides.
+    halfPixelOffset: 2 # Fixes offset shadow from player character.
 SLPM-55141:
   name: "Destroy All Humans! [THQ Collection]"
   region: "NTSC-J"
@@ -38675,7 +38706,7 @@ SLPM-65574:
   speedHacks:
     mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes dark sides.
+    halfPixelOffset: 2 # Fixes offset shadow from player character.
 SLPM-65575:
   name: クリムゾン・ティアーズ
   name-sort: くりむぞん・てぃあーず
@@ -41219,7 +41250,7 @@ SLPM-66032:
   speedHacks:
     mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes dark sides.
+    halfPixelOffset: 2 # Fixes offset shadow from player character.
 SLPM-66033:
   name: OZ -オズ-
   name-sort: おず
@@ -41470,6 +41501,8 @@ SLPM-66079:
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66080:
   name: GENERATION OF CHAOSIII 〜時の封印〜 [IFコレクション]
   name-sort: GENERATION OF CHAOSIII ときのふういん [IFこれくしょん]
@@ -44165,6 +44198,8 @@ SLPM-66514:
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66515:
   name: EA BEST HITS スター・ウォーズ エピソード3 シスの復讐
   name-sort: すたーうぉーず えぴそーど3 しすのふくしゅう [EA BEST HITS]
@@ -60753,7 +60788,7 @@ SLUS-20873:
   speedHacks:
     mvuFlag: 0 # Fixes invisible wall in front of the door leading to East 3F in the 2nd visit of Apartment world preventing Eileen's Nurse Outfit.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes dark sides.
+    halfPixelOffset: 2 # Fixes offset shadow from player character.
 SLUS-20874:
   name: "Dragon Ball Z - Sagas"
   region: "NTSC-U"
@@ -62595,6 +62630,8 @@ SLUS-21199:
   gsHWFixes:
     autoFlush: 1 # Fixes sun shinging through surfaces and graphical corruptions.
     halfPixelOffset: 2 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes black spots appearing on some surfaces and massively reduces RP TC and TU count.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21200:
   name: "Armored Core - Nine Breaker"
   region: "NTSC-U"
