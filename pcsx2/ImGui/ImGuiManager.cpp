@@ -47,6 +47,7 @@ namespace ImGuiManager
 		std::pair<float, float> pos;
 	};
 
+	static void UpdateScale();
 	static void SetStyle();
 	static void SetKeyMap();
 	static bool LoadFontData();
@@ -96,6 +97,7 @@ static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
 // need to keep track of this, so we can reinitialize on renderer switch
 static bool s_fullscreen_ui_was_initialized = false;
+static bool s_scale_changed = false;
 
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
 
@@ -134,6 +136,7 @@ bool ImGuiManager::Initialize()
 	}
 
 	s_global_scale = std::max(0.5f, g_gs_device->GetWindowScale() * (GSConfig.OsdScale / 100.0f));
+	s_scale_changed = false;
 
 	ImGui::CreateContext();
 
@@ -225,11 +228,13 @@ void ImGuiManager::WindowResized()
 	s_window_height = static_cast<float>(new_height);
 	ImGui::GetIO().DisplaySize = ImVec2(s_window_width, s_window_height);
 
-	UpdateScale();
+	// Scale might have changed as a result of window resize.
+	RequestScaleUpdate();
+}
 
-	// restart imgui frame on the new window size to pick it up, otherwise we draw to the old size
-	ImGui::EndFrame();
-	NewFrame();
+void ImGuiManager::RequestScaleUpdate()
+{
+	s_scale_changed = true;
 }
 
 void ImGuiManager::UpdateScale()
@@ -240,9 +245,6 @@ void ImGuiManager::UpdateScale()
 	if ((!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()) && scale == s_global_scale)
 		return;
 
-	// This is assumed to be called mid-frame.
-	ImGui::EndFrame();
-
 	s_global_scale = scale;
 	SetStyle();
 
@@ -251,14 +253,18 @@ void ImGuiManager::UpdateScale()
 
 	if (!g_gs_device->UpdateImGuiFontTexture())
 		pxFailRel("Failed to recreate font texture after scale+resize");
-
-	NewFrame();
 }
 
 void ImGuiManager::NewFrame()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.DeltaTime = s_last_render_time.GetTimeSecondsAndReset();
+
+	if (s_scale_changed)
+	{
+		s_scale_changed = false;
+		UpdateScale();
+	}
 
 	ImGui::NewFrame();
 
