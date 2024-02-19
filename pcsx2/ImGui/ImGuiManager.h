@@ -35,7 +35,7 @@ namespace ImGuiManager
 	void WindowResized();
 
 	/// Updates scaling of the on-screen elements.
-	void UpdateScale();
+	void RequestScaleUpdate();
 
 	/// Call at the beginning of the frame to set up ImGui state.
 	void NewFrame();
