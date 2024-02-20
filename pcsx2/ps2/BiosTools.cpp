@@ -115,7 +115,7 @@ static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& descriptio
 			// case 'E': zone = "Russia"; region = 3;  break; // Not implemented
 			case 'C': zone = "China";  region = 6;  break;
 			// case 'A': zone = "Mexico"; region = 7;  break; // Not implemented
-			case 'T': zone = "T10K";   region = 8;  break;
+			case 'T': zone = (romver[5]=='Z') ? "COH-H" : "T10K";   region = 8;  break;
 			case 'X': zone = "Test";   region = 9;  break;
 			case 'P': zone = "Free";   region = 10; break;
 			// clang-format on
