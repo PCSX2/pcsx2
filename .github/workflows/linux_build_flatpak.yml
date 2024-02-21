@@ -58,6 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
 
       # Hackity hack. When running the workflow on a schedule, we don't have the tag,
       # it doesn't fetch tags, therefore we don't get a version. So grab them manually.
@@ -91,6 +92,7 @@ jobs:
 
       - name: Generate AppStream XML
         run: |
+          git config --global --add safe.directory "*"
           ./.github/workflows/scripts/linux/generate-metainfo.sh .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
           cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
           flatpak-builder-lint appstream .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
