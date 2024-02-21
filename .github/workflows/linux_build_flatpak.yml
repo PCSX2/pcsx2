@@ -99,7 +99,7 @@ jobs:
 
       - name: Validate manifest
         run: |
-          flatpak-builder-lint org.flatpak.Builder manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
+          flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
 
       - name: Build Flatpak
         uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
@@ -118,7 +118,7 @@ jobs:
 
       - name: Validate build
         run: |
-          flatpak-builder-lint org.flatpak.Builder --exceptions repo flatpak_app
+          flatpak-builder-lint repo repo
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
