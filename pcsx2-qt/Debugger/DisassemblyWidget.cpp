@@ -746,12 +746,12 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	const bool isCurrentPC = m_cpu->getPC() == address;
 
 	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelName(address);
-	const u32 opcode = m_cpu->read32(address);
 
 	const auto demangler = demangler::CDemangler::createGcc();
+	const bool showOpcode = m_showInstructionOpcode && m_cpu->isAlive();
 
 	QString lineString;
-	if (m_showInstructionOpcode)
+	if (showOpcode)
 	{
 		lineString = QString("  %1 %2  %3 %4  %5 %6");
 	}
@@ -783,8 +783,11 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 		lineString = lineString.arg(metric.elidedText(symbolString, Qt::ElideRight, (selected ? 32.0f : 7.5f) * font.pointSize()));
 	}
 
-	if (m_showInstructionOpcode)
+	if (showOpcode)
+	{
+		const u32 opcode = m_cpu->read32(address);
 		lineString = lineString.arg(QtUtils::FilledQStringFromValue(opcode, 16));
+	}
 
 	lineString = lineString.leftJustified(4, ' ') // Address / symbol
 					 .arg(line.name.c_str())
