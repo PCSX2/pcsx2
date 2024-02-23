@@ -943,10 +943,18 @@ void ps_main()
 
 #if (PS_DATE & 3) == 1
 	// DATM == 0: Pixel with alpha equal to 1 will failed
-	bool bad = (127.5f / 255.0f) < rt_a;
+	#if PS_RTA_CORRECTION
+		bool bad = (254.5f / 255.0f) < rt_a;
+	#else
+		bool bad = (127.5f / 255.0f) < rt_a;
+	#endif
 #elif (PS_DATE & 3) == 2
 	// DATM == 1: Pixel with alpha equal to 0 will failed
-	bool bad = rt_a < (127.5f / 255.0f);
+	#if PS_RTA_CORRECTION
+		bool bad = rt_a < (254.5f / 255.0f);
+	#else
+		bool bad = rt_a < (127.5f / 255.0f);
+	#endif
 #endif
 
 	if (bad) {

@@ -313,6 +313,26 @@ void ps_datm0()
 }
 #endif
 
+// Used for DATE (stencil)
+// DATM == 1
+#ifdef ps_datm1_rta_correction
+void ps_datm1_rta_correction()
+{
+	if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
+		discard;
+}
+#endif
+
+// Used for DATE (stencil)
+// DATM == 0
+#ifdef ps_datm0_rta_correction
+void ps_datm0_rta_correction()
+{
+	if((254.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
+		discard;
+}
+#endif
+
 #ifdef ps_rta_correction
 void ps_rta_correction()
 {
@@ -435,7 +455,7 @@ void ps_yuv()
 }
 #endif
 
-#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1)
+#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1) || defined(ps_stencil_image_init_2) || defined(ps_stencil_image_init_3)
 
 void main()
 {
@@ -447,6 +467,14 @@ void main()
 	#endif
 	#ifdef ps_stencil_image_init_1
 		if(sample_c().a < (127.5f / 255.0f)) // >= 0x80 pass
+			SV_Target0 = vec4(-1);
+	#endif
+	#ifdef ps_stencil_image_init_2
+		if((254.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
+			SV_Target0 = vec4(-1);
+	#endif
+	#ifdef ps_stencil_image_init_3
+		if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
 			SV_Target0 = vec4(-1);
 	#endif
 }

@@ -1048,15 +1048,21 @@ bool GSDeviceMTL::Create()
 	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
 	m_datm_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm1"), @"datm1");
+	m_datm_pipeline[2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0_rta_correction"), @"datm0 rta");
+	m_datm_pipeline[3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm1_rta_correction"), @"datm1 rta");
 	m_stencil_clear_pipeline = MakePipeline(pdesc, fs_triangle, nil, @"Stencil Clear");
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::PrimID);
 	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	m_primid_init_pipeline[1][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
 	m_primid_init_pipeline[1][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
+	m_primid_init_pipeline[1][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
+	m_primid_init_pipeline[1][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 	m_primid_init_pipeline[0][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
 	m_primid_init_pipeline[0][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
+	m_primid_init_pipeline[0][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
+	m_primid_init_pipeline[0][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
 
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
@@ -1077,6 +1083,8 @@ bool GSDeviceMTL::Create()
 			case ShaderConvert::Count:
 			case ShaderConvert::DATM_0:
 			case ShaderConvert::DATM_1:
+			case ShaderConvert::DATM_0_RTA_CORRECTION:
+			case ShaderConvert::DATM_1_RTA_CORRECTION:
 			case ShaderConvert::CLUT_4:
 			case ShaderConvert::CLUT_8:
 			case ShaderConvert::HDR_INIT:
@@ -2032,7 +2040,7 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == offsetof(GSMTLMainPSUniform, dither_matrix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ScaleFactor)      == offsetof(GSMTLMainPSUniform, scale_factor));
 
-void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm)
+void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm)
 {
 	FlushClears(rt);
 	BeginRenderPass(@"Destination Alpha Setup", nullptr, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare, ds, MTLLoadActionDontCare);
@@ -2040,7 +2048,7 @@ void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVe
 	MRESetDSS(m_dss_stencil_zero);
 	RenderCopy(nullptr, m_stencil_clear_pipeline, r);
 	MRESetDSS(m_dss_stencil_write);
-	RenderCopy(rt, m_datm_pipeline[datm], r);
+	RenderCopy(rt, m_datm_pipeline[static_cast<u8>(datm)], r);
 }
 
 static id<MTLTexture> getTexture(GSTexture* tex)
@@ -2115,7 +2123,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			dsel.zwe = 0;
 			GSTexture* depth = dsel.key == DepthStencilSelector::NoDepth().key ? nullptr : config.ds;
 			BeginRenderPass(@"PrimID Destination Alpha Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
-			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][config.datm], config.drawarea);
+			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][static_cast<u8>(config.datm)], config.drawarea);
 			MRESetDSS(dsel);
 			pxAssert(config.ps.date == 1 || config.ps.date == 2);
 			if (config.ps.tex_is_fb)

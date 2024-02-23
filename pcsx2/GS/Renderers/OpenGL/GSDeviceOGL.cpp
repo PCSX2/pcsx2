@@ -1233,7 +1233,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, bool datm)
+GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, SetDATM datm)
 {
 	const GSVector2i& rtsize = rt->GetSize();
 
@@ -1242,7 +1242,7 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 		return nullptr;
 
 	GL_PUSH("PrimID Destination Alpha Clear");
-	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[datm], false);
+	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[static_cast<u8>(datm)], false);
 	return tex;
 }
 
@@ -1856,18 +1856,18 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float par
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, false);
 }
 
-void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
+void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, SetDATM datm)
 {
 	GL_PUSH("DATE First Pass");
 
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	OMSetRenderTargets(nullptr, ds, &GLState::scissor);
-
-	const GLint clear_color = 0;
-	glClearBufferiv(GL_STENCIL, 0, &clear_color);
-
-	m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].Bind();
+	{
+		const GLint clear_color = 0;
+		glClearBufferiv(GL_STENCIL, 0, &clear_color);
+	}
+	m_convert.ps[SetDATMShader(datm)].Bind();
 
 	// om
 

@@ -24,6 +24,8 @@ layout(location = 0) in vec2 v_tex;
 layout(location = 0) out uint o_col0;
 #elif !defined(ps_datm1) && \
 	!defined(ps_datm0) && \
+	!defined(ps_datm1_rta_correction) && \
+	!defined(ps_datm0_rta_correction) && \
 	!defined(ps_convert_rgba8_float32) && \
 	!defined(ps_convert_rgba8_float24) && \
 	!defined(ps_convert_rgba8_float16) && \
@@ -88,6 +90,22 @@ void ps_datm1()
 void ps_datm0()
 {
 	if((127.5f / 255.0f) < sample_c(v_tex).a) // < 0x80 pass (== 0x80 should not pass)
+		discard;
+}
+#endif
+
+#ifdef ps_datm1_rta_correction
+void ps_datm1_rta_correction()
+{
+	if(sample_c(v_tex).a < (254.5f / 255.0f)) // >= 0x80 pass
+		discard;
+}
+#endif
+
+#ifdef ps_datm0_rta_correction
+void ps_datm0_rta_correction()
+{
+	if((254.5f / 255.0f) < sample_c(v_tex).a) // < 0x80 pass (== 0x80 should not pass)
 		discard;
 }
 #endif
@@ -416,7 +434,7 @@ void ps_yuv()
 }
 #endif
 
-#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1)
+#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1) || defined(ps_stencil_image_init_2) || defined(ps_stencil_image_init_3)
 
 void main()
 {
@@ -428,6 +446,14 @@ void main()
 	#endif
 	#ifdef ps_stencil_image_init_1
 		if(sample_c(v_tex).a < (127.5f / 255.0f)) // >= 0x80 pass
+			o_col0 = vec4(-1);
+	#endif
+	#ifdef ps_stencil_image_init_2
+		if((254.5f / 255.0f) < sample_c(v_tex).a) // < 0x80 pass (== 0x80 should not pass)
+			o_col0 = vec4(-1);
+	#endif
+	#ifdef ps_stencil_image_init_3
+		if(sample_c(v_tex).a < (254.5f / 255.0f)) // >= 0x80 pass
 			o_col0 = vec4(-1);
 	#endif
 }

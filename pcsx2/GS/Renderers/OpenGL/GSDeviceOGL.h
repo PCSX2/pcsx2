@@ -190,7 +190,7 @@ private:
 	struct
 	{
 		GSDepthStencilOGL* dss = nullptr;
-		GLProgram primid_ps[2];
+		GLProgram primid_ps[4];
 	} m_date;
 
 	struct
@@ -306,7 +306,7 @@ public:
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
-	GSTexture* InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, bool datm);
+	GSTexture* InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, SetDATM datm);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -331,7 +331,7 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(const GSHWDrawConfig& config, bool needs_barrier);
 
-	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
+	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, SetDATM datm);
 
 	void IASetVAO(GLuint vao);
 	void IASetPrimitiveTopology(GLenum topology);

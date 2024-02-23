@@ -1019,7 +1019,7 @@ struct PSMain
 		{
 			// 1 => DATM == 0, 2 => DATM == 1
 			float rt_a = PS_WRITE_RG ? current_color.g : current_color.a;
-			bool bad = (PS_DATE & 3) == 1 ? (rt_a > 0.5) : (rt_a < 0.5);
+			bool bad = PS_RTA_CORRECTION ? ((PS_DATE & 3) == 1 ? (rt_a > (254.5f / 255.f)) : (rt_a < (254.5f / 255.f))) : ((PS_DATE & 3) == 1 ? (rt_a > 0.5) : (rt_a < 0.5));
 
 			if (bad)
 				discard_fragment();

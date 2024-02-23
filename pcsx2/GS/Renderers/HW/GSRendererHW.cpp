@@ -4262,9 +4262,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		// TODO: Make it work on DATE, switch to new shaders with Ad doubled.
 		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || rt_alpha_max > 128 || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
-		const bool rta_correction = !rta_decorrection && !m_cached_ctx.TEST.DATE && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
+		const bool rta_correction = !rta_decorrection && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
 			rt->RTACorrect(rt);
@@ -5312,7 +5311,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else if (features.stencil_buffer)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
 
-	m_conf.datm = m_cached_ctx.TEST.DATM;
+	if (m_conf.ps.rta_correction)
+		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM + 2);
+	else
+		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM);
 
 	// If we're doing stencil DATE and we don't have a depth buffer, we need to allocate a temporary one.
 	GSTexture* temp_ds = nullptr;
@@ -6860,7 +6862,7 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.require_one_barrier = false;
 	config.require_full_barrier = false;
 	config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
-	config.datm = false;
+	config.datm = SetDATM::DATM0;
 	config.line_expand = false;
 	config.separate_alpha_pass = false;
 	config.second_separate_alpha_pass = false;
