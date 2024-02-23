@@ -113,6 +113,28 @@ PS_OUTPUT ps_datm0(PS_INPUT input)
 	return output;
 }
 
+PS_OUTPUT ps_datm1_rta_correction(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	clip(sample_c(input.t).a - 254.5f / 255); // >= 0x80 pass
+
+	output.c = 0;
+
+	return output;
+}
+
+PS_OUTPUT ps_datm0_rta_correction(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	clip(254.5f / 255 - sample_c(input.t).a); // < 0x80 pass (== 0x80 should not pass)
+
+	output.c = 0;
+
+	return output;
+}
+
 PS_OUTPUT ps_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
@@ -409,6 +431,28 @@ float ps_stencil_image_init_1(PS_INPUT input) : SV_Target
 {
 	float c;
 	if (sample_c(input.t).a < (127.5f / 255.0f)) // >= 0x80 pass
+		c = float(-1);
+	else
+		c = float(0x7FFFFFFF);
+	return c;
+}
+
+float ps_stencil_image_init_2(PS_INPUT input)
+	: SV_Target
+{
+	float c;
+	if ((254.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
+		c = float(-1);
+	else
+		c = float(0x7FFFFFFF);
+	return c;
+}
+
+float ps_stencil_image_init_3(PS_INPUT input)
+	: SV_Target
+{
+	float c;
+	if (sample_c(input.t).a < (254.5f / 255.0f)) // >= 0x80 pass
 		c = float(-1);
 	else
 		c = float(0x7FFFFFFF);

@@ -247,13 +247,15 @@ public:
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy_mask[1 << 4];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_interlace_pipeline[NUM_INTERLACE_SHADERS];
-	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[2];
+	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_clut_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_stencil_clear_pipeline;
-	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][2];
+	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][4];
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_init_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_rta_init_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_clear_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_resolve_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_rta_resolve_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_fxaa_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_shadeboost_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline;
@@ -430,7 +432,7 @@ public:
 
 	// MARK: Render HW
 
-	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm);
+	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm);
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off);
 

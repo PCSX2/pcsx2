@@ -19,6 +19,8 @@ enum class ShaderConvert
 	RGBA8_TO_16_BITS,
 	DATM_1,
 	DATM_0,
+	DATM_1_RTA_CORRECTION,
+	DATM_0_RTA_CORRECTION,
 	HDR_INIT,
 	HDR_RESOLVE,
 	RTA_CORRECTION,
@@ -43,6 +45,14 @@ enum class ShaderConvert
 	CLUT_8,
 	YUV,
 	Count
+};
+
+enum class SetDATM : u8
+{
+	DATM0 = 0U,
+	DATM1,
+	DATM0_RTA_CORRECTION,
+	DATM1_RTA_CORRECTION
 };
 
 enum class ShaderInterlace
@@ -80,6 +90,8 @@ static inline bool HasStencilOutput(ShaderConvert shader)
 	{
 		case ShaderConvert::DATM_0:
 		case ShaderConvert::DATM_1:
+		case ShaderConvert::DATM_0_RTA_CORRECTION:
+		case ShaderConvert::DATM_1_RTA_CORRECTION:
 			return true;
 		default:
 			return false;
@@ -140,6 +152,7 @@ enum class PresentShader
 
 /// Get the name of a shader
 /// (Can't put methods on an enum class)
+int SetDATMShader(SetDATM datm);
 const char* shaderName(ShaderConvert value);
 const char* shaderName(PresentShader value);
 
@@ -653,7 +666,7 @@ struct alignas(16) GSHWDrawConfig
 	bool require_full_barrier; ///< Require texture barrier between all prims
 
 	DestinationAlphaMode destination_alpha;
-	bool datm : 1;
+	SetDATM datm : 2;
 	bool line_expand : 1;
 	bool separate_alpha_pass : 1;
 	bool second_separate_alpha_pass : 1;
