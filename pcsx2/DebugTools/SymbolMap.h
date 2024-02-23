@@ -72,9 +72,10 @@ public:
 	std::string GetDescription(unsigned int address) const;
 	std::vector<SymbolEntry> GetAllSymbols(SymbolType symmask) const;
 
-	void AddFunction(const std::string& name, u32 address, u32 size);
+	void AddFunction(const std::string& name, u32 address, u32 size, bool noReturn = false);
 	u32 GetFunctionStart(u32 address) const;
 	int GetFunctionNum(u32 address) const;
+	bool GetFunctionNoReturn(u32 address) const;
 	u32 GetFunctionSize(u32 startAddress) const;
 	bool SetFunctionSize(u32 startAddress, u32 newSize);
 	bool RemoveFunction(u32 startAddress);
@@ -113,6 +114,7 @@ private:
 		u32 size;
 		int index;
 		std::string name;
+		bool noReturn;
 	};
 
 	struct LabelEntry

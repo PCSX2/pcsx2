@@ -745,19 +745,33 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 	const bool isConditionalMet = line.info.conditionMet;
 	const bool isCurrentPC = m_cpu->getPC() == address;
 
-	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelName(address);
+	bool isFunctionNoReturn = false;
 
+	const std::string addressSymbol = m_cpu->GetSymbolMap().GetLabelName(address);
+	if(m_cpu->GetSymbolMap().GetFunctionStart(address) == address)
+	{
+		isFunctionNoReturn = m_cpu->GetSymbolMap().GetFunctionNoReturn(address);
+	}
 	const auto demangler = demangler::CDemangler::createGcc();
 	const bool showOpcode = m_showInstructionOpcode && m_cpu->isAlive();
 
 	QString lineString;
 	if (showOpcode)
 	{
-		lineString = QString("  %1 %2  %3 %4  %5 %6");
+		lineString = QString(" %1 %2 %3  %4 %5  %6 %7");
 	}
 	else
 	{
-		lineString = QString("  %1  %2 %3  %4 %5");
+		lineString = QString(" %1 %2  %3 %4  %5 %6");
+	}
+
+	if(isFunctionNoReturn)
+	{
+		lineString = lineString.arg("NR");
+	}
+	else
+	{
+		lineString = lineString.arg("  ");
 	}
 
 	if (addressSymbol.empty()) // The address wont have symbol text if it's the start of a function for example
@@ -780,7 +794,7 @@ inline QString DisassemblyWidget::DisassemblyStringFromAddress(u32 address, QFon
 			symbolString = QString::fromStdString(addressSymbol);
 		}
 
-		lineString = lineString.arg(metric.elidedText(symbolString, Qt::ElideRight, (selected ? 32.0f : 7.5f) * font.pointSize()));
+		lineString = lineString.arg(metric.elidedText(symbolString, Qt::ElideRight, (selected ? 32 : 7) * font.pointSize()));
 	}
 
 	if (showOpcode)
