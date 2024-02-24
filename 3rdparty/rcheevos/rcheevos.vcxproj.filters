@@ -18,130 +18,132 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="rcheevos\src\rapi\rc_api_editor.c">
+    <ClCompile Include="src\rapi\rc_api_editor.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rapi\rc_api_info.c">
+    <ClCompile Include="src\rapi\rc_api_info.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rapi\rc_api_runtime.c">
+    <ClCompile Include="src\rapi\rc_api_runtime.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rapi\rc_api_user.c">
+    <ClCompile Include="src\rapi\rc_api_user.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rapi\rc_api_common.c">
+    <ClCompile Include="src\rapi\rc_api_common.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rhash\hash.c">
+    <ClCompile Include="src\rhash\hash.c">
       <Filter>rhash</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rhash\md5.c">
+    <ClCompile Include="src\rhash\md5.c">
       <Filter>rhash</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rurl\url.c">
+    <ClCompile Include="src\rurl\url.c">
       <Filter>rurl</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rc_client.c" />
-    <ClCompile Include="rcheevos\src\rc_compat.c" />
-    <ClCompile Include="rcheevos\src\rc_util.c" />
-    <ClCompile Include="rcheevos\src\rcheevos\richpresence.c">
+    <ClCompile Include="src\rc_client.c" />
+    <ClCompile Include="src\rc_compat.c" />
+    <ClCompile Include="src\rc_util.c" />
+    <ClCompile Include="src\rcheevos\richpresence.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\runtime.c">
+    <ClCompile Include="src\rcheevos\runtime.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\runtime_progress.c">
+    <ClCompile Include="src\rcheevos\runtime_progress.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\trigger.c">
+    <ClCompile Include="src\rcheevos\trigger.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\value.c">
+    <ClCompile Include="src\rcheevos\value.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\alloc.c">
+    <ClCompile Include="src\rcheevos\alloc.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\condition.c">
+    <ClCompile Include="src\rcheevos\condition.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\condset.c">
+    <ClCompile Include="src\rcheevos\condset.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\consoleinfo.c">
+    <ClCompile Include="src\rcheevos\consoleinfo.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\format.c">
+    <ClCompile Include="src\rcheevos\format.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\lboard.c">
+    <ClCompile Include="src\rcheevos\lboard.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\memref.c">
+    <ClCompile Include="src\rcheevos\memref.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\operand.c">
+    <ClCompile Include="src\rcheevos\operand.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="rcheevos\src\rcheevos\rc_validate.c">
+    <ClCompile Include="src\rcheevos\rc_validate.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rcheevos\src\rapi\rc_api_common.h">
+    <ClInclude Include="src\rapi\rc_api_common.h">
       <Filter>rapi</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\src\rhash\md5.h">
+    <ClInclude Include="src\rhash\md5.h">
       <Filter>rhash</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_api_runtime.h">
+    <ClInclude Include="include\rc_api_runtime.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_api_user.h">
+    <ClInclude Include="include\rc_api_user.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_consoles.h">
+    <ClInclude Include="include\rc_consoles.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_error.h">
+    <ClInclude Include="include\rc_error.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_hash.h">
+    <ClInclude Include="include\rc_hash.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_runtime.h">
+    <ClInclude Include="include\rc_runtime.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_runtime_types.h">
+    <ClInclude Include="include\rc_runtime_types.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_url.h">
+    <ClInclude Include="include\rc_url.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rcheevos.h">
+    <ClInclude Include="include\rcheevos.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_api_editor.h">
+    <ClInclude Include="include\rc_api_editor.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_api_info.h">
+    <ClInclude Include="include\rc_api_info.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_api_request.h">
+    <ClInclude Include="include\rc_api_request.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\include\rc_client.h">
+    <ClInclude Include="include\rc_client.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\src\rc_client_internal.h" />
-    <ClInclude Include="rcheevos\src\rc_compat.h" />
-    <ClInclude Include="rcheevos\src\rc_util.h" />
-    <ClInclude Include="rcheevos\src\rc_version.h" />
-    <ClInclude Include="rcheevos\src\rcheevos\rc_validate.h">
+    <ClInclude Include="src\rc_client_internal.h" />
+    <ClInclude Include="src\rc_compat.h" />
+    <ClInclude Include="include\rc_util.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rc_version.h" />
+    <ClInclude Include="src\rcheevos\rc_validate.h">
       <Filter>rcheevos</Filter>
     </ClInclude>
-    <ClInclude Include="rcheevos\src\rcheevos\rc_internal.h">
+    <ClInclude Include="src\rcheevos\rc_internal.h">
       <Filter>rcheevos</Filter>
     </ClInclude>
   </ItemGroup>
