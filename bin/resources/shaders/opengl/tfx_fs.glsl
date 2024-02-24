@@ -910,7 +910,7 @@ float As = As_rgba.a;
 
 	Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
 	Color.rgb *= vec3(255.0f);
-#elif PS_BLEND_HW == 3
+#elif PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0
 	// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 	// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
 	// When any color channel is higher than 128 then adjust the compensation automatically

@@ -930,7 +930,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
 			Color.rgb *= (float3)255.0f;
 		}
-		else if (PS_BLEND_HW == 3)
+		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{
 			// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 			// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
