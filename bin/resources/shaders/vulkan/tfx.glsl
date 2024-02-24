@@ -1049,18 +1049,20 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 		#if PS_FEEDBACK_LOOP_IS_NEEDED
-			vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+			vec4 RT = sample_from_rt();
 		#else
 			// Not used, but we define it to make the selection below simpler.
 			vec4 RT = vec4(0.0f);
 		#endif
 
-			// FIXME FMT_16 case
-			// FIXME Ad or Ad * 2?
-			float Ad = RT.a / 128.0f;
+		#if PS_RTA_CORRECTION
+			float Ad = trunc(RT.a * 127.5f + 0.05f) / 128.0f;
+		#else
+			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
+		#endif
 
 			// Let the compiler do its jobs !
-			vec3 Cd = RT.rgb;
+			vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
 			vec3 Cs = Color.rgb;
 
 		#if PS_BLEND_A == 0
@@ -1223,8 +1225,13 @@ void main()
 	C.a = 128.0f;
 #endif
 
-#if (SW_AD_TO_HW)
-	vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+#if SW_AD_TO_HW
+	#if PS_RTA_CORRECTION
+		vec4 RT = trunc(sample_from_rt() * 127.5f + 0.05f);
+	#else
+		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
+	#endif
+
 	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
 	vec4 alpha_blend = vec4(C.a / 128.0f);

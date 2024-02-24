@@ -4263,12 +4263,12 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_d = 0;
 
 		// TODO: Make it work on DATE, switch to new shaders with Ad doubled.
-		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || rt_alpha_max > 128;
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || rt_alpha_max > 128 || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
 		const bool rta_correction = !rta_decorrection && !m_cached_ctx.TEST.DATE && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
 			rt->RTACorrect(rt);
-			m_conf.ps.rta_correction = rt->m_rt_alpha_scale && m_conf.colormask.wa;
+			m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 			m_conf.rt = rt->m_texture;
 		}
 
@@ -5264,15 +5264,17 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		}
 	}
 	
+	if (rt)
 	{
-		const bool rta_decorrection = m_cached_ctx.TEST.DATE || m_channel_shuffle || m_texture_shuffle || blend_alpha_max > 128;
-		if (rt && rta_decorrection)
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || std::max(blend_alpha_max, rt->m_alpha_max) > 128 || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
+
+		if (rta_decorrection)
 		{
 			rt->RTADecorrect(rt);
 			m_conf.rt = rt->m_texture;
 		}
-		else if (rt)
-			m_conf.ps.rta_correction = rt->m_rt_alpha_scale && m_conf.colormask.wa;
+
+		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
 
 	bool blending_alpha_pass = false;

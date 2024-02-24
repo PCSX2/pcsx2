@@ -915,7 +915,7 @@ struct PSMain
 					return;
 			}
 
-			float Ad = trunc(current_color.a * 255.5f) / 128.f;
+			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 127.75f) / 128.f : trunc(current_color.a * 255.5f) / 128.f;
 
 			float3 Cd = trunc(current_color.rgb * 255.5f);
 			float3 Cs = Color.rgb;
@@ -1044,7 +1044,15 @@ struct PSMain
 			C.a = 128.0f;
 		}
 
-		float4 alpha_blend = SW_AD_TO_HW ? float4(trunc(current_color.a * 255.5f) / 128.f) : float4(C.a / 128.f);
+		float4 alpha_blend = float4(0.f);
+		if (SW_AD_TO_HW)
+		{
+			alpha_blend = PS_RTA_CORRECTION ? float4(trunc(current_color.a * 127.75f) / 128.f) : float4(trunc(current_color.a * 255.5f) / 128.f);
+		}
+		else
+		{
+			alpha_blend = float4(C.a / 128.f);
+		}
 
 		if (PS_DST_FMT == FMT_16)
 		{
