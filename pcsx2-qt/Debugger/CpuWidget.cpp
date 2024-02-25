@@ -142,9 +142,24 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.memorySearchWidget, &MemorySearchWidget::goToAddressInMemoryView, m_ui.memoryviewWidget, &MemoryViewWidget::gotoAddress);
 	connect(m_ui.memorySearchWidget, &MemorySearchWidget::switchToMemoryViewTab, [this]() { m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory); });
 	m_ui.memorySearchWidget->setCpu(&m_cpu);
+
+	m_refreshDebuggerTimer.setInterval(1000);
+	connect(&m_refreshDebuggerTimer, &QTimer::timeout, this, &CpuWidget::refreshDebugger);
+	m_refreshDebuggerTimer.start();
 }
 
 CpuWidget::~CpuWidget() = default;
+
+void CpuWidget::refreshDebugger()
+{
+	if (m_cpu.isAlive())
+	{
+		m_ui.registerWidget->update();
+		m_ui.disassemblyWidget->update();
+		m_ui.memoryviewWidget->update();
+		m_ui.memorySearchWidget->update();
+	}
+}
 
 void CpuWidget::paintEvent(QPaintEvent* event)
 {
