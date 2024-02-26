@@ -5901,6 +5901,8 @@ void GSTextureCache::Target::Update()
 	u32 ndrects = 0;
 
 	const GSOffset off(g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM));
+	std::pair<u8, u8> alpha_minmax = {255, 0};
+
 	for (size_t i = 0; i < m_dirty.size(); i++)
 	{
 		// Don't align the area we write to the target to the block size. If the format matches, the writes don't need
@@ -5916,6 +5918,17 @@ void GSTextureCache::Target::Update()
 		const GSVector4i t_r(read_r - t_offset);
 		if (mapped)
 		{
+			if (m_32_bits_fmt && (m_TEX0.PSM & 0xf) != PSMCT24)
+			{
+				// TODO: Only read once in 32bit and copy to the mapped texture. Bit out of scope of this PR and not a huge impact.
+				const int pitch = VectorAlign(read_r.width() * sizeof(u32));
+				g_gs_renderer->m_mem.ReadTexture(off, read_r, s_unswizzle_buffer, pitch, TEXA);
+
+				std::pair<u8, u8> new_alpha_minmax = GSGetRGBA8AlphaMinMax(s_unswizzle_buffer, read_r.width(), read_r.height(), pitch);
+				alpha_minmax.first = std::min(alpha_minmax.first, new_alpha_minmax.first);
+				alpha_minmax.second = std::max(alpha_minmax.second, new_alpha_minmax.second);
+			}
+
 			g_gs_renderer->m_mem.ReadTexture(
 				off, read_r, m.bits + t_r.y * static_cast<u32>(m.pitch) + (t_r.x * sizeof(u32)), m.pitch, TEXA);
 		}
@@ -5923,6 +5936,13 @@ void GSTextureCache::Target::Update()
 		{
 			const int pitch = VectorAlign(read_r.width() * sizeof(u32));
 			g_gs_renderer->m_mem.ReadTexture(off, read_r, s_unswizzle_buffer, pitch, TEXA);
+
+			if (m_32_bits_fmt && (m_TEX0.PSM & 0xf) != PSMCT24)
+			{
+				std::pair<u8, u8> new_alpha_minmax = GSGetRGBA8AlphaMinMax(s_unswizzle_buffer, read_r.width(), read_r.height(), pitch);
+				alpha_minmax.first = std::min(alpha_minmax.first, new_alpha_minmax.first);
+				alpha_minmax.second = std::max(alpha_minmax.second, new_alpha_minmax.second);
+			}
 
 			t->Update(t_r, s_unswizzle_buffer, pitch);
 		}
@@ -5981,8 +6001,24 @@ void GSTextureCache::Target::Update()
 	}
 	else
 	{
-		m_alpha_min = 0;
-		m_alpha_max = m_32_bits_fmt ? 255 : 128;
+		if (m_32_bits_fmt)
+		{
+			if (!total_rect.eq(m_valid))
+			{
+				m_alpha_min = std::min(static_cast<int>(alpha_minmax.first), m_alpha_min);
+				m_alpha_max = std::max(static_cast<int>(alpha_minmax.second), m_alpha_max);
+			}
+			else
+			{
+				m_alpha_min = alpha_minmax.first;
+				m_alpha_max = alpha_minmax.second;
+			}
+		}
+		else
+		{
+			m_alpha_min = 0;
+			m_alpha_max = 128;
+		}
 	}
 	g_gs_device->Recycle(t);
 	m_dirty.clear();
