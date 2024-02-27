@@ -93,6 +93,7 @@ private:
 	bool m_sdl_subsystem_initialized = false;
 	bool m_controller_enhanced_mode = false;
 	bool m_controller_raw_mode = false;
+	bool m_controller_ps5_player_led = false;
 
 #ifdef __APPLE__
 	bool m_enable_iokit_driver = false;
