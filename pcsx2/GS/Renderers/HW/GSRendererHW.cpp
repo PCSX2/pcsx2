@@ -4304,7 +4304,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || rt_alpha_max > 128 || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (std::max(rt_alpha_max, rt->m_alpha_max) > 128) || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
 		const bool rta_correction = !rta_decorrection && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
