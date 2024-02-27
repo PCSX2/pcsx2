@@ -6236,8 +6236,25 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (!preserve_rt_color && !IsReallyDithered() && m_r.rintersect(rt->m_valid).eq(rt->m_valid))
 		{
 			const u32 c = GetConstantDirectWriteMemClearColor();
+			u32 clear_c = c;
+			const bool alpha_one_or_less = (c >> 24) <= 0x80;
 			GL_INS("TryTargetClear(): RT at %x <= %08X", rt->m_TEX0.TBP0, c);
-			g_gs_device->ClearRenderTarget(rt->m_texture, c);
+
+			if (rt->m_rt_alpha_scale || alpha_one_or_less)
+			{
+				if (alpha_one_or_less)
+				{
+					const u32 new_alpha = std::min((c >> 24) * 2U, 255U);
+					clear_c = (clear_c & 0xFFFFFF) | (new_alpha << 24);
+					rt->m_rt_alpha_scale = true;
+				}
+				else
+				{
+					rt->m_rt_alpha_scale = false;
+				}
+			}
+
+			g_gs_device->ClearRenderTarget(rt->m_texture, clear_c);
 
 			if (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp != 24)
 			{
