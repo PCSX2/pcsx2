@@ -3083,6 +3083,9 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	if (rt)
+		rt->m_last_draw = s_n;
+
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if (rt)
 		g_texture_cache->Read(rt, m_r);
@@ -5269,8 +5272,13 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 		if (rta_decorrection)
 		{
-			rt->RTADecorrect(rt);
-			m_conf.rt = rt->m_texture;
+			if (rt->m_last_draw == s_n)
+				rt->m_rt_alpha_scale = false;
+			else
+			{
+				rt->RTADecorrect(rt);
+				m_conf.rt = rt->m_texture;
+			}
 		}
 
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;

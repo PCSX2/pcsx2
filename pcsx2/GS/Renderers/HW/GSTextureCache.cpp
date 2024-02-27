@@ -1690,7 +1690,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		}
 #endif
 
-		 if (dst && dst->m_rt_alpha_scale)
+		 if (dst && dst->m_rt_alpha_scale && (GSUtil::GetChannelMask(TEX0.PSM) & 0x8))
 			dst->RTADecorrect(dst);
 
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
@@ -2349,6 +2349,11 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	}
 
 	dst->readbacks_since_draw = 0;
+
+	dst->m_last_draw = GSState::s_n;
+
+	if (dst->m_dirty.empty())
+		dst->m_rt_alpha_scale = true;
 
 	pxAssert(dst && dst->m_texture && dst->m_scale == scale);
 	return dst;
