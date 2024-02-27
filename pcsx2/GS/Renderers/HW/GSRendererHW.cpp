@@ -5272,6 +5272,27 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 		if (rta_decorrection)
 		{
+			if (m_texture_shuffle)
+			{
+				if (m_conf.ps.read_ba)
+				{
+					rt->RTADecorrect(rt);
+					m_conf.rt = rt->m_texture;
+				}
+				else if (m_conf.colormask.wa)
+				{
+					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
+					{
+						rt->m_rt_alpha_scale = false;
+					}
+					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
+					{
+						rt->RTADecorrect(rt);
+						m_conf.rt = rt->m_texture;
+					}
+				}
+			}
+
 			if (rt->m_last_draw == s_n)
 				rt->m_rt_alpha_scale = false;
 			else
