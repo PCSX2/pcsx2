@@ -27694,11 +27694,19 @@ SLES-55669:
   name: "PES 2013 - Pro Evolution Soccer"
   region: "PAL-P-S"
 SLES-55671:
-  name: "FIFA 14"
+  name: "FIFA 14 [LEGACY EDITION]"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes stadium banners and improves performance.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-55672:
   name: "FIFA 14"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes stadium banners and improves performance.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-55673:
   name: "Pro Evolution Soccer 2014"
   region: "PAL-M5"
@@ -67211,6 +67219,10 @@ SLUS-27034:
 SLUS-27093:
   name: "FIFA 14"
   region: "NTSC-B" # Brazil with En,Fr,Es
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes misaligned blur.
+    cpuSpriteRenderBW: 2 # Fixes stadium banners and improves performance.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-28002:
   name: "Red Faction [Trade Demo]"
   region: "NTSC-U"
