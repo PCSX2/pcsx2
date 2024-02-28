@@ -5331,9 +5331,18 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					}
 				}
 			}
-
-			if (rt->m_last_draw == s_n)
+			else if (m_channel_shuffle)
+			{
+				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || ((m_cached_ctx.FRAME.FBMSK & 0xFF000000) != 0xFF000000))
+				{
+					rt->RTADecorrect(rt);
+					m_conf.rt = rt->m_texture;
+				}
+			}
+			else if (rt->m_last_draw == s_n)
+			{
 				rt->m_rt_alpha_scale = false;
+			}
 			else
 			{
 				rt->RTADecorrect(rt);
