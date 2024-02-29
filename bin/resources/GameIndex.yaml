@@ -252,6 +252,7 @@ PAPX-90230:
   name: "Arc the Lad - Seirei no Tasogare - Premiere Disc"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 PAPX-90231:
@@ -724,6 +725,7 @@ PCPX-96330:
   name: "Arc the Lad - Seirei no Tasogare - Premiere Disc"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 PCPX-96554:
@@ -1103,6 +1105,7 @@ SCAJ-20019:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCAJ-20020:
@@ -1188,6 +1191,7 @@ SCAJ-20038:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-Unk"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCAJ-20039:
@@ -2295,6 +2299,7 @@ SCCS-40007:
   name-en: "Arc the Lad - Seirei no Tasogare"
   region: "NTSC-C"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCCS-40009:
@@ -4937,6 +4942,10 @@ SCES-51910:
   name: "Arc - Twilight of the Spirits"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
+    mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
+    trilinearFiltering: 1
 SCES-51920:
   name: "Forbidden Siren"
   region: "PAL-E"
@@ -6511,6 +6520,7 @@ SCKA-20012:
   name: "Arc the Lad - Jeongryeongui Hwanghon"
   region: "NTSC-K"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCKA-20013:
@@ -7900,6 +7910,7 @@ SCPS-15040:
   name-en: "Arc the Lad - Twilight of the Spirits [Limited Edition]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCPS-15041:
@@ -7908,6 +7919,7 @@ SCPS-15041:
   name-en: "Arc the Lad - Seirei no Koukon"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCPS-15042:
@@ -10256,6 +10268,7 @@ SCUS-97231:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCUS-97232:
@@ -10462,6 +10475,7 @@ SCUS-97282:
   name: "Arc the Lad - Twilight of the Spirits [Demo]"
   region: "NTSC-U"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes on screen garbage.
     mipmap: 2 # Mipmap + trilinear, corrects the depth of field effect.
     trilinearFiltering: 1
 SCUS-97292:
@@ -22235,7 +22249,7 @@ SLES-53659:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-53661:
-  name: "Capcom Classics Collection"
+  name: "Capcom Classics Collection Vol. 1"
   region: "PAL-E"
 SLES-53666:
   name: "Midway Arcade Treasures 3"
@@ -28593,7 +28607,7 @@ SLKA-25099:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes upscaling lines.
 SLKA-25100:
-  name: "Dragon Quest V Dragon Quarter"
+  name: "Breath of Fire V - Dragon Quarter"
   region: "NTSC-K"
   compat: 5
 SLKA-25102:
@@ -29017,8 +29031,7 @@ SLKA-25210:
   name: "Summer Heat Beach Volleyball"
   region: "NTSC-K"
 SLKA-25211:
-  name: "The King of Fighters - Maximum Impact"
-  name-sort: "King of Fighters, The - Maximum Impact"
+  name: "King of Fighters - Maximum Impact"
   region: "NTSC-K"
 SLKA-25212:
   name: "Jin Samguk Mussang 2"
@@ -43436,7 +43449,7 @@ SLPM-66316:
 SLPM-66317:
   name: カプコン クラシックス コレクション
   name-sort: かぷこん くらしっくす これくしょん
-  name-en: "Capcom Classics Collection Vol.1"
+  name-en: "Capcom Classics Collection Vol. 1"
   region: "NTSC-J"
 SLPM-66318:
   name: はるのあしおと -Step of Spring-
@@ -46591,7 +46604,7 @@ SLPM-66851:
 SLPM-66852:
   name: カプコン クラシックス コレクション Best Price
   name-sort: かぷこん くらしっくす これくしょん [Best Price]
-  name-en: "Capcom Classics Collection [Best Price]"
+  name-en: "Capcom Classics Collection Vol. 1 [Best Price]"
   region: "NTSC-J"
 SLPM-66853:
   name: ジョジョの奇妙な冒険 黄金の旋風 Best Price
@@ -52901,7 +52914,7 @@ SLPS-25385:
 SLPS-25386:
   name: KOFマキシマムインパクト
   name-sort: KOFまきしまむいんぱくと
-  name-en: "King of Fighters, The - Maximum Impact Maniax"
+  name-en: "KOF - Maximum Impact"
   region: "NTSC-J"
 SLPS-25387:
   name: True Love StorySummer Days,and yet... [エンターブレインコレクション]
@@ -61573,7 +61586,7 @@ SLUS-20922:
         // Avoids hang at loading.
         patch=1,EE,003bcc08,word,00000000
 SLUS-20923:
-  name: "King of Fighters - Maximum Impact"
+  name: "KOF - Maximum Impact"
   region: "NTSC-U"
   compat: 5
 SLUS-20924:
@@ -63912,7 +63925,7 @@ SLUS-21315:
   gsHWFixes:
     roundSprite: 1 # Removes chromatic effect when upscaling also works with halfpixeloffset Special Texture.
 SLUS-21316:
-  name: "Capcom Classics Collection Vol.1"
+  name: "Capcom Classics Collection Vol. 1"
   region: "NTSC-U"
   compat: 5
 SLUS-21317:
