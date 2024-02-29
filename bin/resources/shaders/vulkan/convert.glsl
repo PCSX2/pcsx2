@@ -114,7 +114,7 @@ void ps_datm0_rta_correction()
 void ps_rta_correction()
 {
 	vec4 value = sample_c(v_tex);
-	o_col0 = vec4(value.rgb, (value.a * 255.0f) / 127.5f);
+	o_col0 = vec4(value.rgb, (value.a * 255.0f + 0.1f) / 127.5f);
 }
 #endif
 
@@ -122,7 +122,7 @@ void ps_rta_correction()
 void ps_rta_decorrection()
 {
 	vec4 value = sample_c(v_tex);
-	o_col0 = vec4(value.rgb, (value.a * 127.5f) / 255.0f);
+	o_col0 = vec4(value.rgb, (value.a * 127.5f + 0.1f) / 255.0f);
 }
 #endif
 
