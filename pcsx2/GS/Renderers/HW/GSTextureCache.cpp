@@ -3807,6 +3807,14 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	config.ps.write_rg = write_rg;
 	config.ps.shuffle = true;
 	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
+
+	if (!write_rg)
+	{
+		// Because we don't know the new alpha value which came from green, just go full paranoid.
+		tgt->m_alpha_min = 0;
+		tgt->m_alpha_max = 255;
+	}
+
 	return true;
 }
 
@@ -5809,8 +5817,17 @@ GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unsc
 	m_unscaled_size = unscaled_size;
 	m_scale = scale;
 	m_texture = texture;
-	m_alpha_min = 0;
-	m_alpha_max = 0;
+
+	if ((m_TEX0.PSM & 0xf) == PSMCT24)
+	{
+		m_alpha_min = 128;
+		m_alpha_max = 128;
+	}
+	else
+	{
+		m_alpha_min = 0;
+		m_alpha_max = 0;
+	}
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
 }
 
@@ -5901,7 +5918,10 @@ void GSTextureCache::Target::Update()
 	u32 ndrects = 0;
 
 	const GSOffset off(g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM));
+	const u32 bpp = GSLocalMemory::m_psm[m_TEX0.PSM].bpp;
+
 	std::pair<u8, u8> alpha_minmax = {255, 0};
+	bool transferring_alpha = false;
 
 	for (size_t i = 0; i < m_dirty.size(); i++)
 	{
@@ -5914,11 +5934,13 @@ void GSTextureCache::Target::Update()
 		if (update_r.rempty())
 			continue;
 
+		transferring_alpha |= m_dirty[i].rgba.c.a;
+
 		const GSVector4i read_r = m_dirty.GetDirtyRect(i, m_TEX0, total_rect, true);
 		const GSVector4i t_r(read_r - t_offset);
 		if (mapped)
 		{
-			if (m_32_bits_fmt && (m_TEX0.PSM & 0xf) != PSMCT24)
+			if ((m_TEX0.PSM & 0xf) != PSMCT24 && m_dirty[i].rgba.c.a && bpp >= 16)
 			{
 				// TODO: Only read once in 32bit and copy to the mapped texture. Bit out of scope of this PR and not a huge impact.
 				const int pitch = VectorAlign(read_r.width() * sizeof(u32));
@@ -5937,7 +5959,7 @@ void GSTextureCache::Target::Update()
 			const int pitch = VectorAlign(read_r.width() * sizeof(u32));
 			g_gs_renderer->m_mem.ReadTexture(off, read_r, s_unswizzle_buffer, pitch, TEXA);
 
-			if (m_32_bits_fmt && (m_TEX0.PSM & 0xf) != PSMCT24)
+			if ((m_TEX0.PSM & 0xf) != PSMCT24 && m_dirty[i].rgba.c.a && bpp >= 16)
 			{
 				std::pair<u8, u8> new_alpha_minmax = GSGetRGBA8AlphaMinMax(s_unswizzle_buffer, read_r.width(), read_r.height(), pitch);
 				alpha_minmax.first = std::min(alpha_minmax.first, new_alpha_minmax.first);
@@ -5994,30 +6016,17 @@ void GSTextureCache::Target::Update()
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
-	if ((m_TEX0.PSM & 0xf) == PSMCT24)
+	if (transferring_alpha && bpp >= 16)
 	{
-		m_alpha_min = 128;
-		m_alpha_max = 128;
-	}
-	else
-	{
-		if (m_32_bits_fmt)
+		if (m_dirty.size() != 1 || !total_rect.eq(m_valid))
 		{
-			if (!total_rect.eq(m_valid))
-			{
-				m_alpha_min = std::min(static_cast<int>(alpha_minmax.first), m_alpha_min);
-				m_alpha_max = std::max(static_cast<int>(alpha_minmax.second), m_alpha_max);
-			}
-			else
-			{
-				m_alpha_min = alpha_minmax.first;
-				m_alpha_max = alpha_minmax.second;
-			}
+			m_alpha_min = std::min(static_cast<int>(alpha_minmax.first), m_alpha_min);
+			m_alpha_max = std::max(static_cast<int>(alpha_minmax.second), m_alpha_max);
 		}
 		else
 		{
-			m_alpha_min = 0;
-			m_alpha_max = 128;
+			m_alpha_min = alpha_minmax.first;
+			m_alpha_max = alpha_minmax.second;
 		}
 	}
 	g_gs_device->Recycle(t);
