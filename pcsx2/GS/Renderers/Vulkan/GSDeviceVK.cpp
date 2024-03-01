@@ -5683,9 +5683,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// render pass restart optimizations
-	if (hdr_rt || DATE_rp == DATE_RENDER_PASS_STENCIL_ONE)
+	if (hdr_rt)
 	{
-		// DATE/HDR require clearing/blitting respectively.
+		// HDR requires blitting.
 		EndRenderPass();
 	}
 	else if (InRenderPass() && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
@@ -5754,6 +5754,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		{
 			BeginRenderPass(rp, render_area);
 		}
+	}
+	else if (DATE_rp == DATE_RENDER_PASS_STENCIL_ONE)
+	{
+		const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, {.depthStencil = {0.0f, 1u}}};
+		const VkClearRect rc = {{{config.drawarea.left, config.drawarea.top},
+									{static_cast<u32>(config.drawarea.width()), static_cast<u32>(config.drawarea.height())}},
+			0u, 1u};
+		vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
 	}
 
 	// rt -> hdr blit if enabled
