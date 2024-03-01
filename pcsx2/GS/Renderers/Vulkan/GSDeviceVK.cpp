@@ -3826,7 +3826,7 @@ bool GSDeviceVK::CreateRenderPasses()
 		{
 			for (u32 hdr = 0; hdr < 2; hdr++)
 			{
-				for (u32 date = DATE_RENDER_PASS_NONE; date <= DATE_RENDER_PASS_STENCIL_ONE; date++)
+				for (u32 stencil = 0; stencil < 2; stencil++)
 				{
 					for (u32 fbl = 0; fbl < 2; fbl++)
 					{
@@ -3840,12 +3840,10 @@ bool GSDeviceVK::CreateRenderPasses()
 									const VkFormat rp_rt_format =
 										(rt != 0) ? ((hdr != 0) ? hdr_rt_format : rt_format) : VK_FORMAT_UNDEFINED;
 									const VkFormat rp_depth_format = (ds != 0) ? depth_format : VK_FORMAT_UNDEFINED;
-									const VkAttachmentLoadOp opc =
-										((date == DATE_RENDER_PASS_NONE || !m_features.stencil_buffer) ?
-												VK_ATTACHMENT_LOAD_OP_DONT_CARE :
-												(date == DATE_RENDER_PASS_STENCIL_ONE ? VK_ATTACHMENT_LOAD_OP_CLEAR :
-																						VK_ATTACHMENT_LOAD_OP_LOAD));
-									GET(m_tfx_render_pass[rt][ds][hdr][date][fbl][dsp][opa][opb], rp_rt_format,
+									const VkAttachmentLoadOp opc = (!stencil || !m_features.stencil_buffer) ?
+																	   VK_ATTACHMENT_LOAD_OP_DONT_CARE :
+																	   VK_ATTACHMENT_LOAD_OP_LOAD;
+									GET(m_tfx_render_pass[rt][ds][hdr][stencil][fbl][dsp][opa][opb], rp_rt_format,
 										rp_depth_format, (fbl != 0), (dsp != 0), static_cast<VkAttachmentLoadOp>(opa),
 										static_cast<VkAttachmentLoadOp>(opb), static_cast<VkAttachmentLoadOp>(opc));
 								}
@@ -4004,7 +4002,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 				{
 					pxAssert(!arr[ds][fbl]);
 
-					gpb.SetRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, DATE_RENDER_PASS_NONE, fbl != 0, false,
+					gpb.SetRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, false, fbl != 0, false,
 										  VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 						0);
 					arr[ds][fbl] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
@@ -4805,7 +4803,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	else
 	{
 		gpb.SetRenderPass(
-			GetTFXRenderPass(p.rt, p.ds, p.ps.hdr, p.dss.date ? DATE_RENDER_PASS_STENCIL : DATE_RENDER_PASS_NONE,
+			GetTFXRenderPass(p.rt, p.ds, p.ps.hdr, p.dss.date,
 				p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
 				p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
@@ -5557,7 +5555,6 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
 	// Destination Alpha Setup
-	DATE_RENDER_PASS DATE_rp = DATE_RENDER_PASS_NONE;
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
@@ -5570,18 +5567,13 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			if (!m_features.texture_barrier)
 			{
 				SetupDATE(config.rt, config.ds, config.datm, config.drawarea);
-				DATE_rp = DATE_RENDER_PASS_STENCIL;
-			}
-			else
-			{
-				DATE_rp = DATE_RENDER_PASS_STENCIL_ONE;
+				config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
 			}
 		}
 		break;
 
 		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
 			SetupDATE(config.rt, config.ds, config.datm, config.drawarea);
-			DATE_rp = DATE_RENDER_PASS_STENCIL;
 			break;
 	}
 
@@ -5731,22 +5723,21 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
 		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
-		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.hdr, DATE_rp, pipe.IsRTFeedbackLoop(),
+		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.hdr,
+			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
 		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
 		const GSVector4i render_area = GSVector4i::loadh(rtsize);
 
-		if (is_clearing_rt || DATE_rp == DATE_RENDER_PASS_STENCIL_ONE)
+		if (is_clearing_rt)
 		{
 			// when we're clearing, we set the draw area to the whole fb, otherwise part of it will be undefined
 			alignas(16) VkClearValue cvs[2];
 			u32 cv_count = 0;
 			if (draw_rt)
 				GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
-
-			// the only time the stencil value is used here is DATE_one, so setting it to 1 is fine (not used otherwise)
 			if (draw_ds)
-				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
+				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 0};
 
 			BeginClearRenderPass(rp, render_area, cvs, cv_count);
 		}
@@ -5755,7 +5746,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			BeginRenderPass(rp, render_area);
 		}
 	}
-	else if (DATE_rp == DATE_RENDER_PASS_STENCIL_ONE)
+	
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
 	{
 		const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, {.depthStencil = {0.0f, 1u}}};
 		const VkClearRect rc = {{{config.drawarea.left, config.drawarea.top},
@@ -5846,7 +5838,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			if (draw_ds)
 				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 
-			BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.IsRTFeedbackLoop(),
+			BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
 									 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
 									 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 				draw_rt->GetRect(), cvs, cv_count);
@@ -5854,7 +5846,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 		else
 		{
-			BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, DATE_RENDER_PASS_NONE, pipe.IsRTFeedbackLoop(),
+			BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
 								pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
 								pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 				draw_rt->GetRect());

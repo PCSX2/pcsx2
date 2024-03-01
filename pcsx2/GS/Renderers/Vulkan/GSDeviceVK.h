@@ -390,12 +390,6 @@ public:
 
 		NUM_TFX_TEXTURES
 	};
-	enum DATE_RENDER_PASS : u32
-	{
-		DATE_RENDER_PASS_NONE = 0,
-		DATE_RENDER_PASS_STENCIL = 1,
-		DATE_RENDER_PASS_STENCIL_ONE = 2,
-	};
 
 private:
 	std::unique_ptr<VKSwapChain> m_swap_chain;
@@ -514,10 +508,10 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, DATE_RENDER_PASS date, bool fbl, bool dsp,
+	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, bool stencil, bool fbl, bool dsp,
 		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
 	{
-		return m_tfx_render_pass[rt][ds][hdr][date][fbl][dsp][rt_op][ds_op];
+		return m_tfx_render_pass[rt][ds][hdr][stencil][fbl][dsp][rt_op][ds_op];
 	}
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
