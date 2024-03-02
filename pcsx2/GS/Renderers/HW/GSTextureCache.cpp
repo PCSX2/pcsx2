@@ -5963,6 +5963,15 @@ void GSTextureCache::Target::Update()
 		return;
 	}
 
+	if (m_dirty.size() != 1 || !total_rect.eq(m_valid) && (m_dirty.GetDirtyChannels() & 0x8))
+	{
+		this->RTADecorrect(this);
+	}
+	else
+	{
+		m_rt_alpha_scale = false;
+	}
+
 	const GSVector4i t_offset(total_rect.xyxy());
 	const GSVector4i t_size(total_rect - t_offset);
 	const GSVector4 t_sizef(t_size.zwzw());
