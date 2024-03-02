@@ -142,10 +142,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	// HW Settings
 	//////////////////////////////////////////////////////////////////////////
 	static const char* upscale_entries[] = {"Native (PS2) (Default)", "1.25x Native", "1.5x Native", "1.75x Native", "2x Native (~720p)",
-		"2.25x Native", "2.5x Native", "2.75x Native", "3x Native (~1080p)", "3.5x Native", "4x Native (~1440p/2K)", "5x Native (~1620p)",
-		"6x Native (~2160p/4K)", "7x Native (~2520p)", "8x Native (~2880p/5K)", nullptr};
+		"2.25x Native", "2.5x Native", "2.75x Native", "3x Native (~1080p)", "3.5x Native", "4x Native (~1440p/2K)", "5x Native (~1800p)",
+		"6x Native (~2160p/4K)", "7x Native (~2520p)", "8x Native (~2880p/5K)", "9x Native (~3240p)", "10x Native (~3600p)",
+		"11x Native (~3960p)", "12x Native (~4320p/8K)", nullptr};
 	static const char* upscale_values[] = {
-		"1", "1.25", "1.5", "1.75", "2", "2.25", "2.5", "2.75", "3", "3.5", "4", "5", "6", "7", "8", nullptr};
+		"1", "1.25", "1.5", "1.75", "2", "2.25", "2.5", "2.75", "3", "3.5", "4", "5", "6", "7", "8", "9", "10", "11", "12", nullptr};
 	SettingWidgetBinder::BindWidgetToEnumSetting(
 		sif, m_ui.upscaleMultiplier, "EmuCore/GS", "upscale_multiplier", upscale_entries, upscale_values, "1.0");
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureFiltering, "EmuCore/GS", "filter", static_cast<int>(BiFiltering::PS2));
@@ -472,7 +473,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.upscaleMultiplier, tr("Internal Resolution"), tr("Native (PS2) (Default)"),
 			tr("Control the resolution at which games are rendered. High resolutions can impact performance on "
 			   "older or lower-end GPUs.<br>Non-native resolution may cause minor graphical issues in some games.<br>"
-			   "FMV resolution will remain unchanged, as the video files are pre-rendered."));
+			   "FMV resolution will remain unchanged, as the video files are pre-rendered.<br><br>"
+			   "If the resolution scale is much higher than the output window size, you may see aliasing "
+			   "resulting from a lack of proper downsampling. To resolve this, go to the <b>Post-Processing</b> "
+			   "section and set <b>TV Shader</b> to <b>4xRGSS downsampling</b> or <b>NxAGSS downsampling</b>."));
 
 		dialog->registerWidgetHelp(
 			m_ui.mipmapping, tr("Mipmapping"), tr("Automatic (Default)"), tr("Control the accuracy level of the mipmapping emulation."));

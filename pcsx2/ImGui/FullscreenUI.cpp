@@ -3134,10 +3134,14 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		FSUI_NSTR("3x Native (~1080p)"),
 		FSUI_NSTR("3.5x Native"),
 		FSUI_NSTR("4x Native (~1440p/2K)"),
-		FSUI_NSTR("5x Native (~1620p)"),
+		FSUI_NSTR("5x Native (~1800p)"),
 		FSUI_NSTR("6x Native (~2160p/4K)"),
 		FSUI_NSTR("7x Native (~2520p)"),
 		FSUI_NSTR("8x Native (~2880p)"),
+		FSUI_NSTR("9x Native (~3240p)"),
+		FSUI_NSTR("10x Native (~3600p)"),
+		FSUI_NSTR("11x Native (~3960p)"),
+		FSUI_NSTR("12x Native (~4320p/8K)"),
 	};
 	static const char* s_resolution_values[] = {
 		"1",
@@ -3155,6 +3159,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"6",
 		"7",
 		"8",
+		"9",
+		"10",
+		"11",
+		"12",
 	};
 	static constexpr const char* s_mipmapping_options[] = {
 		FSUI_NSTR("Automatic (Default)"),
@@ -6961,10 +6969,14 @@ TRANSLATE_NOOP("FullscreenUI", "2.75x Native");
 TRANSLATE_NOOP("FullscreenUI", "3x Native (~1080p)");
 TRANSLATE_NOOP("FullscreenUI", "3.5x Native");
 TRANSLATE_NOOP("FullscreenUI", "4x Native (~1440p/2K)");
-TRANSLATE_NOOP("FullscreenUI", "5x Native (~1620p)");
+TRANSLATE_NOOP("FullscreenUI", "5x Native (~1800p)");
 TRANSLATE_NOOP("FullscreenUI", "6x Native (~2160p/4K)");
 TRANSLATE_NOOP("FullscreenUI", "7x Native (~2520p)");
 TRANSLATE_NOOP("FullscreenUI", "8x Native (~2880p)");
+TRANSLATE_NOOP("FullscreenUI", "9x Native (~3240p)");
+TRANSLATE_NOOP("FullscreenUI", "10x Native (~3600p)");
+TRANSLATE_NOOP("FullscreenUI", "11x Native (~3960p)");
+TRANSLATE_NOOP("FullscreenUI", "12x Native (~4320p/8K)");
 TRANSLATE_NOOP("FullscreenUI", "Basic (Generated Mipmaps)");
 TRANSLATE_NOOP("FullscreenUI", "Full (PS2 Mipmaps)");
 TRANSLATE_NOOP("FullscreenUI", "Nearest");
