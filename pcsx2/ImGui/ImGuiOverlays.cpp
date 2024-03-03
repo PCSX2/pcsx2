@@ -634,7 +634,7 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 	// Status Indicators
 	if (g_InputRecording.getControls().isRecording())
 	{
-		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays", "{} Recording Input"), ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
+		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays", "{} Recording Input"), ICON_PF_CIRCLE).c_str(), IM_COL32(255, 0, 0, 255));
 	}
 	else
 	{
@@ -658,7 +658,7 @@ __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, 
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-	static constexpr const char* ICON = ICON_FA_RECORDING;
+	static constexpr const char* ICON = ICON_PF_CIRCLE;
 	const TinyString text_msg = TinyString::from_fmt(" {}", GSCapture::GetElapsedTime());
 	const ImVec2 icon_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
 		-1.0f, ICON, nullptr, nullptr);

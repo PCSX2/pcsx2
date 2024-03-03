@@ -343,6 +343,7 @@
 #define ICON_PF_POPN_RED "\xE2\x8B\x88"
 #define ICON_PF_SLOW_MOTION "\xE2\x8D\xBA"
 #define ICON_PF_CONTROLLER_VIBRATION "\xE2\x88\x9A"
+#define ICON_PF_CIRCLE "\xE2\x8D\x89"
 #define ICON_PF_USB "\xE2\x8D\x9A"
 #define ICON_PF_MICROCHIP_ALT "\xE2\x8D\x9D"
 #define ICON_PF_MICROCHIP "\xE2\x8D\x9E"
