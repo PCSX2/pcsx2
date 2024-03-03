@@ -337,7 +337,7 @@ void ps_datm0_rta_correction()
 void ps_rta_correction()
 {
 	vec4 value = sample_c();
-	SV_Target0 = vec4(value.rgb, (value.a * 255.0f + 0.1f) / 127.5f);
+	SV_Target0 = vec4(value.rgb, value.a / (128.5f / 255.0f));
 }
 #endif
 
@@ -345,7 +345,7 @@ void ps_rta_correction()
 void ps_rta_decorrection()
 {
 	vec4 value = sample_c();
-	SV_Target0 = vec4(value.rgb, (value.a * 127.5f + 0.1f) / 255.0f);
+	SV_Target0 = vec4(value.rgb, value.a * (128.5f / 255.0f));
 }
 #endif
 

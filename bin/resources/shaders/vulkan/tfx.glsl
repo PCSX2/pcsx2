@@ -523,7 +523,12 @@ uvec4 sample_4_index(vec4 uv)
 	c.w = sample_c(uv.zw).a;
 
 	// Denormalize value
+			
+#if PS_RTA_SRC_CORRECTION
+	uvec4 i = uvec4(c * 128.25f);
+#else
 	uvec4 i = uvec4(c * 255.5f);
+#endif
 
 	#if PS_PAL_FMT == 1
 		// 4HL
@@ -835,7 +840,9 @@ vec4 sample_color(vec2 st)
 		t = c[0];
 	}
 	#endif
-
+#if PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION
+	t.a = t.a * (128.5f / 255.0f);
+#endif
 	return trunc(t * 255.0f + 0.05f);
 }
 
@@ -1056,7 +1063,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		#endif
 
 		#if PS_RTA_CORRECTION
-			float Ad = trunc(RT.a * 127.5f + 0.05f) / 128.0f;
+			float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
 		#else
 			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
 		#endif
@@ -1235,7 +1242,7 @@ void main()
 
 #if SW_AD_TO_HW
 	#if PS_RTA_CORRECTION
-		vec4 RT = trunc(sample_from_rt() * 127.5f + 0.05f);
+		vec4 RT = trunc(sample_from_rt() * 128.0f + 0.1f);
 	#else
 		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 	#endif

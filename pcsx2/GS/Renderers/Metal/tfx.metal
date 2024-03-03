@@ -42,6 +42,7 @@ constant uint PS_BLEND_HW           [[function_constant(GSMTLConstantIndex_PS_BL
 constant bool PS_A_MASKED           [[function_constant(GSMTLConstantIndex_PS_A_MASKED)]];
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
 constant bool PS_RTA_CORRECTION     [[function_constant(GSMTLConstantIndex_PS_RTA_CORRECTION)]];
+constant bool PS_RTA_SRC_CORRECTION [[function_constant(GSMTLConstantIndex_PS_RTA_SRC_CORRECTION)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
 constant bool PS_ROUND_INV          [[function_constant(GSMTLConstantIndex_PS_ROUND_INV)]];
@@ -480,9 +481,18 @@ struct PSMain
 		c.y = sample_c(uv.zy).a;
 		c.z = sample_c(uv.xw).a;
 		c.w = sample_c(uv.zw).a;
-
-		uint4 i = uint4(c * 255.5f); // Denormalize value
-
+		
+		uint4 i;
+		
+		if (PS_RTA_SRC_CORRECTION)
+		{
+			i = uint4(c * 128.25f); // Denormalize value
+		}
+		else
+		{
+			i = uint4(c * 255.5f); // Denormalize value
+		}
+		
 		if (PS_PAL_FMT == 1)
 			return i & 0xF;
 		if (PS_PAL_FMT == 2)
@@ -714,9 +724,13 @@ struct PSMain
 		else
 			t = c[0];
 
+		if (PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION)
+			t.a = t.a * (128.5f / 255.0f);
+			
 		// The 0.05f helps to fix the overbloom of sotc
 		// I think the issue is related to the rounding of texture coodinate. The linear (from fixed unit)
 		// interpolation could be slightly below the correct one.
+		
 		return trunc(t * 255.f + 0.05f);
 	}
 
@@ -915,7 +929,7 @@ struct PSMain
 					return;
 			}
 
-			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 127.75f) / 128.f : trunc(current_color.a * 255.5f) / 128.f;
+			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 128.1f) / 128.f : trunc(current_color.a * 255.1f) / 128.f;
 
 			float3 Cd = trunc(current_color.rgb * 255.5f);
 			float3 Cs = Color.rgb;
@@ -1047,7 +1061,7 @@ struct PSMain
 		float4 alpha_blend = float4(0.f);
 		if (SW_AD_TO_HW)
 		{
-			alpha_blend = PS_RTA_CORRECTION ? float4(trunc(current_color.a * 127.75f) / 128.f) : float4(trunc(current_color.a * 255.5f) / 128.f);
+			alpha_blend = PS_RTA_CORRECTION ? float4(trunc(current_color.a * 128.f) / 128.f) : float4(trunc(current_color.a * 255.5f) / 128.f);
 		}
 		else
 		{
