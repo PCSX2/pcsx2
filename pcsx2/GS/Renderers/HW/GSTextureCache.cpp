@@ -1327,6 +1327,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							// The hack can fix glitches in some games.
 							if (!t->m_drawn_since_read.rempty())
 							{
+								t->RTADecorrect(t);
+
 								Read(t, t->m_drawn_since_read);
 
 								t->m_drawn_since_read = GSVector4i::zero();
@@ -3519,6 +3521,8 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
 				if (exact_bp && !dirty_rect.rintersect(targetr).rempty())
 					t->Update();
+
+				t->RTADecorrect(t);
 
 				Read(t, targetr);
 
