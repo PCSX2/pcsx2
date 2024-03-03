@@ -331,6 +331,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 a_masked       : 1;
 				u32 hdr            : 1;
 				u32 rta_correction : 1;
+				u32 rta_source_correction : 1;
 				u32 colclip        : 1;
 				u32 blend_mix      : 2;
 				u32 round_inv      : 1; // Blending will invert the value, so rounding needs to go the other way

@@ -281,8 +281,12 @@ uvec4 sample_4_index(vec4 uv)
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
-
+	
+#if PS_RTA_SRC_CORRECTION 
+	uvec4 i = uvec4(c * 128.25f); // Denormalize value
+#else
 	uvec4 i = uvec4(c * 255.5f); // Denormalize value
+#endif
 
 #if PS_PAL_FMT == 1
 	// 4HL
@@ -591,6 +595,10 @@ vec4 sample_color(vec2 st)
 	t = c[0];
 #endif
 
+#if PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION
+	t.a = t.a * (128.5f / 255.0f);
+#endif
+
 	// The 0.05f helps to fix the overbloom of sotc
 	// I think the issue is related to the rounding of texture coodinate. The linear (from fixed unit)
 	// interpolation could be slightly below the correct one.
@@ -803,7 +811,7 @@ float As = As_rgba.a;
 #endif
 
 	#if PS_RTA_CORRECTION
-		float Ad = trunc(RT.a * 127.5f + 0.05f) / 128.0f;
+		float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
 	#else
 		float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
 	#endif
@@ -984,7 +992,7 @@ void ps_main()
 
 #if SW_AD_TO_HW
 	#if PS_RTA_CORRECTION
-		vec4 RT = trunc(fetch_rt() * 127.5f + 0.05f);
+		vec4 RT = trunc(fetch_rt() * 128.0f + 0.1f);
 	#else
 		vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
 	#endif

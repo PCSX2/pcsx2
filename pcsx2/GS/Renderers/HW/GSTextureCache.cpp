@@ -1690,9 +1690,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		}
 #endif
 
-		 if (dst && (GSUtil::GetChannelMask(TEX0.PSM) & 0x8))
-			dst->RTADecorrect(dst);
-
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
 		if (!src) [[unlikely]]
 			return nullptr;
@@ -4299,7 +4296,16 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			// copy the rt in
 			const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
 			if (!area.rempty())
-				g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
+			{
+				if (dst->m_rt_alpha_scale)
+				{
+					const GSVector4 sRectF = GSVector4(area) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
+					g_gs_device->StretchRect(
+						sTex, sRectF, dTex, GSVector4(area), ShaderConvert::RTA_DECORRECTION, false);
+				}
+				else
+					g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
+			}
 
 			src->m_texture = dTex;
 			src->m_unscaled_size = GSVector2i(tw, th);
@@ -4317,6 +4323,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				src->m_region.SetY(y_offset, region.GetMaxY() + y_offset);
 			else
 				src->m_region.SetY(y_offset, y_offset + th);
+
+			src->m_target_direct = true;
 			src->m_texture = dst->m_texture;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
@@ -4554,6 +4562,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			// sample the target directly
 			src->m_texture = dst->m_texture;
+			src->m_target_direct = true;
 			src->m_scale = dst->m_scale;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
@@ -4600,7 +4609,14 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 			if (use_texture)
 			{
-				g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
+				if (dst->m_rt_alpha_scale)
+				{
+					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
+					g_gs_device->StretchRect(
+						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, false);
+				}
+				else
+					g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
 				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 #ifdef PCSX2_DEVBUILD
@@ -4615,12 +4631,21 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			{
 				if (is_8bits)
 				{
+					if (dst->m_rt_alpha_scale)
+					{
+						dst->RTADecorrect(dst);
+						sTex = dst->m_texture;
+					}
+
 					g_gs_device->ConvertToIndexedTexture(sTex, dst->m_scale, x_offset, y_offset,
 						std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
 						std::max<u32>(TEX0.TBW, 1u) * 64, TEX0.PSM);
 				}
 				else
 				{
+					if (dst->m_rt_alpha_scale && shader == ShaderConvert::COPY)
+						shader = ShaderConvert::RTA_DECORRECTION;
+						
 					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
 					g_gs_device->StretchRect(
 						sTex, sRectF, dTex, GSVector4(destX, destY, new_size.x, new_size.y), shader, false);

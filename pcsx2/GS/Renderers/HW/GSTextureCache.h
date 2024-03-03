@@ -283,6 +283,7 @@ public:
 		u8 m_valid_hashes = 0;
 		u8 m_complete_layers = 0;
 		bool m_target = false;
+		bool m_target_direct = false;
 		bool m_repeating = false;
 		std::pair<u8, u8> m_alpha_minmax = {0u, 255u};
 		std::vector<GSVector2i>* m_p2t = nullptr;

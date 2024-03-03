@@ -4358,6 +4358,9 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	float scale = tex->GetScale();
 	HandleTextureHazards(rt, ds, tex, tmm, source_region, target_region, unscaled_size, scale, src_copy);
 
+	if (tex->m_target && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale)
+		m_conf.ps.rta_source_correction = 1;
+
 	// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
 	//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
@@ -5265,7 +5268,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			ds->m_alpha_min &= 128;
 		}
 	}
-	
+
+	// If we Correct/Decorrect and tex is rt, we will need to update the texture reference
+	const bool req_src_update = tex && rt && tex->m_target && tex->m_target_direct && tex->m_texture == rt->m_texture;
+
 	if (rt)
 	{
 		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || std::max(blend_alpha_max, rt->m_alpha_max) > 128 || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
@@ -5278,6 +5284,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					rt->RTADecorrect(rt);
 					m_conf.rt = rt->m_texture;
+
+					if (req_src_update)
+						tex->m_texture = rt->m_texture;
 				}
 				else if (m_conf.colormask.wa)
 				{
@@ -5289,6 +5298,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					{
 						rt->RTADecorrect(rt);
 						m_conf.rt = rt->m_texture;
+
+						if (req_src_update)
+							tex->m_texture = rt->m_texture;
 					}
 				}
 			}
@@ -5298,6 +5310,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					rt->RTADecorrect(rt);
 					m_conf.rt = rt->m_texture;
+
+					if (req_src_update)
+						tex->m_texture = rt->m_texture;
 				}
 			}
 			else if (rt->m_last_draw == s_n)
@@ -5308,6 +5323,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			{
 				rt->RTADecorrect(rt);
 				m_conf.rt = rt->m_texture;
+
+				if (req_src_update)
+					tex->m_texture = rt->m_texture;
 			}
 		}
 
@@ -5318,6 +5336,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
 		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, blending_alpha_pass, rt);
+
+		if (req_src_update && tex->m_texture != rt->m_texture)
+			tex->m_texture = rt->m_texture;
 	}
 	else
 	{
