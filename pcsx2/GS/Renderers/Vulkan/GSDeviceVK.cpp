@@ -4813,7 +4813,9 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_IIP", sel.iip);
 	AddMacro(ss, "PS_SHUFFLE", sel.shuffle);
 	AddMacro(ss, "PS_SHUFFLE_SAME", sel.shuffle_same);
-	AddMacro(ss, "PS_READ_BA", sel.read_ba);
+	AddMacro(ss, "PS_PROCESS_BA", sel.process_ba);
+	AddMacro(ss, "PS_PROCESS_RG", sel.process_rg);
+	AddMacro(ss, "PS_SHUFFLE_ACROSS", sel.shuffle_across);
 	AddMacro(ss, "PS_READ16_SRC", sel.real16src);
 	AddMacro(ss, "PS_WRITE_RG", sel.write_rg);
 	AddMacro(ss, "PS_FBMASK", sel.fbmask);

@@ -3875,7 +3875,11 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
-	config.ps.read_ba = read_ba;
+	config.ps.process_ba = read_ba ? 1 : 0;
+	config.ps.process_rg = !read_ba ? 1 : 0;
+	config.ps.process_ba = !write_rg ? 2 : 0;
+	config.ps.process_rg = write_rg ? 2 : 0;
+	config.ps.shuffle_across = true;
 	config.ps.write_rg = write_rg;
 	config.ps.shuffle = true;
 	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);

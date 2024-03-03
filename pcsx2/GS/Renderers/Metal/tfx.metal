@@ -7,6 +7,10 @@ constant uint FMT_32 = 0;
 constant uint FMT_24 = 1;
 constant uint FMT_16 = 2;
 
+constant uint SHUFFLE_READ = 1;
+constant uint SHUFFLE_WRITE = 2;
+constant uint SHUFFLE_READWRITE = 3;
+
 constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAMEBUFFER_FETCH)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
@@ -30,7 +34,9 @@ constant bool PS_ADJT               [[function_constant(GSMTLConstantIndex_PS_AD
 constant bool PS_LTF                [[function_constant(GSMTLConstantIndex_PS_LTF)]];
 constant bool PS_SHUFFLE            [[function_constant(GSMTLConstantIndex_PS_SHUFFLE)]];
 constant bool PS_SHUFFLE_SAME       [[function_constant(GSMTLConstantIndex_PS_SHUFFLE_SAME)]];
-constant bool PS_READ_BA            [[function_constant(GSMTLConstantIndex_PS_READ_BA)]];
+constant uint PS_PROCESS_BA         [[function_constant(GSMTLConstantIndex_PS_PROCESS_BA)]];
+constant uint PS_PROCESS_RG         [[function_constant(GSMTLConstantIndex_PS_PROCESS_RG)]];
+constant bool PS_SHUFFLE_ACROSS     [[function_constant(GSMTLConstantIndex_PS_SHUFFLE_ACROSS)]];
 constant bool PS_READ16_SRC         [[function_constant(GSMTLConstantIndex_PS_READ16_SRC)]];
 constant bool PS_WRITE_RG           [[function_constant(GSMTLConstantIndex_PS_WRITE_RG)]];
 constant bool PS_FBMASK             [[function_constant(GSMTLConstantIndex_PS_FBMASK)]];
@@ -825,10 +831,10 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
+		if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_before = uint4(T);
-			if (PS_READ_BA)
+			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
 				T.r = float((denorm_c_before.b << 3) & 0xF8);
 				T.g = float(((denorm_c_before.b >> 2) & 0x38) | ((denorm_c_before.a << 6) & 0xC0));
@@ -1097,10 +1103,10 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
+			if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 			{
 				uint4 denorm_c_after = uint4(C);
-				if (PS_READ_BA)
+				if (PS_PROCESS_BA & SHUFFLE_READ)
 				{
 					C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
 					C.a = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
@@ -1118,30 +1124,62 @@ struct PSMain
 			// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 			if (PS_SHUFFLE_SAME)
 			{
-				if (PS_READ_BA)
-					C = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80);
+				if (PS_PROCESS_BA & SHUFFLE_READ)
+					C = (denorm_c.b & 0x7F) | (denorm_c.a & 0x80);
 				else
 					C.ga = C.rg;
 			}
 			// Copy of a 16bit source in to this target
 			else if (PS_READ16_SRC)
 			{
-				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
+				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7) << 5);
 				if (denorm_c.a & 0x80)
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
 				else
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
 			}
-			// Write RB part. Mask will take care of the correct destination
-			else if (PS_READ_BA)
+			else if (PS_SHUFFLE_ACROSS)
 			{
-				C.rb = C.bb;	
-				C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
+				{
+					C.rb = C.br;
+					if ((denorm_c.a & 0x80) != 0)
+						C.g = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.g = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
+						
+					if ((denorm_c.g & 0x80) != 0)
+						C.a = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.a = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+				}
+				else if(PS_PROCESS_BA & SHUFFLE_READ)
+				{
+					C.rb = C.bb;
+					if ((denorm_c.a & 0x80) != 0)
+						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
+				}
+				else
+				{
+					C.rb = C.rr;
+					if ((denorm_c.g & 0x80) != 0)
+						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+				}
 			}
-			else
+			else // Basically a direct copy but a shuffle of both pairs of channels, so green and alpha get modified by TEXA
 			{
-				C.rb = C.rr;
-				C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				if ((denorm_c.g & 0x80) != 0)
+					C.g = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
+				else
+					C.g = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+				if ((denorm_c.a & 0x80) != 0)
+					C.a = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
+				else
+					C.a = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
 			}
 		}
 		

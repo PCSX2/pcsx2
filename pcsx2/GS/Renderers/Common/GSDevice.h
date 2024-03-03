@@ -317,7 +317,9 @@ struct alignas(16) GSHWDrawConfig
 				u32 shuffle  : 1;
 				u32 shuffle_same : 1;
 				u32 real16src: 1;
-				u32 read_ba  : 1;
+				u32 process_ba : 2;
+				u32 process_rg : 2;
+				u32 shuffle_across : 1;
 				u32 write_rg : 1;
 				u32 fbmask   : 1;
 

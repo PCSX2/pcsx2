@@ -66,6 +66,13 @@ private:
 		CLUTDrawOnGPU,
 	};
 
+	enum ShuffleProcessing
+	{
+		SHUFFLE_READ = 1,
+		SHUFFLE_WRITE,
+		SHUFFLE_READWRITE,
+	};
+
 	bool HasEEUpload(GSVector4i r);
 	CLUTDrawTestResult PossibleCLUTDraw();
 	CLUTDrawTestResult PossibleCLUTDrawAggressive();
@@ -157,6 +164,8 @@ private:
 	u32 m_split_texture_shuffle_fbw = 0;
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
+	u32 m_last_channel_shuffle_fbp = 0;
+	u32 m_last_channel_shuffle_end_block = 0;
 
 	GIFRegFRAME m_split_clear_start = {};
 	GIFRegZBUF m_split_clear_start_Z = {};
@@ -193,7 +202,7 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	void ExpandLineIndices();
-	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+	void ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
 	void MergeSprite(GSTextureCache::Source* tex);
