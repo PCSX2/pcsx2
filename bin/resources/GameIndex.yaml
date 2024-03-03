@@ -2037,6 +2037,8 @@ SCAJ-20188:
 SCAJ-20190:
   name: "God of War II"
   region: "NTSC-Unk"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -2244,6 +2246,8 @@ SCAJ-30010:
 SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -3094,6 +3098,9 @@ SCED-51935:
 SCED-51936:
   name: "Official PlayStation 2 Magazine Demo 12/2003" # German
   region: "PAL-E-G"
+SCED-51937:
+  name: "Das Offizielle PlayStation 2 Magazin 13/2003 - Uncut Edition"
+  region: "PAL-G"
 SCED-51938:
   name: "PlayStation Experience [Demo]"
   region: "PAL-E"
@@ -4113,6 +4120,8 @@ SCED-54642:
 SCED-54680:
   name: "God of War II [Demo]"
   region: "PAL-M6"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -5753,6 +5762,8 @@ SCES-54206:
   name: "God of War II"
   region: "PAL-M6"
   compat: 5
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -7325,6 +7336,8 @@ SCKA-30005:
 SCKA-30006:
   name: "God of War 2"
   region: "NTSC-K"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
@@ -7334,6 +7347,8 @@ SCKA-30006:
 SCKA-30007:
   name: "God of War 2 [Big Hit Series]"
   region: "NTSC-K"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -11140,6 +11155,8 @@ SCUS-97481:
   name: "God of War II"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -11148,6 +11165,8 @@ SCUS-97481:
 SCUS-97482:
   name: "God of War II - The Colossus Battle [Demo]"
   region: "NTSC-U"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -11771,8 +11790,8 @@ SLAJ-25004:
   name: "Kingdom Hearts - Final Mix"
   region: "NTSC-Unk"
 SLAJ-25005:
-  name: "World Soccer Winning Eleven 7"
-  region: "NTSC-Unk"
+  name: "World Soccer Winning Eleven 6 - International"
+  region: "NTSC-HK"
 SLAJ-25006:
   name: "Virtual Fighter 4 - Evolution"
   region: "NTSC-Unk"
@@ -11799,7 +11818,7 @@ SLAJ-25014:
   region: "NTSC-Unk"
 SLAJ-25015:
   name: "Enter the Matrix"
-  region: "NTSC-J"
+  region: "NTSC-T"
   gameFixes:
     - EETimingHack # Fixes various VIF errors.
 SLAJ-25016:
@@ -11807,7 +11826,7 @@ SLAJ-25016:
   region: "NTSC-Unk"
 SLAJ-25017:
   name: "Harry Potter and the Philosopher's Stone"
-  region: "NTSC-C"
+  region: "NTSC-HK"
   gameFixes:
     - EETimingHack
 SLAJ-25018:
@@ -12113,7 +12132,7 @@ SLAJ-25094:
     beforeDraw: "OI_BurnoutGames"
 SLAJ-25095:
   name: "Medal of Honor - Vanguard"
-  region: "NTSC-Unk"
+  region: "NTSC-HK"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lighting misalignment.
     mergeSprite: 1 # Removes occasional vertical lines.
@@ -12152,7 +12171,7 @@ SLAJ-35003:
   region: "NTSC-C"
 SLAJ-35007:
   name: "Zhen San Guo Wu Shuang 5 Special"
-  region: "NTSC-C"
+  region: "NTSC-T"
 SLED-50117:
   name: "Metal Gear Solid 2 - Sons of Liberty [Demo] [Zone of the Enders Bonus Disc]"
   region: "PAL-E"
@@ -16976,8 +16995,9 @@ SLES-51755:
   name: "Disney-Pixar's Finding Nemo"
   region: "PAL-E"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51756:
   name: "Batman - Rise of Sin Tzu"
   region: "PAL-M5"
@@ -17294,24 +17314,27 @@ SLES-51869:
   name: "Dynasty Tactics 2"
   region: "PAL-G"
 SLES-51870:
-  name: "Disney-Pixar's Finding Nemo"
+  name: "Disney-Pixar's Buscando a Nemo"
   region: "PAL-FI-S"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51871:
-  name: "Disney-Pixar's Finding Nemo"
+  name: "Disney-Pixar's Findet Nemo"
   region: "PAL-F-G"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51872:
   name: "Disney-Pixar's Finding Nemo"
-  region: "PAL-M3"
+  region: "PAL-SC"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51873:
   name: "Medal of Honor - Rising Sun"
   region: "PAL-M5"
@@ -17396,8 +17419,9 @@ SLES-51907:
   name: "Disney-Pixar Alla Ricerca di Nemo"
   region: "PAL-I"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51908:
   name: "Van Helsing"
   region: "PAL-M5"
@@ -17542,8 +17566,9 @@ SLES-51960:
   name: "Disney-Pixar À Procura de Nemo"
   region: "PAL-P"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51961:
   name: "Prince of Persia - The Sands of Time" # Pre-order Demo
   region: "PAL-E"
@@ -17937,6 +17962,10 @@ SLES-52143:
   name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "PAL-M4"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes upscaled shadows and improves performance.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes player shadow.
 SLES-52149:
   name: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
   region: "PAL-M5"
@@ -21828,6 +21857,8 @@ SLES-53542:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves smoke rendering.
     halfPixelOffset: 2 # Fixes misaligned lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53544:
   name: "Pro Evolution Soccer 5"
   region: "PAL-M4"
@@ -23201,9 +23232,11 @@ SLES-53998:
   region: "PAL-M5"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Reduces post-processing misalignment.
+    autoFlush: 1 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53999:
   name: "The King of Fighters - Neo Wave"
   name-sort: "King of Fighters, The - Neo Wave"
@@ -23496,6 +23529,8 @@ SLES-54122:
 SLES-54123:
   name: "Marvel - Ultimate Alliance"
   region: "PAL-E-I"
+  clampModes:
+    vu1ClampMode: 3 # Fixes triangle holes in geometry.
 SLES-54124:
   name: "The Quest for Aladdin's Treasure"
   name-sort: "Quest for Aladdin's Treasure, The"
@@ -28436,11 +28471,12 @@ SLKA-25055:
   name: "Hitman 2 - Silent Assasin"
   region: "NTSC-K"
 SLKA-25056:
-  name: "Finding Nemo"
+  name: "Disney-Pixar's Finding Nemo"
   region: "NTSC-K"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-25057:
   name: "All-Star Baseball 2004 featuring Derek Jeter"
   region: "NTSC-K"
@@ -29555,6 +29591,8 @@ SLKA-25335:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves smoke rendering.
     halfPixelOffset: 2 # Fixes misaligned lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-25337:
   name: "Peter Jackson's King Kong - The Official Game of the Movie"
   region: "NTSC-K"
@@ -32248,6 +32286,8 @@ SLPM-61158:
 SLPM-61161:
   name: "God of War II - The End Begins [Trial]"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -39560,8 +39600,9 @@ SLPM-65655:
   name-en: "Finding Nemo [Yuke's The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65657:
   name: ワールドサッカーウイニングイレブン8
   name-sort: わーるどさっかーういにんぐいれぶん8
@@ -42486,6 +42527,8 @@ SLPM-66166:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves smoke rendering.
     halfPixelOffset: 2 # Fixes misaligned lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66167:
   name: "God of War"
   region: "NTSC-J"
@@ -47477,6 +47520,8 @@ SLPM-67013:
   name-sort: ごっど・おぶ・うぉー II しゅうえんへのじょきょく
   name-en: "God of War II - The End Begins"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -47493,6 +47538,8 @@ SLPM-67015:
 SLPM-67017:
   name: "God of War II - The End Begins [Best Price]"
   region: "NTSC-J"
+  speedHacks:
+    mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -52430,8 +52477,9 @@ SLPS-25310:
   name-en: "Disney-Pixar's Finding Nemo"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-25311:
   name: SPY FICTION
   name-sort: SPY FICTION
@@ -59992,8 +60040,9 @@ SLUS-20628:
   name: "Disney's Finding Nemo"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20630:
   name: "Grand Prix Challenge"
   region: "NTSC-U"
@@ -61114,9 +61163,13 @@ SLUS-20848:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20849:
-  name: "Carmen Sandiego - The Secret of The Stolen Drums"
+  name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    cpuSpriteRenderBW: 1 # Fixes upscaled shadows and improves performance.
+    cpuSpriteRenderLevel: 2 # Needed for above.
+    autoFlush: 1 # Fixes player shadow.
 SLUS-20850:
   name: "Blowout"
   region: "NTSC-U"
@@ -63559,6 +63612,8 @@ SLUS-21261:
   gsHWFixes:
     recommendedBlendingLevel: 4 # Improves smoke rendering.
     halfPixelOffset: 2 # Fixes misaligned lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21262:
   name: "Radiata Stories"
   region: "NTSC-U"
@@ -63669,9 +63724,11 @@ SLUS-21274:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Reduces post-processing misalignment.
+    autoFlush: 1 # Reduces post-processing misalignment.
     halfPixelOffset: 2 # Fixes bloom misalignment still a bit misaligned.
     roundSprite: 1 # Fixes bloom misalignment still a bit misaligned + font artifacts.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21275:
   name: "River King - A Wonderful Journey"
   region: "NTSC-U"
@@ -64320,6 +64377,8 @@ SLUS-21374:
   name: "Marvel - Ultimate Alliance"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes triangle holes in geometry.
 SLUS-21375:
   name: "Torino 2006 - The Official Game of the XX Olympic Winter Games"
   region: "NTSC-U"
@@ -68556,7 +68615,7 @@ TLES-52781:
   name: "WWE - Smackdown Vs Raw Beta Trial Code"
   region: "PAL-E"
 TLES-52940:
-  name: "S.L.A.I. Phantom Crash Beta Trial Code"
+  name: "S.L.A.I. - Steel Lancer Arena International Beta Trial Code"
   region: "PAL-E"
 TLES-53544:
   name: "Pro Evolution Soccer 5 Beta Trial Code"
