@@ -1690,7 +1690,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		}
 #endif
 
-		 if (dst && dst->m_rt_alpha_scale && (GSUtil::GetChannelMask(TEX0.PSM) & 0x8))
+		 if (dst && (GSUtil::GetChannelMask(TEX0.PSM) & 0x8))
 			dst->RTADecorrect(dst);
 
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
@@ -2235,9 +2235,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 					else if (dst_match->m_texture->GetState() == GSTexture::State::Dirty)
 					{
-						if (dst_match->m_type == RenderTarget && dst_match->m_rt_alpha_scale)
-							dst_match->RTADecorrect(dst_match);
-
+						dst_match->RTADecorrect(dst_match);
 						g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					}
@@ -2662,7 +2660,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 
 void GSTextureCache::Target::RTACorrect(Target* rt)
 {
-	if (!rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	if (rt && !rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
 	{
 		const GSVector2i rtsize(rt->m_texture->GetSize());
 		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, false))
@@ -3693,18 +3691,12 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		psm_str(SPSM), DBP, DBW, psm_str(DPSM), sx, sy, sx + w, sy + h, dx, dy, dx + w, dy + h);
 
 	const bool cover_whole_target = dst->m_type == RenderTarget && GSVector4i(dx, dy, dx + w, dy + h).rintersect(dst->m_valid).eq(dst->m_valid);
-
 	if (!cover_whole_target)
 	{
-		if (src->m_type == RenderTarget && src->m_rt_alpha_scale)
-		{
-			src->RTADecorrect(src);
-		}
-		if (dst->m_type == RenderTarget && dst->m_rt_alpha_scale)
-		{
-			dst->RTADecorrect(dst);
-		}
+		src->RTADecorrect(src);
+		dst->RTADecorrect(dst);
 	}
+
 	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
 	if ((SBP == DBP) && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty())
 	{
@@ -3871,11 +3863,8 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 
 	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h);
 
-	if (tgt->m_rt_alpha_scale)
-	{
-		if (read_ba || !write_rg)
-			tgt->RTADecorrect(tgt);
-	}
+	if (read_ba || !write_rg)
+		tgt->RTADecorrect(tgt);
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
