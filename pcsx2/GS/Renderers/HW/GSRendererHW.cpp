@@ -328,7 +328,7 @@ void GSRendererHW::ExpandLineIndices()
 }
 
 // Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
-void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GSTextureCache::Target* rt, GSTextureCache::Source* tex)
+void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
 	const u32 count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
@@ -336,16 +336,22 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 	// Could be drawing upside down or just back to front on the actual verts.
 	const GSVertex* start_verts = (v[0].XYZ.X <= v[m_vertex.tail - 2].XYZ.X) ? &v[0] : &v[m_vertex.tail - 2];
 	const GSVertex first_vert = (start_verts[0].XYZ.X <= start_verts[1].XYZ.X) ? start_verts[0] : start_verts[1];
+	const GSVertex second_vert = (start_verts[0].XYZ.X <= start_verts[1].XYZ.X) ? start_verts[1] : start_verts[0];
 	// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
 	const int pos = (first_vert.XYZ.X - o.OFX) & 0xFF;
-	write_ba = (pos > 112 && pos < 136);
-
+	
 	// Read texture is 8 to 16 pixels (same as above)
 	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
-	int tex_pos = (PRIM->FST) ? first_vert.U : static_cast<int>(tw * first_vert.ST.S);
+	int tex_pos = (PRIM->FST) ? first_vert.U : static_cast<int>(tw * first_vert.ST.S * 16.0f);
 	tex_pos &= 0xFF;
+	shuffle_across = (((tex_pos + 8) >> 4) ^ ((pos + 8) >> 4)) & 0x8;
+
+	const bool full_width = !shuffle_across && ((second_vert.XYZ.X - first_vert.XYZ.X) >> 4) >= 16 && m_r.width() > 8;
+	process_ba = ((pos > 112 && pos < 136) || full_width) ? SHUFFLE_WRITE : 0;
+	process_rg = (!process_ba || full_width) ? SHUFFLE_WRITE : 0;
 	// "same group" means it can read blue and write alpha using C32 tricks
-	read_ba = (tex_pos > 112 && tex_pos < 144) || (m_same_group_texture_shuffle && (m_cached_ctx.FRAME.FBMSK & 0xFFFF0000) != 0xFFFF0000);
+	process_ba |= ((tex_pos > 112 && tex_pos < 144) || (m_same_group_texture_shuffle && (m_cached_ctx.FRAME.FBMSK & 0xFFFF0000) != 0xFFFF0000) || full_width) ? SHUFFLE_READ : 0;
+	process_rg |= (!(process_ba & SHUFFLE_READ) || full_width) ? SHUFFLE_READ : 0;
 
 	// Another way of selecting whether to read RG/BA is to use region repeat.
 	// Ace Combat 04 reads RG, writes to RGBA by setting a MINU of 1015.
@@ -356,9 +362,29 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			m_cached_ctx.CLAMP.MAXV);
 
 		// offset coordinates swap around RG/BA.
-		const bool invert = read_ba; // (tex_pos > 112 && tex_pos < 144), i.e. 8 fixed point
-		const u32 minu = (m_cached_ctx.CLAMP.MINU & 8) ^ (invert ? 8 : 0);
-		read_ba = ((minu & 8) != 0);
+		const u32 maxu = (m_cached_ctx.CLAMP.MAXU & 8);
+		const u32 minu = (m_cached_ctx.CLAMP.MINU & 8);
+		if (maxu)
+		{
+			process_ba |= SHUFFLE_READ;
+			process_rg &= ~SHUFFLE_READ;
+			if (!PRIM->ABE && (process_rg & SHUFFLE_WRITE))
+			{
+				process_ba &= ~SHUFFLE_WRITE;
+				shuffle_across = true;
+			}
+		}
+		else if (minu == 0)
+		{
+			process_rg |=  SHUFFLE_READ;
+			process_ba &= ~SHUFFLE_READ;
+
+			if (!PRIM->ABE && (process_ba & SHUFFLE_WRITE))
+			{
+				process_rg &= ~SHUFFLE_WRITE;
+				shuffle_across = true;
+			}
+		}
 	}
 
 	if (m_split_texture_shuffle_pages > 0)
@@ -418,7 +444,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 		// If a game does the texture and frame doubling differently, they can burn in hell.
 		if (!m_copy_16bit_to_target_shuffle && m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
 		{
-			unsigned int max_tex_draw_width = std::min(static_cast<int>(m_vt.m_max.t.x + (!read_ba ? 8 : 0)), 1 << m_cached_ctx.TEX0.TW);
+			unsigned int max_tex_draw_width = std::min(static_cast<int>(m_vt.m_max.t.x + (!process_ba ? 8 : 0)), 1 << m_cached_ctx.TEX0.TW);
 			const unsigned int clamp_minu = m_context->CLAMP.MINU;
 			const unsigned int clamp_maxu = m_context->CLAMP.MAXU;
 
@@ -473,15 +499,19 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 		const int reversed_U = (v[0].U > v[1].U) ? 1 : 0;
 		for (u32 i = 0; i < count; i += 2)
 		{
-			if (write_ba)
-				v[i + reversed_pos].XYZ.X -= 128u;
-			else
-				v[i + 1 - reversed_pos].XYZ.X += 128u;
 
-			if (read_ba)
-				v[i + reversed_U].U -= 128u;
-			else
-				v[i + 1 - reversed_U].U += 128u;
+			if (!full_width)
+			{
+				if (process_ba & SHUFFLE_WRITE)
+					v[i + reversed_pos].XYZ.X -= 128u;
+				else
+					v[i + 1 - reversed_pos].XYZ.X += 128u;
+
+				if (process_ba & SHUFFLE_READ)
+					v[i + reversed_U].U -= 128u;
+				else
+					v[i + 1 - reversed_U].U += 128u;
+			}
 
 			if (half_bottom_vert)
 			{
@@ -530,15 +560,19 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 
 		for (u32 i = 0; i < count; i += 2)
 		{
-			if (write_ba)
-				v[i + reversed_pos].XYZ.X -= 128u;
-			else
-				v[i + 1 - reversed_pos].XYZ.X += 128u;
 
-			if (read_ba)
-				v[i + reversed_S].ST.S -= offset_8pix;
-			else
-				v[i + 1 - reversed_S].ST.S += offset_8pix;
+			if (!full_width)
+			{
+				if (process_ba & SHUFFLE_WRITE)
+					v[i + reversed_pos].XYZ.X -= 128u;
+				else
+					v[i + 1 - reversed_pos].XYZ.X += 128u;
+
+				if (process_ba & SHUFFLE_READ)
+					v[i + reversed_S].ST.S -= offset_8pix;
+				else
+					v[i + 1 - reversed_S].ST.S += offset_8pix;
+			}
 
 			if (half_bottom_vert)
 			{
@@ -579,18 +613,21 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 		}
 	}
 
-	// Update vertex trace too. Avoid issue to compute bounding box
-	if (write_ba)
-		m_vt.m_min.p.x -= 8.0f;
-	else
-		m_vt.m_max.p.x += 8.0f;
-
-	if (!m_same_group_texture_shuffle)
+	if (!full_width)
 	{
-		if (read_ba)
-			m_vt.m_min.t.x -= 8.0f;
+		// Update vertex trace too. Avoid issue to compute bounding box
+		if (process_ba & SHUFFLE_WRITE)
+			m_vt.m_min.p.x -= 8.0f;
 		else
-			m_vt.m_max.t.x += 8.0f;
+			m_vt.m_max.p.x += 8.0f;
+
+		if (!m_same_group_texture_shuffle)
+		{
+			if (process_ba & SHUFFLE_WRITE)
+				m_vt.m_min.t.x -= 8.0f;
+			else
+				m_vt.m_max.t.x += 8.0f;
+		}
 	}
 
 	if (half_right_vert)
@@ -1858,7 +1895,8 @@ void GSRendererHW::Draw()
 		// Fortunately, it seems to change the FBMSK along the way, so this check alone is sufficient.
 		// Tomb Raider: Underworld does similar, except with R, G, B in separate palettes, therefore
 		// we need to split on those too.
-		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK;
+		m_channel_shuffle = IsPossibleChannelShuffle() && m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
+							m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && m_last_channel_shuffle_end_block > m_context->FRAME.Block();
 
 #ifdef ENABLE_OGL_DEBUG
 		if (m_channel_shuffle)
@@ -2507,6 +2545,12 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	if (rt && m_channel_shuffle)
+	{
+		m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
+		m_last_channel_shuffle_end_block = rt->m_end_block;
+	}
+
 	GSTextureCache::Target* ds = nullptr;
 	GIFRegTEX0 ZBUF_TEX0;
 	if (!no_ds)
@@ -2601,6 +2645,11 @@ void GSRendererHW::Draw()
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
 			m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
+			if (rt)
+			{
+				m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
+				m_last_channel_shuffle_end_block = rt->m_end_block;
+			}
 		}
 		else
 		{
@@ -3378,17 +3427,15 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 		m_conf.ps.shuffle = 1;
 		m_conf.ps.dst_fmt = GSLocalMemory::PSM_FMT_32;
 
-		bool write_ba;
-		bool read_ba;
+		u32 process_rg = 0;
+		u32 process_ba = 0;
+		bool shuffle_across = true;
 
-		ConvertSpriteTextureShuffle(write_ba, read_ba, rt, tex);
+		ConvertSpriteTextureShuffle(process_rg, process_ba, shuffle_across, rt, tex);
 
-		// If date is enabled you need to test the green channel instead of the
-		// alpha channel. Only enable this code in DATE mode to reduce the number
-		// of shader.
-		m_conf.ps.write_rg = !write_ba && features.texture_barrier && m_cached_ctx.TEST.DATE;
-
-		m_conf.ps.read_ba = read_ba;
+		// If date is enabled you need to test the green channel instead of the alpha channel.
+		// Only enable this code in DATE mode to reduce the number of shaders.
+		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && features.texture_barrier && m_cached_ctx.TEST.DATE;
 		m_conf.ps.real16src = m_copy_16bit_to_target_shuffle;
 		m_conf.ps.shuffle_same = m_same_group_texture_shuffle;
 		// Please bang my head against the wall!
@@ -3401,30 +3448,26 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 		// r = rb mask, g = ga mask
 		const GSVector2i rb_ga_mask = GSVector2i(fbmask & 0xFF, (fbmask >> 8) & 0xFF);
 
+		m_conf.ps.process_rg = process_rg;
+		m_conf.ps.process_ba = process_ba;
+		m_conf.ps.shuffle_across = shuffle_across;
 		// Ace Combat 04 sets FBMSK to 0 for the shuffle, duplicating RG across RGBA.
 		// Given how touchy texture shuffles are, I'm not ready to make it 100% dependent on the real FBMSK yet.
 		// TODO: Remove this if, and see what breaks.
-		if (fbmask != 0)
-		{
-			m_conf.colormask.wrgba = 0;
-		}
-		else
-		{
-			m_conf.colormask.wr = m_conf.colormask.wg = (rb_ga_mask.r != 0xFF);
-			m_conf.colormask.wb = m_conf.colormask.wa = (rb_ga_mask.g != 0xFF);
-		}
+		m_conf.colormask.wrgba = 0;
 
 		// 2 Select the new mask
 		if (rb_ga_mask.r != 0xFF)
 		{
-			if (write_ba)
+			if (process_ba & SHUFFLE_WRITE)
 			{
-				GL_INS("Color shuffle %s => B", read_ba ? "B" : "R");
+				GL_INS("Color shuffle %s => B", ((process_rg & SHUFFLE_READ) && shuffle_across) ? "R" : "B");
 				m_conf.colormask.wb = 1;
 			}
-			else
+
+			if (process_rg & SHUFFLE_WRITE)
 			{
-				GL_INS("Color shuffle %s => R", read_ba ? "B" : "R");
+				GL_INS("Color shuffle %s => R", ((process_ba & SHUFFLE_READ) && shuffle_across) ? "B" : "R");
 				m_conf.colormask.wr = 1;
 			}
 			if (rb_ga_mask.r)
@@ -3433,14 +3476,15 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		if (rb_ga_mask.g != 0xFF)
 		{
-			if (write_ba)
+			if (process_ba & SHUFFLE_WRITE)
 			{
-				GL_INS("Color shuffle %s => A", read_ba ? "A" : "G");
+				GL_INS("Color shuffle %s => A", ((process_rg & SHUFFLE_READ) && shuffle_across) ? "G" : "A");
 				m_conf.colormask.wa = 1;
 			}
-			else
+
+			if (process_rg & SHUFFLE_WRITE)
 			{
-				GL_INS("Color shuffle %s => G", read_ba ? "A" : "G");
+				GL_INS("Color shuffle %s => G", ((process_ba & SHUFFLE_READ) && shuffle_across) ? "A" : "G");
 				m_conf.colormask.wg = 1;
 			}
 			if (rb_ga_mask.g)
@@ -3590,7 +3634,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		if (test_only)
 			return true;
 
-		ChannelFetch channel_select = (m_cached_ctx.CLAMP.WMT != 3 || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
+		ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex.buff[m_index.buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
 
 		GL_INS("%s channel", (channel_select == ChannelFetch_BLUE) ? "blue" : "alpha");
 
@@ -5316,7 +5360,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		{
 			if (m_texture_shuffle)
 			{
-				if (m_conf.ps.read_ba)
+				if (m_conf.ps.process_ba & SHUFFLE_READ)
 				{
 					m_can_correct_alpha = false;
 

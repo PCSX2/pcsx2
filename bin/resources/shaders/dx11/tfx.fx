@@ -5,6 +5,10 @@
 #define FMT_24 1
 #define FMT_16 2
 
+#define SHUFFLE_READ  1
+#define SHUFFLE_WRITE 2
+#define SHUFFLE_READWRITE 3
+
 #ifndef VS_TME
 #define VS_IIP 0
 #define VS_TME 1
@@ -41,7 +45,9 @@
 #define PS_REGION_RECT 0
 #define PS_SHUFFLE 0
 #define PS_SHUFFLE_SAME 0
-#define PS_READ_BA 0
+#define PS_PROCESS_BA 0
+#define PS_PROCESS_RG 0
+#define PS_SHUFFLE_ACROSS 0
 #define PS_READ16_SRC 0
 #define PS_DST_FMT 0
 #define PS_DEPTH_FMT 0
@@ -761,10 +767,10 @@ float4 ps_color(PS_INPUT input)
 	float4 T = sample_color(st, input.t.w);
 #endif
 
-	if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
+	if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 	{
 		uint4 denorm_c_before = uint4(T);
-		if (PS_READ_BA)
+		if (PS_PROCESS_BA & SHUFFLE_READ)
 		{
 			T.r = float((denorm_c_before.b << 3) & 0xF8);
 			T.g = float(((denorm_c_before.b >> 2) & 0x38) | ((denorm_c_before.a << 6) & 0xC0));
@@ -1028,10 +1034,10 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
+		if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_after = uint4(C);
-			if (PS_READ_BA)
+			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
 				C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
 				C.a = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
@@ -1049,7 +1055,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		if (PS_SHUFFLE_SAME)
 		{
-			if (PS_READ_BA)
+			if (PS_PROCESS_BA & SHUFFLE_READ)
 				C = (float4)(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 			else
 				C.ga = C.rg;
@@ -1063,23 +1069,48 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			else
 				C.ga = (float2)float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u));
 		}
-		// Write RB part. Mask will take care of the correct destination
-		else if (PS_READ_BA)
+		else if (PS_SHUFFLE_ACROSS)
 		{
-			C.rb = C.bb;
-			if (denorm_c.a & 0x80u)
-				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+			if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
+			{
+				C.rb = C.br;
+				if ((denorm_c.a & 0x80u) != 0u)
+					C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
+				else
+					C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
+					
+				if ((denorm_c.g & 0x80u) != 0u)
+					C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
+				else
+					C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
+			}
+			else if(PS_PROCESS_BA & SHUFFLE_READ)
+			{
+				C.rb = C.bb;
+				if ((denorm_c.a & 0x80u) != 0u)
+					C.ga =  (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga =  (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			}
 			else
-				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			{
+				C.rb = C.rr;
+				if ((denorm_c.g & 0x80u) != 0u)
+					C.ga =  (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+				else
+					C.ga =  (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+			}
 		}
-		else
+		else // Basically a direct copy but a shuffle of both pairs of channels, so green and alpha get modified by TEXA
 		{
-			C.rb = C.rr;
-			if (denorm_c.g & 0x80u)
-				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-
+			if ((denorm_c.g & 0x80u) != 0u)
+				C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
 			else
-				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
+			if ((denorm_c.a & 0x80u) != 0u)
+				C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
+			else
+				C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
 		}
 	}
 
