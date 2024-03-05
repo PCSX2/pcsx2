@@ -3931,7 +3931,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
 				// Disable dithering on blend mix.
-				m_conf.ps.dither &= !blend_mix;
+				m_conf.ps.dither &= !blend_mix || (m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_c == 0 && GetAlphaMinMax().max <= 128);
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
@@ -3985,7 +3985,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				blend_mix &= !sw_blending;
 				sw_blending |= blend_mix;
 				// Disable dithering on blend mix.
-				m_conf.ps.dither &= !blend_mix;
+				m_conf.ps.dither &= !blend_mix || (m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_c == 0 && GetAlphaMinMax().max <= 128);
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
 				break;
@@ -5381,6 +5381,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.cb_ps.DitherMatrix[1] = GSVector4(DIMX.DM10, DIMX.DM11, DIMX.DM12, DIMX.DM13);
 		m_conf.cb_ps.DitherMatrix[2] = GSVector4(DIMX.DM20, DIMX.DM21, DIMX.DM22, DIMX.DM23);
 		m_conf.cb_ps.DitherMatrix[3] = GSVector4(DIMX.DM30, DIMX.DM31, DIMX.DM32, DIMX.DM33);
+		m_conf.ps.dither_adjust = m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_c == 0 && GetAlphaMinMax().max <= 128;
 	}
 
 	if (PRIM->FGE)
