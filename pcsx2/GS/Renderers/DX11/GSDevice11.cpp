@@ -1698,6 +1698,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 		sm.AddMacro("PS_PABE", sel.pabe);
 		sm.AddMacro("PS_DITHER", sel.dither);
+		sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);

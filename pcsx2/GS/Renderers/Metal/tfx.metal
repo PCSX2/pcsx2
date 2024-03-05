@@ -51,6 +51,7 @@ constant bool PS_NO_COLOR1          [[function_constant(GSMTLConstantIndex_PS_NO
 constant bool PS_ONLY_ALPHA         [[function_constant(GSMTLConstantIndex_PS_ONLY_ALPHA)]];
 constant uint PS_CHANNEL            [[function_constant(GSMTLConstantIndex_PS_CHANNEL)]];
 constant uint PS_DITHER             [[function_constant(GSMTLConstantIndex_PS_DITHER)]];
+constant uint PS_DITHER_ADJUST      [[function_constant(GSMTLConstantIndex_PS_DITHER_ADJUST)]];
 constant bool PS_ZCLAMP             [[function_constant(GSMTLConstantIndex_PS_ZCLAMP)]];
 constant bool PS_TCOFFSETHACK       [[function_constant(GSMTLConstantIndex_PS_TCOFFSETHACK)]];
 constant bool PS_URBAN_CHAOS_HLE    [[function_constant(GSMTLConstantIndex_PS_URBAN_CHAOS_HLE)]];
@@ -842,7 +843,7 @@ struct PSMain
 			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * 255.5) & cb.fbmask));
 	}
 
-	void ps_dither(thread float4& C)
+	void ps_dither(thread float4& C, float alpha_blend)
 	{
 		if (PS_DITHER == 0)
 			return;
@@ -851,7 +852,13 @@ struct PSMain
 			fpos = ushort2(in.p.xy);
 		else
 			fpos = ushort2(in.p.xy * float2(cb.scale_factor.y));
-		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];;
+		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];
+
+		// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
+		// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
+		if (PS_DITHER_ADJUST)
+			value *= alpha_blend > 0.f ? min(1.f / alpha_blend, 1.f) : 1.f;
+
 		if (PS_ROUND_INV)
 			C.rgb -= value;
 		else
@@ -877,7 +884,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP || PS_HDR)
@@ -1113,7 +1120,7 @@ struct PSMain
 			}
 		}
 		
-		ps_dither(C);
+		ps_dither(C, alpha_blend.a);
 
 		// Color clamp/wrap needs to be done after sw blending and dithering
 		ps_color_clamp_wrap(C);

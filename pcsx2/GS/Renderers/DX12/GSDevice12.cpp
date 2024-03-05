@@ -2824,6 +2824,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 	sm.AddMacro("PS_PABE", sel.pabe);
 	sm.AddMacro("PS_DITHER", sel.dither);
+	sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
 	sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 	sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 	sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);

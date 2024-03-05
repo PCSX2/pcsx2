@@ -329,6 +329,7 @@ struct alignas(16) GSHWDrawConfig
 
 				// Dithering
 				u32 dither : 2;
+				u32 dither_adjust : 1;
 
 				// Depth clamp
 				u32 zclamp : 1;
