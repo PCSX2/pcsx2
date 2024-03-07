@@ -720,7 +720,7 @@ void ps_fbmask(inout vec4 C)
 #endif
 }
 
-void ps_dither(inout vec3 C, float alpha_blend)
+void ps_dither(inout vec3 C, float As)
 {
 #if PS_DITHER
 	#if PS_DITHER == 2
@@ -733,7 +733,13 @@ void ps_dither(inout vec3 C, float alpha_blend)
 	// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
 	// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
 	#if PS_DITHER_ADJUST
-		value *= alpha_blend > 0.0f ? min(1.0f / alpha_blend, 1.0f) : 1.0f;
+		#if PS_BLEND_C == 2
+			float Alpha = Af;
+		#else
+			float Alpha = As;
+		#endif
+
+		value *= Alpha > 0.0f ? min(1.0f / Alpha, 1.0f) : 1.0f;
 	#endif
 
 	#if PS_ROUND_INV

@@ -843,7 +843,7 @@ struct PSMain
 			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * 255.5) & cb.fbmask));
 	}
 
-	void ps_dither(thread float4& C, float alpha_blend)
+	void ps_dither(thread float4& C, float As)
 	{
 		if (PS_DITHER == 0)
 			return;
@@ -857,7 +857,10 @@ struct PSMain
 		// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
 		// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
 		if (PS_DITHER_ADJUST)
-			value *= alpha_blend > 0.f ? min(1.f / alpha_blend, 1.f) : 1.f;
+		{
+			float Alpha = PS_BLEND_C == 2 ? cb.alpha_fix : As;
+			value *= Alpha > 0.f ? min(1.f / Alpha, 1.f) : 1.f;
+		}
 
 		if (PS_ROUND_INV)
 			C.rgb -= value;
