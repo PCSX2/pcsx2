@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 #include "zipconf.h"
-#include "zip.h"
+#include "../3rdparty/libzip/lib/zip.h"
 
 #include "Console.h"
 
