@@ -98,7 +98,12 @@ if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PR
 		endif()
 	endif()
 else()
+if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+	list(APPEND PCSX2_DEFS _M_ARM64=1)
+	set(_M_ARM64 TRUE)
+else()
 	message(FATAL_ERROR "Unsupported architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+endif()
 endif()
 
 # Require C++20.
