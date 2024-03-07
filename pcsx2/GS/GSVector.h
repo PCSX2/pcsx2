@@ -7,6 +7,10 @@
 #include "common/Assertions.h"
 #include "common/VectorIntrin.h"
 
+#if defined(__aarch64__) || defined(__arm64__)
+#include "../../common/sse2neon.h"
+#endif
+
 #include <algorithm>
 #include <cstring>
 
