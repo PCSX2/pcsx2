@@ -6,7 +6,10 @@
 #include "Vif.h"
 #include "VU.h"
 
+#if defined(_M_ARM64) || defined(__aarch64__) || defined(__arm64__)
 #include "../../common/sse2neon.h"
+#endif
+
 #include "common/emitter/x86emitter.h"
 
 using namespace x86Emitter;
