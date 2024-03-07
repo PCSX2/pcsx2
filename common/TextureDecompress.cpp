@@ -469,8 +469,14 @@ void DecompressBlockBC5 (uint32_t x, uint32_t y, uint32_t stride, enum BC5Mode m
 
 // File: bc7decomp.c - Richard Geldreich, Jr. 3/31/2020 - MIT license or public domain (see end of file)
 #include <string.h>
+#if defined(__x86_64__) || defined(__i386__)
 #include <immintrin.h>
 #include <emmintrin.h>
+#elif defined(__aarch64__) || defined(__arm64__)
+#include "sse2neon.h"
+#else
+#error Unsupported architecture
+#endif
 
 namespace bc7decomp
 {
