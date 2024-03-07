@@ -13,6 +13,11 @@
 	#define XBYAK_NO_OP_NAMES
 #endif
 
+#if defined(_M_ARM64) || defined(__aarch64__) || defined(__arm64__) || defined(__x86_64__)
+#undef  XBYAK64
+#define XBYAK64 1
+#endif
+
 #include <stdio.h> // for debug print
 #include <assert.h>
 #include <list>

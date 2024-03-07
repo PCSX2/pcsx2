@@ -6,6 +6,7 @@
 #include "Vif.h"
 #include "VU.h"
 
+#include "../../common/sse2neon.h"
 #include "common/emitter/x86emitter.h"
 
 using namespace x86Emitter;

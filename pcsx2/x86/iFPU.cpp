@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
+#if defined(_M_ARM64) || defined(__arm64__) || defined(__aarch64__)
+#include "../../common/sse2neon.h"
+#endif
+
 #include "Common.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
@@ -158,6 +162,11 @@ void recCTC1()
 }
 //------------------------------------------------------------------
 
+#if defined(_M_ARM64) || defined(__aarch64__) || defined(__arm64__)
+#ifndef _MM_MK_INSERTPS_NDX
+#define _MM_MK_INSERTPS_NDX(X,Y,Z) (((X) << 6) | ((Y) << 4) | (Z))
+#endif
+#endif
 
 //------------------------------------------------------------------
 // MFC1

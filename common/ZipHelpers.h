@@ -6,7 +6,8 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "zip.h"
+#include "../build/3rdparty/libzip/zipconf.h"
+#include "../build/3rdparty/libzip/lib/zip.h"
 
 #include "Console.h"
 

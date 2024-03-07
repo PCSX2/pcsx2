@@ -9,6 +9,10 @@
 // under the GPL license. However, they have been heavily rewritten for PCSX2 usage.
 // The original author's copyright statement is included above for completeness sake.
 
+#if defined(_M_ARM64) || defined(__arm64__) || defined(__aarch64__)
+#include "../../common/sse2neon.h"
+#endif
+
 #include "IPU/IPU.h"
 #include "IPU/IPUdma.h"
 #include "IPU/yuv2rgb.h"

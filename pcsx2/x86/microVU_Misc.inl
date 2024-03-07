@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
+#if defined(_M_ARM64) || defined(__aarch64__) || defined(__arm64__)
+#include "../../common/sse2neon.h"
+
+#ifndef _MM_MK_INSERTPS_NDX
+#define _MM_MK_INSERTPS_NDX(X,Y,Z) (((X) << 6) | ((Y) << 4) | (Z))
+#endif
+#endif
+
 #include <bitset>
 #include <optional>
 

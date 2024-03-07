@@ -74,7 +74,7 @@
 #include "common/Darwin/DarwinMisc.h"
 #endif
 
-#ifdef _M_X86
+#if defined(_M_X86) || defined(_M_ARM64)
 #include "x86/newVif.h"
 #endif
 

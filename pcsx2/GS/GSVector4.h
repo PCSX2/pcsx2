@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
+#if defined(_M_ARM64) || defined(__arm64__) || defined(__aarch64__)
+#include "../../common/sse2neon.h"
+#endif
+
 class alignas(16) GSVector4
 {
 	struct cxpr_init_tag {};
