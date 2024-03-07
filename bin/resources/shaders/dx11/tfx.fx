@@ -784,7 +784,7 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 	}
 }
 
-void ps_dither(inout float3 C, float2 pos_xy, float alpha_blend)
+void ps_dither(inout float3 C, float As, float2 pos_xy)
 {
 	if (PS_DITHER)
 	{
@@ -800,7 +800,10 @@ void ps_dither(inout float3 C, float2 pos_xy, float alpha_blend)
 		// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
 		// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
 		if (PS_DITHER_ADJUST)
-			value *= alpha_blend > 0.0f ? min(1.0f / alpha_blend, 1.0f) : 1.0f;
+		{
+			float Alpha = PS_BLEND_C == 2 ? Af : As;
+			value *= Alpha > 0.0f ? min(1.0f / Alpha, 1.0f) : 1.0f;
+		}
 		
 		if (PS_ROUND_INV)
 			C -= value;
@@ -1068,7 +1071,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		}
 	}
 
-	ps_dither(C.rgb, input.p.xy, alpha_blend.a);
+	ps_dither(C.rgb, alpha_blend.a, input.p.xy);
 
 	// Color clamp/wrap needs to be done after sw blending and dithering
 	ps_color_clamp_wrap(C.rgb);
