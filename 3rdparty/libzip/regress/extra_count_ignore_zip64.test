@@ -1,0 +1,9 @@
+# count extra fields for index
+arguments bigzero.zip count_extra 0 l count_extra 0 c count_extra 0 lc
+return 0
+file bigzero.zip bigzero.zip
+stdout
+Extra field count: 0
+Extra field count: 0
+Extra field count: 0
+end-of-inline-data

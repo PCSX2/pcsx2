@@ -1,0 +1,8 @@
+# zip_open: file opens fine even though same file name appears twice
+program tryopen
+arguments filename_duplicate.zzip
+return 0
+file filename_duplicate.zzip filename_duplicate.zip
+stdout
+opening 'filename_duplicate.zzip' succeeded, 2 entries
+end-of-inline-data

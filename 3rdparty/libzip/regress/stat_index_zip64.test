@@ -1,0 +1,15 @@
+# stat file in zip64 zip file
+arguments bigzero stat 0
+file bigzero bigzero.zip
+return 0
+stdout
+name: 'bigzero'
+index: '0'
+size: '4294967296'
+compressed size: '4168157'
+mtime: 'Thu Mar 15 2012 14:54:06'
+crc: 'd202ef8d'
+compression method: '8'
+encryption method: '0'
+
+end-of-inline-data

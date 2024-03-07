@@ -1,0 +1,10 @@
+# zip_open: file doesn't exist
+program tryopen
+arguments nosuchfile
+return 1
+stdout
+opening 'nosuchfile' returned error 9
+end-of-inline-data
+stderr
+1 errors
+end-of-inline-data

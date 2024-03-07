@@ -1,0 +1,8 @@
+# zip_open: file opens fine
+program tryopen
+arguments test.zip
+return 0
+file test.zip test.zip
+stdout
+opening 'test.zip' succeeded, 3 entries
+end-of-inline-data

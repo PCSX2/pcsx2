@@ -1,0 +1,77 @@
+# zip_open: various inconsistent files
+program tryopen
+file incons-archive-comment-longer.zzip incons-archive-comment-longer.zip
+file incons-archive-comment-shorter.zzip incons-archive-comment-shorter.zip
+file incons-cdoffset.zzip incons-cdoffset.zip
+file incons-central-compression-method.zzip incons-central-compression-method.zip
+file incons-central-compsize-larger.zzip incons-central-compsize-larger.zip
+file incons-central-compsize-larger-toolarge.zzip incons-central-compsize-larger-toolarge.zip
+file incons-central-compsize-smaller.zzip incons-central-compsize-smaller.zip
+file incons-central-crc.zzip incons-central-crc.zip
+file incons-central-date.zzip incons-central-date.zip
+file incons-central-file-comment-longer.zzip incons-central-file-comment-longer.zip
+file incons-central-file-comment-shorter.zzip incons-central-file-comment-shorter.zip
+file incons-central-magic-bad.zzip incons-central-magic-bad.zip
+file incons-central-magic-bad2.zzip incons-central-magic-bad2.zip
+file incons-central-size-larger.zzip incons-central-size-larger.zip
+file incons-data.zzip incons-data.zip
+file incons-ef-central-size-wrong.zzip incons-ef-central-size-wrong.zip
+file incons-ef-local-id-size.zzip incons-ef-local-id-size.zip
+file incons-ef-local-id.zzip incons-ef-local-id.zip
+file incons-ef-local-size.zzip incons-ef-local-size.zip
+file incons-eocd-magic-bad.zzip incons-eocd-magic-bad.zip
+file incons-file-count-high.zzip incons-file-count-high.zip
+file incons-file-count-low.zzip incons-file-count-low.zip
+file incons-file-count-overflow.zzip incons-file-count-overflow.zip
+file incons-local-compression-method.zzip incons-local-compression-method.zip
+file incons-local-compsize-larger.zzip incons-local-compsize-larger.zip
+file incons-local-compsize-smaller.zzip incons-local-compsize-smaller.zip
+file incons-local-crc.zzip incons-local-crc.zip
+file incons-local-filename-long.zzip incons-local-filename-long.zip
+file incons-local-filename-missing.zzip incons-local-filename-missing.zip
+file incons-local-filename-short.zzip incons-local-filename-short.zip
+file incons-local-filename.zzip incons-local-filename.zip
+file incons-local-magic-bad.zzip incons-local-magic-bad.zip
+file incons-local-size-larger.zzip incons-local-size-larger.zip
+arguments -c incons-archive-comment-longer.zzip incons-archive-comment-shorter.zzip incons-cdoffset.zzip incons-central-compression-method.zzip incons-central-compsize-larger-toolarge.zzip incons-central-compsize-larger.zzip incons-central-compsize-smaller.zzip incons-central-crc.zzip incons-central-date.zzip incons-central-file-comment-longer.zzip incons-central-file-comment-shorter.zzip incons-central-magic-bad.zzip incons-central-magic-bad2.zzip incons-central-size-larger.zzip incons-data.zzip incons-ef-central-size-wrong.zzip incons-ef-local-id-size.zzip incons-ef-local-id.zzip incons-ef-local-size.zzip incons-eocd-magic-bad.zzip incons-file-count-high.zzip incons-file-count-low.zzip incons-file-count-overflow.zzip incons-local-compression-method.zzip incons-local-compsize-larger.zzip incons-local-compsize-smaller.zzip incons-local-crc.zzip incons-local-filename-long.zzip incons-local-filename-missing.zzip incons-local-filename-short.zzip incons-local-filename.zzip incons-local-magic-bad.zzip incons-local-size-larger.zzip
+return 1
+# tryopen does not test checksums, so this is fine.
+# different extra fields local vs. central is fine
+stdout
+opening 'incons-archive-comment-longer.zzip' returned error 21/2
+opening 'incons-archive-comment-shorter.zzip' returned error 21/2
+opening 'incons-cdoffset.zzip' returned error 21/1
+opening 'incons-central-compression-method.zzip' returned error 21/6
+opening 'incons-central-compsize-larger-toolarge.zzip' returned error 19
+opening 'incons-central-compsize-larger.zzip' returned error 21/6
+opening 'incons-central-compsize-smaller.zzip' returned error 21/6
+opening 'incons-central-crc.zzip' returned error 21/6
+opening 'incons-central-date.zzip' returned error 21/6
+opening 'incons-central-file-comment-longer.zzip' returned error 21/12
+opening 'incons-central-file-comment-shorter.zzip' returned error 21/260
+opening 'incons-central-magic-bad.zzip' returned error 19
+opening 'incons-central-magic-bad2.zzip' returned error 19
+opening 'incons-central-size-larger.zzip' returned error 21/6
+opening 'incons-data.zzip' succeeded, 1 entries
+opening 'incons-ef-central-size-wrong.zzip' returned error 21/16
+opening 'incons-ef-local-id-size.zzip' returned error 21/16
+opening 'incons-ef-local-id.zzip' succeeded, 1 entries
+opening 'incons-ef-local-size.zzip' returned error 21/16
+opening 'incons-eocd-magic-bad.zzip' returned error 19
+opening 'incons-file-count-high.zzip' returned error 21/5
+opening 'incons-file-count-low.zzip' returned error 21/5
+opening 'incons-file-count-overflow.zzip' returned error 21/11
+opening 'incons-local-compression-method.zzip' returned error 21/6
+opening 'incons-local-compsize-larger.zzip' returned error 21/6
+opening 'incons-local-compsize-smaller.zzip' returned error 21/6
+opening 'incons-local-crc.zzip' returned error 21/6
+opening 'incons-local-filename-long.zzip' returned error 17
+opening 'incons-local-filename-missing.zzip' returned error 21/6
+opening 'incons-local-filename-short.zzip' returned error 21/16
+opening 'incons-local-filename.zzip' returned error 21/6
+opening 'incons-local-magic-bad.zzip' returned error 19
+opening 'incons-local-size-larger.zzip' returned error 21/6
+end-of-inline-data
+stderr
+31 errors
+end-of-inline-data

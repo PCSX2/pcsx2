@@ -1,0 +1,15 @@
+# guess UTF-8 file names
+arguments test-utf8.zip stat 0
+return 0
+file test-utf8.zip test-utf8.zip
+stdout
+name: 'ÄÖÜäöüßćçĉéèêëē'
+index: '0'
+size: '0'
+compressed size: '0'
+mtime: 'Sat Feb 18 2012 00:15:08'
+crc: '0'
+compression method: '0'
+encryption method: '0'
+
+end-of-inline-data

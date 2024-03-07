@@ -1,0 +1,15 @@
+# stat file in streamed zip file
+arguments streamed stat 0
+file streamed streamed.zip
+return 0
+stdout
+name: '-'
+index: '0'
+size: '2'
+compressed size: '4'
+mtime: 'Wed Apr 25 2012 10:20:38'
+crc: 'ddeaa107'
+compression method: '8'
+encryption method: '0'
+
+end-of-inline-data

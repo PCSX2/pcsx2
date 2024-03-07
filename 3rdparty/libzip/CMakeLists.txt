@@ -9,9 +9,22 @@ project(libzip
   VERSION 1.10.1
   LANGUAGES C)
 
-set(ENABLE_FDOPEN ON)
-set(HAVE_LIBZSTD TRUE)
-set(ZIP_STATIC TRUE)
+option(ENABLE_COMMONCRYPTO "Enable use of CommonCrypto" ON)
+option(ENABLE_GNUTLS "Enable use of GnuTLS" ON)
+option(ENABLE_MBEDTLS "Enable use of mbed TLS" ON)
+option(ENABLE_OPENSSL "Enable use of OpenSSL" ON)
+option(ENABLE_WINDOWS_CRYPTO "Enable use of Windows cryptography libraries" ON)
+
+option(ENABLE_BZIP2 "Enable use of BZip2" ON)
+option(ENABLE_LZMA "Enable use of LZMA" ON)
+option(ENABLE_ZSTD "Enable use of Zstandard" ON)
+
+option(ENABLE_FDOPEN "Enable zip_fdopen, which is not allowed in Microsoft CRT secure libraries" ON)
+
+option(BUILD_TOOLS "Build tools in the src directory (zipcmp, zipmerge, ziptool)" ON)
+option(BUILD_REGRESS "Build regression tests" ON)
+option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_DOC "Build documentation" ON)
 
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
@@ -22,110 +35,416 @@ include(CheckCSourceRuns)
 include(CheckCSourceCompiles)
 include(CheckStructHasMember)
 include(TestBigEndian)
+include(GNUInstallDirs)
+
+if(ENABLE_COMMONCRYPTO)
+  check_include_files(CommonCrypto/CommonCrypto.h COMMONCRYPTO_FOUND)
+endif()
+if(ENABLE_GNUTLS)
+  find_package(Nettle 3.0)
+  find_package(GnuTLS)
+endif()
+if(ENABLE_MBEDTLS)
+  find_package(MbedTLS 1.0)
+endif()
+if(ENABLE_OPENSSL)
+  find_package(OpenSSL)
+endif()
+if(WIN32)
+  if(ENABLE_WINDOWS_CRYPTO)
+    set(WINDOWS_CRYPTO_FOUND TRUE)
+  endif()
+endif()
+
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(LIBZIP_DO_INSTALL "Install libzip and the related files" ON)
+
+option(SHARED_LIB_VERSIONNING "Add SO version in .so build" ON)
+
+find_program(MDOCTOOL NAMES mandoc groff)
+if (MDOCTOOL)
+  set(DOCUMENTATION_FORMAT "mdoc" CACHE STRING "Documentation format")
+else()
+  find_program(MANTOOL NAMES nroff)
+  if (MANTOOL)
+    set(DOCUMENTATION_FORMAT "man" CACHE STRING "Documentation format")
+  else()
+    set(DOCUMENTATION_FORMAT "html" CACHE STRING "Documentation format")
+  endif()
+endif()
+
+include(Dist)
+Dist(${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION})
+
+#ADD_CUSTOM_TARGET(uninstall
+#  COMMAND cat ${PROJECT_BINARY_DIR}/install_manifest.txt | xargs rm
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#  )
+
+if(BUILD_SHARED_LIBS)
+  set(HAVE_SHARED TRUE)
+else()
+  set(ZIP_STATIC TRUE)
+endif()
 
 # Checks
 
 # Request ISO C secure library functions (memcpy_s &c)
 list(APPEND CMAKE_REQUIRED_DEFINITIONS -D__STDC_WANT_LIB_EXT1__=1)
 
-# Replaced these dynamic checks with static, otherwise XCode is slow to configure.
-set(HAVE__CLOSE ${MSVC})
-set(HAVE__DUP ${MSVC})
-set(HAVE__FDOPEN ${MSVC})
-set(HAVE__FILENO ${MSVC})
-set(HAVE__SETMODE ${MSVC})
-set(HAVE__SNPRINTF ${MSVC})
-set(HAVE__SNPRINTF_S ${MSVC})
-set(HAVE__SNWPRINTF_S ${MSVC})
-set(HAVE__STRDUP ${MSVC})
-set(HAVE__STRICMP ${MSVC})
-set(HAVE__STRTOI64 ${MSVC})
-set(HAVE__STRTOUI64 ${MSVC})
-set(HAVE__UNLINK ${MSVC})
-set(HAVE_ARC4RANDOM ${APPLE})
-set(HAVE_CLONEFILE ${APPLE})
-set(HAVE_EXPLICIT_BZERO ${LINUX})
-set(HAVE_EXPLICIT_MEMSET ${LINUX})
-set(HAVE_FCHMOD ${UNIX})
-set(HAVE_FILENO TRUE)
-set(HAVE_FSEEKO ${UNIX})
-set(HAVE_FTELLO ${UNIX})
-set(HAVE_GETPROGNAME ${APPLE})
-set(HAVE_LOCALTIME_R ${UNIX})
-set(HAVE_LOCALTIME_S ${MSVC})
-set(HAVE_MEMCPY_S ${MSVC})
-set(HAVE_RANDOM ${UNIX})
-set(HAVE_SETMODE ${APPLE})
-set(HAVE_SNPRINTF TRUE)
-set(HAVE_SNPRINTF_S FALSE)
-set(HAVE_STRCASECMP ${UNIX})
-set(HAVE_STRDUP TRUE)
-set(HAVE_STRERROR_S ${MSVC})
-set(HAVE_STRERRORLEN_S FALSE)
-set(HAVE_STRICMP ${MSVC})
-set(HAVE_STRNCPY_S ${MSVC})
-set(HAVE_STRTOLL TRUE)
-set(HAVE_STRTOULL TRUE)
+check_function_exists(_close HAVE__CLOSE)
+check_function_exists(_dup HAVE__DUP)
+check_function_exists(_fdopen HAVE__FDOPEN)
+check_function_exists(_fileno HAVE__FILENO)
+check_function_exists(_setmode HAVE__SETMODE)
+check_symbol_exists(_snprintf stdio.h HAVE__SNPRINTF)
+check_symbol_exists(_snprintf_s stdio.h HAVE__SNPRINTF_S)
+check_symbol_exists(_snwprintf_s stdio.h HAVE__SNWPRINTF_S)
+check_function_exists(_strdup HAVE__STRDUP)
+check_symbol_exists(_stricmp string.h HAVE__STRICMP)
+check_function_exists(_strtoi64 HAVE__STRTOI64)
+check_function_exists(_strtoui64 HAVE__STRTOUI64)
+check_function_exists(_unlink HAVE__UNLINK)
+check_function_exists(arc4random HAVE_ARC4RANDOM)
+check_function_exists(clonefile HAVE_CLONEFILE)
+check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)
+check_function_exists(explicit_memset HAVE_EXPLICIT_MEMSET)
+check_function_exists(fchmod HAVE_FCHMOD)
+check_function_exists(fileno HAVE_FILENO)
+check_function_exists(fseeko HAVE_FSEEKO)
+check_function_exists(ftello HAVE_FTELLO)
+check_function_exists(getprogname HAVE_GETPROGNAME)
+check_symbol_exists(localtime_r time.h HAVE_LOCALTIME_R)
+check_symbol_exists(localtime_s time.h HAVE_LOCALTIME_S)
+check_function_exists(memcpy_s HAVE_MEMCPY_S)
+check_function_exists(random HAVE_RANDOM)
+check_function_exists(setmode HAVE_SETMODE)
+check_symbol_exists(snprintf stdio.h HAVE_SNPRINTF)
+check_symbol_exists(snprintf_s stdio.h HAVE_SNPRINTF_S)
+check_symbol_exists(strcasecmp strings.h HAVE_STRCASECMP)
+check_function_exists(strdup HAVE_STRDUP)
+check_function_exists(strerror_s HAVE_STRERROR_S)
+check_function_exists(strerrorlen_s HAVE_STRERRORLEN_S)
+check_function_exists(stricmp HAVE_STRICMP)
+check_function_exists(strncpy_s HAVE_STRNCPY_S)
+check_function_exists(strtoll HAVE_STRTOLL)
+check_function_exists(strtoull HAVE_STRTOULL)
 
-if(UNIX)
-  set(HAVE_FTS_H TRUE)
+check_include_files("sys/types.h;sys/stat.h;fts.h" HAVE_FTS_H)
+# fts functions may be in external library
+if(HAVE_FTS_H)
   check_function_exists(fts_open HAVE_FTS_OPEN)
   if(NOT HAVE_FTS_OPEN)
     check_library_exists(fts fts_open "" HAVE_LIB_FTS)
   else(NOT HAVE_FTS_OPEN)
-    set(HAVE_LIB_FTS "")
+    set(HAVE_LIB_FTS "" CACHE INTERNAL "")
   endif(NOT HAVE_FTS_OPEN)
-else()
-  set(HAVE_LIB_FTS "")
-endif()
+else(HAVE_FTS_H)
+  set(HAVE_LIB_FTS "" CACHE INTERNAL "")
+endif(HAVE_FTS_H)
 
 if(HAVE_LIB_FTS)
-  set(FTS_LIB fts)
+  set(FTS_LIB fts CACHE INTERNAL "")
 else()
-  set(FTS_LIB "")
+  set(FTS_LIB "" CACHE INTERNAL "")
 endif()
 
-set(HAVE_STDBOOL_H TRUE)
-set(HAVE_STRINGS_H ${UNIX})
-set(HAVE_UNISTD_H ${UNIX})
+check_include_files(stdbool.h HAVE_STDBOOL_H)
+check_include_files(strings.h HAVE_STRINGS_H)
+check_include_files(unistd.h HAVE_UNISTD_H)
 
+check_include_files(inttypes.h HAVE_INTTYPES_H_LIBZIP)
+check_include_files(stdint.h HAVE_STDINT_H_LIBZIP)
+check_include_files(sys/types.h HAVE_SYS_TYPES_H_LIBZIP)
+
+# TODO: fix test
+# this test does not find __progname even when it exists
+#check_symbol_exists(__progname stdlib.h HAVE___PROGNAME)
+
+check_type_size(__int8 __INT8_LIBZIP)
+check_type_size(int8_t INT8_T_LIBZIP)
+check_type_size(uint8_t UINT8_T_LIBZIP)
+check_type_size(__int16 __INT16_LIBZIP)
+check_type_size(int16_t INT16_T_LIBZIP)
+check_type_size(uint16_t UINT16_T_LIBZIP)
+check_type_size(__int32 __INT32_LIBZIP)
+check_type_size(int32_t INT32_T_LIBZIP)
+check_type_size(uint32_t UINT32_T_LIBZIP)
+check_type_size(__int64 __INT64_LIBZIP)
+check_type_size(int64_t INT64_T_LIBZIP)
+check_type_size(uint64_t UINT64_T_LIBZIP)
+check_type_size("short" SHORT_LIBZIP)
+check_type_size("int" INT_LIBZIP)
+check_type_size("long" LONG_LIBZIP)
+check_type_size("long long" LONG_LONG_LIBZIP)
 check_type_size("off_t" SIZEOF_OFF_T)
 check_type_size("size_t" SIZEOF_SIZE_T)
 
-if(LINUX)
-  check_c_source_compiles("#include <sys/ioctl.h>
-  #include <linux/fs.h>
-  int main(int argc, char *argv[]) { unsigned long x = FICLONERANGE; }" HAVE_FICLONERANGE)
-else()
-  set(HAVE_FICLONERANGE FALSE)
-endif()
+check_c_source_compiles("#include <sys/ioctl.h>
+#include <linux/fs.h>
+int main(int argc, char *argv[]) { unsigned long x = FICLONERANGE; }" HAVE_FICLONERANGE)
 
 check_c_source_compiles("
 int foo(char * _Nullable bar);
 int main(int argc, char *argv[]) { }" HAVE_NULLABLE)
 
-set(WORDS_BIGENDIAN FALSE)
+test_big_endian(WORDS_BIGENDIAN)
+
+find_package(ZLIB 1.1.2 REQUIRED)
+# so developers on systems where zlib is named differently (Windows, sometimes)
+# can override the name used in the pkg-config file
+if (NOT ZLIB_LINK_LIBRARY_NAME)
+  set(ZLIB_LINK_LIBRARY_NAME "z")
+
+  # Get the correct name in common cases
+  list(LENGTH ZLIB_LIBRARIES N_ZLIB_LIBRARIES)
+  if(N_ZLIB_LIBRARIES EQUAL 1)
+    set(ZLIB_FILENAME ${ZLIB_LIBRARIES})
+  elseif(N_ZLIB_LIBRARIES EQUAL 4)
+    # ZLIB_LIBRARIES might have the target_link_library() format like
+    # "optimized;path/to/zlib.lib;debug;path/to/zlibd.lib". Use the 'optimized'
+    # case unless we know we are in a Debug build.
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      list(FIND ZLIB_LIBRARIES "debug" ZLIB_LIBRARIES_INDEX_OF_CONFIG)
+    else()
+      list(FIND ZLIB_LIBRARIES "optimized" ZLIB_LIBRARIES_INDEX_OF_CONFIG)
+    endif()
+    if(ZLIB_LIBRARIES_INDEX_OF_CONFIG GREATER_EQUAL 0)
+      math(EXPR ZLIB_FILENAME_INDEX "${ZLIB_LIBRARIES_INDEX_OF_CONFIG}+1")
+      list(GET ZLIB_LIBRARIES ${ZLIB_FILENAME_INDEX} ZLIB_FILENAME)
+    endif()
+  endif()
+  if(ZLIB_FILENAME)
+    get_filename_component(ZLIB_FILENAME ${ZLIB_FILENAME} NAME_WE)
+    string(REGEX REPLACE "^lib" "" ZLIB_LINK_LIBRARY_NAME ${ZLIB_FILENAME})
+  endif()
+endif(NOT ZLIB_LINK_LIBRARY_NAME)
+
+if(ENABLE_BZIP2)
+  find_package(BZip2)
+  if(BZIP2_FOUND)
+    set(HAVE_LIBBZ2 1)
+  else()
+    message(WARNING "-- bzip2 library not found; bzip2 support disabled")
+  endif(BZIP2_FOUND)
+endif(ENABLE_BZIP2)
+
+if(ENABLE_LZMA)
+  find_package(LibLZMA 5.2)
+  if(LIBLZMA_FOUND)
+    set(HAVE_LIBLZMA 1)
+  else()
+    message(WARNING "-- lzma library not found; lzma/xz support disabled")
+  endif(LIBLZMA_FOUND)
+endif(ENABLE_LZMA)
+
+if(ENABLE_ZSTD)
+  find_package(zstd 1.3.6)
+  if(zstd_FOUND)
+    set(HAVE_LIBZSTD 1)
+    if(TARGET zstd::libzstd_shared)
+      set(zstd_TARGET zstd::libzstd_shared)
+    else()
+      set(zstd_TARGET zstd::libzstd_static)
+    endif()
+  else()
+    message(WARNING "-- zstd library not found; zstandard support disabled")
+  endif(zstd_FOUND)
+endif(ENABLE_ZSTD)
+
+if (COMMONCRYPTO_FOUND)
+  set(HAVE_CRYPTO 1)
+  set(HAVE_COMMONCRYPTO 1)
+elseif (WINDOWS_CRYPTO_FOUND)
+  set(HAVE_CRYPTO 1)
+  set(HAVE_WINDOWS_CRYPTO 1)
+elseif (OPENSSL_FOUND)
+  set(HAVE_CRYPTO 1)
+  set(HAVE_OPENSSL 1)
+elseif (GNUTLS_FOUND AND NETTLE_FOUND)
+  set(HAVE_CRYPTO 1)
+  set(HAVE_GNUTLS 1)
+elseif (MBEDTLS_FOUND)
+  set(HAVE_CRYPTO 1)
+  set(HAVE_MBEDTLS 1)
+endif()
+
+if ((ENABLE_COMMONCRYPTO OR ENABLE_GNUTLS OR ENABLE_MBEDTLS OR ENABLE_OPENSSL OR ENABLE_WINDOWS_CRYPTO) AND NOT HAVE_CRYPTO)
+  message(WARNING "-- neither Common Crypto, GnuTLS, mbed TLS, OpenSSL, nor Windows Cryptography found; AES support disabled")
+endif()
 
 if(MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
   add_compile_definitions(_CRT_NONSTDC_NO_DEPRECATE)
 endif(MSVC)
 
+if(WIN32)
+  if(CMAKE_SYSTEM_NAME MATCHES WindowsPhone OR CMAKE_SYSTEM_NAME MATCHES WindowsStore)
+    add_compile_definitions(MS_UWP)
+  endif(CMAKE_SYSTEM_NAME MATCHES WindowsPhone OR CMAKE_SYSTEM_NAME MATCHES WindowsStore)
+endif(WIN32)
+
+# rpath handling: use rpath in installed binaries
+if(NOT CMAKE_SYSTEM_NAME MATCHES Linux)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
+
+# for code completion frameworks
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Testing
+ENABLE_TESTING()
+
+# Targets
+ADD_SUBDIRECTORY(lib)
+
+if(BUILD_DOC)
+  ADD_SUBDIRECTORY(man)
+endif()
+
+if(BUILD_TOOLS)
+  ADD_SUBDIRECTORY(src)
+else(BUILD_TOOLS)
+  if(BUILD_REGRESS)
+    message(WARNING "-- tools build has been disabled, but they are needed for regression tests; regression testing disabled")
+    set(BUILD_REGRESS OFF)
+  endif(BUILD_REGRESS)
+endif()
+
+find_program(NIHTEST nihtest)
+
+if(BUILD_REGRESS AND NOT NIHTEST)
+  message(WARNING "-- nihtest not found, regression testing disabled")
+  set(BUILD_REGRESS OFF)
+endif()
+
+if(BUILD_REGRESS)
+  add_subdirectory(regress)
+endif()
+
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+
+# pkgconfig file
+file(RELATIVE_PATH pc_relative_bindir ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_FULL_BINDIR})
+set(bindir "\${prefix}/${pc_relative_bindir}")
+file(RELATIVE_PATH pc_relative_libdir ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_FULL_LIBDIR})
+set(libdir "\${prefix}/${pc_relative_libdir}")
+file(RELATIVE_PATH pc_relative_includedir ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_FULL_INCLUDEDIR})
+set(includedir "\${prefix}/${pc_relative_includedir}")
+if(CMAKE_SYSTEM_NAME MATCHES BSD)
+  set(PKG_CONFIG_RPATH "-Wl,-R\${libdir}")
+endif(CMAKE_SYSTEM_NAME MATCHES BSD)
+get_target_property(LIBS_PRIVATE zip LINK_LIBRARIES)
+foreach(LIB ${LIBS_PRIVATE})
+  if(LIB MATCHES "^/")
+    get_filename_component(LIB ${LIB} NAME_WE)
+    string(REGEX REPLACE "^lib" "" LIB ${LIB})
+  endif()
+  set(LIBS "${LIBS} -l${LIB}")
+endforeach()
+STRING(CONCAT zlib_link_name "-l" ${ZLIB_LINK_LIBRARY_NAME})
+string(REGEX REPLACE "-lBZip2::BZip2" "-lbz2" LIBS ${LIBS})
+string(REGEX REPLACE "-lLibLZMA::LibLZMA" "-llzma" LIBS ${LIBS})
+if(ENABLE_ZSTD)
+  string(REGEX REPLACE "-l${zstd_TARGET}" "-lzstd" LIBS ${LIBS})
+endif()
+string(REGEX REPLACE "-lOpenSSL::Crypto" "-lssl -lcrypto" LIBS ${LIBS})
+string(REGEX REPLACE "-lZLIB::ZLIB" ${zlib_link_name} LIBS ${LIBS})
+string(REGEX REPLACE "-lGnuTLS::GnuTLS" "-lgnutls" LIBS ${LIBS})
+string(REGEX REPLACE "-lNettle::Nettle" "-lnettle" LIBS ${LIBS})
+configure_file(libzip.pc.in libzip.pc @ONLY)
+if(LIBZIP_DO_INSTALL)
+  install(FILES ${PROJECT_BINARY_DIR}/libzip.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
+
 # fixed size integral types
 
-set(LIBZIP_TYPES_INCLUDE "#if !defined(__STDC_FORMAT_MACROS)
+if(HAVE_INTTYPES_H_LIBZIP)
+  set(LIBZIP_TYPES_INCLUDE "#if !defined(__STDC_FORMAT_MACROS)
 #define __STDC_FORMAT_MACROS 1
 #endif
 #include <inttypes.h>")
+elseif(HAVE_STDINT_H_LIBZIP)
+  set(LIBZIP_TYPES_INCLUDE "#include <stdint.h>")
+elseif(HAVE_SYS_TYPES_H_LIBZIP)
+  set(LIBZIP_TYPES_INCLUDE "#include <sys/types.h>")
+endif()
 
-set(ZIP_INT8_T int8_t)
-set(ZIP_UINT8_T uint8_t)
-set(ZIP_INT16_T int16_t)
-set(ZIP_UINT16_T uint16_t)
-set(ZIP_INT32_T int32_t)
-set(ZIP_UINT32_T uint32_t)
-set(ZIP_INT64_T int64_t)
-set(ZIP_UINT64_T uint64_t)
+if(HAVE_INT8_T_LIBZIP)
+  set(ZIP_INT8_T int8_t)
+elseif(HAVE___INT8_LIBZIP)
+  set(ZIP_INT8_T __int8)
+else()
+  set(ZIP_INT8_T "signed char")
+endif()
+
+if(HAVE_UINT8_T_LIBZIP)
+  set(ZIP_UINT8_T uint8_t)
+elseif(HAVE___INT8_LIBZIP)
+  set(ZIP_UINT8_T "unsigned __int8")
+else()
+  set(ZIP_UINT8_T "unsigned char")
+endif()
+
+if(HAVE_INT16_T_LIBZIP)
+  set(ZIP_INT16_T int16_t)
+elseif(HAVE___INT16_LIBZIP)
+  set(INT16_T_LIBZIP __int16)
+elseif(SHORT_LIBZIP EQUAL 2)
+  set(INT16_T_LIBZIP short)
+endif()
+
+if(HAVE_UINT16_T_LIBZIP)
+  set(ZIP_UINT16_T uint16_t)
+elseif(HAVE___INT16_LIBZIP)
+  set(UINT16_T_LIBZIP "unsigned __int16")
+elseif(SHORT_LIBZIP EQUAL 2)
+  set(UINT16_T_LIBZIP "unsigned short")
+endif()
+
+if(HAVE_INT32_T_LIBZIP)
+  set(ZIP_INT32_T int32_t)
+elseif(HAVE___INT32_LIBZIP)
+  set(ZIP_INT32_T __int32)
+elseif(INT_LIBZIP EQUAL 4)
+  set(ZIP_INT32_T int)
+elseif(LONG_LIBZIP EQUAL 4)
+  set(ZIP_INT32_T long)
+endif()
+
+if(HAVE_UINT32_T_LIBZIP)
+  set(ZIP_UINT32_T uint32_t)
+elseif(HAVE___INT32_LIBZIP)
+  set(ZIP_UINT32_T "unsigned __int32")
+elseif(INT_LIBZIP EQUAL 4)
+  set(ZIP_UINT32_T "unsigned int")
+elseif(LONG_LIBZIP EQUAL 4)
+  set(ZIP_UINT32_T "unsigned long")
+endif()
+
+if(HAVE_INT64_T_LIBZIP)
+  set(ZIP_INT64_T int64_t)
+elseif(HAVE___INT64_LIBZIP)
+  set(ZIP_INT64_T __int64)
+elseif(LONG_LIBZIP EQUAL 8)
+  set(ZIP_INT64_T long)
+elseif(LONG_LONG_LIBZIP EQUAL 8)
+  set(ZIP_INT64_T "long long")
+endif()
+
+if(HAVE_UINT64_T_LIBZIP)
+  set(ZIP_UINT64_T uint64_t)
+elseif(HAVE___INT64_LIBZIP)
+  set(ZIP_UINT64_T "unsigned __int64")
+elseif(LONG_LIBZIP EQUAL 8)
+  set(ZIP_UINT64_T "unsigned long")
+elseif(LONG_LONG_LIBZIP EQUAL 8)
+  set(ZIP_UINT64_T "unsigned long long")
+endif()
 
 if(HAVE_NULLABLE)
   set(ZIP_NULLABLE_DEFINES)
@@ -138,160 +457,40 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake-config.h.in ${PROJECT_BINARY_DIR}/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake-zipconf.h.in ${PROJECT_BINARY_DIR}/zipconf.h)
 
-set(CMAKE_C_VISIBILITY_PRESET hidden)
+# for tests
 
-add_library(zip STATIC
-  lib/zip_add.c
-  lib/zip_add_dir.c
-  lib/zip_add_entry.c
-  lib/zip_algorithm_deflate.c
-  lib/zip_buffer.c
-  lib/zip_close.c
-  lib/zip_delete.c
-  lib/zip_dir_add.c
-  lib/zip_dirent.c
-  lib/zip_discard.c
-  lib/zip_entry.c
-  lib/zip_error.c
-  lib/zip_error_clear.c
-  lib/zip_error_get.c
-  lib/zip_error_get_sys_type.c
-  lib/zip_error_strerror.c
-  lib/zip_error_to_str.c
-  lib/zip_extra_field.c
-  lib/zip_extra_field_api.c
-  lib/zip_fclose.c
-  lib/zip_fdopen.c
-  lib/zip_file_add.c
-  lib/zip_file_error_clear.c
-  lib/zip_file_error_get.c
-  lib/zip_file_get_comment.c
-  lib/zip_file_get_external_attributes.c
-  lib/zip_file_get_offset.c
-  lib/zip_file_rename.c
-  lib/zip_file_replace.c
-  lib/zip_file_set_comment.c
-  lib/zip_file_set_encryption.c
-  lib/zip_file_set_external_attributes.c
-  lib/zip_file_set_mtime.c
-  lib/zip_file_strerror.c
-  lib/zip_fopen.c
-  lib/zip_fopen_encrypted.c
-  lib/zip_fopen_index.c
-  lib/zip_fopen_index_encrypted.c
-  lib/zip_fread.c
-  lib/zip_fseek.c
-  lib/zip_ftell.c
-  lib/zip_get_archive_comment.c
-  lib/zip_get_archive_flag.c
-  lib/zip_get_encryption_implementation.c
-  lib/zip_get_file_comment.c
-  lib/zip_get_name.c
-  lib/zip_get_num_entries.c
-  lib/zip_get_num_files.c
-  lib/zip_hash.c
-  lib/zip_io_util.c
-  lib/zip_libzip_version.c
-  lib/zip_memdup.c
-  lib/zip_name_locate.c
-  lib/zip_new.c
-  lib/zip_open.c
-  lib/zip_pkware.c
-  lib/zip_progress.c
-  lib/zip_rename.c
-  lib/zip_replace.c
-  lib/zip_set_archive_comment.c
-  lib/zip_set_archive_flag.c
-  lib/zip_set_default_password.c
-  lib/zip_set_file_comment.c
-  lib/zip_set_file_compression.c
-  lib/zip_set_name.c
-  lib/zip_source_accept_empty.c
-  lib/zip_source_begin_write.c
-  lib/zip_source_begin_write_cloning.c
-  lib/zip_source_buffer.c
-  lib/zip_source_call.c
-  lib/zip_source_close.c
-  lib/zip_source_commit_write.c
-  lib/zip_source_compress.c
-  lib/zip_source_crc.c
-  lib/zip_source_error.c
-  lib/zip_source_file_common.c
-  lib/zip_source_file_stdio.c
-  lib/zip_source_free.c
-  lib/zip_source_function.c
-  lib/zip_source_get_file_attributes.c
-  lib/zip_source_is_deleted.c
-  lib/zip_source_layered.c
-  lib/zip_source_open.c
-  lib/zip_source_pass_to_lower_layer.c
-  lib/zip_source_pkware_decode.c
-  lib/zip_source_pkware_encode.c
-  lib/zip_source_read.c
-  lib/zip_source_remove.c
-  lib/zip_source_rollback_write.c
-  lib/zip_source_seek.c
-  lib/zip_source_seek_write.c
-  lib/zip_source_stat.c
-  lib/zip_source_supports.c
-  lib/zip_source_tell.c
-  lib/zip_source_tell_write.c
-  lib/zip_source_window.c
-  lib/zip_source_write.c
-  lib/zip_source_zip.c
-  lib/zip_source_zip_new.c
-  lib/zip_stat.c
-  lib/zip_stat_index.c
-  lib/zip_stat_init.c
-  lib/zip_strerror.c
-  lib/zip_string.c
-  lib/zip_unchange.c
-  lib/zip_unchange_all.c
-  lib/zip_unchange_archive.c
-  lib/zip_unchange_data.c
-  lib/zip_utf-8.c
-  ${CMAKE_CURRENT_BINARY_DIR}/zip_err_str.c
-  )
+set(srcdir ${CMAKE_CURRENT_SOURCE_DIR}/regress)
+set(abs_srcdir ${CMAKE_CURRENT_SOURCE_DIR}/regress)
+set(top_builddir ${PROJECT_BINARY_DIR}) # used to find config.h
 
-if(WIN32)
-  target_sources(zip PRIVATE
-    lib/zip_source_file_win32.c
-    lib/zip_source_file_win32_named.c
-    lib/zip_source_file_win32_utf16.c
-    lib/zip_source_file_win32_utf8.c
-    lib/zip_source_file_win32_ansi.c
-    lib/zip_random_win32.c
+# create package config file
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+  COMPATIBILITY AnyNewerVersion)
+
+configure_package_config_file("${PROJECT_NAME}-config.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libzip)
+
+# Install Find* modules, they are required by libzip-config.cmake to resolve dependencies
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindNettle.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findzstd.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindMbedTLS.cmake
+  DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/libzip/modules
+  )  
+
+if(LIBZIP_DO_INSTALL)
+  # Add targets to the build-tree export set
+  export(TARGETS zip
+    FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake")
+
+  # installation
+  install(FILES ${PROJECT_BINARY_DIR}/zipconf.h DESTINATION include)
+  install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
-else(WIN32)
-  target_sources(zip PRIVATE
-    lib/zip_source_file_stdio_named.c
-    lib/zip_random_unix.c
+  install(EXPORT ${PROJECT_NAME}-targets NAMESPACE libzip:: FILE ${PROJECT_NAME}-targets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
-endif(WIN32)
-
-target_sources(zip PRIVATE lib/zip_algorithm_zstd.c)
-target_link_libraries(zip PRIVATE Zstd::Zstd)
-
-target_link_libraries(zip PRIVATE ZLIB::ZLIB)
-target_include_directories(zip
-  PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib>
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  )
-
-# create zip_err_str.c from zip.h and zipint.h
-add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zip_err_str.c
-  COMMAND "${CMAKE_COMMAND}"
-    "-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-    "-DCMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
-    "-P" "${PROJECT_SOURCE_DIR}/cmake/GenerateZipErrorStrings.cmake"
-  DEPENDS
-    ${PROJECT_SOURCE_DIR}/cmake/GenerateZipErrorStrings.cmake
-    ${PROJECT_SOURCE_DIR}/lib/zip.h
-    ${PROJECT_SOURCE_DIR}/lib/zipint.h
-  COMMENT "Generating zip_err_str.c"
-)
-
-add_library(libzip::zip ALIAS zip)
+endif()

@@ -1,0 +1,16 @@
+# follow strict rules and convert UTF-8 as if it was CP437, but not
+# if the files are marked as having UTF-8 names
+arguments -s test-utf8.zip stat 0
+return 0
+file test-utf8.zip test-utf8.zip
+stdout
+name: 'ÄÖÜäöüßćçĉéèêëē'
+index: '0'
+size: '0'
+compressed size: '0'
+mtime: 'Sat Feb 18 2012 00:15:08'
+crc: '0'
+compression method: '0'
+encryption method: '0'
+
+end-of-inline-data
