@@ -2271,6 +2271,7 @@ inline void LogUserPowerPlan()
 }
 #endif
 
+#if 0
 #if defined(__linux__) || defined(_WIN32)
 void LogGPUCapabilities()
 {
@@ -2384,6 +2385,7 @@ void LogGPUCapabilities()
 #endif
 }
 #endif
+#endif
 
 void VMManager::LogCPUCapabilities()
 {
@@ -2418,7 +2420,7 @@ void VMManager::LogCPUCapabilities()
 	Console.WriteLnFmt("  {}", features);
 	Console.WriteLn();
 
-#if defined(__linux__) || defined(_WIN32)
+#if 0
 	LogGPUCapabilities();
 #endif
 }
