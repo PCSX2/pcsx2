@@ -5147,6 +5147,17 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
 	if (DATE)
 	{
+		if (m_cached_ctx.TEST.DATM)
+		{
+			blend_alpha_min = std::max(blend_alpha_min, 128);
+			blend_alpha_max = std::max(blend_alpha_max, 128);
+		}
+		else
+		{
+			blend_alpha_min = std::min(blend_alpha_min, 127);
+			blend_alpha_max = std::min(blend_alpha_max, 127);
+		}
+
 		// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
 		// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
 		if (features.framebuffer_fetch)
