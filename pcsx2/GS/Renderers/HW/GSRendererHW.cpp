@@ -5090,6 +5090,44 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 		const bool is_24_bit = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp == 24);
 		const u32 alpha_mask = GSLocalMemory::m_psm[rt->m_TEX0.PSM].fmsk & 0xFF000000;
+		const int fba_value = m_draw_env->CTXT[m_draw_env->PRIM.CTXT].FBA.FBA * 128;
+		int s_alpha_max = GetAlphaMinMax().max;
+		int s_alpha_min = GetAlphaMinMax().min;
+		{
+			const int fail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
+			if (m_cached_ctx.TEST.ATE && ((fail_type != AFAIL_FB_ONLY) || ((fail_type == AFAIL_RGB_ONLY) && (m_conf.ps.dst_fmt != GSLocalMemory::PSM_FMT_32))))
+			{
+				const int aref = static_cast<int>(m_cached_ctx.TEST.AREF);
+				switch (m_cached_ctx.TEST.ATST)
+				{
+					case ATST_LESS:
+						s_alpha_max = std::min(s_alpha_max, aref - 1);
+						s_alpha_min = std::min(s_alpha_min, s_alpha_max);
+						break;
+					case ATST_LEQUAL:
+						s_alpha_max = std::min(s_alpha_max, aref);
+						s_alpha_min = std::min(s_alpha_min, s_alpha_max);
+						break;
+					case ATST_EQUAL:
+						s_alpha_max = aref;
+						s_alpha_min = aref;
+						break;
+					case ATST_GEQUAL:
+						s_alpha_max = std::max(s_alpha_max, aref);
+						s_alpha_min = std::max(s_alpha_min, aref);
+						break;
+					case ATST_GREATER:
+						s_alpha_max = std::max(s_alpha_max, aref + 1);
+						s_alpha_min = std::max(s_alpha_min, aref + 1);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
+		s_alpha_max |= fba_value;
+		s_alpha_min |= fba_value;
 
 		if (is_24_bit)
 		{
@@ -5100,25 +5138,23 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 		if (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8 && !m_channel_shuffle && !m_texture_shuffle)
 		{
-			const int fba_value = m_prev_env.CTXT[m_prev_env.PRIM.CTXT].FBA.FBA * 128;
-
 			if ((m_cached_ctx.FRAME.FBMSK & alpha_mask) == 0)
 			{
 				if (rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE || m_cached_ctx.TEST.ATE || (m_cached_ctx.TEST.ZTE && m_cached_ctx.TEST.ZTST != ZTST_ALWAYS)))
 				{
-					rt->m_alpha_max = GetAlphaMinMax().max | fba_value;
-					rt->m_alpha_min = GetAlphaMinMax().min | fba_value;
+					rt->m_alpha_max = s_alpha_max;
+					rt->m_alpha_min = s_alpha_min;
 				}
 				else
 				{
-					rt->m_alpha_max = std::max(GetAlphaMinMax().max | fba_value, rt->m_alpha_max);
-					rt->m_alpha_min = std::min(GetAlphaMinMax().min | fba_value, rt->m_alpha_min);
+					rt->m_alpha_max = std::max(s_alpha_max, rt->m_alpha_max);
+					rt->m_alpha_min = std::min(s_alpha_min, rt->m_alpha_min);
 				}
 			}
 			else if ((m_cached_ctx.FRAME.FBMSK & alpha_mask) != alpha_mask) // We can't be sure of the alpha if it's partially masked.
 			{
-				rt->m_alpha_max |= std::max(GetAlphaMinMax().max | fba_value, rt->m_alpha_max);
-				rt->m_alpha_min = std::min(GetAlphaMinMax().min | fba_value, rt->m_alpha_min);
+				rt->m_alpha_max |= std::max(s_alpha_max, rt->m_alpha_max);
+				rt->m_alpha_min = std::min(s_alpha_min, rt->m_alpha_min);
 			}
 		}
 		else if ((m_texture_shuffle && m_conf.colormask.wa) || (m_channel_shuffle && (m_cached_ctx.FRAME.FBMSK & alpha_mask) != alpha_mask))
