@@ -442,9 +442,13 @@ bool VKSwapChain::CreateSwapChain()
 		m_images.push_back(std::move(texture));
 	}
 
-	m_semaphores.reserve(image_count);
-	m_current_semaphore = (image_count - 1);
-	for (u32 i = 0; i < image_count; i++)
+	// We don't actually need +1 semaphores, or, more than one really.
+	// But, the validation layer gets cranky if we don't fence wait before the next image acquire.
+	// So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
+	const u32 semaphore_count = (image_count + 1);
+	m_semaphores.reserve(semaphore_count);
+	m_current_semaphore = 0;
+	for (u32 i = 0; i < semaphore_count; i++)
 	{
 		ImageSemaphores sema;
 
