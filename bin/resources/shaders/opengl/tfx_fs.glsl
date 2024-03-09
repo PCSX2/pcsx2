@@ -844,7 +844,7 @@ float As = As_rgba.a;
 	// As/Af clamp alpha for Blend mix
 	// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 	float C_clamped = C;
-#if PS_BLEND_MIX > 0 && PS_BLEND_HW != 1
+#if PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2
 	C_clamped = min(C_clamped, 1.0f);
 #endif
 
@@ -876,13 +876,12 @@ float As = As_rgba.a;
 	vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
 	As_rgba.rgb -= alpha_compensate;
 #elif PS_BLEND_HW == 2
-	// Compensate slightly for Cd*(As + 1) - Cs*As.
-	// The initial factor we chose is 1 (0.00392)
-	// as that is the minimum color Cd can be,
-	// then we multiply by alpha to get the minimum
-	// blended value it can be.
-	float color_compensate = 1.0f * (C + 1.0f);
-	Color.rgb -= vec3(color_compensate);
+	// Since we can't do Cd*(Alpha + 1) - Cs*Alpha in hw blend
+	// what we can do is adjust the Cs value that will be
+	// subtracted, this way we can get a better result in hw blend.
+	// Result is still wrong but less wrong than before.
+	float division_alpha = 1.0f + C;
+	Color.rgb /= vec3(division_alpha);
 #elif PS_BLEND_HW == 3
 	// As, Ad or Af clamped.
 	As_rgba.rgb = vec3(C_clamped);
