@@ -3463,38 +3463,76 @@ void GSDeviceVK::OMSetRenderTargets(
 	{
 		// Framebuffer unchanged, but check for clears
 		// Use an attachment clear to wipe it out without restarting the render pass
-		std::array<VkClearAttachment, 2> cas;
-		u32 num_ca = 0;
-		if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+		if (IsDeviceNVIDIA())
 		{
-			if (vkRt->GetState() == GSTexture::State::Cleared)
+			// Using vkCmdClearAttachments() within a render pass on NVIDIA seems to cause dependency issues
+			// between draws that are testing depth which precede it. The result is flickering where Z tests
+			// should be failing. Breaking/restarting the render pass isn't enough to work around the bug,
+			// it needs an explicit pipeline barrier.
+			if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
 			{
-				VkClearAttachment& ca = cas[num_ca++];
-				ca.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				ca.colorAttachment = 0;
-				GSVector4::store<false>(ca.clearValue.color.float32, vkRt->GetUNormClearColor());
+				if (vkRt->GetState() == GSTexture::State::Cleared)
+				{
+					EndRenderPass();
+					vkRt->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1,
+						vkRt->GetLayout(), vkRt->GetLayout());
+				}
+				else
+				{
+					// Invalidated -> Dirty.
+					vkRt->SetState(GSTexture::State::Dirty);
+				}
+			}
+			if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+			{
+				if (vkDs->GetState() == GSTexture::State::Cleared)
+				{
+					EndRenderPass();
+					vkDs->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1,
+						vkDs->GetLayout(), vkDs->GetLayout());
+				}
+				else
+				{
+					// Invalidated -> Dirty.
+					vkDs->SetState(GSTexture::State::Dirty);
+				}
+			}
+		}
+		else
+		{
+			std::array<VkClearAttachment, 2> cas;
+			u32 num_ca = 0;
+			if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+			{
+				if (vkRt->GetState() == GSTexture::State::Cleared)
+				{
+					VkClearAttachment& ca = cas[num_ca++];
+					ca.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					ca.colorAttachment = 0;
+					GSVector4::store<false>(ca.clearValue.color.float32, vkRt->GetUNormClearColor());
+				}
+
+				vkRt->SetState(GSTexture::State::Dirty);
+			}
+			if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+			{
+				if (vkDs->GetState() == GSTexture::State::Cleared)
+				{
+					VkClearAttachment& ca = cas[num_ca++];
+					ca.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+					ca.colorAttachment = 1;
+					ca.clearValue.depthStencil = {vkDs->GetClearDepth()};
+				}
+
+				vkDs->SetState(GSTexture::State::Dirty);
 			}
 
-			vkRt->SetState(GSTexture::State::Dirty);
-		}
-		if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
-		{
-			if (vkDs->GetState() == GSTexture::State::Cleared)
+			if (num_ca > 0)
 			{
-				VkClearAttachment& ca = cas[num_ca++];
-				ca.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				ca.colorAttachment = 1;
-				ca.clearValue.depthStencil = {vkDs->GetClearDepth()};
+				const GSVector2i size = vkRt ? vkRt->GetSize() : vkDs->GetSize();
+				const VkClearRect cr = {{{0, 0}, {static_cast<u32>(size.x), static_cast<u32>(size.y)}}, 0u, 1u};
+				vkCmdClearAttachments(GetCurrentCommandBuffer(), num_ca, cas.data(), 1, &cr);
 			}
-
-			vkDs->SetState(GSTexture::State::Dirty);
-		}
-
-		if (num_ca > 0)
-		{
-			const GSVector2i size = vkRt ? vkRt->GetSize() : vkDs->GetSize();
-			const VkClearRect cr = {{{0, 0}, {static_cast<u32>(size.x), static_cast<u32>(size.y)}}, 0u, 1u};
-			vkCmdClearAttachments(GetCurrentCommandBuffer(), num_ca, cas.data(), 1, &cr);
 		}
 	}
 
