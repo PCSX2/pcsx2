@@ -1925,8 +1925,6 @@ void GSRendererHW::Draw()
 		// Depth test will always pass
 		(m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z);
 	bool no_ds = (zm != 0 && all_depth_tests_pass) ||
-				 // Depth will be written through the RT
-				 (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE) ||
 				 // No color or Z being written.
 				 (no_rt && zm != 0);
 
@@ -1986,7 +1984,8 @@ void GSRendererHW::Draw()
 	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear)
 	{
 		if (!DetectStripedDoubleClear(no_rt, no_ds))
-			DetectDoubleHalfClear(no_rt, no_ds);
+			if (!DetectDoubleHalfClear(no_rt, no_ds))
+				DetectRedundantBufferClear(no_rt, no_ds, fm_mask);
 	}
 
 	m_process_texture = PRIM->TME && !(PRIM->ABE && m_context->ALPHA.IsBlack() && !m_cached_ctx.TEX0.TCC) && !(no_rt && (!m_cached_ctx.TEST.ATE || m_cached_ctx.TEST.ATST <= ATST_ALWAYS));
@@ -6109,6 +6108,49 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// Remove any targets at the half-buffer point, they're getting overwritten.
 	g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, half * BLOCKS_PER_PAGE);
 	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, half * BLOCKS_PER_PAGE);
+	return true;
+}
+
+bool GSRendererHW::DetectRedundantBufferClear(bool& no_rt, bool& no_ds, u32 fm_mask)
+{
+	// This function handles the case where the game points FRAME and ZBP at the same page, and both FRAME and Z
+	// write the same bits. A few games do this, including Flatout 2, DMC3, Ratchet & Clank, Gundam, and Superman.
+	if (m_cached_ctx.FRAME.FBP != m_cached_ctx.ZBUF.ZBP || m_cached_ctx.ZBUF.ZMSK)
+		return false;
+
+	// Frame and Z aren't writing any overlapping bits.
+	// We can't check for exactly the same bitmask, because some games do C32 FRAME with Z24, and no FBMSK.
+	if (((~m_cached_ctx.FRAME.FBMSK & fm_mask) & GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmsk) == 0)
+		return false;
+
+	// Make sure the width is page aligned, so we don't break powerdrome-style clears where Z writes the right side of the page.
+	// We can't check page alignment on the size entirely, because Ratchet does 256x127 clears...
+	// Test cases: Devil May Cry 3, Tom & Jerry.
+	if ((m_r.x & 63) != 0 || (m_r.z & 63) != 0)
+		return false;
+
+	// Compute how many bits are actually written through FRAME. Normally we'd use popcnt, but we still have to
+	// support SSE4.1. If we somehow don't have a contiguous FBMSK, we're in trouble anyway...
+	const u32 frame_bits_written = 32 - std::countl_zero(~m_cached_ctx.FRAME.FBMSK & fm_mask);
+
+	// Keep Z if we have a target at this location already, or if Z is writing more bits than FRAME.
+	const u32 z_bits_written = GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].trbpp;
+	const GSTextureCache::Target* ztgt = g_texture_cache->GetTargetWithSharedBits(m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM);
+	const bool keep_z = (ztgt && ztgt->m_valid_rgb && z_bits_written >= frame_bits_written) || (z_bits_written > frame_bits_written);
+	GL_INS("FRAME and ZBUF writing page-aligned same data, discarding %s", keep_z ? "FRAME" : "ZBUF");
+	if (keep_z)
+	{
+		m_cached_ctx.FRAME.FBMSK = 0xFFFFFFFFu;
+		no_rt = true;
+		no_ds = false;
+	}
+	else
+	{
+		m_cached_ctx.ZBUF.ZMSK = true;
+		no_ds = true;
+		no_rt = false;
+	}
+
 	return true;
 }
 
