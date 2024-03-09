@@ -862,7 +862,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
-		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1)
+		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
 			C_clamped = min(C_clamped, 1.0f);
 
 		if (PS_BLEND_A == PS_BLEND_B)
@@ -895,13 +895,12 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		else if (PS_BLEND_HW == 2)
 		{
-			// Compensate slightly for Cd*(As + 1) - Cs*As.
-			// The initial factor we chose is 1 (0.00392)
-			// as that is the minimum color Cd can be,
-			// then we multiply by alpha to get the minimum
-			// blended value it can be.
-			float color_compensate = 1.0f * (C + 1.0f);
-			Color.rgb -= (float3)color_compensate;
+			// Since we can't do Cd*(Alpha + 1) - Cs*Alpha in hw blend
+			// what we can do is adjust the Cs value that will be
+			// subtracted, this way we can get a better result in hw blend.
+			// Result is still wrong but less wrong than before.
+			float division_alpha = 1.0f + C;
+			Color.rgb /= (float3)division_alpha;
 		}
 		else if (PS_BLEND_HW == 3)
 		{
