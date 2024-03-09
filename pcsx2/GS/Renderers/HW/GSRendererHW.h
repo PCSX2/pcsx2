@@ -38,6 +38,7 @@ private:
 	void ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, u32 vert_color);
 	bool DetectDoubleHalfClear(bool& no_rt, bool& no_ds);
 	bool DetectStripedDoubleClear(bool& no_rt, bool& no_ds);
+	bool DetectRedundantBufferClear(bool& no_rt, bool& no_ds, u32 fm_mask);
 	bool TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Target* ds, bool preserve_rt_color, bool preserve_depth);
 	void SetNewFRAME(u32 bp, u32 bw, u32 psm);
 	void SetNewZBUF(u32 bp, u32 psm);
