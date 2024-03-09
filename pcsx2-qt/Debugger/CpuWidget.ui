@@ -176,185 +176,49 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="tab">
+         <widget class="QWidget" name="tabMemorySearch">
           <attribute name="title">
            <string>Memory Search</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
-            <layout class="QGridLayout" name="gridLayout_2">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>Value</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="txtSearchValue"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Type</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QComboBox" name="cmbSearchType">
-               <item>
-                <property name="text">
-                 <string>1 Byte (8 bits)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>2 Bytes (16 bits)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>4 Bytes (32 bits)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>8 Bytes (64 bits)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Float</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Double</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>String</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Array of byte</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Hex</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="3">
-              <widget class="QCheckBox" name="chkSearchHex">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2" colspan="2">
-              <widget class="QPushButton" name="btnSearch">
-               <property name="text">
-                <string>Search</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2" colspan="2">
-              <widget class="QPushButton" name="btnFilterSearch">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Filter Search</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QComboBox" name="cmbSearchComparison">
-               <item>
-                <property name="text">
-                 <string>Equals</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Not Equals</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Greater Than</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Greater Than Or Equal</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Less Than</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Less Than Or Equal</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="comparisonLabel">
-               <property name="text">
-                <string>Comparison</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QGridLayout" name="gridLayout_3">
-             <item row="0" column="0" alignment="Qt::AlignLeft">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Start</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1" alignment="Qt::AlignLeft">
-              <widget class="QLineEdit" name="txtSearchStart">
-               <property name="text">
-                <string notr="true">0x00</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>End</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="3">
-              <widget class="QLineEdit" name="txtSearchEnd">
-               <property name="text">
-                <string notr="true">0x2000000</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QListWidget" name="listSearchResults"/>
+            <widget class="MemorySearchWidget" name="memorySearchWidget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Monospace</family>
+              </font>
+             </property>
+             <property name="focusPolicy">
+              <enum>Qt::StrongFocus</enum>
+             </property>
+             <property name="contextMenuPolicy">
+              <enum>Qt::CustomContextMenu</enum>
+             </property>
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -648,6 +512,12 @@
    <class>MemoryViewWidget</class>
    <extends>QWidget</extends>
    <header>pcsx2-qt/Debugger/MemoryViewWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MemorySearchWidget</class>
+   <extends>QWidget</extends>
+   <header>pcsx2-qt/Debugger/MemorySearchWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

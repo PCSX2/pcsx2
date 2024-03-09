@@ -1,0 +1,15 @@
+# More info: http://EditorConfig.org
+root = true
+
+# * here means any file type
+[*]
+end_of_line          = crlf
+insert_final_newline = true
+
+# latin1 is a type of ASCII, should work with mbcs
+[*.{h,c,cpp}]
+charset                  = latin1
+indent_style             = space
+indent_size              = 2
+trim_trailing_whitespace = true
+curly_bracket_next_line  = false

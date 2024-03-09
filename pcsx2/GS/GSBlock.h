@@ -1516,7 +1516,7 @@ public:
 #endif
 	}
 
-	/// ReadAndExpandBlock8 for AVX2 platforms with slow VPGATHERDD (Haswell, Zen, Zen2, Zen3)
+	/// ReadAndExpandBlock8 for AVX2 platforms with slow VPGATHERDD (Haswell, Zen, Zen2, Zen3, Zen4)
 	/// This is faster than the one in ReadAndExpandBlock8_32 on HSW+ due to a port 5 traffic jam, should be about the same on Zen
 	__forceinline static void ReadAndExpandBlock8_32HSW(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{

@@ -11,14 +11,14 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 
 INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-SDL=SDL2-2.30.0
+SDL=SDL2-2.30.1
 XZ=5.4.5
 ZSTD=1.5.5
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 PNG=1.6.37
 WEBP=1.3.2
 FFMPEG=6.0
-QT=6.6.0
+QT=6.6.2
 
 mkdir -p deps-build
 cd deps-build
@@ -29,18 +29,18 @@ export CFLAGS="-I$INSTALLDIR/include $CFLAGS"
 export CXXFLAGS="-I$INSTALLDIR/include $CXXFLAGS"
 
 cat > SHASUMS <<EOF
-36e2e41557e0fa4a1519315c0f5958a87ccb27e25c51776beb6f1239526447b0  $SDL.tar.gz
+01215ffbc8cfc4ad165ba7573750f15ddda1f971d5a66e9dcaffd37c587f473a  $SDL.tar.gz
 135c90b934aee8fbc0d467de87a05cb70d627da36abe518c357a873709e5b7d6  xz-$XZ.tar.gz
 9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca  libpng-$PNG.tar.xz
 2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$WEBP.tar.gz
 57be87c22d9b49c112b6d24bc67d42508660e6b718b3db89c44e47e289137082  ffmpeg-$FFMPEG.tar.xz
-039d53312acb5897a9054bd38c9ccbdab72500b71fdccdb3f4f0844b0dd39e0e  qtbase-everywhere-src-$QT.tar.xz
-e1542cb50176e237809895c6549598c08587c63703d100be54ac2d806834e384  qtimageformats-everywhere-src-$QT.tar.xz
-33da25fef51102f564624a7ea3e57cb4a0a31b7b44783d1af5749ac36d3c72de  qtsvg-everywhere-src-$QT.tar.xz
-4e9feebc142bbb6e453e1dc3277e09ec45c8ef081b5ee2a029e6684b5905ba99  qttools-everywhere-src-$QT.tar.xz
-a0d89a236f64b810eb0fe4ae1e90db22b0e86263521b35f89e69f1392815078c  qttranslations-everywhere-src-$QT.tar.xz
+b89b426b9852a17d3e96230ab0871346574d635c7914480a2a27f98ff942677b  qtbase-everywhere-src-$QT.tar.xz
+71584c9136d4983ad19fa2d017abbae57b055eb90c62a36bf3f45d6d21a87cb3  qtimageformats-everywhere-src-$QT.tar.xz
+5a231d59ef1b42bfbaa5174d4ff39f8e1b4ba070ef984a70b069b4b2576d8181  qtsvg-everywhere-src-$QT.tar.xz
+e6d49e9f52111287f77878ecb8b708cce682f10b03ba2476d9247603bc6c4746  qttools-everywhere-src-$QT.tar.xz
+ca3ac090ef3aa12566c26b482c106f1f986c5a3444e7003f379726a550530c77  qttranslations-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \

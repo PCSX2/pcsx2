@@ -21,9 +21,6 @@
 [submodule "3rdparty/zstd/zstd"]
 	path = 3rdparty/zstd/zstd
 	url = https://github.com/facebook/zstd.git
-[submodule "3rdparty/rcheevos/rcheevos"]
-	path = 3rdparty/rcheevos/rcheevos
-	url = https://github.com/RetroAchievements/rcheevos.git
 [submodule "3rdparty/libwebp/libwebp"]
 	path = 3rdparty/libwebp/libwebp
 	url = https://github.com/webmproject/libwebp

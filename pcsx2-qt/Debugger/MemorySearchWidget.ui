@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MemorySearchWidget</class>
+ <widget class="QWidget" name="MemorySearchWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Monospace</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="valueLabel">
+       <property name="text">
+        <string>Value</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="txtSearchValue"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="typeLabel">
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cmbSearchType">
+       <item>
+        <property name="text">
+         <string>1 Byte (8 bits)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 Bytes (16 bits)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4 Bytes (32 bits)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>8 Bytes (64 bits)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Float</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Double</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>String</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Array of byte</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="hexLabel">
+       <property name="text">
+        <string>Hex</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QCheckBox" name="chkSearchHex">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="2">
+      <widget class="QPushButton" name="btnSearch">
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2" colspan="2">
+      <widget class="QPushButton" name="btnFilterSearch">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Filter Search</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cmbSearchComparison">
+       <item>
+        <property name="text">
+         <string>Equals</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Not Equals</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Greater Than</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Greater Than Or Equal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Less Than</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Less Than Or Equal</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="comparisonLabel">
+       <property name="text">
+        <string>Comparison</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="0" column="0" alignment="Qt::AlignLeft">
+      <widget class="QLabel" name="startLabel">
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" alignment="Qt::AlignLeft">
+      <widget class="QLineEdit" name="txtSearchStart">
+       <property name="text">
+        <string notr="true">0x00</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="endLabel">
+       <property name="text">
+        <string>End</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLineEdit" name="txtSearchEnd">
+       <property name="text">
+        <string notr="true">0x2000000</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listSearchResults"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="resultsCountLabel">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

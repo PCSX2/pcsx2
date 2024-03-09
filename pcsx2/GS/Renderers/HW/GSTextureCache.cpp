@@ -2467,8 +2467,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				if (!eerect.rempty())
 				{
 					GL_INS("Preloading the RT DATA from updated GS Memory");
-					eerect = eerect.rintersect(newrect);
-					AddDirtyRectTarget(dst, eerect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
+					AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
 			}
 		}
@@ -3808,6 +3807,14 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	config.ps.write_rg = write_rg;
 	config.ps.shuffle = true;
 	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
+
+	if (!write_rg)
+	{
+		// Because we don't know the new alpha value which came from green, just go full paranoid.
+		tgt->m_alpha_min = 0;
+		tgt->m_alpha_max = 255;
+	}
+
 	return true;
 }
 
@@ -5810,8 +5817,17 @@ GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unsc
 	m_unscaled_size = unscaled_size;
 	m_scale = scale;
 	m_texture = texture;
-	m_alpha_min = 0;
-	m_alpha_max = 0;
+
+	if ((m_TEX0.PSM & 0xf) == PSMCT24)
+	{
+		m_alpha_min = 128;
+		m_alpha_max = 128;
+	}
+	else
+	{
+		m_alpha_min = 0;
+		m_alpha_max = 0;
+	}
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
 }
 
@@ -5902,6 +5918,11 @@ void GSTextureCache::Target::Update()
 	u32 ndrects = 0;
 
 	const GSOffset off(g_gs_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM));
+	const u32 bpp = GSLocalMemory::m_psm[m_TEX0.PSM].bpp;
+
+	std::pair<u8, u8> alpha_minmax = {255, 0};
+	bool transferring_alpha = false;
+
 	for (size_t i = 0; i < m_dirty.size(); i++)
 	{
 		// Don't align the area we write to the target to the block size. If the format matches, the writes don't need
@@ -5913,10 +5934,23 @@ void GSTextureCache::Target::Update()
 		if (update_r.rempty())
 			continue;
 
+		transferring_alpha |= m_dirty[i].rgba.c.a;
+
 		const GSVector4i read_r = m_dirty.GetDirtyRect(i, m_TEX0, total_rect, true);
 		const GSVector4i t_r(read_r - t_offset);
 		if (mapped)
 		{
+			if ((m_TEX0.PSM & 0xf) != PSMCT24 && m_dirty[i].rgba.c.a && bpp >= 16)
+			{
+				// TODO: Only read once in 32bit and copy to the mapped texture. Bit out of scope of this PR and not a huge impact.
+				const int pitch = VectorAlign(read_r.width() * sizeof(u32));
+				g_gs_renderer->m_mem.ReadTexture(off, read_r, s_unswizzle_buffer, pitch, TEXA);
+
+				std::pair<u8, u8> new_alpha_minmax = GSGetRGBA8AlphaMinMax(s_unswizzle_buffer, read_r.width(), read_r.height(), pitch);
+				alpha_minmax.first = std::min(alpha_minmax.first, new_alpha_minmax.first);
+				alpha_minmax.second = std::max(alpha_minmax.second, new_alpha_minmax.second);
+			}
+
 			g_gs_renderer->m_mem.ReadTexture(
 				off, read_r, m.bits + t_r.y * static_cast<u32>(m.pitch) + (t_r.x * sizeof(u32)), m.pitch, TEXA);
 		}
@@ -5924,6 +5958,13 @@ void GSTextureCache::Target::Update()
 		{
 			const int pitch = VectorAlign(read_r.width() * sizeof(u32));
 			g_gs_renderer->m_mem.ReadTexture(off, read_r, s_unswizzle_buffer, pitch, TEXA);
+
+			if ((m_TEX0.PSM & 0xf) != PSMCT24 && m_dirty[i].rgba.c.a && bpp >= 16)
+			{
+				std::pair<u8, u8> new_alpha_minmax = GSGetRGBA8AlphaMinMax(s_unswizzle_buffer, read_r.width(), read_r.height(), pitch);
+				alpha_minmax.first = std::min(alpha_minmax.first, new_alpha_minmax.first);
+				alpha_minmax.second = std::max(alpha_minmax.second, new_alpha_minmax.second);
+			}
 
 			t->Update(t_r, s_unswizzle_buffer, pitch);
 		}
@@ -5975,15 +6016,18 @@ void GSTextureCache::Target::Update()
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
 
-	if ((m_TEX0.PSM & 0xf) == PSMCT24)
+	if (transferring_alpha && bpp >= 16)
 	{
-		m_alpha_min = 128;
-		m_alpha_max = 128;
-	}
-	else
-	{
-		m_alpha_min = 0;
-		m_alpha_max = m_32_bits_fmt ? 255 : 128;
+		if (m_dirty.size() != 1 || !total_rect.eq(m_valid))
+		{
+			m_alpha_min = std::min(static_cast<int>(alpha_minmax.first), m_alpha_min);
+			m_alpha_max = std::max(static_cast<int>(alpha_minmax.second), m_alpha_max);
+		}
+		else
+		{
+			m_alpha_min = alpha_minmax.first;
+			m_alpha_max = alpha_minmax.second;
+		}
 	}
 	g_gs_device->Recycle(t);
 	m_dirty.clear();

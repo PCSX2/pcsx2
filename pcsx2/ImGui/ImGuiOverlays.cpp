@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Config.h"
@@ -418,7 +418,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			APPEND("FTC ");
 		if (GSConfig.UserHacks_DisableDepthSupport)
-			APPEND("DDE ");
+			APPEND("DDC ");
 		if (GSConfig.UserHacks_DisablePartialInvalidation)
 			APPEND("DPIV ");
 		if (GSConfig.UserHacks_DisableSafeFeatures)
@@ -429,6 +429,10 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("PLFD ");
 		if (GSConfig.UserHacks_EstimateTextureRegion)
 			APPEND("ETR ");
+		if (GSConfig.HWSpinGPUForReadbacks)
+			APPEND("RBSG ");
+		if (GSConfig.HWSpinCPUForReadbacks)
+			APPEND("RBSC ");
 	}
 
 #undef APPEND
@@ -555,7 +559,7 @@ __ri void ImGuiManager::DrawInputsOverlay(float scale, float margin, float spaci
 		if (bindings.empty())
 			continue;
 
-		text.fmt("USB{} |", port + 1u);
+		text.fmt("{} {} ", ICON_PF_USB, port + 1u);
 
 		for (const InputBindingInfo& bi : bindings)
 		{
@@ -630,7 +634,7 @@ __ri void ImGuiManager::DrawInputRecordingOverlay(float& position_y, float scale
 	// Status Indicators
 	if (g_InputRecording.getControls().isRecording())
 	{
-		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays", "{} Recording Input"), ICON_FA_RECORDING).c_str(), IM_COL32(255, 0, 0, 255));
+		DRAW_LINE(standard_font, TinyString::from_fmt(TRANSLATE_FS("ImGuiOverlays", "{} Recording Input"), ICON_PF_CIRCLE).c_str(), IM_COL32(255, 0, 0, 255));
 	}
 	else
 	{
@@ -654,7 +658,7 @@ __ri void ImGuiManager::DrawVideoCaptureOverlay(float& position_y, float scale, 
 	ImFont* const standard_font = ImGuiManager::GetStandardFont();
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-	static constexpr const char* ICON = ICON_FA_RECORDING;
+	static constexpr const char* ICON = ICON_PF_CIRCLE;
 	const TinyString text_msg = TinyString::from_fmt(" {}", GSCapture::GetElapsedTime());
 	const ImVec2 icon_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
 		-1.0f, ICON, nullptr, nullptr);

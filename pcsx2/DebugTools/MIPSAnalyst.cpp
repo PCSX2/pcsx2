@@ -190,6 +190,7 @@ namespace MIPSAnalyst
 		bool looking = false;
 		bool end = false;
 		bool isStraightLeaf = true;
+		bool suspectedNoReturn = false;
 
 		functions.clear();
 
@@ -218,6 +219,16 @@ namespace MIPSAnalyst
 				isStraightLeaf = false;
 				if (target > furthestBranch) {
 					furthestBranch = target;
+				}
+
+				// beq $zero, $zero, xyz
+				if ((op >> 16) == 0x1000)
+				{
+					// If it's backwards, and there's no other branch passing it, treat as noreturn
+					if(target < addr && furthestBranch < addr)
+					{
+						end = suspectedNoReturn = true;
+					}
 				}
 			} else if ((op & 0xFC000000) == 0x08000000) {
 				u32 sureTarget = GetJumpTarget(addr);
@@ -286,11 +297,13 @@ namespace MIPSAnalyst
 
 				currentFunction.end = addr + 4;
 				currentFunction.isStraightLeaf = isStraightLeaf;
+				currentFunction.suspectedNoReturn = suspectedNoReturn;
 				functions.push_back(currentFunction);
 				furthestBranch = 0;
 				addr += 4;
 				looking = false;
 				end = false;
+				suspectedNoReturn = false;
 				isStraightLeaf = true;
 
 				currentFunction.start = addr+4;
@@ -304,7 +317,7 @@ namespace MIPSAnalyst
 			iter->size = iter->end - iter->start + 4;
 			if (insertSymbols) {
 				char temp[256];
-				map.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4);
+				map.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4, iter->suspectedNoReturn);
 			}
 		}
 	}

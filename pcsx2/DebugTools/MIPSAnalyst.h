@@ -25,6 +25,7 @@ namespace MIPSAnalyst
 		u32 size;
 		bool isStraightLeaf;
 		bool hasHash;
+		bool suspectedNoReturn;
 		bool usesVFPU;
 		char name[64];
 	};

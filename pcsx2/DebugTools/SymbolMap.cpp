@@ -241,7 +241,7 @@ std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) const
 	return result;
 }
 
-void SymbolMap::AddFunction(const std::string& name, u32 address, u32 size)
+void SymbolMap::AddFunction(const std::string& name, u32 address, u32 size, bool noReturn)
 {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
@@ -258,6 +258,7 @@ void SymbolMap::AddFunction(const std::string& name, u32 address, u32 size)
 		func.size = size;
 		func.index = (int)functions.size();
 		func.name = name;
+		func.noReturn = noReturn;
 		functions[address] = func;
 
 		functions.insert(std::make_pair(address, func));
@@ -319,6 +320,16 @@ int SymbolMap::GetFunctionNum(u32 address) const
 		return INVALID_ADDRESS;
 
 	return it->second.index;
+}
+
+bool SymbolMap::GetFunctionNoReturn(u32 address) const
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	auto it = functions.find(address);
+	if (it == functions.end())
+		return false;
+
+	return it->second.noReturn;
 }
 
 void SymbolMap::AssignFunctionIndices()

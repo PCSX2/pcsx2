@@ -1006,7 +1006,7 @@
          <item row="0" column="0">
           <widget class="QCheckBox" name="disableDepthEmulation">
            <property name="text">
-            <string>Disable Depth Emulation</string>
+            <string>Disable Depth Conversion</string>
            </property>
           </widget>
          </item>

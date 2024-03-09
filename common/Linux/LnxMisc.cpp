@@ -49,6 +49,41 @@ u64 GetCPUTicks()
 std::string GetOSVersionString()
 {
 #if defined(__linux__)
+	FILE* file = fopen("/etc/os-release", "r");
+	if (file)
+	{
+		char line[256];
+		std::string distro;
+		std::string version = "";
+		while (fgets(line, sizeof(line), file))
+		{
+			std::string_view line_view(line);
+			if (line_view.starts_with("NAME="))
+			{
+				distro = line_view.substr(5, line_view.size() - 6);
+			}
+			else if (line_view.starts_with("BUILD_ID="))
+			{
+				version = line_view.substr(9, line_view.size() - 10);
+			}
+			else if (line_view.starts_with("VERSION_ID="))
+			{
+				version = line_view.substr(11, line_view.size() - 12);
+			}
+		}
+		fclose(file);
+
+		// Some distros put quotes around the name and or version.
+		if (distro.starts_with("\"") && distro.ends_with("\""))
+			distro = distro.substr(1, distro.size() - 2);
+
+		if (version.starts_with("\"") && version.ends_with("\""))
+					version = version.substr(1, version.size() - 2);
+
+		if (!distro.empty() && !version.empty())
+			return fmt::format("{} {}", distro, version);
+	}
+
 	return "Linux";
 #else // freebsd
 	return "Other Unix";

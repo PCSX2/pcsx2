@@ -48,6 +48,9 @@ jobs:
   build_linux:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.6
+      options: --privileged
     timeout-minutes: 60
 
     steps:
@@ -55,6 +58,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
+
+      # Work around container ownership issue
+      - name: Set Safe Directory
+        shell: bash
+        run: git config --global --add safe.directory "*"
 
       # Hackity hack. When running the workflow on a schedule, we don't have the tag,
       # it doesn't fetch tags, therefore we don't get a version. So grab them manually.
@@ -81,29 +90,23 @@ jobs:
           PR_SHA: ${{ github.event.pull_request.head.sha }}
         run: ./.github/workflows/scripts/common/name-artifacts.sh
 
-      - name: Install Packages
-        env:
-          COMPILER: ${{ inputs.compiler }}
-        run: .github/workflows/scripts/linux/install-packages-flatpak.sh
-
       - name: Download patches
         run: |
           cd bin/resources
-          aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
+          wget "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Generate AppStream XML
         run: |
           ./.github/workflows/scripts/linux/generate-metainfo.sh .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
           cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-          flatpak run org.freedesktop.appstream-glib validate .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
+          flatpak-builder-lint appstream .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
 
       - name: Validate manifest
         run: |
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
+          flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
 
       - name: Build Flatpak
-        # TODO - based on v6.3, switch back to the main action once change is accepted (or they release a breaking change that uses upload-artifact@v4)
-        uses: xTVaser/flatpak-github-actions/flatpak-builder@64267d4cf01f7955a40128039d0abab17bb48aac
+        uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           upload-artifact: false
@@ -111,27 +114,19 @@ jobs:
           arch: x86_64
           build-bundle: true
           verbose: true
-          mirror-screenshots-url: https://dl.flathub.org/repo/screenshots
+          mirror-screenshots-url: https://dl.flathub.org/media
           branch: ${{ inputs.branch }}
           cache: true
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
 
-      - name: Commit screenshots to OSTree
+      - name: Validate build
         run: |
-          ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 flatpak_app/screenshots
-
-      #- name: Validate build directory
-      #  run: |
-      #    flatpak run --command=flatpak-builder-lint org.flatpak.Builder builddir flatpak_app
-      #
-      #- name: Validate repo
-      #  run: |
-      #    flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
+          flatpak-builder-lint repo repo
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
-        uses: flatpak/flatpak-github-actions/flat-manager@v6.3
+        uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: beta
@@ -139,7 +134,7 @@ jobs:
 
       - name: Push to Flathub stable
         if: inputs.publish == true && inputs.branch == 'stable'
-        uses: flatpak/flatpak-github-actions/flat-manager@v6.3
+        uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
         with:
           flat-manager-url: https://hub.flathub.org/
           repository: stable

@@ -158,6 +158,9 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/DisassemblyWidget.cpp
 	Debugger/DisassemblyWidget.h
 	Debugger/DisassemblyWidget.ui
+	Debugger/MemorySearchWidget.cpp
+	Debugger/MemorySearchWidget.h
+	Debugger/MemorySearchWidget.ui
 	Debugger/MemoryViewWidget.cpp
 	Debugger/MemoryViewWidget.h
 	Debugger/MemoryViewWidget.ui
