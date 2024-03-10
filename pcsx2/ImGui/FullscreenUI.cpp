@@ -5939,12 +5939,12 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
 					if (index == 0)
 					{
-						// Open in file browser... todo
-						Host::ReportErrorAsync("Error", "Not implemented");
+						// Open In File Browser.
+						Host::OpenURL(Path::CreateFileURL(dir));
 					}
 					else if (index == 1)
 					{
-						// toggle subdirectory scanning
+						// Toggle Subdirectory Scanning.
 						{
 							auto lock = Host::GetSettingsLock();
 							SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
@@ -5967,7 +5967,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 					}
 					else if (index == 2)
 					{
-						// remove from list
+						// Remove From List.
 						auto lock = Host::GetSettingsLock();
 						SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
 						bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
