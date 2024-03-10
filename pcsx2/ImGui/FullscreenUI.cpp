@@ -5928,7 +5928,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 				{it.second ? (FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Disable Subdirectory Scanning")) :
 							 (FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Enable Subdirectory Scanning")),
 					false},
-				{FSUI_ICONSTR(ICON_FA_TIMES, "Remove From List"), false},
+				{FSUI_ICONSTR(ICON_FA_TRASH, "Remove From List"), false},
 				{FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
 			};
 

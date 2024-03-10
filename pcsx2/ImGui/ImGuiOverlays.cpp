@@ -728,7 +728,7 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 	const std::string serial = VMManager::GetDiscSerial();
 	if (serial.empty())
 	{
-		Host::AddIconOSDMessage("SaveStateSelectorUIUnavailable", ICON_FA_SD_CARD,
+		Host::AddIconOSDMessage("SaveStateSelectorUIUnavailable", ICON_PF_MEMORY_CARD,
 			TRANSLATE_SV("ImGuiOverlays", "Save state selector is unavailable without a valid game serial."));
 		return;
 	}
