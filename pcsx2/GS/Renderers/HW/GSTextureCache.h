@@ -89,7 +89,8 @@ public:
 		HashType TEX0Hash, CLUTHash;
 		GIFRegTEX0 TEX0;
 		GIFRegTEXA TEXA;
-		SourceRegion region;
+		u32 region_width;
+		u32 region_height;
 
 		HashCacheKey();
 
@@ -102,6 +103,7 @@ public:
 		__fi bool operator!=(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) != 0; }
 		__fi bool operator<(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) < 0; }
 	};
+	static_assert(sizeof(HashCacheKey) == 40, "HashCacheKey has no padding");
 
 	struct HashCacheKeyHash
 	{
