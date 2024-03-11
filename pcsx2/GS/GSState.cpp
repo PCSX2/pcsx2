@@ -3962,6 +3962,41 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 	m_vt.m_alpha.valid = true;
 }
 
+void GSState::CorrectATEAlphaMinMax(const u32 atst, const int aref)
+{
+	const GSVertexTrace::VertexAlpha& aminmax = GetAlphaMinMax();
+	int amin = aminmax.min;
+	int amax = aminmax.max;
+	switch (atst)
+	{
+		case ATST_LESS:
+			amin = std::min(amin, std::max(aref - 1, amin));
+			amax = std::min(amax, std::max(aref - 1, amin));
+			break;
+		case ATST_LEQUAL:
+			amin = std::min(amin, std::max(aref, amin));
+			amax = std::min(amax, std::max(aref, amin));
+			break;
+		case ATST_EQUAL:
+			amax = aref;
+			amin = aref;
+			break;
+		case ATST_GEQUAL:
+			amax = std::max(amax, std::min(aref, amax));
+			amin = std::max(amin, std::min(aref, amax));
+			break;
+		case ATST_GREATER:
+			amax = std::max(amax, std::min(aref + 1, amax));
+			amin = std::max(amin, std::min(aref + 1, amax));
+			break;
+		default:
+			break;
+	}
+
+	m_vt.m_alpha.min = amin;
+	m_vt.m_alpha.max = amax;
+}
+
 bool GSState::TryAlphaTest(u32& fm, u32& zm)
 {
 	// Shortcut for the easy case
