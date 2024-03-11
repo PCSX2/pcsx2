@@ -556,6 +556,15 @@ void MemorySearchWidget::onSearchButtonClicked()
 			return;
 	}
 
+	if (!isFilterSearch && (searchComparison == SearchComparison::Changed || searchComparison == SearchComparison::ChangedBy
+		|| searchComparison == SearchComparison::Decreased || searchComparison == SearchComparison::DecreasedBy
+		|| searchComparison == SearchComparison::Increased || searchComparison == SearchComparison::IncreasedBy
+		|| searchComparison == SearchComparison::NotChanged))
+	{
+		QMessageBox::critical(this, tr("Debugger"), tr("This search comparison can only be used with filter searches."));
+		return;
+	}
+
 	QFutureWatcher<std::vector<SearchResult>>* workerWatcher = new QFutureWatcher<std::vector<SearchResult>>();
 	auto onSearchFinished = [this, workerWatcher] {
 		m_ui.btnSearch->setDisabled(false);
@@ -588,7 +597,7 @@ void MemorySearchWidget::onSearchButtonClicked()
 
 void MemorySearchWidget::onSearchResultsListScroll(u32 value)
 {
-	const bool hasResultsToLoad = static_cast<qsizetype>(m_ui.listSearchResults->count()) < m_searchResults.size();
+	const bool hasResultsToLoad = static_cast<size_t>(m_ui.listSearchResults->count()) < m_searchResults.size();
 	const bool scrolledSufficiently = value > (m_ui.listSearchResults->verticalScrollBar()->maximum() * 0.95);
 	if (!m_resultsLoadTimer.isActive() && hasResultsToLoad && scrolledSufficiently)
 	{
