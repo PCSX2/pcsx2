@@ -3731,9 +3731,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	GL_INS("Draw AlphaMinMax: %d-%d, RT AlphaMinMax: %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max, rt_alpha_min, rt_alpha_max);
 #endif
 
-	bool blend_ad_improved = false;
-	const bool alpha_mask = (m_cached_ctx.FRAME.FBMSK & 0xFF000000) == 0xFF000000;
-
 	// When AA1 is enabled and Alpha Blending is disabled, alpha blending done with coverage instead of alpha.
 	// We use a COV value of 128 (full coverage) in triangles (except the edge geometry, which we can't do easily).
 	if (IsCoverageAlpha())
@@ -3754,13 +3751,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			AFIX = 128;
 			m_conf.ps.blend_c = 2;
-		}
-		// Check whenever we can use rt alpha min as the new alpha value, will be more accurate.
-		else if (!alpha_mask && (rt_alpha_min >= (rt_alpha_max / 2)))
-		{
-			AFIX = rt_alpha_min;
-			m_conf.ps.blend_c = 2;
-			blend_ad_improved = true;
 		}
 	}
 
@@ -3821,6 +3811,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
 	// Must be done before index calculation, after blending equation optimizations
 	const bool blend_ad = m_conf.ps.blend_c == 1;
+	const bool alpha_mask = (m_cached_ctx.FRAME.FBMSK & 0xFF000000) == 0xFF000000;
 	bool blend_ad_alpha_masked = blend_ad && alpha_mask;
 	if (((GSConfig.AccurateBlendingUnit >= AccBlendLevel::Basic) || (COLCLAMP.CLAMP == 0))
 		&& g_gs_device->Features().texture_barrier && blend_ad_alpha_masked)
@@ -3868,7 +3859,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	// BLEND_HW_CLR1 with Ad, BLEND_HW_CLR3  Cs > 0.5f will require sw blend.
 	// BLEND_HW_CLR1 with As/F and BLEND_HW_CLR2 can be done in hw.
 	const bool clr_blend = !!(blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2 | BLEND_HW_CLR3));
-	bool clr_blend1_2 = (blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2)) && (m_conf.ps.blend_c != 1) && !blend_ad_improved // Make sure it isn't an Ad case
+	bool clr_blend1_2 = (blend_flag & (BLEND_HW_CLR1 | BLEND_HW_CLR2)) && (m_conf.ps.blend_c != 1) // Make sure it isn't an Ad case
 						&& !(m_draw_env->PABE.PABE && GetAlphaMinMax().min < 128) // No PABE as it will require sw blending.
 						&& (COLCLAMP.CLAMP) // Let's add a colclamp check too, hw blend will clamp to 0-1.
 						&& !(one_barrier || m_conf.require_full_barrier); // Also don't run if there are barriers present.
@@ -3891,7 +3882,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			|| (one_barrier && (no_prim_overlap || features.framebuffer_fetch))
 			|| ((alpha_c2_high_one || alpha_c0_high_max_one) && no_prim_overlap)
 			// Ad blends are completely wrong without sw blend (Ad is 0.5 not 1 for 128). We can spare a barrier for it.
-			|| ((blend_ad || blend_ad_improved) && no_prim_overlap);
+			|| (blend_ad && no_prim_overlap);
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -3922,12 +3913,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				sw_blending |= blend_requires_barrier;
 				// Try to do hw blend for clr2 case.
 				sw_blending &= !clr_blend1_2;
-				// blend_ad_improved should only run if no other barrier blend is enabled, otherwise restore bit values.
-				if (blend_ad_improved && (sw_blending || prefer_sw_blend))
-				{
-					AFIX = 0;
-					m_conf.ps.blend_c = 1;
-				}
 				// Enable sw blending for free blending, should be done after blend_ad_improved check.
 				sw_blending |= free_blend;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate.
@@ -3974,12 +3959,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				sw_blending |= fbmask_no_overlap;
 				// Try to do hw blend for clr2 case.
 				sw_blending &= !clr_blend1_2;
-				// blend_ad_improved should only run if no other barrier blend is enabled, otherwise restore bit values.
-				if (blend_ad_improved && (sw_blending || fbmask_no_overlap))
-				{
-					AFIX = 0;
-					m_conf.ps.blend_c = 1;
-				}
 				// Enable sw blending for free blending, should be done after blend_ad_improved check.
 				sw_blending |= accumulation_blend || blend_non_recursive;
 				// Do not run BLEND MIX if sw blending is already present, it's less accurate.
