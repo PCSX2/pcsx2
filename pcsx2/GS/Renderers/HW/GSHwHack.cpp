@@ -682,6 +682,8 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	{
 		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo RGB channel shuffle");
 
+		src->m_alpha_max = 255;
+		src->m_alpha_min = 0;
 		GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
 			src->GetTexture(), nullptr, src->GetScale(), src->GetTexture(), src->GetScale(), src->GetUnscaledRect());
 		config.pal = palette->GetPaletteGSTexture();
