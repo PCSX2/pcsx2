@@ -400,30 +400,27 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 		return;
 	}
 
-	bool half_bottom_vert = true;
 	bool half_right_vert = true;
-	bool half_bottom_uv = true;
-	bool half_right_uv = true;
+	bool half_bottom_vert = true;
+	bool half_right_uv = !m_copy_16bit_to_target_shuffle;
+	bool half_bottom_uv = !m_copy_16bit_to_target_shuffle;
 
 	if (m_same_group_texture_shuffle)
 	{
 		if (m_cached_ctx.FRAME.FBW != rt->m_TEX0.TBW && m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
-			half_right_vert = false;
-		else
 			half_bottom_vert = false;
+		else
+			half_right_vert = false;
 	}
 	else
 	{
 		// Different source (maybe?)
 		// If a game does the texture and frame doubling differently, they can burn in hell.
-		if (m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
+		if (!m_copy_16bit_to_target_shuffle && m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
 		{
-			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
-			const int tex_width = tex->m_target ? tex->m_from_target->m_valid.z : (tex->m_TEX0.TBW * 64);
-			const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
-			const int clamp_minu = m_context->CLAMP.MINU;
-			const int clamp_maxu = m_context->CLAMP.MAXU;
-			int max_tex_draw_width = std::min(static_cast<int>(m_vt.m_max.t.x), 1 << m_cached_ctx.TEX0.TW);
+			unsigned int max_tex_draw_width = std::min(static_cast<int>(m_vt.m_max.t.x + (!read_ba ? 8 : 0)), 1 << m_cached_ctx.TEX0.TW);
+			const unsigned int clamp_minu = m_context->CLAMP.MINU;
+			const unsigned int clamp_maxu = m_context->CLAMP.MAXU;
 
 			switch (m_context->CLAMP.WMS)
 			{
@@ -437,28 +434,34 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 					break;
 			}
 
-			if ((static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= std::min(tex_width * 2, 1024) && tex_tbw != m_cached_ctx.TEX0.TBW) || (m_cached_ctx.TEX0.TBW * 64) < floor(max_tex_draw_width))
-			{
-				half_right_uv = false;
-				half_right_vert = false;
-			}
-			else
+			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
+			// Dogs will reuse the Z in a different size format for a completely unrelated draw with an FBW of 2, then go back to using it in full width
+			const bool size_is_wrong = tex->m_target ? (static_cast<int>(tex->m_from_target_TEX0.TBW * 64) < tex->m_from_target->m_valid.z / 2) : false;
+			const int tex_width = tex->m_target ? std::min(tex->m_from_target->m_valid.z, size_is_wrong ? tex->m_from_target->m_valid.z : static_cast<int>(tex->m_from_target_TEX0.TBW * 64)) : max_tex_draw_width;
+			const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
+
+			if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= (tex_width * 2) && tex_tbw != m_cached_ctx.TEX0.TBW)
 			{
 				half_bottom_uv = false;
 				half_bottom_vert = false;
+			}
+			else
+			{
+				half_right_uv = false;
+				half_right_vert = false;
 			}
 		}
 		else
 		{
 			if ((floor(m_vt.m_max.p.y) <= rt->m_valid.w) && ((floor(m_vt.m_max.p.x) > (m_cached_ctx.FRAME.FBW * 64)) || (rt->m_TEX0.TBW != m_cached_ctx.FRAME.FBW)))
 			{
-				half_right_vert = false;
-				half_right_uv = false;
+				half_bottom_vert = false;
+				half_bottom_uv = false;
 			}
 			else
 			{
-				half_bottom_vert = false;
-				half_bottom_uv = false;
+				half_right_vert = false;
+				half_right_uv = false;
 			}
 		}
 	}
@@ -480,7 +483,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			else
 				v[i + 1 - reversed_U].U += 128u;
 
-			if (!half_bottom_vert)
+			if (half_bottom_vert)
 			{
 				// Height is too big (2x).
 				const int tex_offset = v[i].V & 0xF;
@@ -492,10 +495,28 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 				v[i].XYZ.Y = static_cast<u16>(tmp.x);
 				v[i + 1].XYZ.Y = static_cast<u16>(tmp.z);
 
-				if (!half_bottom_uv)
+				if (half_bottom_uv)
 				{
 					v[i].V = static_cast<u16>(tmp.y);
 					v[i + 1].V = static_cast<u16>(tmp.w);
+				}
+			}
+			else if (half_right_vert)
+			{
+				// Width is too big (2x).
+				const int tex_offset = v[i].U & 0xF;
+				const GSVector4i offset(o.OFX, tex_offset, o.OFX, tex_offset);
+
+				GSVector4i tmp(v[i].XYZ.X, v[i].U, v[i + 1].XYZ.X, v[i + 1].U);
+				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
+
+				v[i].XYZ.X = static_cast<u16>(tmp.x);
+				v[i + 1].XYZ.X = static_cast<u16>(tmp.z);
+
+				if (half_right_uv)
+				{
+					v[i].U = static_cast<u16>(tmp.y);
+					v[i + 1].U = static_cast<u16>(tmp.w);
 				}
 			}
 		}
@@ -519,7 +540,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			else
 				v[i + 1 - reversed_S].ST.S += offset_8pix;
 
-			if (!half_bottom_vert)
+			if (half_bottom_vert)
 			{
 				// Height is too big (2x).
 				const GSVector4i offset(o.OFY, o.OFY);
@@ -531,10 +552,28 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 				v[i].XYZ.Y = static_cast<u16>(tmp.x);
 				v[i + 1].XYZ.Y = static_cast<u16>(tmp.y);
 
-				if (!half_bottom_uv)
+				if (half_bottom_uv)
 				{
 					v[i].ST.T /= 2.0f;
 					v[i + 1].ST.T /= 2.0f;
+				}
+			}
+			else if (half_right_vert)
+			{
+				// Width is too big (2x).
+				const GSVector4i offset(o.OFX, o.OFX);
+
+				GSVector4i tmp(v[i].XYZ.X, v[i + 1].XYZ.X);
+				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
+
+				//fprintf(stderr, "Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
+				v[i].XYZ.X = static_cast<u16>(tmp.x);
+				v[i + 1].XYZ.X = static_cast<u16>(tmp.y);
+
+				if (half_right_uv)
+				{
+					v[i].ST.S /= 2.0f;
+					v[i + 1].ST.S /= 2.0f;
 				}
 			}
 		}
@@ -554,7 +593,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 			m_vt.m_max.t.x += 8.0f;
 	}
 
-	if (!half_right_vert)
+	if (half_right_vert)
 	{
 		m_vt.m_min.p.x /= 2.0f;
 		m_vt.m_max.p.x /= 2.0f;
@@ -562,7 +601,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 		m_context->scissor.in.z = m_vt.m_max.p.x + 8.0f;
 	}
 
-	if (!half_bottom_vert)
+	if (half_bottom_vert)
 	{
 		m_vt.m_min.p.y /= 2.0f;
 		m_vt.m_max.p.y /= 2.0f;
@@ -571,16 +610,16 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GS
 	}
 
 	// Only do this is the source is being interpreted as 16bit
-	if (!half_bottom_uv)
+	if (half_bottom_uv)
 	{
 		m_vt.m_min.t.y /= 2.0f;
 		m_vt.m_max.t.y /= 2.0f;
 	}
 
-	if (!half_right_uv)
+	if (half_right_uv)
 	{
-		m_vt.m_min.t.y /= 2.0f;
-		m_vt.m_max.t.y /= 2.0f;
+		m_vt.m_min.t.x /= 2.0f;
+		m_vt.m_max.t.x /= 2.0f;
 	}
 }
 
