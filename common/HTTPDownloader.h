@@ -66,8 +66,6 @@ public:
 	virtual ~HTTPDownloader();
 
 	static std::unique_ptr<HTTPDownloader> Create(std::string user_agent = DEFAULT_USER_AGENT);
-	static std::string URLEncode(const std::string_view& str);
-	static std::string URLDecode(const std::string_view& str);
 	static std::string GetExtensionForContentType(const std::string& content_type);
 
 	void SetTimeout(float timeout);
