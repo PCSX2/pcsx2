@@ -759,6 +759,115 @@ std::string Path::Combine(const std::string_view& base, const std::string_view& 
 	return ret;
 }
 
+
+std::string Path::URLEncode(std::string_view str)
+{
+	std::string ret;
+	ret.reserve(str.length() + ((str.length() + 3) / 4) * 3);
+
+	for (size_t i = 0, l = str.size(); i < l; i++)
+	{
+		const char c = str[i];
+		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-' || c == '_' ||
+			c == '.' || c == '!' || c == '~' || c == '*' || c == '\'' || c == '(' || c == ')')
+		{
+			ret.push_back(c);
+		}
+		else
+		{
+			ret.push_back('%');
+
+			const unsigned char n1 = static_cast<unsigned char>(c) >> 4;
+			const unsigned char n2 = static_cast<unsigned char>(c) & 0x0F;
+			ret.push_back((n1 >= 10) ? ('a' + (n1 - 10)) : ('0' + n1));
+			ret.push_back((n2 >= 10) ? ('a' + (n2 - 10)) : ('0' + n2));
+		}
+	}
+
+	return ret;
+}
+
+std::string Path::URLDecode(std::string_view str)
+{
+	std::string ret;
+	ret.reserve(str.length());
+
+	for (size_t i = 0, l = str.size(); i < l; i++)
+	{
+		const char c = str[i];
+		if (c == '+')
+		{
+			ret.push_back(c);
+		}
+		else if (c == '%')
+		{
+			if ((i + 2) >= str.length())
+				break;
+
+			const char clower = str[i + 1];
+			const char cupper = str[i + 2];
+			const unsigned char lower =
+				(clower >= '0' && clower <= '9') ?
+					static_cast<unsigned char>(clower - '0') :
+					((clower >= 'a' && clower <= 'f') ?
+							static_cast<unsigned char>(clower - 'a') :
+							((clower >= 'A' && clower <= 'F') ? static_cast<unsigned char>(clower - 'A') : 0));
+			const unsigned char upper =
+				(cupper >= '0' && cupper <= '9') ?
+					static_cast<unsigned char>(cupper - '0') :
+					((cupper >= 'a' && cupper <= 'f') ?
+							static_cast<unsigned char>(cupper - 'a') :
+							((cupper >= 'A' && cupper <= 'F') ? static_cast<unsigned char>(cupper - 'A') : 0));
+			const char dch = static_cast<char>(lower | (upper << 4));
+			ret.push_back(dch);
+		}
+		else
+		{
+			ret.push_back(c);
+		}
+	}
+
+	return std::string(str);
+}
+
+std::string Path::CreateFileURL(std::string_view path)
+{
+	pxAssert(IsAbsolute(path));
+
+	std::string ret;
+	ret.reserve(path.length() + 10);
+	ret.append("file://");
+
+	const std::vector<std::string_view> components = SplitNativePath(path);
+	pxAssertRel(!components.empty(), "Trying to create a URL from an empty path.");
+
+	const std::string_view& first = components.front();
+#ifdef _WIN32
+	// Windows doesn't urlencode the drive letter.
+	// UNC paths should be omit the leading slash.
+	if (first.starts_with("\\\\"))
+	{
+		// file://hostname/...
+		ret.append(first.substr(2));
+	}
+	else
+	{
+		// file:///c:/...
+		fmt::format_to(std::back_inserter(ret), "/{}", first);
+	}
+#else
+	// Don't append a leading slash for the first component.
+	ret.append(first);
+#endif
+
+	for (size_t comp = 1; comp < components.size(); comp++)
+	{
+		fmt::format_to(std::back_inserter(ret), "/{}", URLEncode(components[comp]));
+	}
+
+	return ret;
+}
+
 std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* error)
 {
 #ifdef _WIN32

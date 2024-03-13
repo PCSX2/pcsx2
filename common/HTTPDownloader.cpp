@@ -227,69 +227,6 @@ bool HTTPDownloader::HasAnyRequests()
 	return !m_pending_http_requests.empty();
 }
 
-std::string HTTPDownloader::URLEncode(const std::string_view& str)
-{
-	std::string ret;
-	ret.reserve(str.length() + ((str.length() + 3) / 4) * 3);
-
-	for (size_t i = 0, l = str.size(); i < l; i++)
-	{
-		const char c = str[i];
-		if ((c >= '0' && c <= '9') ||
-			(c >= 'a' && c <= 'z') ||
-			(c >= 'A' && c <= 'Z') ||
-			c == '-' || c == '_' || c == '.' || c == '!' || c == '~' ||
-			c == '*' || c == '\'' || c == '(' || c == ')')
-		{
-			ret.push_back(c);
-		}
-		else
-		{
-			ret.push_back('%');
-
-			const unsigned char n1 = static_cast<unsigned char>(c) >> 4;
-			const unsigned char n2 = static_cast<unsigned char>(c) & 0x0F;
-			ret.push_back((n1 >= 10) ? ('a' + (n1 - 10)) : ('0' + n1));
-			ret.push_back((n2 >= 10) ? ('a' + (n2 - 10)) : ('0' + n2));
-		}
-	}
-
-	return ret;
-}
-
-std::string HTTPDownloader::URLDecode(const std::string_view& str)
-{
-	std::string ret;
-	ret.reserve(str.length());
-
-	for (size_t i = 0, l = str.size(); i < l; i++)
-	{
-		const char c = str[i];
-		if (c == '+')
-		{
-			ret.push_back(c);
-		}
-		else if (c == '%')
-		{
-			if ((i + 2) >= str.length())
-				break;
-
-			const char clower = str[i + 1];
-			const char cupper = str[i + 2];
-			const unsigned char lower = (clower >= '0' && clower <= '9') ? static_cast<unsigned char>(clower - '0') : ((clower >= 'a' && clower <= 'f') ? static_cast<unsigned char>(clower - 'a') : ((clower >= 'A' && clower <= 'F') ? static_cast<unsigned char>(clower - 'A') : 0));
-			const unsigned char upper = (cupper >= '0' && cupper <= '9') ? static_cast<unsigned char>(cupper - '0') : ((cupper >= 'a' && cupper <= 'f') ? static_cast<unsigned char>(cupper - 'a') : ((cupper >= 'A' && cupper <= 'F') ? static_cast<unsigned char>(cupper - 'A') : 0));
-			const char dch = static_cast<char>(lower | (upper << 4));
-			ret.push_back(dch);
-		}
-		else
-		{
-			ret.push_back(c);
-		}
-	}
-
-	return std::string(str);
-}
-
 std::string HTTPDownloader::GetExtensionForContentType(const std::string& content_type)
 {
 	// Based on https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types

@@ -75,4 +75,13 @@ namespace Path
 	/// Splits a path into its components, only handling native separators.
 	std::vector<std::string_view> SplitNativePath(const std::string_view& path);
 	std::string JoinNativePath(const std::vector<std::string_view>& components);
+
+	/// URL encodes the specified string.
+	std::string URLEncode(std::string_view str);
+
+	/// Decodes the specified escaped string.
+	std::string URLDecode(std::string_view str);
+
+	/// Returns a URL for a given path. The path should be absolute.
+	std::string CreateFileURL(std::string_view path);
 } // namespace Path

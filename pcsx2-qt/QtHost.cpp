@@ -1367,7 +1367,7 @@ QString QtHost::GetResourcesBasePath()
 
 std::string QtHost::GetRuntimeDownloadedResourceURL(std::string_view name)
 {
-	return fmt::format("{}/{}", RUNTIME_RESOURCES_URL, HTTPDownloader::URLEncode(name));
+	return fmt::format("{}/{}", RUNTIME_RESOURCES_URL, Path::URLEncode(name));
 }
 
 std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
