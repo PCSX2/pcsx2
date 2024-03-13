@@ -399,17 +399,17 @@
           <widget class="QComboBox" name="screenshotSize">
            <item>
             <property name="text">
-             <string>Screen Resolution</string>
+             <string>Window Resolution (Aspect Corrected)</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Internal Resolution</string>
+             <string>Internal Resolution (Aspect Corrected)</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Internal Resolution (Aspect Uncorrected)</string>
+             <string>Internal Resolution (No Aspect Correction)</string>
             </property>
            </item>
           </widget>
