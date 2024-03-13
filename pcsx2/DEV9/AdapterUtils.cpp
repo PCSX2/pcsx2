@@ -5,25 +5,28 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 
 #ifdef __POSIX__
+#include <unistd.h>
 #include <vector>
 #include <fstream>
 #include <net/if.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#ifdef __linux__
-#include <unistd.h>
 #include <sys/ioctl.h>
-#endif
+#include <string.h>
 
 #if defined(__FreeBSD__) || (__APPLE__)
+#include <sys/types.h>
+#include <net/if_dl.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#include <sys/sockio.h>
 #include <net/route.h>
+#include <net/if_var.h>
 #endif
 #endif
 
@@ -244,29 +247,69 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 
 	return std::nullopt;
 }
-#elif defined(__POSIX__)
-#ifdef __linux__
-std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
-{
-	struct ifreq ifr;
-	strcpy(ifr.ifr_name, adapter->ifa_name);
-
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	int ret = ioctl(fd, SIOCGIFHWADDR, &ifr);
-	close(fd);
-
-	if (ret == 0)
-		return *(MAC_Address*)ifr.ifr_hwaddr.sa_data;
-
-	return std::nullopt;
-}
 #else
 std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 {
-	Console.Error("DEV9: Unsupported OS, can't get MAC address");
+	MAC_Address macAddr = {};
+#if defined(AF_LINK)
+	ifaddrs* adapterInfo;
+	const int error = getifaddrs(&adapterInfo);
+	if (error)
+	{
+		Console.Error("DEV9: Failed to get adapter information %s", error);
+		return std::nullopt;
+	}
+
+	const ScopedGuard adapterInfoGuard = [&adapterInfo]() {
+		freeifaddrs(adapterInfo);
+	};
+
+	for (const ifaddrs* po = adapterInfo; po; po = po->ifa_next)
+	{
+		if (strcmp(po->ifa_name, adapter->ifa_name))
+			continue;
+
+		if (po->ifa_addr->sa_family != AF_LINK)
+			continue;
+
+		// We have a valid MAC address.
+		std::memcpy(&macAddr, LLADDR(reinterpret_cast<sockaddr_dl*>(po->ifa_addr)), sizeof(macAddr));
+		return macAddr;
+	}
+	Console.Error("DEV9: Failed to get MAC address for adapter using AF_LINK");
+#else
+	const int sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+	if (sd < 0)
+	{
+		Console.Error("DEV9: Failed to open socket");
+		return std::nullopt;
+	}
+	const ScopedGuard sd_guard = [&sd]() {
+		close(sd);
+	};
+	struct ifreq ifr = {};
+	StringUtil::Strlcpy(ifr.ifr_name, adapter->ifa_name, std::size(ifr.ifr_name));
+#if defined(SIOCGIFHWADDR)
+	if (ioctl(sd, SIOCGIFHWADDR, &ifr) < 0)
+	{
+		Console.Error("DEV9: Failed to get MAC address for adapter using SIOCGIFHWADDR");
+		return std::nullopt;
+	}
+	std::memcpy(&macAddr, &ifr.ifr_hwaddr.sa_data, sizeof(macAddr));
+	return macAddr;
+#elif defined(SIOCGENADDR)
+	if (ioctl(sd, SIOCGENADDR, &ifr) < 0)
+	{
+		Console.Error("DEV9: Failed to get MAC address for adapter using SIOCGENADDR");
+		return std::nullopt;
+	}
+	std::memcpy(&macAddr, &ifr.ifr_enaddr, sizeof(macAddr));
+	return macAddr;
+#endif
+#endif
+	Console.Error("DEV9: Unsupported OS, can't get network features");
 	return std::nullopt;
 }
-#endif
 #endif
 
 // AdapterIP.
@@ -376,7 +419,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	}
 	return collection;
 }
-#elif defined(__FreeBSD__) || (__APPLE__)
+#elif defined(__FreeBSD__) || defined(__APPLE__)
 std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 {
 	if (adapter == nullptr)
