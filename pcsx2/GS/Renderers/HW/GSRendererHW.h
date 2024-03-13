@@ -124,6 +124,7 @@ private:
 	bool IsUsingAsInBlend();
 
 	GSVector4i m_r = {};
+	GSVector4i m_r_no_scissor = {};
 	
 	// We modify some of the context registers to optimize away unnecessary operations.
 	// Instead of messing with the real context, we copy them and use those instead.

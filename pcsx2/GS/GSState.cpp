@@ -3643,7 +3643,7 @@ static bool UsesRegionRepeat(int fix, int msk, int min, int max, int* min_out, i
 	return sets_bits || clears_bits;
 }
 
-GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize)
+GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP, bool linear, bool clamp_to_tsize, bool no_gaps)
 {
 	// TODO: some of the +1s can be removed if linear == false
 
@@ -3752,7 +3752,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && m_index.tail < 3)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && no_gaps)
 		{
 			// When coordinates are fractional, GS appears to draw to the right/bottom (effectively
 			// taking the ceiling), not to the top/left (taking the floor).
@@ -3768,50 +3768,55 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
 				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
 
-				// we need to check that it's not going to repeat over the non-clipped part
-				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(st.x) & ~tw_mask) == (static_cast<int>(st.z) & ~tw_mask)))
-				{
-					// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-					const bool u_forward = vert_first->U < vert_second->U;
-					const bool x_forward = vert_first->XYZ.X < vert_second->XYZ.X;
-					const bool swap_x = u_forward != x_forward;
+				GSVector4 new_st = st;
+				// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
+				const bool u_forward = vert_first->U < vert_second->U;
+				const bool x_forward = vert_first->XYZ.X < vert_second->XYZ.X;
+				const bool swap_x = u_forward != x_forward;
 
-					if (int_rc.left < scissored_rc.left)
-					{
-						if(!swap_x)
-							st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
-						else
-							st.z -= floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
-					}
-					if (int_rc.right > scissored_rc.right)
-					{
-						if (!swap_x)
-							st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
-						else
-							st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
-					}
+				if (int_rc.left < scissored_rc.left)
+				{
+					if (!swap_x)
+						new_st.x += floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
+					else
+						new_st.z -= floor(static_cast<float>(scissored_rc.left - int_rc.left) * grad.x);
 				}
-				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(st.y) & ~th_mask) == (static_cast<int>(st.w) & ~th_mask)))
+				if (int_rc.right > scissored_rc.right)
 				{
-					// Check if the UV coords are going in a different direction to the verts, if they match direction, no need to swap
-					const bool v_forward = vert_first->V < vert_second->V;
-					const bool y_forward = vert_first->XYZ.Y < vert_second->XYZ.Y;
-					const bool swap_y = v_forward != y_forward;
+					if (!swap_x)
+						new_st.z -= floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+					else
+						new_st.x += floor(static_cast<float>(int_rc.right - scissored_rc.right) * grad.x);
+				}
+				// we need to check that it's not going to repeat over the non-clipped part
+				if (wms != CLAMP_REGION_REPEAT && (wms != CLAMP_REPEAT || (static_cast<int>(new_st.x) & ~tw_mask) == (static_cast<int>(new_st.z) & ~tw_mask)))
+				{
+					st.x = new_st.x;
+					st.z = new_st.z;
+				}
 
-					if (int_rc.top < scissored_rc.top)
-					{
-						if (!swap_y)
-							st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
-						else
-							st.w -= floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
-					}
-					if (int_rc.bottom > scissored_rc.bottom)
-					{
-						if (!swap_y)
-							st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
-						else
-							st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
-					}
+				const bool v_forward = vert_first->V < vert_second->V;
+				const bool y_forward = vert_first->XYZ.Y < vert_second->XYZ.Y;
+				const bool swap_y = v_forward != y_forward;
+
+				if (int_rc.top < scissored_rc.top)
+				{
+					if (!swap_y)
+						new_st.y += floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+					else
+						new_st.w -= floor(static_cast<float>(scissored_rc.top - int_rc.top) * grad.y);
+				}
+				if (int_rc.bottom > scissored_rc.bottom)
+				{
+					if (!swap_y)
+						new_st.w -= floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+					else
+						new_st.y += floor(static_cast<float>(int_rc.bottom - scissored_rc.bottom) * grad.y);
+				}
+				if (wmt != CLAMP_REGION_REPEAT && (wmt != CLAMP_REPEAT || (static_cast<int>(new_st.y) & ~th_mask) == (static_cast<int>(new_st.w) & ~th_mask)))
+				{
+					st.y = new_st.y;
+					st.w = new_st.w;
 				}
 			}
 		}
