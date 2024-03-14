@@ -1154,7 +1154,7 @@ bool GSDeviceMTL::Create()
 	{
 		bool mmod = i & 1;
 		bool amod = i & 2;
-		NSString* name = [NSString stringWithFormat:@"ps_merge%zu", mmod];
+		NSString* name = [NSString stringWithFormat:@"ps_merge%d", mmod];
 		NSString* pipename = [NSString stringWithFormat:@"Merge%s%s", mmod ? " MMOD" : "", amod ? " AMOD" : ""];
 		pdesc.colorAttachments[0].writeMask = amod ? MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue : MTLColorWriteMaskAll;
 		m_merge_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), pipename);
@@ -2234,7 +2234,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 	if (config.drawlist)
 	{
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d sprites in %d groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
+		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d sprites in %zu groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
 #if defined(_DEBUG)
 		// Check how draw call is split.
 		std::map<size_t, size_t> frequency;
