@@ -13842,6 +13842,7 @@ SLES-50386:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
+    deinterlace: 5 # Fixes blurriness.
     nativePaletteDraw: 1
     autoFlush: 2 # Fixes refraction effect.
 SLES-50390:
