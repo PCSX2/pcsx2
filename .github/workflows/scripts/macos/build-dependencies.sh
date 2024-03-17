@@ -20,6 +20,10 @@ WEBP=1.3.2
 FFMPEG=6.0
 QT=6.6.2
 
+if [ "${INSTALLDIR:0:1}" != "/" ]; then
+	INSTALLDIR="$PWD/$INSTALLDIR"
+fi
+
 mkdir -p deps-build
 cd deps-build
 
