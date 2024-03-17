@@ -3450,17 +3450,9 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 			m_conf.cb_ps.FbMask.b = rb_ga_mask.r;
 			m_conf.cb_ps.FbMask.a = rb_ga_mask.g;
 
-			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !features.texture_barrier)
-			{
-				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
-				m_conf.require_one_barrier = true;
-			}
-			else
-			{
-				GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
-				m_conf.require_full_barrier = true;
-			}
+			// No need for full barrier on fbmask with shuffle.
+			GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
+			m_conf.require_one_barrier = true;
 		}
 		else
 		{
@@ -3913,7 +3905,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	{
 		// Condition 1: Require full sw blend for full barrier.
 		// Condition 2: One barrier is already enabled, prims don't overlap so let's use sw blend instead.
-		const bool prefer_sw_blend = m_conf.require_full_barrier || (one_barrier && m_prim_overlap == PRIM_OVERLAP_NO);
+		const bool prefer_sw_blend = m_conf.require_full_barrier || (one_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle));
 		const bool no_prim_overlap = (m_prim_overlap == PRIM_OVERLAP_NO);
 		const bool free_blend = blend_non_recursive // Free sw blending, doesn't require barriers or reading fb
 			|| accumulation_blend; // Mix of hw/sw blending
@@ -3967,8 +3959,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	}
 	else
 	{
-		// FBMASK or channel shuffle already reads the fb so it is safe to enable sw blend when there is no overlap.
-		const bool fbmask_no_overlap = m_conf.require_one_barrier && (m_prim_overlap == PRIM_OVERLAP_NO);
+		// FBMASK, channel shuffle already reads the fb so it is safe to enable sw blend when there is no overlap or a texture shuffle.
+		const bool prefer_sw_blend = m_conf.require_one_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle);
 
 		switch (GSConfig.AccurateBlendingUnit)
 		{
@@ -3994,11 +3986,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				}
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
-				// Disable accumulation blend when there is fbmask with no overlap, will be faster.
-				color_dest_blend   &= !fbmask_no_overlap;
-				accumulation_blend &= !fbmask_no_overlap;
+				// Disable accumulation blend when sw blend is preferred.
+				color_dest_blend   &= !prefer_sw_blend;
+				accumulation_blend &= !prefer_sw_blend;
 				// Blending requires reading the framebuffer when there's no overlap.
-				sw_blending |= fbmask_no_overlap;
+				sw_blending |= prefer_sw_blend;
 				// Try to do hw blend for clr2 case.
 				sw_blending &= !clr_blend1_2;
 				// Enable sw blending for free blending, should be done after blend_ad_improved check.
@@ -5587,8 +5579,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
 	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.hdr);
 
-	// Swap full barrier for one barrier when there's no overlap.
-	if (m_conf.require_full_barrier && m_prim_overlap == PRIM_OVERLAP_NO)
+	// Swap full barrier for one barrier when there's no overlap, or a texture shuffle.
+	if (m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle))
 	{
 		m_conf.require_full_barrier = false;
 		m_conf.require_one_barrier = true;
