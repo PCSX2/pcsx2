@@ -31,6 +31,12 @@ export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 export LDFLAGS="-L$INSTALLDIR/lib $LDFLAGS"
 export CFLAGS="-I$INSTALLDIR/include $CFLAGS"
 export CXXFLAGS="-I$INSTALLDIR/include $CXXFLAGS"
+CMAKE_COMMON=(
+	-DCMAKE_BUILD_TYPE=Release
+	-DCMAKE_PREFIX_PATH="$INSTALLDIR"
+	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR"
+	-DCMAKE_OSX_ARCHITECTURES="x86_64"
+)
 
 cat > SHASUMS <<EOF
 01215ffbc8cfc4ad165ba7573750f15ddda1f971d5a66e9dcaffd37c587f473a  $SDL.tar.gz
@@ -66,7 +72,7 @@ shasum -a 256 --check SHASUMS
 echo "Installing SDL..."
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
+cmake -B build "${CMAKE_COMMON[@]}" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -90,7 +96,7 @@ cd ..
 echo "Installing XZ..."
 tar xf "xz-$XZ.tar.gz"
 cd "xz-$XZ"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -B build
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -B build
 make -C build "-j$NPROCS"
 make -C build install
 make install
@@ -99,7 +105,7 @@ cd ..
 echo "Installing Zstd..."
 tar xf "zstd-$ZSTD.tar.gz"
 cd "zstd-$ZSTD"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir build/cmake
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir build/cmake
 make -C build-dir "-j$NPROCS"
 make -C build-dir install
 cd ..
@@ -107,7 +113,7 @@ cd ..
 echo "Installing LZ4..."
 tar xf "$LZ4.tar.gz"
 cd "lz4-$LZ4"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBUILD_SHARED_LIBS=ON -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -B build-dir build/cmake
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -B build-dir build/cmake
 make -C build-dir "-j$NPROCS"
 make -C build-dir install
 cd ..
@@ -115,7 +121,7 @@ cd ..
 echo "Installing libpng..."
 tar xf "libpng-$PNG.tar.xz"
 cd "libpng-$PNG"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -B build
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -123,7 +129,7 @@ cd ..
 echo "Installing WebP..."
 tar xf "libwebp-$WEBP.tar.gz"
 cd "libwebp-$WEBP"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -B build \
+cmake "${CMAKE_COMMON[@]}" -B build \
 	-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
 	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
@@ -157,7 +163,7 @@ patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
  
      // Platforminputcontext plugins if QtGui is in use
 EOF
-cmake -B build -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF
+cmake -B build "${CMAKE_COMMON[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
@@ -167,7 +173,7 @@ tar xf "qtsvg-everywhere-src-$QT.tar.xz"
 cd "qtsvg-everywhere-src-$QT"
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" ..
+"$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}"
 make "-j$NPROCS"
 make install
 cd ../..
@@ -177,7 +183,7 @@ tar xf "qtimageformats-everywhere-src-$QT.tar.xz"
 cd "qtimageformats-everywhere-src-$QT"
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" ..
+"$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}"
 make "-j$NPROCS"
 make install
 cd ../..
@@ -201,7 +207,7 @@ patch -u src/linguist/CMakeLists.txt <<EOF
 EOF
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" .. -- -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
+"$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}" -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=OFF -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
 make "-j$NPROCS"
 make install 
 cd ../..
@@ -211,7 +217,7 @@ tar xf "qttranslations-everywhere-src-$QT.tar.xz"
 cd "qttranslations-everywhere-src-$QT"
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" ..
+"$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}"
 make "-j$NPROCS"
 make install
 cd ../..
