@@ -2357,6 +2357,8 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 
 	if (dst->m_dirty.empty())
 		dst->m_rt_alpha_scale = true;
+	else
+		dst->m_last_draw -= 1; // If we preload and it needs to decorrect and we couldn't catch it early, we need to make sure it decorrects the data.
 
 	pxAssert(dst && dst->m_texture && dst->m_scale == scale);
 	return dst;
@@ -2662,9 +2664,12 @@ void GSTextureCache::Target::RTACorrect(Target* rt)
 	if (rt && !rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
 	{
 		const GSVector2i rtsize(rt->m_texture->GetSize());
-		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, false))
+		const GSVector4i valid_rect = GSVector4i(GSVector4(rt->m_valid) * GSVector4(rt->m_scale));
+
+		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
 		{
-			const GSVector4 dRect(rt->m_texture->GetRect());
+			// Only copy up the valid area, since there's no point in "correcting" nothing.
+			const GSVector4 dRect(rt->m_texture->GetRect().rintersect(valid_rect));
 			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 			g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION, false);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -2680,9 +2685,12 @@ void GSTextureCache::Target::RTADecorrect(Target* rt)
 	if (rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
 	{
 		const GSVector2i rtsize(rt->m_texture->GetSize());
-		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, false))
+		const GSVector4i valid_rect = GSVector4i(GSVector4(rt->m_valid) * GSVector4(rt->m_scale));
+
+		if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
 		{
-			const GSVector4 dRect(rt->m_texture->GetRect());
+			// Only copy up the valid area, since there's no point in "correcting" nothing.
+			const GSVector4 dRect(rt->m_texture->GetRect().rintersect(valid_rect));
 			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 			g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION, false);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -3521,8 +3529,6 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				// The draw rect and read rect overlap somewhat, we should update the target before downloading it.
 				if (exact_bp && !dirty_rect.rintersect(targetr).rempty())
 					t->Update();
-
-				t->RTADecorrect(t);
 
 				Read(t, targetr);
 
@@ -5422,7 +5428,11 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 			else
 			{
 				fmt = GSTexture::Format::Color;
-				ps_shader = ShaderConvert::COPY;
+				if (t->m_rt_alpha_scale)
+					ps_shader = ShaderConvert::RTA_DECORRECTION;
+				else
+					ps_shader = ShaderConvert::COPY;
+
 				dltex = &m_color_download_texture;
 			}
 		}
@@ -5472,7 +5482,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	const GSVector4 src(GSVector4(r) * GSVector4(t->m_scale) / GSVector4(t->m_texture->GetSize()).xyxy());
 	const GSVector4i drc(0, 0, r.width(), r.height());
-	const bool direct_read = (t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY);
+	const bool direct_read = t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY;
 
 	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
 		return;
@@ -5950,7 +5960,7 @@ GSTextureCache::Target::~Target()
 #endif
 }
 
-void GSTextureCache::Target::Update()
+void GSTextureCache::Target::Update(bool cannot_scale)
 {
 	m_age = 0;
 
@@ -5981,15 +5991,6 @@ void GSTextureCache::Target::Update()
 		return;
 	}
 
-	if (m_dirty.size() != 1 || !total_rect.eq(m_valid) && (m_dirty.GetDirtyChannels() & 0x8))
-	{
-		this->RTADecorrect(this);
-	}
-	else
-	{
-		m_rt_alpha_scale = false;
-	}
-
 	const GSVector4i t_offset(total_rect.xyxy());
 	const GSVector4i t_size(total_rect - t_offset);
 	const GSVector4 t_sizef(t_size.zwzw());
@@ -6006,7 +6007,7 @@ void GSTextureCache::Target::Update()
 	const bool mapped = t->Map(m);
 
 	GIFRegTEXA TEXA = {};
-	TEXA.AEM = 1;
+	TEXA.AEM = 0;
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
@@ -6097,6 +6098,14 @@ void GSTextureCache::Target::Update()
 
 	if (ndrects > 0)
 	{
+		if (m_type == RenderTarget && transferring_alpha && bpp >= 16)
+		{
+			if (alpha_minmax.second > 128 || (m_TEX0.PSM & 0xf) == PSMCT24)
+				this->RTADecorrect(this);
+			else if (!cannot_scale && total_rect.eq(m_valid))
+				m_rt_alpha_scale = true;
+		}
+
 		ShaderConvert depth_shader = upscaled ? ShaderConvert::RGBA8_TO_FLOAT32_BILN : ShaderConvert::RGBA8_TO_FLOAT32;
 		if (m_type == DepthStencil && GSLocalMemory::m_psm[m_TEX0.PSM].trbpp != 32)
 		{
@@ -6113,8 +6122,9 @@ void GSTextureCache::Target::Update()
 			}
 		}
 
+		const ShaderConvert rt_shader = m_rt_alpha_scale ? ShaderConvert::RTA_CORRECTION : ShaderConvert::COPY;
 		// No need to sort here, it's all the one texture.
-		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY : depth_shader;
+		const ShaderConvert shader = (m_type == RenderTarget) ? rt_shader : depth_shader;
 
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}

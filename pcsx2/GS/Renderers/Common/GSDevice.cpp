@@ -582,7 +582,7 @@ void GSDevice::DrawMultiStretchRects(
 	for (u32 i = 0; i < num_rects; i++)
 	{
 		const MultiStretchRect& sr = rects[i];
-		pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+		pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
 		if (rects[0].wmask.wrgba != 0xf)
 		{
 			g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect, rects[0].wmask.wr,

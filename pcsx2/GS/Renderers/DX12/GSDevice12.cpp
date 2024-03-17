@@ -1394,7 +1394,7 @@ void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 }
 
 void GSDevice12::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
-	bool green, bool blue, bool alpha)
+	bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
 
@@ -1569,8 +1569,9 @@ void GSDevice12::DoMultiStretchRects(
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
 
-	pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
-	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba].get() :
+	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
+	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
+	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba + rta_offset].get() :
 												m_convert[static_cast<int>(shader)].get());
 
 	if (ApplyUtilityState())
@@ -2448,17 +2449,42 @@ bool GSDevice12::CompileConvertPipelines()
 			// compile color copy pipelines
 			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
 			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-			for (u32 i = 0; i < 16; i++)
+			for (u32 j = 0; j < 16; j++)
 			{
-				pxAssert(!m_color_copy[i]);
+				pxAssert(!m_color_copy[j]);
 				gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
-					D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, static_cast<u8>(i));
-				m_color_copy[i] = gpb.Create(m_device.get(), m_shader_cache, false);
-				if (!m_color_copy[i])
+					D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, static_cast<u8>(j));
+				m_color_copy[j] = gpb.Create(m_device.get(), m_shader_cache, false);
+				if (!m_color_copy[j])
 					return false;
 
-				D3D12::SetObjectName(m_color_copy[i].get(), TinyString::from_fmt("Color copy pipeline (r={}, g={}, b={}, a={})",
-					i & 1u, (i >> 1) & 1u, (i >> 2) & 1u, (i >> 3) & 1u));
+				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_fmt("Color copy pipeline (r={}, g={}, b={}, a={})",
+					j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
+			}
+		}
+		else if (i == ShaderConvert::RTA_CORRECTION)
+		{
+			// compile color copy pipelines
+			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
+
+			ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
+			if (!ps)
+				return false;
+
+			gpb.SetPixelShader(ps.get());
+
+			for (u32 j = 16; j < 32; j++)
+			{
+				pxAssert(!m_color_copy[j]);
+				gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
+					D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, static_cast<u8>(j - 16));
+				m_color_copy[j] = gpb.Create(m_device.get(), m_shader_cache, false);
+				if (!m_color_copy[j])
+					return false;
+
+				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_fmt("Color copy pipeline (r={}, g={}, b={}, a={})",
+																j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
 			}
 		}
 		else if (i == ShaderConvert::HDR_INIT || i == ShaderConvert::HDR_RESOLVE)
