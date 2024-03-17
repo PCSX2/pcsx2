@@ -3319,7 +3319,7 @@ void GSRendererHW::Draw()
 		}
 
 		// Noting to do if no texture is sampled
-		if (PRIM->FST && draw_sprite_tex)
+		if (PRIM->FST && draw_sprite_tex && rt && rt->m_scale > 1)
 		{
 			if ((GSConfig.UserHacks_RoundSprite > 1) || (GSConfig.UserHacks_RoundSprite == 1 && !m_vt.IsLinear()))
 			{
