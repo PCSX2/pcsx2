@@ -747,7 +747,7 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages)
 {
 	const QString message =
-		tr("RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.").arg(display_name).arg(points).arg(sc_points).arg(unread_messages);
+		tr("RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.").arg(display_name).arg(points).arg(sc_points).arg(unread_messages);
 	m_ui.statusBar->showMessage(message);
 }
 
