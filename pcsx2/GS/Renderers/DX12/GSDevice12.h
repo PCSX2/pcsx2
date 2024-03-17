@@ -312,7 +312,7 @@ private:
 
 	std::array<ComPtr<ID3D12PipelineState>, static_cast<int>(ShaderConvert::Count)> m_convert{};
 	std::array<ComPtr<ID3D12PipelineState>, static_cast<int>(PresentShader::Count)> m_present{};
-	std::array<ComPtr<ID3D12PipelineState>, 16> m_color_copy{};
+	std::array<ComPtr<ID3D12PipelineState>, 32> m_color_copy{};
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_merge{};
 	std::array<ComPtr<ID3D12PipelineState>, NUM_INTERLACE_SHADERS> m_interlace{};
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_hdr_setup_pipelines{}; // [depth]
@@ -432,7 +432,7 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
-		bool green, bool blue, bool alpha) override;
+		bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		PresentShader shader, float shaderTime, bool linear) override;
 	void UpdateCLUTTexture(

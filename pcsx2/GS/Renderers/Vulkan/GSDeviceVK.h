@@ -416,7 +416,7 @@ private:
 
 	std::array<VkPipeline, static_cast<int>(ShaderConvert::Count)> m_convert{};
 	std::array<VkPipeline, static_cast<int>(PresentShader::Count)> m_present{};
-	std::array<VkPipeline, 16> m_color_copy{};
+	std::array<VkPipeline, 32> m_color_copy{};
 	std::array<VkPipeline, 2> m_merge{};
 	std::array<VkPipeline, NUM_INTERLACE_SHADERS> m_interlace{};
 	VkPipeline m_hdr_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
@@ -551,7 +551,7 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
-		bool green, bool blue, bool alpha) override;
+		bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		PresentShader shader, float shaderTime, bool linear) override;
 	void DrawMultiStretchRects(

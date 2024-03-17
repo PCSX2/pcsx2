@@ -2924,7 +2924,11 @@ void GSRendererHW::Draw()
 	if (rt)
 	{
 		if (m_texture_shuffle || m_channel_shuffle || (!rt->m_dirty.empty() && !rt->m_dirty.GetTotalRect(rt->m_TEX0, rt->m_unscaled_size).rintersect(m_r).rempty()))
-			rt->Update();
+		{
+			const u32 alpha = m_cached_ctx.FRAME.FBMSK >> 24;
+			const u32 alpha_mask = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk >> 24;
+			rt->Update(m_texture_shuffle || m_channel_shuffle || (alpha != 0 && (alpha & alpha_mask) != alpha_mask) || (!alpha && GetAlphaMinMax().max > 128));
+		}
 		else
 			rt->m_age = 0;
 	}
@@ -4296,8 +4300,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (std::max(rt_alpha_max, rt->m_alpha_max) > 128) || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
-		const bool rta_correction = !rta_decorrection && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
+		const bool rta_correction = m_can_correct_alpha && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
 			rt->RTACorrect(rt);
@@ -5303,9 +5306,11 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// If we Correct/Decorrect and tex is rt, we will need to update the texture reference
 	const bool req_src_update = tex && rt && tex->m_target && tex->m_target_direct && tex->m_texture == rt->m_texture;
 
+	m_can_correct_alpha = true;
+
 	if (rt)
 	{
-		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || std::max(blend_alpha_max, rt->m_alpha_max) > 128 || m_conf.ps.fbmask || m_conf.ps.tex_is_fb;
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || ((m_conf.colormask.wrgba & 0x8) && (std::max(blend_alpha_max, rt->m_alpha_max) > 128) || (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0));
 
 		if (rta_decorrection)
 		{
@@ -5313,6 +5318,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			{
 				if (m_conf.ps.read_ba)
 				{
+					m_can_correct_alpha = false;
+
 					rt->RTADecorrect(rt);
 					m_conf.rt = rt->m_texture;
 
@@ -5323,10 +5330,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
 					{
+						m_can_correct_alpha = false;
 						rt->m_rt_alpha_scale = false;
 					}
 					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
 					{
+						m_can_correct_alpha = false;
 						rt->RTADecorrect(rt);
 						m_conf.rt = rt->m_texture;
 
@@ -5339,6 +5348,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			{
 				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || ((m_cached_ctx.FRAME.FBMSK & 0xFF000000) != 0xFF000000))
 				{
+					m_can_correct_alpha = false;
 					rt->RTADecorrect(rt);
 					m_conf.rt = rt->m_texture;
 
@@ -5348,10 +5358,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			}
 			else if (rt->m_last_draw == s_n)
 			{
+				m_can_correct_alpha = false;
 				rt->m_rt_alpha_scale = false;
 			}
 			else
 			{
+				m_can_correct_alpha = false;
 				rt->RTADecorrect(rt);
 				m_conf.rt = rt->m_texture;
 

@@ -1033,6 +1033,7 @@ bool GSDeviceMTL::Create()
 	auto vs_convert = LoadShader(@"vs_convert");
 	auto fs_triangle = LoadShader(@"fs_triangle");
 	auto ps_copy = LoadShader(@"ps_copy");
+	auto ps_copy_rta_correct = LoadShader(@"ps_rta_correction");
 	auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
 	// FS Triangle Pipelines
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
@@ -1153,7 +1154,7 @@ bool GSDeviceMTL::Create()
 		if (i & 8) mask |= MTLColorWriteMaskAlpha;
 		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s", i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : ""];
 		pdesc.colorAttachments[0].writeMask = mask;
-		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, ps_copy, name);
+		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, (i >= 16) ? ps_copy_rta_correct : ps_copy, name);
 	}
 
 	pdesc.colorAttachments[0].blendingEnabled = YES;
@@ -1572,7 +1573,7 @@ void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, load_action, nullptr, 0);
 }}
 
-void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
+void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader)
 { @autoreleasepool {
 	int sel = 0;
 	if (red)   sel |= 1;
@@ -1580,7 +1581,7 @@ void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	if (blue)  sel |= 4;
 	if (alpha) sel |= 8;
 
-	id<MTLRenderPipelineState> pipeline = m_convert_pipeline_copy_mask[sel];
+	id<MTLRenderPipelineState> pipeline = m_convert_pipeline_copy_mask[(shader == ShaderConvert::RTA_CORRECTION) ? (sel + 16) : sel];
 
 	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, false, sel == 15 ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
 }}
@@ -1642,7 +1643,7 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 		const u32 vertex_count = end - start;
 		const u32 index_count = vertex_count + (vertex_count >> 1); // 6 indices per 4 vertices
 		id<MTLRenderPipelineState> new_pipeline = wmask == 0xf ? m_convert_pipeline[static_cast<int>(shader)]
-		                                                       : m_convert_pipeline_copy_mask[wmask];
+		                                                       : m_convert_pipeline_copy_mask[(shader == ShaderConvert::RTA_CORRECTION) ? (wmask + 16) : wmask];
 		if (new_pipeline != pipeline)
 		{
 			pipeline = new_pipeline;

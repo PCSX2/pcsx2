@@ -2917,13 +2917,14 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 }
 
 void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
-	bool green, bool blue, bool alpha)
+	bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
 
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
 	const bool allow_discard = (index == 0xf);
-	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect, m_color_copy[index],
+	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect, m_color_copy[index + rta_offset],
 		false, allow_discard);
 }
 
@@ -3046,9 +3047,10 @@ void GSDeviceVK::DoMultiStretchRects(
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
 
-	pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
+	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
 	SetPipeline(
-		(rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba] : m_convert[static_cast<int>(shader)]);
+		(rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba + rta_offset] : m_convert[static_cast<int>(shader)]);
 
 	if (ApplyUtilityState())
 		DrawIndexedPrimitive();
@@ -4018,18 +4020,44 @@ bool GSDeviceVK::CompileConvertPipelines()
 		{
 			// compile color copy pipelines
 			gpb.SetRenderPass(m_utility_color_render_pass_discard, 0);
-			for (u32 i = 0; i < 16; i++)
+			for (u32 j = 0; j < 16; j++)
 			{
-				pxAssert(!m_color_copy[i]);
+				pxAssert(!m_color_copy[j]);
 				gpb.ClearBlendAttachments();
 				gpb.SetBlendAttachment(0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
-					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, static_cast<VkColorComponentFlags>(i));
-				m_color_copy[i] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
-				if (!m_color_copy[i])
+					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, static_cast<VkColorComponentFlags>(j));
+				m_color_copy[j] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
+				if (!m_color_copy[j])
 					return false;
 
-				Vulkan::SetObjectName(m_device, m_color_copy[i], "Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", i & 1u,
-					(i >> 1) & 1u, (i >> 2) & 1u, (i >> 3) & 1u);
+				Vulkan::SetObjectName(m_device, m_color_copy[j], "Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", j & 1u,
+					(j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u);
+			}
+		}
+		else if (i == ShaderConvert::RTA_CORRECTION)
+		{
+			// compile color copy pipelines
+			gpb.SetRenderPass(m_utility_color_render_pass_discard, 0);
+			VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
+			if (ps == VK_NULL_HANDLE)
+				return false;
+
+			ScopedGuard ps_guard([this, &ps]() { vkDestroyShaderModule(m_device, ps, nullptr); });
+			gpb.SetFragmentShader(ps);
+
+			for (u32 j = 16; j < 32; j++)
+			{
+				pxAssert(!m_color_copy[j]);
+				gpb.ClearBlendAttachments();
+
+				gpb.SetBlendAttachment(0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, static_cast<VkColorComponentFlags>(j - 16));
+				m_color_copy[j] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
+				if (!m_color_copy[j])
+					return false;
+
+				Vulkan::SetObjectName(m_device, m_color_copy[j], "Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", j & 1u,
+					(j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u);
 			}
 		}
 		else if (i == ShaderConvert::HDR_INIT || i == ShaderConvert::HDR_RESOLVE)
