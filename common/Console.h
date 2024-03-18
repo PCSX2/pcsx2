@@ -132,10 +132,10 @@ struct ConsoleLogWriter
 	} while (0)
 
 	// clang-format off
-	__fi static void Error(const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(Color_StrongRed); }
-	__fi static void Warning(const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(Color_StrongOrange); }
-	__fi static void WriteLn(const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(Color_Default); }
-	__fi static void WriteLn(ConsoleColors color, const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(color); }
+	static void Error(const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(Color_StrongRed); }
+	static void Warning(const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(Color_StrongOrange); }
+	static void WriteLn(const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(Color_Default); }
+	static void WriteLn(ConsoleColors color, const char* format, ...) { MAKE_PRINTF_CONSOLE_WRITER(color); }
 	// clang-format on	
 
 #undef MAKE_PRINTF_CONSOLE_WRITER
