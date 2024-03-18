@@ -150,7 +150,7 @@ PAPX-90201:
 PAPX-90202:
   name: I.Q REMIX+ 体験版
   name-sort: あいきゅー りみっくすぷらす たいけんばん
-  name-en: "I.Q Remix+ - Intelligent Qube [Trial]"
+  name-en: "I.Q Remix+ [Trial]"
   region: "NTSC-J"
 PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
@@ -388,7 +388,7 @@ PAPX-90522:
   region: "NTSC-J"
 PAPX-90523:
   name: "Gran Turismo 4 - オンライン実験バージョン"
-  name-sort: "Gran Turismo 4 - おんらいんじっけんばーじょん"
+  name-sort: "ぐらんつーりすも4 - おんらいんじっけんばーじょん"
   name-en: "Gran Turismo 4 - Online Test Version"
   region: "NTSC-J"
   gsHWFixes:
@@ -518,7 +518,7 @@ PBPX-95251:
   name: "Online Start-Up Disc 4.0 - Broadband Only"
   region: "NTSC-U"
 PBPX-95501:
-  name: "PS2 Linux Beta Release1"
+  name: "PS2 Linux Beta Release 1"
   region: "NTSC-J"
 PBPX-95502:
   name: "Gran Turismo 3 - A-Spec"
@@ -627,7 +627,7 @@ PBPX-95601:
 PCPX-96301:
   name: I.Q REMIX+ 体験版
   name-sort: あいきゅー りみっくすぷらす たいけんばん
-  name-en: "I.Q Remix+ - Intelligent Qube [Trial]"
+  name-en: "I.Q Remix+ [Trial]"
   region: "NTSC-J"
 PCPX-96302:
   name: "Fantavision 体験版"
@@ -7437,7 +7437,7 @@ SCPN-60160:
 SCPS-11001:
   name: I.Q REMIX+
   name-sort: あいきゅー りみっくすぷらす
-  name-en: "I.Q Remix+ - Intelligent Qube"
+  name-en: "I.Q Remix+"
   region: "NTSC-J"
   compat: 5
 SCPS-11002:
@@ -7477,12 +7477,12 @@ SCPS-11006:
 SCPS-11007:
   name: tsugunai 〜つぐない〜
   name-sort: つぐない
-  name-en: "Tsuganai"
+  name-en: "Tsugunai"
   region: "NTSC-J"
 SCPS-11008:
   name: ボクと魔王
   name-sort: ぼくとまおう
-  name-en: "Boku to Mao"
+  name-en: "Boku to Maou"
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
@@ -7502,7 +7502,7 @@ SCPS-11010:
   region: "NTSC-J"
 SCPS-11011:
   name: Check-i-TV
-  name-sort: Check-i-TV
+  name-sort: ちぇきってぃーびー
   name-en: "Check-i-TV"
   region: "NTSC-J"
 SCPS-11012:
@@ -7525,7 +7525,7 @@ SCPS-11014:
   compat: 5
 SCPS-11015:
   name: Check-i-TV きょうから「チェキッ」パック
-  name-sort: Check-i-TV きょうからちぇきっぱっく
+  name-sort: ちぇきってぃーびー きょうからちぇきっぱっく
   name-en: "Check-i-TV [Kyou kara Check It Pack]"
   region: "NTSC-J"
 SCPS-11016:
@@ -7602,7 +7602,7 @@ SCPS-11027:
   compat: 5
 SCPS-11028:
   name: Let’s ブラボーミュージック
-  name-sort: Let’s ぶらぼーみゅーじっく
+  name-sort: れっつぶらぼーみゅーじっく
   name-en: "Let's Bravo Music"
   region: "NTSC-J"
 SCPS-11029:
@@ -7834,7 +7834,7 @@ SCPS-15026:
     roundSprite: 1 # Fixes menu text.
 SCPS-15027:
   name: ポポロクロイス〜はじまりの冒険〜 通常版 [初回生産]
-  name-sort: ぽぽろくろいす はじまりのぼうけん [つうじょうばん] [しょかいせいさん]
+  name-sort: ぽぽろくろいす はじまりのぼうけん [しょかいせいさん]
   name-en: "PoPoLoCrois - Hajimari no Bouken [Limited]"
   region: "NTSC-J"
 SCPS-15028:
@@ -7913,7 +7913,7 @@ SCPS-15038:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCPS-15039:
-  name: OPERATOR’S SIDE
+  name: OPERATOR’S SIDE 通常版
   name-sort: おぺれーたーずさいど
   name-en: "Operator's Side"
   region: "NTSC-J"
@@ -8176,7 +8176,7 @@ SCPS-15069:
   compat: 5
 SCPS-15070:
   name: "EyeToy:Play [ソフト単品]"
-  name-sort: "EyeToy:Play [そふとたんぴん]"
+  name-sort: "あいとーい ぷれい [そふとたんぴん]"
   name-en: "EyeToy - Play [Game Only]"
   region: "NTSC-J"
 SCPS-15071:
@@ -8580,7 +8580,7 @@ SCPS-15117:
   region: "NTSC-J"
 SCPS-15118:
   name: ワイルドアームズ ザ フィフスヴァンガード(WILD ARMS the Vth Vanguard)
-  name-sort: WILD ARMS the Vth Vanguard
+  name-sort: わいるどあーむず ざ ふぃふすゔぁんがーど
   name-en: "Wild ARMs - The Vth Vanguard"
   region: "NTSC-J"
   gsHWFixes:
@@ -8685,7 +8685,7 @@ SCPS-17502:
 SCPS-19101:
   name: 蚊 PlayStation 2 the Best
   name-sort: か PlayStation 2 the Best
-  name-en: "Mosquito [PlayStation 2 the Best]"
+  name-en: "Ka [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes blurriness.
@@ -8721,7 +8721,7 @@ SCPS-19105:
   region: "NTSC-J"
 SCPS-19151:
   name: ICO PlayStation 2 the Best
-  name-sort: ICO PlayStation 2 the Best
+  name-sort: いこ PlayStation 2 the Best
   name-en: "ICO [PlayStation 2 the Best]"
   region: "NTSC-J"
   compat: 5
@@ -8834,14 +8834,14 @@ SCPS-19211:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SCPS-19213:
-  name: OPERATOR’S SIDE マイク同梱版 PlayStation 2 the Best
-  name-sort: おぺれーたーずさいど [まいくどうこんばん] PlayStation 2 the Best
+  name: Operator’s Side USBマイク同梱版 PlayStation 2 the Best
+  name-sort: おぺれーたーずさいど [USBまいくどうこんばん] PlayStation 2 the Best
   name-en: "Operator's Side [PlayStation 2 the Best] [with Microphone]"
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCPS-19214:
-  name: OPERATOR’S SIDE PlayStation 2 the Best
+  name: Operator’s Side PlayStation 2 the Best
   name-sort: おぺれーたーずさいど PlayStation 2 the Best
   name-en: "Operator's Side [PlayStation 2 the Best]"
   region: "NTSC-J"
@@ -9245,7 +9245,7 @@ SCPS-19332:
     vu1RoundMode: 1 # Fixes the display of scores and text ingame.
 SCPS-19333:
   name: ワイルドアームズ ザ フィフスヴァンガード PlayStation 2 the Best
-  name-sort: WILD ARMS the Vth Vanguard [PlayStation 2 the Best]
+  name-sort: わいるどあーむず ざ ふぃふすゔぁんがーど [PlayStation 2 the Best]
   name-en: "Wild ARMs - The Vth Vanguard [PlayStation 2 the Best]"
   region: "NTSC-J"
 SCPS-19335:
@@ -28484,7 +28484,7 @@ SLKA-25059:
   name: "Pride FC - Fighting Championships"
   region: "NTSC-K"
 SLKA-25060:
-  name: "I.Q Remix+ - Intelligent Qube"
+  name: "I.Q Remix+"
   region: "NTSC-K"
 SLKA-25061:
   name: "Tom Clancy's Splinter Cell"
@@ -31117,8 +31117,8 @@ SLPM-55270:
   name: "Shinkyoku Soukai Polyphonica - After School"
   region: "NTSC-J"
 SLPM-55271:
-  name: EA:SY! 1980 FIFA10 ワールドクラスサッカー
-  name-sort: EA:SY! 1980 FIFA10 わーるどくらすさっかー
+  name: EA:SY!1980 FIFA10 ワールドクラスサッカー
+  name-sort: FIFA10 わーるどくらすさっかー [EA:SY!1980]
   name-en: "FIFA 10 - World Class Soccer [Ea -SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
@@ -31144,7 +31144,7 @@ SLPM-55277:
   region: "NTSC-J"
 SLPM-55280:
   name: Palais de Reine/パレドゥレーヌ ベスト版
-  name-sort: Palais de Reine/ぱれどぅれーぬ べすとばん
+  name-sort: ぱれどぅれーぬ べすとばん
   name-en: "King of Fighters '98 Ultimate Match, The"
   region: "NTSC-J"
 SLPM-55281:
@@ -31160,7 +31160,7 @@ SLPM-55283:
   region: "NTSC-J"
 SLPM-55285:
   name: クリムゾン・エンパイア
-  name-sort: くりむぞん・えんぱいあ
+  name-sort: くりむぞん えんぱいあ
   name-en: "Crimson Empire"
   region: "NTSC-J"
 SLPM-55287:
@@ -32328,12 +32328,12 @@ SLPM-62005:
   region: "NTSC-J"
 SLPM-62006:
   name: 永世名人IV
-  name-sort: えいせいめいじんIV
+  name-sort: えいせいめいじん4
   name-en: "Eisei Meijin 4"
   region: "NTSC-J"
 SLPM-62007:
   name: グラディウスIII&IV 復活の神話
-  name-sort: ぐらでぃうすIII&IV ふっかつのしんわ
+  name-sort: ぐらでぃうす3&4 ふっかつのしんわ
   name-en: "Gradius III & IV"
   region: "NTSC-J"
   compat: 5
@@ -32703,7 +32703,7 @@ SLPM-62093:
   region: "NTSC-J"
 SLPM-62094:
   name: SIMPLE2000シリーズ Vol.2 THE パーティーゲーム
-  name-sort: SIMPLE2000しりーず Vol.2 THE ぱーてぃーげーむ
+  name-sort: しんぷる2000しりーず Vol.2 THE ぱーてぃーげーむ
   name-en: "Simple 2000 Series Vol. 2 - The Party Game"
   region: "NTSC-J"
 SLPM-62095:
@@ -32742,7 +32742,7 @@ SLPM-62101:
   compat: 5
 SLPM-62102:
   name: CRAZY TAXI
-  name-sort: CRAZY TAXI
+  name-sort: くれいじーたくしー
   name-en: "Crazy Taxi"
   region: "NTSC-J"
   gameFixes:
@@ -32973,7 +32973,7 @@ SLPM-62153:
   region: "NTSC-J"
 SLPM-62154:
   name: DDRMAX 〜DanceDanceRevolution 6thMIX〜
-  name-sort: DDRMAX 〜DanceDanceRevolution 6thMIX〜
+  name-sort: だんすだんすれぼりゅーしょんMAX 〜DanceDanceRevolution 6thMIX〜
   name-en: "DDRMAX ~DanceDanceRevolution 6thMIX~"
   region: "NTSC-J"
   compat: 5
@@ -33002,8 +33002,8 @@ SLPM-62160:
   name: "Simple 2000 Series Vol. 4 - The Double Mahjong Puzzle"
   region: "NTSC-J"
 SLPM-62161:
-  name: GENERATION OF CHAOS NEXT [限定版]
-  name-sort: GENERATION OF CHAOS NEXT [げんていばん]
+  name: GENERATION OF CHAOS NEXT (限定版)
+  name-sort: じぇねれーしょんおぶかおす 2 うしなわれしきずな [げんていばん]
   name-en: "Generation of Chaos - Next [Limited Edition]"
   region: "NTSC-J"
   compat: 5
@@ -33011,8 +33011,8 @@ SLPM-62163:
   name: "WinBack"
   region: "NTSC-C-E-J"
 SLPM-62164:
-  name: GENERATION OF CHAOS NEXT 〜失われし絆〜
-  name-sort: GENERATION OF CHAOS NEXT うしなわれしきずな
+  name: GENERATION OF CHAOS NEXT ～失われし絆～(通常版)
+  name-sort: じぇねれーしょんおぶかおす 2 うしなわれしきずな
   name-en: "Generation of Chaos - Next"
   region: "NTSC-J"
 SLPM-62165:
@@ -33041,7 +33041,7 @@ SLPM-62170:
   region: "NTSC-J"
 SLPM-62171:
   name: SIMPLE2000シリーズVol.5 THEブロックくずしHYPER
-  name-sort: SIMPLE2000しりーずVol.5 THEぶろっくくずしHYPER
+  name-sort: しんぷる2000しりーずVol.5 THEぶろっくくずしHYPER
   name-en: "Simple 2000 Series Vol. 5 - The Block Kuzushi Hyper"
   region: "NTSC-J"
 SLPM-62172:
@@ -33073,7 +33073,7 @@ SLPM-62179:
   region: "NTSC-J"
 SLPM-62180:
   name: SIMPLE2000本格思考シリーズVol.1 THE 将棋〜森田和郎の将棋指南〜
-  name-sort: SIMPLE2000ほんかくしこうしりーずVol.1 THE しょうぎ もりたかずおのしょうぎしなん
+  name-sort: しんぷる2000ほんかくしこうしりーずVol.1 THE しょうぎ もりたかずおのしょうぎしなん
   name-en: "Simple 2000 Honkaku Shikou Series Vol. 1 - The Shogi"
   region: "NTSC-J"
   compat: 5
@@ -33130,14 +33130,14 @@ SLPM-62196:
   region: "NTSC-J"
 SLPM-62197:
   name: SIMPLE2000シリーズVol.7 THEボクシング〜REAL FIST FIGHTER〜
-  name-sort: SIMPLE2000しりーずVol.7 THEぼくしんぐ〜REAL FIST FIGHTER〜
+  name-sort: しんぷる2000しりーずVol.7 THEぼくしんぐ〜REAL FIST FIGHTER〜
   name-en: "Simple 2000 Series Vol. 7 - The Boxing - Real Fist Fighter"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes graphical issues.
 SLPM-62198:
   name: SIMPLE2000本格思考シリーズVol.4 THE 麻雀
-  name-sort: SIMPLE2000ほんかくしこうしりーずVol.4 THE まーじゃん
+  name-sort: しんぷる2000ほんかくしこうしりーずVol.4 THE まーじゃん
   name-en: "Simple 2000 Honkaku Shikou Series Vol. 4 - The Mahjong"
   region: "NTSC-J"
 SLPM-62199:
@@ -33184,7 +33184,7 @@ SLPM-62206:
   compat: 4
 SLPM-62207:
   name: SIMPLE2000シリーズVol.9 THE恋愛アドベンチャー 〜BITTERSWEET FOOLS〜
-  name-sort: SIMPLE2000しりーずVol.9 THEれんあいあどべんちゃー 〜BITTERSWEET FOOLS〜
+  name-sort: しんぷる2000しりーずVol.9 THEれんあいあどべんちゃー 〜BITTERSWEET FOOLS〜
   name-en: "Simple 2000 Series Vol. 9 - The Renai Adventure - Bittersweet Fools"
   region: "NTSC-J"
 SLPM-62208:
@@ -33234,12 +33234,12 @@ SLPM-62217:
   region: "NTSC-J"
 SLPM-62218:
   name: SIMPLE2000シリーズVol.10 THEテーブルゲーム 世界編 〜チェス・バックギャモン・ダイヤモンド・軍人将棋 etc〜
-  name-sort: SIMPLE2000しりーずVol.10 THEてーぶるげーむ せかいへん ちぇす ばっくぎゃもん だいやもんど ぐんじんしょうぎ etc
+  name-sort: しんぷる2000しりーずVol.10 THEてーぶるげーむ せかいへん ちぇす ばっくぎゃもん だいやもんど ぐんじんしょうぎ etc
   name-en: "Simple 2000 Series Vol. 10 - The Table Game Sekai-Hen"
   region: "NTSC-J"
 SLPM-62219:
   name: SIMPLE2000シリーズVol.8 THEテニス
-  name-sort: SIMPLE2000しりーずVol.8 THEてにす
+  name-sort: しんぷる2000しりーずVol.8 THEてにす
   name-en: "Simple 2000 Series Vol. 8 - The Tennis"
   region: "NTSC-J"
   gameFixes:
@@ -33256,12 +33256,12 @@ SLPM-62221:
     mipmap: 1 # Improves ground textures to match sw renderer.
 SLPM-62223:
   name: SIMPLE2000シリーズVol.11 THEオフロードバギー
-  name-sort: SIMPLE2000しりーずVol.11 THEおふろーどばぎー
+  name-sort: しんぷる2000しりーずVol.11 THEおふろーどばぎー
   name-en: "Simple 2000 Series Vol. 11 - The Off-Road Buggy"
   region: "NTSC-J"
 SLPM-62224:
   name: SIMPLE2000シリーズ アルティメットVol.3 最速!族車キング〜仏恥義理伝説〜
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.3 さいそく ぞくしゃきんぐ ぶっちぎりでんせつ
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.3 さいそく ぞくしゃきんぐ ぶっちぎりでんせつ
   name-en: "Simple 2000 Series Ultimate Vol. 3 - Saisoku! Zokusha King - Bucchigiri Densetsu"
   region: "NTSC-J"
 SLPM-62225:
@@ -33296,17 +33296,17 @@ SLPM-62231:
   region: "NTSC-J"
 SLPM-62232:
   name: SIMPLE2000シリーズVol.15 THEラグビー
-  name-sort: SIMPLE2000しりーずVol.15 THEらぐびー
+  name-sort: しんぷる2000しりーずVol.15 THEらぐびー
   name-en: "Simple 2000 Series Vol. 15 - The Rugby"
   region: "NTSC-J"
 SLPM-62233:
   name: SIMPLE2000シリーズ アルティメットVol.4 裏技イカサ麻雀街 〜兄ィさん、つかんじまったようだね〜
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.4 うらわざいかさまーじゃんがい にぃさん つかんじまったようだね
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.4 うらわざいかさまーじゃんがい にぃさん つかんじまったようだね
   name-en: "Simple 2000 Series Ultimate Vol. 4 - Urawaza Ikasa Mahjong Machi"
   region: "NTSC-J"
 SLPM-62234:
   name: SIMPLE2000シリーズVol.13 女の子のためのTHE恋愛アドベンチャー〜硝子の森〜
-  name-sort: SIMPLE2000しりーずVol.13 おんなのこのためのTHEれんあいあどべんちゃー がらすのもり
+  name-sort: しんぷる2000しりーずVol.13 おんなのこのためのTHEれんあいあどべんちゃー がらすのもり
   name-en: "Simple 2000 Series Vol. 13 - Onna no Ko no Tame no - The Renai Adventure - Garasu no Mori"
   region: "NTSC-J"
 SLPM-62235:
@@ -33326,7 +33326,7 @@ SLPM-62236:
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLPM-62237:
-  name: 学園都市 ヴァラノワール [限定版]
+  name: 学園都市ヴァラノワール（限定版）
   name-sort: がくえんとし ゔぁらのわーる [げんていばん]
   name-en: "Gakuen Toshi Vara Noir [Limited Edition]"
   region: "NTSC-J"
@@ -33378,34 +33378,34 @@ SLPM-62247:
   region: "NTSC-J"
 SLPM-62248:
   name: SIMPLE2000シリーズ アルティメットVol.5 ラブ★マージャン!
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.5 らぶまーじゃん!
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.5 らぶまーじゃん!
   name-en: "Simple 2000 Series Ultimate Vol. 5 - Love - Mahjong!"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS.
 SLPM-62249:
   name: SIMPLE2000シリーズ ハローキティVol.1 スターライト★パズル〜いそがしキューブ★どっすんフワワ(ハート) 〜
-  name-sort: SIMPLE2000しりーず はろーきてぃVol.1 すたーらいとぱずる いそがしきゅーぶどっすんふわわ(はーと) 〜
+  name-sort: しんぷる2000しりーず はろーきてぃVol.1 すたーらいとぱずる いそがしきゅーぶどっすんふわわ(はーと) 〜
   name-en: "Hello Kitty Star Light - Isogasi Cube"
   region: "NTSC-J"
 SLPM-62250:
   name: SIMPLE2000シリーズ ハローキティVol.2 みんなですごろく〜不思議な世界の仲良しすごろく〜
-  name-sort: SIMPLE2000しりーず はろーきてぃVol.2 みんなですごろく〜ふしぎなせかいのなかよしすごろく〜
+  name-sort: しんぷる2000しりーず はろーきてぃVol.2 みんなですごろく〜ふしぎなせかいのなかよしすごろく〜
   name-en: "Hello Kitty Star Light - Minna de Sugoroku"
   region: "NTSC-J"
 SLPM-62251:
   name: SIMPLE2000シリーズVol.14 THEビリヤード
-  name-sort: SIMPLE2000しりーずVol.14 THEびりやーど
+  name-sort: しんぷる2000しりーずVol.14 THEびりやーど
   name-en: "Simple 2000 Series Vol. 14 - The Billiard"
   region: "NTSC-J"
 SLPM-62252:
   name: SIMPLE2000シリーズVol.17 THE推理〜新たなる20の事件簿〜
-  name-sort: SIMPLE2000しりーずVol.17 THEすいり あらたなる20のじけんぼ
+  name-sort: しんぷる2000しりーずVol.17 THEすいり あらたなる20のじけんぼ
   name-en: "Simple 2000 Series Vol. 17 - The Suiri-Aratanaru 20 no Jikenbo"
   region: "NTSC-J"
 SLPM-62253:
   name: SIMPLE2000シリーズVol.16 THEスナイパー2 〜悪夢の銃弾〜
-  name-sort: SIMPLE2000しりーずVol.16 THEすないぱー2 〜あくむのじゅうだん〜
+  name-sort: しんぷる2000しりーずVol.16 THEすないぱー2 〜あくむのじゅうだん〜
   name-en: "Simple 2000 Series Vol. 16 - The Sniper"
   region: "NTSC-J"
 SLPM-62254:
@@ -33442,12 +33442,12 @@ SLPM-62259:
   name: "Dejikame Album - Kuraemon"
   region: "NTSC-J"
 SLPM-62260:
-  name: 犬とあそぼう dog station マイクパック
-  name-sort: いぬとあそぼう dog station まいくぱっく
+  name: 犬とあそぼう dogstation(マイク同梱版)
+  name-sort: いぬとあそぼう dog station [まいくどうこんばん]
   name-en: "DogStation"
   region: "NTSC-J"
 SLPM-62261:
-  name: 犬とあそぼう dog station
+  name: 犬とあそぼう dogstation(ソフト単体版)
   name-sort: いぬとあそぼう dog station
   name-en: "DogStation"
   region: "NTSC-J"
@@ -33491,19 +33491,19 @@ SLPM-62269:
   region: "NTSC-J"
 SLPM-62270:
   name: SIMPLE2000シリーズVol.19 THE恋愛シミュレーション〜私におまカフェ〜
-  name-sort: SIMPLE2000しりーずVol.19 THEれんあいしみゅれーしょん わたしにおまかふぇ
+  name-sort: しんぷる2000しりーずVol.19 THEれんあいしみゅれーしょん わたしにおまかふぇ
   name-en: "Simple 2000 Series Vol. 19 - The Love Simulation - The Coffee Shop"
   region: "NTSC-J"
 SLPM-62271:
   name: SIMPLE2000シリーズVol.20 THEダンジョンRPG忍〜魔物の棲む城〜
-  name-sort: SIMPLE2000しりーずVol.20 THEだんじょんRPGにん まもののすむしろ
+  name-sort: しんぷる2000しりーずVol.20 THEだんじょんRPGにん まもののすむしろ
   name-en: "Simple 2000 Series Vol. 20 - The Dungeon RPG Nin"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes missing blue lines on the characters in dark areas.
 SLPM-62272:
   name: SIMPLE2000シリーズVol.18 THEパーティーすごろく
-  name-sort: SIMPLE2000しりーずVol.18 THEぱーてぃーすごろく
+  name-sort: しんぷる2000しりーずVol.18 THEぱーてぃーすごろく
   name-en: "Simple 2000 Series Vol. 18 - The Party Sugoroku"
   region: "NTSC-J"
 SLPM-62273:
@@ -33603,23 +33603,23 @@ SLPM-62293:
   region: "NTSC-J"
 SLPM-62294:
   name: SIMPLE2000シリーズVol.21 THE美少女シミュレーションRPG 〜MoonLightTale〜
-  name-sort: SIMPLE2000しりーずVol.21 THEびしょうじょしみゅれーしょんRPG 〜MoonLightTale〜
+  name-sort: しんぷる2000しりーずVol.21 THEびしょうじょしみゅれーしょんRPG 〜MoonLightTale〜
   name-en: "Simple 2000 Series Vol. 21 - The Moonlight Tale RPG"
   region: "NTSC-J"
 SLPM-62295:
   name: SIMPLE2000シリーズVol.22 THE通勤電車運転士 〜電車でGO!3通勤編〜
-  name-sort: SIMPLE2000しりーずVol.22 THEつうきんでんしゃうんてんし 〜でんしゃでごー3つうきんへん〜
+  name-sort: しんぷる2000しりーずVol.22 THEつうきんでんしゃうんてんし 〜でんしゃでごー3つうきんへん〜
   name-en: "Simple 2000 Series Vol. 22 - The Tsuukin Densha Untenshi - Densha de Go! 3 Tsuukin Hen"
   region: "NTSC-J"
 SLPM-62296:
   name: SIMPLE2000シリーズ アルティメット Vol.6 ラブ★アッパー！
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.6 らぶあっぱー
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.6 らぶあっぱー
   name-en: "Simple 2000 Series Ultimate Vol. 6 - Love Upper!"
   region: "NTSC-J"
   compat: 5
 SLPM-62297:
   name: 彩京べすと いくぜ！温泉卓球
-  name-sort: さいきょうべすと いくぜ!おんせんたっきゅう
+  name-sort: いくぜ!おんせんたっきゅう [さいきょうべすと]
   name-en: "Got To Do! Hot Spring Table Tennis [Psikyo Best]"
   region: "NTSC-J"
 SLPM-62298:
@@ -33645,7 +33645,7 @@ SLPM-62302:
   region: "NTSC-J"
 SLPM-62305:
   name: SuperLite 2000テーブル オセロ
-  name-sort: SuperLite 2000てーぶる おせろ
+  name-sort: すーぱーらいと2000てーぶる おせろ
   name-en: "Othello [SuperLite 2000]"
   region: "NTSC-J"
 SLPM-62306:
@@ -33653,19 +33653,19 @@ SLPM-62306:
   region: "NTSC-J"
 SLPM-62307:
   name: SIMPLE2000シリーズVol.26 THEピンボール×3
-  name-sort: SIMPLE2000しりーずVol.26 THEぴんぼーる×3
+  name-sort: しんぷる2000しりーずVol.26 THEぴんぼーる×3
   name-en: "Simple 2000 Series Vol. 26 - The Pinball X 3"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS and console spam.
 SLPM-62308:
   name: SIMPLE2000シリーズVol.24 THEボウリングHYPER
-  name-sort: SIMPLE2000しりーずVol.24 THEぼうりんぐHYPER
+  name-sort: しんぷる2000しりーずVol.24 THEぼうりんぐHYPER
   name-en: "Simple 2000 Series Vol. 24 - The Bowling"
   region: "NTSC-J"
 SLPM-62309:
   name: SIMPLE2000シリーズVol.25 THE 免許取得シミュレーション
-  name-sort: SIMPLE2000しりーずVol.25 THE めんきょしゅとくしみゅれーしょん
+  name-sort: しんぷる2000しりーずVol.25 THE めんきょしゅとくしみゅれーしょん
   name-en: "Simple 2000 Series Vol. 25 - The Menkyo Shutoku Simulation"
   region: "NTSC-J"
 SLPM-62310:
@@ -33678,12 +33678,12 @@ SLPM-62312:
   region: "NTSC-J"
 SLPM-62313:
   name: SIMPLE2000シリーズ Vol.23 THE パズルコレクション2000問
-  name-sort: SIMPLE2000しりーずVol.23 THE ぱずるこれくしょん2000もん
+  name-sort: しんぷる2000しりーずVol.23 THE ぱずるこれくしょん2000もん
   name-en: "Simple 2000 Series Vol. 23 - The Puzzle Collection 2000-mon"
   region: "NTSC-J"
 SLPM-62314:
   name: SIMPLE2000シリーズ アルティメットVol.7 最強!白バイキング〜SECURITY POLICE〜
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.7 さいきょう!しろばいきんぐ SECURITY POLICE
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.7 さいきょう!しろばいきんぐ SECURITY POLICE
   name-en: "Simple 2000 Series Vol. 7 - Saikyou! Shiro Biking Security Police"
   region: "NTSC-J"
 SLPM-62315:
@@ -33693,12 +33693,12 @@ SLPM-62315:
   region: "NTSC-J"
 SLPM-62316:
   name: SuperLite 2000テーブル 麻雀
-  name-sort: SuperLite 2000てーぶる まーじゃん
+  name-sort: すーぱーらいと2000てーぶる まーじゃん
   name-en: "Table Mahjong [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-62317:
   name: SuperLite 2000囲碁
-  name-sort: SuperLite 2000いご
+  name-sort: すーぱーらいと2000いご
   name-en: "SuperLite 2000 Vol. 3 - Igo"
   region: "NTSC-J"
 SLPM-62318:
@@ -33729,7 +33729,7 @@ SLPM-62323:
   region: "NTSC-J"
 SLPM-62324:
   name: SIMPLE2000シリーズ アルティメットVol.8 激闘!迷路キング
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.8 げきとう!めいろきんぐ
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.8 げきとう!めいろきんぐ
   name-en: "Simple 2000 Series Vol. 8 - Gekitou! Meiro King"
   region: "NTSC-J"
 SLPM-62325:
@@ -33749,7 +33749,7 @@ SLPM-62327:
   region: "NTSC-J"
 SLPM-62328:
   name: SIMPLE2000シリーズVol.27 THEプロ野球 〜2003ペナントレース〜
-  name-sort: SIMPLE2000しりーずVol.27 THEぷろやきゅう 2003ぺなんとれーす
+  name-sort: しんぷる2000しりーずVol.27 THEぷろやきゅう 2003ぺなんとれーす
   name-en: "Simple 2000 Series Vol. 27 - The Pro Yakyuu 2003 Pennant Race"
   region: "NTSC-J"
 SLPM-62329:
@@ -33769,23 +33769,23 @@ SLPM-62333:
   region: "NTSC-J"
 SLPM-62334:
   name: SIMPLE2000シリーズVol.29 THE恋愛ボードゲーム 〜青春18ラヂオ〜
-  name-sort: SIMPLE2000しりーずVol.29 THEれんあいぼーどげーむ せいしゅん18らじお
+  name-sort: しんぷる2000しりーずVol.29 THEれんあいぼーどげーむ せいしゅん18らじお
   name-en: "Simple 2000 Series Vol. 29 - The Renai Board Game"
   region: "NTSC-J"
 SLPM-62335:
   name: SIMPLE2000シリーズVol.28 THE武士道〜辻斬一代〜
-  name-sort: SIMPLE2000しりーずVol.28 THEぶしどう つじぎりいちだい
+  name-sort: しんぷる2000しりーずVol.28 THEぶしどう つじぎりいちだい
   name-en: "Simple 2000 Series Vol. 28 - The Bushido - Tsujigiri Ichi-dai"
   region: "NTSC-J"
 SLPM-62336:
   name: SIMPLE2000シリーズ Vol.44 THE はじめてのRPG〜伝説の継承者〜
-  name-sort: SIMPLE2000しりーず Vol.44 THE はじめてのRPG でんせつのけいしょうしゃ
+  name-sort: しんぷる2000しりーず Vol.44 THE はじめてのRPG でんせつのけいしょうしゃ
   name-en: "Simple 2000 Series Vol. 44 - The Hajimete no RPG - Densetsu no Keishousha"
   region: "NTSC-J"
   compat: 5
 SLPM-62337:
   name: SIMPLE2000シリーズVol.30 THEストリートバスケ 3ON3
-  name-sort: SIMPLE2000しりーずVol.30 THEすとりーとばすけ 3ON3
+  name-sort: しんぷる2000しりーずVol.30 THEすとりーとばすけ 3ON3
   name-en: "Simple 2000 Series Vol. 30 - The Basketball - 3-on-3"
   region: "NTSC-J"
 SLPM-62338:
@@ -33818,12 +33818,12 @@ SLPM-62342:
     - InstantDMAHack # Fixes bad ring/UI textures.
 SLPM-62343:
   name: SIMPLE2000シリーズVol.34 THE恋愛ホラーアドベンチャー〜漂流少女〜
-  name-sort: SIMPLE2000しりーずVol.34 THEれんあいほらーあどべんちゃー〜ひょうりゅうしょうじょ〜
+  name-sort: しんぷる2000しりーずVol.34 THEれんあいほらーあどべんちゃー〜ひょうりゅうしょうじょ〜
   name-en: "Simple 2000 Series Vol. 34 - The Renai Horror Adventure - Hyouryuu Shoujo"
   region: "NTSC-J"
 SLPM-62344:
   name: SIMPLE2000シリーズVol.31 THE地球防衛軍
-  name-sort: SIMPLE2000しりーずVol.31 THEちきゅうぼうえいぐん
+  name-sort: しんぷる2000しりーずVol.31 THEちきゅうぼうえいぐん
   name-en: "Simple 2000 Series Vol. 31 - The Chikyuu Boueigun"
   region: "NTSC-J"
   gsHWFixes:
@@ -33831,7 +33831,7 @@ SLPM-62344:
     trilinearFiltering: 1 # Smooths high frequency textures on distant ground.
 SLPM-62345:
   name: SIMPLE2000シリーズVol.32 THE戦車
-  name-sort: SIMPLE2000しりーずVol.32 THEせんしゃ
+  name-sort: しんぷる2000しりーずVol.32 THEせんしゃ
   name-en: "Simple 2000 Series Vol. 32 - The Sensha"
   region: "NTSC-J"
 SLPM-62346:
@@ -33845,7 +33845,7 @@ SLPM-62346:
     getSkipCount: "GSC_BlueTongueGames" # Mipmap rendering on CPU.
 SLPM-62348:
   name: THE MECHSMITH [IFコレクション]
-  name-sort: THE MECHSMITH [IFこれくしょん]
+  name-sort: THE MECHSMITH [あいであふぁくとりーこれくしょん]
   name-en: "Mechsmith, The"
   region: "NTSC-J"
 SLPM-62349:
@@ -33865,7 +33865,7 @@ SLPM-62352:
   region: "NTSC-J"
 SLPM-62353:
   name: SIMPLE2000シリーズVol.33 THEジェットコースター
-  name-sort: SIMPLE2000しりーずVol.33 THEじぇっとこーすたー
+  name-sort: しんぷる2000しりーずVol.33 THEじぇっとこーすたー
   name-en: "Simple 2000 Series Vol. 33 - The Jet Coaster - Yuuenchi Otsukkurou!"
   region: "NTSC-J"
 SLPM-62354:
@@ -33938,12 +33938,12 @@ SLPM-62369:
   region: "NTSC-J"
 SLPM-62370:
   name: SuperLite 2000シューティング PSYVARIAR 〜MIDIUM UNIT〜
-  name-sort: SuperLite 2000しゅーてぃんぐ PSYVARIAR 〜MIDIUM UNIT〜
+  name-sort: すーぱーらいと2000しゅーてぃんぐ PSYVARIAR 〜MIDIUM UNIT〜
   name-en: "Psyvariar Medium Unit [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-62371:
   name: SuperLite 2000シューティング PSYVARIAR 〜RIVISION〜
-  name-sort: SuperLite 2000しゅーてぃんぐ PSYVARIAR 〜RIVISION〜
+  name-sort: すーぱーらいと2000しゅーてぃんぐ PSYVARIAR 〜RIVISION〜
   name-en: "Psyvariar Revision [Superlite 2000 Series]"
   region: "NTSC-J"
   compat: 5
@@ -33952,17 +33952,17 @@ SLPM-62372:
   region: "NTSC-J"
 SLPM-62373:
   name: SIMPLE2000シリーズVol.35 THEヘリコプター
-  name-sort: SIMPLE2000しりーずVol.35 THEへりこぷたー
+  name-sort: しんぷる2000しりーずVol.35 THEへりこぷたー
   name-en: "Simple 2000 Series Vol. 35 - The Helicopter"
   region: "NTSC-J"
 SLPM-62374:
   name: SIMPLE2000シリーズ アルティメットVol.12 ストリートゴルファー
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.12 すとりーとごるふぁー
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.12 すとりーとごるふぁー
   name-en: "Simple 2000 Series Ultimate Vol. 12 - Street Golfer"
   region: "NTSC-J"
 SLPM-62375:
   name: SIMPLE2000シリーズVol.36 THE娘育成シミュレーション
-  name-sort: SIMPLE2000しりーずVol.36 THEむすめいくせいしみゅれーしょん
+  name-sort: しんぷる2000しりーずVol.36 THEむすめいくせいしみゅれーしょん
   name-en: "Simple 2000 Series Vol. 36 - The Musume Ikusei Simulation"
   region: "NTSC-J"
 SLPM-62376:
@@ -34033,7 +34033,7 @@ SLPM-62388:
   region: "NTSC-J"
 SLPM-62389:
   name: SuperLite 2000釣り　ビッグバス 〜バス釣り完全攻略〜
-  name-sort: SuperLite 2000つり びっぐばす ばすづりかんぜんこうりゃく
+  name-sort: すーぱーらいと2000つり びっぐばす ばすづりかんぜんこうりゃく
   name-en: "Big Bass - Bass Tsuri Kanzen Kouryaku [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62390:
@@ -34066,7 +34066,7 @@ SLPM-62394:
     trilinearFiltering: 1
 SLPM-62395:
   name: SIMPLE2000シリーズVol.37 THEシューティング 〜ダブル紫炎龍〜
-  name-sort: SIMPLE2000しりーずVol.37 THEしゅーてぃんぐ だぶるしえんりゅう
+  name-sort: しんぷる2000しりーずVol.37 THEしゅーてぃんぐ だぶるしえんりゅう
   name-en: "Simple 2000 Series Vol. 37 - The Shooting - Double Shienryu"
   region: "NTSC-J"
   compat: 5
@@ -34077,7 +34077,7 @@ SLPM-62396:
   region: "NTSC-J"
 SLPM-62397:
   name: SIMPLE2000本格思考シリーズVol.5 THE棋力検定〜楽しく学べる囲碁入門〜
-  name-sort: SIMPLE2000ほんかくしこうしりーずVol.5 THEきりょくけんてい たのしくまなべるいごにゅうもん
+  name-sort: しんぷる2000ほんかくしこうしりーずVol.5 THEきりょくけんてい たのしくまなべるいごにゅうもん
   name-en: "Simple 2000 Honkaku Shikou Series Vol. 5 - Kiryoku Kentei"
   region: "NTSC-J"
 SLPM-62398:
@@ -34129,7 +34129,7 @@ SLPM-62408:
   region: "NTSC-J"
 SLPM-62409:
   name: ウィザードリィ エンパイアIII 〜覇王の系譜〜
-  name-sort: うぃざーどりぃ えんぱいあIII はおうのけいふ
+  name-sort: うぃざーどりぃ えんぱいあ3 はおうのけいふ
   name-en: "Wizardry Empire III - Ancestry of the Emperor"
   region: "NTSC-J"
 SLPM-62410:
@@ -34144,7 +34144,7 @@ SLPM-62411:
     - EETimingHack # Fixes random graphical corruption.
 SLPM-62412:
   name: SIMPLE2000シリーズVol.41 THEバレーボール
-  name-sort: SIMPLE2000しりーずVol.41 THEばれーぼーる
+  name-sort: しんぷる2000しりーずVol.41 THEばれーぼーる
   name-en: "Simple 2000 Series Vol. 41 - The Volleyball"
   region: "NTSC-J"
 SLPM-62413:
@@ -34195,7 +34195,7 @@ SLPM-62422:
   compat: 5
 SLPM-62423:
   name: SuperLite 2000 パズル テトリス KIWAMEMICHI
-  name-sort: SuperLite 2000 ぱずる てとりす KIWAMEMICHI
+  name-sort: すーぱーらいと2000 ぱずる てとりす KIWAMEMICHI
   name-en: "Tetris Kiwamemichi [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62424:
@@ -34211,12 +34211,12 @@ SLPM-62425:
   compat: 5
 SLPM-62426:
   name: SIMPLE2000シリーズ Vol.42 異種格闘技 〜ボクシングVSキックVS空手VSプロレスVS柔術VS・・・〜
-  name-sort: SIMPLE2000しりーず Vol.42 いしゅかくとうぎ ぼくしんぐVSきっくVSからてVSぷろれすVSじゅうじゅつVS・・・
+  name-sort: しんぷる2000しりーず Vol.42 いしゅかくとうぎ ぼくしんぐVSきっくVSからてVSぷろれすVSじゅうじゅつVS・・・
   name-en: "Simple 2000 Series Vol. 42 - The Ishu Kakutou Waza"
   region: "NTSC-J"
 SLPM-62427:
   name: Dance Dance Revolution パーティーコレクション
-  name-sort: Dance Dance Revolution ぱーてぃーこれくしょん
+  name-sort: だんすだんすれぼりゅーしょん ぱーてぃーこれくしょん
   name-en: "Dance Dance Revolution Party Collection"
   region: "NTSC-J"
   compat: 5
@@ -34227,12 +34227,12 @@ SLPM-62428:
   region: "NTSC-J"
 SLPM-62429:
   name: SIMPLE2000シリーズ アルティメット Vol.15 ラブ★ピンポン
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.15 らぶぴんぽん
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.15 らぶぴんぽん
   name-en: "Simple 2000 Series Ultimate Vol. 15 - Love - Ping Pong!"
   region: "NTSC-J"
 SLPM-62430:
   name: SIMPLE2000シリーズ Vol.43 THE裁判 〜新米司法官 桃田 司の10の裁判ファイル
-  name-sort: SIMPLE2000しりーず Vol.43 THEさいばん 〜しんまいしほうかん ももた つかさの10のさいばんふぁいる
+  name-sort: しんぷる2000しりーず Vol.43 THEさいばん 〜しんまいしほうかん ももた つかさの10のさいばんふぁいる
   name-en: "Simple 2000 Series Vol. 43 - The Saiban"
   region: "NTSC-J"
 SLPM-62431:
@@ -34309,7 +34309,7 @@ SLPM-62447:
   region: "NTSC-J"
 SLPM-62448:
   name: SuperLite 2000パズル クロスワード
-  name-sort: SuperLite 2000ぱずる くろすわーど
+  name-sort: すーぱーらいと2000ぱずる くろすわーど
   name-en: "Crossword [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62449:
@@ -34332,7 +34332,7 @@ SLPM-62451:
   region: "NTSC-J"
 SLPM-62453:
   name: 彩京べすと G-taste麻雀
-  name-sort: さいきょうべすと じーていすとまーじゃん
+  name-sort: じーていすとまーじゃん [さいきょうべすと]
   name-en: "G-Taste Mahjong"
   region: "NTSC-J"
 SLPM-62454:
@@ -34362,13 +34362,13 @@ SLPM-62458:
   region: "NTSC-J"
 SLPM-62459:
   name: SIMPLE2000シリーズ アルティメット Vol.16 戦国VS現代
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.16 せんごくVSげんだい
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.16 せんごくVSげんだい
   name-en: "Simple 2000 Series Vol. 16 - Sengoku vs. Gendai"
   region: "NTSC-J"
   compat: 5
 SLPM-62460:
   name: SuperLite2000 シミュレーション 箱庭鉄道 〜ブルートレイン・特急編〜
-  name-sort: SuperLite2000 しみゅれーしょん はこにわてつどう ぶるーとれいんとっきゅうへん
+  name-sort: すーぱーらいと2000 しみゅれーしょん はこにわてつどう ぶるーとれいんとっきゅうへん
   name-en: "Kakoniwa Tetsudou - Blue Train Tokkyuuhen [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62461:
@@ -34401,19 +34401,19 @@ SLPM-62465:
   region: "NTSC-J"
 SLPM-62466:
   name: SuperLite 2000パズル ZOOO
-  name-sort: SuperLite 2000ぱずる ZOOO
+  name-sort: すーぱーらいと2000ぱずる ZOOO
   name-en: "Zooo [Superlite 2000 Series]"
   region: "NTSC-J"
   compat: 5
 SLPM-62467:
   name: SIMPLE2000シリーズ アルティメットVol.18 ラブ★エアロビ
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.18 らぶえあろび
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.18 らぶえあろび
   name-en: "Simple 2000 Series Ultimate Vol. 18 - Love - Aerobics"
   region: "NTSC-J"
   compat: 5
 SLPM-62468:
   name: SIMPLE2000シリーズ アルティメット Vol.17 対戦!爆弾ポイポイ
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.17 たいせん!ばくだんぽいぽい
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.17 たいせん!ばくだんぽいぽい
   name-en: "Simple 2000 Series Ultimate Vol. 17 - Taisen! Bakudan Poi Poi"
   region: "NTSC-J"
 SLPM-62469:
@@ -34431,7 +34431,7 @@ SLPM-62470:
     - "SLPM-62518"
 SLPM-62471:
   name: SuperLite 2000テーブル UNO
-  name-sort: SuperLite 2000てーぶる UNO
+  name-sort: すーぱーらいと2000てーぶる UNO
   name-en: "Uno [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62472:
@@ -34446,7 +34446,7 @@ SLPM-62473:
   region: "NTSC-J"
 SLPM-62474:
   name: SIMPLE2000シリーズ Vol.46 THE 漢字クイズ〜チャレンジ!漢字検定〜
-  name-sort: SIMPLE2000しりーず Vol.46 THE かんじくいず〜ちゃれんじ!かんじけんてい〜
+  name-sort: しんぷる2000しりーず Vol.46 THE かんじくいず〜ちゃれんじ!かんじけんてい〜
   name-en: "Simple 2000 Series Vol. 46 - The Kanji Quiz - Challenge! Kanji Kentei"
   region: "NTSC-J"
 SLPM-62475:
@@ -34461,7 +34461,7 @@ SLPM-62476:
   region: "NTSC-J"
 SLPM-62477:
   name: SIMPLE2000シリーズ Vol.47 THE 合戦 関が原
-  name-sort: SIMPLE2000しりーず Vol.47 THE かっせん せきがはら
+  name-sort: しんぷる2000しりーず Vol.47 THE かっせん せきがはら
   name-en: "Simple 2000 Series Vol. 47 - The Kassen Sekigahara"
   region: "NTSC-J"
 SLPM-62478:
@@ -34482,7 +34482,7 @@ SLPM-62480:
   compat: 5
 SLPM-62481:
   name: SuperLite2000 スポーツ わくわくバレー2
-  name-sort: SuperLite2000 すぽーつ わくわくばれー2
+  name-sort: すーぱーらいと2000 すぽーつ わくわくばれー2
   name-en: "Waku Waku Volleyball 2 [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-62482:
@@ -34492,7 +34492,7 @@ SLPM-62482:
   region: "NTSC-J"
 SLPM-62483:
   name: SIMPLE2000シリーズ Vol.48 THE タクシー 〜運転手は君だ〜
-  name-sort: SIMPLE2000しりーず Vol.48 THE たくしー うんてんしゅはきみだ
+  name-sort: しんぷる2000しりーず Vol.48 THE たくしー うんてんしゅはきみだ
   name-en: "Simple 2000 Series Vol. 48 - The Taxi - Untenshu ha Kimi da"
   region: "NTSC-J"
   gsHWFixes:
@@ -34503,12 +34503,12 @@ SLPM-62483:
     vu1RoundMode: 2 # Positive rounding fixes close white models.
 SLPM-62484:
   name: SIMPLE2000シリーズ Vol.50 THE 大美人
-  name-sort: SIMPLE2000しりーず Vol.50 THE だいびじん
+  name-sort: しんぷる2000しりーず Vol.50 THE だいびじん
   name-en: "Simple 2000 Series Vol. 50 - The Daibijin"
   region: "NTSC-J"
 SLPM-62485:
   name: SIMPLE2000シリーズVol.49 THE ドッヂボール 〜World Champion Dodge Baller〜〜
-  name-sort: SIMPLE2000しりーずVol.49 THE どっぢぼーる 〜World Champion Dodge Baller〜〜
+  name-sort: しんぷる2000しりーずVol.49 THE どっぢぼーる 〜World Champion Dodge Baller〜〜
   name-en: "Simple 2000 Series Vol. 49 - The World Champ Dodge Baller"
   region: "NTSC-J"
 SLPM-62486:
@@ -34558,28 +34558,28 @@ SLPM-62492:
   region: "NTSC-J"
 SLPM-62493:
   name: SIMPLE2000シリーズ Vol.54 THE 大海獣
-  name-sort: SIMPLE2000しりーず Vol.54 THE だいかいじゅう
+  name-sort: しんぷる2000しりーず Vol.54 THE だいかいじゅう
   name-en: "Simple 2000 Series Vol. 54 - The Daikiju"
   region: "NTSC-J"
 SLPM-62494:
   name: SIMPLE2000シリーズ Vol.55 THE キャットファイト
-  name-sort: SIMPLE2000しりーず Vol.55 THE きゃっとふぁいと
+  name-sort: しんぷる2000しりーず Vol.55 THE きゃっとふぁいと
   name-en: "Simple 2000 Series Vol. 55 - The Cat Fight"
   region: "NTSC-J"
   compat: 5
 SLPM-62495:
   name: SIMPLE2000シリーズ Vol.53 THE カメラ小僧
-  name-sort: SIMPLE2000しりーず Vol.53 THE かめらこぞう
+  name-sort: しんぷる2000しりーず Vol.53 THE かめらこぞう
   name-en: "Simple 2000 Series Vol. 53 - The Camera Kozo"
   region: "NTSC-J"
 SLPM-62496:
   name: SIMPLE2000シリーズ Vol.52 THE 地球侵略群〜スペースレイダース〜
-  name-sort: SIMPLE2000しりーず Vol.52 THE ちきゅうしんりゃくぐん すぺーすれいだーす
+  name-sort: しんぷる2000しりーず Vol.52 THE ちきゅうしんりゃくぐん すぺーすれいだーす
   name-en: "Simple 2000 Series Vol. 52 - The Space Raiders"
   region: "NTSC-J"
 SLPM-62497:
   name: SIMPLE2000シリーズ Vol.51 THE 戦艦
-  name-sort: SIMPLE2000しりーず Vol.51 THE せんかん
+  name-sort: しんぷる2000しりーず Vol.51 THE せんかん
   name-en: "Simple 2000 Series Vol. 51 - The Senkan"
   region: "NTSC-J"
 SLPM-62498:
@@ -34612,7 +34612,7 @@ SLPM-62503:
   region: "NTSC-J"
 SLPM-62504:
   name: SIMPLE2000シリーズ Vol.56 THE サバイバルゲーム
-  name-sort: SIMPLE2000しりーず Vol.56 THE さばいばるげーむ
+  name-sort: しんぷる2000しりーず Vol.56 THE さばいばるげーむ
   name-en: "Simple 2000 Series Vol. 56 - The Survival Game"
   region: "NTSC-J"
 SLPM-62505:
@@ -34628,17 +34628,17 @@ SLPM-62506:
   compat: 5
 SLPM-62508:
   name: SIMPLE2000シリーズ Vol.57 THE プロ野球2004
-  name-sort: SIMPLE2000しりーず Vol.57 THE ぷろやきゅう2004
+  name-sort: しんぷる2000しりーず Vol.57 THE ぷろやきゅう2004
   name-en: "Simple 2000 Series Vol. 57 - The Pro Yakyuu 2004"
   region: "NTSC-J"
 SLPM-62509:
   name: SIMPLE2000シリーズ Vol.58 THE 外科医
-  name-sort: SIMPLE2000しりーず Vol.58 THE げかい
+  name-sort: しんぷる2000しりーず Vol.58 THE げかい
   name-en: "Simple 2000 Series Vol. 58 - The Gekai"
   region: "NTSC-J"
 SLPM-62510:
   name: SIMPLE2000シリーズ Vol.60 THE 特撮変身ヒーロー
-  name-sort: SIMPLE2000しりーず Vol.60 THE とくさつへんしんひーろー
+  name-sort: しんぷる2000しりーず Vol.60 THE とくさつへんしんひーろー
   name-en: "Simple 2000 Series Vol. 60 - The Tokusatsu Henshin Hero"
   region: "NTSC-J"
   compat: 5
@@ -34716,13 +34716,13 @@ SLPM-62523:
   region: "NTSC-J"
 SLPM-62524:
   name: SIMPLE2000シリーズ Vol.59 THE 宇宙人と話そう!〜うちゅ〜じんってなぁに?〜
-  name-sort: SIMPLE2000しりーず Vol.59 THE うちゅうじんとはなそう! うちゅーじんってなぁに?
+  name-sort: しんぷる2000しりーず Vol.59 THE うちゅうじんとはなそう! うちゅーじんってなぁに?
   name-en: "Simple 2000 Series Vol. 59 - The Uchyujin to Hanasou!"
   region: "NTSC-J"
   compat: 5
 SLPM-62525:
   name: SIMPLE2000シリーズ Vol.61 THE お姉チャンバラ
-  name-sort: SIMPLE2000しりーず Vol.61 THE おねえちゃんばら
+  name-sort: しんぷる2000しりーず Vol.61 THE おねえちゃんばら
   name-en: "Simple 2000 Series Vol. 61 - The OneeChanBara"
   region: "NTSC-J"
   compat: 5
@@ -34764,7 +34764,7 @@ SLPM-62533:
   region: "NTSC-J"
 SLPM-62534:
   name: SIMPLE2000シリーズ Vol.63 もぎたて水着!女まみれの THE 水泳大会
-  name-sort: SIMPLE2000しりーず Vol.63 もぎたてみずぎ!おんなまみれの THE すいえいたいかい
+  name-sort: しんぷる2000しりーず Vol.63 もぎたてみずぎ!おんなまみれの THE すいえいたいかい
   name-en: "Simple 2000 Series Vol. 63 - Mogitate Mizugi! Onna Mamire no The Suieitaikai"
   region: "NTSC-J"
   compat: 5
@@ -34785,37 +34785,37 @@ SLPM-62538:
   region: "NTSC-J"
 SLPM-62539:
   name: SuperLite 2000 テーブル めざせ! チェスチャンピオン
-  name-sort: SuperLite 2000 てーぶる めざせ! ちぇすちゃんぴおん
+  name-sort: すーぱーらいと2000 てーぶる めざせ! ちぇすちゃんぴおん
   name-en: "Chess Champion [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62540:
   name: SuperLite 2000シリーズ めざせ!スーパーハスラー
-  name-sort: SuperLite 2000しりーず めざせ!すーぱーはすらー
+  name-sort: すーぱーらいと2000しりーず めざせ!すーぱーはすらー
   name-en: "Super Husaru [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62541:
   name: SuperLite 2000 スポーツ めざせ! スーパーボウラー
-  name-sort: SuperLite 2000 すぽーつ めざせ! すーぱーぼうらー
+  name-sort: すーぱーらいと2000 すぽーつ めざせ! すーぱーぼうらー
   name-en: "Super Bowling [Superlite 2000 Series Sports]"
   region: "NTSC-J"
 SLPM-62542:
   name: SIMPLE2000シリーズ アルティメット Vol.20 ラブ★マージャン!2
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.20 らぶまーじゃん!2
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.20 らぶまーじゃん!2
   name-en: "Simple 2000 Series Vol. 20 - The Love Mahjong 2"
   region: "NTSC-J"
 SLPM-62543:
   name: SIMPLE2000シリーズ Vol.65 THE キョンシーパニック
-  name-sort: SIMPLE2000しりーず Vol.65 THE きょんしーぱにっく
+  name-sort: しんぷる2000しりーず Vol.65 THE きょんしーぱにっく
   name-en: "Simple 2000 Series Vol. 65 - The Kyonshi Panic"
   region: "NTSC-J"
 SLPM-62544:
   name: SIMPLE2000シリーズ アルティメット Vol.19 アカギ〜闇に降り立った天才〜
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.19 あかぎ〜やみにおりたったてんさい〜
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.19 あかぎ〜やみにおりたったてんさい〜
   name-en: "Simple 2000 Series Vol. 19 - Akagi Yama ni Oritattatensai"
   region: "NTSC-J"
 SLPM-62545:
   name: SIMPLE2000シリーズ Vol.64 THE スプラッターアクション
-  name-sort: SIMPLE2000しりーず Vol.64 THE すぷらったーあくしょん
+  name-sort: しんぷる2000しりーず Vol.64 THE すぷらったーあくしょん
   name-en: "Simple 2000 Series Vol. 64 - Splatter Action"
   region: "NTSC-J"
   compat: 5
@@ -34836,7 +34836,7 @@ SLPM-62547:
     gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-62548:
   name: SuperLite 2000パズル 平成博徒伝
-  name-sort: SuperLite 2000ぱずる へいせいばくとでん
+  name-sort: すーぱーらいと2000ぱずる へいせいばくとでん
   name-en: "Heisei Bakutoden [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-62549:
@@ -34846,12 +34846,12 @@ SLPM-62549:
   region: "NTSC-J"
 SLPM-62550:
   name: ウィザードリィ エンパイアIII 〜覇王の系譜〜 Good Price [限定版]
-  name-sort: うぃざーどりぃ えんぱいあIII 〜はおうのけいふ〜 Good Price [げんていばん]
+  name-sort: うぃざーどりぃ えんぱいあ3 〜はおうのけいふ〜 Good Price [げんていばん]
   name-en: "Wizardry Empire III - Ancestry of the Emperor [Good Price - Limited Edition]"
   region: "NTSC-J"
 SLPM-62551:
   name: ウィザードリィ エンパイアIII 〜覇王の系譜〜 Good Price
-  name-sort: うぃざーどりぃ えんぱいあIII 〜はおうのけいふ〜 Good Price
+  name-sort: うぃざーどりぃ えんぱいあ3 〜はおうのけいふ〜 Good Price
   name-en: "Wizardry Empire III - Ancestry of the Emperor [Good Price]"
   region: "NTSC-J"
 SLPM-62552:
@@ -34884,17 +34884,17 @@ SLPM-62555:
   region: "NTSC-J"
 SLPM-62556:
   name: SIMPLE2000シリーズ Vol.66 THE パーティー右脳クイズ
-  name-sort: SIMPLE2000しりーず Vol.66 THE ぱーてぃーうのうくいず
+  name-sort: しんぷる2000しりーず Vol.66 THE ぱーてぃーうのうくいず
   name-en: "Simple 2000 Series Vol. 66 - The Party Unou Quiz"
   region: "NTSC-J"
 SLPM-62557:
   name: SIMPLE2000シリーズ Vol.67 THE 推理 〜そして誰もいなくなった〜
-  name-sort: SIMPLE2000しりーず Vol.67 THE すいり 〜そしてだれもいなくなった〜
+  name-sort: しんぷる2000しりーず Vol.67 THE すいり 〜そしてだれもいなくなった〜
   name-en: "Simple 2000 Series Vol. 67 - The Suiri"
   region: "NTSC-J"
 SLPM-62558:
   name: SIMPLE2000シリーズ Ultimate Vol.21 喧嘩上等!ヤンキー番長 〜昭和99年の伝説〜
-  name-sort: SIMPLE2000しりーず Ultimate Vol.21 けんかじょうとう!やんきーばんちょう 〜しょうわ99ねんのでんせつ〜
+  name-sort: しんぷる2000しりーず Ultimate Vol.21 けんかじょうとう!やんきーばんちょう 〜しょうわ99ねんのでんせつ〜
   name-en: "Simple 2000 Series Vol. 21 - Kenka Joutou! Yankee Banchou"
   region: "NTSC-J"
 SLPM-62559:
@@ -34921,7 +34921,7 @@ SLPM-62563:
   compat: 5
 SLPM-62564:
   name: SIMPLE2000シリーズ Vol.68 THE 逃走ハイウェイ〜名古屋-東京〜
-  name-sort: SIMPLE2000しりーず Vol.68 THE とうそうはいうぇい〜なごや-とうきょう〜
+  name-sort: しんぷる2000しりーず Vol.68 THE とうそうはいうぇい〜なごや-とうきょう〜
   name-en: "Simple 2000 Series Vol. 68 - The Tousou Highway - Nagoya - Tokyo"
   region: "NTSC-J"
   gameFixes:
@@ -34960,7 +34960,7 @@ SLPM-62570:
   region: "NTSC-J"
 SLPM-62571:
   name: SIMPLE2000シリーズ アルティメット Vol.22 THE スタイリッシュ麻雀〜兎-野性の闘牌-＆兎-野性の闘牌 THE ARCADE- ダブルパック〜
-  name-sort: SIMPLE2000しりーず あるてぃめっと Vol.22 THE すたいりっしゅまーじゃん うさぎ やせいのとうはい うさぎ やせいのとうはい THE ARCADE だぶるぱっく
+  name-sort: しんぷる2000しりーず あるてぃめっと Vol.22 THE すたいりっしゅまーじゃん うさぎ やせいのとうはい うさぎ やせいのとうはい THE ARCADE だぶるぱっく
   name-en: "Simple 2000 Series Ultimate Vol. 22 - Stylish Mahjong"
   region: "NTSC-J"
   compat: 5
@@ -34992,12 +34992,12 @@ SLPM-62578:
   region: "NTSC-J"
 SLPM-62579:
   name: SIMPLE2000シリーズ Vol.74 女の子専用 THE 王子様とロマンス 〜リプルのたまご〜
-  name-sort: SIMPLE2000しりーず Vol.74 おんなのこせんよう THE おうじさまとろまんす 〜りぷるのたまご〜
+  name-sort: しんぷる2000しりーず Vol.74 おんなのこせんよう THE おうじさまとろまんす 〜りぷるのたまご〜
   name-en: "Simple 2000 Series Vol. 74 - Onna no Ko Senyou - The Oujisama to Romance - Ripuru no Tamago"
   region: "NTSC-J"
 SLPM-62580:
   name: SIMPLE2000シリーズ Vol.69 THE ボードゲームコレクション
-  name-sort: SIMPLE2000しりーず Vol.69 THE ぼーどげーむこれくしょん
+  name-sort: しんぷる2000しりーず Vol.69 THE ぼーどげーむこれくしょん
   name-en: "Simple 2000 Series Vol. 69 - The Board Game Collection"
   region: "NTSC-J"
   compat: 5
@@ -35037,17 +35037,17 @@ SLPM-62585:
   region: "NTSC-J"
 SLPM-62586:
   name: SIMPLE2000シリーズ Vol.70 THE 鑑識官
-  name-sort: SIMPLE2000しりーず Vol.70 THE かんしきかん
+  name-sort: しんぷる2000しりーず Vol.70 THE かんしきかん
   name-en: "Simple 2000 Series Vol. 70 - Kanshikikan"
   region: "NTSC-J"
 SLPM-62588:
   name: SIMPLE2000シリーズ Vol.73 THE 西遊闘猿伝
-  name-sort: SIMPLE2000しりーず Vol.73 THE さいゆうとうえんでん
+  name-sort: しんぷる2000しりーず Vol.73 THE さいゆうとうえんでん
   name-en: "Simple 2000 Series Vol. 73 - The Saiyuu Touenden"
   region: "NTSC-J"
 SLPM-62589:
   name: SIMPLE2000シリーズ Vol.72 THE 任侠
-  name-sort: SIMPLE2000しりーず Vol.72 THE にんきょう
+  name-sort: しんぷる2000しりーず Vol.72 THE にんきょう
   name-en: "Simple 2000 Series Vol. 72 - Ninkyou"
   region: "NTSC-J"
 SLPM-62590:
@@ -35068,7 +35068,7 @@ SLPM-62593:
   compat: 5
 SLPM-62594:
   name: 彩京べすと 対戦ホットギミック コスプレ雀
-  name-sort: さいきょうべすと たいせんほっとぎみっく こすぷれじゃん
+  name-sort: たいせんほっとぎみっく こすぷれじゃん [さいきょうべすと]
   name-en: "Battle Hot Gimmick Cosplay Mahjong [Psikyo Best]"
   region: "NTSC-J"
 SLPM-62595:
@@ -35096,7 +35096,7 @@ SLPM-62599:
   region: "NTSC-J"
 SLPM-62600:
   name: SIMPLE2000シリーズ Vol.75 THE 特ダネ 〜日本全国スクープ列島〜
-  name-sort: SIMPLE2000しりーず Vol.75 THE とくだね にほんぜんこくすくーぷれっとう
+  name-sort: しんぷる2000しりーず Vol.75 THE とくだね にほんぜんこくすくーぷれっとう
   name-en: "Simple 2000 Series Vol. 75 - The Tokudane"
   region: "NTSC-J"
 SLPM-62601:
@@ -35116,12 +35116,12 @@ SLPM-62603:
   region: "NTSC-J"
 SLPM-62604:
   name: SIMPLE2000シリーズ Vol.76 THE 話そう英語の旅
-  name-sort: SIMPLE2000しりーず Vol.76 THE はなそうえいごのたび
+  name-sort: しんぷる2000しりーず Vol.76 THE はなそうえいごのたび
   name-en: "Simple 2000 Series Vol. 76 - The Hanasou Eigo no Tabi"
   region: "NTSC-J"
 SLPM-62605:
   name: SIMPLE2000シリーズ Vol.77 THE 話そう韓国語の旅
-  name-sort: SIMPLE2000しりーず Vol.77 THE はなそうかんこくごのたび
+  name-sort: しんぷる2000しりーず Vol.77 THE はなそうかんこくごのたび
   name-en: "Simple 2000 Series Vol. 77 - The Hanasou Kankokugo no Tabi"
   region: "NTSC-J"
 SLPM-62606:
@@ -35139,7 +35139,7 @@ SLPM-62607:
   region: "NTSC-J"
 SLPM-62608:
   name: SuperLite 2000 アクション 吉野家
-  name-sort: SuperLite 2000 あくしょん よしのや
+  name-sort: すーぱーらいと2000 あくしょん よしのや
   name-en: "Yoshinoya [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-62609:
@@ -35181,7 +35181,7 @@ SLPM-62615:
   region: "NTSC-J"
 SLPM-62616:
   name: SIMPLE2000シリーズ Ultimate Vol.25 超最速!族車キングBUのBU 〜仏恥義理伝説2改〜
-  name-sort: SIMPLE2000しりーず Ultimate Vol.25 ちょうさいそく!ぞくしゃきんぐBUのBU ぶっちぎりでんせつ2 かい
+  name-sort: しんぷる2000しりーず Ultimate Vol.25 ちょうさいそく!ぞくしゃきんぐBUのBU ぶっちぎりでんせつ2 かい
   name-en: "Simple 2000 Series Ultimate Vol. 25 - Chou-Saisoku! Zokusha King BU no BU"
   region: "NTSC-J"
 SLPM-62617:
@@ -35189,7 +35189,7 @@ SLPM-62617:
   region: "NTSC-J"
 SLPM-62618:
   name: SIMPLE2000シリーズ Vol.78 THE 宇宙大戦争
-  name-sort: SIMPLE2000しりーず Vol.78 THE うちゅうだいせんそう
+  name-sort: しんぷる2000しりーず Vol.78 THE うちゅうだいせんそう
   name-en: "Simple 2000 Series Vol. 78 - The Uchuu Daisensou"
   region: "NTSC-J"
 SLPM-62619:
@@ -35207,7 +35207,7 @@ SLPM-62621:
   region: "NTSC-J"
 SLPM-62622:
   name: スロッターUPコア7 激闘打!ストリートファイターII
-  name-sort: すろったーUPこあ7 げきとうだ!すとりーとふぁいたーII
+  name-sort: すろったーUPこあ7 げきとうだ!すとりーとふぁいたー2
   name-en: "Slotter Up Core 7"
   region: "NTSC-J"
 SLPM-62623:
@@ -35264,46 +35264,46 @@ SLPM-62630:
   region: "NTSC-J"
 SLPM-62631:
   name: SIMPLE2000シリーズ 2in1 Vol.3 THE パズルコレクション2,000問 & THE 東洋三大占術〜風水・姓名判断・易占〜 [ディスク1/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.3 THE ぱずるこれくしょん2,000もん & THE とうようさんだいうらないじゅつ〜ふうすい・せいめいはんだん・えきうらない〜 [でぃすく1/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.3 THE ぱずるこれくしょん2,000もん & THE とうようさんだいうらないじゅつ〜ふうすい・せいめいはんだん・えきうらない〜 [でぃすく1/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 3 - The Puzzle Collection 2000 Toi & The Touyou Sandai Senjitsu Fusui, Seimeidanhan, Ekisen [Disc 1 of 2]"
   region: "NTSC-J"
 SLPM-62632:
   name: SIMPLE2000シリーズ 2in1 Vol.3 THE パズルコレクション2,000問 & THE 東洋三大占術〜風水・姓名判断・易占〜 [ディスク2/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.3 THE ぱずるこれくしょん2,000もん & THE とうようさんだいうらないじゅつ〜ふうすい・せいめいはんだん・えきうらない〜 [でぃすく2/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.3 THE ぱずるこれくしょん2,000もん & THE とうようさんだいうらないじゅつ〜ふうすい・せいめいはんだん・えきうらない〜 [でぃすく2/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 3 - The Puzzle Collection 2000 Toi & The Touyou Sandai Senjitsu Fusui, Seimeidanhan, Ekisen [Disc 2 of 2]"
   region: "NTSC-J"
 SLPM-62633:
   name: SIMPLE2000シリーズ 2in1 Vol.2 THE バスフィッシング ＆ THE ボウリングHYPER [ディスク1/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.2 THE ばすふぃっしんぐ & THE ぼうりんぐHYPER [でぃすく1/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.2 THE ばすふぃっしんぐ & THE ぼうりんぐHYPER [でぃすく1/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 2 - The Bass Fishing & The Bowling Hyper [Disc 1 of 2]"
   region: "NTSC-J"
 SLPM-62634:
   name: SIMPLE2000シリーズ 2in1 Vol.2 THE バスフィッシング ＆ THE ボウリングHYPER [ディスク2/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.2 THE ばすふぃっしんぐ & THE ぼうりんぐHYPER [でぃすく2/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.2 THE ばすふぃっしんぐ & THE ぼうりんぐHYPER [でぃすく2/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 2 - The Bass Fishing & The Bowling Hyper [Disc 2 of 2]"
   region: "NTSC-J"
 SLPM-62635:
   name: SIMPLE2000シリーズ Ultimate Vol.26 ラブ★スマッシュ!5.1 〜テニスロボの反乱〜
-  name-sort: SIMPLE2000しりーず Ultimate Vol.26 らぶすまっしゅ!5.1 〜てにすろぼのはんらん〜
+  name-sort: しんぷる2000しりーず Ultimate Vol.26 らぶすまっしゅ!5.1 〜てにすろぼのはんらん〜
   name-en: "Simple 2000 Series Ultimate Vol. 26 - Love - Smash! 5.1 - Tennis Robo no Gyakushuu"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
 SLPM-62636:
   name: SIMPLE2000シリーズ 2in1 Vol.1 THE テニス ＆ THE スノーボード [ディスク1/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.1 THE てにす & THE すのーぼーど [でぃすく1/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.1 THE てにす & THE すのーぼーど [でぃすく1/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 1 - The Tennis & The Snowboard [Disc 1 of 2]"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes SPS and console spam (The Tennis).
 SLPM-62637:
   name: SIMPLE2000シリーズ 2in1 Vol.1 THE テニス ＆ THE スノーボード [ディスク2/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.1 THE てにす & THE すのーぼーど [でぃすく2/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.1 THE てにす & THE すのーぼーど [でぃすく2/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 1 - The Tennis & The Snowboard [Disc 2 of 2]"
   region: "NTSC-J"
 SLPM-62638:
   name: SIMPLE2000シリーズ Vol.80 THE お姉チャンプルゥ 〜THE姉チャン特別編〜
-  name-sort: SIMPLE2000しりーず Vol.80 THE おねえちゃんぷるぅ 〜THEねえちゃんとくべつへん〜
+  name-sort: しんぷる2000しりーず Vol.80 THE おねえちゃんぷるぅ 〜THEねえちゃんとくべつへん〜
   name-en: "Simple 2000 Series Vol. 80 - The OneeChanPuruu"
   region: "NTSC-J"
   gameFixes:
@@ -35315,7 +35315,7 @@ SLPM-62639:
   region: "NTSC-J"
 SLPM-62640:
   name: コーエー定番シリーズ 太閤立志伝IV
-  name-sort: たいこうりっしでんIV [こーえーていばんしりーず]
+  name-sort: たいこうりっしでん4 [こーえーていばんしりーず]
   name-en: "Taikou Risshiden IV [Koei Selection Series]"
   region: "NTSC-J"
 SLPM-62641:
@@ -35355,22 +35355,22 @@ SLPM-62648:
   region: "NTSC-J"
 SLPM-62649:
   name: SIMPLE2000シリーズ Vol.85 世界名作劇場クイズ
-  name-sort: SIMPLE2000しりーず Vol.85 せかいめいさくげきじょうくいず
+  name-sort: しんぷる2000しりーず Vol.85 せかいめいさくげきじょうくいず
   name-en: "Simple 2000 Series Vol. 88 - The Sekai Meisaku Gekijou Quiz"
   region: "NTSC-J"
 SLPM-62650:
   name: SIMPLE2000シリーズ Vol.82 THE カンフー
-  name-sort: SIMPLE2000しりーず Vol.82 THE かんふー
+  name-sort: しんぷる2000しりーず Vol.82 THE かんふー
   name-en: "Simple 2000 Series Vol. 82 - The Kung-fu"
   region: "NTSC-J"
 SLPM-62651:
   name: SIMPLE2000シリーズ Vol.83 THE 昆虫採集
-  name-sort: SIMPLE2000しりーず Vol.83 THE こんちゅうさいしゅう
+  name-sort: しんぷる2000しりーず Vol.83 THE こんちゅうさいしゅう
   name-en: "Simple 2000 Series Vol. 83 - The Konchuu Saishuu"
   region: "NTSC-J"
 SLPM-62652:
   name: SIMPLE2000シリーズ Vol.81 THE 地球防衛軍2
-  name-sort: SIMPLE2000しりーず Vol.81 THE ちきゅうぼうえいぐん2
+  name-sort: しんぷる2000しりーず Vol.81 THE ちきゅうぼうえいぐん2
   name-en: "Simple 2000 Series Vol. 81 - The Chikyuu Boueigun 2"
   region: "NTSC-J"
   compat: 5
@@ -35407,27 +35407,27 @@ SLPM-62661:
   region: "NTSC-J"
 SLPM-62662:
   name: SIMPLE2000シリーズ 2in1 Vol.5 THE シューティング〜ダブル紫炎龍〜 ＆ THE ヘリコプター [ディスク1/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.5 THE しゅーてぃんぐ〜だぶるしえんりゅう〜 & THE へりこぷたー [でぃすく1/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.5 THE しゅーてぃんぐ〜だぶるしえんりゅう〜 & THE へりこぷたー [でぃすく1/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 5 - The Shooting & The Helicopter [Disc 1 of 2]"
   region: "NTSC-J"
 SLPM-62663:
   name: SIMPLE2000シリーズ 2in1 Vol.5 THE シューティング〜ダブル紫炎龍〜 ＆ THE ヘリコプター [ディスク2/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.5 THE しゅーてぃんぐ〜だぶるしえんりゅう〜 & THE へりこぷたー [でぃすく2/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.5 THE しゅーてぃんぐ〜だぶるしえんりゅう〜 & THE へりこぷたー [でぃすく2/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 5 - The Shooting & The Helicopter [Disc 2 of 2]"
   region: "NTSC-J"
 SLPM-62664:
   name: SIMPLE2000シリーズ 2in1 Vol.4 THE 武士道 〜辻斬り一代〜 ＆ THE スナイパー2 〜悪夢の銃弾〜 [ディスク1/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.4 THE ぶしどう 〜つじぎりいちだい〜 & THE すないぱー2 〜あくむのじゅうだん〜 [でぃすく1/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.4 THE ぶしどう 〜つじぎりいちだい〜 & THE すないぱー2 〜あくむのじゅうだん〜 [でぃすく1/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 4 - The Bushidou & The Sniper 2 [Disc 1 of 2]"
   region: "NTSC-J"
 SLPM-62665:
   name: SIMPLE2000シリーズ 2in1 Vol.4 THE 武士道 〜辻斬り一代〜 ＆ THE スナイパー2 〜悪夢の銃弾〜 [ディスク2/2]
-  name-sort: SIMPLE2000しりーず 2in1 Vol.4 THE ぶしどう 〜つじぎりいちだい〜 & THE すないぱー2 〜あくむのじゅうだん〜 [でぃすく2/2]
+  name-sort: しんぷる2000しりーず 2in1 Vol.4 THE ぶしどう 〜つじぎりいちだい〜 & THE すないぱー2 〜あくむのじゅうだん〜 [でぃすく2/2]
   name-en: "Simple 2000 Series 2-in-1 Vol. 4 - The Bushidou & The Sniper 2 [Disc 2 of 2]"
   region: "NTSC-J"
 SLPM-62666:
   name: SEGA AGES 2500シリーズ Vol.1 PHANTASY STAR generation:1 通常版
-  name-sort: SEGA AGES 2500しりーず Vol.1 PHANTASY STAR generation:1 [つうじょうばん]
+  name-sort: SEGA AGES 2500しりーず Vol.1 PHANTASY STAR generation:1
   name-en: "Sega Ages 2500 Series Vol.01 - Phantasy Star Generation 1"
   region: "NTSC-J"
 SLPM-62668:
@@ -35550,12 +35550,12 @@ SLPM-62695:
   region: "NTSC-J"
 SLPM-62696:
   name: オレたちゲーセン族 イー・アル・カンフー
-  name-sort: おれたちげーせんぞく いー・ある・かんふー
+  name-sort: おれたちげーせんぞく いーあるかんふー
   name-en: "Oretachi Geasen Zoku Sono - Yie Ar Kung-fu"
   region: "NTSC-J"
 SLPM-62697:
   name: IFコレクション ジェネレーション オブ カオス ネクスト 〜失われし絆〜
-  name-sort: じぇねれーしょん おぶ かおす ねくすと 〜うしなわれしきずな〜 [IFこれくしょん]
+  name-sort: じぇねれーしょん おぶ かおす 2 うしなわれしきずな [あいであふぁくとりーこれくしょん]
   name-en: "Generation of Chaos Next [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-62698:
@@ -35565,7 +35565,7 @@ SLPM-62698:
   region: "NTSC-J"
 SLPM-62699:
   name: IFコレクション カルディナル アーク 〜混沌の封札〜
-  name-sort: かるでぃなる あーく こんとんのふうさつ [IFこれくしょん]
+  name-sort: かるでぃなる あーく こんとんのふうさつ [あいであふぁくとりーこれくしょん]
   name-en: "Neverland Card War Cardinal Arc - Konton no Fuusatsu [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-62700:
@@ -35630,7 +35630,7 @@ SLPM-62710:
   region: "NTSC-J"
 SLPM-62711:
   name: SuperLite 2000 ようこそ ひつじ村
-  name-sort: SuperLite 2000 ようこそ ひつじむら
+  name-sort: すーぱーらいと2000 ようこそ ひつじむら
   name-en: "Welcome to Sheep Village [Superlite 2000]"
   region: "NTSC-J"
 SLPM-62712:
@@ -36105,7 +36105,7 @@ SLPM-65005:
   name-en: "I am the Coach"
   region: "NTSC-J"
 SLPM-65006:
-  name: beatmania IIDX 3rd style
+  name: ビートマニアII ＤＸ 3ｒｄＳｔｙｌｅ
   name-sort: びーとまにあ つーでぃーえっくす 3rd style
   name-en: "Beatmania IIDX 3rd style"
   region: "NTSC-J"
@@ -36195,14 +36195,14 @@ SLPM-65017:
   region: "NTSC-J"
 SLPM-65018:
   name: Z.O.E プレミアムパッケージ
-  name-sort: Z.O.E ぷれみあむぱっけーじ
+  name-sort: ぞーん おぶ えんだーず ぷれみあむぱっけーじ
   name-en: "Z.O.E. - Zone of the Enders [Limited Edition]"
   region: "NTSC-J"
   gsHWFixes:
     gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
 SLPM-65019:
   name: Z.O.E
-  name-sort: Z.O.E
+  name-sort: ぞーん おぶ えんだーず
   name-en: "Z.O.E. - Zone of the Enders"
   region: "NTSC-J"
   compat: 5
@@ -36271,8 +36271,8 @@ SLPM-65031:
         patch=0,EE,0016ae9c,word,4BE72B3C
 SLPM-65032:
   name: 東京バス案内 今日から君も運転手
-  name-sort: とうきょうばすあんない きょうからきみもうんてんしゅ
-  name-en: "Tokyo Bus Guide - Annai"
+  name-sort: とうきょうばすがいど きょうからきみもうんてんしゅ
+  name-en: "Tokyo Bus Guide"
   region: "NTSC-J"
   compat: 5
 SLPM-65033:
@@ -36471,7 +36471,7 @@ SLPM-65072:
   name-en: "ESPN Winter X-Games Snowboarding 2002"
   region: "NTSC-J"
 SLPM-65073:
-  name: 幻想水滸伝III（初回生産分：特殊仕様）
+  name: 幻想水滸伝 III(初回生産分:特殊仕様)
   name-sort: げんそうすいこでん3 [しょかいせいさんぶん:とくしゅしよう]
   name-en: "Gensou Suikoden III"
   region: "NTSC-J"
@@ -36672,7 +36672,7 @@ SLPM-65105:
   region: "NTSC-J"
 SLPM-65107:
   name: SIMPLE2000シリーズ アルティメットVol.2 エディット・レーシング
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.2 えでぃっと・れーしんぐ
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.2 えでぃっと・れーしんぐ
   name-en: "Simple 2000 Series Ultimate Vol. 2 - Edit Racing"
   region: "NTSC-J"
 SLPM-65108:
@@ -36771,11 +36771,11 @@ SLPM-65123:
     - "SLPM-65123"
 SLPM-65124:
   name: auto modellista
-  name-sort: auto modellista
+  name-sort: おーともでりすた
   name-en: "Auto Modellista"
   region: "NTSC-J"
 SLPM-65125:
-  name: 夏色の砂時計（初回限定生産版）
+  name: 夏色の砂時計(初回限定生産版)
   name-sort: なついろのすなどけい [しょかいげんていせいさんばん]
   name-en: "Natsuiro no Sunadokei"
   region: "NTSC-J"
@@ -37023,7 +37023,7 @@ SLPM-65181:
     halfPixelOffset: 1 # Fixes blurriness.
 SLPM-65183:
   name: auto modellista モデムパック バージョン
-  name-sort: auto modellista もでむぱっく ばーじょん
+  name-sort: おーともでりすた もでむぱっく ばーじょん
   name-en: "Auto Modellista"
   region: "NTSC-J"
 SLPM-65184:
@@ -37251,7 +37251,7 @@ SLPM-65221:
   compat: 5
 SLPM-65222:
   name: 遊戯王真デュエルマスターズ II 継承されし記憶 コナミ ザ ベスト
-  name-sort: ゆうぎおうまでゅえるますたーず II けいしょうされしきおく こなみ ざ べすと
+  name-sort: ゆうぎおうしんでゅえるますたーず II けいしょうされしきおく こなみ ざ べすと
   name-en: "Yu-Gi-Oh! 2 [Konami The Best]"
   region: "NTSC-J"
   roundModes:
@@ -37263,7 +37263,7 @@ SLPM-65222:
     wildArmsHack: 1 # Corrects some more font artifacts a little.
 SLPM-65223:
   name: トライアングル・アゲイン
-  name-sort: とらいあんぐる・あげいん
+  name-sort: とらいあんぐるあげいん
   name-en: "Triangle Again"
   region: "NTSC-J"
 SLPM-65224:
@@ -37305,7 +37305,7 @@ SLPM-65229:
   name-en: "Totsugeki! Army Men - Shijou Saishou no Sakusen"
   region: "NTSC-J"
 SLPM-65230:
-  name: ときめきメモリアル3 約束のあの場所で コナミ ザ・ベスト
+  name: ときめきメモリアル3 約束のあの場所で(コナミ・ザ・ベスト)
   name-sort: ときめきめもりある3 やくそくのあのばしょで こなみ ざ べすと
   name-en: "Tokimeki Memorial 3 [Konami The Best]"
   region: "NTSC-J"
@@ -37352,7 +37352,7 @@ SLPM-65235:
   compat: 5
 SLPM-65236:
   name: ANUBIS ZONE OF THE ENDERS
-  name-sort: あぬびす ぞーん おぶ えんだーず
+  name-sort: ぞーん おぶ えんだーず あぬびす
   name-en: "Anubis - Zone of the Enders"
   region: "NTSC-J"
 SLPM-65237:
@@ -37601,18 +37601,18 @@ SLPM-65276:
     - VIFFIFOHack
 SLPM-65277:
   name: DDRMAX2 Dance Dance Revolution 7th Mix
-  name-sort: DDRMAX2 Dance Dance Revolution 7th Mix
+  name-sort: だんすだんすれぼりゅーしょんMAX2 Dance Dance Revolution 7th Mix
   name-en: "DDRMAX2 Dance Dance Revolution 7th Mix"
   region: "NTSC-J"
   compat: 5
 SLPM-65278:
-  name: GENERATION OF CHAOS 3 〜時の封印〜 （限定版）
-  name-sort: GENERATION OF CHAOS 3 ときのふういん [げんていばん]
+  name: GENERATION OF CHAOS 3 ～時の封印～ （限定版）
+  name-sort: じぇねれーしょんおぶかおす 3 ときのふういん [げんていばん]
   name-en: "Generation of Chaos 3 [Limited Edition]"
   region: "NTSC-J"
 SLPM-65279:
-  name: GENERATION OF CHAOS 3 〜時の封印〜
-  name-sort: GENERATION OF CHAOS 3 ときのふういん
+  name: GENERATION OF CHAOS 3 時の封印
+  name-sort: じぇねれーしょんおぶかおす 3 ときのふういん
   name-en: "Generation of Chaos 3"
   region: "NTSC-J"
 SLPM-65280:
@@ -37622,7 +37622,7 @@ SLPM-65280:
   region: "NTSC-J"
 SLPM-65281:
   name: グリーングリーン 〜鐘の音ダイナミック〜 [通常版]
-  name-sort: ぐりーんぐりーん かねのおとだいなみっく [つうじょうばん]
+  name-sort: ぐりーんぐりーん かねのおとだいなみっく
   name-en: "Green Green - Sound of the Ring Dynamic"
   region: "NTSC-J"
 SLPM-65282:
@@ -37632,7 +37632,7 @@ SLPM-65282:
   region: "NTSC-J"
 SLPM-65283:
   name: グリーングリーン 〜鐘の音ロマンティック〜 [通常版]
-  name-sort: ぐりーんぐりーん かねのおとろまんてぃっく [つうじょうばん]
+  name-sort: ぐりーんぐりーん かねのおとろまんてぃっく
   name-en: "Green Green - Sound of the Ring Romantic"
   region: "NTSC-J"
 SLPM-65284:
@@ -37799,12 +37799,12 @@ SLPM-65313:
   region: "NTSC-J"
 SLPM-65314:
   name: 7大ふろくつき!半熟英雄 対 3D 特大号
-  name-sort: 7だいふろくつき!はんじゅくえいゆう たい 3D とくだいごう
+  name-sort: 7だいふろくつき!はんじゅくひーろー たい 3D とくだいごう
   name-en: "Hanjuku Hero VS 3-D [Limited Edition]"
   region: "NTSC-J"
 SLPM-65315:
   name: 半熟英雄 対 3D
-  name-sort: はんじゅくえいゆう たい 3D
+  name-sort: はんじゅくひーろー たい 3D
   name-en: "Hanjuku Hero VS 3-D"
   region: "NTSC-J"
   compat: 5
@@ -37971,7 +37971,7 @@ SLPM-65344:
   region: "NTSC-J"
 SLPM-65345:
   name: SIMPLE2000シリーズ アルティメットVol.9 爆走マンハッタン
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.9 ばくそうまんはったん
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.9 ばくそうまんはったん
   name-en: "Simple 2000 Series Ultimate Vol. 9 - Bakusou! Manhattan - Runabout 3"
   region: "NTSC-J"
 SLPM-65346:
@@ -37986,27 +37986,27 @@ SLPM-65347:
   region: "NTSC-J"
 SLPM-65348:
   name: ビストロ・きゅーぴっと2 通常版
-  name-sort: びすとろ・きゅーぴっと2 [つうじょうばん]
+  name-sort: びすとろ・きゅーぴっと2
   name-en: "Bistro Cupid 2"
   region: "NTSC-J"
 SLPM-65349:
   name: SuperLite 2000シミュレーション 東京バス案内〜今日から君も運転手〜
-  name-sort: SuperLite 2000しみゅれーしょん とうきょうばすあんない きょうからきみもうんてんしゅ
+  name-sort: すーぱーらいと2000しみゅれーしょん とうきょうばすがいど きょうからきみもうんてんしゅ
   name-en: "Tokyo Bus Guide [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-65350:
   name: SIMPLE2000シリーズ アルティメットVol.11 ワンダバスタイル〜突撃!みっくす生JUICE〜
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.11 わんだばすたいる とつげき!みっくすなまじゅーす
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.11 わんだばすたいる とつげき!みっくすなまじゅーす
   name-en: "Simple 2000 Series Ultimate Vol. 11 - Wandaba Style - Totsugeki! Mix Ki Juice"
   region: "NTSC-J"
 SLPM-65352:
   name: SIMPLE2000シリーズ アルティメットVol.10 ラブ★ソングス♪
-  name-sort: SIMPLE2000しりーず あるてぃめっとVol.10 らぶそんぐす
+  name-sort: しんぷる2000しりーず あるてぃめっとVol.10 らぶそんぐす
   name-en: "Simple 2000 Series Ultimate Vol. 10 - Love - Songs"
   region: "NTSC-J"
 SLPM-65353:
   name: SuperLite 2000アドベンチャー 此花2〜届かないレクイエム〜
-  name-sort: SuperLite 2000あどべんちゃー このはな2〜とどかないれくいえむ〜
+  name-sort: すーぱーらいと2000あどべんちゃー このはな2〜とどかないれくいえむ〜
   name-en: "SuperLite 2000 Series Vol. 6 - Konohana 2 - Todokanai Requiem"
   region: "NTSC-J"
 SLPM-65354:
@@ -38017,7 +38017,7 @@ SLPM-65355:
   region: "NTSC-J"
 SLPM-65356:
   name: 夏色小町【一日千夏】 [通常版]
-  name-sort: なついろこまち いちじつせんか [つうじょうばん]
+  name-sort: なついろこまち いちじつせんか
   name-en: "Natsuiro Komachi"
   region: "NTSC-J"
 SLPM-65357:
@@ -38027,18 +38027,18 @@ SLPM-65357:
   region: "NTSC-J"
 SLPM-65358:
   name: Dance Dance Revolution EXTREME
-  name-sort: Dance Dance Revolution EXTREME
+  name-sort: だんすだんすれぼりゅーしょん EXTREME
   name-en: "Dance Dance Revolution EXTREME"
   region: "NTSC-J"
   compat: 5
 SLPM-65359:
   name: ユーディーのアトリエ 〜グラムナート の錬金術士〜 [ガストベストプライス]
-  name-sort: ゆーでぃーのあとりえ 〜ぐらむなーと のれんきんじゅつし〜 [がすとべすとぷらいす]
+  name-sort: ゆーでぃーのあとりえ 〜ぐらむなーとのれんきんじゅつし〜 [がすとべすとぷらいす]
   name-en: "Judie no Atelier - Gramnad no Renkinjutsushi [Gust Best Price]"
   region: "NTSC-J"
 SLPM-65361:
   name: ANUBIS ZONE OF THE ENDERS SPECIAL EDITION [限定版]
-  name-sort: あぬびす ぞーん おぶ えんだーず SPECIAL EDITION [げんていばん]
+  name-sort: ぞーん おぶ えんだーず あぬびす SPECIAL EDITION [げんていばん]
   name-en: "Anubis - Zone of the Enders Special Edition [Limited Edition]"
   region: "NTSC-J"
   compat: 5
@@ -38052,7 +38052,7 @@ SLPM-65363:
   region: "NTSC-J"
 SLPM-65364:
   name: 少女義経伝 [通常版]
-  name-sort: しょうじょよしつねでん [つうじょうばん]
+  name-sort: しょうじょよしつねでん
   name-en: "Shoujo Yoshitsune-den"
   region: "NTSC-J"
 SLPM-65365:
@@ -38139,7 +38139,7 @@ SLPM-65379:
 SLPM-65380:
   name: 侍道2 〜WAY OF THE SAMURAI 2〜
   name-sort: さむらいどう2 WAY OF THE SAMURAI 2
-  name-en: "Samurai Michi 2"
+  name-en: "Samurai Dou 2"
   region: "NTSC-J"
 SLPM-65381:
   name: きまぐれストロベリーカフェ
@@ -38182,7 +38182,7 @@ SLPM-65388:
   region: "NTSC-J"
 SLPM-65389:
   name: Lost Passage 〜失われた一節〜 [通常版]
-  name-sort: Lost Passage うしなわれたいっせつ [つうじょうばん]
+  name-sort: Lost Passage うしなわれたいっせつ
   name-en: "Lost Passage"
   region: "NTSC-J"
 SLPM-65390:
@@ -38202,7 +38202,7 @@ SLPM-65392:
   region: "NTSC-J"
 SLPM-65393:
   name: SIMPLE2000シリーズVol.39 漢のためのバイブル THE 友情アドベンチャー 〜炎多留・魂〜
-  name-sort: SIMPLE2000しりーずVol.39 おとこのためのばいぶる THE ゆうじょうあどべんちゃー ほたる そうる
+  name-sort: しんぷる2000しりーずVol.39 おとこのためのばいぶる THE ゆうじょうあどべんちゃー ほたる そうる
   name-en: "Simple 2000 Series Vol. 38 - The Yuujou Adventure - Hotaru Soul"
   region: "NTSC-J"
 SLPM-65394:
@@ -38214,7 +38214,7 @@ SLPM-65394:
     - XGKickHack # Fixes bad Geometry.
 SLPM-65395:
   name: デ・ジ・キャラット ファンタジー エクセレント プレミアム版
-  name-sort: で・じ・きゃらっと ふぁんたじー えくせれんと ぷれみあむばん
+  name-sort: でじきゃらっと ふぁんたじー えくせれんと ぷれみあむばん
   name-en: "Digi-Charat Fantasy"
   region: "NTSC-J"
 SLPM-65396:
@@ -38329,7 +38329,7 @@ SLPM-65413:
     bilinearUpscale: 2 # Gets rid of center vertical line when upscaling.
 SLPM-65414:
   name: SIMPLE2000シリーズ Vol.45 THE 恋と涙と、追憶と・・・。〜スレッドカラーズ さよならの向こう側〜
-  name-sort: SIMPLE2000しりーず Vol.45 THE こいとなみだと ついおくと すれっどからーず さよならのむこうがわ
+  name-sort: しんぷる2000しりーず Vol.45 THE こいとなみだと ついおくと すれっどからーず さよならのむこうがわ
   name-en: "Simple 2000 Series Vol. 45 - The Koi to Namida to, Tsuioku to..."
   region: "NTSC-J"
 SLPM-65415:
@@ -38374,7 +38374,7 @@ SLPM-65422:
   region: "NTSC-J"
 SLPM-65423:
   name: 三國志IX
-  name-sort: さんごくしIX
+  name-sort: さんごくし9
   name-en: "Sangokushi IX"
   region: "NTSC-J"
 SLPM-65424:
@@ -38384,7 +38384,7 @@ SLPM-65424:
   region: "NTSC-J"
 SLPM-65425:
   name: モエかん 〜もえっ娘島へようこそ〜 [通常版]
-  name-sort: もえかん もえっこしまへようこそ [つうじょうばん]
+  name-sort: もえかん もえっこしまへようこそ
   name-en: "Moekko Company"
   region: "NTSC-J"
 SLPM-65426:
@@ -38563,7 +38563,7 @@ SLPM-65456:
   region: "NTSC-J"
 SLPM-65457:
   name: ナースウィッチ小麦ちゃん マジカルて [通常版]
-  name-sort: なーすうぃっちこむぎちゃん まじかるて [つうじょうばん]
+  name-sort: なーすうぃっちこむぎちゃん まじかるて
   name-en: "Magical Nurse Witch Komugi-chan [Standard Edition]"
   region: "NTSC-J"
 SLPM-65458:
@@ -38698,7 +38698,7 @@ SLPM-65481:
   region: "NTSC-J"
 SLPM-65482:
   name: After...〜忘れえぬ絆〜 通常版
-  name-sort: After...〜わすれえぬきずな〜 [つうじょうばん]
+  name-sort: After...〜わすれえぬきずな〜
   name-en: "After... [Standard Edition]"
   region: "NTSC-J"
 SLPM-65483:
@@ -38767,7 +38767,7 @@ SLPM-65495:
     - "SLPM-65495"
 SLPM-65496:
   name: ハイパーストリートファイターII アニバーサリー エディション
-  name-sort: はいぱーすとりーとふぁいたーII あにばーさりー えでぃしょん
+  name-sort: はいぱーすとりーとふぁいたー2 あにばーさりー えでぃしょん
   name-en: "Hyper Street Fighter"
   region: "NTSC-J"
 SLPM-65497:
@@ -38787,7 +38787,7 @@ SLPM-65499:
   region: "NTSC-J"
 SLPM-65500:
   name: ANUBIS ZONE OF THE ENDERS SPECIAL EDITION [通常版]
-  name-sort: ANUBIS ZONE OF THE ENDERS SPECIAL EDITION [つうじょうばん]
+  name-sort: ぞーん おぶ えんだーず あぬびす SPECIAL EDITION
   name-en: "Anubis - Zone of the Enders Special Edition [Standard Edition]"
   region: "NTSC-J"
 SLPM-65501:
@@ -38856,12 +38856,12 @@ SLPM-65510:
   region: "NTSC-J"
 SLPM-65512:
   name: Angel’s Feather [限定版]
-  name-sort: Angel’s Feather [げんていばん]
+  name-sort: えんじぇるずふぇざー [げんていばん]
   name-en: "Angel's Feather [Limited Edition]"
   region: "NTSC-J"
 SLPM-65513:
   name: Angel’s Feather [通常版]
-  name-sort: Angel’s Feather [つうじょうばん]
+  name-sort: えんじぇるずふぇざー
   name-en: "Angel's Feather [Standard Edition]"
   region: "NTSC-J"
 SLPM-65514:
@@ -38899,7 +38899,7 @@ SLPM-65520:
   region: "NTSC-J"
 SLPM-65521:
   name: てんたま2wins [通常版]
-  name-sort: てんたま2wins [つうじょうばん]
+  name-sort: てんたま2wins
   name-en: "Tentama 2 Wins [Standard Edition]"
   region: "NTSC-J"
 SLPM-65522:
@@ -38909,7 +38909,7 @@ SLPM-65522:
   region: "NTSC-J"
 SLPM-65523:
   name: ふらせら Hurrah!Sailor 通常版
-  name-sort: ふらせら Hurrah!Sailor [つうじょうばん]
+  name-sort: ふらせら Hurrah!Sailor
   name-en: "Hurrah! Sailor [Standard Edition]"
   region: "NTSC-J"
 SLPM-65524:
@@ -39045,7 +39045,7 @@ SLPM-65549:
   region: "NTSC-J"
 SLPM-65550:
   name: Remember 11 〜the age of infinity〜 [通常版]
-  name-sort: Remember 11 the age of infinity [つうじょうばん]
+  name-sort: Remember 11 the age of infinity
   name-en: "Remember 11 - The Age of Infinity [Standard Edition]"
   region: "NTSC-J"
 SLPM-65551:
@@ -39065,7 +39065,7 @@ SLPM-65552:
   region: "NTSC-J"
 SLPM-65553:
   name: メタルウルフREV 通常版
-  name-sort: めたるうるふREV [つうじょうばん]
+  name-sort: めたるうるふREV
   name-en: "Metal Wolf Rev [Standard Edition]"
   region: "NTSC-J"
 SLPM-65554:
@@ -39141,12 +39141,12 @@ SLPM-65570:
   region: "NTSC-J"
 SLPM-65571:
   name: 新天魔界 GENERATION OF CHAOS 4 限定版
-  name-sort: しんてんまかい GENERATION OF CHAOS 4 [げんていばん]
+  name-sort: じぇねれーしょんおぶかおす 4 [げんていばん]
   name-en: "Generation of Chaos 4 [Limited Edition]"
   region: "NTSC-J"
 SLPM-65572:
   name: 新天魔界 GENERATION OF CHAOS 4
-  name-sort: しんてんまかい GENERATION OF CHAOS 4
+  name-sort: じぇねれーしょんおぶかおす 4
   name-en: "Generation of Chaos 4"
   region: "NTSC-J"
 SLPM-65573:
@@ -39301,12 +39301,12 @@ SLPM-65600:
   region: "NTSC-J"
 SLPM-65601:
   name: SuperLite 2000思い出にかわる君〜Memories Off〜
-  name-sort: SuperLite 2000おもいでにかわるきみ Memories Off
+  name-sort: すーぱーらいと2000おもいでにかわるきみ Memories Off
   name-en: "Omoide ni Kawaru-Kimi - Memories Off [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65602:
   name: キングオブコロシアム II
-  name-sort: きんぐおぶころしあむ II
+  name-sort: きんぐおぶころしあむ 2
   name-en: "King of Colosseum 2"
   region: "NTSC-J"
   compat: 5
@@ -39338,7 +39338,7 @@ SLPM-65609:
   region: "NTSC-J"
 SLPM-65610:
   name: メモリーズ・オフ〜それから〜 通常版
-  name-sort: めもりーず おふ それから [つうじょうばん]
+  name-sort: めもりーず おふ それから
   name-en: "Memories Off... - Sorekara [Standard Edition]"
   region: "NTSC-J"
 SLPM-65611:
@@ -39377,8 +39377,8 @@ SLPM-65615:
   region: "NTSC-J"
 SLPM-65616:
   name: 十二国記-紅蓮の標 黄塵の路- [コナミ・ザ・ベスト]
-  name-sort: じゅうにこくき-ぐれんのしるべ こうじんのみち- [こなみ・ざ・べすと]
-  name-en: "Juunikoku-ki - Guren no Shirube Koejin no Michi [Konami The Best]"
+  name-sort: じゅうにこくき ぐれんのしるべ こうじんのみち- [こなみ・ざ・べすと]
+  name-en: "Juunikoku-ki - Guren no Shirube Koujin no Michi [Konami The Best]"
   region: "NTSC-J"
 SLPM-65617:
   name: 冒険時代活劇ゴエモン(コナミ殿堂セレクション)
@@ -39402,7 +39402,7 @@ SLPM-65620:
   region: "NTSC-J"
 SLPM-65621:
   name: ストリートファイター III 3rd STRIKE
-  name-sort: すとりーとふぁいたー III 3rd STRIKE
+  name-sort: すとりーとふぁいたー 3 3rd STRIKE
   name-en: "Street Fighter III - 3rd Strike"
   region: "NTSC-J"
   compat: 5
@@ -39450,7 +39450,7 @@ SLPM-65627:
   region: "NTSC-J"
 SLPM-65628:
   name: SuperLite 2000 アドベンチャー此花パック〜3つの事件簿〜
-  name-sort: SuperLite 2000 あどべんちゃーこのはなぱっく 3つのじけんぼ
+  name-sort: すーぱーらいと2000 あどべんちゃーこのはなぱっく 3つのじけんぼ
   name-en: "Konohana Pack Vol.21 - 3-tsu no Jikenbo [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65629:
@@ -39547,7 +39547,7 @@ SLPM-65646:
   region: "NTSC-J"
 SLPM-65647:
   name: 遊戯王真デュエルモンスターズ II 継承されし記憶(コナミ殿堂セレクション)
-  name-sort: ゆうぎおうまでゅえるもんすたーず II けいしょうされしきおく [こなみでんどうせれくしょん]
+  name-sort: ゆうぎおうしんでゅえるもんすたーず II けいしょうされしきおく [こなみでんどうせれくしょん]
   name-en: "Yu-Gi-Oh! 2 [Konami Dendou Collection]"
   region: "NTSC-J"
   roundModes:
@@ -39633,7 +39633,7 @@ SLPM-65663:
     roundSprite: 1 # Fixes vertical lines.
 SLPM-65664:
   name: SuperLite 2000 恋愛アドベンチャー Memories Off Duet
-  name-sort: SuperLite 2000 れんあいあどべんちゃー Memories Off Duet
+  name-sort: すーぱーらいと2000 れんあいあどべんちゃー Memories Off Duet
   name-en: "Memories Off... Duet [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65665:
@@ -39682,12 +39682,12 @@ SLPM-65674:
   name-en: "Taikou Risshiden V"
   region: "NTSC-J"
 SLPM-65675:
-  name: ふぁいなる・アプローチ [初回限定版]
+  name: ふぁいなる・アプローチ (初回限定版)
   name-sort: ふぁいなる あぷろーち しょかいげんていばん
   name-en: "Final Approach [First Print Limited Edition]"
   region: "NTSC-J"
 SLPM-65676:
-  name: ふぁいなる・アプローチ
+  name: ふぁいなる・アプローチ (通常版)
   name-sort: ふぁいなる あぷろーち
   name-en: "Final Approach"
   region: "NTSC-J"
@@ -39760,7 +39760,7 @@ SLPM-65687:
     recommendedBlendingLevel: 3 # Improves reflections on certain characters and objects on certain levels.
 SLPM-65688:
   name: ベルセルク 千年帝国の鷹篇 聖魔戦記の章 通常版
-  name-sort: べるせるく みれにあむ・ふぁるこんへん せいませんきのしょう [つうじょうばん]
+  name-sort: べるせるく みれにあむ・ふぁるこんへん せいませんきのしょう
   name-en: "Berserk - Millennium Falcon-hen - Seima Senki no Shou [Standard Edition]"
   region: "NTSC-J"
   compat: 5
@@ -39772,7 +39772,7 @@ SLPM-65688:
     - SoftwareRendererFMVHack # Fixes subtitles not showing during FMVs.
 SLPM-65689:
   name: SuperLite 2000 恋愛アドベンチャー Never7〜the end of infinity〜
-  name-sort: SuperLite 2000 れんあいあどべんちゃー Never7〜the end of infinity〜
+  name-sort: すーぱーらいと2000 れんあいあどべんちゃー Never7〜the end of infinity〜
   name-en: "Never 7 - The End of Infinity [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65690:
@@ -39783,7 +39783,7 @@ SLPM-65690:
   compat: 5
 SLPM-65691:
   name: SuperLite 2000 恋愛アドベンチャー Ever17 〜the out of infinity〜 Premium Edition
-  name-sort: SuperLite 2000 れんあいあどべんちゃー Ever17 〜the out of infinity〜 Premium Edition
+  name-sort: すーぱーらいと2000 れんあいあどべんちゃー Ever17 〜the out of infinity〜 Premium Edition
   name-en: "Ever 17 - Out of Infinity [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65692:
@@ -39827,7 +39827,7 @@ SLPM-65695:
   region: "NTSC-J"
 SLPM-65696:
   name: SIMPLE2000シリーズ Vol.62 THE スーパーパズルボブルDX
-  name-sort: SIMPLE2000しりーず Vol.62 THE すーぱーぱずるぼぶるDX
+  name-sort: しんぷる2000しりーず Vol.62 THE すーぱーぱずるぼぶるDX
   name-en: "Simple 2000 Series Vol. 62 - The Super Puzzle Bubble DX"
   region: "NTSC-J"
 SLPM-65697:
@@ -39882,7 +39882,7 @@ SLPM-65705:
   name-en: "Final Fantasy XI - Chains of Promathia [Expansion Disc]"
   region: "NTSC-J"
 SLPM-65706:
-  name: ファイナルファンタジーXI オールインワンパック2004 [プレイオンライン]
+  name: プレイオンライン/ファイナルファンタジーXI オールインワンパック2004
   name-sort: ふぁいなるふぁんたじー11 おーるいんわんぱっく2004 [ぷれいおんらいん]
   name-en: "Final Fantasy XI - Chains of Promathia [All-in-One Pack]"
   region: "NTSC-J"
@@ -39893,7 +39893,7 @@ SLPM-65708:
   region: "NTSC-J"
 SLPM-65710:
   name: Apocripha/0 通常版
-  name-sort: Apocripha/0 [つうじょうばん]
+  name-sort: Apocripha/0
   name-en: "Apocripha-0 [Standard Edition]"
   region: "NTSC-J"
 SLPM-65714:
@@ -40278,7 +40278,7 @@ SLPM-65773:
   region: "NTSC-J"
 SLPM-65775:
   name: DDR Festival Dance Dance Revolution
-  name-sort: DDR Festival Dance Dance Revolution
+  name-sort: だんすだんすれぼりゅーしょん Festival Dance Dance Revolution
   name-en: "DDR Festival Dance Dance Revolution"
   region: "NTSC-J"
   compat: 5
@@ -40578,7 +40578,7 @@ SLPM-65826:
   compat: 5
 SLPM-65828:
   name: AngelWish 君の笑顔にチュッ!
-  name-sort: AngelWish きみのえがおにちゅっ
+  name-sort: えんぜるうぃっしゅ きみのえがおにちゅっ
   name-en: "Angel Wish - Kimi no Egao ni Chu!"
   region: "NTSC-J"
 SLPM-65829:
@@ -40602,7 +40602,7 @@ SLPM-65831:
   region: "NTSC-J"
 SLPM-65832:
   name: IZUMO コンプリート
-  name-sort: IZUMO こんぷりーと
+  name-sort: いずも こんぷりーと
   name-en: "Izumo Complete"
   region: "NTSC-J"
 SLPM-65833:
@@ -40617,7 +40617,7 @@ SLPM-65834:
   region: "NTSC-J"
 SLPM-65835:
   name: 幕末恋華・新選組
-  name-sort: ばくまつれんか・しんせんぐみ
+  name-sort: ばくまつれんか しんせんぐみ
   name-en: "Bakumatsu Renka Shinsengumi"
   region: "NTSC-J"
 SLPM-65836:
@@ -40634,7 +40634,7 @@ SLPM-65837:
   region: "NTSC-J"
 SLPM-65838:
   name: 半熟銀河弁当 半熟英雄4 〜7人の半熟英雄〜 [限定版]
-  name-sort: はんじゅくぎんがべんとう はんじゅくえいゆう4 7にんのはんじゅくえいゆう [げんていばん]
+  name-sort: はんじゅくぎんがべんとう はんじゅくひーろー4 7にんのはんじゅくひーろー [げんていばん]
   name-en: "Hanjuku Hero 4 [Limited Edition]"
   region: "NTSC-J"
   gsHWFixes:
@@ -40642,7 +40642,7 @@ SLPM-65838:
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-65839:
   name: 半熟英雄4 〜7人の半熟英雄〜
-  name-sort: はんじゅくえいゆう4 7にんのはんじゅくえいゆう
+  name-sort: はんじゅくひーろー4 7にんのはんじゅくひーろー
   name-en: "Hanjuku Hero 4"
   region: "NTSC-J"
   compat: 5
@@ -40817,17 +40817,17 @@ SLPM-65871:
   compat: 5
 SLPM-65872:
   name: SIMPLE2000シリーズUltimate Vol.24 魔界転生
-  name-sort: SIMPLE2000しりーずあるてぃめっと Vol.24 まかいてんせい
+  name-sort: しんぷる2000しりーずあるてぃめっと Vol.24 まかいてんせい
   name-en: "Simple 2000 Series Ultimate Vol. 24 - Makai Tenshou"
   region: "NTSC-J"
 SLPM-65873:
   name: SIMPLE2000シリーズUltimate Vol.23 プロジェクト・ミネルヴァ プロフェッショナル
-  name-sort: SIMPLE2000しりーずあるてぃめっと Vol.23 ぷろじぇくと みねるゔぁ ぷろふぇっしょなる
+  name-sort: しんぷる2000しりーずあるてぃめっと Vol.23 ぷろじぇくと みねるゔぁ ぷろふぇっしょなる
   name-en: "Simple 2000 Series Ultimate Vol. 23 - Project Minerva Professional"
   region: "NTSC-J"
 SLPM-65874:
   name: SIMPLE2000シリーズ Vol.71 THE ファンタジー恋愛アドベンチャー〜彼女の伝説、僕の石版〜
-  name-sort: SIMPLE2000しりーず Vol.71 THE ふぁんたじーれんあいあどべんちゃー かのじょのでんせつ ぼくのせきばん
+  name-sort: しんぷる2000しりーず Vol.71 THE ふぁんたじーれんあいあどべんちゃー かのじょのでんせつ ぼくのせきばん
   name-en: "Simple 2000 Series Vol. 71 - The Fantasy Renai Adventure - Kanojo no Densetsu"
   region: "NTSC-J"
 SLPM-65875:
@@ -40927,7 +40927,7 @@ SLPM-65890:
   region: "NTSC-J"
 SLPM-65891:
   name: 三國志X
-  name-sort: さんごくしX
+  name-sort: さんごくし10
   name-en: "Sangokushi X"
   region: "NTSC-J"
 SLPM-65892:
@@ -41132,7 +41132,7 @@ SLPM-65927:
     roundSprite: 1 # Reduces ghosting even more.
 SLPM-65928:
   name: SuperLite 2000 バラエティ メモオフみっくす
-  name-sort: SuperLite 2000 ばらえてぃ めもおふみっくす
+  name-sort: すーぱーらいと2000 ばらえてぃ めもおふみっくす
   name-en: "SuperLite 2000 Series - Memories Off Mix"
   region: "NTSC-J"
 SLPM-65929:
@@ -41147,8 +41147,8 @@ SLPM-65930:
   region: "NTSC-J"
 SLPM-65931:
   name: 新紀幻想スペクトラルソウルズ [IFコレクション]
-  name-sort: しんきげんそうすぺくとらるそうるず [IFこれくしょん]
-  name-en: "Shinseiki Genso - Spectral Souls [IF Collection]"
+  name-sort: しんきげんそうすぺくとらるそうるず [あいであふぁくとりーこれくしょん]
+  name-en: "Shinseiki Genso - Spectral Souls [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-65932:
   name: 戦闘国家・改 NEW OPERATIONS
@@ -41186,7 +41186,9 @@ SLPM-65939:
   name-en: "Memories Off - After Rain Vol.3"
   region: "NTSC-J"
 SLPM-65940:
-  name: "Mabino x Style"
+  name: マビノ×スタイル 初回限定版
+  name-sort: まびのすたいる しょかいげんていばん
+  name-en: "Mabino x Style [Limited Edition]"
   region: "NTSC-J"
 SLPM-65941:
   name: マビノ×スタイル
@@ -41203,7 +41205,7 @@ SLPM-65942:
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-65943:
   name: Angel’s Feather −黒の残影−
-  name-sort: Angel’s Feather くろのざんえい
+  name-sort: えんじぇるずふぇざー くろのざんえい
   name-en: "Angel's Feather"
   region: "NTSC-J"
 SLPM-65944:
@@ -41262,7 +41264,7 @@ SLPM-65952:
   name-en: "Tengai Makyou III - Namida"
   region: "NTSC-J"
 SLPM-65953:
-  name: ファイナルファンタジーXI エントリーディスク2005 [プレイオンライン]
+  name: プレイオンライン / ファイナルファンタジーXI エントリーディスク2005
   name-sort: ふぁいなるふぁんたじー11 えんとりーでぃすく2005 [ぷれいおんらいん]
   name-en: "Final Fantasy XI [Entry Disc 2005]"
   region: "NTSC-J"
@@ -41467,12 +41469,12 @@ SLPM-65987:
   region: "NTSC-J"
 SLPM-65988:
   name: 少女義経伝・弐 〜刻を超える契り〜 [特別版]
-  name-sort: しょうじょよしつねでん2 こくをこえるちぎり [とくべつばん]
+  name-sort: しょうじょよしつねでん2 ときをこえるちぎり [とくべつばん]
   name-en: "Shoujo Yoshitsune Den 2 [Premium Pack]"
   region: "NTSC-J"
 SLPM-65989:
   name: 少女義経伝・弐 〜刻を超える契り〜
-  name-sort: しょうじょよしつねでん2 こくをこえるちぎり
+  name-sort: しょうじょよしつねでん2 ときをこえるちぎり
   name-en: "Shoujo Yoshitsune Den 2"
   region: "NTSC-J"
 SLPM-65990:
@@ -41486,12 +41488,12 @@ SLPM-65990:
     eeClampMode: 2 # Reduces FPU calculation errors.
 SLPM-65991:
   name: ANUBIS ZONE OF THE ENDERS SPECIAL EDITION(コナミ殿堂セレクション)
-  name-sort: ANUBIS ZONE OF THE ENDERS SPECIAL EDITION [こなみでんどうせれくしょん]
+  name-sort: ぞーん おぶ えんだーず あぬびす SPECIAL EDITION [こなみでんどうせれくしょん]
   name-en: "Anubis - Zone of the Enders Special Edition [Konami Dendou Collection]"
   region: "NTSC-J"
 SLPM-65994:
   name: SuperLite 2000 アドベンチャー Remember11 -the age of infinity-
-  name-sort: SuperLite 2000 あどべんちゃー Remember11 -the age of infinity-
+  name-sort: すーぱーらいと2000 あどべんちゃー Remember11 -the age of infinity-
   name-en: "Remember 11 - The Age of Infinity [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-65995:
@@ -41608,7 +41610,7 @@ SLPM-66014:
   region: "NTSC-J"
 SLPM-66015:
   name: SuperLite 2000 アドベンチャー 藍より青し
-  name-sort: SuperLite 2000 あどべんちゃー あいよりあおし
+  name-sort: すーぱーらいと2000 あどべんちゃー あいよりあおし
   name-en: "SuperLite 2000 Series - Ever 17 - The Out of Infinity [Premium Edition]"
   region: "NTSC-J"
 SLPM-66016:
@@ -41675,7 +41677,7 @@ SLPM-66024:
   region: "NTSC-J"
 SLPM-66025:
   name: 新天魔界ジェネレーション オブ カオスIV [IFコレクション]
-  name-sort: しんてんまかいじぇねれーしょん おぶ かおすIV [IFこれくしょん]
+  name-sort: じぇねれーしょんおぶかおす 4 [あいであふぁくとりーこれくしょん]
   name-en: "Generation of Chaos IV [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-66026:
@@ -41746,7 +41748,7 @@ SLPM-66038:
   region: "NTSC-J"
 SLPM-66039:
   name: SuperLite 2000シリーズ Memories Off 〜それから〜
-  name-sort: SuperLite 2000しりーず Memories Off それから
+  name-sort: すーぱーらいと2000しりーず Memories Off それから
   name-en: "SuperLite 2000 Series - Memories Off... Sorekara"
   region: "NTSC-J"
 SLPM-66040:
@@ -41823,12 +41825,12 @@ SLPM-66053:
   region: "NTSC-J"
 SLPM-66054:
   name: 新天魔界 ジェネレーション オブ カオス V(ファイブ) 限定版
-  name-sort: しんてんまかい じぇねれーしょん おぶ かおす ふぁいぶ [げんていばん]
+  name-sort: じぇねれーしょんおぶかおす 5 [げんていばん]
   name-en: "Generation of Chaos 5 [Limited Edition]"
   region: "NTSC-J"
 SLPM-66055:
   name: 新天魔界 ジェネレーション オブ カオス V(ファイブ)
-  name-sort: しんてんまかい じぇねれーしょん おぶ かおす ふぁいぶ
+  name-sort: じぇねれーしょんおぶかおす 5
   name-en: "Generation of Chaos 5"
   region: "NTSC-J"
 SLPM-66056:
@@ -41975,8 +41977,8 @@ SLPM-66079:
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66080:
   name: GENERATION OF CHAOSIII 〜時の封印〜 [IFコレクション]
-  name-sort: GENERATION OF CHAOSIII ときのふういん [IFこれくしょん]
-  name-en: "Generation of Chaos 3 [IF Collection]"
+  name-sort: じぇねれーしょんおぶかおす 3 ときのふういん [あいであふぁくとりーこれくしょん]
+  name-en: "Generation of Chaos 3 [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-66081:
   name: イリスのアトリエ エターナルマナ Gust Best Price
@@ -42179,7 +42181,7 @@ SLPM-66111:
   region: "NTSC-J"
 SLPM-66112:
   name: ふしぎの海のナディア 通常版
-  name-sort: ふしぎのうみのなでぃあ [つうじょうばん]
+  name-sort: ふしぎのうみのなでぃあ
   name-en: "Fushigi no Umi no Nadia - Inherit the Blue Water [Standard Edition]"
   region: "NTSC-J"
 SLPM-66113:
@@ -42194,7 +42196,7 @@ SLPM-66114:
   region: "NTSC-J"
 SLPM-66115:
   name: 水の旋律 [通常版]
-  name-sort: みずのせんりつ [つうじょうばん]
+  name-sort: みずのせんりつ
   name-en: "Mizu no Senritsu [Standard Edition]"
   region: "NTSC-J"
 SLPM-66116:
@@ -42344,7 +42346,7 @@ SLPM-66135:
   region: "NTSC-J"
 SLPM-66136:
   name: SuperLite2000 アカイイト
-  name-sort: SuperLite2000 あかいいと
+  name-sort: すーぱーらいと2000 あかいいと
   name-en: "SuperLite 2000 Vol. 34 - Akai Ito"
   region: "NTSC-J"
 SLPM-66137:
@@ -42433,7 +42435,7 @@ SLPM-66149:
   region: "NTSC-J"
 SLPM-66150:
   name: しろがねの鳥籠 通常版
-  name-sort: しろがねのとりかご [つうじょうばん]
+  name-sort: しろがねのとりかご
   name-en: "Shirogane no Torikago [Standard Edition]"
   region: "NTSC-J"
 SLPM-66151:
@@ -42703,7 +42705,7 @@ SLPM-66191:
     trilinearFiltering: 1
 SLPM-66192:
   name: IZUMO2 猛き剣の閃記
-  name-sort: IZUMO2 たけきつるぎのせんき
+  name-sort: いずも2 たけきつるぎのせんき
   name-en: "Izumo 2"
   region: "NTSC-J"
 SLPM-66193:
@@ -42720,7 +42722,7 @@ SLPM-66194:
   region: "NTSC-J"
 SLPM-66195:
   name: SuperLite 2000シリーズ モノクローム
-  name-sort: SuperLite 2000しりーず ものくろーむ
+  name-sort: すーぱーらいと2000しりーず ものくろーむ
   name-en: "SuperLite 2000 Series - Love Adventure Monochrome"
   region: "NTSC-J"
   compat: 5
@@ -42746,7 +42748,7 @@ SLPM-66202:
   region: "NTSC-J"
 SLPM-66203:
   name: フラグメンツ・ブルー [通常版]
-  name-sort: ふらぐめんつ・ぶるー [つうじょうばん]
+  name-sort: ふらぐめんつ・ぶるー
   name-en: "Fragments Blue [Standard Edition]"
   region: "NTSC-J"
 SLPM-66204:
@@ -43035,13 +43037,13 @@ SLPM-66241:
   region: "NTSC-J"
 SLPM-66242:
   name: Dance Dance Revolution Strike
-  name-sort: Dance Dance Revolution Strike
+  name-sort: だんすだんすれぼりゅーしょん Strike
   name-en: "Dance Dance Revolution Strike"
   region: "NTSC-J"
   compat: 5
 SLPM-66243:
   name: ギャラクシーエンジェルII 〜絶対領域の扉〜 通常版
-  name-sort: ぎゃらくしーえんじぇるII ぜったいりょういきのとびら [つうじょうばん]
+  name-sort: ぎゃらくしーえんじぇるII ぜったいりょういきのとびら
   name-en: "Galaxy Angel II [Standard Edition]"
   region: "NTSC-J"
   gsHWFixes:
@@ -43111,7 +43113,7 @@ SLPM-66253:
   region: "NTSC-J"
 SLPM-66254:
   name: ふぁいなりすと 通常版
-  name-sort: ふぁいなりすと [つうじょうばん]
+  name-sort: ふぁいなりすと
   name-en: "Finalist [Standard Edition]"
   region: "NTSC-J"
 SLPM-66255:
@@ -43177,7 +43179,7 @@ SLPM-66264:
   region: "NTSC-J"
 SLPM-66265:
   name: Canvas2 〜虹色のスケッチ〜 [通常版]
-  name-sort: Canvas2 〜にじいろのすけっち〜 [つうじょうばん]
+  name-sort: Canvas2 〜にじいろのすけっち〜
   name-en: "Canvas 2 - Nijiiro no Sketch [Standard Edition]"
   region: "NTSC-J"
 SLPM-66266:
@@ -43202,7 +43204,7 @@ SLPM-66269:
   region: "NTSC-J"
 SLPM-66270:
   name: ブレイジング ソウルズ 通常版
-  name-sort: ぶれいじんぐ そうるず [つうじょうばん]
+  name-sort: ぶれいじんぐ そうるず
   name-en: "Blazing Souls [Standard Edition]"
   region: "NTSC-J"
 SLPM-66271:
@@ -43222,7 +43224,7 @@ SLPM-66272:
   region: "NTSC-J"
 SLPM-66273:
   name: SuperLite 2000 Memories Off AfterRain Vol.1 〜折鶴〜
-  name-sort: SuperLite 2000 Memories Off AfterRain Vol.1 〜おりづる〜
+  name-sort: すーぱーらいと2000 Memories Off AfterRain Vol.1 〜おりづる〜
   name-en: "Memories Off After Rain Vol.1 - Ensou [Superlite 2000]"
   region: "NTSC-J"
 SLPM-66274:
@@ -43298,12 +43300,12 @@ SLPM-66281:
     trilinearFiltering: 1
 SLPM-66282:
   name: SuperLite 2000 Memories Off AfterRain Vol.2 〜想演〜
-  name-sort: SuperLite 2000 Memories Off AfterRain Vol.2 〜そうえん〜
+  name-sort: すーぱーらいと2000 Memories Off AfterRain Vol.2 〜そうえん〜
   name-en: "Memories Off After Rain Vol.2 - Souen [Superlite 2000]"
   region: "NTSC-J"
 SLPM-66283:
   name: SuperLite 2000 Memories Off AfterRain Vol.3 〜卒業〜
-  name-sort: SuperLite 2000 Memories Off AfterRain Vol.3 〜そつぎょう〜
+  name-sort: すーぱーらいと2000 Memories Off AfterRain Vol.3 〜そつぎょう〜
   name-en: "SuperLite 2000 Series - Memories Off After Rain Vol.3 - Graduation"
   region: "NTSC-J"
 SLPM-66284:
@@ -43313,7 +43315,7 @@ SLPM-66284:
   region: "NTSC-J"
 SLPM-66285:
   name: プリンセスコンチェルト [通常版]
-  name-sort: ぷりんせすこんちぇると [つうじょうばん]
+  name-sort: ぷりんせすこんちぇると
   name-en: "Princess Concerto [Standard Edition]"
   region: "NTSC-J"
 SLPM-66286:
@@ -43377,7 +43379,7 @@ SLPM-66295:
         patch=1,EE,00156888,word,10000003
 SLPM-66296:
   name: 闇夜にささやく 〜探偵 相楽恭一郎〜 通常版
-  name-sort: やみよにささやく 〜たんてい さがらきょういちろう〜 [つうじょうばん]
+  name-sort: やみよにささやく 〜たんてい さがらきょういちろう〜
   name-en: "Yamiyo ni Sasayaku - Tantei Sagara Kyouichirou [Standard Edition]"
   region: "NTSC-J"
   patches:
@@ -43394,7 +43396,7 @@ SLPM-66297:
   region: "NTSC-J"
 SLPM-66298:
   name: セパレイトハーツ 通常版
-  name-sort: せぱれいとはーつ [つうじょうばん]
+  name-sort: せぱれいとはーつ
   name-en: "Separate Hearts [Standard Edition]"
   region: "NTSC-J"
 SLPM-66299:
@@ -43586,7 +43588,7 @@ SLPM-66331:
   region: "NTSC-J"
 SLPM-66332:
   name: 高円寺女子サッカー 通常版
-  name-sort: こうえんじじょしさっかー [つうじょうばん]
+  name-sort: こうえんじじょしさっかー
   name-en: "Kouenji Onago Soccer [Standard Edition]"
   region: "NTSC-J"
 SLPM-66333:
@@ -43682,7 +43684,7 @@ SLPM-66348:
   region: "NTSC-J"
 SLPM-66349:
   name: スペクトラルフォース クロニクル [IFコレクション]
-  name-sort: すぺくとらるふぉーす くろにくる [IFこれくしょん]
+  name-sort: すぺくとらるふぉーす くろにくる [あいであふぁくとりーこれくしょん]
   name-en: "Spectral Force Chronicle"
   region: "NTSC-J"
 SLPM-66350:
@@ -43700,7 +43702,7 @@ SLPM-66352:
   region: "NTSC-J"
 SLPM-66353:
   name: Memories Off〜それから〜Again 通常版
-  name-sort: Memories Off〜それから〜Again [つうじょうばん]
+  name-sort: Memories Off〜それから〜Again
   name-en: "Memories Off - Sorekara Again [Standard Edition]"
   region: "NTSC-J"
 SLPM-66354:
@@ -43756,7 +43758,7 @@ SLPM-66360:
   region: "NTSC-J"
 SLPM-66361:
   name: SuperLite 2000 此花4 〜闇を祓う祈り〜
-  name-sort: SuperLite 2000 このはな4 〜やみをはらういのり〜
+  name-sort: すーぱーらいと2000 このはな4 〜やみをはらういのり〜
   name-en: "Konohana 4 - Yami wo Harau Inori [Superlite 2000]"
   region: "NTSC-J"
 SLPM-66363:
@@ -43842,7 +43844,7 @@ SLPM-66380:
   region: "NTSC-J"
 SLPM-66381:
   name: 蜜×蜜ドロップス LOVE×LOVE HONEY LIFE [通常版]
-  name-sort: みつみつどろっぷす LOVE×LOVE HONEY LIFE [つうじょうばん]
+  name-sort: みつみつどろっぷす LOVE×LOVE HONEY LIFE
   name-en: "Mitsu x Mitsu Drops - Love x Love Honey Life [Standard Edition]"
   region: "NTSC-J"
   patches:
@@ -43943,7 +43945,7 @@ SLPM-66399:
         patch=1,EE,00157F78,word,10000003
 SLPM-66400:
   name: SAMURAI 7 通常版
-  name-sort: SAMURAI 7 [つうじょうばん]
+  name-sort: SAMURAI 7
   name-en: "Samurai 7 [Standard Edition]"
   region: "NTSC-J"
   patches:
@@ -44000,7 +44002,7 @@ SLPM-66407:
   region: "NTSC-J"
 SLPM-66408:
   name: つよきす 〜Mighty Heart〜 通常版
-  name-sort: つよきす 〜Mighty Heart〜 [つうじょうばん]
+  name-sort: つよきす 〜Mighty Heart〜
   name-en: "Tsuyo Kiss - Mighty Heart [Standard Edition]"
   region: "NTSC-J"
 SLPM-66409:
@@ -44046,7 +44048,7 @@ SLPM-66417:
   region: "NTSC-J"
 SLPM-66418:
   name: グローランサーV ジェネレーションズ 通常版
-  name-sort: ぐろーらんさーV じぇねれーしょんず [つうじょうばん]
+  name-sort: ぐろーらんさーV じぇねれーしょんず
   name-en: "Growlanser V - Generations [Standard Edition]"
   region: "NTSC-J"
   compat: 5
@@ -44145,7 +44147,7 @@ SLPM-66434:
   region: "NTSC-J"
 SLPM-66435:
   name: Festa!!HYPER GIRLS PARTY 通常版
-  name-sort: Festa!!HYPER GIRLS PARTY [つうじょうばん]
+  name-sort: Festa!!HYPER GIRLS PARTY
   name-en: "Festa!! Hyper Girls Party [Standard Edition]"
   region: "NTSC-J"
 SLPM-66436:
@@ -44243,7 +44245,7 @@ SLPM-66448:
   region: "NTSC-J"
 SLPM-66449:
   name: We Are* 通常版
-  name-sort: We Are* [つうじょうばん]
+  name-sort: We Are*
   name-en: "We Are [Standard Edition]"
   region: "NTSC-J"
 SLPM-66450:
@@ -44287,8 +44289,8 @@ SLPM-66454:
   region: "NTSC-J"
 SLPM-66455:
   name: スペクトラルフォース ラジカルエレメンツ [IFコレクション]
-  name-sort: すぺくとらるふぉーす らじかるえれめんつ [IFこれくしょん]
-  name-en: "Spectral Force - Radical Elements [IF Collection]"
+  name-sort: すぺくとらるふぉーす らじかるえれめんつ [あいであふぁくとりーこれくしょん]
+  name-en: "Spectral Force - Radical Elements [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-66456:
   name: あそびにいくヨ! 〜ちきゅうぴんちのこんやくせんげん〜 限定版
@@ -44392,7 +44394,7 @@ SLPM-66469:
   region: "NTSC-J"
 SLPM-66470:
   name: 「ラブ★コン 〜パンチDEコント〜」通常版
-  name-sort: らぶこん ぱんちでこんと [つうじょうばん]
+  name-sort: らぶこん ぱんちでこんと
   name-en: "Love-Com - Punch de Court [Standard Edition]"
   region: "NTSC-J"
   compat: 5
@@ -44526,7 +44528,7 @@ SLPM-66489:
   region: "NTSC-J"
 SLPM-66491:
   name: あやかしびと -幻妖異聞録- [通常版]
-  name-sort: あやかしびと げんよういぶんろく [つうじょうばん]
+  name-sort: あやかしびと げんよういぶんろく
   name-en: "Ayakashi-bito - Gen'you Ibunroku [Standard Edition]"
   region: "NTSC-J"
   gsHWFixes:
@@ -44540,8 +44542,8 @@ SLPM-66492:
     halfPixelOffset: 2 # Fixes lighting misalignment.
 SLPM-66493:
   name: 新天魔界 ジェネレーション オブ カオスV [IFコレクション]
-  name-sort: しんてんまかい じぇねれーしょん おぶ かおすV [IFこれくしょん]
-  name-en: "Shinten Makai - Generation of Chaos V [IF Collection]"
+  name-sort: じぇねれーしょんおぶかおす 5 [あいであふぁくとりーこれくしょん]
+  name-en: "Shinten Makai - Generation of Chaos V [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-66494:
   name: 女子高生 GAME’S-HIGH! 限定版
@@ -44729,7 +44731,7 @@ SLPM-66522:
   region: "NTSC-J"
 SLPM-66523:
   name: 三國志IX with パワーアップキット [KOEI The Best]
-  name-sort: さんごくしIX with ぱわーあっぷきっと [KOEI The Best]
+  name-sort: さんごくし9 with ぱわーあっぷきっと [KOEI The Best]
   name-en: "Sangokushi IX [with Power-Up Kit]"
   region: "NTSC-J"
 SLPM-66524:
@@ -44764,7 +44766,7 @@ SLPM-66529:
   region: "NTSC-J"
 SLPM-66530:
   name: Gift -prism- 通常版
-  name-sort: Gift -prism- [つうじょうばん]
+  name-sort: Gift -prism-
   name-en: "Gift Prism [Standard Edition]"
   region: "NTSC-J"
 SLPM-66531:
@@ -44789,7 +44791,7 @@ SLPM-66534:
   region: "NTSC-J"
 SLPM-66535:
   name: 龍刻 Ryu-Koku 通常版
-  name-sort: りゅうこく [つうじょうばん]
+  name-sort: りゅうこく
   name-en: "Ryu Koku [Standard Edition]"
   region: "NTSC-J"
 SLPM-66536:
@@ -44834,7 +44836,7 @@ SLPM-66544:
   region: "NTSC-J"
 SLPM-66548:
   name: 遙かなる時空の中で 舞一夜 通常版
-  name-sort: はるかなるときのなかで まいひとよ [つうじょうばん]
+  name-sort: はるかなるときのなかで まいひとよ
   name-en: "Harukanaru Toki no Naka de Maihitoyo [Standard Edition]"
   region: "NTSC-J"
 SLPM-66549:
@@ -44872,7 +44874,7 @@ SLPM-66554:
   region: "NTSC-J"
 SLPM-66555:
   name: SuperLite2000シリーズ 東京バス案内2
-  name-sort: SuperLite2000しりーず とうきょうばすがいど2
+  name-sort: すーぱーらいと2000しりーず とうきょうばすがいど2
   name-en: "SuperLite 2000 Series - Tokyo Bus Guide 2"
   region: "NTSC-J"
 SLPM-66556:
@@ -44905,7 +44907,7 @@ SLPM-66559:
   region: "NTSC-J"
 SLPM-66560:
   name: 三國志X [KOEI The Best]
-  name-sort: さんごくしX [KOEI The Best]
+  name-sort: さんごくし10 [KOEI The Best]
   name-en: "Sangokushi X [KOEI The Best]"
   region: "NTSC-J"
 SLPM-66561:
@@ -44945,7 +44947,7 @@ SLPM-66564:
   region: "NTSC-J"
 SLPM-66565:
   name: REC☆ドキドキ声優パラダイス☆ 通常版
-  name-sort: REC どきどきせいゆうぱらだいす [つうじょうばん]
+  name-sort: REC どきどきせいゆうぱらだいす
   name-en: "REC - DokiDoki Seiyuu Paradise [Standard Edition]"
   region: "NTSC-J"
   patches:
@@ -44981,7 +44983,7 @@ SLPM-66568:
     halfPixelOffset: 2 # Reduces blurriness, there are still ghosting issues for like lighting poles.
 SLPM-66569:
   name: シークレット・オブ・エヴァンゲリオン 通常版
-  name-sort: しーくれっと おぶ えゔぁんげりおん [つうじょうばん]
+  name-sort: しーくれっと おぶ えゔぁんげりおん
   name-en: "Secret of Evangelion [Standard Edition]"
   region: "NTSC-J"
   gsHWFixes:
@@ -44993,7 +44995,7 @@ SLPM-66570:
   region: "NTSC-J"
 SLPM-66571:
   name: SuperLite2000 恋愛アドベンチャー Memories Off #5 とぎれたフィルム
-  name-sort: SuperLite2000 れんあいあどべんちゃー Memories Off #5 とぎれたふぃるむ
+  name-sort: すーぱーらいと2000 れんあいあどべんちゃー Memories Off #5 とぎれたふぃるむ
   name-en: "Memories Off #5 - Togireta [Superlite 2000 Series]"
   region: "NTSC-J"
 SLPM-66572:
@@ -45070,7 +45072,7 @@ SLPM-66582:
         patch=1,EE,0014A148,word,10000003
 SLPM-66583:
   name: 仔羊捕獲ケーカク! スイートボーイズライフ 通常版
-  name-sort: こひつじほかくけーかく! すいーとぼーいずらいふ [つうじょうばん]
+  name-sort: こひつじほかくけーかく! すいーとぼーいずらいふ
   name-en: "Kohitsuji Hokaku Keikaku! Sweet Boys Life [Standard Edition]"
   region: "NTSC-J"
 SLPM-66584:
@@ -45219,7 +45221,7 @@ SLPM-66606:
   region: "NTSC-J"
 SLPM-66607:
   name: ホワイトブレス〜絆〜 通常版
-  name-sort: ほわいとぶれす〜きずな〜 [つうじょうばん]
+  name-sort: ほわいとぶれす〜きずな〜
   name-en: "White Breath - Kizuna [Standard Edition]"
   region: "NTSC-J"
 SLPM-66608:
@@ -45229,7 +45231,7 @@ SLPM-66608:
   region: "NTSC-J"
 SLPM-66609:
   name: Dance Dance Revolution SuperNOVA
-  name-sort: Dance Dance Revolution SuperNOVA
+  name-sort: だんすだんすれぼりゅーしょん SuperNOVA
   name-en: "Dance Dance Revolution SuperNOVA"
   region: "NTSC-J"
 SLPM-66610:
@@ -45319,7 +45321,7 @@ SLPM-66625:
   region: "NTSC-J"
 SLPM-66626:
   name: とらぶるふぉうちゅん COMPANY★はぴCURE [通常版]
-  name-sort: とらぶるふぉうちゅん COMPANY はぴCURE [つうじょうばん]
+  name-sort: とらぶるふぉうちゅん COMPANY はぴCURE
   name-en: "Trouble Fortune Company - HapiCure"
   region: "NTSC-J"
 SLPM-66627:
@@ -45380,7 +45382,7 @@ SLPM-66635:
   region: "NTSC-J"
 SLPM-66636:
   name: ハイパーストリートファイターII アニバーサリーエディション カプコレ
-  name-sort: はいぱーすとりーとふぁいたーII あにばーさりーえでぃしょん かぷこれ
+  name-sort: はいぱーすとりーとふぁいたー2 あにばーさりーえでぃしょん かぷこれ
   name-en: "Hyper Street Fighter II - The Anniversary Edition [CapKore]"
   region: "NTSC-J"
 SLPM-66637:
@@ -45402,7 +45404,7 @@ SLPM-66638:
     beforeDraw: "OI_HauntingGround" # Fix bloom.
 SLPM-66639:
   name: ストリートファイターIII 3rd STRIKE Fight for the future カプコレ
-  name-sort: すとりーとふぁいたーIII 3rd STRIKE Fight for the future かぷこれ
+  name-sort: すとりーとふぁいたー3 3rd STRIKE Fight for the future かぷこれ
   name-en: "Street Fighter III - 3rd Strike [Capcom the Best]"
   region: "NTSC-J"
 SLPM-66640:
@@ -45617,7 +45619,7 @@ SLPM-66674:
     trilinearFiltering: 1
 SLPM-66675:
   name: KINGDOM HEARTS II FINAL MIX+ 通常版
-  name-sort: KINGDOM HEARTS II FINAL MIX+ [つうじょうばん]
+  name-sort: KINGDOM HEARTS II FINAL MIX+
   name-en: "Kingdom Hearts II - Final Mix +"
   region: "NTSC-J"
   gsHWFixes:
@@ -45870,8 +45872,8 @@ SLPM-66714:
     halfPixelOffset: 1 # Fixes misaligned bloom.
 SLPM-66715:
   name: 新紀幻想 スペクトラル ソウルズ II [IFコレクション]
-  name-sort: しんきげんそう すぺくとらる そうるず II [IFこれくしょん]
-  name-en: "Shinki Gensou Spectral Souls II [IF Collection]"
+  name-sort: しんきげんそう すぺくとらる そうるず II [あいであふぁくとりーこれくしょん]
+  name-en: "Shinki Gensou Spectral Souls II [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-66716:
   name: グローランサーVI
@@ -45928,7 +45930,7 @@ SLPM-66725:
   region: "NTSC-J"
 SLPM-66726:
   name: お嬢様組曲 -Sweet Concert- [通常版]
-  name-sort: おじょうさまくみきょく Sweet Concert [つうじょうばん]
+  name-sort: おじょうさまくみきょく Sweet Concert
   name-en: "Ojousama Kumikyoku - Sweet Concert"
   region: "NTSC-J"
 SLPM-66727:
@@ -45948,7 +45950,7 @@ SLPM-66729:
   region: "NTSC-J"
 SLPM-66730:
   name: 少年陰陽師 翼よいま、天へ還れ 通常版
-  name-sort: しょうねんおんみょうじ つばさよいま てんへかえれ [つうじょうばん]
+  name-sort: しょうねんおんみょうじ つばさよいま てんへかえれ
   name-en: "Shounen Onmyouji - Tsubasa yo Ima, Ten he Kaere"
   region: "NTSC-J"
 SLPM-66731:
@@ -45973,7 +45975,7 @@ SLPM-66732:
   region: "NTSC-J"
 SLPM-66733:
   name: 許嫁(いいなずけ) [通常版]
-  name-sort: いいなずけ [つうじょうばん]
+  name-sort: いいなずけ
   name-en: "Iinazuke"
   region: "NTSC-J"
 SLPM-66734:
@@ -45983,7 +45985,7 @@ SLPM-66734:
   region: "NTSC-J"
 SLPM-66735:
   name: きると〜貴方と紡ぐ夢と恋のドレス〜 [通常版]
-  name-sort: きると あなたとつむぐゆめとこいのどれす [つうじょうばん]
+  name-sort: きると あなたとつむぐゆめとこいのどれす
   name-en: "Kiruto - Anata to Tsumugu Yume to Koi no Dress"
   region: "NTSC-J"
 SLPM-66736:
@@ -46039,7 +46041,7 @@ SLPM-66740:
   region: "NTSC-J"
 SLPM-66741:
   name: 戦闘国家・改・レジェンド [通常版]
-  name-sort: せんとうこっか かい れじぇんど [つうじょうばん]
+  name-sort: せんとうこっか かい れじぇんど
   name-en: "Sentou Kokka Kai - Legend"
   region: "NTSC-J"
 SLPM-66742:
@@ -46101,7 +46103,7 @@ SLPM-66750:
   compat: 5
 SLPM-66751:
   name: まほろばStories [通常版]
-  name-sort: まほろばStories [つうじょうばん]
+  name-sort: まほろばStories
   name-en: "Mahoroba Stories"
   region: "NTSC-J"
 SLPM-66752:
@@ -46119,12 +46121,12 @@ SLPM-66753:
   region: "NTSC-J"
 SLPM-66754:
   name: 月面兎兵器ミーナ -ふたつのPROJECT M- [通常版]
-  name-sort: げつめんとへいきみーな -ふたつのPROJECT M- [つうじょうばん]
+  name-sort: げつめんとへいきみーな -ふたつのPROJECT M-
   name-en: "Getsumento Heiki Mina - Futatsu no Project M"
   region: "NTSC-J"
 SLPM-66755:
   name: 魔女っ娘ア・ラ・モードII〜魔法と剣のストラグル〜 [通常版]
-  name-sort: まじょっこあらもーど2 まほうとけんのすとらぐる [つうじょうばん]
+  name-sort: まじょっこあらもーど2 まほうとけんのすとらぐる
   name-en: "Majo-musume - A La Mode II"
   region: "NTSC-J"
   gsHWFixes:
@@ -46136,7 +46138,7 @@ SLPM-66756:
   region: "NTSC-J"
 SLPM-66757:
   name: Que〜エンシェントリーフの妖精〜 [通常版]
-  name-sort: Que〜えんしぇんとりーふのようせい〜 [つうじょうばん]
+  name-sort: Que〜えんしぇんとりーふのようせい〜
   name-en: "Que - Ancient Leaf no Yousei"
   region: "NTSC-J"
 SLPM-66758:
@@ -46161,18 +46163,18 @@ SLPM-66761:
   region: "NTSC-J"
 SLPM-66762:
   name: Panic Palette [通常版]
-  name-sort: Panic Palette [つうじょうばん]
+  name-sort: Panic Palette
   name-en: "Panic Palette"
   region: "NTSC-J"
 SLPM-66763:
   name: 新世紀エヴァンゲリオン バトルオーケストラ [通常版]
-  name-sort: しんせいきえゔぁんげりおん ばとるおーけすとら [つうじょうばん]
+  name-sort: しんせいきえゔぁんげりおん ばとるおーけすとら
   name-en: "Neon Genesis Evangelion - Battle Orchestra"
   region: "NTSC-J"
   compat: 5
 SLPM-66764:
   name: IZUMO零 〜横濱あやかし絵巻〜
-  name-sort: IZUMOぜろ 〜よこはまあやかしえまき〜
+  name-sort: いずもぜろ 〜よこはまあやかしえまき〜
   name-en: "Izumo Zero"
   region: "NTSC-J"
 SLPM-66765:
@@ -46182,7 +46184,7 @@ SLPM-66765:
   region: "NTSC-J"
 SLPM-66766:
   name: 十次元立方体サイファー ゲーム・オブ・サバイバル [通常版]
-  name-sort: じゅうじげんりっぽうたいさいふぁー げーむ・おぶ・さばいばる [つうじょうばん]
+  name-sort: じゅうじげんりっぽうたいさいふぁー げーむ・おぶ・さばいばる
   name-en: "Juujigen Ripoutai Sypher - Game of Survival"
   region: "NTSC-J"
 SLPM-66767:
@@ -46254,14 +46256,14 @@ SLPM-66778:
   region: "NTSC-J"
 SLPM-66779:
   name: ギャラクシーエンジェルII 無限回廊の鍵【通常版】 [ディスク1/2]
-  name-sort: ぎゃらくしーえんじぇるII むげんかいろうのかぎ [つうじょうばん] [でぃすく1/2]
+  name-sort: ぎゃらくしーえんじぇるII むげんかいろうのかぎ [でぃすく1/2]
   name-en: "Galaxy Angel II - Mugen Kairou no Kagi [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Reduces misaligned lighting and other effects.
 SLPM-66780:
   name: ギャラクシーエンジェルII 無限回廊の鍵【通常版】 [ディスク2/2]
-  name-sort: ぎゃらくしーえんじぇるII むげんかいろうのかぎ [つうじょうばん] [でぃすく2/2]
+  name-sort: ぎゃらくしーえんじぇるII むげんかいろうのかぎ [でぃすく2/2]
   name-en: "Galaxy Angel II - Mugen Kairou no Kagi [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -46288,7 +46290,7 @@ SLPM-66782:
     nativePaletteDraw: 1
 SLPM-66783:
   name: アイドル雀士 スーチーパイIV 「完全限定版・コレクターズエディション」
-  name-sort: あいどるじゃんし すーちーぱいIV 「かんぜんげんていばん・これくたーずえでぃしょん」
+  name-sort: あいどるじゃんし すーちーぱい4 [かんぜんげんていばん・これくたーずえでぃしょん]
   name-en: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
 SLPM-66784:
@@ -46296,7 +46298,7 @@ SLPM-66784:
   region: "NTSC-J"
 SLPM-66785:
   name: アイドル雀士 スーチーパイIV [通常版]
-  name-sort: あいどるじゃんし すーちーぱいIV [つうじょうばん]
+  name-sort: あいどるじゃんし すーちーぱい4
   name-en: "Idol Janshi Suchie-Pai 4"
   region: "NTSC-J"
 SLPM-66786:
@@ -46306,7 +46308,7 @@ SLPM-66786:
   region: "NTSC-J"
 SLPM-66787:
   name: 水夏A.S+ Eternal Name 通常版
-  name-sort: すいかA.S+ Eternal Name [つうじょうばん]
+  name-sort: すいかA.S+ Eternal Name
   name-en: "Suika A.S+ Eternal Name"
   region: "NTSC-J"
 SLPM-66788:
@@ -46330,7 +46332,7 @@ SLPM-66790:
   region: "NTSC-J"
 SLPM-66791:
   name: Memories Off ♯5 アンコール [通常版]
-  name-sort: Memories Off ♯5 あんこーる [つうじょうばん]
+  name-sort: Memories Off ♯5 あんこーる
   name-en: "Memories Off #5 Encore"
   region: "NTSC-J"
 SLPM-66792:
@@ -46386,7 +46388,7 @@ SLPM-66800:
   region: "NTSC-J"
 SLPM-66801:
   name: IZUMO コンプリート ベスト版
-  name-sort: IZUMO こんぷりーと べすとばん
+  name-sort: いずも こんぷりーと べすとばん
   name-en: "Izumo Complete [GN Software Best]"
   region: "NTSC-J"
 SLPM-66802:
@@ -46406,7 +46408,7 @@ SLPM-66804:
   region: "NTSC-J"
 SLPM-66805:
   name: カラフルアクアリウム〜My Little Mermaid〜 [通常版]
-  name-sort: からふるあくありうむ〜My Little Mermaid〜 [つうじょうばん]
+  name-sort: からふるあくありうむ〜My Little Mermaid〜
   name-en: "Colorful Aquarium - My Little Mermaid"
   region: "NTSC-J"
 SLPM-66806:
@@ -46457,7 +46459,7 @@ SLPM-66812:
   region: "NTSC-J"
 SLPM-66813:
   name: コーエー定番シリーズ 三國志IX
-  name-sort: さんごくしIX [こーえーていばんしりーず]
+  name-sort: さんごくし9 [こーえーていばんしりーず]
   name-en: "Sangokushi IX [Koei Selection]"
   region: "NTSC-J"
 SLPM-66814:
@@ -46525,7 +46527,7 @@ SLPM-66826:
   region: "NTSC-J"
 SLPM-66827:
   name: 妖鬼姫伝 〜あやかし幻灯話〜 [通常版]
-  name-sort: ようきひでん 〜あやかしげんとうばなし〜 [つうじょうばん]
+  name-sort: ようきひでん 〜あやかしげんとうばなし〜
   name-en: "Youki Hime Den"
   region: "NTSC-J"
 SLPM-66828:
@@ -46551,7 +46553,7 @@ SLPM-66834:
   region: "NTSC-J"
 SLPM-66835:
   name: 金色のコルダ2 アンコール [通常版]
-  name-sort: きんいろのこるだ2 あんこーる [つうじょうばん]
+  name-sort: きんいろのこるだ2 あんこーる
   name-en: "Kiniro no Corda 2 Anchor"
   region: "NTSC-J"
 SLPM-66836:
@@ -46606,7 +46608,7 @@ SLPM-66844:
   region: "NTSC-J"
 SLPM-66845:
   name: 悠久ノ桜 [通常版]
-  name-sort: ゆうきゅうのさくら [つうじょうばん]
+  name-sort: ゆうきゅうのさくら
   name-en: "Yuukyuu no Sakura"
   region: "NTSC-J"
 SLPM-66846:
@@ -46680,7 +46682,7 @@ SLPM-66857:
   region: "NTSC-J"
 SLPM-66858:
   name: いつか、届く、あの空に。 〜陽の道と緋の昏と〜 [通常版]
-  name-sort: いつかとどくあのそらに ようのみちとひのたそがれと [つうじょうばん]
+  name-sort: いつかとどくあのそらに ようのみちとひのたそがれと
   name-en: "Itsuka, Todoku, Ano Sora ni"
   region: "NTSC-J"
 SLPM-66859:
@@ -46695,7 +46697,7 @@ SLPM-66860:
   region: "NTSC-J"
 SLPM-66861:
   name: 熱帯低気圧少女 [通常版]
-  name-sort: ねったいていきあつしょうじょ [つうじょうばん]
+  name-sort: ねったいていきあつしょうじょ
   name-en: "Nettai Teikiatsu Shoujo"
   region: "NTSC-J"
 SLPM-66862:
@@ -46756,7 +46758,7 @@ SLPM-66871:
   region: "NTSC-J"
 SLPM-66872:
   name: 召喚少女-ElementalGirl Calling- [通常版]
-  name-sort: しょうかんしょうじょ ElementalGirl Calling [つうじょうばん]
+  name-sort: しょうかんしょうじょ ElementalGirl Calling
   name-en: "Shoukan Shoujo - Elemental Girl Calling"
   region: "NTSC-J"
   compat: 5
@@ -46777,7 +46779,7 @@ SLPM-66875:
   region: "NTSC-J"
 SLPM-66876:
   name: IZUMO2 -猛き剣の戦記- ベスト版
-  name-sort: IZUMO2 もうきけんのせんき べすとばん
+  name-sort: いずも2 もうきけんのせんき べすとばん
   name-en: "Izumo 2 [GN Software Best]"
   region: "NTSC-J"
 SLPM-66877:
@@ -46797,7 +46799,7 @@ SLPM-66879:
   region: "NTSC-J"
 SLPM-66880:
   name: StarTRain -your past makes your future- [通常版]
-  name-sort: StarTRain -your past makes your future- [つうじょうばん]
+  name-sort: StarTRain -your past makes your future-
   name-en: "StarTRain - Your Past Makes Your Future"
   region: "NTSC-J"
 SLPM-66881:
@@ -46953,7 +46955,7 @@ SLPM-66907:
   region: "NTSC-J"
 SLPM-66908:
   name: IZUMO2 学園狂想曲 ダブルタクト
-  name-sort: IZUMO2 がくえんきょうそうきょく だぶるたくと
+  name-sort: いずも2 がくえんきょうそうきょく だぶるたくと
   name-en: "Izumo 2 - Gakuen Kyousoukyoku - Double Tact"
   region: "NTSC-J"
 SLPM-66909:
@@ -47302,7 +47304,7 @@ SLPM-66970:
   region: "NTSC-J"
 SLPM-66971:
   name: コーエー定番シリーズ 三國志IX with パワーアップキット
-  name-sort: さんごくしIX with ぱわーあっぷきっと [こーえーていばんしりーず]
+  name-sort: さんごくし9 with ぱわーあっぷきっと [こーえーていばんしりーず]
   name-en: "Sangokushi IX [with Power-Up Kit] [Koei Selection]"
   region: "NTSC-J"
 SLPM-66972:
@@ -47423,8 +47425,8 @@ SLPM-66999:
   region: "NTSC-J"
 SLPM-67000:
   name: ふしぎ遊戯 玄武開伝 外伝 鏡の巫女 [IFコレクション]
-  name-sort: ふしぎゆうぎ げんぶひらきでん がいでん きょうのみこ [IFこれくしょん]
-  name-en: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [IF Collection]"
+  name-sort: ふしぎゆうぎ げんぶひらきでん がいでん きょうのみこ [あいであふぁくとりーこれくしょん]
+  name-en: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-67001:
   name: "Wonder Zone"
@@ -48924,7 +48926,7 @@ SLPS-20077:
 SLPS-20078:
   name: シムピープル お茶の間劇場
   name-sort: しむぴーぷる おちゃのまげきじょう
-  name-en: "Generation of Chaos"
+  name-en: "Sim People"
   region: "NTSC-J"
 SLPS-20080:
   name: "Typing Namidabashi - Ashita no Joe Touda"
@@ -48965,12 +48967,12 @@ SLPS-20085:
     - "SLPS-20085"
 SLPS-20086:
   name: GENERATION OF CHAOS 限定版
-  name-sort: GENERATION OF CHAOS [げんていばん]
+  name-sort: じぇねれーしょんおぶかおす [げんていばん]
   name-en: "Generation of Chaos [Limited Edition]"
   region: "NTSC-J"
 SLPS-20087:
-  name: GENERATION OF CHAOS
-  name-sort: GENERATION OF CHAOS
+  name: GENERATION OF CHAOS 通常版
+  name-sort: じぇねれーしょんおぶかおす
   name-en: "Generation of Chaos"
   region: "NTSC-J"
 SLPS-20089:
@@ -49556,7 +49558,8 @@ SLPS-20242:
   name: "Tomak - Save the Earth - Love Story"
   region: "NTSC-J"
 SLPS-20243:
-  name: GoGoGolf [NewPrice]
+  name: NewPrice GoGoGolf
+  name-sort: GoGoGolf [NewPrice]
   name-en: "Go Go Golf [NewPrice]"
   region: "NTSC-J"
   gsHWFixes:
@@ -49582,12 +49585,12 @@ SLPS-20248:
   name: "Downforce"
   region: "NTSC-J"
 SLPS-20250:
-  name: 魔界戦記 ディスガイア 限定版
+  name: 魔界戦記 ディスガイア (限定版)
   name-sort: まかいせんき でぃすがいあ [げんていばん]
   name-en: "Makai Senki Disgaea [Limited Edition]"
   region: "NTSC-J"
 SLPS-20251:
-  name: 魔界戦記 ディスガイア
+  name: 魔界戦記 ディスガイア (通常版)
   name-sort: まかいせんき でぃすがいあ
   name-en: "Makai Senki Disgaea"
   region: "NTSC-J"
@@ -49710,7 +49713,7 @@ SLPS-20283:
   region: "NTSC-J"
 SLPS-20284:
   name: マールDEジグソー 〜日本一ソフトウェア the Best〜
-  name-sort: まーるDEじぐそー にっぽんいちそふとうぇあ the Best
+  name-sort: まーるDEじぐそー [にっぽんいちそふとうぇあ the Best]
   name-en: "Marl de Jigsaw"
   region: "NTSC-J"
 SLPS-20285:
@@ -49959,7 +49962,7 @@ SLPS-20344:
   region: "NTSC-J"
 SLPS-20345:
   name: ファントム・ブレイブ(通常版)
-  name-sort: ふぁんとむ ぶれいぶ [つうじょうばん]
+  name-sort: ふぁんとむ ぶれいぶ
   name-en: "Phantom Brave"
   region: "NTSC-J"
 SLPS-20347:
@@ -50354,7 +50357,7 @@ SLPS-20429:
   region: "NTSC-J"
 SLPS-20430:
   name: SIMPLE2000シリーズ Vol.91 THE ALL★STAR格闘祭
-  name-sort: SIMPLE2000しりーず Vol.91 THE おーるすたーかくとうさい
+  name-sort: しんぷる2000しりーず Vol.91 THE おーるすたーかくとうさい
   name-en: "Simple 2000 Series Vol. 91 - The All-Star Kakutou"
   region: "NTSC-J"
   compat: 5
@@ -50362,7 +50365,7 @@ SLPS-20430:
     - XGKickHack # Fixes cell shade like effect.
 SLPS-20431:
   name: SIMPLE2000シリーズ Vol.86 THE 免許取得シミュレーション 〜改正道路交通法対応版〜
-  name-sort: SIMPLE2000しりーず Vol.86 THE めんきょしゅとくしみゅれーしょん 〜かいせいどうろこうつうほうたいおうばん〜
+  name-sort: しんぷる2000しりーず Vol.86 THE めんきょしゅとくしみゅれーしょん 〜かいせいどうろこうつうほうたいおうばん〜
   name-en: "Simple 2000 Series Vol. 86 - The Menkyo Shutoku Simulation"
   region: "NTSC-J"
 SLPS-20436:
@@ -50372,17 +50375,17 @@ SLPS-20436:
   region: "NTSC-J"
 SLPS-20439:
   name: SIMPLE2000シリーズ Vol.79 アッコにおまかせ! THE パーティークイズ
-  name-sort: SIMPLE2000しりーず Vol.79 あっこにおまかせ! THE ぱーてぃーくいず
+  name-sort: しんぷる2000しりーず Vol.79 あっこにおまかせ! THE ぱーてぃーくいず
   name-en: "Simple 2000 Series Vol. 79 - The Party Quiz - Akko ni Omakase"
   region: "NTSC-J"
 SLPS-20440:
   name: SIMPLE2000シリーズ Vol.88 THE ミニ美女警官
-  name-sort: SIMPLE 2000しりーず Vol.88 THE みにびじょけいかん
+  name-sort: しんぷる2000しりーず Vol.88 THE みにびじょけいかん
   name-en: "Simple 2000 Series Vol. 88 - The Mini Bijo Keikan"
   region: "NTSC-J"
 SLPS-20441:
   name: SIMPLE2000シリーズ Vol.87 THE 戦娘
-  name-sort: SIMPLE 2000しりーず Vol.87 THE なでしこ
+  name-sort: しんぷる2000しりーず Vol.87 THE なでしこ
   name-en: "Simple 2000 Series Vol. 87 - The Nadesiko"
   region: "NTSC-J"
 SLPS-20442:
@@ -50399,7 +50402,7 @@ SLPS-20443:
     recommendedBlendingLevel: 4 # Fixes water reflections.
 SLPS-20444:
   name: SIMPLE2000シリーズ Vol.90 THE お姉チャンバラ2
-  name-sort: SIMPLE2000しりーず Vol.90 THE おねえちゃんばら2
+  name-sort: しんぷる2000しりーず Vol.90 THE おねえちゃんばら2
   name-en: "Simple 2000 Series Vol. 90 - The OneeChanBara 2"
   region: "NTSC-J"
   compat: 5
@@ -50410,12 +50413,12 @@ SLPS-20444:
     - XGKickHack # Fixes blank textures.
 SLPS-20445:
   name: SIMPLE2000シリーズ Ultimate Vol.28 闘走!喧嘩グランプリ 〜Drive to Survive〜
-  name-sort: SIMPLE2000しりーず Ultimate Vol.28 とうそう!けんかぐらんぷり 〜Drive to Survive〜
+  name-sort: しんぷる2000しりーず Ultimate Vol.28 とうそう!けんかぐらんぷり 〜Drive to Survive〜
   name-en: "Simple 2000 Series Ultimate Vol. 28 - Tousou! Kenka Grand Prix - Drive to Survive"
   region: "NTSC-J"
 SLPS-20446:
   name: SIMPLE2000シリーズ Vol.89 THE パーティーゲーム2
-  name-sort: SIMPLE 2000しりーず Vol.89 THE ぱーてぃーげーむ2
+  name-sort: しんぷる2000しりーず Vol.89 THE ぱーてぃーげーむ2
   name-en: "Simple 2000 Series Vol. 89 - The Party Game 2"
   region: "NTSC-J"
 SLPS-20447:
@@ -50443,14 +50446,14 @@ SLPS-20451:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20452:
   name: SIMPLE2000シリーズ Ultimate Vol.30 降臨!族車ゴッド〜仏恥義理★愛羅武勇〜
-  name-sort: SIMPLE 2000しりーず Ultimate Vol.30 こうりん!ぞくしゃごっど ぶっちぎりあいらぶゆう
+  name-sort: しんぷる2000しりーず Ultimate Vol.30 こうりん!ぞくしゃごっど ぶっちぎりあいらぶゆう
   name-en: "Simple 2000 Series Ultimate Vol. 30 - Kourin! Zokusha Goddo!"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes car colours.
 SLPS-20453:
   name: SIMPLE2000シリーズ Ultimate Vol.29 K-1 PREMIUM 2005 Dynamite!!
-  name-sort: SIMPLE 2000しりーず Ultimate Vol.29 K-1 PREMIUM 2005 Dynamite!!
+  name-sort: しんぷる2000しりーず Ultimate Vol.29 K-1 PREMIUM 2005 Dynamite!!
   name-en: "Simple 2000 Series Ultimate Vol. 29 - K-1 Premium 2005 Dynamite!!"
   region: "NTSC-J"
   compat: 5
@@ -50465,17 +50468,17 @@ SLPS-20453:
         patch=1,EE,00336a48,word,0000948c
 SLPS-20454:
   name: SIMPLE2000 Vol.93 THE 右脳ドリル
-  name-sort: SIMPLE2000 Vol.93 THE うのうどりる
+  name-sort: しんぷる2000 Vol.93 THE うのうどりる
   name-en: "Simple 2000 Series Vol. 93 - The Unou Drill"
   region: "NTSC-J"
 SLPS-20455:
   name: SIMPLE2000シリーズ Vol.94 THE 赤ちゃんぴおん〜COME ON BABY〜
-  name-sort: SIMPLE 2000しりーず Vol.94 THE あかちゃんぴおん〜COME ON BABY〜
+  name-sort: しんぷる2000しりーず Vol.94 THE あかちゃんぴおん〜COME ON BABY〜
   name-en: "Simple 2000 Series Vol. 94 - The Aka-Champion - Come on Baby"
   region: "NTSC-J"
 SLPS-20456:
   name: SIMPLE2000シリーズ Vol.95 THE ゾンビV.S.救急車
-  name-sort: SIMPLE 2000しりーず Vol.95 THE ぞんびV.S.きゅうきゅうしゃ
+  name-sort: しんぷる2000しりーず Vol.95 THE ぞんびV.S.きゅうきゅうしゃ
   name-en: "Simple 2000 Series Vol. 95 - The Zombie vs. Kyuukyuusha"
   region: "NTSC-J"
 SLPS-20457:
@@ -50485,7 +50488,7 @@ SLPS-20457:
   region: "NTSC-J"
 SLPS-20458:
   name: SIMPLE2000シリーズ Vol.96 THE 海賊 〜ガイコツいっぱいれーつ!〜
-  name-sort: SIMPLE 2000しりーず Vol.96 THE かいぞく 〜がいこついっぱいれーつ!〜
+  name-sort: しんぷる2000しりーず Vol.96 THE かいぞく 〜がいこついっぱいれーつ!〜
   name-en: "Simple 2000 Series Vol. 96 - The Kaizoku - Gaikotsu Ippaire~tsu!"
   region: "NTSC-J"
 SLPS-20459:
@@ -50500,7 +50503,7 @@ SLPS-20460:
   region: "NTSC-J"
 SLPS-20461:
   name: SIMPLE2000シリーズ Vol.99 THE 原始人
-  name-sort: SIMPLE 2000しりーず Vol.99 THE げんしじん
+  name-sort: しんぷる2000しりーず Vol.99 THE げんしじん
   name-en: "Simple 2000 Series Vol. 99 - The Genshijin"
   region: "NTSC-J"
   compat: 5
@@ -50516,17 +50519,17 @@ SLPS-20463:
   region: "NTSC-J"
 SLPS-20464:
   name: SIMPLE2000シリーズ Vol.105 THE メイド服と機関銃
-  name-sort: SIMPLE2000しりーず Vol.105 THE めいどふくときかんじゅう
+  name-sort: しんぷる2000しりーず Vol.105 THE めいどふくときかんじゅう
   name-en: "Simple 2000 Series Vol. 105 - The Maid-Fuku to Kikanjuu"
   region: "NTSC-J"
 SLPS-20465:
   name: SIMPLE2000シリーズ Vol.100 THE 男たちの機銃砲座
-  name-sort: SIMPLE2000しりーず Vol.100 THE おとこたちのきじゅうほうざ
+  name-sort: しんぷる2000しりーず Vol.100 THE おとこたちのきじゅうほうざ
   name-en: "Simple 2000 Series Vol. 100 - The Otoko Tachi no Kijuu Houza"
   region: "NTSC-J"
 SLPS-20466:
   name: SIMPLE2000シリーズ Vol.101 THE お姉チャンポン 〜THE 姉チャン2 特別編〜
-  name-sort: SIMPLE2000しりーず Vol.101 THE おねえちゃんぽん 〜THE ねえちゃん2 とくべつへん〜
+  name-sort: しんぷる2000しりーず Vol.101 THE おねえちゃんぽん 〜THE ねえちゃん2 とくべつへん〜
   name-en: "Simple 2000 Series Vol. 101 - The OneeChanpon - OneeChan 2 Special Edition"
   region: "NTSC-J"
   gsHWFixes:
@@ -50536,12 +50539,12 @@ SLPS-20466:
     - XGKickHack # Fixes blank textures.
 SLPS-20467:
   name: SIMPLE2000シリーズ Vol.102 THE歩兵〜戦場の犬たち〜
-  name-sort: SIMPLE2000しりーず Vol.102 THEほへい〜せんじょうのいぬたち〜
+  name-sort: しんぷる2000しりーず Vol.102 THEほへい〜せんじょうのいぬたち〜
   name-en: "Simple 2000 Series Vol. 102 - The Hohei - Senjou no Inutachi"
   region: "NTSC-J"
 SLPS-20468:
   name: SIMPLE2000シリーズ Vol.106 THEブロックくずしクエスト 〜DragonKingdom〜
-  name-sort: SIMPLE2000しりーず Vol.106 THEぶろっくくずしくえすと 〜DragonKingdom〜
+  name-sort: しんぷる2000しりーず Vol.106 THEぶろっくくずしくえすと 〜DragonKingdom〜
   name-en: "Simple 2000 Series Vol. 106 - The Block Kuzushi Quest - Dragon Kingdom"
   region: "NTSC-J"
   compat: 5
@@ -50553,7 +50556,7 @@ SLPS-20469:
   compat: 5
 SLPS-20470:
   name: SIMPLE2000シリーズ Vol.103 THE地球防衛軍タクティクス
-  name-sort: SIMPLE2000しりーず Vol.103 THEちきゅうぼうえいぐんたくてぃくす
+  name-sort: しんぷる2000しりーず Vol.103 THEちきゅうぼうえいぐんたくてぃくす
   name-en: "Simple 2000 Series Vol. 103 - The Chikyuu Boueigun Tactics"
   region: "NTSC-J"
 SLPS-20471:
@@ -50566,12 +50569,12 @@ SLPS-20472:
   region: "NTSC-J"
 SLPS-20473:
   name: SIMPLE2000シリーズ Vol.104 THE ロボットつくろうぜっ! 〜激闘!ロボットファイト〜
-  name-sort: SIMPLE2000しりーず Vol.104 THE ろぼっとつくろうぜっ! 〜げきとう!ろぼっとふぁいと〜
+  name-sort: しんぷる2000しりーず Vol.104 THE ろぼっとつくろうぜっ! 〜げきとう!ろぼっとふぁいと〜
   name-en: "Simple 2000 Series Vol. 104 - The Robot Tsuku Rouze! - Gekitou! Robot Fight"
   region: "NTSC-J"
 SLPS-20474:
   name: SIMPLE2000シリーズ Vol.107 THE 炎の格闘番長
-  name-sort: SIMPLE2000しりーず Vol.107 THE ほのおのかくとうばんちょう
+  name-sort: しんぷる2000しりーず Vol.107 THE ほのおのかくとうばんちょう
   name-en: "Simple 2000 Series Vol. 107 - The Honoo no Kakutou Banchou"
   region: "NTSC-J"
 SLPS-20475:
@@ -50582,17 +50585,17 @@ SLPS-20475:
   compat: 5
 SLPS-20476:
   name: SIMPLE2000シリーズ Vol.108 THE 日本特殊部隊
-  name-sort: SIMPLE2000しりーず Vol.108 THE にっぽんとくしゅぶたい
+  name-sort: しんぷる2000しりーず Vol.108 THE にっぽんとくしゅぶたい
   name-en: "Simple 2000 Series Vol. 108 - The Nippon Tokushubutai"
   region: "NTSC-J"
 SLPS-20477:
   name: FISH EYES 3 〜記憶の破片たち〜 Super Best Collection
-  name-sort: FISH EYES 3 〜きおくのはへんたち〜 Super Best Collection
+  name-sort: FISH EYES 3 〜きおくのかけらたち〜 Super Best Collection
   name-en: "Fish Eyes 3 [Super Best Collection]"
   region: "NTSC-J"
 SLPS-20478:
   name: SIMPLE2000シリーズ Vol.109 THEタクシー2 〜運転手はやっぱり君だ!〜
-  name-sort: SIMPLE2000しりーず Vol.109 THEたくしー2 〜うんてんしゅはやっぱりきみだ!〜
+  name-sort: しんぷる2000しりーず Vol.109 THEたくしー2 〜うんてんしゅはやっぱりきみだ!〜
   name-en: "Simple 2000 Series Vol. 109 - The Taxi 2 - Untenshu ha Yappari Kimi da!"
   region: "NTSC-J"
 SLPS-20479:
@@ -50602,12 +50605,12 @@ SLPS-20479:
   region: "NTSC-J"
 SLPS-20480:
   name: SIMPLE2000シリーズ Vol.110 THE逃亡プリズナー 〜ロスシティ 真実への10時間〜
-  name-sort: SIMPLE2000しりーず Vol.110 THEとうぼうぷりずなー 〜ろすしてぃ しんじつへの10じかん〜
+  name-sort: しんぷる2000しりーず Vol.110 THEとうぼうぷりずなー 〜ろすしてぃ しんじつへの10じかん〜
   name-en: "Simple 2000 Series Vol. 110 - The Toubou Prisoner"
   region: "NTSC-J"
 SLPS-20481:
   name: SIMPLE2000シリーズ Vol.112 THE逃走ハイウェイ2 〜ROAD WARRIOR 2050〜
-  name-sort: SIMPLE2000しりーず Vol.112 THEとうそうはいうぇい2 〜ROAD WARRIOR 2050〜
+  name-sort: しんぷる2000しりーず Vol.112 THEとうそうはいうぇい2 〜ROAD WARRIOR 2050〜
   name-en: "Simple 2000 Series Vol. 112 - The Tousou Highway 2 - Road Warrior 2050"
   region: "NTSC-J"
 SLPS-20482:
@@ -50624,7 +50627,7 @@ SLPS-20483:
     autoFlush: 1 # Fixes garbage corruptions on the bottom of the screen.
 SLPS-20484:
   name: SIMPLE2000シリーズ UltimateVol.34 魁!!男塾
-  name-sort: SIMPLE2000しりーず UltimateVol.34 さきがけ!!おとこじゅく
+  name-sort: しんぷる2000しりーず UltimateVol.34 さきがけ!!おとこじゅく
   name-en: "Simple 2000 Series Ultimate Vol. 34 - Sakigake!! Otokojuku"
   region: "NTSC-J"
 SLPS-20485:
@@ -50648,12 +50651,12 @@ SLPS-20487:
   region: "NTSC-J"
 SLPS-20488:
   name: SIMPLE2000シリーズ Vol.113 THE大量地獄
-  name-sort: SIMPLE2000しりーず Vol.113 THEたいりょうじごく
+  name-sort: しんぷる2000しりーず Vol.113 THEたいりょうじごく
   name-en: "Simple 2000 Series Vol. 113 - The Tairyou Jigoku"
   region: "NTSC-J"
 SLPS-20489:
   name: SIMPLE2000シリーズ Vol.114 THE女岡っピチ捕物帳 〜お春ちゃんGOGOGO!〜
-  name-sort: SIMPLE2000しりーず Vol.114 THEおんなおかっぴちとりものちょう 〜おはるちゃんGOGOGO!〜
+  name-sort: しんぷる2000しりーず Vol.114 THEおんなおかっぴちとりものちょう 〜おはるちゃんGOGOGO!〜
   name-en: "Simple 2000 Series Vol. 114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
   region: "NTSC-J"
   gsHWFixes:
@@ -50667,23 +50670,23 @@ SLPS-20490:
   region: "NTSC-J"
 SLPS-20491:
   name: SIMPLE2000シリーズVol.118 THE落武者 〜怒獲武サムライ登場〜
-  name-sort: SIMPLE2000しりーずVol.118 THEおちむしゃ どえむさむらいとうじょう
+  name-sort: しんぷる2000しりーずVol.118 THEおちむしゃ どえむさむらいとうじょう
   name-en: "Simple 2000 Series Vol. 118 - The Ochimusha - Doemu Samurai Toujou"
   region: "NTSC-J"
 SLPS-20492:
   name: SIMPLE2000シリーズ Vol.115 THEルームシェアという生活。
-  name-sort: SIMPLE2000しりーず Vol.115 THEるーむしぇあというせいかつ
+  name-sort: しんぷる2000しりーず Vol.115 THEるーむしぇあというせいかつ
   name-en: "Simple 2000 Series Vol. 115 - The Roomshare to Iu Seikatsu"
   region: "NTSC-J"
 SLPS-20493:
   name: SIMPLE2000シリーズVol.116 THE ネコ村の人々 〜パグ代官の悪行三昧〜
-  name-sort: SIMPLE2000しりーずVol.116 THE ねこむらのひとびと ぱぐだいかんのあくぎょうさんまい
+  name-sort: しんぷる2000しりーずVol.116 THE ねこむらのひとびと ぱぐだいかんのあくぎょうさんまい
   name-en: "Simple 2000 Series Vol. 116 - The Neko-Mura no Ninnin - Pagu Daikan no Akugyou Sanmai"
   region: "NTSC-J"
   compat: 5
 SLPS-20494:
   name: SIMPLE2000シリーズVol.117 THE 零戦
-  name-sort: SIMPLE2000しりーずVol.117 THE ぜろせん
+  name-sort: しんぷる2000しりーずVol.117 THE ぜろせん
   name-en: "Simple 2000 Series Vol. 117 - The Zerosen"
   region: "NTSC-J"
 SLPS-20496:
@@ -50693,7 +50696,7 @@ SLPS-20496:
   region: "NTSC-J"
 SLPS-20497:
   name: SIMPLE2000シリーズ Vol.119 THE サバイバルゲーム2
-  name-sort: SIMPLE2000しりーず Vol.119 THE さばいばるげーむ2
+  name-sort: しんぷる2000しりーず Vol.119 THE さばいばるげーむ2
   name-en: "Simple 2000 Series Vol. 119 - The Survival Game 2"
   region: "NTSC-J"
 SLPS-20499:
@@ -50703,7 +50706,7 @@ SLPS-20499:
   region: "NTSC-J"
 SLPS-20500:
   name: SIMPLE2000シリーズ Vol.120 THE 最後の日本兵〜美しき国土奪還作戦〜
-  name-sort: SIMPLE2000しりーず Vol.120 THE さいごのにほんへい うつくしきこくどだっかんさくせん
+  name-sort: しんぷる2000しりーず Vol.120 THE さいごのにほんへい うつくしきこくどだっかんさくせん
   name-en: "Simple 2000 Series Vol. 120 - The Saigo no Nihon hei"
   region: "NTSC-J"
 SLPS-20501:
@@ -50718,7 +50721,7 @@ SLPS-20502:
   region: "NTSC-J"
 SLPS-20503:
   name: SIMPLE2000シリーズ Vol.121 THE ぼくの街づくり2 〜街ingメーカー2.1〜
-  name-sort: SIMPLE2000しりーず Vol.121 THE ぼくのまちづくり2 〜まちingめーかー2.1〜
+  name-sort: しんぷる2000しりーず Vol.121 THE ぼくのまちづくり2 〜まちingめーかー2.1〜
   name-en: "Simple 2000 Series Vol. 121 - The Boku no Machi-zukuri 2 - Machi-ing Maker 2.1"
   region: "NTSC-J"
 SLPS-20504:
@@ -51127,7 +51130,7 @@ SLPS-25056:
   region: "NTSC-J"
 SLPS-25057:
   name: キングスフィールドIV
-  name-sort: きんぐすふぃーるどIV
+  name-sort: きんぐすふぃーるど4
   name-en: "King's Field IV"
   region: "NTSC-J"
   gsHWFixes:
@@ -51729,7 +51732,7 @@ SLPS-25168:
   name: "NBA Live 2003"
   region: "NTSC-J"
 SLPS-25169:
-  name: アーマード・コア 3　サイレントライン
+  name: ARMORED CORE3 Silent Line
   name-sort: あーまーどこあ3 さいれんとらいん
   name-en: "Armored Core 3 - Silent Line"
   region: "NTSC-J"
@@ -51796,7 +51799,7 @@ SLPS-25179:
   gsHWFixes:
     mipmap: 1 # Improves field textures.
 SLPS-25181:
-  name: ガンバリコレクション プラス タイムクライシス
+  name: ガンバリコレクション プラス タイムクライシス(ソフト単品)
   name-sort: がんばりこれくしょん ぷらす たいむくらいしす
   name-en: "Gunvari Collection & Time Crisis"
   region: "NTSC-J"
@@ -51890,7 +51893,7 @@ SLPS-25198:
   gsHWFixes:
     roundSprite: 1 # Fixes picture artifacts.
 SLPS-25199:
-  name: アンリミテッド：サガ
+  name: アンリミテッド:サガ(通常版)
   name-sort: あんりみてっど：さが
   name-en: "Unlimited Saga"
   region: "NTSC-J"
@@ -52260,7 +52263,7 @@ SLPS-25264:
     autoFlush: 2 # Fixes DOF effect.
 SLPS-25265:
   name: ラーゼフォン 蒼穹幻想曲 [通常版]
-  name-sort: らーぜふぉん そうきゅうげんそうきょく [つうじょうばん]
+  name-sort: らーぜふぉん そうきゅうげんそうきょく
   name-en: "RAhXEPhON - Soukyuu Gensoukyoku [Standard Edition]"
   region: "NTSC-J"
   roundModes:
@@ -52606,7 +52609,7 @@ SLPS-25333:
     trilinearFiltering: 1
 SLPS-25334:
   name: シャドウハーツ II [通常版] [ディスク1/2]
-  name-sort: しゃどうはーつ II [つうじょうばん] [でぃすく1/2]
+  name-sort: しゃどうはーつ II [でぃすく1/2]
   name-en: "Shadow Hearts 2 [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -52616,7 +52619,7 @@ SLPS-25334:
     autoFlush: 2 # Makes the shadow monsters appear.
 SLPS-25335:
   name: シャドウハーツ II [通常版] [ディスク2/2]
-  name-sort: しゃどうはーつ II [つうじょうばん] [でぃすく2/2]
+  name-sort: しゃどうはーつ II [でぃすく2/2]
   name-en: "Shadow Hearts 2 [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -52819,7 +52822,7 @@ SLPS-25365:
   region: "NTSC-J"
 SLPS-25366:
   name: ゼノサーガ エピソードII [善悪の彼岸] プレミアムボックス [ディスク1/2]
-  name-sort: ぜのさーが えぴそーどII ぜんあくのひがん ぷれみあむぼっくす [でぃすく1/2]
+  name-sort: ぜのさーが えぴそーど2 ぜんあくのひがん ぷれみあむぼっくす [でぃすく1/2]
   name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [Premium Box] [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -52835,7 +52838,7 @@ SLPS-25366:
     - "SLPS-73224"
 SLPS-25367:
   name: ゼノサーガ エピソードII［善悪の彼岸］ プレミアムボックス [ディスク2/2]
-  name-sort: ぜのさーが えぴそーどII ぜんあくのひがん ぷれみあむぼっくす [でぃすく2/2]
+  name-sort: ぜのさーが えぴそーど2 ぜんあくのひがん ぷれみあむぼっくす [でぃすく2/2]
   name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [Premium Box] [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -52851,7 +52854,7 @@ SLPS-25367:
     - "SLPS-73224"
 SLPS-25368:
   name: ゼノサーガ エピソードII［善悪の彼岸］ [ディスク1/2]
-  name-sort: ぜのさーが えぴそーどII ぜんあくのひがん [でぃすく1/2]
+  name-sort: ぜのさーが えぴそーど2 ぜんあくのひがん [でぃすく1/2]
   name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -52867,7 +52870,7 @@ SLPS-25368:
     - "SLPS-73224"
 SLPS-25369:
   name: ゼノサーガ エピソードII［善悪の彼岸］ [ディスク2/2]
-  name-sort: ぜのさーが えぴそーどII ぜんあくのひがん [でぃすく2/2]
+  name-sort: ぜのさーが えぴそーど2 ぜんあくのひがん [でぃすく2/2]
   name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -53139,7 +53142,7 @@ SLPS-25415:
   region: "NTSC-J"
 SLPS-25416:
   name: ちゅ〜かな雀士 てんほー牌娘 [通常版]
-  name-sort: ちゅーかなじゃんし てんほーぱいにゃん [つうじょうばん]
+  name-sort: ちゅーかなじゃんし てんほーぱいにゃん
   name-en: "Chuuka na Janshi - Tenhoo Painyan"
   region: "NTSC-J"
 SLPS-25417:
@@ -53596,7 +53599,7 @@ SLPS-25496:
   region: "NTSC-J"
 SLPS-25497:
   name: ティアリングサーガシリーズ ベルウィックサーガ [通常版]
-  name-sort: てぃありんぐさーがしりーず べるうぃっくさーが [つうじょうばん]
+  name-sort: てぃありんぐさーがしりーず べるうぃっくさーが
   name-en: "Berwick Saga - Tear Ring Saga Series"
   region: "NTSC-J"
 SLPS-25498:
@@ -53953,7 +53956,7 @@ SLPS-25565:
   region: "NTSC-J"
 SLPS-25566:
   name: SIMPLE2000シリーズ Ultimate Vol.27 放課後のラブ★ビート♪
-  name-sort: SIMPLE 2000しりーず Ultimate Vol.27 ほうかごのらぶびーと
+  name-sort: しんぷる2000しりーず Ultimate Vol.27 ほうかごのらぶびーと
   name-en: "Simple 2000 Series Ultimate Vol. 27 - Houkago no Love Beat"
   region: "NTSC-J"
 SLPS-25567:
@@ -54057,7 +54060,7 @@ SLPS-25580:
   region: "NTSC-J"
 SLPS-25581:
   name: SIMPLE2000シリーズ Vol.92 THE 呪いのゲーム
-  name-sort: SIMPLE 2000しりーず Vol.92 THE のろいのげーむ
+  name-sort: しんぷる2000しりーず Vol.92 THE のろいのげーむ
   name-en: "Simple 2000 Series Vol. 92 - The Game of a Curse"
   region: "NTSC-J"
 SLPS-25582:
@@ -54218,7 +54221,7 @@ SLPS-25611:
   region: "NTSC-J"
 SLPS-25612:
   name: Strawberry Panic! [通常版]
-  name-sort: すとろべりーぱにっく! [つうじょうばん]
+  name-sort: すとろべりーぱにっく!
   name-en: "Strawberry Panic"
   region: "NTSC-J"
 SLPS-25613:
@@ -54343,12 +54346,12 @@ SLPS-25630:
   region: "NTSC-J"
 SLPS-25631:
   name: SIMPLE2000シリーズ Vol.98 THE 浪漫茶房
-  name-sort: SIMPLE 2000しりーず Vol.98 THE ろまんさぼう
+  name-sort: しんぷる2000しりーず Vol.98 THE ろまんさぼう
   name-en: "Simple 2000 Series Vol. 98 - Roman Sabou"
   region: "NTSC-J"
 SLPS-25632:
   name: SIMPLE2000シリーズ Vol.97 THE 恋のエンジン
-  name-sort: SIMPLE 2000しりーず Vol.97 THE こいのえんじん
+  name-sort: しんぷる2000しりーず Vol.97 THE こいのえんじん
   name-en: "Simple 2000 Series Vol. 97 - The Koi no Engine"
   region: "NTSC-J"
 SLPS-25633:
@@ -54373,7 +54376,7 @@ SLPS-25636:
   region: "NTSC-J"
 SLPS-25638:
   name: KOF MAXIMUM IMPACT 2 [通常版]
-  name-sort: KOF MAXIMUM IMPACT 2 [つうじょうばん]
+  name-sort: KOF MAXIMUM IMPACT 2
   name-en: "King of Fighters, The - Maximum Impact 2"
   region: "NTSC-J"
 SLPS-25639:
@@ -54383,7 +54386,7 @@ SLPS-25639:
   region: "NTSC-J"
 SLPS-25640:
   name: ゼノサーガ エピソードIII [ツァラトゥストラはかく語りき] [ディスク1/2]
-  name-sort: ぜのさーが えぴそーどIII [つぁらとぅすとらはかくかたりき] [でぃすく1/2]
+  name-sort: ぜのさーが えぴそーど3 [つぁらとぅすとらはかくかたりき] [でぃすく1/2]
   name-en: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 5
@@ -54397,7 +54400,7 @@ SLPS-25640:
     - "SLPS-25368"
 SLPS-25641:
   name: ゼノサーガ エピソードIII [ツァラトゥストラはかく語りき] [ディスク2/2]
-  name-sort: ぜのさーが えぴそーどIII [つぁらとぅすとらはかくかたりき] [でぃすく2/2]
+  name-sort: ぜのさーが えぴそーど3 [つぁらとぅすとらはかくかたりき] [でぃすく2/2]
   name-en: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-J"
   compat: 5
@@ -54424,7 +54427,7 @@ SLPS-25643:
     roundSprite: 1 # Fixes textboxes and character portraits.
 SLPS-25644:
   name: SIMPLE2000シリーズ Ultimate Vol.31 K-1 WORLD MAX 2005 〜世界王者への道〜
-  name-sort: SIMPLE 2000しりーず Ultimate Vol.31 K-1 WORLD MAX 2005 せかいおうじゃへのみち
+  name-sort: しんぷる2000しりーず Ultimate Vol.31 K-1 WORLD MAX 2005 せかいおうじゃへのみち
   name-en: "Simple 2000 Series Ultimate Vol. 31 - K-1 World Max 2005"
   region: "NTSC-J"
 SLPS-25645:
@@ -54441,7 +54444,7 @@ SLPS-25646:
   region: "NTSC-J"
 SLPS-25647:
   name: SIMPLE2000シリーズ Ultimate Vol.32 あずみ
-  name-sort: SIMPLE 2000しりーず Ultimate Vol.32 あずみ
+  name-sort: しんぷる2000しりーず Ultimate Vol.32 あずみ
   name-en: "Simple 2000 Series Ultimate Vol. 32 - Azumi"
   region: "NTSC-J"
 SLPS-25648:
@@ -54557,7 +54560,7 @@ SLPS-25658:
   region: "NTSC-J"
 SLPS-25659:
   name: びんちょうタン しあわせ暦 [通常版]
-  name-sort: びんちょうたん しあわせごよみ [つうじょうばん]
+  name-sort: びんちょうたん しあわせごよみ
   name-en: "Binchou-Tan - Shiwase Koyomi"
   region: "NTSC-J"
 SLPS-25660:
@@ -54578,7 +54581,7 @@ SLPS-25662:
   region: "NTSC-J"
 SLPS-25663:
   name: 今日からマ王!はじマりの旅 [通常版]
-  name-sort: きょうからまおう!はじまりのたび [つうじょうばん]
+  name-sort: きょうからまおう!はじまりのたび
   name-en: "Kyo Kara Maoh! The 1st trip of Maoh!"
   region: "NTSC-J"
 SLPS-25664:
@@ -54618,7 +54621,7 @@ SLPS-25670:
   region: "NTSC-J"
 SLPS-25671:
   name: SchoolRumble スクールランブル ねる娘は育つ。Best Collection
-  name-sort: SchoolRumble すくーるらんぶる ねるむすめはそだつ Best Collection
+  name-sort: すくーるらんぶる ねるこはそだつ Best Collection
   name-en: "School Rumble [Best Collection]"
   region: "NTSC-J"
 SLPS-25672:
@@ -54718,7 +54721,7 @@ SLPS-25688:
   region: "NTSC-J"
 SLPS-25689:
   name: シムーン 異薔薇戦争 封印のリ・マージョン 通常版
-  name-sort: しむーん いばらせんそう ふういんのりまーじょん [つうじょうばん]
+  name-sort: しむーん いばらせんそう ふういんのりまーじょん
   name-en: "Simoun - Shoubi Sensou - Fuuin no Remersion"
   region: "NTSC-J"
 SLPS-25690:
@@ -54792,7 +54795,7 @@ SLPS-25702:
   region: "NTSC-J"
 SLPS-25703:
   name: SIMPLE2000シリーズ Vol.111 THE いただきライダー 〜お前のバイクは俺のモノ / Jacked〜
-  name-sort: SIMPLE2000しりーず Vol.111 THE いただきらいだー おまえのばいくはおれのもの / Jacked
+  name-sort: しんぷる2000しりーず Vol.111 THE いただきらいだー おまえのばいくはおれのもの / Jacked
   name-en: "Simple 2000 Series Vol. 111 - The Itadaki Raider"
   region: "NTSC-J"
 SLPS-25704:
@@ -54841,7 +54844,7 @@ SLPS-25710:
         patch=1,EE,004574D8,word,0000948c
 SLPS-25711:
   name: かしまし 〜ガールミーツガール「初めての夏物語。」Best Collection
-  name-sort: かしまし がーるみーつがーる「はじめてのなつものがたり」Best Collection
+  name-sort: かしまし がーるみーつがーる はじめてのなつものがたり Best Collection
   name-en: "Kashimashi! Girl Meets Girl [Best Collection]"
   region: "NTSC-J"
 SLPS-25712:
@@ -54856,7 +54859,7 @@ SLPS-25713:
   region: "NTSC-J"
 SLPS-25714:
   name: NARUTO-ナルト- 木ノ葉スピリッツ!!
-  name-sort: なると きのはすぴりっつ!!
+  name-sort: なると このはすぴりっつ!!
   name-en: "Naruto - Konoha Spirits"
   region: "NTSC-J"
   gameFixes:
@@ -54875,7 +54878,7 @@ SLPS-25716:
   region: "NTSC-J"
 SLPS-25717:
   name: SIMPLE2000シリーズ UltimateVol.33 うるるんクエスト恋遊記
-  name-sort: SIMPLE2000しりーず UltimateVol.33 うるるんくえすとこいゆうき
+  name-sort: しんぷる2000しりーず UltimateVol.33 うるるんくえすとこいゆうき
   name-en: "Simple 2000 Series Ultimate Vol. 33 - Ururun Quest Koiyuuki"
   region: "NTSC-J"
 SLPS-25718:
@@ -54900,7 +54903,7 @@ SLPS-25719:
   region: "NTSC-J"
 SLPS-25720:
   name: はぴねす!でらっくす 通常版
-  name-sort: はぴねす!でらっくす [つうじょうばん]
+  name-sort: はぴねす!でらっくす
   name-en: "Happiness! Deluxe"
   region: "NTSC-J"
 SLPS-25721:
@@ -54945,7 +54948,7 @@ SLPS-25728:
   region: "NTSC-J"
 SLPS-25729:
   name: くじびき アンバランス 会長お願いすま〜っしゅファイト☆ [通常版]
-  name-sort: くじびき あんばらんす かいちょうおねがいすまーっしゅふぁいと [つうじょうばん]
+  name-sort: くじびき あんばらんす かいちょうおねがいすまーっしゅふぁいと
   name-en: "Kujibiki Unbalance"
   region: "NTSC-J"
 SLPS-25730:
@@ -55018,7 +55021,7 @@ SLPS-25742:
   region: "NTSC-J"
 SLPS-25743:
   name: ああっ女神さまっ [通常版]
-  name-sort: ああっめがみさまっ [つうじょうばん]
+  name-sort: ああっめがみさまっ
   name-en: "Aa Megami-sama"
   region: "NTSC-J"
 SLPS-25744:
@@ -55048,7 +55051,7 @@ SLPS-25748:
   region: "NTSC-J"
 SLPS-25749:
   name: 蒼い空のネオスフィア〜ナノカ・フランカ発明工房記2〜 [通常版]
-  name-sort: あおいそらのねおすふぃあ なのかふらんかはつめいこうぼうき2 [つうじょうばん]
+  name-sort: あおいそらのねおすふぃあ なのかふらんかはつめいこうぼうき2
   name-en: "Aoi Sora no Neosphere - Nanoca Flanka Hatsumei Koubouki 2"
   region: "NTSC-J"
 SLPS-25750:
@@ -55069,18 +55072,20 @@ SLPS-25752:
 SLPS-25753:
   name: 電撃SP 苺ましまろ
   name-sort: でんげきSP いちごましまろ
-  name-en: "Ichigo Mashimaro [Shock SP]"
+  name-en: "Ichigo Mashimaro [Dengeki SP]"
   region: "NTSC-J"
 SLPS-25754:
   name: 電撃SP キノの旅II
   name-sort: でんげきSP きののたびII
-  name-en: "Kino no Tabi 2 - The Beautiful World [Electric Shock SP]"
+  name-en: "Kino no Tabi 2 - The Beautiful World [Dengeki SP]"
   region: "NTSC-J"
 SLPS-25755:
   name: ".hack//G.U. Vol. 1 - Saitan"
   region: "NTSC-J"
 SLPS-25756:
-  name: ".hack//G.U. Vol.1 - Saitan [Bandai the Best]"
+  name: .hack//G.U. Vol.1 再誕 Bandai the Best
+  name-sort: どっとはっく じーゆー Vol.1 さいたん [Bandai the Best]
+  name-en: ".hack//G.U. Vol.1 - Saitan [Bandai the Best]"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -55101,12 +55106,12 @@ SLPS-25756:
     - "SLPS-25756"
 SLPS-25757:
   name: ななついろ★ドロップスPure!! [初回限定版]
-  name-sort: ななついろどろっぷすPure!! しょかいげんていばん
+  name-sort: ななついろどろっぷす ぴゅあ!! しょかいげんていばん
   name-en: "Nanatsu Iro - Drops Pure!! [First Print Limited Edition]"
   region: "NTSC-J"
 SLPS-25758:
   name: ななついろ★ドロップス Pure!! [通常版]
-  name-sort: ななついろどろっぷす Pure!! [つうじょうばん]
+  name-sort: ななついろどろっぷす ぴゅあ!!
   name-en: "Nanatsu Iro - Drops Pure!!"
   region: "NTSC-J"
 SLPS-25759:
@@ -55143,7 +55148,7 @@ SLPS-25764:
   region: "NTSC-J"
 SLPS-25765:
   name: KOF MAXIMUM IMPACT REGULATION“A”
-  name-sort: KOF MAXIMUM IMPACT REGULATION“A”
+  name-sort: きんぐ おぶ ふぁいたーず MAXIMUM IMPACT REGULATION“A”
   name-en: "King of Fighters, The - Maximum Impact Regulation A"
   region: "NTSC-J"
 SLPS-25766:
@@ -55153,7 +55158,7 @@ SLPS-25766:
   region: "NTSC-J"
 SLPS-25767:
   name: オレンジハニー 僕はキミに恋してる [通常版]
-  name-sort: おれんじはにー ぼくはきみにこいしてる [つうじょうばん]
+  name-sort: おれんじはにー ぼくはきみにこいしてる
   name-en: "Orange Honey - Boku ha Kimi ni Koishiteru"
   region: "NTSC-J"
 SLPS-25768:
@@ -55171,7 +55176,7 @@ SLPS-25768:
     vu1ClampMode: 3 # Fixes SPS on characters.
 SLPS-25769:
   name: プロ野球 熱スタ2007
-  name-sort: ぷろやきゅう ねつすた2007
+  name-sort: ぷろやきゅう ねっすた2007
   name-en: "Netsu Chu! Pro Baseball 2007"
   region: "NTSC-J"
 SLPS-25770:
@@ -55186,7 +55191,9 @@ SLPS-25771:
   region: "NTSC-J"
   compat: 5
 SLPS-25772:
-  name: "GrimGrimoire"
+  name: グリムグリモア
+  name-sort: ぐりむぐりもあ
+  name-en: "Grim Grimoire"
   region: "NTSC-J-K"
 SLPS-25773:
   name: テイルズ オブ ファンダムVol.2 [ティアバージョン]
@@ -55200,7 +55207,7 @@ SLPS-25774:
   region: "NTSC-J"
 SLPS-25775:
   name: まじしゃんず・あかでみい
-  name-sort: まじしゃんず・あかでみい
+  name-sort: まじしゃんず あかでみい
   name-en: "Magician's Academy, The"
   region: "NTSC-J"
 SLPS-25776:
@@ -55215,12 +55222,12 @@ SLPS-25777:
   region: "NTSC-J"
 SLPS-25778:
   name: すもももももも 〜地上最強のヨメ〜 継承しましょ!? 恋の花ムコ争奪戦!! [通常版]
-  name-sort: すもももももも ちじょうさいきょうのよめ けいしょうしましょ!? こいのはなむこそうだつせん!! [つうじょうばん]
+  name-sort: すもももももも ちじょうさいきょうのよめ けいしょうしましょ!? こいのはなむこそうだつせん!!
   name-en: "Sumomomo Momomo - Chijou Saikyou no Yome - Keishou Shimasho! Koi no Hanamuko Soudatsu-sen!!"
   region: "NTSC-J"
 SLPS-25779:
   name: KOF MAXIMUMIMPACT 2 [SNK BEST COLLECTION]
-  name-sort: KOF MAXIMUMIMPACT 2 [SNK BEST COLLECTION]
+  name-sort: きんぐ おぶ ふぁいたーず MAXIMUMIMPACT 2 [SNK BEST COLLECTION]
   name-en: "King of Fighters, The - Maximum Impact 2 [SNK Best Collection]"
   region: "NTSC-J"
 SLPS-25780:
@@ -55321,7 +55328,7 @@ SLPS-25797:
     roundSprite: 1 # Aligns bloom effect.
 SLPS-25798:
   name: 一騎当千 Shining Dragon [通常版]
-  name-sort: いっきとうせん Shining Dragon [つうじょうばん]
+  name-sort: いっきとうせん Shining Dragon
   name-en: "Ikki Tousen - Shining Dragon"
   region: "NTSC-J"
   compat: 5
@@ -55372,7 +55379,7 @@ SLPS-25807:
   region: "NTSC-J"
 SLPS-25808:
   name: セイント・ビースト 〜螺旋の章〜 [通常版]
-  name-sort: せいんと びーすと らせんのしょう [つうじょうばん]
+  name-sort: せいんと びーすと らせんのしょう
   name-en: "Saint Beast - Rasen no Shou"
   region: "NTSC-J"
 SLPS-25809:
@@ -55382,7 +55389,7 @@ SLPS-25809:
   region: "NTSC-J"
 SLPS-25810:
   name: DEAR My SUN!! 〜ムスコ★育成★狂騒曲〜 [通常版]
-  name-sort: DEAR My SUN!! むすこいくせいきょうそうきょく [つうじょうばん]
+  name-sort: DEAR My SUN!! むすこいくせいきょうそうきょく
   name-en: "Dear My Sun"
   region: "NTSC-J"
 SLPS-25811:
@@ -55500,7 +55507,7 @@ SLPS-25830:
   region: "NTSC-J"
 SLPS-25831:
   name: ゼロの使い魔 夢魔が紡ぐ夜風の幻想曲 [通常版]
-  name-sort: ぜろのつかいま むまがつむぐよかぜのげんそうきょく [つうじょうばん]
+  name-sort: ぜろのつかいま むまがつむぐよかぜのげんそうきょく
   name-en: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku"
   region: "NTSC-J"
 SLPS-25832:
@@ -55510,7 +55517,7 @@ SLPS-25832:
   region: "NTSC-J"
 SLPS-25833:
   name: SIMPLE2000シリーズ Vol.122 THE 人魚姫物語〜マーメイドプリズム〜
-  name-sort: SIMPLE2000しりーず Vol.122 THE にんぎょひめものがたり まーめいどぷりずむ
+  name-sort: しんぷる2000しりーず Vol.122 THE にんぎょひめものがたり まーめいどぷりずむ
   name-en: "Simple 2000 Series Vol. 122 - The Ningyo Hime Monogatari - Mermaid Prism"
   region: "NTSC-J"
 SLPS-25834:
@@ -56145,7 +56152,7 @@ SLPS-25989:
     roundSprite: 1 # Fixes character sprites.
 SLPS-29001:
   name: ゼノサーガ エピソードI 力への意志 プレミアムボックス
-  name-sort: ぜのさーが えぴそーどI ちからへのいし ぷれみあむぼっくす
+  name-sort: ぜのさーが えぴそーど1 ちからへのいし ぷれみあむぼっくす
   name-en: "Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]"
   region: "NTSC-J"
   gsHWFixes:
@@ -56171,7 +56178,7 @@ SLPS-29001:
         patch=1,EE,00285f64,word,00000000
 SLPS-29002:
   name: ゼノサーガ エピソードI 力への意志
-  name-sort: ぜのさーが えぴそーどI ちからへのいし
+  name-sort: ぜのさーが えぴそーど1 ちからへのいし
   name-en: "Xenosaga Episode 1 - Der Wille zur Macht"
   region: "NTSC-J"
   compat: 5
@@ -56527,7 +56534,7 @@ SLPS-73223:
     getSkipCount: "GSC_Tekken5"
 SLPS-73224:
   name: ゼノサーガ エピソードII［善悪の彼岸］ PlayStation 2 the Best [ディスク1/2]
-  name-sort: ぜのさーが えぴそーどII ぜんあくのひがん PlayStation 2 the Best [でぃすく1/2]
+  name-sort: ぜのさーが えぴそーど2 ぜんあくのひがん PlayStation 2 the Best [でぃすく1/2]
   name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 the Best] [Disc 1 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -56543,7 +56550,7 @@ SLPS-73224:
     - "SLPS-73224"
 SLPS-73225:
   name: ゼノサーガ エピソードII［善悪の彼岸］ PlayStation 2 the Best [ディスク2/2]
-  name-sort: ぜのさーが えぴそーどII ぜんあくのひがん PlayStation 2 the Best [でぃすく2/2]
+  name-sort: ぜのさーが えぴそーど2 ぜんあくのひがん PlayStation 2 the Best [でぃすく2/2]
   name-en: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 the Best] [Disc 2 of 2]"
   region: "NTSC-J"
   gsHWFixes:
@@ -57048,7 +57055,7 @@ SLPS-73424:
   region: "NTSC-J"
 SLPS-73901:
   name: ゼノサーガ エピソードI 力への意志 PlayStation 2 the Best
-  name-sort: ぜのさーが えぴそーどI ちからへのいし PlayStation 2 the Best
+  name-sort: ぜのさーが えぴそーど1 ちからへのいし PlayStation 2 the Best
   name-en: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
@@ -68415,7 +68422,7 @@ TCPS-10094:
   region: "NTSC-J"
 TCPS-10106:
   name: イース IV Mask of the Sun -a new theory-
-  name-sort: いーす IV Mask of the Sun -a new theory-
+  name-sort: いーす 4 Mask of the Sun -a new theory-
   name-en: "Ys IV - Mask of the Sun - A New Theory"
   region: "NTSC-J"
 TCPS-10107:
@@ -68522,7 +68529,7 @@ TCPS-10148:
   region: "NTSC-J"
 TCPS-10152:
   name: ローゼンメイデン ドゥエルヴァルツァ [通常版]
-  name-sort: ろーぜんめいでん どぅえるゔぁるつぁ [つうじょうばん]
+  name-sort: ろーぜんめいでん どぅえるゔぁるつぁ
   name-en: "Rozen Maiden - Duellwalzer"
   region: "NTSC-J"
 TCPS-10153:
