@@ -21,6 +21,8 @@ cbuffer cb0 : register(b0)
 	int EMODA;
 	int EMODC;
 	int DOFFSET;
+	float cb0_pad1;
+	uint4 FbMask;
 };
 
 static const float3x3 rgb2yuv =
@@ -163,7 +165,9 @@ PS_OUTPUT ps_hdr_resolve(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	output.c = float4(float3(uint3(value.rgb * 65535.5) & 255) / 255, value.a);
+	output.c = float4(float3(uint3(value.rgb * 65535.5) & 255), value.a * 255.5);
+	output.c = (float4)(((uint4)output.c & ~FbMask));
+	output.c /= 255.0f;
 	return output;
 }
 

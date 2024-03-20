@@ -3513,7 +3513,9 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 			   have been invalidated before subsequent Draws are executed.
 			 */
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !g_gs_device->Features().texture_barrier)
+			const bool unsafe_fbmask = !PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7);
+			m_conf.ps.hdr_fbmask = !unsafe_fbmask;
+			if (unsafe_fbmask || !g_gs_device->Features().texture_barrier)
 			{
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_cached_ctx.FRAME.FBMSK,
 					(m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16) ? 16 : 32);
@@ -4087,6 +4089,19 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			GL_INS("COLCLIP HDR mode ENABLED");
 			m_conf.ps.hdr = 1;
+		}
+
+		if (m_conf.ps.hdr && m_conf.ps.hdr_fbmask)
+		{
+			m_conf.ps.fbmask = 0;
+			m_conf.HDR_FbMask = m_conf.cb_ps.FbMask;
+			m_conf.cb_ps.FbMask = GSVector4i::zero();
+			m_conf.require_one_barrier = false;
+		}
+		else
+		{
+			m_conf.ps.hdr_fbmask = 0;
+			m_conf.HDR_FbMask = GSVector4i::zero();
 		}
 	}
 

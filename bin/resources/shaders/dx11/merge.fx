@@ -9,7 +9,9 @@ cbuffer cb0 : register(b0)
 	float4 BGColor;
 	int EMODA;
 	int EMODC;
-	int cb0_pad[2];
+	uint cb0_pad1;
+	float cb0_pad2;
+	uint cb0_pad3[4];
 };
 
 struct PS_INPUT

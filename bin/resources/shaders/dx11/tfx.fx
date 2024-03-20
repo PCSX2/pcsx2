@@ -50,6 +50,7 @@
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
 #define PS_HDR 0
+#define PS_HDR_FBMASK 0
 #define PS_RTA_CORRECTION 0
 #define PS_RTA_SRC_CORRECTION 0
 #define PS_COLCLIP 0
@@ -840,9 +841,9 @@ void ps_color_clamp_wrap(inout float3 C)
 			C = clamp(C, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER))
+		if (PS_DST_FMT == FMT_16 && PS_HDR_FBMASK == 0 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			C = (float3)((int3)C & (int3)0xF8);
-		else if (PS_COLCLIP == 1 || PS_HDR == 1)
+		else if (PS_HDR_FBMASK == 0 && (PS_COLCLIP == 1 || PS_HDR == 1))
 			C = (float3)((int3)C & (int3)0xFF);
 	}
 }

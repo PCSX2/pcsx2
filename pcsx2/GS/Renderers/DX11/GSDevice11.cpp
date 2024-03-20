@@ -1389,7 +1389,7 @@ void GSDevice11::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u
 	{
 		float scale;
 		float pad1[3];
-		u32 offsetX, offsetY, dOffset;
+		u32 offsetX, offsetY, dOffset, pad2[5];
 	};
 	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset};
 	m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
@@ -1406,7 +1406,7 @@ void GSDevice11::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offs
 	{
 		float scale;
 		float pad1[3];
-		u32 SBW, DBW, pad3;
+		u32 SBW, DBW, pad3[5];
 	};
 
 	const Uniforms cb = {sScale, {}, SBW, DBW};
@@ -1673,6 +1673,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_A_MASKED", sel.a_masked);
 		sm.AddMacro("PS_FBA", sel.fba);
 		sm.AddMacro("PS_FBMASK", sel.fbmask);
+		sm.AddMacro("PS_HDR_FBMASK", sel.hdr_fbmask);
 		sm.AddMacro("PS_LTF", sel.ltf);
 		sm.AddMacro("PS_TCOFFSETHACK", sel.tcoffsethack);
 		sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
@@ -2663,7 +2664,21 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		const GSVector2i size = config.rt->GetSize();
 		const GSVector4 dRect(config.drawarea);
 		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
-		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::HDR_RESOLVE, false);
+
+		// match merge cb
+		struct Uniforms
+		{
+			float pad1[4];
+			u32 pad2[3];
+			float pad3;
+			GSVector4i HDR_FbMask;
+		};
+		const Uniforms cb = {{}, {}, {}, config.HDR_FbMask};
+		m_ctx->UpdateSubresource(m_merge.cb.get(), 0, nullptr, &cb, 0, 0);
+
+		const ShaderConvert shader = ShaderConvert::HDR_RESOLVE;
+		StretchRect(hdr_rt, sRect, config.rt, dRect, m_convert.ps[static_cast<int>(shader)].get(), m_merge.cb.get(),
+			m_convert.bs[ShaderConvertWriteMask(shader)].get(), false);
 		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		Recycle(hdr_rt);
 	}

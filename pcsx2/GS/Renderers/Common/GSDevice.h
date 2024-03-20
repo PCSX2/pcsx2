@@ -209,8 +209,9 @@ struct alignas(16) MergeConstantBuffer
 	u32 EMODC;
 	u32 DOFFSET;
 	float ScaleFactor;
+	GSVector4i HDR_FbMask;
 };
-static_assert(sizeof(MergeConstantBuffer) == 32, "MergeConstantBuffer is correct size");
+static_assert(sizeof(MergeConstantBuffer) == 48, "MergeConstantBuffer is correct size");
 
 struct alignas(16) InterlaceConstantBuffer
 {
@@ -320,6 +321,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 read_ba  : 1;
 				u32 write_rg : 1;
 				u32 fbmask   : 1;
+				u32 hdr_fbmask : 1;
 
 				// Blend and Colclip
 				u32 blend_a        : 2;
@@ -654,6 +656,7 @@ struct alignas(16) GSHWDrawConfig
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
 	Topology topology;  ///< Draw topology
+	GSVector4i HDR_FbMask;
 
 	alignas(8) PSSelector ps;
 	VSSelector vs;

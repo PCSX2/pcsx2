@@ -1427,7 +1427,7 @@ void GSDevice12::UpdateCLUTTexture(
 		float scale;
 		float pad1[3];
 		u32 offsetX, offsetY, dOffset;
-		u32 pad2;
+		u32 pad2[5];
 	};
 	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset};
 	SetUtilityRootSignature();
@@ -1447,7 +1447,7 @@ void GSDevice12::ConvertToIndexedTexture(
 	{
 		float scale;
 		float pad1[3];
-		u32 SBW, DBW, pad2;
+		u32 SBW, DBW, pad2[5];
 	};
 
 	const Uniforms cb = {sScale, {}, SBW, DBW};
@@ -2801,6 +2801,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_A_MASKED", sel.a_masked);
 	sm.AddMacro("PS_FBA", sel.fba);
 	sm.AddMacro("PS_FBMASK", sel.fbmask);
+	sm.AddMacro("PS_HDR_FBMASK", sel.hdr_fbmask);
 	sm.AddMacro("PS_LTF", sel.ltf);
 	sm.AddMacro("PS_TCOFFSETHACK", sel.tcoffsethack);
 	sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
@@ -3947,6 +3948,19 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 		EndRenderPass();
 		hdr_rt->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		// match merge cb
+		struct Uniforms
+		{
+			float pad1[4];
+			u32 pad2[3];
+			float pad3;
+			GSVector4i HDR_FbMask;
+		};
+		const Uniforms cb = {{}, {}, {}, config.HDR_FbMask};
+
+		SetUtilityRootSignature();
+		SetUtilityPushConstants(&cb, sizeof(cb));
 
 		draw_rt = static_cast<GSTexture12*>(config.rt);
 		OMSetRenderTargets(draw_rt, draw_ds, config.scissor);
