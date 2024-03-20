@@ -48,6 +48,7 @@ private:
 	QMenu* m_level_menu;
 
 	bool m_attached_to_main_window = true;
+	bool m_destroying = false;
 };
 
 extern LogWindow* g_log_window;
