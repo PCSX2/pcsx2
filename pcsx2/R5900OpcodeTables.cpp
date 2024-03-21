@@ -6,6 +6,7 @@
 #include "R5900OpcodeTables.h"
 #include "R5900.h"
 
+// TODO(Stenzek): Move headers to common code.
 #include "x86/iR5900AritImm.h"
 #include "x86/iR5900Arit.h"
 #include "x86/iR5900MultDiv.h"
@@ -24,6 +25,7 @@ namespace R5900
 	{
 		// Generates an entry for the given opcode name.
 		// Assumes the default function naming schemes for interpreter and recompiler  functions.
+#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
 	#	define MakeOpcode( name, cycles, flags ) \
 		static const OPCODE name = { \
 			#name, \
@@ -67,6 +69,51 @@ namespace R5900
 			::R5900::Dynarec::OpcodeImpl::COP1::rec##name, \
 			::R5900::OpcodeDisasm::name \
 		}
+#else
+	#	define MakeOpcode( name, cycles, flags ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			flags, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::name, \
+			nullptr, \
+			::R5900::OpcodeDisasm::name \
+		}
+
+#	define MakeOpcodeM( name, cycles, flags ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			flags, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::MMI::name, \
+			nullptr, \
+			::R5900::OpcodeDisasm::name \
+		}
+
+#	define MakeOpcode0( name, cycles, flags ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			flags, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::COP0::name, \
+			nullptr, \
+			::R5900::OpcodeDisasm::name \
+		}
+
+	#	define MakeOpcode1( name, cycles, flags ) \
+		static const OPCODE name = { \
+			#name, \
+			cycles, \
+			flags, \
+			NULL, \
+			::R5900::Interpreter::OpcodeImpl::COP1::name, \
+			nullptr, \
+			::R5900::OpcodeDisasm::name \
+		}
+#endif
 
 	#	define MakeOpcodeClass( name ) \
 		static const OPCODE name = { \

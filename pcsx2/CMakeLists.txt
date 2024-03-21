@@ -1023,6 +1023,7 @@ set(pcsx2arm64Sources
 	arm64/AsmHelpers.cpp
 	arm64/newVif_Dynarec.cpp
 	arm64/newVif_UnpackNEON.cpp
+	arm64/RecStubs.cpp
 	)
 
 set(pcsx2arm64Headers

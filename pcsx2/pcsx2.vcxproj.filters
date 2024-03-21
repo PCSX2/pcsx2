@@ -286,6 +286,9 @@
     <Filter Include="Tools\arm64">
       <UniqueIdentifier>{cf847f4e-744e-4c27-a7ac-8564726fb4e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\EmotionEngine\EE\Dynarec\arm64">
+      <UniqueIdentifier>{cd8ec519-2196-43f7-86de-7faced2d4296}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\License.txt">
@@ -1412,6 +1415,9 @@
     </ClCompile>
     <ClCompile Include="arm64\AsmHelpers.cpp">
       <Filter>Tools\arm64</Filter>
+    </ClCompile>
+    <ClCompile Include="arm64\RecStubs.cpp">
+      <Filter>System\Ps2\EmotionEngine\EE\Dynarec\arm64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
