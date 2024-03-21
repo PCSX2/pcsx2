@@ -61,12 +61,12 @@ namespace MTGS
 
 	static void SetEvent();
 
-	alignas(32) BufferedData RingBuffer;
+	alignas(__cachelinesize) BufferedData RingBuffer;
 
 	// note: when m_ReadPos == m_WritePos, the fifo is empty
 	// Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
-	alignas(64) static std::atomic<unsigned int> s_ReadPos; // cur pos gs is reading from
-	alignas(64) static std::atomic<unsigned int> s_WritePos; // cur pos ee thread is writing to
+	alignas(__cachelinesize) static std::atomic<unsigned int> s_ReadPos; // cur pos gs is reading from
+	alignas(__cachelinesize) static std::atomic<unsigned int> s_WritePos; // cur pos ee thread is writing to
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.

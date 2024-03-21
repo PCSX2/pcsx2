@@ -123,6 +123,12 @@ namespace HostSys
 #else
 	void FlushInstructionCache(void* address, u32 size);
 #endif
+
+	/// Returns the size of pages for the current host.
+	size_t GetRuntimePageSize();
+
+	/// Returns the size of a cache line for the current host.
+	size_t GetRuntimeCacheLineSize();
 } // namespace HostSys
 
 namespace PageFaultHandler

@@ -100,6 +100,35 @@ void HostSys::UnmapSharedMemory(void* baseaddr, size_t size)
 		pxFail("Failed to unmap shared memory");
 }
 
+size_t HostSys::GetRuntimePageSize()
+{
+	SYSTEM_INFO si = {};
+	GetSystemInfo(&si);
+	return si.dwPageSize;
+}
+
+size_t HostSys::GetRuntimeCacheLineSize()
+{
+	DWORD size = 0;
+	if (!GetLogicalProcessorInformation(nullptr, &size) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+		return 0;
+
+	std::unique_ptr<SYSTEM_LOGICAL_PROCESSOR_INFORMATION[]> lpi =
+		std::make_unique<SYSTEM_LOGICAL_PROCESSOR_INFORMATION[]>(
+			(size + (sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) - 1)) / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
+	if (!GetLogicalProcessorInformation(lpi.get(), &size))
+		return 0;
+
+	u32 max_line_size = 0;
+	for (u32 i = 0; i < size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); i++)
+	{
+		if (lpi[i].Relationship == RelationCache)
+			max_line_size = std::max<u32>(max_line_size, lpi[i].Cache.LineSize);
+	}
+
+	return max_line_size;
+}
+
 #ifdef _M_ARM64
 
 void HostSys::FlushInstructionCache(void* address, u32 size)

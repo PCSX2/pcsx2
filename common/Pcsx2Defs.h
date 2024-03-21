@@ -4,6 +4,8 @@
 #pragma once
 
 #include "Pcsx2Types.h"
+
+#include <bit>
 #include <cstddef>
 
 // --------------------------------------------------------------------------------------
@@ -21,11 +23,33 @@ static constexpr bool IsDebugBuild = true;
 static constexpr bool IsDebugBuild = false;
 #endif
 
-// Defines the memory page size for the target platform at compilation.  All supported platforms
-// (which means Intel only right now) have a 4k granularity.
-static constexpr unsigned int __pagesize = 0x1000;
-static constexpr unsigned int __pageshift = 12;
-static constexpr unsigned int __pagemask = __pagesize - 1;
+// Defines the memory page size for the target platform at compilation.
+#if defined(OVERRIDE_HOST_PAGE_SIZE)
+	static constexpr unsigned int __pagesize = OVERRIDE_HOST_PAGE_SIZE;
+	static constexpr unsigned int __pagemask = __pagesize - 1;
+	static constexpr unsigned int __pageshift = std::bit_width(__pagemask);
+#elif defined(_M_ARM64)
+	// Apple Silicon uses 16KB pages and 128 byte cache lines.
+	static constexpr unsigned int __pagesize = 0x4000;
+	static constexpr unsigned int __pageshift = 14;
+	static constexpr unsigned int __pagemask = __pagesize - 1;
+#else
+	// X86 uses a 4KB granularity and 64 byte cache lines.
+	static constexpr unsigned int __pagesize = 0x1000;
+	static constexpr unsigned int __pageshift = 12;
+	static constexpr unsigned int __pagemask = __pagesize - 1;
+#endif
+#if defined(OVERRIDE_HOST_CACHE_LINE_SIZE)
+	static constexpr unsigned int __cachelinesize = OVERRIDE_HOST_CACHE_LINE_SIZE;
+#elif defined(_M_ARM64)
+	static constexpr unsigned int __cachelinesize = 128;
+#else
+	static constexpr unsigned int __cachelinesize = 64;
+#endif
+
+// We use 4KB alignment for globals for both Apple and x86 platforms, since computing the
+// address on ARM64 is a single instruction (adrp).
+static constexpr unsigned int __pagealignsize = 0x1000;
 
 // --------------------------------------------------------------------------------------
 //  Microsoft Visual Studio

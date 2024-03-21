@@ -211,7 +211,7 @@ namespace GSCapture
 	static std::unique_ptr<s16[]> s_audio_buffer;
 	static std::atomic<u32> s_audio_buffer_size{0};
 	static u32 s_audio_buffer_write_pos = 0;
-	alignas(64) static u32 s_audio_buffer_read_pos = 0;
+	alignas(__cachelinesize) static u32 s_audio_buffer_read_pos = 0;
 } // namespace GSCapture
 
 #ifndef USE_LINKED_FFMPEG
