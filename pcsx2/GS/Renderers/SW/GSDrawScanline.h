@@ -1,11 +1,18 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
 #include "GS/GSState.h"
+
+#ifdef _M_X86
 #include "GS/Renderers/SW/GSSetupPrimCodeGenerator.all.h"
 #include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.h"
+#endif
+#ifdef _M_ARM64
+#include "GS/Renderers/SW/GSSetupPrimCodeGenerator.arm64.h"
+#include "GS/Renderers/SW/GSDrawScanlineCodeGenerator.arm64.h"
+#endif
 
 struct GSScanlineLocalData;
 

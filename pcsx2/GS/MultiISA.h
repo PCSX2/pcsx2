@@ -44,10 +44,12 @@
 
 struct ProcessorFeatures
 {
+#ifdef _M_X86
 	enum class VectorISA { SSE4, AVX, AVX2 };
 	VectorISA vectorISA;
 	bool hasFMA;
 	bool hasSlowGather;
+#endif
 };
 
 extern const ProcessorFeatures g_cpu;

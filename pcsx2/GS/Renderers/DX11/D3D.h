@@ -44,7 +44,6 @@ namespace D3D
 	// returns the driver version from the registry as a string
 	std::string GetDriverVersionFromLUID(const LUID& luid);
 
-#ifdef _M_X86
 	// this is sort of a legacy thing that doesn't have much to do with d3d (just the easiest way)
 	// checks to see if the adapter at 0 is NV and thus we should prefer OpenGL
 	enum class VendorID
@@ -57,7 +56,6 @@ namespace D3D
 
 	VendorID GetVendorID(IDXGIAdapter1* adapter);
 	GSRendererType GetPreferredRenderer();
-#endif
 
 	// D3DCompiler wrapper.
 	enum class ShaderType

@@ -21,10 +21,14 @@ struct alignas(32) GSVertex
 			u32 FOG;        // FOG:28
 		};
 
+#if defined(_M_X86)
 #if _M_SSE >= 0x500
 		__m256i mx;
 #endif
 		__m128i m[2];
+#elif defined(_M_ARM64)
+		int32x4_t m[2];
+#endif
 	};
 };
 
