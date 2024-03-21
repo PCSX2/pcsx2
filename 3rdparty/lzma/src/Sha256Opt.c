@@ -224,7 +224,7 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
 
 #if defined(__clang__) || defined(__GNUC__)
   #ifdef MY_CPU_ARM64
-    #define ATTRIB_SHA __attribute__((__target__("+crypto")))
+    #define ATTRIB_SHA __attribute__((__target__("+crypto,sha2")))
   #else
     #define ATTRIB_SHA __attribute__((__target__("fpu=crypto-neon-fp-armv8")))
   #endif
@@ -234,7 +234,7 @@ void Z7_FASTCALL Sha256_UpdateBlocks_HW(UInt32 state[8], const Byte *data, size_
   #define _ARM_USE_NEW_NEON_INTRINSICS
 #endif
 
-#if defined(_MSC_VER) && defined(MY_CPU_ARM64)
+#if defined(_MSC_VER) && !defined(__clang__) && defined(MY_CPU_ARM64)
 #include <arm64_neon.h>
 #else
 #include <arm_neon.h>
