@@ -11,7 +11,6 @@
 #include "IopHw.h"
 #include "Mdec.h"
 #include "R3000A.h"
-#include "x86/iR5900.h"
 
 // NOTE: Any modifications to read/write fns should also go into their const counterparts
 // found in iPsxHw.cpp.

@@ -29,6 +29,8 @@ static __fi void vu0SetMicroFlags(u32* flags, u32 value)
 {
 #ifdef _M_X86
 	_mm_store_si128(reinterpret_cast<__m128i*>(flags), _mm_set1_epi32(value));
+#elif defined(_M_ARM64)
+	vst1q_u32(flags, vdupq_n_u32(value));
 #else
 	flags[0] = flags[1] = flags[2] = flags[3] = value;
 #endif

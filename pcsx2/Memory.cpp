@@ -98,7 +98,7 @@ u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, upt
 	if (!baseptr)
 		return nullptr;
 
-	if ((uptr)baseptr != base)
+	if (base != 0 && (uptr)baseptr != base)
 	{
 		if (file_handle)
 		{
@@ -122,6 +122,8 @@ u8* SysMemory::TryAllocateVirtualMemory(const char* name, void* file_handle, upt
 
 u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t size, size_t offset_from_base)
 {
+	// ARM64 does not need the rec areas to be in +/- 2GB.
+#ifdef _M_X86
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Virtual memory size is page aligned");
 
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
@@ -148,6 +150,9 @@ u8* SysMemory::AllocateVirtualMemory(const char* name, void* file_handle, size_t
 		DevCon.Warning("%s: host memory @ 0x%016" PRIXPTR " -> 0x%016" PRIXPTR " is unavailable; attempting to map elsewhere...", name,
 			base, base + size);
 	}
+#else
+	return TryAllocateVirtualMemory(name, file_handle, 0, size);
+#endif
 
 	return nullptr;
 }
@@ -986,8 +991,8 @@ void memClearPageAddr(u32 vaddr)
 ///////////////////////////////////////////////////////////////////////////
 // PS2 Memory Init / Reset / Shutdown
 
-EEVM_MemoryAllocMess* eeMem = NULL;
-alignas(__pagesize) u8 eeHw[Ps2MemSize::Hardware];
+EEVM_MemoryAllocMess* eeMem = nullptr;
+alignas(__pagealignsize) u8 eeHw[Ps2MemSize::Hardware];
 
 
 void memBindConditionalHandlers()

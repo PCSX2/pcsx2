@@ -512,9 +512,6 @@
     <ClCompile Include="Vif_Unpack.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
     </ClCompile>
-    <ClCompile Include="x86\newVif_Unpack.cpp">
-      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
-    </ClCompile>
     <ClCompile Include="x86\newVif_Dynarec.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClCompile>
@@ -1484,9 +1481,6 @@
     <ClInclude Include="x86\newVif.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
     </ClInclude>
-    <ClInclude Include="x86\newVif_HashBucket.h">
-      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
-    </ClInclude>
     <ClInclude Include="x86\newVif_UnpackSSE.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClInclude>
@@ -2302,6 +2296,12 @@
     </ClInclude>
     <ClInclude Include="CDVD\FlatFileReader.h">
       <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="Vif_Dynarec.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
+    </ClInclude>
+    <ClInclude Include="Vif_HashBucket.h">
+      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
