@@ -160,11 +160,12 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 				skipdirty = true;
 				break;
 			}
-
+			const GSVector4i valid_rect = rect.rintersect(target->m_valid);
+			const GSVector4i dirty_rect = it[0].r.rintersect(target->m_valid);
 			// Edges lined up so just expand the dirty rect
-			if ((it[0].r.xzxz().eq(rect.xzxz()) && (it[0].r.wwww().eq(rect.yyyy()) || it[0].r.yyyy().eq(rect.wwww()))) ||
-				(it[0].r.ywyw().eq(rect.ywyw()) && (it[0].r.zzzz().eq(rect.xxxx()) || it[0].r.xxxx().eq(rect.zzzz()))) ||
-				it[0].r.rintersect(rect).eq(it[0].r)) // If the new rect completely envelops the old one.
+			if ((dirty_rect.xzxz().eq(valid_rect.xzxz()) && (dirty_rect.wwww().eq(valid_rect.yyyy()) || dirty_rect.yyyy().eq(valid_rect.wwww()))) ||
+				(dirty_rect.ywyw().eq(valid_rect.ywyw()) && (dirty_rect.zzzz().eq(valid_rect.xxxx()) || dirty_rect.xxxx().eq(valid_rect.zzzz()))) ||
+				dirty_rect.rintersect(valid_rect).eq(dirty_rect)) // If the new rect completely envelops the old one.
 			{
 				rect = rect.runion(it[0].r);
 				it = target->m_dirty.erase(it);
