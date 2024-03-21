@@ -104,6 +104,7 @@ oprofile_data/
 
 /deps-build
 /deps
+/deps-arm64
 /ipch
 
 !/3rdparty/libjpeg/change.log
