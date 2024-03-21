@@ -284,7 +284,6 @@
     <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
     <ClCompile Include="GS\GSDrawingContext.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp" />
     <ClCompile Include="GS\GSDump.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp" />
@@ -301,7 +300,6 @@
     <ClCompile Include="GS\Renderers\HW\GSRendererHWMultiISA.cpp" />
     <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp" />
     <ClCompile Include="GS\GSState.cpp" />
     <ClCompile Include="GS\GSTables.cpp" />
@@ -620,7 +618,6 @@
     <ClInclude Include="GS\GSDrawingContext.h" />
     <ClInclude Include="GS\GSDrawingEnvironment.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h" />
-    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h" />
     <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h" />
     <ClInclude Include="GS\GSDump.h" />
@@ -637,7 +634,6 @@
     <ClInclude Include="GS\Renderers\Null\GSRendererNull.h" />
     <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
     <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
-    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h" />
     <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h" />
     <ClInclude Include="GS\GSState.h" />
     <ClInclude Include="GS\GSTables.h" />

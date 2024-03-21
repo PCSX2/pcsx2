@@ -4,6 +4,7 @@
 #include "GS/Renderers/SW/GSRendererSW.h"
 #include "GS/GSGL.h"
 #include "GS/GSPng.h"
+#include "GS/GSUtil.h"
 
 #include "common/StringUtil.h"
 

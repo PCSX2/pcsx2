@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -19,9 +19,8 @@
 
 MULTI_ISA_UNSHARED_START
 
-class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
+class GSSetupPrimCodeGenerator : public GSNewCodeGenerator
 {
-	using _parent = GSNewCodeGenerator;
 	using XYm = SETUP_PRIM_VECTOR_REGISTER;
 
 	using Xmm = Xbyak::Xmm;
@@ -42,7 +41,7 @@ class GSSetupPrimCodeGenerator2 : public GSNewCodeGenerator
 	const AddressReg _64_vertex, _index, _dscan, _m_local, t1;
 
 public:
-	GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key);
+	GSSetupPrimCodeGenerator(u64 key, void* code, size_t maxsize);
 	void Generate();
 
 private:

@@ -8,6 +8,8 @@
 
 #include "common/Console.h"
 
+#include <fstream>
+
 // Comment to disable all dynamic code generation.
 #define ENABLE_JIT_RASTERIZER
 
@@ -34,6 +36,64 @@ GSDrawScanline::~GSDrawScanline()
 {
 	if (const size_t used = GSCodeReserve::GetMemoryUsed(); used > 0)
 		DevCon.WriteLn("SW JIT generated %zu bytes of code", used);
+}
+
+bool GSDrawScanline::ShouldUseCDrawScanline(u64 key)
+{
+	static std::map<u64, bool> s_use_c_draw_scanline;
+	static std::mutex s_use_c_draw_scanline_mutex;
+
+	static const char* const fname = getenv("USE_C_DRAW_SCANLINE");
+	if (!fname)
+		return false;
+
+	std::lock_guard<std::mutex> l(s_use_c_draw_scanline_mutex);
+
+	if (s_use_c_draw_scanline.empty())
+	{
+		std::ifstream file(fname);
+		if (file)
+		{
+			for (std::string str; std::getline(file, str);)
+			{
+				u64 key;
+				char yn;
+				if (sscanf(str.c_str(), "%" PRIx64 " %c", &key, &yn) == 2)
+				{
+					if (yn != 'Y' && yn != 'N' && yn != 'y' && yn != 'n')
+						Console.Warning("Failed to parse %s: Not y/n", str.c_str());
+					s_use_c_draw_scanline[key] = (yn == 'Y' || yn == 'y') ? true : false;
+				}
+				else
+				{
+					Console.Warning("Failed to process line %s", str.c_str());
+				}
+			}
+		}
+	}
+
+	auto idx = s_use_c_draw_scanline.find(key);
+	if (idx == s_use_c_draw_scanline.end())
+	{
+		s_use_c_draw_scanline[key] = false;
+		// Rewrite file
+		FILE* file = fopen(fname, "w");
+		if (file)
+		{
+			for (const auto& pair : s_use_c_draw_scanline)
+			{
+				fprintf(file, "%016" PRIX64 " %c %s\n", pair.first, pair.second ? 'Y' : 'N', GSScanlineSelector(pair.first).to_string().c_str());
+			}
+			fclose(file);
+		}
+		else
+		{
+			Console.Warning("Failed to write C draw scanline usage config: %s", strerror(errno));
+		}
+		return false;
+	}
+
+	return idx->second;
 }
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData& local)
