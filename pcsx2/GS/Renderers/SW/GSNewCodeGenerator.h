@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "GS/MultiISA.h"
+#include "common/Assertions.h"
+
 // Xbyak pulls in windows.h, and breaks everything.
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -13,8 +16,6 @@
 
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
-#include "GS/MultiISA.h"
-#include "common/Assertions.h"
 
 /// Code generator that automatically selects between SSE and AVX, x86 and x64 so you don't have to
 /// Should make combined SSE and AVX codegen much easier
@@ -41,7 +42,7 @@ private:
 	}
 
 public:
-	Xbyak::CodeGenerator& actual;
+	Xbyak::CodeGenerator actual;
 
 	using AddressReg = Xbyak::Reg64;
 	using RipType = Xbyak::RegRip;
@@ -58,13 +59,16 @@ public:
 	const RipType rip{};
 	const Xbyak::AddressFrame ptr{0}, byte{8}, word{16}, dword{32}, qword{64}, xword{128}, yword{256}, zword{512};
 
-	GSNewCodeGenerator(Xbyak::CodeGenerator* actual, const ProcessorFeatures& cpu)
-		: actual(*actual)
-		, hasAVX(cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
-		, hasAVX2(cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX2)
-		, hasFMA(cpu.hasFMA)
+	GSNewCodeGenerator(void* code, size_t maxsize)
+		: actual(maxsize, code)
+		, hasAVX(g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX)
+		, hasAVX2(g_cpu.vectorISA >= ProcessorFeatures::VectorISA::AVX2)
+		, hasFMA(g_cpu.hasFMA)
 	{
 	}
+
+	size_t GetSize() const { return actual.getSize(); }
+	const u8* GetCode() const { return actual.getCode(); }
 
 
 // ------------ Forwarding instructions ------------

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GSSetupPrimCodeGenerator.all.h"
@@ -37,8 +37,8 @@ using namespace Xbyak;
 	#define _rip_local_d_p(x) _rip_local_d(x)
 #endif
 
-GSSetupPrimCodeGenerator2::GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base, const ProcessorFeatures& cpu, u64 key)
-	: _parent(base, cpu)
+GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(u64 key, void* code, size_t maxsize)
+	: GSNewCodeGenerator(code, maxsize)
 	, many_regs(false)
 	// On x86 arg registers are very temporary but on x64 they aren't, so on x86 some registers overlap
 #ifdef _WIN32
@@ -61,7 +61,7 @@ GSSetupPrimCodeGenerator2::GSSetupPrimCodeGenerator2(Xbyak::CodeGenerator* base,
 	m_en.c = m_sel.fb && !(m_sel.tfx == TFX_DECAL && m_sel.tcc) ? 1 : 0;
 }
 
-void GSSetupPrimCodeGenerator2::broadcastf128(const XYm& reg, const Address& mem)
+void GSSetupPrimCodeGenerator::broadcastf128(const XYm& reg, const Address& mem)
 {
 #if SETUP_PRIM_USING_YMM
 	vbroadcastf128(reg, mem);
@@ -70,7 +70,7 @@ void GSSetupPrimCodeGenerator2::broadcastf128(const XYm& reg, const Address& mem
 #endif
 }
 
-void GSSetupPrimCodeGenerator2::broadcastss(const XYm& reg, const Address& mem)
+void GSSetupPrimCodeGenerator::broadcastss(const XYm& reg, const Address& mem)
 {
 	if (hasAVX)
 	{
@@ -83,7 +83,7 @@ void GSSetupPrimCodeGenerator2::broadcastss(const XYm& reg, const Address& mem)
 	}
 }
 
-void GSSetupPrimCodeGenerator2::Generate()
+void GSSetupPrimCodeGenerator::Generate()
 {
 	bool needs_shift = ((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS) || m_en.t || (m_en.c && m_sel.iip);
 	many_regs = isYmm && !m_sel.notest && needs_shift;
@@ -140,7 +140,7 @@ void GSSetupPrimCodeGenerator2::Generate()
 	Perf::any.RegisterKey(actual.getCode(), actual.getSize(), "GSSetupPrim_", m_sel.key);
 }
 
-void GSSetupPrimCodeGenerator2::Depth_XMM()
+void GSSetupPrimCodeGenerator::Depth_XMM()
 {
 	if (!m_en.z && !m_en.f)
 	{
@@ -227,7 +227,7 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 	}
 }
 
-void GSSetupPrimCodeGenerator2::Depth_YMM()
+void GSSetupPrimCodeGenerator::Depth_YMM()
 {
 	if (!m_en.z && !m_en.f)
 	{
@@ -313,7 +313,7 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 	}
 }
 
-void GSSetupPrimCodeGenerator2::Texture()
+void GSSetupPrimCodeGenerator::Texture()
 {
 	if (!m_en.t)
 	{
@@ -385,7 +385,7 @@ void GSSetupPrimCodeGenerator2::Texture()
 	}
 }
 
-void GSSetupPrimCodeGenerator2::Color()
+void GSSetupPrimCodeGenerator::Color()
 {
 	if (!m_en.c)
 	{
