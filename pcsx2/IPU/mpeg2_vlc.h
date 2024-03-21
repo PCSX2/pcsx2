@@ -168,7 +168,7 @@ static constexpr VLC_ALIGNED16 MVtab MV_10[] = {
 
 
 static constexpr DMVtab DMV_2[] = {
-	{0, 1}, {0, 1}, {1, 2}, {-1, 2}};
+	{0, 1}, {0, 1}, {1, 2}, {(s8)-1, 2}};
 
 
 static constexpr VLC_ALIGNED16 CBPtab CBP_7[] = {
