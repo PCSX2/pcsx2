@@ -16,6 +16,12 @@
     <Filter Include="clog">
       <UniqueIdentifier>{7f0aba4c-ca06-4a7b-aed1-4f1e6976e839}</UniqueIdentifier>
     </Filter>
+    <Filter Include="arm">
+      <UniqueIdentifier>{ac4549d3-f60f-4e60-bf43-86d1c253cf3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="arm\windows">
+      <UniqueIdentifier>{41fcb23a-e77b-4b5c-8238-e9b92bf1f3c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\x86\isa.c">
@@ -57,6 +63,15 @@
     <ClCompile Include="deps\clog\src\clog.c">
       <Filter>clog</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\cache.c">
+      <Filter>arm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\uarch.c">
+      <Filter>arm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\init.c">
+      <Filter>arm\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\x86\api.h">
@@ -83,6 +98,15 @@
     <ClInclude Include="include\cpuinfo.h" />
     <ClInclude Include="deps\clog\include\clog.h">
       <Filter>clog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\api.h">
+      <Filter>arm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\midr.h">
+      <Filter>arm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\api.h">
+      <Filter>arm\windows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

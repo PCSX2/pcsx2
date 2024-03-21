@@ -30,32 +30,78 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\cache.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\uarch.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="deps\clog\src\clog.c" />
     <ClCompile Include="src\api.c" />
     <ClCompile Include="src\cache.c" />
     <ClCompile Include="src\init.c" />
-    <ClCompile Include="src\x86\cache\descriptor.c" />
-    <ClCompile Include="src\x86\cache\deterministic.c" />
-    <ClCompile Include="src\x86\cache\init.c" />
-    <ClCompile Include="src\x86\info.c" />
-    <ClCompile Include="src\x86\init.c" />
-    <ClCompile Include="src\x86\isa.c" />
-    <ClCompile Include="src\x86\name.c" />
-    <ClCompile Include="src\x86\topology.c" />
-    <ClCompile Include="src\x86\uarch.c" />
-    <ClCompile Include="src\x86\vendor.c" />
-    <ClCompile Include="src\x86\windows\init.c" />
+    <ClCompile Include="src\x86\cache\descriptor.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\deterministic.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\info.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\isa.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\name.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\topology.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\uarch.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\vendor.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\x86\windows\init.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\api.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\midr.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\..\duckstation\dep\cpuinfo\src\arm\windows\api.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="deps\clog\include\clog.h" />
     <ClInclude Include="include\cpuinfo.h" />
     <ClInclude Include="src\cpuinfo\common.h" />
     <ClInclude Include="src\cpuinfo\internal-api.h" />
     <ClInclude Include="src\cpuinfo\log.h" />
     <ClInclude Include="src\cpuinfo\utils.h" />
-    <ClInclude Include="src\x86\api.h" />
-    <ClInclude Include="src\x86\cpuid.h" />
-    <ClInclude Include="src\x86\windows\api.h" />
+    <ClInclude Include="src\x86\api.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\x86\cpuid.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\x86\windows\api.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
