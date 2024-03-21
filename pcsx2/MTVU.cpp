@@ -5,7 +5,7 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "VMManager.h"
-#include "x86/newVif.h"
+#include "Vif_Dynarec.h"
 
 #include <thread>
 

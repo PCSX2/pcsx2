@@ -8,7 +8,6 @@
 #include "R3000A.h"
 #include "R5900.h"
 #include "ps2/BiosTools.h"
-#include "x86/iR3000A.h"
 #include "VMManager.h"
 
 #include <ctype.h>

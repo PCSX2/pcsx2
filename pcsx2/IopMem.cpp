@@ -14,7 +14,7 @@ const uptr *psxMemRLUT = nullptr;
 
 IopVM_MemoryAllocMess* iopMem = nullptr;
 
-alignas(__pagesize) u8 iopHw[Ps2MemSize::IopHardware];
+alignas(__pagealignsize) u8 iopHw[Ps2MemSize::IopHardware];
 
 void iopMemAlloc()
 {

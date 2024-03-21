@@ -7,7 +7,7 @@
 #include "MTVU.h"
 #include "VUmicro.h"
 #include "Vif_Dma.h"
-#include "x86/newVif.h"
+#include "Vif_Dynarec.h"
 
 #define vifOp(vifCodeName) _vifT int vifCodeName(int pass, const u32* data)
 #define pass1 if (pass == 0)

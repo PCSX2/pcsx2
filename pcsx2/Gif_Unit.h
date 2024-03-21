@@ -118,6 +118,22 @@ struct Gif_Tag
 
 		// write out unpacked registers
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(regs), vregs);
+#elif defined(_M_ARM64)
+		// zero out bits for registers which shouldn't be tested
+		u64 REGS64;
+		std::memcpy(&REGS64, tag.REGS, sizeof(u64));
+		REGS64 &= (0xFFFFFFFFFFFFFFFFULL >> (64 - nRegs * 4));
+		uint8x16_t vregs = vsetq_lane_u64(REGS64, vdupq_n_u64(0), 0);
+
+		// get upper nibbles, interleave with lower nibbles, clear upper bits from low nibbles
+		vregs = vandq_u8(vzip1q_u8(vregs, vshrq_n_u8(vregs, 4)), vdupq_n_u8(0x0F));
+
+		// compare with GIF_REG_A_D, set hasAD if any lanes passed
+		const uint8x16_t comp = vceqq_u8(vregs, vdupq_n_u8(GIF_REG_A_D));
+		hasAD = vmaxvq_u8(comp) & 1;
+
+		// write out unpacked registers
+		vst1q_u8(regs, vregs);
 #else
 		// Reference C implementation.
 		hasAD = false;

@@ -3,7 +3,7 @@
 
 #include "Common.h"
 #include "Vif_Dma.h"
-#include "x86/newVif.h"
+#include "Vif_Dynarec.h"
 
 //------------------------------------------------------------------
 // VifCode Transfer Interpreter (Vif0/Vif1)

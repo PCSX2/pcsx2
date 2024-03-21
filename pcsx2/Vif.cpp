@@ -8,7 +8,7 @@
 #include "MTVU.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
-#include "x86/newVif.h"
+#include "Vif_Dynarec.h"
 
 alignas(16) vifStruct vif0, vif1;
 

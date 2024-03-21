@@ -425,9 +425,6 @@
     <ClCompile Include="Vif_Codes.cpp" />
     <ClCompile Include="Vif_Transfer.cpp" />
     <ClCompile Include="Vif_Unpack.cpp" />
-    <ClCompile Include="x86\newVif_Unpack.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="x86\newVif_Dynarec.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -819,6 +816,8 @@
     <ClInclude Include="ps2\HwInternal.h" />
     <ClInclude Include="Cache.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="Vif_Dynarec.h" />
+    <ClInclude Include="Vif_HashBucket.h" />
     <ClInclude Include="VMManager.h" />
     <ClInclude Include="vtlb.h" />
     <ClInclude Include="MTVU.h" />
@@ -838,7 +837,6 @@
     <ClInclude Include="Vif_Dma.h" />
     <ClInclude Include="Vif_Unpack.h" />
     <ClInclude Include="x86\newVif.h" />
-    <ClInclude Include="x86\newVif_HashBucket.h" />
     <ClInclude Include="x86\newVif_UnpackSSE.h" />
     <ClInclude Include="SPR.h" />
     <ClInclude Include="Gif.h" />

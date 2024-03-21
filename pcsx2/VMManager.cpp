@@ -38,6 +38,7 @@
 #include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
+#include "Vif_Dynarec.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
 #include "svnrev.h"
@@ -74,10 +75,6 @@
 
 #ifdef __APPLE__
 #include "common/Darwin/DarwinMisc.h"
-#endif
-
-#ifdef _M_X86
-#include "x86/newVif.h"
 #endif
 
 namespace VMManager
@@ -230,6 +227,14 @@ bool VMManager::PerformEarlyHardwareChecks(const char** error)
 		return false;
 	}
 #endif
+#elif defined(_M_ARM64)
+	// Check page size. If it doesn't match, it is a fatal error.
+	const size_t runtime_host_page_size = HostSys::GetRuntimePageSize();
+	if (__pagesize != runtime_host_page_size)
+	{
+		*error = "Page size mismatch. This build cannot run on your Mac.\n\n" COMMON_DOWNLOAD_MESSAGE;
+		return false;
+	}
 #endif
 
 #undef COMMON_DOWNLOAD_MESSAGE
@@ -2502,6 +2507,7 @@ void VMManager::LogCPUCapabilities()
 	LogUserPowerPlan();
 #endif
 
+#ifdef _M_X86
 	std::string features;
 	if (cpuinfo_has_x86_avx())
 		features += "AVX ";
@@ -2513,6 +2519,18 @@ void VMManager::LogCPUCapabilities()
 	Console.WriteLn(Color_StrongBlack, "x86 Features Detected:");
 	Console.WriteLnFmt("  {}", features);
 	Console.WriteLn();
+#endif
+
+#ifdef _M_ARM64
+	const size_t runtime_cache_line_size = HostSys::GetRuntimeCacheLineSize();
+	if (__cachelinesize != runtime_cache_line_size)
+	{
+		// Not fatal, but does have performance implications.
+		WARNING_LOG(
+			"Cache line size mismatch. This build was compiled with {} byte lines, but the system has {} byte lines.",
+			__cachelinesize, runtime_cache_line_size);
+	}
+#endif
 
 #if 0
 	LogGPUCapabilities();
@@ -3197,6 +3215,8 @@ void VMManager::WarnAboutUnsafeSettings()
 		append(ICON_FA_EXCLAMATION_CIRCLE,
 			TRANSLATE_SV("VMManager", "INTC Spin Detection is not enabled, this may reduce performance."));
 	}
+	if (!EmuConfig.Cpu.Recompiler.EnableFastmem)
+		append(ICON_FA_EXCLAMATION_CIRCLE, TRANSLATE_SV("VMManager", "Fastmem is not enabled, this will reduce performance."));
 	if (!EmuConfig.Speedhacks.vu1Instant)
 	{
 		append(ICON_FA_EXCLAMATION_CIRCLE,
@@ -3322,6 +3342,12 @@ static u32 GetProcessorIdForProcessor(const cpuinfo_processor* proc)
 
 static void InitializeProcessorList()
 {
+	if (!cpuinfo_initialize())
+	{
+		Console.Error("cpuinfo_initialize() failed");
+		return;
+	}
+
 	const u32 cluster_count = cpuinfo_get_clusters_count();
 	if (cluster_count == 0)
 	{
@@ -3448,6 +3474,10 @@ static void InitializeProcessorList()
 
 static void SetMTVUAndAffinityControlDefault(SettingsInterface& si)
 {
+#ifdef __APPLE__
+	// Everything we support Mac-wise has enough cores for MTVU.
+	si.SetBoolValue("EmuCore/Speedhacks", "vuThread", true);
+#endif
 }
 
 #endif

@@ -202,9 +202,17 @@ struct tlbs
 
 #endif
 
-alignas(16) extern cpuRegisters cpuRegs;
-alignas(16) extern fpuRegisters fpuRegs;
+struct cpuRegistersPack
+{
+	alignas(16) cpuRegisters cpuRegs;
+	alignas(16) fpuRegisters fpuRegs;
+};
+
+alignas(16) extern cpuRegistersPack _cpuRegistersPack;
 alignas(16) extern tlbs tlb[48];
+
+static cpuRegisters& cpuRegs = _cpuRegistersPack.cpuRegs;
+static fpuRegisters& fpuRegs = _cpuRegistersPack.fpuRegs;
 
 extern bool eeEventTestIsActive;
 

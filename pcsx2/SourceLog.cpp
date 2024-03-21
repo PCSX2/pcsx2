@@ -11,7 +11,7 @@
 
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
-#include "x86/iR5900.h"
+#include "R5900.h"
 
 #include "fmt/core.h"
 
