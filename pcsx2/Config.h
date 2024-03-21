@@ -1236,7 +1236,11 @@ namespace EmuFolders
 
 // ------------ CPU / Recompiler Options ---------------
 
+#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
 #define THREAD_VU1 (EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
+#else
+#define THREAD_VU1 false
+#endif
 #define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
