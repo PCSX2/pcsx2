@@ -1374,6 +1374,7 @@ __fi static bool mpeg2_slice()
 				//Cr bias	- 8 * 8
 				//Cb bias	- 8 * 8
 
+#if defined(_M_X86)
 				__m128i zeroreg = _mm_setzero_si128();
 
 				for (uint i = 0; i < (256+64+64) / 32; ++i)
@@ -1388,6 +1389,24 @@ __fi static bool mpeg2_slice()
 					s += 32;
 					d += 32;
 				}
+#elif defined(_M_ARM64)
+				uint8x16_t zeroreg = vmovq_n_u8(0);
+
+				for (uint i = 0; i < (256 + 64 + 64) / 32; ++i)
+				{
+					//*d++ = *s++;
+					uint8x16_t woot1 = vld1q_u8((uint8_t*)s);
+					uint8x16_t woot2 = vld1q_u8((uint8_t*)s + 16);
+					vst1q_u8((uint8_t*)d, vzip1q_u8(woot1, zeroreg));
+					vst1q_u8((uint8_t*)d + 16, vzip2q_u8(woot1, zeroreg));
+					vst1q_u8((uint8_t*)d + 32, vzip1q_u8(woot2, zeroreg));
+					vst1q_u8((uint8_t*)d + 48, vzip2q_u8(woot2, zeroreg));
+					s += 32;
+					d += 32;
+				}
+#else
+#error Unsupported arch
+#endif
 			}
 		}
 		else
