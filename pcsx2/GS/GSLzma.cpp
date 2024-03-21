@@ -278,7 +278,7 @@ namespace
 		size_t m_block_pos = 0;
 
 		DynamicHeapArray<u8, 64> m_block_read_buffer;
-		alignas(64) CXzUnpacker m_unpacker = {};
+		alignas(__cachelinesize) CXzUnpacker m_unpacker = {};
 	};
 
 	GSDumpLzma::GSDumpLzma() = default;

@@ -21,9 +21,9 @@ class VU_Thread final {
 
 	u32 buffer[buffer_size];
 	// Note: keep atomic on separate cache line to avoid CPU conflict
-	alignas(64) std::atomic<int> m_ato_read_pos; // Only modified by VU thread
-	alignas(64) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
-	alignas(64) int  m_read_pos; // temporary read pos (local to the VU thread)
+	alignas(__cachelinesize) std::atomic<int> m_ato_read_pos; // Only modified by VU thread
+	alignas(__cachelinesize) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
+	alignas(__cachelinesize) int  m_read_pos; // temporary read pos (local to the VU thread)
 	int  m_write_pos; // temporary write pos (local to the EE thread)
 	Threading::WorkSema semaEvent;
 	std::atomic_bool m_shutdown_flag{false};

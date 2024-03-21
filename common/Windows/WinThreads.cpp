@@ -107,10 +107,20 @@ Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& 
 
 u64 Threading::ThreadHandle::GetCPUTime() const
 {
+#ifndef _M_ARM64
 	u64 ret = 0;
 	if (m_native_handle)
 		QueryThreadCycleTime((HANDLE)m_native_handle, &ret);
 	return ret;
+#else
+	FILETIME user, kernel, unused;
+	if (!GetThreadTimes((HANDLE)m_native_handle, &unused, &unused, &kernel, &user))
+		return 0;
+
+	const u64 user_time = (static_cast<u64>(user.dwHighDateTime) << 32) | static_cast<u64>(user.dwLowDateTime);
+	const u64 kernel_time = (static_cast<u64>(kernel.dwHighDateTime) << 32) | static_cast<u64>(kernel.dwLowDateTime);
+	return user_time + kernel_time;
+#endif
 }
 
 bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
@@ -198,13 +208,24 @@ Threading::ThreadHandle& Threading::Thread::operator=(Thread&& thread)
 
 u64 Threading::GetThreadCpuTime()
 {
+#ifndef _M_ARM64
 	u64 ret = 0;
 	QueryThreadCycleTime(GetCurrentThread(), &ret);
 	return ret;
+#else
+	FILETIME user, kernel, unused;
+	if (!GetThreadTimes(GetCurrentThread(), &unused, &unused, &kernel, &user))
+		return 0;
+
+	const u64 user_time = (static_cast<u64>(user.dwHighDateTime) << 32) | static_cast<u64>(user.dwLowDateTime);
+	const u64 kernel_time = (static_cast<u64>(kernel.dwHighDateTime) << 32) | static_cast<u64>(kernel.dwLowDateTime);
+	return user_time + kernel_time;
+#endif
 }
 
 u64 Threading::GetThreadTicksPerSecond()
 {
+#ifndef _M_ARM64
 	// On x86, despite what the MS documentation says, this basically appears to be rdtsc.
 	// So, the frequency is our base clock speed (and stable regardless of power management).
 	static u64 frequency = 0;
@@ -224,6 +245,9 @@ u64 Threading::GetThreadTicksPerSecond()
 		}
 	}
 	return frequency;
+#else
+	return 10000000;
+#endif
 }
 
 void Threading::SetNameOfCurrentThread(const char* name)

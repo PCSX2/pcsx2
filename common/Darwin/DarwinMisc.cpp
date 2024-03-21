@@ -189,6 +189,27 @@ std::vector<DarwinMisc::CPUClass> DarwinMisc::GetCPUClasses()
 	return out;
 }
 
+template <typename T>
+static std::optional<T> sysctlbyname_T(const char* name)
+{
+	T output = 0;
+	size_t output_size = sizeof(output);
+	if (sysctlbyname(name, &output, &output_size, nullptr, 0) != 0)
+		return std::nullopt;
+
+	return output;
+}
+
+size_t HostSys::GetRuntimePageSize()
+{
+	return sysctlbyname_T<u32>("hw.pagesize").value_or(0);
+}
+
+size_t HostSys::GetRuntimeCacheLineSize()
+{
+	return static_cast<size_t>(std::max<s64>(sysctlbyname_T<s64>("hw.cachelinesize").value_or(0), 0));
+}
+
 static __ri vm_prot_t MachProt(const PageProtectionMode& mode)
 {
 	vm_prot_t machmode = (mode.CanWrite()) ? VM_PROT_WRITE : 0;
