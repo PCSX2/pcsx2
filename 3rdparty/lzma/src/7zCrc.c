@@ -75,7 +75,7 @@ UInt32 Z7_FASTCALL CrcUpdateT1(UInt32 v, const void *data, size_t size, const UI
 
 // #pragma message("ARM*")
 
-  #if defined(_MSC_VER)
+  #if defined(_MSC_VER) && !defined(__clang__)
     #if defined(MY_CPU_ARM64)
     #if (_MSC_VER >= 1910)
     #ifndef __clang__

@@ -576,7 +576,7 @@ VAES_COMPAT_STUB (AesCtr_Code_HW)
 
 #if defined(__clang__) || defined(__GNUC__)
   #ifdef MY_CPU_ARM64
-    #define ATTRIB_AES __attribute__((__target__("+crypto")))
+    #define ATTRIB_AES __attribute__((__target__("+crypto,aes")))
   #else
     #define ATTRIB_AES __attribute__((__target__("fpu=crypto-neon-fp-armv8")))
   #endif
@@ -590,7 +590,7 @@ VAES_COMPAT_STUB (AesCtr_Code_HW)
   #define ATTRIB_AES
 #endif
 
-#if defined(_MSC_VER) && defined(MY_CPU_ARM64)
+#if defined(_MSC_VER) && !defined(__clang__) && defined(MY_CPU_ARM64)
 #include <arm64_neon.h>
 #else
 #include <arm_neon.h>
