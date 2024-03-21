@@ -1016,9 +1016,6 @@ set(pcsx2LTOSources
 
 if(LTO_PCSX2_CORE)
 	add_library(PCSX2_LTO ${pcsx2LTOSources})
-	if (WIN32)
-		target_compile_definitions(PCSX2_LTO PRIVATE _M_SSE=0x401)
-	endif()
 	if (DISABLE_ADVANCE_SIMD)
 		target_compile_definitions(PCSX2_LTO PRIVATE MULTI_ISA_SHARED_COMPILATION)
 	endif()
@@ -1091,7 +1088,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	libchdr
 	libzip::zip
 	cpuinfo
-	zydis
 	cubeb
 	rcheevos
 	discord-rpc
@@ -1138,15 +1134,15 @@ else()
 endif()
 
 # additonal include directories
+if(_M_X86)
+	target_include_directories(PCSX2_FLAGS INTERFACE "${CMAKE_SOURCE_DIR}/3rdparty/xbyak")
+	target_compile_definitions(PCSX2_FLAGS INTERFACE XBYAK_NO_EXCEPTION)
+endif()
 target_include_directories(PCSX2_FLAGS INTERFACE
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${CMAKE_BINARY_DIR}/pcsx2"
 	"${CMAKE_BINARY_DIR}/common/include"
-	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak"
 	"${FFMPEG_INCLUDE_DIRS}"
-)
-target_compile_definitions(PCSX2_FLAGS INTERFACE
-	XBYAK_NO_EXCEPTION
 )
 
 set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
