@@ -11,6 +11,8 @@
 #define strcasecmp _stricmp
 #endif
 
+#ifdef _M_X86
+
 static ProcessorFeatures::VectorISA getCurrentISA()
 {
 	// For debugging
@@ -41,11 +43,14 @@ static ProcessorFeatures::VectorISA getCurrentISA()
 		return ProcessorFeatures::VectorISA::SSE4;
 }
 
+#endif
+
 static ProcessorFeatures getProcessorFeatures()
 {
 	cpuinfo_initialize();
 
 	ProcessorFeatures features = {};
+#if defined(_M_X86)
 	features.vectorISA = getCurrentISA();
 	features.hasFMA = cpuinfo_has_x86_fma3();
 	if (const char* over = getenv("OVERRIDE_FMA"))
@@ -74,6 +79,7 @@ static ProcessorFeatures getProcessorFeatures()
 			features.hasSlowGather = true;
 		}
 	}
+#endif
 	return features;
 }
 

@@ -207,6 +207,12 @@
     <ClCompile Include="GS\Renderers\OpenGL\GLStreamBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.arm64.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.arm64.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GS\Renderers\Vulkan\VKBuilders.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -317,7 +323,9 @@
     <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
     <ClCompile Include="GS\GSDrawingContext.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GS\GSDump.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSHwHack.cpp" />
@@ -333,7 +341,9 @@
     <ClCompile Include="GS\Renderers\HW\GSRendererHWMultiISA.cpp" />
     <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GS\GSState.cpp" />
     <ClCompile Include="GS\GSTables.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSTexture.cpp" />
@@ -607,6 +617,8 @@
     <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
     <ClInclude Include="DEV9\Win32\tap.h" />
     <ClInclude Include="GameList.h" />
+    <ClInclude Include="GS\GSVector4i_arm64.h" />
+    <ClInclude Include="GS\GSVector4_arm64.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12Builders.h" />
     <ClInclude Include="GS\Renderers\DX12\D3D12DescriptorHeapManager.h" />
@@ -627,6 +639,12 @@
     </ClInclude>
     <ClInclude Include="GS\Renderers\OpenGL\GLStreamBuffer.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.arm64.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.arm64.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="GS\Renderers\Vulkan\VKBuilders.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
@@ -727,8 +745,12 @@
     <ClInclude Include="GS\GSDrawingContext.h" />
     <ClInclude Include="GS\GSDrawingEnvironment.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h" />
-    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h" />
-    <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="GS\GSDump.h" />
     <ClInclude Include="GS\Renderers\Common\GSFastList.h" />
     <ClInclude Include="GS\Renderers\Common\GSFunctionMap.h" />
@@ -743,7 +765,9 @@
     <ClInclude Include="GS\Renderers\Null\GSRendererNull.h" />
     <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
     <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
-    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h" />
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="GS\GSState.h" />
     <ClInclude Include="GS\GSTables.h" />
     <ClInclude Include="GS\Renderers\Common\GSTexture.h" />

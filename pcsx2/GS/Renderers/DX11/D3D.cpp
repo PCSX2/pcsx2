@@ -318,8 +318,6 @@ std::string D3D::GetDriverVersionFromLUID(const LUID& luid)
 	return ret;
 }
 
-#ifdef _M_X86
-
 D3D::VendorID D3D::GetVendorID(IDXGIAdapter1* adapter)
 {
 	DXGI_ADAPTER_DESC1 desc;
@@ -382,6 +380,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
 		return device;
 	};
+#ifdef ENABLE_VULKAN
 	static constexpr auto check_for_mapping_layers = []() {
 		PCWSTR familyName = L"Microsoft.D3DMappingLayers_8wekyb3d8bbwe";
 		UINT32 numPackages = 0, bufferLength = 0;
@@ -391,7 +390,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			Host::AddIconOSDMessage("VKDriverUnsupported", ICON_FA_TV,
 				TRANSLATE_STR("GS",
 					"Your system has the \"OpenCL, OpenGL, and Vulkan Compatibility Pack\" installed.\n"
-					"This Vulkan driver crashes PCSX2 on some GPUs.\n" 
+					"This Vulkan driver crashes PCSX2 on some GPUs.\n"
 					"To use the Vulkan renderer, you should remove this app package."),
 				Host::OSD_WARNING_DURATION);
 			return true;
@@ -416,6 +415,9 @@ GSRendererType D3D::GetPreferredRenderer()
 			"       to use the Vulkan renderer."), Host::OSD_WARNING_DURATION);
 		return false;
 	};
+#else
+	static constexpr auto check_vulkan_supported = []() { return false; };
+#endif
 
 	switch (GetVendorID(adapter.get()))
 	{
@@ -470,13 +472,15 @@ GSRendererType D3D::GetPreferredRenderer()
 
 		default:
 		{
-			// Default is D3D11
+			// Default is D3D11, but prefer DX12 on ARM (better drivers).
+#ifdef _M_ARM64
+			return GSRendererType::DX12;
+#else
 			return GSRendererType::DX11;
+#endif
 		}
 	}
 }
-
-#endif // _M_X86
 
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
 	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
