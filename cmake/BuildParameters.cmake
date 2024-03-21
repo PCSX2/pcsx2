@@ -99,6 +99,21 @@ if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_HOST_SYSTEM_PR
 			endif()
 		endif()
 	endif()
+elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR
+       "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
+	message(STATUS "Building for Apple Silicon (ARM64).")
+	list(APPEND PCSX2_DEFS _M_ARM64=1)
+	set(_M_ARM64 TRUE)
+	add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
+
+	# If we're running on Linux, we need to detect the page/cache line size.
+	# It could be a virtual machine with 4K pages, or 16K with Asahi.
+	if(LINUX)
+		detect_page_size()
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_PAGE_SIZE=${HOST_PAGE_SIZE})
+		detect_cache_line_size()
+		list(APPEND PCSX2_DEFS OVERRIDE_HOST_CACHE_LINE_SIZE=${HOST_CACHE_LINE_SIZE})
+	endif()
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()

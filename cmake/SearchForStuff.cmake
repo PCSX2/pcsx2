@@ -83,7 +83,6 @@ add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/imgui EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/cpuinfo EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(cpuinfo)
-add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
@@ -112,6 +111,13 @@ endif()
 
 # Demangler for the debugger
 add_subdirectory(3rdparty/demangler EXCLUDE_FROM_ALL)
+
+# Architecture-specific.
+if(_M_X86)
+	add_subdirectory(3rdparty/zydis EXCLUDE_FROM_ALL)
+elseif(_M_ARM64)
+	add_subdirectory(3rdparty/vixl EXCLUDE_FROM_ALL)
+endif()
 
 # Prevent fmt from being built with exceptions, or being thrown at call sites.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")

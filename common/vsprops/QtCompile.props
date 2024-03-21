@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <QtBinaryOutputDir>$(SolutionDir)bin\</QtBinaryOutputDir>
+    <QtBinaryOutputDir Condition="'$(Platform)'!='ARM64'">$(SolutionDir)bin\</QtBinaryOutputDir>
+    <QtBinaryOutputDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)bin-arm64\</QtBinaryOutputDir>
     <PCSX2QTDIRDefault Condition="'$(Platform)'=='x64'">$(SolutionDir)deps\</PCSX2QTDIRDefault>
     <PCSX2QTDIRDefault Condition="'$(Platform)'=='ARM64'">$(SolutionDir)deps-arm64\</PCSX2QTDIRDefault>
     <PCSX2QTDIR Condition="Exists('$(PCSX2QTDIRDefault)') And ('$(PCSX2QTDIR)'=='' Or !Exists('$(PCSX2QTDIR)'))">$(PCSX2QTDIRDefault)</PCSX2QTDIR>

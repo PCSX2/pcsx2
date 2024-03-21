@@ -21,7 +21,7 @@
       <Configuration>Devel</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-	<ProjectConfiguration Include="Devel AVX2|x64">
+    <ProjectConfiguration Include="Devel AVX2|x64">
       <Configuration>Devel AVX2</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
@@ -48,6 +48,18 @@
     <ProjectConfiguration Include="Release Clang AVX2|x64">
       <Configuration>Release Clang AVX2</Configuration>
       <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Clang|ARM64">
+      <Configuration>Debug Clang</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel Clang|ARM64">
+      <Configuration>Devel Clang</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Clang|ARM64">
+      <Configuration>Release Clang</Configuration>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
 
