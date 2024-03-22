@@ -63915,15 +63915,22 @@ SLUS-21278:
       content: |-
         author=refraction and jordanthetoast
         // Rearrange COP2 codes.
-        patch=1,EE,0032e084,word,DA5A0000
-        patch=1,EE,00324668,word,D8DA0000
-        patch=1,EE,0032e2bc,word,D8DA0000
-        patch=1,EE,00324668,word,D8DA0000
-        patch=1,EE,0032c43c,word,DA5A0000
-        patch=1,EE,0032c5c0,word,D89A0000
-        patch=1,EE,0032c990,word,D89A0000
-        patch=1,EE,0032e360,word,D8FA0000
-        patch=1,EE,0032f494,word,D8DA0000
+        patch=1,EE,0032465c,word,48478800
+        patch=1,EE,00324668,word,4BF9D6EC
+        patch=1,EE,0032465c,word,48478800
+        patch=1,EE,00324668,word,4BF9D6EC
+        patch=1,EE,0032c430,word,48428800
+        patch=1,EE,0032c43c,word,4BF9D6EC
+        patch=1,EE,0032c5b4,word,48428800
+        patch=1,EE,0032c5c0,word,4BF9D6EC
+        patch=1,EE,0032c984,word,48428800
+        patch=1,EE,0032c990,word,4BF9D6EC
+        patch=1,EE,0032e078,word,48428800
+        patch=1,EE,0032e084,word,4BF9D6EC
+        patch=1,EE,0032e2b0,word,48428800
+        patch=1,EE,0032e2bc,word,4BF9D6EC
+        patch=1,EE,0032f488,word,48428800
+        patch=1,EE,0032f494,word,4BF9D6EC
 SLUS-21279:
   name: "NBA Live '06"
   region: "NTSC-U"
