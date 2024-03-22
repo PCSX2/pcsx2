@@ -21,6 +21,9 @@
     <normalon>:/icons/AppIcon64.png</normalon>
    </iconset>
   </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
+  </property>
   <widget class="QStackedWidget" name="mainContainer"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
