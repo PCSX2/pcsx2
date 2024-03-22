@@ -573,6 +573,22 @@ void MainWindow::resetSettings(bool ui)
 	g_main_window->recreateSettings();
 }
 
+void MainWindow::quit()
+{
+	// Make sure VM is gone. It really should be if we're here.
+	if (s_vm_valid)
+	{
+		g_emu_thread->shutdownVM(false);
+		while (s_vm_valid)
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+	}
+
+	// Ensure subwindows are removed before quitting. That way the log window cancelling
+	// the close event won't cancel the quit process.
+	destroySubWindows();
+	QGuiApplication::quit();
+}
+
 void MainWindow::destroySubWindows()
 {
 	if (m_debugger_window)
@@ -1218,7 +1234,7 @@ void MainWindow::requestExit(bool allow_confirm)
 	if (vm_was_valid)
 		m_is_closing = true;
 	else
-		QGuiApplication::quit();
+		quit();
 }
 
 void MainWindow::checkForSettingChanges()
@@ -1908,8 +1924,7 @@ void MainWindow::onVMStopped()
 	// If we're closing or in batch mode, quit the whole application now.
 	if (m_is_closing || QtHost::InBatchMode())
 	{
-		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-		QCoreApplication::quit();
+		quit();
 		return;
 	}
 
@@ -1960,8 +1975,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		saveStateToConfig();
 		if (m_display_created)
 			g_emu_thread->stopFullscreenUI();
-		destroySubWindows();
-		QMainWindow::closeEvent(event);
+		quit();
 		return;
 	}
 

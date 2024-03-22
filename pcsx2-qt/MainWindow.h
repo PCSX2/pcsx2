@@ -87,6 +87,7 @@ public:
 	void connectVMThreadSignals(EmuThread* thread);
 	void startupUpdateCheck();
 	void resetSettings(bool ui);
+	void quit();
 
 	/// Locks the VM by pausing it, while a popup dialog is displayed.
 	VMLock pauseAndLockVM();
