@@ -1975,7 +1975,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		saveStateToConfig();
 		if (m_display_created)
 			g_emu_thread->stopFullscreenUI();
-		quit();
+		destroySubWindows();
+		QMainWindow::closeEvent(event);
 		return;
 	}
 
