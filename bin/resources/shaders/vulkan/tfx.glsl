@@ -531,7 +531,7 @@ uvec4 sample_4_index(vec4 uv)
 	// Denormalize value
 			
 #if PS_RTA_SRC_CORRECTION
-	uvec4 i = uvec4(c * 128.25f);
+	uvec4 i = uvec4(c * 128.55f);
 #else
 	uvec4 i = uvec4(c * 255.5f);
 #endif

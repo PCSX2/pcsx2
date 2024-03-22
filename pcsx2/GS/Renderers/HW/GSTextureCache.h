@@ -210,6 +210,7 @@ public:
 		const int m_type = 0;
 		int m_alpha_max = 0;
 		int m_alpha_min = 0;
+		bool m_alpha_range = false;
 
 		// Valid alpha means "we have rendered to the alpha channel of this target".
 		// A false value means that the alpha in local memory is still valid/up-to-date.
