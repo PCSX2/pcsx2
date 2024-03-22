@@ -18305,6 +18305,8 @@ SLES-52282:
 SLES-52283:
   name: "Terminator 3 - The Redemption"
   region: "PAL-M5"
+  gsHWFixes:
+    autoFlush: 2 # Fixes environment lights visible through player model.
 SLES-52284:
   name: "Deadly Skies III"
   region: "PAL-M5"
@@ -19037,6 +19039,9 @@ SLES-52573:
   region: "PAL-M5"
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52576:
   name: "Yu-Gi-Oh! Capsule Monster Coliseum"
   region: "PAL-M5"
@@ -40738,6 +40743,8 @@ SLPM-65837:
   name-sort: Terminator 3:The Redemption
   name-en: "Terminator 3 - Redemption"
   region: "NTSC-J"
+  gsHWFixes:
+    autoFlush: 2 # Fixes environment lights visible through player model.
 SLPM-65838:
   name: 半熟銀河弁当 半熟英雄4 〜7人の半熟英雄〜 [限定版]
   name-sort: はんじゅくぎんがべんとう はんじゅくひーろー4 7にんのはんじゅくひーろー [げんていばん]
@@ -63180,6 +63187,9 @@ SLUS-21172:
   compat: 5
   roundModes:
     eeRoundMode: 2 # Fixes abnormal character behaviour.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21173:
   name: "Dora the Explorer - To the Purple Planet"
   region: "NTSC-U"
