@@ -5371,6 +5371,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					tex->m_texture = rt->m_texture;
 			}
 		}
+		else if (!rt->m_rt_alpha_scale)
+			m_can_correct_alpha = std::max(blend_alpha_max, rt->m_alpha_max) <= 128;
 
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
