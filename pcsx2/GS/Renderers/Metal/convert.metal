@@ -129,13 +129,13 @@ fragment float4 ps_primid_rta_init_datm0(float4 p [[position]], DirectReadTextur
 fragment float4 ps_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	float4 in = tex.read(p);
-	return float4(in.rgb, in.a / (128.5f / 255.0f));
+	return float4(in.rgb, in.a / (127.5f / 255.0f));
 }
 
 fragment float4 ps_rta_decorrection(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	float4 in = tex.read(p);
-	return float4(in.rgb, in.a * (128.5f / 255.0f));
+	return float4(in.rgb, in.a * (128.25f / 255.0f));
 }
 
 fragment float4 ps_hdr_init(float4 p [[position]], DirectReadTextureIn<float> tex)
