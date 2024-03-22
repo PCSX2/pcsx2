@@ -648,6 +648,11 @@ PCPX-96305:
 PCPX-96306:
   name: "Bikkuri Mouse"
   region: "NTSC-J"
+PCPX-96309:
+  name: "Gran Turismo 3 Netz Toyota Demo"
+  region: "NTSC-J"
+  gsHWFixes:
+    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 PCPX-96310:
   name: "X-treme Racing SSX"
   region: "NTSC-J"
@@ -1132,7 +1137,6 @@ SCAJ-20023:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCAJ-20024:
   name: ".hack Quarantine Part 4"
   region: "NTSC-Unk"
@@ -1423,6 +1427,9 @@ SCAJ-20082:
 SCAJ-20083:
   name: "Bakuso! Mountain Bikers"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20084:
   name: "MLB '04"
   region: "NTSC-Unk"
@@ -1524,7 +1531,8 @@ SCAJ-20104:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -1574,6 +1582,8 @@ SCAJ-20111:
     - XGKickHack # Fixes bad Geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20112:
   name: "Tales of Rebirth"
   region: "NTSC-Unk"
@@ -1733,7 +1743,8 @@ SCAJ-20136:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -1952,7 +1963,8 @@ SCAJ-20173:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -3527,7 +3539,6 @@ SCED-52946:
   name-sort: "Getaway, The - Black Monday [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes the fog wall.
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes outlines on screen edges.
     getSkipCount: "GSC_GetawayGames"
@@ -3588,7 +3599,8 @@ SCED-53081:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -3600,7 +3612,8 @@ SCED-53115:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -4322,7 +4335,8 @@ SCES-50410:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering and edge of screen issues in 16:9 mode.
+    trilinearFiltering: 1
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
@@ -5116,7 +5130,8 @@ SCES-52424:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -5253,7 +5268,6 @@ SCES-52758:
   name-sort: "Getaway, The - Black Monday"
   region: "PAL-M6"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes the fog wall.
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes outlines on screen edges.
     getSkipCount: "GSC_GetawayGames"
@@ -5305,7 +5319,6 @@ SCES-52948:
   name-sort: "Getaway, The - Black Monday"
   region: "PAL-M4"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes the fog wall.
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes outlines on screen edges.
     getSkipCount: "GSC_GetawayGames"
@@ -5688,7 +5701,8 @@ SCES-54041:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -6552,7 +6566,6 @@ SCKA-20016:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SCKA-20017:
   name: "EyeToy - Play"
   region: "NTSC-K"
@@ -6716,7 +6729,8 @@ SCKA-20042:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -6926,7 +6940,8 @@ SCKA-20070:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -6996,7 +7011,8 @@ SCKA-20082:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -8078,6 +8094,9 @@ SCPS-15062:
   name-sort: ばくそうまうんてんばいかーず
   name-en: "Bakuso! Mountain Bikers"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCPS-15063:
   name: ポポロクロイス 月の掟の冒険
   name-sort: ぽぽろくろいす つきのおきてのぼうけん
@@ -10065,6 +10084,9 @@ SCUS-97177:
   name: "Downhill Domination"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97178:
   name: "NFL GameDay 2002"
   region: "NTSC-U"
@@ -10586,6 +10608,9 @@ SCUS-97328:
 SCUS-97329:
   name: "Downhill Domination [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97330:
   name: "Jak 3"
   region: "NTSC-U"
@@ -10838,7 +10863,6 @@ SCUS-97408:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes the fog wall.
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes outlines on screen edges.
     getSkipCount: "GSC_GetawayGames"
@@ -11004,7 +11028,6 @@ SCUS-97441:
   name: "Getaway The - Black Monday [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes the fog wall.
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes outlines on screen edges.
     getSkipCount: "GSC_GetawayGames"
@@ -11988,6 +12011,9 @@ SLAJ-25063:
 SLAJ-25064:
   name: "MVP Baseball 2005"
   region: "NTSC-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLAJ-25066:
   name: "Burnout Revenge - Battle Racing Ignited"
   region: "NTSC-Unk"
@@ -12037,7 +12063,7 @@ SLAJ-25075:
   name: "Need for Speed - Most Wanted [Black Edition]"
   region: "NTSC-Unk"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -12353,7 +12379,6 @@ SLED-51901:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLED-51902:
   name: "True Crime - Streets of L.A."
   region: "PAL-E"
@@ -12421,6 +12446,9 @@ SLED-52304:
 SLED-52325:
   name: "Downhill Domination"
   region: "PAL-Unk"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -12509,7 +12537,6 @@ SLED-52736:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "PAL-E"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLED-52851:
   name: "TOCA Race Driver 2"
@@ -12679,13 +12706,25 @@ SLED-53627:
   name: "The Suffering - Ties that Bind"
   region: "PAL-Unk"
 SLED-53637:
-  name: "Burnout Revenge"
-  region: "PAL-Unk"
+  name: "Burnout Revenge [Demo]"
+  region: "PAL-M2"
+  clampModes:
+    vuClampMode: 0 # Fixes buggy lighting in the garage.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves car reflections.
+    halfPixelOffset: 2 # Fixes depth lines.
+    autoFlush: 2 # Fixes blur and obscures sun behind objects.
+    mipmap: 2 # Fixes over sharpening.
+    trilinearFiltering: 1 # Smoothes out mipmapping.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
+    getSkipCount: "GSC_BurnoutGames"
+    beforeDraw: "OI_BurnoutGames"
 SLED-53650:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -12695,8 +12734,11 @@ SLED-53664:
 SLED-53673:
   name: "007 - From Russia with Love [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines in FMVs.
   gsHWFixes:
     textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center upscaling line during explosions.
     recommendedBlendingLevel: 4 # Fixes lighting.
 SLED-53681:
   name: "007 - From Russia with Love & Need for Speed Most Wanted & SSX On Tour [Demo]"
@@ -16571,6 +16613,8 @@ SLES-51507:
   region: "PAL-M5"
   gsHWFixes:
     readTCOnClose: 1 # Fixes render to target getting lost on state/switch.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51508:
   name: "The Hulk"
   name-sort: "Hulk, The"
@@ -17122,7 +17166,6 @@ SLES-51799:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLES-51800:
   name: "Smash Cars"
   region: "PAL-M5"
@@ -17591,6 +17634,8 @@ SLES-51956:
   name: "Bionicle"
   region: "PAL-M6"
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes heat blur layer.
+    halfPixelOffset: 2 # Fixes depth line.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
 SLES-51957:
@@ -18106,6 +18151,9 @@ SLES-52202:
   name: "Downhill Domination"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52203:
   name: "Armored Core 3 - Silent Line"
   region: "PAL-E"
@@ -19014,7 +19062,8 @@ SLES-52568:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
-    PCRTCOverscan: 1 # Fixes offscreen image.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52569:
   name: "Spyro - A Hero's Tail"
   region: "PAL-M6"
@@ -19151,6 +19200,10 @@ SLES-52605:
   name: "The Polar Express"
   name-sort: "Polar Express, The"
   region: "PAL-Unk"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bottom left and right corner garbage.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52616:
   name: "Video Poker & Blackjack"
   region: "PAL-M5"
@@ -19405,6 +19458,10 @@ SLES-52685:
   name: "The Polar Express"
   name-sort: "Polar Express, The"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bottom left and right corner garbage.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52686:
   name: "Backyard Wrestling 2 - There Goes the Neighborhood"
   region: "PAL-E"
@@ -19520,7 +19577,6 @@ SLES-52725:
   region: "PAL-M8"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLES-52726:
   name: "NBA Live 2005"
@@ -21954,8 +22010,11 @@ SLES-53552:
 SLES-53553:
   name: "007 - From Russia with Love"
   region: "PAL-M7"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines in FMVs.
   gsHWFixes:
     textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center upscaling line during explosions.
     recommendedBlendingLevel: 4 # Fixes lighting.
 SLES-53556:
   name: "Driver - Parallel Lines"
@@ -21972,7 +22031,7 @@ SLES-53557:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -21986,7 +22045,7 @@ SLES-53558:
   name: "Need for Speed - Most Wanted"
   region: "PAL-M8"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -21998,9 +22057,9 @@ SLES-53558:
     - "SLES-52725"
 SLES-53559:
   name: "Need for Speed - Most Wanted"
-  region: "PAL-M3"
+  region: "PAL-M7"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -22943,7 +23002,7 @@ SLES-53857:
   name: "Need for Speed - Most Wanted [Black Edition]"
   region: "PAL-M3"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -23170,6 +23229,9 @@ SLES-53959:
   region: "PAL-M5"
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-53961:
   name: "Rock'N'Roll Adventures"
   region: "PAL-E"
@@ -24929,6 +24991,8 @@ SLES-54584:
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   clampModes:
     vuClampMode: 3 # Fixes bad geometry.
 SLES-54586:
@@ -25856,6 +25920,9 @@ SLES-54897:
 SLES-54898:
   name: "Metropolismania 2"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-54899:
   name: "EyeToy - Bob the Builder"
   region: "PAL-M5"
@@ -26435,11 +26502,14 @@ SLES-55074:
   name: "Casper's Scare School"
   region: "PAL-SC"
 SLES-55075:
-  name: "Speed Racer"
+  name: "Speed Racer - The Videogame"
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes lighting misalignment, still missing vibrant colors compared to Software.
+    halfPixelOffset: 2 # Fixes bloom alignment.
+    autoFlush: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55076:
   name: "Saint & Sinner"
   region: "PAL-E"
@@ -27432,6 +27502,9 @@ SLES-55465:
 SLES-55467:
   name: "Trivial Pursuit"
   region: "PAL-M5"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55468:
   name: "Nickelodeon Dora the Explorer - Dora Saves the Snow Princess"
   region: "PAL-E"
@@ -27520,12 +27593,18 @@ SLES-55496:
 SLES-55499:
   name: "Disney G-Force"
   region: "PAL-M4"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misaligment.
 SLES-55500:
   name: "Disney G-Force"
   region: "PAL-G-I"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misaligment.
 SLES-55502:
-  name: "Disney G-Force"
+  name: "Миссия Дарвина"
   region: "PAL-R"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misaligment.
 SLES-55509:
   name: "Music Maker - Rockstar"
   region: "PAL-M6"
@@ -27548,7 +27627,10 @@ SLES-55516:
     halfPixelOffset: 2 # Fixes blurriness.
 SLES-55517:
   name: "Trivial Pursuit"
-  region: "PAL-M4"
+  region: "PAL-SC"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55518:
   name: "Guitar Hero - Van Halen"
   region: "PAL-A"
@@ -27808,6 +27890,9 @@ SLES-55648:
   name: "WWE All-Stars"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ring textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55652:
   name: "FIFA 12"
   region: "PAL-M4"
@@ -29070,6 +29155,11 @@ SLKA-25188:
 SLKA-25192:
   name: "Need for Speed - Underground"
   region: "NTSC-K"
+  gameFixes:
+    - EETimingHack # Fixes broken textures.
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves reflection quality.
+    halfPixelOffset: 2 # Fixes misaligned post-processing.
 SLKA-25193:
   name: "Gwimuja 2"
   region: "NTSC-K"
@@ -29296,7 +29386,6 @@ SLKA-25241:
   name: "Need for Speed - Underground 2"
   region: "NTSC-K"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLKA-25242:
   name: "Fight Night Round 2"
@@ -29440,6 +29529,9 @@ SLKA-25277:
 SLKA-25278:
   name: "MVP Baseball 2005"
   region: "NTSC-K"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLKA-25279:
   name: "Hello Kitty - Rescue Mission"
   region: "NTSC-K"
@@ -29683,7 +29775,7 @@ SLKA-25334:
   name: "Need for Speed - Most Wanted"
   region: "NTSC-K"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -30302,7 +30394,7 @@ SLPM-55003:
   name: "Need for Speed - Most Wanted [EASY 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -31455,7 +31547,8 @@ SLPM-60149:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering and edge of screen issues in 16:9 mode.
+    trilinearFiltering: 1
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
@@ -31725,7 +31818,6 @@ SLPM-60250:
   name: "Need for Speed - Underground 2 [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLPM-60251:
   name: "Devil May Cry 3 [Trial Version]"
@@ -34105,14 +34197,14 @@ SLPM-62381:
   name-en: "Karaoke Revolution - J-Pop Vol.4"
   region: "NTSC-J"
 SLPM-62382:
-  name: カラオケレボリューション ナイトセレクション2003
-  name-sort: からおけれぼりゅーしょん ないとせれくしょん2003
+  name: カラオケレボリューション Love & Ballad
+  name-sort: カラオケレボリューション Love & Ballad
   name-en: "Karaoke Revolution - Love & Ballad"
   region: "NTSC-J"
   compat: 4
 SLPM-62383:
-  name: カラオケレボリューション Love&Ballad
-  name-sort: からおけれぼりゅーしょん Love&Ballad
+  name: カラオケレボリューション ナイトセレクション 2003
+  name-sort: カラオケレボリューション ナイトセレクション 2003
   name-en: "Karaoke Revolution - Night Selection 2003"
   region: "NTSC-J"
 SLPM-62384:
@@ -34360,6 +34452,8 @@ SLPM-62433:
 SLPM-62435:
   name: "Tennis no Oujisama - Smash Hit! 2 - Original Anime Game"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
 SLPM-62437:
   name: すいすい Sweet 〜あまい恋のみつけ方〜
   name-sort: すいすい すいーと あまいこいのみつけかた
@@ -38650,17 +38744,28 @@ SLPM-65450:
 SLPM-65451:
   name: テニスの王子様 Smash Hit!2 初回SP限定版
   name-sort: てにすのおうじさま Smash Hit!2 しょかいSPげんていばん
-  name-en: "Prince of Tennis - Smash Hit! 2 [First Limited Edition]"
+  name-en: "Prince of Tennis - Smash Hit! 2 [Shokai SP Genteiban A-Type]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
 SLPM-65452:
-  name: "Tennis no Oujisama - Smash Hit! 2"
+  name: "Tennis no Oujisama - Smash Hit! 2 [Shokai SP Genteiban B-Type]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
+SLPM-65453:
+  name: "Tennis no Oujisama - Smash Hit! 2 [Shokai SP Genteiban C-Type]"
+  region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
 SLPM-65454:
   name: テニスの王子様 Smash Hit!2
   name-sort: てにすのおうじさま Smash Hit!2
-  name-en: "Prince of Tennis - Smash Hit! 2"
+  name-en: "Prince of Tennis - Smash Hit! 2 [Konami the Best]"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
 SLPM-65455:
   name: "Nobunaga no Yabou - Soutenroku [with Power-Up Kit]"
   region: "NTSC-J"
@@ -39814,6 +39919,8 @@ SLPM-65678:
   name-sort: てにすのおうじさま Smash Hit!2 [こなみ ざ べすと]
   name-en: "Prince of Tennis - Smash Hit! 2 [Konami The Best]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
 SLPM-65679:
   name: テニスの王子様 SWEAT＆TEARS 2 [コナミ ザ ベスト]
   name-sort: てにすのおうじさま SWEAT&TEARS 2 [こなみ ざ べすと]
@@ -40350,7 +40457,6 @@ SLPM-65766:
   name-en: "Need for Speed - Underground 2"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLPM-65767:
   name: NBA STARTINGFIVE 2005
@@ -40563,6 +40669,8 @@ SLPM-65801:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65802:
   name: EA BEST HITS DEF JAM VENDETTA
   name-sort: DEF JAM VENDETTA [EA BEST HITS]
@@ -41706,6 +41814,8 @@ SLPM-66011:
   name-sort: てにすのおうじさま Smash Hit!2 [こなみでんどうせれくしょん]
   name-en: "Tennis no Oji-Sama - Smash-Hit! 2 [Konami Palace Selection]"
   region: "NTSC-J"
+  gsHWFixes:
+    wildArmsHack: 1 # Fixes screen shake when upscaling.
 SLPM-66012:
   name: テニスの王子様SWEAT&TEARS 2(コナミ殿堂セレクション)
   name-sort: てにすのおうじさまSWEAT&TEARS 2 [こなみでんどうせれくしょん]
@@ -41891,6 +42001,9 @@ SLPM-66044:
   name-sort: MVPべーすぼーる2005
   name-en: "MVP Baseball 2005"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-66045:
   name: My Merry May with be
   name-sort: My Merry May with be
@@ -41924,7 +42037,6 @@ SLPM-66051:
   name-en: "Need for Speed Underground 2 [EA Best Hits] - SHA_DO"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLPM-66052:
   name: 巫女舞 〜永遠の想い〜
@@ -42745,7 +42857,6 @@ SLPM-66183:
   name-en: "Getaway, The - Black Monday"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes the fog wall.
     textureInsideRT: 1
     halfPixelOffset: 2 # Fixes outlines on screen edges.
     getSkipCount: "GSC_GetawayGames"
@@ -43093,7 +43204,7 @@ SLPM-66232:
   name-en: "Need for Speed - Most Wanted"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -43639,8 +43750,11 @@ SLPM-66322:
   name-sort: 007 ろしあよりあいをこめて
   name-en: "007 - Russia yori Ai o Komete"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines in FMVs.
   gsHWFixes:
     textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center upscaling line during explosions.
     recommendedBlendingLevel: 4 # Fixes lighting.
 SLPM-66323:
   name: φなる・あぷろーち [プリンセスソフトコレクション]
@@ -44355,6 +44469,8 @@ SLPM-66447:
   name-en: "Sengoku Basara 2"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLPM-66448:
   name: We Are* 限定版
   name-sort: We Are* [げんていばん]
@@ -44402,7 +44518,7 @@ SLPM-66453:
 SLPM-66454:
   name: 緋色の欠片
   name-sort: ひいろのかけら
-  name-en: "Hiiro no Kakera"
+  name-en: "Hiiro no Kakera - Tamayori-hime Kitan"
   region: "NTSC-J"
 SLPM-66455:
   name: スペクトラルフォース ラジカルエレメンツ [IFコレクション]
@@ -45041,7 +45157,7 @@ SLPM-66562:
   name-en: "Need for Speed - Most Wanted [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -45865,6 +45981,8 @@ SLPM-66691:
   name-sort: せんごくばさら2 かぷこれ
   name-en: "Sengoku Basara 2 [CapKore]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLPM-66692:
   name: セレクション 星界の戦旗 [BEST HIT]
   name-sort: せれくしょん せいかいのせんき [BEST HIT]
@@ -46833,8 +46951,12 @@ SLPM-66864:
   gsHWFixes:
     alignSprite: 1 # Reduces misaligned line distortian when in QTE.
 SLPM-66865:
-  name: "Sengoku Basara 2"
+  name: 戦国BASARA2
+  name-sort: せんごくばさら2
+  name-en: "Sengoku Basara 2 [Best Price]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes misaligned bloom.
 SLPM-66866:
   name: 実戦パチスロ必勝法! 北斗の拳2 乱世覇王伝 天覇の章
   name-sort: じっせんぱちすろひっしょうほう! ほくとのけん2 らんせいはおうでん てんはのしょう
@@ -47333,7 +47455,6 @@ SLPM-66960:
   name-en: "Need for Speed - Underground 2 [EA-SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLPM-66961:
   name: EA:SY!1980 BLACK
@@ -50664,9 +50785,12 @@ SLPS-20468:
 SLPS-20469:
   name: 街ingメーカー2 〜続・ぼくの街づくり〜
   name-sort: まちingめーかー2 〜ぞく ぼくのまちづくり〜
-  name-en: "Matching Maker 2"
+  name-en: "Matching Maker 2 - Zoku Boku no Machi-zukuri"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLPS-20470:
   name: SIMPLE2000シリーズ Vol.103 THE地球防衛軍タクティクス
   name-sort: しんぷる2000しりーず Vol.103 THEちきゅうぼうえいぐんたくてぃくす
@@ -51216,7 +51340,8 @@ SLPS-25052:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering and edge of screen issues in 16:9 mode.
+    trilinearFiltering: 1
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
@@ -52166,7 +52291,6 @@ SLPS-25230:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLPS-25231:
   name: ミストIII:エグザイル
   name-sort: みすとIII えぐざいる
@@ -53271,7 +53395,8 @@ SLPS-25418:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -54437,7 +54562,8 @@ SLPS-25629:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -56518,7 +56644,8 @@ SLPS-73205:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering and edge of screen issues in 16:9 mode.
+    trilinearFiltering: 1
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
@@ -56613,7 +56740,8 @@ SLPS-73218:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -56899,7 +57027,8 @@ SLPS-73250:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -57073,7 +57202,8 @@ SLPS-73410:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering and edge of screen issues in 16:9 mode.
+    trilinearFiltering: 1
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
@@ -57783,7 +57913,8 @@ SLUS-20152:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering and edge of screen issues in 16:9 mode.
+    trilinearFiltering: 1
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
@@ -59182,6 +59313,8 @@ SLUS-20439:
   compat: 5
   gsHWFixes:
     readTCOnClose: 1 # Fixes render to target getting lost on state/switch.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20440:
   name: "Kya - Dark Lineage"
   region: "NTSC-U"
@@ -60253,7 +60386,6 @@ SLUS-20643:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLUS-20643BD:
   name: "Namco Transmission Demo Disc v1.03 [Soul Calibur II Pack-In]"
   region: "NTSC-U"
@@ -61182,6 +61314,8 @@ SLUS-20818:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Fixes heat blur layer.
+    halfPixelOffset: 2 # Fixes depth line.
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
 SLUS-20820:
@@ -61326,7 +61460,8 @@ SLUS-20851:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes font and HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -61686,6 +61821,8 @@ SLUS-20909:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth lines.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20910:
   name: "Test Drive - Eve of Destruction"
   region: "NTSC-U"
@@ -62160,6 +62297,10 @@ SLUS-20989:
   name-sort: "Polar Express, The"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bottom left and right corner garbage.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20990:
   name: "Metal Slug 4 & 5 [Disc 2 of 2]"
   region: "NTSC-U"
@@ -62630,7 +62771,6 @@ SLUS-21065:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLUS-21066:
   name: "The Urbz - Sims in the City"
@@ -62993,6 +63133,9 @@ SLUS-21134:
 SLUS-21135:
   name: "MVP Baseball 2005"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21136:
   name: "Graffiti Kingdom"
   region: "NTSC-U"
@@ -63476,6 +63619,9 @@ SLUS-21219:
   compat: 5
   gameFixes:
     - EETimingHack
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21220:
   name: "World Soccer - Winning Eleven 9 International"
   region: "NTSC-U"
@@ -63733,6 +63879,14 @@ SLUS-21256:
   name: "IHRA Drag Racing - Sportsman Edition"
   region: "NTSC-U"
   compat: 5
+SLUS-21257:
+  name: "Need for Speed - Most Wanted"
+  region: "NTSC-U"
+  gsHWFixes:
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
+    halfPixelOffset: 2 # Fixes blurriness.
+    cpuCLUTRender: 1 # Final colour adjustment LUT.
+    gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
 SLUS-21258:
   name: ".hack//G.U. Vol.1 - Rebirth"
   region: "NTSC-U"
@@ -63812,7 +63966,7 @@ SLUS-21267:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -63950,8 +64104,11 @@ SLUS-21282:
   name: "007 - From Russia with Love"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines in FMVs.
   gsHWFixes:
     textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center upscaling line during explosions.
     recommendedBlendingLevel: 4 # Fixes lighting.
 SLUS-21283:
   name: "Total Overdose - A Gunslinger's Tale in Mexico"
@@ -64250,6 +64407,8 @@ SLUS-21328:
     vuClampMode: 3 # Fixes bad geometry.
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
   patches:
     default:
       content: |-
@@ -64352,7 +64511,8 @@ SLUS-21346:
     - SoftwareRendererFMVHack # Fixes FMVs disabling hash cache.
   gsHWFixes:
     recommendedBlendingLevel: 2 # Helps banding when dithering is enabled.
-    mipmap: 1
+    mipmap: 2 # Fixes terrain rendering.
+    trilinearFiltering: 1
     halfPixelOffset: 3 # Fixes ghosting in foggy maps.
     roundSprite: 1 # Fixes HUD artifacts.
     alignSprite: 1 # Fixes vertical lines.
@@ -64391,7 +64551,7 @@ SLUS-21351:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -65733,6 +65893,9 @@ SLUS-21606:
   name: "Metropolismania 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21607:
   name: "The Legend of Spyro - The Eternal Night"
   name-sort: "Legend of Spyro, The - The Eternal Night"
@@ -66849,11 +67012,14 @@ SLUS-21811:
   region: "NTSC-U"
   compat: 5
 SLUS-21812:
-  name: "Speed Racer"
+  name: "Speed Racer - The Videogame"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes lighting misalignment, still missing vibrant colors compared to Software.
+    halfPixelOffset: 2 # Fixes bloom alignment.
+    autoFlush: 1
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21813:
   name: "007 - Quantum of Solace"
   region: "NTSC-U"
@@ -67086,6 +67252,9 @@ SLUS-21868:
 SLUS-21869:
   name: "Trivial Pursuit"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21870:
   name: "Monsters VS Aliens"
   region: "NTSC-U"
@@ -67197,9 +67366,11 @@ SLUS-21890:
   speedHacks:
     mvuFlag: 0 # Fixes missing graphical effects.
 SLUS-21891:
-  name: "G-Force"
+  name: "Disney G-Force"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 2 # Fixes bloom misaligment.
 SLUS-21892:
   name: "NCAA Football 10"
   region: "NTSC-U"
@@ -67426,6 +67597,9 @@ SLUS-21940:
   name: "WWE All-Stars"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ring textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21941:
   name: "FIFA Soccer 11"
   region: "NTSC-U"
@@ -67878,7 +68052,6 @@ SLUS-29058:
     vuClampMode: 2 # Respawn issues, Fixes SPS, avoids teleporting characters.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    recommendedBlendingLevel: 3 # Fixes menu transparency.
 SLUS-29059:
   name: "Hunter the Reckoning - Wayward [Demo]"
   region: "NTSC-U"
@@ -68079,7 +68252,6 @@ SLUS-29118:
   name: "Need for Speed - Underground 2 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves reflection quality and map opacity.
     halfPixelOffset: 2 # Fixes depth lines.
 SLUS-29123:
   name: "Ghost in the Shell - Stand Alone Complex [Demo]"
@@ -68231,7 +68403,7 @@ SLUS-29155:
   name: "Need for Speed - Most Wanted [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves car reflections.
+    bilinearUpscale: 2 # Smooths out sun glare textures like native.
     halfPixelOffset: 2 # Fixes blurriness.
     cpuCLUTRender: 1 # Final colour adjustment LUT.
     gpuTargetCLUT: 1 # Fixes sun penetrating bridges (along with HPO special).
@@ -68289,8 +68461,11 @@ SLUS-29167:
 SLUS-29168:
   name: "007 - From Russia with Love [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes lines in FMVs.
   gsHWFixes:
     textureInsideRT: 1 # Required for complex offset shuffles.
+    halfPixelOffset: 2 # Fixes center upscaling line during explosions.
     recommendedBlendingLevel: 4 # Fixes lighting.
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
