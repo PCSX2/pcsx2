@@ -131,6 +131,7 @@ jobs:
           flat-manager-url: https://hub.flathub.org/
           repository: beta
           token: ${{ secrets.FLATHUB_BETA_TOKEN }}
+          build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Push to Flathub stable
         if: inputs.publish == true && inputs.branch == 'stable'
@@ -139,6 +140,7 @@ jobs:
           flat-manager-url: https://hub.flathub.org/
           repository: stable
           token: ${{ secrets.FLATHUB_TOKEN }}
+          build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       # NOTE - this is done after on purpose so the flatpak file is wherever it needs to be for the previous pushes
       - name: Prepare artifacts folder
