@@ -1497,9 +1497,7 @@ void Pcsx2Config::EmulationSpeedOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(SlomoScalar);
 
 	// This was in the wrong place... but we can't change it without breaking existing configs.
-	//SettingsWrapBitBool(FrameLimitEnable);
 	//SettingsWrapBitBool(SyncToHostRefreshRate);
-	FrameLimitEnable = wrap.EntryBitBool("EmuCore/GS", "FrameLimitEnable", FrameLimitEnable, FrameLimitEnable);
 	SyncToHostRefreshRate = wrap.EntryBitBool("EmuCore/GS", "SyncToHostRefreshRate", SyncToHostRefreshRate, SyncToHostRefreshRate);
 }
 
