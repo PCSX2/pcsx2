@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>672</width>
-    <height>431</height>
+    <height>438</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -29,26 +29,23 @@
       <string>Speed Control</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Slow-Motion Speed:</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="fastForwardSpeed"/>
       </item>
       <item row="2" column="1">
        <widget class="QComboBox" name="slowMotionSpeed"/>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="normalSpeed"/>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Normal Speed:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Slow-Motion Speed:</string>
         </property>
        </widget>
       </item>
@@ -59,12 +56,8 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="speedLimiter">
-        <property name="text">
-         <string>Enable Speed Limiter</string>
-        </property>
-       </widget>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="normalSpeed"/>
       </item>
      </layout>
     </widget>
