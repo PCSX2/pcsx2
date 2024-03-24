@@ -85,7 +85,7 @@ jobs:
 
       - name: Setup msbuild
         if: inputs.configuration != 'CMake'
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v2
 
       - name: Download patches
         shell: cmd
@@ -95,7 +95,7 @@ jobs:
 
       - name: Cache Dependencies
         id: cache-deps
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: deps
           key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat') }}
