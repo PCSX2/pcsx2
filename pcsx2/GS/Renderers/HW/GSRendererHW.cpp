@@ -444,35 +444,46 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 		// If a game does the texture and frame doubling differently, they can burn in hell.
 		if (!m_copy_16bit_to_target_shuffle && m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
 		{
-			unsigned int max_tex_draw_width = std::min(static_cast<int>(m_vt.m_max.t.x + (!process_ba ? 8 : 0)), 1 << m_cached_ctx.TEX0.TW);
-			const unsigned int clamp_minu = m_context->CLAMP.MINU;
-			const unsigned int clamp_maxu = m_context->CLAMP.MAXU;
-
-			switch (m_context->CLAMP.WMS)
-			{
-				case CLAMP_REGION_CLAMP:
-					max_tex_draw_width = std::min(max_tex_draw_width, clamp_maxu);
-					break;
-				case CLAMP_REGION_REPEAT:
-					max_tex_draw_width = std::min(max_tex_draw_width, (clamp_maxu | clamp_minu));
-					break;
-				default:
-					break;
-			}
-
 			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
 			// Dogs will reuse the Z in a different size format for a completely unrelated draw with an FBW of 2, then go back to using it in full width
 			const bool size_is_wrong = tex->m_target ? (static_cast<int>(tex->m_from_target_TEX0.TBW * 64) < tex->m_from_target->m_valid.z / 2) : false;
-			const int tex_width = tex->m_target ? std::min(tex->m_from_target->m_valid.z, size_is_wrong ? tex->m_from_target->m_valid.z : static_cast<int>(tex->m_from_target_TEX0.TBW * 64)) : max_tex_draw_width;
-			const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
-
-			if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= (tex_width * 2) && tex_tbw != m_cached_ctx.TEX0.TBW)
+			const u32 draw_page_width = std::max(static_cast<int>(m_vt.m_max.p.x + (!(process_ba & SHUFFLE_WRITE) ? 8.9f : 0.9f)) / 64, 1);
+			if (size_is_wrong || (rt && (rt->m_TEX0.TBW % draw_page_width) == 0))
 			{
-				half_bottom_uv = false;
-				half_bottom_vert = false;
+				unsigned int max_tex_draw_width = std::min(static_cast<int>(floor(m_vt.m_max.t.x + (!(process_ba & SHUFFLE_READ) ? 8.9f : 0.9f))), 1 << m_cached_ctx.TEX0.TW);
+				const unsigned int clamp_minu = m_context->CLAMP.MINU;
+				const unsigned int clamp_maxu = m_context->CLAMP.MAXU;
+
+				switch (m_context->CLAMP.WMS)
+				{
+					case CLAMP_REGION_CLAMP:
+						max_tex_draw_width = std::min(max_tex_draw_width, clamp_maxu);
+						break;
+					case CLAMP_REGION_REPEAT:
+						max_tex_draw_width = std::min(max_tex_draw_width, (clamp_maxu | clamp_minu));
+						break;
+					default:
+						break;
+				}
+
+				const int tex_width = tex->m_target ? std::min(tex->m_from_target->m_valid.z, size_is_wrong ? tex->m_from_target->m_valid.z : static_cast<int>(tex->m_from_target_TEX0.TBW * 64)) : max_tex_draw_width;
+				const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
+
+				if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= (tex_width * 2) && tex_tbw != m_cached_ctx.TEX0.TBW)
+				{
+					half_bottom_uv = false;
+					half_bottom_vert = false;
+				}
+				else
+				{
+					half_right_uv = false;
+					half_right_vert = false;
+				}
 			}
 			else
 			{
+				half_bottom_uv = false;
+				half_bottom_vert = false;
 				half_right_uv = false;
 				half_right_vert = false;
 			}
@@ -623,7 +634,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 
 		if (!m_same_group_texture_shuffle)
 		{
-			if (process_ba & SHUFFLE_WRITE)
+			if (process_ba & SHUFFLE_READ)
 				m_vt.m_min.t.x -= 8.0f;
 			else
 				m_vt.m_max.t.x += 8.0f;
@@ -633,30 +644,31 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 	if (half_right_vert)
 	{
 		m_vt.m_min.p.x /= 2.0f;
-		m_vt.m_max.p.x /= 2.0f;
-		m_context->scissor.in.x = m_vt.m_min.p.x;
-		m_context->scissor.in.z = m_vt.m_max.p.x + 8.0f;
+		m_vt.m_max.p.x = floor(m_vt.m_max.p.x + 1.9f) / 2.0f;
 	}
 
 	if (half_bottom_vert)
 	{
 		m_vt.m_min.p.y /= 2.0f;
-		m_vt.m_max.p.y /= 2.0f;
-		m_context->scissor.in.y = m_vt.m_min.p.y;
-		m_context->scissor.in.w = m_vt.m_max.p.y + 8.0f;
+		m_vt.m_max.p.y = floor(m_vt.m_max.p.y + 1.9f) / 2.0f;
 	}
+
+	m_context->scissor.in.x = m_vt.m_min.p.x;
+	m_context->scissor.in.z = m_vt.m_max.p.x + 0.9f;
+	m_context->scissor.in.y = m_vt.m_min.p.y;
+	m_context->scissor.in.w = m_vt.m_max.p.y + 0.9f;
 
 	// Only do this is the source is being interpreted as 16bit
 	if (half_bottom_uv)
 	{
 		m_vt.m_min.t.y /= 2.0f;
-		m_vt.m_max.t.y /= 2.0f;
+		m_vt.m_max.t.y = (m_vt.m_max.t.y + 1.9f) / 2.0f;
 	}
 
 	if (half_right_uv)
 	{
 		m_vt.m_min.t.x /= 2.0f;
-		m_vt.m_max.t.x /= 2.0f;
+		m_vt.m_max.t.x = (m_vt.m_max.t.x + 1.9f) / 2.0f;
 	}
 }
 
