@@ -2823,7 +2823,9 @@ bool GSState::TrianglesAreQuads() const
 		{
 			const u16* const prev_tri= m_index.buff + (idx - 3);
 			const GSVertex& vert = v[i[0]];
-			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
+			const GSVertex& last_vert = v[i[2]];
+			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ &&
+				last_vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
