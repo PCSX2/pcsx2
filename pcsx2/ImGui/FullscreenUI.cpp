@@ -2805,7 +2805,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 	DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Change Search Directory"), "Folders", "Bios", EmuFolders::Bios);
 
 	const std::string bios_selection(GetEditingSettingsInterface()->GetStringValue("Filenames", "BIOS", ""));
-	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_MICROCHIP, "BIOS Selection"),
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_PF_MICROCHIP, "BIOS Selection"),
 			FSUI_CSTR("Changes the BIOS image used to start future sessions."),
 			bios_selection.empty() ? FSUI_CSTR("Automatic") : bios_selection.c_str()))
 	{
