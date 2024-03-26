@@ -2389,7 +2389,7 @@ void GSRendererHW::Draw()
 			FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
 			FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
 
-			GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(FRAME_TEX0, GSVector2i(m_vt.m_max.p.x, m_vt.m_max.p.y), GetTextureScaleFactor(), GSTextureCache::RenderTarget, true,
+			GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(FRAME_TEX0, GSVector2i(m_vt.m_max.p.x, m_vt.m_max.p.y), GetTextureScaleFactor(), GSTextureCache::RenderTarget, false,
 				fm);
 
 			if (tgt)
