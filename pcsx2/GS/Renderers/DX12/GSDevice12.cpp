@@ -1570,8 +1570,8 @@ void GSDevice12::DoMultiStretchRects(
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
 
 	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
-	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
-	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba + rta_offset].get() :
+	int rta_bit = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
+	SetPipeline((rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba | rta_bit].get() :
 												m_convert[static_cast<int>(shader)].get());
 
 	if (ApplyUtilityState())
