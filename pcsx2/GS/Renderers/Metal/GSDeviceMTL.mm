@@ -1152,9 +1152,10 @@ bool GSDeviceMTL::Create()
 		if (i & 2) mask |= MTLColorWriteMaskGreen;
 		if (i & 4) mask |= MTLColorWriteMaskBlue;
 		if (i & 8) mask |= MTLColorWriteMaskAlpha;
-		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s", i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : ""];
+		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s%s",
+		                  i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : "", i & 16 ? "_rta" : ""];
 		pdesc.colorAttachments[0].writeMask = mask;
-		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, (i >= 16) ? ps_copy_rta_correct : ps_copy, name);
+		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, i & 16 ? ps_copy_rta_correct : ps_copy, name);
 	}
 
 	pdesc.colorAttachments[0].blendingEnabled = YES;
@@ -1580,10 +1581,12 @@ void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	if (green) sel |= 2;
 	if (blue)  sel |= 4;
 	if (alpha) sel |= 8;
+	if (shader == ShaderConvert::RTA_CORRECTION) sel |= 16;
+	const int color_sel = sel & 15;
 
-	id<MTLRenderPipelineState> pipeline = m_convert_pipeline_copy_mask[(shader == ShaderConvert::RTA_CORRECTION) ? (sel + 16) : sel];
+	id<MTLRenderPipelineState> pipeline = m_convert_pipeline_copy_mask[sel];
 
-	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, false, sel == 15 ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
+	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, false, color_sel == 15 ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
 }}
 
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));
@@ -1642,8 +1645,9 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 		const u32 end = i * 4;
 		const u32 vertex_count = end - start;
 		const u32 index_count = vertex_count + (vertex_count >> 1); // 6 indices per 4 vertices
+		const int rta_bit = shader == ShaderConvert::RTA_CORRECTION ? 16 : 0;
 		id<MTLRenderPipelineState> new_pipeline = wmask == 0xf ? m_convert_pipeline[static_cast<int>(shader)]
-		                                                       : m_convert_pipeline_copy_mask[(shader == ShaderConvert::RTA_CORRECTION) ? (wmask + 16) : wmask];
+		                                                       : m_convert_pipeline_copy_mask[wmask | rta_bit];
 		if (new_pipeline != pipeline)
 		{
 			pipeline = new_pipeline;
