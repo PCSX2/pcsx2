@@ -126,15 +126,15 @@ fragment float4 ps_primid_rta_init_datm0(float4 p [[position]], DirectReadTextur
 	return tex.read(p).a > (254.5f / 255.f) ? -1 : FLT_MAX;
 }
 
-fragment float4 ps_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
+fragment float4 ps_rta_correction(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
-	float4 in = tex.read(p);
+	float4 in = res.sample(data.t);
 	return float4(in.rgb, in.a / (127.5f / 255.0f));
 }
 
-fragment float4 ps_rta_decorrection(float4 p [[position]], DirectReadTextureIn<float> tex)
+fragment float4 ps_rta_decorrection(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
-	float4 in = tex.read(p);
+	float4 in = res.sample(data.t);
 	return float4(in.rgb, in.a * (128.25f / 255.0f));
 }
 
