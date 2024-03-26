@@ -140,8 +140,8 @@ void GSTextureMTL::SetDebugName(std::string_view name)
 			initWithBytes:name.data()
 			length:static_cast<NSUInteger>(name.length())
 			encoding:NSUTF8StringEncoding];
-    [m_texture setLabel:label];
-  }
+		[m_texture setLabel:label];
+	}
 }
 
 #endif
@@ -273,8 +273,8 @@ void GSDownloadTextureMTL::SetDebugName(std::string_view name)
 			initWithBytes:name.data()
 			length:static_cast<NSUInteger>(name.length())
 			encoding:NSUTF8StringEncoding];
-    [m_buffer setLabel:label];
-  }
+		[m_buffer setLabel:label];
+	}
 }
 
 #endif
