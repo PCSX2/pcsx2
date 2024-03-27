@@ -260,6 +260,7 @@ void main()
 #define PS_TFX 0
 #define PS_TCC 1
 #define PS_ATST 1
+#define PS_AFAIL 0
 #define PS_FOG 0
 #define PS_BLEND_HW 0
 #define PS_A_MASKED 0
@@ -885,29 +886,30 @@ vec4 tfx(vec4 T, vec4 C)
 	return C_out;
 }
 
-void atst(vec4 C)
+bool atst(vec4 C)
 {
 	float a = C.a;
 
-	#if (PS_ATST == 0)
+	#if (PS_ATST == 1)
 	{
-		// nothing to do
-	}
-	#elif (PS_ATST == 1)
-	{
-		if (a > AREF) discard;
+		return (a <= AREF);
 	}
 	#elif (PS_ATST == 2)
 	{
-		if (a < AREF) discard;
+		return (a >= AREF);
 	}
 	#elif (PS_ATST == 3)
 	{
-		if (abs(a - AREF) > 0.5f) discard;
+		return (abs(a - AREF) <= 0.5f);
 	}
 	#elif (PS_ATST == 4)
 	{
-		if (abs(a - AREF) < 0.5f) discard;
+		return (abs(a - AREF) >= 0.5f);
+	}
+	#else
+	{
+		// nothing to do
+		return true;
 	}
 	#endif
 }
@@ -967,8 +969,6 @@ vec4 ps_color()
 	#endif
 	
 	vec4 C = tfx(T, vsIn.c);
-
-	atst(C);
 
 	C = fog(C, vsIn.t.z);
 
@@ -1238,6 +1238,12 @@ void main()
 #endif
 
 	vec4 C = ps_color();
+	bool atst_pass = atst(C);
+
+#if PS_AFAIL == 0 // KEEP or ATST off
+	if (!atst_pass)
+		discard;
+#endif
 
 	// Must be done before alpha correction
 
@@ -1258,7 +1264,7 @@ void main()
 	vec4 alpha_blend = vec4(C.a / 128.0f);
 #endif
 
-  // Correct the ALPHA value based on the output format
+	// Correct the ALPHA value based on the output format
 #if (PS_DST_FMT == FMT_16)
 	float A_one = 128.0f; // alpha output will be 0x80
 	C.a = (PS_FBA != 0) ? A_one : step(128.0f, C.a) * A_one;
@@ -1356,6 +1362,11 @@ void main()
 	ps_color_clamp_wrap(C.rgb);
 
 	ps_fbmask(C);
+
+	#if PS_AFAIL == 3 // RGB_ONLY
+		// Use alpha blend factor to determine whether to update A.
+		alpha_blend.a = float(atst_pass);
+	#endif
 
 	#if !PS_NO_COLOR
 		#if PS_RTA_CORRECTION

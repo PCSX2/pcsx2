@@ -25,6 +25,7 @@ constant bool PS_FBA                [[function_constant(GSMTLConstantIndex_PS_FB
 constant bool PS_FOG                [[function_constant(GSMTLConstantIndex_PS_FOG)]];
 constant uint PS_DATE               [[function_constant(GSMTLConstantIndex_PS_DATE)]];
 constant uint PS_ATST               [[function_constant(GSMTLConstantIndex_PS_ATST)]];
+constant uint PS_AFAIL              [[function_constant(GSMTLConstantIndex_PS_AFAIL)]];
 constant uint PS_TFX                [[function_constant(GSMTLConstantIndex_PS_TFX)]];
 constant bool PS_TCC                [[function_constant(GSMTLConstantIndex_PS_TCC)]];
 constant uint PS_WMS                [[function_constant(GSMTLConstantIndex_PS_WMS)]];
@@ -850,8 +851,7 @@ struct PSMain
 		}
 	
 		float4 C = tfx(T, IIP ? in.c : in.fc);
-		if (!atst(C))
-			discard_fragment();
+
 		fog(C, in.t.z);
 
 		return C;
@@ -1054,6 +1054,9 @@ struct PSMain
 		}
 
 		float4 C = ps_color();
+		bool atst_pass = atst(C);
+		if (PS_AFAIL == 0 && !atst_pass)
+			discard_fragment();
 
 		// Must be done before alpha correction
 
@@ -1188,6 +1191,10 @@ struct PSMain
 		ps_color_clamp_wrap(C);
 
 		ps_fbmask(C);
+
+		// Use alpha blend factor to determine whether to update A.
+		if (PS_AFAIL == 3) // RGB_ONLY
+			alpha_blend.a = float(atst_pass);
 
 		if (PS_COLOR0)
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;

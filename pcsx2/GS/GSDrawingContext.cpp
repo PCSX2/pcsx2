@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "GSDrawingContext.h"
-#include "GSGL.h"
-#include "GS.h"
+#include "GS/GSDrawingContext.h"
+#include "GS/GSGL.h"
+#include "GS/GS.h"
+#include "GS/GSUtil.h"
 
 static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 {
@@ -258,14 +259,14 @@ void GSDrawingContext::Dump(const std::string& filename)
 	fprintf(fp,
 		"TEST\n"
 		"\tATE:%u\n"
-		"\tATST:%u\n"
+		"\tATST:%s\n"
 		"\tAREF:%u\n"
-		"\tAFAIL:%u\n"
+		"\tAFAIL:%s\n"
 		"\tDATE:%u\n"
 		"\tDATM:%u\n"
 		"\tZTE:%u\n"
 		"\tZTST:%u\n\n",
-		TEST.ATE, TEST.ATST, TEST.AREF, TEST.AFAIL, TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
+		TEST.ATE, GSUtil::GetATSTName(TEST.ATST), TEST.AREF, GSUtil::GetAFAILName(TEST.AFAIL), TEST.DATE, TEST.DATM, TEST.ZTE, TEST.ZTST);
 
 	fprintf(fp,
 		"FBA\n"

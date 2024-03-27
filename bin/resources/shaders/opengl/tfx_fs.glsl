@@ -640,20 +640,21 @@ vec4 tfx(vec4 T, vec4 C)
 	return C_out;
 }
 
-void atst(vec4 C)
+bool atst(vec4 C)
 {
 	float a = C.a;
 
-#if (PS_ATST == 0)
-	// nothing to do
-#elif (PS_ATST == 1)
-	if (a > AREF) discard;
+#if (PS_ATST == 1)
+	return (a <= AREF);
 #elif (PS_ATST == 2)
-	if (a < AREF) discard;
+	return (a >= AREF);
 #elif (PS_ATST == 3)
-	if (abs(a - AREF) > 0.5f) discard;
+	return (abs(a - AREF) <= 0.5f);
 #elif (PS_ATST == 4)
-	if (abs(a - AREF) < 0.5f) discard;
+	return (abs(a - AREF) >= 0.5f);
+#else
+	// nothing to do
+	return true;
 #endif
 }
 
@@ -984,6 +985,12 @@ void ps_main()
 #endif
 
 	vec4 C = ps_color();
+	bool atst_pass = atst(C);
+
+#if PS_AFAIL == 0 // KEEP or ATST off
+	if (!atst_pass)
+		discard;
+#endif
 
 	// Must be done before alpha correction
 
@@ -1101,6 +1108,11 @@ void ps_main()
 	ps_color_clamp_wrap(C.rgb);
 
 	ps_fbmask(C);
+
+#if PS_AFAIL == 3 // RGB_ONLY
+	// Use alpha blend factor to determine whether to update A.
+	alpha_blend.a = float(atst_pass);
+#endif
 
 #if !PS_NO_COLOR
 	#if PS_RTA_CORRECTION

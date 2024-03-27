@@ -701,29 +701,30 @@ float4 tfx(float4 T, float4 C)
 	return C_out;
 }
 
-void atst(float4 C)
+bool atst(float4 C)
 {
 	float a = C.a;
 
-	if(PS_ATST == 0)
+	if(PS_ATST == 1)
 	{
-		// nothing to do
-	}
-	else if(PS_ATST == 1)
-	{
-		if (a > AREF) discard;
+		return (a <= AREF);
 	}
 	else if(PS_ATST == 2)
 	{
-		if (a < AREF) discard;
+		return (a >= AREF);
 	}
 	else if(PS_ATST == 3)
 	{
-		 if (abs(a - AREF) > 0.5f) discard;
+		 return (abs(a - AREF) <= 0.5f);
 	}
 	else if(PS_ATST == 4)
 	{
-		if (abs(a - AREF) < 0.5f) discard;
+		return (abs(a - AREF) >= 0.5f);
+	}
+	else
+	{
+		// nothing to do
+		return true;
 	}
 }
 
@@ -785,8 +786,6 @@ float4 ps_color(PS_INPUT input)
 	}
 
 	float4 C = tfx(T, input.c);
-
-	atst(C);
 
 	C = fog(C, input.t.z);
 
@@ -964,6 +963,12 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 PS_OUTPUT ps_main(PS_INPUT input)
 {
 	float4 C = ps_color(input);
+	bool atst_pass = atst(C);
+
+#if PS_AFAIL == 0 // KEEP or ATST off
+	if (!atst_pass)
+		discard;
+#endif
 
 	PS_OUTPUT output;
 
@@ -1118,6 +1123,11 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	ps_color_clamp_wrap(C.rgb);
 
 	ps_fbmask(C, input.p.xy);
+
+#if PS_AFAIL == 3 // RGB_ONLY
+	// Use alpha blend factor to determine whether to update A.
+	alpha_blend.a = float(atst_pass);
+#endif
 
 #if !PS_NO_COLOR
 	output.c0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GS.h"
@@ -6,6 +6,8 @@
 #include "GS/GSUtil.h"
 #include "MultiISA.h"
 #include "common/StringUtil.h"
+
+#include <array>
 
 #ifdef ENABLE_VULKAN
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
@@ -113,6 +115,19 @@ public:
 void GSUtil::Init()
 {
 	s_maps.Init();
+}
+
+const char* GSUtil::GetATSTName(u32 atst)
+{
+	static constexpr const char* names[] = {
+		"NEVER", "ALWAYS", "LESS", "LEQUAL", "EQUAL", "GEQUAL", "GREATER", "NOTEQUAL" };
+	return (atst < std::size(names)) ? names[atst] : "";
+}
+
+const char* GSUtil::GetAFAILName(u32 afail)
+{
+	static constexpr const char* names[] = {"KEEP", "FB_ONLY", "ZB_ONLY", "RGB_ONLY"};
+	return (afail < std::size(names)) ? names[afail] : "";
 }
 
 GS_PRIM_CLASS GSUtil::GetPrimClass(u32 prim)
