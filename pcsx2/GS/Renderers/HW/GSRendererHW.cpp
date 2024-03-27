@@ -3784,7 +3784,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	return true;
 }
 
-void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass, GSTextureCache::Target* rt)
+void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt)
 {
 	{
 		// AA1: Blending needs to be enabled on draw.
@@ -3928,7 +3928,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		blend_ad_alpha_masked = false;
 
 	u8 blend_index = static_cast<u8>(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
-	const HWBlend blend_preliminary = GSDevice::GetBlend(blend_index, false);
+	const HWBlend blend_preliminary = GSDevice::GetBlend(blend_index);
 	const int blend_flag = blend_preliminary.flags;
 
 	// Re set alpha, it was modified, must be done after index calculation
@@ -4068,33 +4068,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		}
 	}
 
-	bool replace_dual_src = false;
-	if (!features.dual_source_blend && GSDevice::IsDualSourceBlend(blend_index))
-	{
-		// if we don't have an alpha channel, we don't need a second pass, just output the alpha blend
-		// in the single colour's alpha chnanel, and blend with it
-		if (!m_conf.colormask.wa)
-		{
-			GL_INS("Outputting alpha blend in col0 because of no alpha write");
-			m_conf.ps.no_ablend = true;
-			replace_dual_src = true;
-		}
-		else if (features.framebuffer_fetch || m_conf.require_one_barrier || m_conf.require_full_barrier)
-		{
-			// prefer single pass sw blend (if barrier) or framebuffer fetch over dual pass alpha when supported
-			sw_blending = true;
-			color_dest_blend = false;
-			accumulation_blend &= !features.framebuffer_fetch;
-			blend_mix = false;
-		}
-		else
-		{
-			// split the draw into two
-			blending_alpha_pass = true;
-			replace_dual_src = true;
-		}
-	}
-	else if (features.framebuffer_fetch)
+	if (features.framebuffer_fetch)
 	{
 		// If we have fbfetch, use software blending when we need the fb value for anything else.
 		// This saves outputting the second color when it's not needed.
@@ -4209,12 +4183,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		if (m_conf.ps.blend_c == 2)
 			m_conf.cb_ps.TA_MaxDepth_Af.a = static_cast<float>(AFIX) / 128.0f;
 
-		const HWBlend blend = GSDevice::GetBlend(blend_index, replace_dual_src);
+		const HWBlend blend = GSDevice::GetBlend(blend_index);
 		if (accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
 			m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::CONST_ONE, blend.op, false, 0};
-			blending_alpha_pass = false;
 
 			// Remove Cd from sw blend, it's handled in hw
 			if (m_conf.ps.blend_a == 1)
@@ -4319,8 +4292,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			// Disable HW blending
 			m_conf.blend = {};
 			m_conf.ps.no_color1 = true;
-			replace_dual_src = false;
-			blending_alpha_pass = false;
 
 			// No need to set a_masked bit for blend_ad_alpha_masked case
 			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
@@ -4364,7 +4335,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			m_conf.ps.blend_hw = 3;
 		}
 
-		const HWBlend blend(GSDevice::GetBlend(blend_index, replace_dual_src));
+		const HWBlend blend = GSDevice::GetBlend(blend_index);
 		m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
 
 		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
@@ -5441,10 +5412,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
 
-	bool blending_alpha_pass = false;
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
-		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, blending_alpha_pass, rt);
+		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, rt);
 
 		if (req_src_update && tex->m_texture != rt->m_texture)
 			tex->m_texture = rt->m_texture;
@@ -5773,35 +5743,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		memcpy(&m_conf.depth,     &m_conf.alpha_second_pass.depth,     sizeof(m_conf.depth));
 		m_conf.cb_ps.FogColor_AREF.a = m_conf.alpha_second_pass.ps_aref;
 		m_conf.alpha_second_pass.enable = false;
-	}
-
-	if (blending_alpha_pass)
-	{
-		// write alpha blend as the single alpha output
-		m_conf.ps.no_ablend = true;
-
-		// there's a case we can skip this: RGB_then_ZA alternate handling.
-		// but otherwise, we need to write alpha separately.
-		if (m_conf.colormask.wa)
-		{
-			m_conf.colormask.wa = false;
-			m_conf.separate_alpha_pass = true;
-		}
-
-		// do we need to do this for the failed alpha fragments?
-		if (m_conf.alpha_second_pass.enable)
-		{
-			// there's also a case we can skip here: when we're not writing RGB, there's
-			// no blending, so we can just write the normal alpha!
-			const u8 second_pass_wrgba = m_conf.alpha_second_pass.colormask.wrgba;
-			if ((second_pass_wrgba & (1 << 3)) != 0 && second_pass_wrgba != (1 << 3))
-			{
-				// this sucks. potentially up to 4 passes. but no way around it when we don't have dual-source blend.
-				m_conf.alpha_second_pass.ps.no_ablend = true;
-				m_conf.alpha_second_pass.colormask.wa = false;
-				m_conf.second_separate_alpha_pass = true;
-			}
-		}
 	}
 
 	m_conf.drawlist = (m_conf.require_full_barrier && m_vt.m_primclass == GS_SPRITE_CLASS) ? &m_drawlist : nullptr;
@@ -7069,8 +7010,6 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
 	config.datm = SetDATM::DATM0;
 	config.line_expand = false;
-	config.separate_alpha_pass = false;
-	config.second_separate_alpha_pass = false;
 	config.alpha_second_pass.enable = false;
 	config.vs.key = 0;
 	config.vs.tme = tex != nullptr;

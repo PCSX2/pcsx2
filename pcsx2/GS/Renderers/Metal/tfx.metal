@@ -56,7 +56,6 @@ constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FI
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
 constant bool PS_NO_COLOR1          [[function_constant(GSMTLConstantIndex_PS_NO_COLOR1)]];
-constant bool PS_ONLY_ALPHA         [[function_constant(GSMTLConstantIndex_PS_ONLY_ALPHA)]];
 constant uint PS_CHANNEL            [[function_constant(GSMTLConstantIndex_PS_CHANNEL)]];
 constant uint PS_DITHER             [[function_constant(GSMTLConstantIndex_PS_DITHER)]];
 constant uint PS_DITHER_ADJUST      [[function_constant(GSMTLConstantIndex_PS_DITHER_ADJUST)]];
@@ -1193,8 +1192,6 @@ struct PSMain
 		if (PS_COLOR0)
 			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
 			out.c0.rgb = PS_HDR ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
-		if (PS_COLOR0 && PS_ONLY_ALPHA)
-			out.c0.rgb = 0;
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
 		if (PS_ZCLAMP)

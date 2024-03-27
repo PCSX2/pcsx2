@@ -76,8 +76,6 @@
 #define PS_TEX_IS_FB 0
 #define PS_NO_COLOR 0
 #define PS_NO_COLOR1 0
-#define PS_NO_ABLEND 0
-#define PS_ONLY_ALPHA 0
 #define PS_DATE 0
 #endif
 
@@ -1127,18 +1125,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #if !PS_NO_COLOR1
 	output.c1 = alpha_blend;
 #endif
+#endif // !PS_NO_COLOR
 
-#if PS_NO_ABLEND
-	// write alpha blend factor into col0
-	output.c0.a = alpha_blend.a;
-#endif
-#if PS_ONLY_ALPHA
-	// rgb isn't used
-	output.c0.rgb = float3(0.0f, 0.0f, 0.0f);
-#endif
-#endif
-
-#endif
+#endif // PS_DATE != 1/2
 
 #if PS_ZCLAMP
 	output.depth = min(input.p.z, MaxDepthPS);

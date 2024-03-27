@@ -1710,8 +1710,6 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
-		sm.AddMacro("PS_NO_ABLEND", sel.no_ablend);
-		sm.AddMacro("PS_ONLY_ALPHA", sel.only_alpha);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2619,15 +2617,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 	DrawIndexedPrimitive();
 
-	if (config.separate_alpha_pass)
-	{
-		GSHWDrawConfig::BlendState sap_blend = {};
-		SetHWDrawConfigForAlphaPass(&config.ps, &config.colormask, &sap_blend, &config.depth);
-		SetupOM(config.depth, convertSel(config.colormask, sap_blend), config.blend.constant);
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
-		DrawIndexedPrimitive();
-	}
-
 	if (config.alpha_second_pass.enable)
 	{
 		preprocessSel(config.alpha_second_pass.ps);
@@ -2644,15 +2633,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 		DrawIndexedPrimitive();
-
-		if (config.second_separate_alpha_pass)
-		{
-			GSHWDrawConfig::BlendState sap_blend = {};
-			SetHWDrawConfigForAlphaPass(&config.alpha_second_pass.ps, &config.alpha_second_pass.colormask, &sap_blend, &config.alpha_second_pass.depth);
-			SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, sap_blend), config.blend.constant);
-			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
-			DrawIndexedPrimitive();
-		}
 	}
 
 	if (rt_copy)

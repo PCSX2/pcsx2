@@ -2864,8 +2864,6 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 	sm.AddMacro("PS_NO_COLOR", sel.no_color);
 	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
-	sm.AddMacro("PS_NO_ABLEND", sel.no_ablend);
-	sm.AddMacro("PS_ONLY_ALPHA", sel.only_alpha);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
@@ -3924,16 +3922,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-	{
 		DrawIndexedPrimitive();
-
-		if (config.second_separate_alpha_pass)
-		{
-			SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
-			if (BindDrawPipeline(pipe))
-				DrawIndexedPrimitive();
-		}
-	}
 
 	// and the alpha pass
 	if (config.alpha_second_pass.enable)
@@ -3950,16 +3939,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
-		{
 			DrawIndexedPrimitive();
-
-			if (config.second_separate_alpha_pass)
-			{
-				SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
-				if (BindDrawPipeline(pipe))
-					DrawIndexedPrimitive();
-			}
-		}
 	}
 
 	if (draw_rt_clone)
