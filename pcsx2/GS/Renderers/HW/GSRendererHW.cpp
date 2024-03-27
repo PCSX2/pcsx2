@@ -386,15 +386,50 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 			}
 		}
 	}
+	bool half_right_vert = true;
+	bool half_bottom_vert = true;
 
-	if (m_split_texture_shuffle_pages > 0)
+	if (m_split_texture_shuffle_pages > 0 || m_same_group_texture_shuffle)
 	{
+		if (m_same_group_texture_shuffle)
+		{
+			if (m_r.x & 8)
+			{
+				m_r.x &= ~8;
+				m_vt.m_min.p.x = m_r.x;
+			}
+			else if ((m_r.z + 1) & 8)
+			{
+				m_r.z += 8;
+				m_vt.m_max.p.z = m_r.z;
+			}
+
+			if (m_cached_ctx.FRAME.FBW != rt->m_TEX0.TBW && m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
+			{
+				half_bottom_vert = false;
+				m_vt.m_min.p.x /= 2.0f;
+				m_vt.m_max.p.x = floor(m_vt.m_max.p.y + 1.9f) / 2.0f;
+			}
+			else
+			{
+				half_right_vert = false;
+				m_vt.m_min.p.y /= 2.0f;
+				m_vt.m_max.p.y = floor(m_vt.m_max.p.y + 1.9f) / 2.0f;
+			}
+
+			m_context->scissor.in.x = m_vt.m_min.p.x;
+			m_context->scissor.in.z = m_vt.m_max.p.x + 0.9f;
+			m_context->scissor.in.y = m_vt.m_min.p.y;
+			m_context->scissor.in.w = m_vt.m_max.p.y + 0.9f;
+		}
+
 		// Input vertices might be bad, so rewrite them.
 		// We can't use the draw rect exactly here, because if the target was actually larger
 		// for some reason... unhandled clears, maybe, it won't have been halved correctly.
 		// So, halve it ourselves.
+
 		const GSVector4i dr = m_r;
-		const GSVector4i r = dr.blend32<9>(dr.sra32(1));
+		const GSVector4i r = half_bottom_vert ? dr.blend32<0xA>(dr.sra32(1)) : dr.blend32<5>(dr.sra32(1)); // Half Y : Half X
 		GL_CACHE("ConvertSpriteTextureShuffle: Rewrite from %d,%d => %d,%d to %d,%d => %d,%d",
 			static_cast<int>(m_vt.m_min.p.x), static_cast<int>(m_vt.m_min.p.y), static_cast<int>(m_vt.m_min.p.z),
 			static_cast<int>(m_vt.m_min.p.w), r.x, r.y, r.z, r.w);
@@ -406,19 +441,35 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 		v[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.z);
 		v[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.w);
 
-		if (PRIM->FST)
+		if (m_same_group_texture_shuffle)
 		{
-			v[0].U = fpr.x;
-			v[0].V = fpr.y;
-			v[1].U = fpr.z;
-			v[1].V = fpr.w;
+			// no need to adjust v[0] because it should already be correct.
+			if (PRIM->FST)
+			{
+				v[1].U = v[m_index.buff[m_index.tail - 1]].U;
+				v[1].V = v[m_index.buff[m_index.tail - 1]].V;
+			}
+			else
+			{
+				v[1].ST = v[m_index.buff[m_index.tail - 1]].ST;
+			}
 		}
 		else
 		{
-			const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
-			const GSVector4 st = GSVector4(r) / GSVector4(GSVector2(tw, th)).xyxy();
-			GSVector4::storel(&v[0].ST.S, st);
-			GSVector4::storeh(&v[1].ST.S, st);
+			if (PRIM->FST)
+			{
+				v[0].U = fpr.x;
+				v[0].V = fpr.y;
+				v[1].U = fpr.z;
+				v[1].V = fpr.w;
+			}
+			else
+			{
+				const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
+				const GSVector4 st = GSVector4(r) / GSVector4(GSVector2(tw, th)).xyxy();
+				GSVector4::storel(&v[0].ST.S, st);
+				GSVector4::storeh(&v[1].ST.S, st);
+			}
 		}
 
 		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
@@ -426,19 +477,9 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 		return;
 	}
 
-	bool half_right_vert = true;
-	bool half_bottom_vert = true;
-	bool half_right_uv = !m_copy_16bit_to_target_shuffle;
-	bool half_bottom_uv = !m_copy_16bit_to_target_shuffle;
+	bool half_right_uv = !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle;
+	bool half_bottom_uv = !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle;
 
-	if (m_same_group_texture_shuffle)
-	{
-		if (m_cached_ctx.FRAME.FBW != rt->m_TEX0.TBW && m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
-			half_bottom_vert = false;
-		else
-			half_right_vert = false;
-	}
-	else
 	{
 		// Different source (maybe?)
 		// If a game does the texture and frame doubling differently, they can burn in hell.
@@ -2197,6 +2238,15 @@ void GSRendererHW::Draw()
 				m_cached_ctx.TEX0.TH = std::ceil(std::log2(std::min(1024, height * tex_psm.pgs.y)));
 				m_cached_ctx.TEX0.TBW = m_split_texture_shuffle_fbw;
 			}
+
+			m_vt.m_min.p.x = m_r.x;
+			m_vt.m_min.p.y = m_r.y;
+			m_vt.m_min.t.x = m_r.x;
+			m_vt.m_min.t.y = m_r.y;
+			m_vt.m_max.p.x = m_r.z;
+			m_vt.m_max.p.y = m_r.w;
+			m_vt.m_max.t.x = m_r.z;
+			m_vt.m_max.t.y = m_r.w;
 		}
 	}
 
@@ -3531,6 +3581,12 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 		m_split_texture_shuffle_pages_high = 0;
 		m_split_texture_shuffle_start_FBP = 0;
 		m_split_texture_shuffle_start_TBP = 0;
+
+		// Get rid of any clamps, we're basically overriding this (more of an issue for D3D).
+		if (m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP)
+			m_cached_ctx.CLAMP.WMS = m_cached_ctx.CLAMP.WMS == CLAMP_REGION_CLAMP ? CLAMP_CLAMP : CLAMP_REPEAT;
+		if (m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP)
+			m_cached_ctx.CLAMP.WMT = m_cached_ctx.CLAMP.WMT == CLAMP_REGION_CLAMP ? CLAMP_CLAMP : CLAMP_REPEAT;
 	}
 	else
 	{
@@ -4776,18 +4832,17 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		copy_size.x = std::min(tex_size.x, src_unscaled_size.x);
 		copy_size.y = std::min(tex_size.y, src_unscaled_size.y);
 
-		// Use the texture min/max to get the copy range.
-		copy_range = tmm.coverage;
+		// Use the texture min/max to get the copy range if not reinterpreted.
+		if (m_texture_shuffle)
+			copy_range = GSVector4i::loadh(copy_size);
+		else
+			copy_range = tmm.coverage;
 
 		// Texture size above might be invalid (Timesplitters 2), extend if needed.
 		if (m_cached_ctx.CLAMP.WMS >= CLAMP_REGION_CLAMP && copy_range.z > copy_size.x)
 			copy_size.x = src_unscaled_size.x;
 		if (m_cached_ctx.CLAMP.WMT >= CLAMP_REGION_CLAMP && copy_range.w > copy_size.y)
 			copy_size.y = src_unscaled_size.y;
-
-		// Texture shuffles might read up to +/- 8 pixels on either side.
-		if (m_texture_shuffle)
-			copy_range = (copy_range + GSVector4i::cxpr(-8, 0, 8, 0)).max_i32(GSVector4i::zero());
 
 		// Apply target region offset.
 		// TODO: Shrink the output texture to only the copy size.
@@ -4859,6 +4914,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		m_conf.ps.tfx = 4;
 		return;
 	}
+
 	g_gs_device->CopyRect(
 		src_target->m_texture, src_copy, scaled_copy_range, scaled_copy_dst_offset.x, scaled_copy_dst_offset.y);
 	m_conf.tex = src_copy;
@@ -4877,6 +4933,10 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	// If we're a shuffle, tex-is-fb is always fine.
 	if (m_texture_shuffle || m_channel_shuffle)
 	{
+		// We can't do tex is FB if the source and destination aren't pointing to the same bit of texture.
+		if (m_texture_shuffle && (floor(abs(m_vt.m_min.t.y) + tex->m_region.GetMinY()) != floor(abs(m_vt.m_min.p.y))))
+			return false;
+
 		GL_CACHE("Activating tex-is-fb for %s shuffle.", m_texture_shuffle ? "texture" : "channel");
 		return true;
 	}
