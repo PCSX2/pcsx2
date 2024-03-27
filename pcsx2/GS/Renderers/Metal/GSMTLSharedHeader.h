@@ -162,6 +162,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_FOG,
 	GSMTLConstantIndex_PS_DATE,
 	GSMTLConstantIndex_PS_ATST,
+	GSMTLConstantIndex_PS_AFAIL,
 	GSMTLConstantIndex_PS_TFX,
 	GSMTLConstantIndex_PS_TCC,
 	GSMTLConstantIndex_PS_WMS,
