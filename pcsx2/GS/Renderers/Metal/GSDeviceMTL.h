@@ -36,18 +36,19 @@ struct PipelineSelectorExtrasMTL
 			u8 writemask : 4;
 			GSDevice::BlendFactor src_factor : 4;
 			GSDevice::BlendFactor dst_factor : 4;
+			GSDevice::BlendFactor src_factor_alpha : 4;
+			GSDevice::BlendFactor dst_factor_alpha : 4;
 			GSDevice::BlendOp     blend_op : 2;
 			bool blend_enable : 1;
 			bool has_depth : 1;
 			bool has_stencil : 1;
 		};
-		u8 _key[3];
+		u32 fullkey;
 	};
-	u32 fullkey() { return _key[0] | (_key[1] << 8) | (_key[2] << 16); }
 
-	PipelineSelectorExtrasMTL(): _key{} {}
+	PipelineSelectorExtrasMTL(): fullkey(0) {}
 	PipelineSelectorExtrasMTL(GSHWDrawConfig::BlendState blend, GSTexture* rt, GSHWDrawConfig::ColorMaskSelector cms, bool has_depth, bool has_stencil)
-		: _key{}
+		: fullkey(0)
 	{
 		this->rt = rt ? rt->GetFormat() : GSTexture::Format::Invalid;
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
@@ -59,6 +60,8 @@ struct PipelineSelectorExtrasMTL
 		this->src_factor = static_cast<GSDevice::BlendFactor>(blend.src_factor);
 		this->dst_factor = static_cast<GSDevice::BlendFactor>(blend.dst_factor);
 		this->blend_op = static_cast<GSDevice::BlendOp>(blend.op);
+		this->src_factor_alpha = static_cast<GSDevice::BlendFactor>(blend.src_factor_alpha);
+		this->dst_factor_alpha = static_cast<GSDevice::BlendFactor>(blend.dst_factor_alpha);
 		this->blend_enable = blend.enable;
 		this->has_depth   = has_depth;
 		this->has_stencil = has_stencil;
@@ -69,6 +72,7 @@ struct PipelineSelectorMTL
 	GSHWDrawConfig::PSSelector ps;
 	PipelineSelectorExtrasMTL extras;
 	GSHWDrawConfig::VSSelector vs;
+	u8 pad[7];
 	PipelineSelectorMTL()
 	{
 		memset(this, 0, sizeof(*this));
@@ -95,7 +99,7 @@ struct PipelineSelectorMTL
 	}
 };
 
-static_assert(sizeof(PipelineSelectorMTL) == 16);
+static_assert(sizeof(PipelineSelectorMTL) == 24);
 
 template <>
 struct std::hash<PipelineSelectorMTL>

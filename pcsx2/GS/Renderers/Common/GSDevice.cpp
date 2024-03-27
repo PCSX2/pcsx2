@@ -858,6 +858,11 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	src_uv = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
+bool GSHWDrawConfig::BlendState::IsEffective(ColorMaskSelector colormask) const
+{
+	return enable && ((colormask.key & 7u) || src_factor_alpha != GSDevice::CONST_ZERO || dst_factor_alpha != GSDevice::CONST_ONE);
+}
+
 // clang-format off
 
 const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =

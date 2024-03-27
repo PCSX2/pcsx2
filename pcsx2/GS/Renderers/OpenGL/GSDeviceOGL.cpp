@@ -2208,7 +2208,8 @@ void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
 		OMAttachDs();
 }
 
-void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op, bool is_constant, u8 constant)
+void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op,
+	GLenum src_factor_alpha, GLenum dst_factor_alpha, bool is_constant, u8 constant)
 {
 	if (enable)
 	{
@@ -2231,11 +2232,14 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 			glBlendEquationSeparate(op, GL_FUNC_ADD);
 		}
 
-		if (GLState::f_sRGB != src_factor || GLState::f_dRGB != dst_factor)
+		if (GLState::f_sRGB != src_factor || GLState::f_dRGB != dst_factor ||
+			GLState::f_sA != src_factor_alpha || GLState::f_dA != dst_factor_alpha)
 		{
 			GLState::f_sRGB = src_factor;
 			GLState::f_dRGB = dst_factor;
-			glBlendFuncSeparate(src_factor, dst_factor, GL_ONE, GL_ZERO);
+			GLState::f_sA = src_factor_alpha;
+			GLState::f_dA = dst_factor_alpha;
+			glBlendFuncSeparate(src_factor, dst_factor, src_factor_alpha, dst_factor_alpha);
 		}
 	}
 	else
@@ -2530,6 +2534,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
 		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+		s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
 		config.blend.constant_enable, config.blend.constant);
 
 	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa

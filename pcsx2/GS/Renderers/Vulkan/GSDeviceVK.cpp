@@ -4850,7 +4850,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 
 	GSHWDrawConfig::BlendState pbs{p.bs};
 	GSHWDrawConfig::PSSelector pps{p.ps};
-	if ((p.cms.wrgba & 0x7) == 0)
+	if (!p.bs.IsEffective(p.cms))
 	{
 		// disable blending when colours are masked
 		pbs = {};
@@ -4942,7 +4942,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		// clang-format on
 
 		gpb.SetBlendAttachment(0, true, vk_blend_factors[pbs.src_factor], vk_blend_factors[pbs.dst_factor],
-			vk_blend_ops[pbs.op], VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
+			vk_blend_ops[pbs.op], vk_blend_factors[pbs.src_factor_alpha], vk_blend_factors[pbs.dst_factor_alpha],
+			VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
 	{

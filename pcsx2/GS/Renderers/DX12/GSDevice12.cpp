@@ -2880,7 +2880,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 
 	GSHWDrawConfig::BlendState pbs{p.bs};
 	GSHWDrawConfig::PSSelector pps{p.ps};
-	if ((p.cms.wrgba & 0x7) == 0)
+	if (!p.bs.IsEffective(p.cms))
 	{
 		// disable blending when colours are masked
 		pbs = {};
@@ -2966,7 +2966,8 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 		// clang-format on
 
 		gpb.SetBlendState(0, true, d3d_blend_factors[pbs.src_factor], d3d_blend_factors[pbs.dst_factor],
-			d3d_blend_ops[pbs.op], D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, p.cms.wrgba);
+			d3d_blend_ops[pbs.op], d3d_blend_factors[pbs.src_factor_alpha], d3d_blend_factors[pbs.dst_factor_alpha],
+			D3D12_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
 	{
