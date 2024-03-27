@@ -614,14 +614,17 @@ struct alignas(16) GSHWDrawConfig
 				u8 enable : 1;
 				u8 constant_enable : 1;
 				u8 op : 6;
-				u8 src_factor;
-				u8 dst_factor;
+				u8 src_factor : 4;
+				u8 dst_factor : 4;
+				u8 src_alpha_factor : 4;
+				u8 dst_alpha_factor : 4;
 				u8 constant;
 			};
 			u32 key;
 		};
 		BlendState(): key(0) {}
-		BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_, bool constant_enable_, u8 constant_)
+		BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_,
+			u8 src_alpha_factor_, u8 dst_alpha_factor_, bool constant_enable_, u8 constant_)
 			: key(0)
 		{
 			enable = enable_;
@@ -629,6 +632,8 @@ struct alignas(16) GSHWDrawConfig
 			src_factor = src_factor_;
 			dst_factor = dst_factor_;
 			op = op_;
+			src_alpha_factor = src_alpha_factor_;
+			dst_alpha_factor = dst_alpha_factor_;
 			constant = constant_;
 		}
 	};
@@ -955,8 +960,7 @@ public:
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{
-		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR
-			/* || factor == INV_SRC1_COLOR*/); // not used
+		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR || factor == INV_SRC1_COLOR);
 	}
 	__fi static constexpr bool IsConstantBlendFactor(u16 factor)
 	{

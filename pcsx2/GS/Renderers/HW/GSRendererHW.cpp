@@ -4187,7 +4187,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		if (accumulation_blend)
 		{
 			// Keep HW blending to do the addition/subtraction
-			m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::CONST_ONE, blend.op, false, 0};
+			m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::CONST_ONE, blend.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 
 			// Remove Cd from sw blend, it's handled in hw
 			if (m_conf.ps.blend_a == 1)
@@ -4239,7 +4239,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			}
 
 			// For mixed blend, the source blend is done in the shader (so we use CONST_ONE as a factor).
-			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
+			m_conf.blend = {true, GSDevice::CONST_ONE, blend.dst, blend.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO,m_conf.ps.blend_c == 2, AFIX};
 			m_conf.ps.blend_mix = (blend.op == GSDevice::OP_REV_SUBTRACT) ? 2 : 1;
 
 			// Elide DSB colour output if not used by dest.
@@ -4252,7 +4252,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 					// Replace Cs*Alpha + Cd*(1 - Alpha) with Cs*Alpha - Cd*(Alpha - 1).
 					// Alpha - 1 subtraction is only done for the dual source output (hw blending part) since we are changing the equation.
 					// Af will be replaced with As in shader and send it to dual source output.
-					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, GSDevice::OP_SUBTRACT, false, 0};
+					m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, GSDevice::OP_SUBTRACT, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 					// blend hw 1 will disable alpha clamp, we can reuse the old bits.
 					m_conf.ps.blend_hw = 1;
 					// DSB output will always be used.
@@ -4272,7 +4272,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			{
 				// Allow to compensate when Cs*(Alpha + 1) overflows, to compensate we change
 				// the alpha output value for Cd*Alpha.
-				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, false, 0};
+				m_conf.blend = {true, GSDevice::CONST_ONE, GSDevice::SRC1_COLOR, blend.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO,false, 0};
 				m_conf.ps.blend_hw = 3;
 				m_conf.ps.no_color1 = false;
 
@@ -4336,7 +4336,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		}
 
 		const HWBlend blend = GSDevice::GetBlend(blend_index);
-		m_conf.blend = {true, blend.src, blend.dst, blend.op, m_conf.ps.blend_c == 2, AFIX};
+		m_conf.blend = {true, blend.src, blend.dst, blend.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO,m_conf.ps.blend_c == 2, AFIX};
 
 		// Remove second color output when unused. Works around bugs in some drivers (e.g. Intel).
 		m_conf.ps.no_color1 |= !GSDevice::IsDualSourceBlendFactor(m_conf.blend.src_factor) &&
