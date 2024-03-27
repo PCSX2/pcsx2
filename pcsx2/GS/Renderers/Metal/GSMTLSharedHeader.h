@@ -193,7 +193,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_PABE,
 	GSMTLConstantIndex_PS_NO_COLOR,
 	GSMTLConstantIndex_PS_NO_COLOR1,
-	GSMTLConstantIndex_PS_ONLY_ALPHA,
 	GSMTLConstantIndex_PS_CHANNEL,
 	GSMTLConstantIndex_PS_DITHER,
 	GSMTLConstantIndex_PS_DITHER_ADJUST,

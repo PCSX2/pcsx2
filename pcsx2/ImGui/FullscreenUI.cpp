@@ -3556,8 +3556,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Framebuffer Fetch"),
 		FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Disable Dual-Source Blending"),
-		FSUI_CSTR("Prevents the usage of dual-source blending when supported by host GPU."), "EmuCore/GS", "DisableDualSourceBlend", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Shader Cache"), FSUI_CSTR("Prevents the loading and saving of shaders/pipelines to disk."),
 		"EmuCore/GS", "DisableShaderCache", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
@@ -6664,8 +6662,6 @@ TRANSLATE_NOOP("FullscreenUI", "GS Dump Compression");
 TRANSLATE_NOOP("FullscreenUI", "Sets the compression algorithm for GS dumps.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Framebuffer Fetch");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the usage of framebuffer fetch when supported by host GPU.");
-TRANSLATE_NOOP("FullscreenUI", "Disable Dual-Source Blending");
-TRANSLATE_NOOP("FullscreenUI", "Prevents the usage of dual-source blending when supported by host GPU.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Shader Cache");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the loading and saving of shaders/pipelines to disk.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Vertex Shader Expand");

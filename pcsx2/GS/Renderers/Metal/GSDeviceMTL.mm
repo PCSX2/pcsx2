@@ -1836,8 +1836,6 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.pabe,                  GSMTLConstantIndex_PS_PABE);
 		setFnConstantB(m_fn_constants, pssel.no_color,              GSMTLConstantIndex_PS_NO_COLOR);
 		setFnConstantB(m_fn_constants, pssel.no_color1,             GSMTLConstantIndex_PS_NO_COLOR1);
-		// no_ablend ignored for now (No Metal driver has had DSB so broken that it's needed to be disabled, though Intel's was pretty close)
-		setFnConstantB(m_fn_constants, pssel.only_alpha,            GSMTLConstantIndex_PS_ONLY_ALPHA);
 		setFnConstantI(m_fn_constants, pssel.channel,               GSMTLConstantIndex_PS_CHANNEL);
 		setFnConstantI(m_fn_constants, pssel.dither,                GSMTLConstantIndex_PS_DITHER);
 		setFnConstantI(m_fn_constants, pssel.dither_adjust,         GSMTLConstantIndex_PS_DITHER_ADJUST);

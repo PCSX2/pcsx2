@@ -787,33 +787,6 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 	return true;
 }
 
-void GSDevice::SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
-	GSHWDrawConfig::ColorMaskSelector* cms,
-	GSHWDrawConfig::BlendState* bs,
-	GSHWDrawConfig::DepthStencilSelector* dss)
-{
-	// only need to compute the alpha component (allow the shader to optimize better)
-	ps->no_ablend = false;
-	ps->only_alpha = true;
-
-	// definitely don't need to compute software blend (this may get rid of some barriers)
-	ps->blend_a = ps->blend_b = ps->blend_c = ps->blend_d = 0;
-
-	// only write alpha (RGB=0,A=1)
-	cms->wrgba = (1 << 3);
-
-	// no need for hardware blending, since we're not writing RGB
-	bs->enable = false;
-
-	// if depth writes are on, we can optimize to an EQUAL test, otherwise we leave the tests alone
-	// since the alpha channel isn't blended, the last fragment wins and this'll be okay
-	if (dss->zwe)
-	{
-		dss->zwe = false;
-		dss->ztst = ZTST_GEQUAL;
-	}
-}
-
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
@@ -886,26 +859,6 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 }
 
 // clang-format off
-
-const std::array<u8, 16> GSDevice::m_replaceDualSrcBlendMap =
-{{
-	SRC_COLOR,        // SRC_COLOR
-	INV_SRC_COLOR,    // INV_SRC_COLOR
-	DST_COLOR,        // DST_COLOR
-	INV_DST_COLOR,    // INV_DST_COLOR
-	SRC_COLOR,        // SRC1_COLOR
-	INV_SRC_COLOR,    // INV_SRC1_COLOR
-	SRC_ALPHA,        // SRC_ALPHA
-	INV_SRC_ALPHA,    // INV_SRC_ALPHA
-	DST_ALPHA,        // DST_ALPHA
-	INV_DST_ALPHA,    // INV_DST_ALPHA
-	SRC_ALPHA,        // SRC1_ALPHA
-	INV_SRC_ALPHA,    // INV_SRC1_ALPHA
-	CONST_COLOR,      // CONST_COLOR
-	INV_CONST_COLOR,  // INV_CONST_COLOR
-	CONST_ONE,        // CONST_ONE
-	CONST_ZERO        // CONST_ZERO
-}};
 
 const std::array<HWBlend, 3*3*3*3> GSDevice::m_blendMap =
 {{

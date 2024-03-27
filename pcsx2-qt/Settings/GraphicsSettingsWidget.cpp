@@ -230,7 +230,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "EmuCore/GS", "DisableDualSourceBlend", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, "EmuCore/GS", "DisableShaderCache", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableVertexShaderExpand, "EmuCore/GS", "DisableVertexShaderExpand", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
@@ -334,7 +333,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.skipPresentingDuplicateFrames = nullptr;
 		m_ui.threadedPresentation = nullptr;
 		m_ui.overrideTextureBarriers = nullptr;
-		m_ui.disableDualSource = nullptr;
 		m_ui.disableFramebufferFetch = nullptr;
 		m_ui.disableShaderCache = nullptr;
 		m_ui.disableVertexShaderExpand = nullptr;

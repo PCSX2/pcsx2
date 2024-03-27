@@ -781,7 +781,6 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(UseDebugDevice) &&
 		   OpEqu(UseBlitSwapChain) &&
 		   OpEqu(DisableShaderCache) &&
-		   OpEqu(DisableDualSourceBlend) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableVertexShaderExpand) &&
 		   OpEqu(DisableThreadedPresentation) &&
@@ -834,7 +833,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBool(UseDebugDevice);
 	GSSettingBool(UseBlitSwapChain);
 	GSSettingBool(DisableShaderCache);
-	GSSettingBool(DisableDualSourceBlend);
 	GSSettingBool(DisableFramebufferFetch);
 	GSSettingBool(DisableVertexShaderExpand);
 	GSSettingBool(DisableThreadedPresentation);

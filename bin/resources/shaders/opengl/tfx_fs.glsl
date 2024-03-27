@@ -86,14 +86,12 @@ in SHADER
 	#endif
 #endif
 
-#if !PS_NO_COLOR
-#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
+#if !PS_NO_COLOR && !PS_NO_COLOR1
 	// Same buffer but 2 colors for dual source blending
 	layout(location = 0, index = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
 	layout(location = 0, index = 1) out vec4 SV_Target1;
-#else
+#elif !PS_NO_COLOR
 	layout(location = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
-#endif
 #endif
 
 #if NEEDS_TEX
@@ -1117,15 +1115,6 @@ void ps_main()
 	#endif
 	#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;
-	#endif
-
-	#if PS_NO_ABLEND
-		// write alpha blend factor into col0
-		SV_Target0.a = alpha_blend.a;
-	#endif
-	#if PS_ONLY_ALPHA
-		// rgb isn't used
-		SV_Target0.rgb = vec3(0.0f);
 	#endif
 #endif
 
