@@ -13,8 +13,6 @@
 GSClut::GSClut(GSLocalMemory* mem)
 	: m_mem(mem)
 {
-	static constexpr u32 CLUT_ALLOC_SIZE = 4096 * 2;
-
 	// 1k + 1k for mirrored area simulating wrapping memory
 	m_clut = static_cast<u16*>(_aligned_malloc(CLUT_ALLOC_SIZE, VECTOR_ALIGNMENT));
 	if (!m_clut)
@@ -94,10 +92,8 @@ GSClut::GSClut(GSLocalMemory* mem)
 
 GSClut::~GSClut()
 {
-	if (m_gpu_clut4)
-		delete m_gpu_clut4;
-	if (m_gpu_clut8)
-		delete m_gpu_clut8;
+	delete m_gpu_clut4;
+	delete m_gpu_clut8;
 
 	_aligned_free(m_clut);
 }
@@ -128,6 +124,16 @@ u32 GSClut::GetCLUTCPSM()
 void GSClut::SetNextCLUTTEX0(u64 TEX0)
 {
 	m_write.next_tex0 = TEX0;
+}
+
+void GSClut::Reset()
+{
+	std::memset(m_CBP, 0, sizeof(m_CBP));
+	std::memset(m_clut, 0, CLUT_ALLOC_SIZE);
+	m_write = {};
+	m_write.dirty = 1;
+	m_read = {};
+	m_read.dirty = true;
 }
 
 bool GSClut::InvalidateRange(u32 start_block, u32 end_block, bool is_draw)

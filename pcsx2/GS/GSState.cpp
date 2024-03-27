@@ -140,6 +140,7 @@ void GSState::Reset(bool hardware_reset)
 	memset(&m_v, 0, sizeof(m_v));
 
 	m_env.Reset();
+	m_mem.m_clut.Reset();
 
 	PRIM = &m_env.PRIM;
 
@@ -181,6 +182,7 @@ void GSState::Reset(bool hardware_reset)
 	m_index.tail = 0;
 	m_scanmask_used = 0;
 	m_texflush_flag = false;
+	m_channel_shuffle = false;
 	m_dirty_gs_regs = 0;
 	m_backed_up_ctx = -1;
 
@@ -2708,6 +2710,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	ReadState(&m_q, data);
 
+	m_prev_env = m_env;
 	PRIM = &m_env.PRIM;
 
 	UpdateContext();
@@ -2724,6 +2727,10 @@ int GSState::Defrost(const freezeData* fd)
 	}
 
 	UpdateScissor();
+
+	// Force CLUT to be reloaded.
+	m_mem.m_clut.Reset();
+	(PRIM->CTXT == 0) ? ApplyTEX0<0>(m_context->TEX0) : ApplyTEX0<1>(m_context->TEX0);
 
 	g_perfmon.SetFrame(5000);
 
