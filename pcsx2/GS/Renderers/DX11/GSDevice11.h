@@ -29,43 +29,25 @@ public:
 	using PSSamplerSelector = GSHWDrawConfig::SamplerSelector;
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 
-#pragma pack(push, 1)
-	struct OMBlendSelector
+	union OMBlendSelector
 	{
-		union
+		struct
 		{
-			struct
-			{
-				// Color mask
-				u32 wr : 1;
-				u32 wg : 1;
-				u32 wb : 1;
-				u32 wa : 1;
-				// Alpha blending
-				u32 blend_enable : 1;
-				u32 blend_op : 2;
-				u32 blend_src_factor : 4;
-				u32 blend_dst_factor : 4;
-			};
-
-			struct
-			{
-				// Color mask
-				u32 wrgba : 4;
-			};
-
-			u32 key;
+			GSHWDrawConfig::ColorMaskSelector colormask;
+			u8 pad[3];
+			GSHWDrawConfig::BlendState blend;
 		};
+		u64 key;
 
-		operator u32() { return key & 0x7fff; }
-
-		OMBlendSelector()
-			: key(0)
+		constexpr OMBlendSelector() : key(0) {}
+		constexpr OMBlendSelector(GSHWDrawConfig::ColorMaskSelector colormask_, GSHWDrawConfig::BlendState blend_)
 		{
+			key = 0;
+			colormask = colormask_;
+			blend = blend_;
 		}
 	};
-
-#pragma pack(pop)
+	static_assert(sizeof(OMBlendSelector) == sizeof(u64));
 
 	class ShaderMacro
 	{
@@ -255,7 +237,7 @@ private:
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11DepthStencilState>> m_om_dss;
-	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
+	std::unordered_map<u64, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
 	wil::com_ptr_nothrow<ID3D11RasterizerState> m_rs;
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;

@@ -23,6 +23,8 @@ namespace GLState
 	extern u16 eq_RGB;
 	extern u16 f_sRGB;
 	extern u16 f_dRGB;
+	extern u16 f_sA;
+	extern u16 f_dA;
 	extern u8 bf;
 	extern u8 wrgba;
 

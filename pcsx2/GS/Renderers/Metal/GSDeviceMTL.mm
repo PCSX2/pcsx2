@@ -1749,8 +1749,6 @@ static MTLBlendOperation ConvertBlendOp(GSDevice::BlendOp generic)
 	}
 }
 
-static constexpr MTLColorWriteMask MTLColorWriteMaskRGB = MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue;
-
 static GSMTLExpandType ConvertVSExpand(GSHWDrawConfig::VSExpand generic)
 {
 	switch (generic)
@@ -1874,14 +1872,16 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		color.destinationRGBBlendFactor = MTLBlendFactorOne;
 		color.writeMask = MTLColorWriteMaskRed;
 	}
-	else if (extras.blend_enable && (extras.writemask & MTLColorWriteMaskRGB))
+	else if (blend.IsEffective(cms))
 	{
 		color.blendingEnabled = YES;
 		color.rgbBlendOperation = ConvertBlendOp(extras.blend_op);
 		color.sourceRGBBlendFactor = ConvertBlendFactor(extras.src_factor);
 		color.destinationRGBBlendFactor = ConvertBlendFactor(extras.dst_factor);
+		color.sourceAlphaBlendFactor = ConvertBlendFactor(extras.src_factor_alpha);
+		color.destinationAlphaBlendFactor = ConvertBlendFactor(extras.dst_factor_alpha);
 	}
-	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey()];
+	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
 	auto pipeline = MakePipeline(pdesc, vs, ps, pname);
 
 	[m_current_render.encoder setRenderPipelineState:pipeline];

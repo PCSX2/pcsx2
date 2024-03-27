@@ -487,9 +487,9 @@ struct alignas(16) GSHWDrawConfig
 			};
 			u8 key;
 		};
-		DepthStencilSelector(): key(0) {}
-		DepthStencilSelector(u8 k): key(k) {}
-		static DepthStencilSelector NoDepth()
+		constexpr DepthStencilSelector(): key(0) {}
+		constexpr DepthStencilSelector(u8 k): key(k) {}
+		static constexpr DepthStencilSelector NoDepth()
 		{
 			DepthStencilSelector out;
 			out.ztst = ZTST_ALWAYS;
@@ -515,8 +515,8 @@ struct alignas(16) GSHWDrawConfig
 			};
 			u8 key;
 		};
-		ColorMaskSelector(): key(0xF) {}
-		ColorMaskSelector(u8 c): key(0) { wrgba = c; }
+		constexpr ColorMaskSelector(): key(0xF) {}
+		constexpr ColorMaskSelector(u8 c): key(0) { wrgba = c; }
 	};
 #pragma pack(pop)
 	struct alignas(16) VSConstantBuffer
@@ -616,14 +616,14 @@ struct alignas(16) GSHWDrawConfig
 				u8 op : 6;
 				u8 src_factor : 4;
 				u8 dst_factor : 4;
-				u8 src_alpha_factor : 4;
-				u8 dst_alpha_factor : 4;
+				u8 src_factor_alpha : 4;
+				u8 dst_factor_alpha : 4;
 				u8 constant;
 			};
 			u32 key;
 		};
-		BlendState(): key(0) {}
-		BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_,
+		constexpr BlendState(): key(0) {}
+		constexpr BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_,
 			u8 src_alpha_factor_, u8 dst_alpha_factor_, bool constant_enable_, u8 constant_)
 			: key(0)
 		{
@@ -632,10 +632,13 @@ struct alignas(16) GSHWDrawConfig
 			src_factor = src_factor_;
 			dst_factor = dst_factor_;
 			op = op_;
-			src_alpha_factor = src_alpha_factor_;
-			dst_alpha_factor = dst_alpha_factor_;
+			src_factor_alpha = src_alpha_factor_;
+			dst_factor_alpha = dst_alpha_factor_;
 			constant = constant_;
 		}
+
+		// Blending has no effect if RGB is masked.
+		bool IsEffective(ColorMaskSelector colormask) const;
 	};
 	enum class DestinationAlphaMode : u8
 	{
