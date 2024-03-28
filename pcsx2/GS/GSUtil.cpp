@@ -22,18 +22,17 @@
 #include <wil/com.h>
 #endif
 
-static class GSUtilMaps
+namespace {
+struct GSUtilMaps
 {
-public:
-	u8 PrimClassField[8];
-	u8 VertexCountField[8];
-	u8 ClassVertexCountField[4];
-	u32 CompatibleBitsField[64][2];
-	u32 SharedBitsField[64][2];
-	u32 SwizzleField[64][2];
+	u8 PrimClassField[8] = {};
+	u8 VertexCountField[8] = {};
+	u8 ClassVertexCountField[4] = {};
+	u32 CompatibleBitsField[64][2] = {};
+	u32 SharedBitsField[64][2] = {};
+	u32 SwizzleField[64][2] = {};
 
-	// Defer init to avoid AVX2 illegal instructions
-	void Init()
+	constexpr GSUtilMaps()
 	{
 		PrimClassField[GS_POINTLIST] = GS_POINT_CLASS;
 		PrimClassField[GS_LINELIST] = GS_LINE_CLASS;
@@ -58,8 +57,6 @@ public:
 		ClassVertexCountField[GS_TRIANGLE_CLASS] = 3;
 		ClassVertexCountField[GS_SPRITE_CLASS] = 2;
 
-		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
-
 		for (int i = 0; i < 64; i++)
 		{
 			CompatibleBitsField[i][i >> 5] |= 1U << (i & 0x1f);
@@ -73,8 +70,6 @@ public:
 		CompatibleBitsField[PSMZ24][PSMZ32 >> 5] |= 1 << (PSMZ32 & 0x1f);
 		CompatibleBitsField[PSMZ16][PSMZ16S >> 5] |= 1 << (PSMZ16S & 0x1f);
 		CompatibleBitsField[PSMZ16S][PSMZ16 >> 5] |= 1 << (PSMZ16 & 0x1f);
-
-		memset(SwizzleField, 0, sizeof(SwizzleField));
 
 		for (int i = 0; i < 64; i++)
 		{
@@ -92,8 +87,6 @@ public:
 		SwizzleField[PSMZ32][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
 		SwizzleField[PSMZ24][PSMZ32 >> 5] |= 1 << (PSMZ32 & 0x1f);
 
-		memset(SharedBitsField, 0, sizeof(SharedBitsField));
-
 		SharedBitsField[PSMCT24][PSMT8H >> 5] |= 1 << (PSMT8H & 0x1f);
 		SharedBitsField[PSMCT24][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
 		SharedBitsField[PSMCT24][PSMT4HH >> 5] |= 1 << (PSMT4HH & 0x1f);
@@ -109,13 +102,10 @@ public:
 		SharedBitsField[PSMT4HH][PSMZ24 >> 5] |= 1 << (PSMZ24 & 0x1f);
 		SharedBitsField[PSMT4HH][PSMT4HL >> 5] |= 1 << (PSMT4HL & 0x1f);
 	}
-
-} s_maps;
-
-void GSUtil::Init()
-{
-	s_maps.Init();
+};
 }
+
+static constexpr const GSUtilMaps s_maps;
 
 const char* GSUtil::GetATSTName(u32 atst)
 {
