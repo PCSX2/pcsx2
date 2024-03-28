@@ -1,10 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "cam-linux.h"
+#include "cam-jpeg.h"
 #include "usb-eyetoy-webcam.h"
-#include "jpgd.h"
-#include "jpge.h"
 #include "jo_mpeg.h"
 #include "common/Console.h"
 
@@ -58,22 +57,23 @@ namespace usb_eyetoy
 		static void store_mpeg_frame(const unsigned char* data, const unsigned int len)
 		{
 			mpeg_mutex.lock();
-			memcpy(mpeg_buffer.start, data, len);
+			if (len > 0)
+				memcpy(mpeg_buffer.start, data, len);
 			mpeg_buffer.length = len;
 			mpeg_mutex.unlock();
 		}
 
 		static void process_image(const unsigned char* data, int size)
 		{
-			const int bytesPerPixel = 3;
-			int comprBufSize = frame_width * frame_height * bytesPerPixel;
+			constexpr int bytesPerPixel = 3;
+			const size_t comprBufSize = frame_width * frame_height * bytesPerPixel;
 			if (pixelformat == V4L2_PIX_FMT_YUYV)
 			{
-				unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
-				int comprLen = 0;
+				std::vector<u8> comprBuf(comprBufSize);
 				if (frame_format == format_mpeg)
 				{
-					comprLen = jo_write_mpeg(comprBuf, data, frame_width, frame_height, JO_YUYV, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_NONE);
+					const size_t comprLen = jo_write_mpeg(comprBuf.data(), data, frame_width, frame_height, JO_YUYV, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_NONE);
+					comprBuf.resize(comprLen);
 				}
 				else if (frame_format == format_jpeg)
 				{
@@ -105,14 +105,10 @@ namespace usb_eyetoy
 							dst[5] = (b > 255) ? 255 : ((b < 0) ? 0 : b);
 						}
 					}
-					jpge::params params;
-					params.m_quality = 80;
-					params.m_subsampling = jpge::H2V1;
-					comprLen = comprBufSize;
-					if (!jpge::compress_image_to_jpeg_file_in_memory(comprBuf, comprLen, frame_width, frame_height, 3, data2, params))
-					{
-						comprLen = 0;
-					}
+
+					if (!CompressCamJPEG(&comprBuf, data2, frame_width, frame_height, 80))
+						comprBuf.clear();
+
 					free(data2);
 				}
 				else if (frame_format == format_yuv400)
@@ -135,22 +131,26 @@ namespace usb_eyetoy
 										comprBuf[in_pos++] = src[0];//Y
 									}
 								}
-					comprLen = 80 * 64;
+					comprBuf.resize(80 * 64);
 				}
-				store_mpeg_frame(comprBuf, comprLen);
-				free(comprBuf);
+				else
+				{
+					comprBuf.clear();
+				}
+				store_mpeg_frame(comprBuf.data(), static_cast<unsigned int>(comprBuf.size()));
 			}
 			else if (pixelformat == V4L2_PIX_FMT_JPEG)
 			{
 				if (frame_format == format_mpeg)
 				{
-					int width, height, actual_comps;
-					unsigned char* rgbData = jpgd::decompress_jpeg_image_from_memory(data, size, &width, &height, &actual_comps, 3);
-					unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
-					int comprLen = jo_write_mpeg(comprBuf, rgbData, frame_width, frame_height, JO_RGB24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_NONE);
-					free(rgbData);
-					store_mpeg_frame(comprBuf, comprLen);
-					free(comprBuf);
+					std::vector<u8> rgbData;
+					u32 width, height;
+					if (DecompressCamJPEG(&rgbData, &width, &height, data, size))
+					{
+						std::vector<u8> comprBuf(comprBufSize);
+						const size_t comprLen = jo_write_mpeg(comprBuf.data(), rgbData.data(), frame_width, frame_height, JO_RGB24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_NONE);
+						store_mpeg_frame(comprBuf.data(), comprLen);
+					}
 				}
 				else if (frame_format == format_jpeg)
 				{
@@ -158,35 +158,35 @@ namespace usb_eyetoy
 				}
 				else if (frame_format == format_yuv400)
 				{
-					int width, height, actual_comps;
-					unsigned char* rgbData = jpgd::decompress_jpeg_image_from_memory(data, size, &width, &height, &actual_comps, 3);
-					unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
-					int comprLen = 0;
-					int in_pos = 0;
-					for (int my = 0; my < 8; my++)
-						for (int mx = 0; mx < 10; mx++)
-							for (int y = 0; y < 8; y++)
-								for (int x = 0; x < 8; x++)
-								{
-									int srcx = 4* (8*mx + x);
-									int srcy = 4* (8*my + y);
-									unsigned char* src = rgbData + (srcy * frame_width + srcx) * bytesPerPixel;
-									if (srcy >= frame_height)
+					std::vector<u8> rgbData;
+					u32 width, height;
+					if (DecompressCamJPEG(&rgbData, &width, &height, data, size))
+					{
+						const size_t comprLen = 80 * 64;
+						std::vector<u8> comprBuf(comprLen);
+						int in_pos = 0;
+						for (int my = 0; my < 8; my++)
+							for (int mx = 0; mx < 10; mx++)
+								for (int y = 0; y < 8; y++)
+									for (int x = 0; x < 8; x++)
 									{
-										comprBuf[in_pos++] = 0x01;
+										int srcx = 4* (8*mx + x);
+										int srcy = 4* (8*my + y);
+										unsigned char* src = rgbData.data() + (srcy * frame_width + srcx) * bytesPerPixel;
+										if (srcy >= frame_height)
+										{
+											comprBuf[in_pos++] = 0x01;
+										}
+										else
+										{
+											float r = src[0];
+											float g = src[1];
+											float b = src[2];
+											comprBuf[in_pos++] = 0.299f * r + 0.587f * g + 0.114f * b;
+										}
 									}
-									else
-									{
-										float r = src[0];
-										float g = src[1];
-										float b = src[2];
-										comprBuf[in_pos++] = 0.299f * r + 0.587f * g + 0.114f * b;
-									}
-								}
-					comprLen = 80 * 64;
-					free(rgbData);
-					store_mpeg_frame(comprBuf, comprLen);
-					free(comprBuf);
+						store_mpeg_frame(comprBuf.data(), comprLen);
+					}
 				}
 			}
 			else
@@ -536,8 +536,8 @@ namespace usb_eyetoy
 
 		void create_dummy_frame_eyetoy()
 		{
-			const int bytesPerPixel = 3;
-			int comprBufSize = frame_width * frame_height * bytesPerPixel;
+			constexpr int bytesPerPixel = 3;
+			const int comprBufSize = frame_width * frame_height * bytesPerPixel;
 			unsigned char* rgbData = (unsigned char*)calloc(1, comprBufSize);
 			for (int y = 0; y < frame_height; y++)
 			{
@@ -549,27 +549,25 @@ namespace usb_eyetoy
 					ptr[2] = 255 * y / frame_height;
 				}
 			}
-			unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
-			int comprLen = 0;
+
+			std::vector<u8> comprBuf(comprBufSize);
 			if (frame_format == format_mpeg)
 			{
-				comprLen = jo_write_mpeg(comprBuf, rgbData, frame_width, frame_height, JO_RGB24, JO_NONE, JO_NONE);
+				const size_t comprLen = jo_write_mpeg(comprBuf.data(), rgbData, frame_width, frame_height, JO_RGB24, JO_NONE, JO_NONE);
+				comprBuf.resize(comprLen);
 			}
 			else if (frame_format == format_jpeg)
 			{
-				jpge::params params;
-				params.m_quality = 80;
-				params.m_subsampling = jpge::H2V1;
-				comprLen = comprBufSize;
-				if (!jpge::compress_image_to_jpeg_file_in_memory(comprBuf, comprLen, frame_width, frame_height, 3, rgbData, params))
-				{
-					comprLen = 0;
-				}
+				if (!CompressCamJPEG(&comprBuf, rgbData, frame_width, frame_height, 80))
+					comprBuf.clear();
+			}
+			else
+			{
+				comprBuf.clear();
 			}
 			free(rgbData);
 
-			store_mpeg_frame(comprBuf, comprLen);
-			free(comprBuf);
+			store_mpeg_frame(comprBuf.data(), static_cast<unsigned int>(comprBuf.size()));	
 		}
 
 		void create_dummy_frame_ov511p()
