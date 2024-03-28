@@ -169,11 +169,6 @@
     <ClInclude Include="WrappedMemCopy.h" />
     <ClInclude Include="ZipHelpers.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\3rdparty\jpgd\jpgd.vcxproj">
-      <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
