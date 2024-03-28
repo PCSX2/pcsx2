@@ -1085,7 +1085,6 @@ if(WIN32)
 endif()
 
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
-target_link_libraries(PCSX2_FLAGS INTERFACE jpgd)
 
 if(APPLE OR BSD)
 	if(APPLE)
