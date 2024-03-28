@@ -327,6 +327,7 @@
     <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
     <ClCompile Include="USB\qemu-usb\usb-ohci.cpp" />
     <ClCompile Include="USB\shared\ringbuffer.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\cam-jpeg.cpp" />
     <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp" />
     <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp" />
     <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp" />
@@ -676,6 +677,7 @@
     <ClInclude Include="USB\qemu-usb\qusb.h" />
     <ClInclude Include="USB\qemu-usb\USBinternal.h" />
     <ClInclude Include="USB\shared\ringbuffer.h" />
+    <ClInclude Include="USB\usb-eyetoy\cam-jpeg.h" />
     <ClInclude Include="USB\usb-eyetoy\cam-windows.h" />
     <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h" />
     <ClInclude Include="USB\usb-eyetoy\ov519.h" />

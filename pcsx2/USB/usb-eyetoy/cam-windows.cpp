@@ -1,15 +1,17 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "common/Console.h"
 #include "common/StringUtil.h"
 
-#include "jpge.h"
 #include "videodev.h"
+#include "cam-jpeg.h"
 #include "cam-windows.h"
 #include "usb-eyetoy-webcam.h"
 #include "jo_mpeg.h"
 #include "USB/USB.h"
+
+#include <jpeglib.h>
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -373,7 +375,8 @@ namespace usb_eyetoy
 		void store_mpeg_frame(const unsigned char* data, const unsigned int len)
 		{
 			mpeg_mutex.lock();
-			memcpy(mpeg_buffer.start, data, len);
+			if (len > 0)
+				memcpy(mpeg_buffer.start, data, len);
 			mpeg_buffer.length = len;
 			mpeg_mutex.unlock();
 		}
@@ -383,13 +386,13 @@ namespace usb_eyetoy
 			if (bitsperpixel == 24)
 			{
 				const int bytesPerPixel = 3;
-				int comprBufSize = frame_width * frame_height * bytesPerPixel;
-				unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
-				int comprLen = 0;
+				const size_t comprBufSize = frame_width * frame_height * bytesPerPixel;
+				std::vector<u8> comprBuf(comprBufSize);
 				if (frame_format == format_mpeg)
 				{
-					comprLen = jo_write_mpeg(
-						comprBuf, data, frame_width, frame_height, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
+					const size_t comprLen = jo_write_mpeg(
+						comprBuf.data(), data, frame_width, frame_height, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
+					comprBuf.resize(comprBufSize);
 				}
 				else if (frame_format == format_jpeg)
 				{
@@ -407,14 +410,9 @@ namespace usb_eyetoy
 						}
 					}
 
-					jpge::params params;
-					params.m_quality = 80;
-					params.m_subsampling = jpge::H2V1;
-					comprLen = comprBufSize;
-					if (!jpge::compress_image_to_jpeg_file_in_memory(comprBuf, comprLen, frame_width, frame_height, 3, data2, params))
-					{
-						comprLen = 0;
-					}
+					if (!CompressCamJPEG(&comprBuf, data2, frame_width, frame_height, 80))
+						comprBuf.clear();
+
 					free(data2);
 				}
 				else if (frame_format == format_yuv400)
@@ -440,10 +438,13 @@ namespace usb_eyetoy
 										comprBuf[in_pos++] = 0.299f * r + 0.587f * g + 0.114f * b;
 									}
 								}
-					comprLen = 80 * 64;
+					comprBuf.resize(80 * 64);
 				}
-				store_mpeg_frame(comprBuf, comprLen);
-				free(comprBuf);
+				else
+				{
+					comprBuf.clear();
+				}
+				store_mpeg_frame(comprBuf.data(), static_cast<unsigned int>(comprBuf.size()));
 			}
 			else
 			{
@@ -453,8 +454,8 @@ namespace usb_eyetoy
 
 		void create_dummy_frame_eyetoy()
 		{
-			const int bytesPerPixel = 3;
-			int comprBufSize = frame_width * frame_height * bytesPerPixel;
+			constexpr int bytesPerPixel = 3;
+			const int comprBufSize = frame_width * frame_height * bytesPerPixel;
 			unsigned char* rgbData = (unsigned char*)calloc(1, comprBufSize);
 			for (int y = 0; y < frame_height; y++)
 			{
@@ -466,27 +467,25 @@ namespace usb_eyetoy
 					ptr[2] = 255 * y / frame_height;
 				}
 			}
-			unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
-			int comprLen = 0;
+
+			std::vector<u8> comprBuf(comprBufSize);
 			if (frame_format == format_mpeg)
 			{
-				comprLen = jo_write_mpeg(comprBuf, rgbData, frame_width, frame_height, JO_RGB24, JO_NONE, JO_NONE);
+				const size_t comprLen = jo_write_mpeg(comprBuf.data(), rgbData, frame_width, frame_height, JO_RGB24, JO_NONE, JO_NONE);
+				comprBuf.resize(comprBufSize);
 			}
 			else if (frame_format == format_jpeg)
 			{
-				jpge::params params;
-				params.m_quality = 80;
-				params.m_subsampling = jpge::H2V1;
-				comprLen = comprBufSize;
-				if (!jpge::compress_image_to_jpeg_file_in_memory(comprBuf, comprLen, frame_width, frame_height, 3, rgbData, params))
-				{
-					comprLen = 0;
-				}
+				if (!CompressCamJPEG(&comprBuf, rgbData, frame_width, frame_height, 80))
+					comprBuf.clear();
+			}
+			else
+			{
+				comprBuf.clear();
 			}
 			free(rgbData);
 
-			store_mpeg_frame(comprBuf, comprLen);
-			free(comprBuf);
+			store_mpeg_frame(comprBuf.data(), static_cast<unsigned int>(comprBuf.size()));				
 		}
 
 		void create_dummy_frame_ov511p()

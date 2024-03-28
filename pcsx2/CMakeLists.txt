@@ -385,6 +385,7 @@ set(pcsx2USBSources
 	USB/qemu-usb/input-keymap-qcode-to-qnum.cpp
 	USB/qemu-usb/usb-ohci.cpp
 	USB/shared/ringbuffer.cpp
+	USB/usb-eyetoy/cam-jpeg.cpp
 	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
@@ -414,6 +415,7 @@ set(pcsx2USBHeaders
 	USB/qemu-usb/queue.h
 	USB/qemu-usb/qusb.h
 	USB/shared/ringbuffer.h
+	USB/usb-eyetoy/cam-jpeg.h
 	USB/usb-eyetoy/jo_mpeg.h
 	USB/usb-eyetoy/ov519.h
 	USB/usb-eyetoy/usb-eyetoy-webcam.h
