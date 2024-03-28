@@ -325,6 +325,7 @@ enum class GSScreenshotFormat : u8
 {
 	PNG,
 	JPEG,
+	WebP,
 	Count,
 };
 
