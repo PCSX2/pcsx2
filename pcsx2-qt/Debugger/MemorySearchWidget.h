@@ -133,7 +133,7 @@ signals:
 	void switchToMemoryViewTab();
 
 private:
-	QMap<u32, SearchResult> m_searchResultsMap;
+	std::vector<SearchResult> m_searchResults;
 	SearchComparisonLabelMap m_searchComparisonLabelMap;
 	Ui::MemorySearchWidget m_ui;
 	DebugInterface* m_cpu;
@@ -143,7 +143,7 @@ private:
 	u32 m_numResultsAddedPerLoad = 10000;
 
 	void updateSearchComparisonSelections();
-	std::vector<SearchComparison> getValidSearchComparisonsForState(SearchType type, QMap<u32, MemorySearchWidget::SearchResult> existingResults);
+	std::vector<SearchComparison> getValidSearchComparisonsForState(SearchType type, std::vector<SearchResult> &existingResults);
 	SearchType getCurrentSearchType();
 	SearchComparison getCurrentSearchComparison();
 };

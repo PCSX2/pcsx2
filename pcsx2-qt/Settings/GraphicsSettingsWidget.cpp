@@ -230,7 +230,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "EmuCore/GS", "DisableDualSourceBlend", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, "EmuCore/GS", "DisableShaderCache", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableVertexShaderExpand, "EmuCore/GS", "DisableVertexShaderExpand", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
@@ -334,7 +333,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		m_ui.skipPresentingDuplicateFrames = nullptr;
 		m_ui.threadedPresentation = nullptr;
 		m_ui.overrideTextureBarriers = nullptr;
-		m_ui.disableDualSource = nullptr;
 		m_ui.disableFramebufferFetch = nullptr;
 		m_ui.disableShaderCache = nullptr;
 		m_ui.disableVertexShaderExpand = nullptr;
@@ -958,6 +956,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool is_software = (type == GSRendererType::SW);
 	const bool is_auto = (type == GSRendererType::Auto);
 	const bool is_vk = (type == GSRendererType::VK);
+	const bool is_disable_barriers = (type == GSRendererType::DX11 || type == GSRendererType::DX12 || type == GSRendererType::Metal || type == GSRendererType::SW);
 	const bool hw_fixes = (is_hardware && m_ui.enableHWFixes && m_ui.enableHWFixes->checkState() == Qt::Checked);
 	const int prev_tab = m_ui.tabs->currentIndex();
 
@@ -991,7 +990,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 		m_ui.useBlitSwapChain->setEnabled(is_dx11);
 
 	if (m_ui.overrideTextureBarriers)
-		m_ui.overrideTextureBarriers->setDisabled(is_sw_dx);
+		m_ui.overrideTextureBarriers->setDisabled(is_disable_barriers);
 
 	if (m_ui.disableFramebufferFetch)
 		m_ui.disableFramebufferFetch->setDisabled(is_sw_dx);

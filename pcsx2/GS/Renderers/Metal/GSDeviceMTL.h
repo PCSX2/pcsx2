@@ -36,18 +36,19 @@ struct PipelineSelectorExtrasMTL
 			u8 writemask : 4;
 			GSDevice::BlendFactor src_factor : 4;
 			GSDevice::BlendFactor dst_factor : 4;
+			GSDevice::BlendFactor src_factor_alpha : 4;
+			GSDevice::BlendFactor dst_factor_alpha : 4;
 			GSDevice::BlendOp     blend_op : 2;
 			bool blend_enable : 1;
 			bool has_depth : 1;
 			bool has_stencil : 1;
 		};
-		u8 _key[3];
+		u32 fullkey;
 	};
-	u32 fullkey() { return _key[0] | (_key[1] << 8) | (_key[2] << 16); }
 
-	PipelineSelectorExtrasMTL(): _key{} {}
+	PipelineSelectorExtrasMTL(): fullkey(0) {}
 	PipelineSelectorExtrasMTL(GSHWDrawConfig::BlendState blend, GSTexture* rt, GSHWDrawConfig::ColorMaskSelector cms, bool has_depth, bool has_stencil)
-		: _key{}
+		: fullkey(0)
 	{
 		this->rt = rt ? rt->GetFormat() : GSTexture::Format::Invalid;
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
@@ -59,6 +60,8 @@ struct PipelineSelectorExtrasMTL
 		this->src_factor = static_cast<GSDevice::BlendFactor>(blend.src_factor);
 		this->dst_factor = static_cast<GSDevice::BlendFactor>(blend.dst_factor);
 		this->blend_op = static_cast<GSDevice::BlendOp>(blend.op);
+		this->src_factor_alpha = static_cast<GSDevice::BlendFactor>(blend.src_factor_alpha);
+		this->dst_factor_alpha = static_cast<GSDevice::BlendFactor>(blend.dst_factor_alpha);
 		this->blend_enable = blend.enable;
 		this->has_depth   = has_depth;
 		this->has_stencil = has_stencil;
@@ -69,6 +72,7 @@ struct PipelineSelectorMTL
 	GSHWDrawConfig::PSSelector ps;
 	PipelineSelectorExtrasMTL extras;
 	GSHWDrawConfig::VSSelector vs;
+	u8 pad[7];
 	PipelineSelectorMTL()
 	{
 		memset(this, 0, sizeof(*this));
@@ -95,7 +99,7 @@ struct PipelineSelectorMTL
 	}
 };
 
-static_assert(sizeof(PipelineSelectorMTL) == 16);
+static_assert(sizeof(PipelineSelectorMTL) == 24);
 
 template <>
 struct std::hash<PipelineSelectorMTL>
@@ -244,16 +248,18 @@ public:
 	MRCOwned<id<MTLComputePipelineState>> m_cas_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline[static_cast<int>(ShaderConvert::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
-	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy_mask[1 << 4];
+	MRCOwned<id<MTLRenderPipelineState>> m_convert_pipeline_copy_mask[1 << 5];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_interlace_pipeline[NUM_INTERLACE_SHADERS];
-	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[2];
+	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_clut_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_stencil_clear_pipeline;
-	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][2];
+	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][4];
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_init_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_rta_init_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_clear_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_hdr_resolve_pipeline;
+	MRCOwned<id<MTLRenderPipelineState>> m_hdr_rta_resolve_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_fxaa_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_shadeboost_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline;
@@ -405,7 +411,7 @@ public:
 	/// Copy from a position in sTex to the same position in the currently active render encoder using the given fs pipeline and rect
 	void RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipeline, const GSVector4i& rect);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) override;
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) override;
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) override;
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear) override;
 	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
 	void UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize) override;
@@ -430,7 +436,7 @@ public:
 
 	// MARK: Render HW
 
-	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm);
+	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm);
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off);
 

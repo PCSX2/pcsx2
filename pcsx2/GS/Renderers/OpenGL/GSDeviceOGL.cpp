@@ -733,7 +733,7 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	m_features.bptc_textures =
 		GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
 	m_features.prefer_new_textures = false;
-	m_features.dual_source_blend = !GSConfig.DisableDualSourceBlend;
+	m_features.dual_source_blend = true;
 	m_features.clip_control = GLAD_GL_ARB_clip_control;
 	if (!m_features.clip_control)
 		Host::AddOSDMessage(
@@ -1233,7 +1233,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 	return dss;
 }
 
-GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, bool datm)
+GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, SetDATM datm)
 {
 	const GSVector2i& rtsize = rt->GetSize();
 
@@ -1242,7 +1242,7 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 		return nullptr;
 
 	GL_PUSH("PrimID Destination Alpha Clear");
-	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[datm], false);
+	StretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[static_cast<u8>(datm)], false);
 	return tex;
 }
 
@@ -1348,6 +1348,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_TFX {}\n", sel.tfx)
 		+ fmt::format("#define PS_TCC {}\n", sel.tcc)
 		+ fmt::format("#define PS_ATST {}\n", sel.atst)
+		+ fmt::format("#define PS_AFAIL {}\n", sel.afail)
 		+ fmt::format("#define PS_FOG {}\n", sel.fog)
 		+ fmt::format("#define PS_BLEND_HW {}\n", sel.blend_hw)
 		+ fmt::format("#define PS_A_MASKED {}\n", sel.a_masked)
@@ -1367,12 +1368,17 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_IIP {}\n", sel.iip)
 		+ fmt::format("#define PS_SHUFFLE {}\n", sel.shuffle)
 		+ fmt::format("#define PS_SHUFFLE_SAME {}\n", sel.shuffle_same)
-		+ fmt::format("#define PS_READ_BA {}\n", sel.read_ba)
+		+ fmt::format("#define PS_PROCESS_BA {}\n", sel.process_ba)
+		+ fmt::format("#define PS_PROCESS_RG {}\n", sel.process_rg)
+		+ fmt::format("#define PS_SHUFFLE_ACROSS {}\n", sel.shuffle_across)
 		+ fmt::format("#define PS_READ16_SRC {}\n", sel.real16src)
 		+ fmt::format("#define PS_WRITE_RG {}\n", sel.write_rg)
 		+ fmt::format("#define PS_FBMASK {}\n", sel.fbmask)
 		+ fmt::format("#define PS_HDR {}\n", sel.hdr)
+		+ fmt::format("#define PS_RTA_CORRECTION {}\n", sel.rta_correction)
+		+ fmt::format("#define PS_RTA_SRC_CORRECTION {}\n", sel.rta_source_correction)
 		+ fmt::format("#define PS_DITHER {}\n", sel.dither)
+		+ fmt::format("#define PS_DITHER_ADJUST {}\n", sel.dither_adjust)
 		+ fmt::format("#define PS_ZCLAMP {}\n", sel.zclamp)
 		+ fmt::format("#define PS_BLEND_MIX {}\n", sel.blend_mix)
 		+ fmt::format("#define PS_ROUND_INV {}\n", sel.round_inv)
@@ -1381,8 +1387,6 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_SCANMSK {}\n", sel.scanmsk)
 		+ fmt::format("#define PS_NO_COLOR {}\n", sel.no_color)
 		+ fmt::format("#define PS_NO_COLOR1 {}\n", sel.no_color1)
-		+ fmt::format("#define PS_NO_ABLEND {}\n", sel.no_ablend)
-		+ fmt::format("#define PS_ONLY_ALPHA {}\n", sel.only_alpha)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
@@ -1451,7 +1455,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	StretchRect(sTex, sRect, dTex, dRect, ps, false, OMColorMaskSelector(), linear);
 }
 
-void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
+void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	OMColorMaskSelector cms;
 
@@ -1460,7 +1464,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	cms.wb = blue;
 	cms.wa = alpha;
 
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)ShaderConvert::COPY], false, cms, false);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[(int)shader], false, cms, false);
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
@@ -1854,18 +1858,18 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float par
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, false);
 }
 
-void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
+void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, SetDATM datm)
 {
 	GL_PUSH("DATE First Pass");
 
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
 	OMSetRenderTargets(nullptr, ds, &GLState::scissor);
-
-	const GLint clear_color = 0;
-	glClearBufferiv(GL_STENCIL, 0, &clear_color);
-
-	m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].Bind();
+	{
+		const GLint clear_color = 0;
+		glClearBufferiv(GL_STENCIL, 0, &clear_color);
+	}
+	m_convert.ps[SetDATMShader(datm)].Bind();
 
 	// om
 
@@ -2205,7 +2209,8 @@ void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
 		OMAttachDs();
 }
 
-void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op, bool is_constant, u8 constant)
+void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op,
+	GLenum src_factor_alpha, GLenum dst_factor_alpha, bool is_constant, u8 constant)
 {
 	if (enable)
 	{
@@ -2228,26 +2233,20 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 			glBlendEquationSeparate(op, GL_FUNC_ADD);
 		}
 
-		if (GLState::f_sRGB != src_factor || GLState::f_dRGB != dst_factor)
+		if (GLState::f_sRGB != src_factor || GLState::f_dRGB != dst_factor ||
+			GLState::f_sA != src_factor_alpha || GLState::f_dA != dst_factor_alpha)
 		{
 			GLState::f_sRGB = src_factor;
 			GLState::f_dRGB = dst_factor;
-			glBlendFuncSeparate(src_factor, dst_factor, GL_ONE, GL_ZERO);
+			GLState::f_sA = src_factor_alpha;
+			GLState::f_dA = dst_factor_alpha;
+			glBlendFuncSeparate(src_factor, dst_factor, src_factor_alpha, dst_factor_alpha);
 		}
 	}
 	else
 	{
 		if (GLState::blend)
 		{
-			// make sure we're not using dual source
-			if (GLState::f_sRGB == GL_SRC1_ALPHA || GLState::f_sRGB == GL_ONE_MINUS_SRC1_ALPHA ||
-				GLState::f_dRGB == GL_SRC1_ALPHA || GLState::f_dRGB == GL_ONE_MINUS_SRC1_ALPHA)
-			{
-				glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
-				GLState::f_sRGB = GL_ONE;
-				GLState::f_dRGB = GL_ZERO;
-			}
-
 			GLState::blend = false;
 			glDisable(GL_BLEND);
 		}
@@ -2536,6 +2535,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
 		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+		s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
 		config.blend.constant_enable, config.blend.constant);
 
 	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
@@ -2565,25 +2565,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
-	if (config.separate_alpha_pass)
-	{
-		GSHWDrawConfig::BlendState dummy_bs;
-		SetHWDrawConfigForAlphaPass(&psel.ps, &config.colormask, &dummy_bs, &config.depth);
-		SetupPipeline(psel);
-		OMSetColorMaskState(config.alpha_second_pass.colormask);
-		SetupOM(config.alpha_second_pass.depth);
-		OMSetBlendState();
-		SendHWDraw(config, psel.ps.IsFeedbackLoop());
-
-		// restore blend state if we're doing a second pass
-		if (config.alpha_second_pass.enable)
-		{
-			OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
-				s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
-				config.blend.constant_enable, config.blend.constant);
-		}
-	}
-
 	if (config.alpha_second_pass.enable)
 	{
 		// cbuffer will definitely be dirty if aref changes, no need to check it
@@ -2599,17 +2580,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
 		SetupOM(config.alpha_second_pass.depth);
 		SendHWDraw(config, psel.ps.IsFeedbackLoop());
-
-		if (config.second_separate_alpha_pass)
-		{
-			GSHWDrawConfig::BlendState dummy_bs;
-			SetHWDrawConfigForAlphaPass(&psel.ps, &config.colormask, &dummy_bs, &config.depth);
-			SetupPipeline(psel);
-			OMSetColorMaskState(config.alpha_second_pass.colormask);
-			SetupOM(config.alpha_second_pass.depth);
-			OMSetBlendState();
-			SendHWDraw(config, psel.ps.IsFeedbackLoop());
-		}
 	}
 
 	if (primid_texture)

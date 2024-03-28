@@ -56,8 +56,6 @@ s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
 s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
 s16 GSLookupMoveHandlerFunctionId(const std::string_view& name);
 
-void GSinit();
-void GSshutdown();
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
 bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<const Pcsx2Config::GSOptions*> old_config);
 void GSreset(bool hardware_reset);

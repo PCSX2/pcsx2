@@ -1316,6 +1316,20 @@ function(setup_main_executable target)
 
 		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/Resources/PCSX2.icns ${PCSX2_SOURCE_DIR}/Resources)
 
+		# Copy MoltenVK into the bundle
+		unset(MOLTENVK_PATH CACHE)
+		find_file(MOLTENVK_PATH NAMES
+			libMoltenVK.dylib
+			lib/libMoltenVK.dylib
+		)
+		if (MOLTENVK_PATH)
+			target_sources(${target} PRIVATE "${MOLTENVK_PATH}")
+			set_source_files_properties("${MOLTENVK_PATH}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+			message(STATUS "Using MoltenVK from ${MOLTENVK_PATH}")
+		else()
+			message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
+		endif()
+
 		# If they say to skip postprocess bundle, leave the target in but make it so they have
 		# to manually run it
 		if (SKIP_POSTPROCESS_BUNDLE)

@@ -594,7 +594,6 @@ struct Pcsx2Config
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
-					DisableDualSourceBlend : 1,
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
 					DisableThreadedPresentation : 1,

@@ -50,7 +50,7 @@ static u32 s_debug_scope_depth = 0;
 
 static bool IsDATMConvertShader(ShaderConvert i)
 {
-	return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1);
+	return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1 || i == ShaderConvert::DATM_0_RTA_CORRECTION || i == ShaderConvert::DATM_1_RTA_CORRECTION);
 }
 static bool IsDATEModePrimIDInit(u32 flag)
 {
@@ -2669,7 +2669,7 @@ bool GSDeviceVK::CheckFeatures()
 
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
-	m_features.dual_source_blend = m_device_features.dualSrcBlend && !GSConfig.DisableDualSourceBlend;
+	m_features.dual_source_blend = m_device_features.dualSrcBlend;
 	m_features.clip_control = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
@@ -2917,13 +2917,14 @@ void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 }
 
 void GSDeviceVK::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red,
-	bool green, bool blue, bool alpha)
+	bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	GL_PUSH("ColorCopy Red:%d Green:%d Blue:%d Alpha:%d", red, green, blue, alpha);
 
 	const u32 index = (red ? 1 : 0) | (green ? 2 : 0) | (blue ? 4 : 0) | (alpha ? 8 : 0);
 	const bool allow_discard = (index == 0xf);
-	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect, m_color_copy[index],
+	int rta_offset = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
+	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect, m_color_copy[index + rta_offset],
 		false, allow_discard);
 }
 
@@ -3046,9 +3047,10 @@ void GSDeviceVK::DoMultiStretchRects(
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
 
-	pxAssert(shader == ShaderConvert::COPY || rects[0].wmask.wrgba == 0xf);
+	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
+	int rta_bit = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
 	SetPipeline(
-		(rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba] : m_convert[static_cast<int>(shader)]);
+		(rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba | rta_bit] : m_convert[static_cast<int>(shader)]);
 
 	if (ApplyUtilityState())
 		DrawIndexedPrimitive();
@@ -3463,38 +3465,76 @@ void GSDeviceVK::OMSetRenderTargets(
 	{
 		// Framebuffer unchanged, but check for clears
 		// Use an attachment clear to wipe it out without restarting the render pass
-		std::array<VkClearAttachment, 2> cas;
-		u32 num_ca = 0;
-		if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+		if (IsDeviceNVIDIA())
 		{
-			if (vkRt->GetState() == GSTexture::State::Cleared)
+			// Using vkCmdClearAttachments() within a render pass on NVIDIA seems to cause dependency issues
+			// between draws that are testing depth which precede it. The result is flickering where Z tests
+			// should be failing. Breaking/restarting the render pass isn't enough to work around the bug,
+			// it needs an explicit pipeline barrier.
+			if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
 			{
-				VkClearAttachment& ca = cas[num_ca++];
-				ca.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				ca.colorAttachment = 0;
-				GSVector4::store<false>(ca.clearValue.color.float32, vkRt->GetUNormClearColor());
+				if (vkRt->GetState() == GSTexture::State::Cleared)
+				{
+					EndRenderPass();
+					vkRt->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1,
+						vkRt->GetLayout(), vkRt->GetLayout());
+				}
+				else
+				{
+					// Invalidated -> Dirty.
+					vkRt->SetState(GSTexture::State::Dirty);
+				}
+			}
+			if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+			{
+				if (vkDs->GetState() == GSTexture::State::Cleared)
+				{
+					EndRenderPass();
+					vkDs->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1,
+						vkDs->GetLayout(), vkDs->GetLayout());
+				}
+				else
+				{
+					// Invalidated -> Dirty.
+					vkDs->SetState(GSTexture::State::Dirty);
+				}
+			}
+		}
+		else
+		{
+			std::array<VkClearAttachment, 2> cas;
+			u32 num_ca = 0;
+			if (vkRt && vkRt->GetState() != GSTexture::State::Dirty)
+			{
+				if (vkRt->GetState() == GSTexture::State::Cleared)
+				{
+					VkClearAttachment& ca = cas[num_ca++];
+					ca.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					ca.colorAttachment = 0;
+					GSVector4::store<false>(ca.clearValue.color.float32, vkRt->GetUNormClearColor());
+				}
+
+				vkRt->SetState(GSTexture::State::Dirty);
+			}
+			if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
+			{
+				if (vkDs->GetState() == GSTexture::State::Cleared)
+				{
+					VkClearAttachment& ca = cas[num_ca++];
+					ca.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+					ca.colorAttachment = 1;
+					ca.clearValue.depthStencil = {vkDs->GetClearDepth()};
+				}
+
+				vkDs->SetState(GSTexture::State::Dirty);
 			}
 
-			vkRt->SetState(GSTexture::State::Dirty);
-		}
-		if (vkDs && vkDs->GetState() != GSTexture::State::Dirty)
-		{
-			if (vkDs->GetState() == GSTexture::State::Cleared)
+			if (num_ca > 0)
 			{
-				VkClearAttachment& ca = cas[num_ca++];
-				ca.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				ca.colorAttachment = 1;
-				ca.clearValue.depthStencil = {vkDs->GetClearDepth()};
+				const GSVector2i size = vkRt ? vkRt->GetSize() : vkDs->GetSize();
+				const VkClearRect cr = {{{0, 0}, {static_cast<u32>(size.x), static_cast<u32>(size.y)}}, 0u, 1u};
+				vkCmdClearAttachments(GetCurrentCommandBuffer(), num_ca, cas.data(), 1, &cr);
 			}
-
-			vkDs->SetState(GSTexture::State::Dirty);
-		}
-
-		if (num_ca > 0)
-		{
-			const GSVector2i size = vkRt ? vkRt->GetSize() : vkDs->GetSize();
-			const VkClearRect cr = {{{0, 0}, {static_cast<u32>(size.x), static_cast<u32>(size.y)}}, 0u, 1u};
-			vkCmdClearAttachments(GetCurrentCommandBuffer(), num_ca, cas.data(), 1, &cr);
 		}
 	}
 
@@ -3929,6 +3969,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 			break;
 			case ShaderConvert::DATM_0:
 			case ShaderConvert::DATM_1:
+			case ShaderConvert::DATM_0_RTA_CORRECTION:
+			case ShaderConvert::DATM_1_RTA_CORRECTION:
 			{
 				rp = m_date_setup_render_pass;
 			}
@@ -3978,18 +4020,44 @@ bool GSDeviceVK::CompileConvertPipelines()
 		{
 			// compile color copy pipelines
 			gpb.SetRenderPass(m_utility_color_render_pass_discard, 0);
-			for (u32 i = 0; i < 16; i++)
+			for (u32 j = 0; j < 16; j++)
 			{
-				pxAssert(!m_color_copy[i]);
+				pxAssert(!m_color_copy[j]);
 				gpb.ClearBlendAttachments();
 				gpb.SetBlendAttachment(0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
-					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, static_cast<VkColorComponentFlags>(i));
-				m_color_copy[i] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
-				if (!m_color_copy[i])
+					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, static_cast<VkColorComponentFlags>(j));
+				m_color_copy[j] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
+				if (!m_color_copy[j])
 					return false;
 
-				Vulkan::SetObjectName(m_device, m_color_copy[i], "Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", i & 1u,
-					(i >> 1) & 1u, (i >> 2) & 1u, (i >> 3) & 1u);
+				Vulkan::SetObjectName(m_device, m_color_copy[j], "Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", j & 1u,
+					(j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u);
+			}
+		}
+		else if (i == ShaderConvert::RTA_CORRECTION)
+		{
+			// compile color copy pipelines
+			gpb.SetRenderPass(m_utility_color_render_pass_discard, 0);
+			VkShaderModule ps = GetUtilityFragmentShader(*shader, shaderName(i));
+			if (ps == VK_NULL_HANDLE)
+				return false;
+
+			ScopedGuard ps_guard([this, &ps]() { vkDestroyShaderModule(m_device, ps, nullptr); });
+			gpb.SetFragmentShader(ps);
+
+			for (u32 j = 16; j < 32; j++)
+			{
+				pxAssert(!m_color_copy[j]);
+				gpb.ClearBlendAttachments();
+
+				gpb.SetBlendAttachment(0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, static_cast<VkColorComponentFlags>(j - 16));
+				m_color_copy[j] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
+				if (!m_color_copy[j])
+					return false;
+
+				Vulkan::SetObjectName(m_device, m_color_copy[j], "Color copy pipeline (r=%u, g=%u, b=%u, a=%u)", j & 1u,
+					(j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u);
 			}
 		}
 		else if (i == ShaderConvert::HDR_INIT || i == ShaderConvert::HDR_RESOLVE)
@@ -4030,10 +4098,11 @@ bool GSDeviceVK::CompileConvertPipelines()
 		}
 	}
 
-	for (u32 datm = 0; datm < 2; datm++)
+	for (u32 datm = 0; datm < 4; datm++)
 	{
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", datm));
 		VkShaderModule ps =
-			GetUtilityFragmentShader(*shader, datm ? "ps_stencil_image_init_1" : "ps_stencil_image_init_0");
+			GetUtilityFragmentShader(*shader, entry_point.c_str());
 		if (ps == VK_NULL_HANDLE)
 			return false;
 
@@ -4055,7 +4124,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 				return false;
 
 			Vulkan::SetObjectName(m_device, m_date_image_setup_pipelines[ds][datm],
-				"DATE image clear pipeline (ds=%u, datm=%u)", ds, datm);
+				"DATE image clear pipeline (ds=%u, datm=%u)", ds, (datm == 1 || datm == 3));
 		}
 	}
 
@@ -4586,7 +4655,7 @@ void GSDeviceVK::DestroyResources()
 	}
 	for (u32 ds = 0; ds < 2; ds++)
 	{
-		for (u32 datm = 0; datm < 2; datm++)
+		for (u32 datm = 0; datm < 4; datm++)
 		{
 			if (m_date_image_setup_pipelines[ds][datm] != VK_NULL_HANDLE)
 				vkDestroyPipeline(m_device, m_date_image_setup_pipelines[ds][datm], nullptr);
@@ -4722,6 +4791,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_TFX", sel.tfx);
 	AddMacro(ss, "PS_TCC", sel.tcc);
 	AddMacro(ss, "PS_ATST", sel.atst);
+	AddMacro(ss, "PS_AFAIL", sel.afail);
 	AddMacro(ss, "PS_FOG", sel.fog);
 	AddMacro(ss, "PS_BLEND_HW", sel.blend_hw);
 	AddMacro(ss, "PS_A_MASKED", sel.a_masked);
@@ -4744,20 +4814,23 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_IIP", sel.iip);
 	AddMacro(ss, "PS_SHUFFLE", sel.shuffle);
 	AddMacro(ss, "PS_SHUFFLE_SAME", sel.shuffle_same);
-	AddMacro(ss, "PS_READ_BA", sel.read_ba);
+	AddMacro(ss, "PS_PROCESS_BA", sel.process_ba);
+	AddMacro(ss, "PS_PROCESS_RG", sel.process_rg);
+	AddMacro(ss, "PS_SHUFFLE_ACROSS", sel.shuffle_across);
 	AddMacro(ss, "PS_READ16_SRC", sel.real16src);
 	AddMacro(ss, "PS_WRITE_RG", sel.write_rg);
 	AddMacro(ss, "PS_FBMASK", sel.fbmask);
 	AddMacro(ss, "PS_HDR", sel.hdr);
+	AddMacro(ss, "PS_RTA_CORRECTION", sel.rta_correction);
+	AddMacro(ss, "PS_RTA_SRC_CORRECTION", sel.rta_source_correction);
 	AddMacro(ss, "PS_DITHER", sel.dither);
+	AddMacro(ss, "PS_DITHER_ADJUST", sel.dither_adjust);
 	AddMacro(ss, "PS_ZCLAMP", sel.zclamp);
 	AddMacro(ss, "PS_PABE", sel.pabe);
 	AddMacro(ss, "PS_SCANMSK", sel.scanmsk);
 	AddMacro(ss, "PS_TEX_IS_FB", sel.tex_is_fb);
 	AddMacro(ss, "PS_NO_COLOR", sel.no_color);
 	AddMacro(ss, "PS_NO_COLOR1", sel.no_color1);
-	AddMacro(ss, "PS_NO_ABLEND", sel.no_ablend);
-	AddMacro(ss, "PS_ONLY_ALPHA", sel.only_alpha);
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
@@ -4778,7 +4851,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 
 	GSHWDrawConfig::BlendState pbs{p.bs};
 	GSHWDrawConfig::PSSelector pps{p.ps};
-	if ((p.cms.wrgba & 0x7) == 0)
+	if (!p.bs.IsEffective(p.cms))
 	{
 		// disable blending when colours are masked
 		pbs = {};
@@ -4870,7 +4943,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		// clang-format on
 
 		gpb.SetBlendAttachment(0, true, vk_blend_factors[pbs.src_factor], vk_blend_factors[pbs.dst_factor],
-			vk_blend_ops[pbs.op], VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
+			vk_blend_ops[pbs.op], vk_blend_factors[pbs.src_factor_alpha], vk_blend_factors[pbs.dst_factor_alpha],
+			VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
 	{
@@ -5439,7 +5513,7 @@ void GSDeviceVK::SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb)
 		m_dirty_flags |= DIRTY_FLAG_PS_CONSTANT_BUFFER;
 }
 
-void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVector4i& bbox)
+void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
 {
 	GL_PUSH("SetupDATE {%d,%d} %dx%d", bbox.left, bbox.top, bbox.width(), bbox.height());
 
@@ -5458,7 +5532,7 @@ void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, bool datm, const GSVect
 	SetUtilityTexture(rt, m_point_sampler);
 	OMSetRenderTargets(nullptr, ds, bbox);
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
-	SetPipeline(m_convert[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)]);
+	SetPipeline(m_convert[SetDATMShader(datm)]);
 	BeginClearRenderPass(m_date_setup_render_pass, bbox, 0.0f, 0);
 	if (ApplyUtilityState())
 		DrawPrimitive();
@@ -5513,7 +5587,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
 		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
 	};
-	const VkPipeline pipeline = m_date_image_setup_pipelines[ds][config.datm];
+	const VkPipeline pipeline = m_date_image_setup_pipelines[ds][static_cast<u8>(config.datm)];
 	SetPipeline(pipeline);
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	if (ApplyUtilityState())
@@ -5776,15 +5850,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-	{
 		SendHWDraw(config, draw_rt, skip_first_barrier);
-		if (config.separate_alpha_pass)
-		{
-			SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
-			if (BindDrawPipeline(pipe))
-				SendHWDraw(config, draw_rt, false);
-		}
-	}
 
 	// and the alpha pass
 	if (config.alpha_second_pass.enable)
@@ -5801,15 +5867,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
-		{
 			SendHWDraw(config, draw_rt, false);
-			if (config.second_separate_alpha_pass)
-			{
-				SetHWDrawConfigForAlphaPass(&pipe.ps, &pipe.cms, &pipe.bs, &pipe.dss);
-				if (BindDrawPipeline(pipe))
-					SendHWDraw(config, draw_rt, false);
-			}
-		}
 	}
 
 	if (draw_rt_clone)

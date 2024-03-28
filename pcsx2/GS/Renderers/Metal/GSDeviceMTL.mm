@@ -1033,6 +1033,7 @@ bool GSDeviceMTL::Create()
 	auto vs_convert = LoadShader(@"vs_convert");
 	auto fs_triangle = LoadShader(@"fs_triangle");
 	auto ps_copy = LoadShader(@"ps_copy");
+	auto ps_copy_rta_correct = LoadShader(@"ps_rta_correction");
 	auto pdesc = [[MTLRenderPipelineDescriptor new] autorelease];
 	// FS Triangle Pipelines
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
@@ -1048,15 +1049,21 @@ bool GSDeviceMTL::Create()
 	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	m_datm_pipeline[0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0"), @"datm0");
 	m_datm_pipeline[1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm1"), @"datm1");
+	m_datm_pipeline[2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm0_rta_correction"), @"datm0 rta");
+	m_datm_pipeline[3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_datm1_rta_correction"), @"datm1 rta");
 	m_stencil_clear_pipeline = MakePipeline(pdesc, fs_triangle, nil, @"Stencil Clear");
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::PrimID);
 	pdesc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	m_primid_init_pipeline[1][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
 	m_primid_init_pipeline[1][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
+	m_primid_init_pipeline[1][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
+	m_primid_init_pipeline[1][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 	m_primid_init_pipeline[0][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
 	m_primid_init_pipeline[0][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
+	m_primid_init_pipeline[0][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
+	m_primid_init_pipeline[0][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
 
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
@@ -1077,6 +1084,8 @@ bool GSDeviceMTL::Create()
 			case ShaderConvert::Count:
 			case ShaderConvert::DATM_0:
 			case ShaderConvert::DATM_1:
+			case ShaderConvert::DATM_0_RTA_CORRECTION:
+			case ShaderConvert::DATM_1_RTA_CORRECTION:
 			case ShaderConvert::CLUT_4:
 			case ShaderConvert::CLUT_8:
 			case ShaderConvert::HDR_INIT:
@@ -1105,6 +1114,8 @@ bool GSDeviceMTL::Create()
 				break;
 			case ShaderConvert::COPY:
 			case ShaderConvert::RGBA_TO_8I: // Yes really
+			case ShaderConvert::RTA_CORRECTION:
+			case ShaderConvert::RTA_DECORRECTION:
 			case ShaderConvert::TRANSPARENCY_FILTER:
 			case ShaderConvert::FLOAT32_TO_RGBA8:
 			case ShaderConvert::FLOAT32_TO_RGB8:
@@ -1141,9 +1152,10 @@ bool GSDeviceMTL::Create()
 		if (i & 2) mask |= MTLColorWriteMaskGreen;
 		if (i & 4) mask |= MTLColorWriteMaskBlue;
 		if (i & 8) mask |= MTLColorWriteMaskAlpha;
-		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s", i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : ""];
+		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s%s",
+		                  i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : "", i & 16 ? "_rta" : ""];
 		pdesc.colorAttachments[0].writeMask = mask;
-		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, ps_copy, name);
+		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, i & 16 ? ps_copy_rta_correct : ps_copy, name);
 	}
 
 	pdesc.colorAttachments[0].blendingEnabled = YES;
@@ -1154,7 +1166,7 @@ bool GSDeviceMTL::Create()
 	{
 		bool mmod = i & 1;
 		bool amod = i & 2;
-		NSString* name = [NSString stringWithFormat:@"ps_merge%zu", mmod];
+		NSString* name = [NSString stringWithFormat:@"ps_merge%d", mmod];
 		NSString* pipename = [NSString stringWithFormat:@"Merge%s%s", mmod ? " MMOD" : "", amod ? " AMOD" : ""];
 		pdesc.colorAttachments[0].writeMask = amod ? MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue : MTLColorWriteMaskAll;
 		m_merge_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), pipename);
@@ -1562,17 +1574,19 @@ void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, load_action, nullptr, 0);
 }}
 
-void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
+void GSDeviceMTL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader)
 { @autoreleasepool {
 	int sel = 0;
 	if (red)   sel |= 1;
 	if (green) sel |= 2;
 	if (blue)  sel |= 4;
 	if (alpha) sel |= 8;
+	if (shader == ShaderConvert::RTA_CORRECTION) sel |= 16;
+	const int color_sel = sel & 15;
 
 	id<MTLRenderPipelineState> pipeline = m_convert_pipeline_copy_mask[sel];
 
-	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, false, sel == 15 ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
+	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, false, color_sel == 15 ? LoadAction::DontCareIfFull : LoadAction::Load, nullptr, 0);
 }}
 
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));
@@ -1631,8 +1645,9 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 		const u32 end = i * 4;
 		const u32 vertex_count = end - start;
 		const u32 index_count = vertex_count + (vertex_count >> 1); // 6 indices per 4 vertices
+		const int rta_bit = shader == ShaderConvert::RTA_CORRECTION ? 16 : 0;
 		id<MTLRenderPipelineState> new_pipeline = wmask == 0xf ? m_convert_pipeline[static_cast<int>(shader)]
-		                                                       : m_convert_pipeline_copy_mask[wmask];
+		                                                       : m_convert_pipeline_copy_mask[wmask | rta_bit];
 		if (new_pipeline != pipeline)
 		{
 			pipeline = new_pipeline;
@@ -1734,8 +1749,6 @@ static MTLBlendOperation ConvertBlendOp(GSDevice::BlendOp generic)
 	}
 }
 
-static constexpr MTLColorWriteMask MTLColorWriteMaskRGB = MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue;
-
 static GSMTLExpandType ConvertVSExpand(GSHWDrawConfig::VSExpand generic)
 {
 	switch (generic)
@@ -1779,58 +1792,62 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	}
 	else
 	{
-		setFnConstantB(m_fn_constants, pssel.fst,                GSMTLConstantIndex_FST);
-		setFnConstantB(m_fn_constants, pssel.iip,                GSMTLConstantIndex_IIP);
-		setFnConstantI(m_fn_constants, pssel.aem_fmt,            GSMTLConstantIndex_PS_AEM_FMT);
-		setFnConstantI(m_fn_constants, pssel.pal_fmt,            GSMTLConstantIndex_PS_PAL_FMT);
-		setFnConstantI(m_fn_constants, pssel.dst_fmt,            GSMTLConstantIndex_PS_DST_FMT);
-		setFnConstantI(m_fn_constants, pssel.depth_fmt,          GSMTLConstantIndex_PS_DEPTH_FMT);
-		setFnConstantB(m_fn_constants, pssel.aem,                GSMTLConstantIndex_PS_AEM);
-		setFnConstantB(m_fn_constants, pssel.fba,                GSMTLConstantIndex_PS_FBA);
-		setFnConstantB(m_fn_constants, pssel.fog,                GSMTLConstantIndex_PS_FOG);
-		setFnConstantI(m_fn_constants, pssel.date,               GSMTLConstantIndex_PS_DATE);
-		setFnConstantI(m_fn_constants, pssel.atst,               GSMTLConstantIndex_PS_ATST);
-		setFnConstantI(m_fn_constants, pssel.tfx,                GSMTLConstantIndex_PS_TFX);
-		setFnConstantB(m_fn_constants, pssel.tcc,                GSMTLConstantIndex_PS_TCC);
-		setFnConstantI(m_fn_constants, pssel.wms,                GSMTLConstantIndex_PS_WMS);
-		setFnConstantI(m_fn_constants, pssel.wmt,                GSMTLConstantIndex_PS_WMT);
-		setFnConstantB(m_fn_constants, pssel.adjs,               GSMTLConstantIndex_PS_ADJS);
-		setFnConstantB(m_fn_constants, pssel.adjt,               GSMTLConstantIndex_PS_ADJT);
-		setFnConstantB(m_fn_constants, pssel.ltf,                GSMTLConstantIndex_PS_LTF);
-		setFnConstantB(m_fn_constants, pssel.shuffle,            GSMTLConstantIndex_PS_SHUFFLE);
-		setFnConstantB(m_fn_constants, pssel.shuffle_same,       GSMTLConstantIndex_PS_SHUFFLE_SAME);
-		setFnConstantB(m_fn_constants, pssel.read_ba,            GSMTLConstantIndex_PS_READ_BA);
-		setFnConstantB(m_fn_constants, pssel.real16src,          GSMTLConstantIndex_PS_READ16_SRC);
-		setFnConstantB(m_fn_constants, pssel.write_rg,           GSMTLConstantIndex_PS_WRITE_RG);
-		setFnConstantB(m_fn_constants, pssel.fbmask,             GSMTLConstantIndex_PS_FBMASK);
-		setFnConstantI(m_fn_constants, pssel.blend_a,            GSMTLConstantIndex_PS_BLEND_A);
-		setFnConstantI(m_fn_constants, pssel.blend_b,            GSMTLConstantIndex_PS_BLEND_B);
-		setFnConstantI(m_fn_constants, pssel.blend_c,            GSMTLConstantIndex_PS_BLEND_C);
-		setFnConstantI(m_fn_constants, pssel.blend_d,            GSMTLConstantIndex_PS_BLEND_D);
-		setFnConstantI(m_fn_constants, pssel.blend_hw,           GSMTLConstantIndex_PS_BLEND_HW);
-		setFnConstantB(m_fn_constants, pssel.a_masked,           GSMTLConstantIndex_PS_A_MASKED);
-		setFnConstantB(m_fn_constants, pssel.hdr,                GSMTLConstantIndex_PS_HDR);
-		setFnConstantB(m_fn_constants, pssel.colclip,            GSMTLConstantIndex_PS_COLCLIP);
-		setFnConstantI(m_fn_constants, pssel.blend_mix,          GSMTLConstantIndex_PS_BLEND_MIX);
-		setFnConstantB(m_fn_constants, pssel.round_inv,          GSMTLConstantIndex_PS_ROUND_INV);
-		setFnConstantB(m_fn_constants, pssel.fixed_one_a,        GSMTLConstantIndex_PS_FIXED_ONE_A);
-		setFnConstantB(m_fn_constants, pssel.pabe,               GSMTLConstantIndex_PS_PABE);
-		setFnConstantB(m_fn_constants, pssel.no_color,           GSMTLConstantIndex_PS_NO_COLOR);
-		setFnConstantB(m_fn_constants, pssel.no_color1,          GSMTLConstantIndex_PS_NO_COLOR1);
-		// no_ablend ignored for now (No Metal driver has had DSB so broken that it's needed to be disabled, though Intel's was pretty close)
-		setFnConstantB(m_fn_constants, pssel.only_alpha,         GSMTLConstantIndex_PS_ONLY_ALPHA);
-		setFnConstantI(m_fn_constants, pssel.channel,            GSMTLConstantIndex_PS_CHANNEL);
-		setFnConstantI(m_fn_constants, pssel.dither,             GSMTLConstantIndex_PS_DITHER);
-		setFnConstantB(m_fn_constants, pssel.zclamp,             GSMTLConstantIndex_PS_ZCLAMP);
-		setFnConstantB(m_fn_constants, pssel.tcoffsethack,       GSMTLConstantIndex_PS_TCOFFSETHACK);
-		setFnConstantB(m_fn_constants, pssel.urban_chaos_hle,    GSMTLConstantIndex_PS_URBAN_CHAOS_HLE);
-		setFnConstantB(m_fn_constants, pssel.tales_of_abyss_hle, GSMTLConstantIndex_PS_TALES_OF_ABYSS_HLE);
-		setFnConstantB(m_fn_constants, pssel.tex_is_fb,          GSMTLConstantIndex_PS_TEX_IS_FB);
-		setFnConstantB(m_fn_constants, pssel.automatic_lod,      GSMTLConstantIndex_PS_AUTOMATIC_LOD);
-		setFnConstantB(m_fn_constants, pssel.manual_lod,         GSMTLConstantIndex_PS_MANUAL_LOD);
-		setFnConstantB(m_fn_constants, pssel.point_sampler,      GSMTLConstantIndex_PS_POINT_SAMPLER);
-		setFnConstantB(m_fn_constants, pssel.region_rect,        GSMTLConstantIndex_PS_REGION_RECT);
-		setFnConstantI(m_fn_constants, pssel.scanmsk,            GSMTLConstantIndex_PS_SCANMSK);
+		setFnConstantB(m_fn_constants, pssel.fst,                   GSMTLConstantIndex_FST);
+		setFnConstantB(m_fn_constants, pssel.iip,                   GSMTLConstantIndex_IIP);
+		setFnConstantI(m_fn_constants, pssel.aem_fmt,               GSMTLConstantIndex_PS_AEM_FMT);
+		setFnConstantI(m_fn_constants, pssel.pal_fmt,               GSMTLConstantIndex_PS_PAL_FMT);
+		setFnConstantI(m_fn_constants, pssel.dst_fmt,               GSMTLConstantIndex_PS_DST_FMT);
+		setFnConstantI(m_fn_constants, pssel.depth_fmt,             GSMTLConstantIndex_PS_DEPTH_FMT);
+		setFnConstantB(m_fn_constants, pssel.aem,                   GSMTLConstantIndex_PS_AEM);
+		setFnConstantB(m_fn_constants, pssel.fba,                   GSMTLConstantIndex_PS_FBA);
+		setFnConstantB(m_fn_constants, pssel.fog,                   GSMTLConstantIndex_PS_FOG);
+		setFnConstantI(m_fn_constants, pssel.date,                  GSMTLConstantIndex_PS_DATE);
+		setFnConstantI(m_fn_constants, pssel.atst,                  GSMTLConstantIndex_PS_ATST);
+		setFnConstantI(m_fn_constants, pssel.afail,                 GSMTLConstantIndex_PS_AFAIL);
+		setFnConstantI(m_fn_constants, pssel.tfx,                   GSMTLConstantIndex_PS_TFX);
+		setFnConstantB(m_fn_constants, pssel.tcc,                   GSMTLConstantIndex_PS_TCC);
+		setFnConstantI(m_fn_constants, pssel.wms,                   GSMTLConstantIndex_PS_WMS);
+		setFnConstantI(m_fn_constants, pssel.wmt,                   GSMTLConstantIndex_PS_WMT);
+		setFnConstantB(m_fn_constants, pssel.adjs,                  GSMTLConstantIndex_PS_ADJS);
+		setFnConstantB(m_fn_constants, pssel.adjt,                  GSMTLConstantIndex_PS_ADJT);
+		setFnConstantB(m_fn_constants, pssel.ltf,                   GSMTLConstantIndex_PS_LTF);
+		setFnConstantB(m_fn_constants, pssel.shuffle,               GSMTLConstantIndex_PS_SHUFFLE);
+		setFnConstantB(m_fn_constants, pssel.shuffle_same,          GSMTLConstantIndex_PS_SHUFFLE_SAME);
+		setFnConstantI(m_fn_constants, pssel.process_ba,            GSMTLConstantIndex_PS_PROCESS_BA);
+		setFnConstantI(m_fn_constants, pssel.process_rg,            GSMTLConstantIndex_PS_PROCESS_RG);
+		setFnConstantB(m_fn_constants, pssel.shuffle_across,        GSMTLConstantIndex_PS_SHUFFLE_ACROSS);
+		setFnConstantB(m_fn_constants, pssel.real16src,             GSMTLConstantIndex_PS_READ16_SRC);
+		setFnConstantB(m_fn_constants, pssel.write_rg,              GSMTLConstantIndex_PS_WRITE_RG);
+		setFnConstantB(m_fn_constants, pssel.fbmask,                GSMTLConstantIndex_PS_FBMASK);
+		setFnConstantI(m_fn_constants, pssel.blend_a,               GSMTLConstantIndex_PS_BLEND_A);
+		setFnConstantI(m_fn_constants, pssel.blend_b,               GSMTLConstantIndex_PS_BLEND_B);
+		setFnConstantI(m_fn_constants, pssel.blend_c,               GSMTLConstantIndex_PS_BLEND_C);
+		setFnConstantI(m_fn_constants, pssel.blend_d,               GSMTLConstantIndex_PS_BLEND_D);
+		setFnConstantI(m_fn_constants, pssel.blend_hw,              GSMTLConstantIndex_PS_BLEND_HW);
+		setFnConstantB(m_fn_constants, pssel.a_masked,              GSMTLConstantIndex_PS_A_MASKED);
+		setFnConstantB(m_fn_constants, pssel.hdr,                   GSMTLConstantIndex_PS_HDR);
+		setFnConstantB(m_fn_constants, pssel.rta_correction,        GSMTLConstantIndex_PS_RTA_CORRECTION);
+		setFnConstantB(m_fn_constants, pssel.rta_source_correction, GSMTLConstantIndex_PS_RTA_SRC_CORRECTION);
+		setFnConstantB(m_fn_constants, pssel.colclip,               GSMTLConstantIndex_PS_COLCLIP);
+		setFnConstantI(m_fn_constants, pssel.blend_mix,             GSMTLConstantIndex_PS_BLEND_MIX);
+		setFnConstantB(m_fn_constants, pssel.round_inv,             GSMTLConstantIndex_PS_ROUND_INV);
+		setFnConstantB(m_fn_constants, pssel.fixed_one_a,           GSMTLConstantIndex_PS_FIXED_ONE_A);
+		setFnConstantB(m_fn_constants, pssel.pabe,                  GSMTLConstantIndex_PS_PABE);
+		setFnConstantB(m_fn_constants, pssel.no_color,              GSMTLConstantIndex_PS_NO_COLOR);
+		setFnConstantB(m_fn_constants, pssel.no_color1,             GSMTLConstantIndex_PS_NO_COLOR1);
+		setFnConstantI(m_fn_constants, pssel.channel,               GSMTLConstantIndex_PS_CHANNEL);
+		setFnConstantI(m_fn_constants, pssel.dither,                GSMTLConstantIndex_PS_DITHER);
+		setFnConstantI(m_fn_constants, pssel.dither_adjust,         GSMTLConstantIndex_PS_DITHER_ADJUST);
+		setFnConstantB(m_fn_constants, pssel.zclamp,                GSMTLConstantIndex_PS_ZCLAMP);
+		setFnConstantB(m_fn_constants, pssel.tcoffsethack,          GSMTLConstantIndex_PS_TCOFFSETHACK);
+		setFnConstantB(m_fn_constants, pssel.urban_chaos_hle,       GSMTLConstantIndex_PS_URBAN_CHAOS_HLE);
+		setFnConstantB(m_fn_constants, pssel.tales_of_abyss_hle,    GSMTLConstantIndex_PS_TALES_OF_ABYSS_HLE);
+		setFnConstantB(m_fn_constants, pssel.tex_is_fb,             GSMTLConstantIndex_PS_TEX_IS_FB);
+		setFnConstantB(m_fn_constants, pssel.automatic_lod,         GSMTLConstantIndex_PS_AUTOMATIC_LOD);
+		setFnConstantB(m_fn_constants, pssel.manual_lod,            GSMTLConstantIndex_PS_MANUAL_LOD);
+		setFnConstantB(m_fn_constants, pssel.point_sampler,         GSMTLConstantIndex_PS_POINT_SAMPLER);
+		setFnConstantB(m_fn_constants, pssel.region_rect,           GSMTLConstantIndex_PS_REGION_RECT);
+		setFnConstantI(m_fn_constants, pssel.scanmsk,               GSMTLConstantIndex_PS_SCANMSK);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
 		m_hw_ps.insert(std::make_pair(pssel, std::move(newps)));
@@ -1856,14 +1873,16 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		color.destinationRGBBlendFactor = MTLBlendFactorOne;
 		color.writeMask = MTLColorWriteMaskRed;
 	}
-	else if (extras.blend_enable && (extras.writemask & MTLColorWriteMaskRGB))
+	else if (blend.IsEffective(cms))
 	{
 		color.blendingEnabled = YES;
 		color.rgbBlendOperation = ConvertBlendOp(extras.blend_op);
 		color.sourceRGBBlendFactor = ConvertBlendFactor(extras.src_factor);
 		color.destinationRGBBlendFactor = ConvertBlendFactor(extras.dst_factor);
+		color.sourceAlphaBlendFactor = ConvertBlendFactor(extras.src_factor_alpha);
+		color.destinationAlphaBlendFactor = ConvertBlendFactor(extras.dst_factor_alpha);
 	}
-	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey()];
+	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
 	auto pipeline = MakePipeline(pdesc, vs, ps, pname);
 
 	[m_current_render.encoder setRenderPipelineState:pipeline];
@@ -2028,7 +2047,7 @@ static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, STScale)          == of
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, DitherMatrix)     == offsetof(GSMTLMainPSUniform, dither_matrix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, ScaleFactor)      == offsetof(GSMTLMainPSUniform, scale_factor));
 
-void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, bool datm)
+void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm)
 {
 	FlushClears(rt);
 	BeginRenderPass(@"Destination Alpha Setup", nullptr, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare, ds, MTLLoadActionDontCare);
@@ -2036,7 +2055,7 @@ void GSDeviceMTL::SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVe
 	MRESetDSS(m_dss_stencil_zero);
 	RenderCopy(nullptr, m_stencil_clear_pipeline, r);
 	MRESetDSS(m_dss_stencil_write);
-	RenderCopy(rt, m_datm_pipeline[datm], r);
+	RenderCopy(rt, m_datm_pipeline[static_cast<u8>(datm)], r);
 }
 
 static id<MTLTexture> getTexture(GSTexture* tex)
@@ -2111,7 +2130,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			dsel.zwe = 0;
 			GSTexture* depth = dsel.key == DepthStencilSelector::NoDepth().key ? nullptr : config.ds;
 			BeginRenderPass(@"PrimID Destination Alpha Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
-			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][config.datm], config.drawarea);
+			RenderCopy(config.rt, m_primid_init_pipeline[static_cast<bool>(depth)][static_cast<u8>(config.datm)], config.drawarea);
 			MRESetDSS(dsel);
 			pxAssert(config.ps.date == 1 || config.ps.date == 2);
 			if (config.ps.tex_is_fb)
@@ -2233,7 +2252,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 	if (config.drawlist)
 	{
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d sprites in %d groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
+		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d sprites in %zu groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
 #if defined(_DEBUG)
 		// Check how draw call is split.
 		std::map<size_t, size_t> frequency;

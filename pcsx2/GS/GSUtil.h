@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -9,7 +9,8 @@
 class GSUtil
 {
 public:
-	static void Init();
+	static const char* GetATSTName(u32 atst);
+	static const char* GetAFAILName(u32 afail);
 
 	static GS_PRIM_CLASS GetPrimClass(u32 prim);
 	static int GetVertexCount(u32 prim);

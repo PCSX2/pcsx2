@@ -190,8 +190,6 @@ void MTGS::ThreadEntryPoint()
 		// we need to reset sem_event here, because MainLoop() kills it.
 		s_sem_event.Reset();
 	}
-
-	GSshutdown();
 }
 
 void MTGS::ResetGS(bool hardware_reset)

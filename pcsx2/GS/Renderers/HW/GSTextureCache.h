@@ -89,7 +89,8 @@ public:
 		HashType TEX0Hash, CLUTHash;
 		GIFRegTEX0 TEX0;
 		GIFRegTEXA TEXA;
-		SourceRegion region;
+		u32 region_width;
+		u32 region_height;
 
 		HashCacheKey();
 
@@ -102,6 +103,7 @@ public:
 		__fi bool operator!=(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) != 0; }
 		__fi bool operator<(const HashCacheKey& e) const { return std::memcmp(this, &e, sizeof(*this)) < 0; }
 	};
+	static_assert(sizeof(HashCacheKey) == 40, "HashCacheKey has no padding");
 
 	struct HashCacheKeyHash
 	{
@@ -208,12 +210,15 @@ public:
 		const int m_type = 0;
 		int m_alpha_max = 0;
 		int m_alpha_min = 0;
+		bool m_alpha_range = false;
 
 		// Valid alpha means "we have rendered to the alpha channel of this target".
 		// A false value means that the alpha in local memory is still valid/up-to-date.
 		bool m_valid_alpha_low = false;
 		bool m_valid_alpha_high = false;
 		bool m_valid_rgb = false;
+		bool m_rt_alpha_scale = false;
+		int m_last_draw = 0;
 
 		bool m_is_frame = false;
 		bool m_used = false;
@@ -237,7 +242,10 @@ public:
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
 
-		void Update();
+		void RTACorrect(Target* rt);
+		void RTADecorrect(Target* rt);
+
+		void Update(bool cannot_scale = false);
 
 		/// Updates the target, if the dirty area intersects with the specified rectangle.
 		void UpdateIfDirtyIntersects(const GSVector4i& rc);
@@ -276,6 +284,7 @@ public:
 		u8 m_valid_hashes = 0;
 		u8 m_complete_layers = 0;
 		bool m_target = false;
+		bool m_target_direct = false;
 		bool m_repeating = false;
 		std::pair<u8, u8> m_alpha_minmax = {0u, 255u};
 		std::vector<GSVector2i>* m_p2t = nullptr;

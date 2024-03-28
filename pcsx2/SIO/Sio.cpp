@@ -7,7 +7,7 @@
 #include "SIO/Memcard/MemoryCardProtocol.h"
 
 #include "Host.h"
-#include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
 
 #include <atomic>
 
@@ -79,7 +79,7 @@ void AutoEject::CountDownTicks()
 
 	if (reinserted)
 	{
-		Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
+		Host::AddIconOSDMessage("AutoEjectAllSet", ICON_PF_MEMORY_CARD,
 			TRANSLATE_SV("MemoryCard", "Memory Cards reinserted."), Host::OSD_INFO_DURATION);
 	}
 }
@@ -100,7 +100,7 @@ void AutoEject::Clear(size_t port, size_t slot)
 
 void AutoEject::SetAll()
 {
-	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_FA_SD_CARD,
+	Host::AddIconOSDMessage("AutoEjectAllSet", ICON_PF_MEMORY_CARD,
 		TRANSLATE_SV("MemoryCard", "Force ejecting all Memory Cards. Reinserting in 1 second."), Host::OSD_INFO_DURATION);
 
 	for (size_t port = 0; port < SIO::PORTS; port++)

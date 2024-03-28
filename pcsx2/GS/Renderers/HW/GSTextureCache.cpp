@@ -160,11 +160,12 @@ void GSTextureCache::AddDirtyRectTarget(Target* target, GSVector4i rect, u32 psm
 				skipdirty = true;
 				break;
 			}
-
+			const GSVector4i valid_rect = rect.rintersect(target->m_valid);
+			const GSVector4i dirty_rect = it[0].r.rintersect(target->m_valid);
 			// Edges lined up so just expand the dirty rect
-			if ((it[0].r.xzxz().eq(rect.xzxz()) && (it[0].r.wwww().eq(rect.yyyy()) || it[0].r.yyyy().eq(rect.wwww()))) ||
-				(it[0].r.ywyw().eq(rect.ywyw()) && (it[0].r.zzzz().eq(rect.xxxx()) || it[0].r.xxxx().eq(rect.zzzz()))) ||
-				it[0].r.rintersect(rect).eq(it[0].r)) // If the new rect completely envelops the old one.
+			if ((dirty_rect.xzxz().eq(valid_rect.xzxz()) && (dirty_rect.wwww().eq(valid_rect.yyyy()) || dirty_rect.yyyy().eq(valid_rect.wwww()))) ||
+				(dirty_rect.ywyw().eq(valid_rect.ywyw()) && (dirty_rect.zzzz().eq(valid_rect.xxxx()) || dirty_rect.xxxx().eq(valid_rect.zzzz()))) ||
+				dirty_rect.rintersect(valid_rect).eq(dirty_rect)) // If the new rect completely envelops the old one.
 			{
 				rect = rect.runion(it[0].r);
 				it = target->m_dirty.erase(it);
@@ -930,6 +931,10 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 					CopyRGBFromDepthToColor(t, dst);
 
 				dst = t;
+
+				if (GSUtil::GetChannelMask(TEX0.PSM) & 0x8)
+					t->RTADecorrect(t);
+
 				inside_target = false;
 				break;
 			}
@@ -1327,6 +1332,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							// The hack can fix glitches in some games.
 							if (!t->m_drawn_since_read.rempty())
 							{
+								t->RTADecorrect(t);
+
 								Read(t, t->m_drawn_since_read);
 
 								t->m_drawn_since_read = GSVector4i::zero();
@@ -1334,8 +1341,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						}
 						else
 						{
+							const bool outside_target = !t->Overlaps(bp, bw, psm, r);
+
 							// We don't have a shader for this.
-							if (!possible_shuffle && TEX0.PSM == PSMT8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32)
+							if (!possible_shuffle && TEX0.PSM == PSMT8 && ((GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp != 32) || outside_target))
 							{
 								continue;
 							}
@@ -1687,6 +1696,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
+
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset, lod, &r, gpu_clut, region);
 		if (!src) [[unlikely]]
 			return nullptr;
@@ -1989,6 +1999,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					dst->m_was_dst_matched = true;
 					dst->m_TEX0.TBW = dst_match->m_TEX0.TBW;
 					dst->UpdateValidity(dst->m_valid);
+
+					dst->m_rt_alpha_scale = false;
+
 					if (!CopyRGBFromDepthToColor(dst, dst_match))
 					{
 						// Needed new texture and memory allocation failed.
@@ -2226,6 +2239,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 					else if (dst_match->m_texture->GetState() == GSTexture::State::Dirty)
 					{
+						dst_match->RTADecorrect(dst_match);
 						g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					}
@@ -2343,6 +2357,13 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	}
 
 	dst->readbacks_since_draw = 0;
+
+	dst->m_last_draw = GSState::s_n;
+
+	if (dst->m_dirty.empty())
+		dst->m_rt_alpha_scale = true;
+	else
+		dst->m_last_draw -= 1; // If we preload and it needs to decorrect and we couldn't catch it early, we need to make sure it decorrects the data.
 
 	pxAssert(dst && dst->m_texture && dst->m_scale == scale);
 	return dst;
@@ -2641,6 +2662,56 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	}
 
 	return can_create ? CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true) : nullptr;
+}
+
+void GSTextureCache::Target::RTACorrect(Target* rt)
+{
+	if (rt && !rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	{
+		if (rt->m_alpha_max > 0)
+		{
+			const GSVector2i rtsize(rt->m_texture->GetSize());
+			const GSVector4i valid_rect = GSVector4i(GSVector4(rt->m_valid) * GSVector4(rt->m_scale));
+
+			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
+			{
+				// Only copy up the valid area, since there's no point in "correcting" nothing.
+				const GSVector4 dRect(rt->m_texture->GetRect().rintersect(valid_rect));
+				const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+				g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION, false);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				g_gs_device->Recycle(rt->m_texture);
+				rt->m_texture = temp_rt;
+			}
+		}
+
+		rt->m_rt_alpha_scale = true;
+	}
+}
+
+void GSTextureCache::Target::RTADecorrect(Target* rt)
+{
+	if (rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	{
+		if (rt->m_alpha_max > 0)
+		{
+			const GSVector2i rtsize(rt->m_texture->GetSize());
+			const GSVector4i valid_rect = GSVector4i(GSVector4(rt->m_valid) * GSVector4(rt->m_scale));
+
+			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
+			{
+				// Only copy up the valid area, since there's no point in "correcting" nothing.
+				const GSVector4 dRect(rt->m_texture->GetRect().rintersect(valid_rect));
+				const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+				g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION, false);
+				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+				g_gs_device->Recycle(rt->m_texture);
+				rt->m_texture = temp_rt;
+			}
+		}
+
+		rt->m_rt_alpha_scale = false;
+	}
 }
 
 void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, int real_w, int real_h)
@@ -3639,6 +3710,13 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	GL_CACHE("HW Move 0x%x[BW:%u PSM:%s] to 0x%x[BW:%u PSM:%s] <%d,%d->%d,%d> -> <%d,%d->%d,%d>", SBP, SBW,
 		psm_str(SPSM), DBP, DBW, psm_str(DPSM), sx, sy, sx + w, sy + h, dx, dy, dx + w, dy + h);
 
+	const bool cover_whole_target = dst->m_type == RenderTarget && GSVector4i(dx, dy, dx + w, dy + h).rintersect(dst->m_valid).eq(dst->m_valid);
+	if (!cover_whole_target)
+	{
+		src->RTADecorrect(src);
+		dst->RTADecorrect(dst);
+	}
+
 	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
 	if ((SBP == DBP) && !(GSVector4i(sx, sy, sx + w, sy + h).rintersect(GSVector4i(dx, dy, dx + w, dy + h))).rempty())
 	{
@@ -3716,6 +3794,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			dst->m_valid_alpha_high |= src->m_valid_alpha_high;
 		dst->m_alpha_max = src->m_alpha_max;
 		dst->m_alpha_min = src->m_alpha_min;
+		dst->m_alpha_range |= src->m_alpha_range;
 	}
 
 	if (GSLocalMemory::IsPageAligned(src->m_TEX0.PSM, GSVector4i(sx, sy, sx + w, sy + h)) && (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x || h == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.y))
@@ -3747,6 +3826,10 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	}
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
+
+	if (cover_whole_target)
+		dst->m_rt_alpha_scale = src->m_rt_alpha_scale;
+
 	// Invalidate any sources that overlap with the target (since they're now stale).
 	InvalidateVideoMem(g_gs_renderer->m_mem.GetOffset(DBP, DBW, DPSM), GSVector4i(dx, dy, dx + w, dy + h), false);
 	return true;
@@ -3801,9 +3884,16 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 
 	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h);
 
+	if (read_ba || !write_rg)
+		tgt->RTADecorrect(tgt);
+
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
-	config.ps.read_ba = read_ba;
+	config.ps.process_ba = read_ba ? 1 : 0;
+	config.ps.process_rg = !read_ba ? 1 : 0;
+	config.ps.process_ba = !write_rg ? 2 : 0;
+	config.ps.process_rg = write_rg ? 2 : 0;
+	config.ps.shuffle_across = true;
 	config.ps.write_rg = write_rg;
 	config.ps.shuffle = true;
 	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
@@ -3813,6 +3903,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 		// Because we don't know the new alpha value which came from green, just go full paranoid.
 		tgt->m_alpha_min = 0;
 		tgt->m_alpha_max = 255;
+		tgt->m_alpha_range = true;
 	}
 
 	return true;
@@ -4234,7 +4325,16 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			// copy the rt in
 			const GSVector4i area(GSVector4i(x, y, x + w, y + h).rintersect(GSVector4i(sTex->GetSize()).zwxy()));
 			if (!area.rempty())
-				g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
+			{
+				if (dst->m_rt_alpha_scale)
+				{
+					const GSVector4 sRectF = GSVector4(area) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
+					g_gs_device->StretchRect(
+						sTex, sRectF, dTex, GSVector4(area), ShaderConvert::RTA_DECORRECTION, false);
+				}
+				else
+					g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
+			}
 
 			src->m_texture = dTex;
 			src->m_unscaled_size = GSVector2i(tw, th);
@@ -4252,6 +4352,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				src->m_region.SetY(y_offset, region.GetMaxY() + y_offset);
 			else
 				src->m_region.SetY(y_offset, y_offset + th);
+
+			src->m_target_direct = true;
 			src->m_texture = dst->m_texture;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
@@ -4489,6 +4591,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			// sample the target directly
 			src->m_texture = dst->m_texture;
+			src->m_target_direct = true;
 			src->m_scale = dst->m_scale;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
@@ -4535,7 +4638,14 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 			if (use_texture)
 			{
-				g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
+				if (dst->m_rt_alpha_scale)
+				{
+					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
+					g_gs_device->StretchRect(
+						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, false);
+				}
+				else
+					g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
 				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 #ifdef PCSX2_DEVBUILD
@@ -4550,12 +4660,21 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			{
 				if (is_8bits)
 				{
+					if (dst->m_rt_alpha_scale)
+					{
+						dst->RTADecorrect(dst);
+						sTex = dst->m_texture;
+					}
+
 					g_gs_device->ConvertToIndexedTexture(sTex, dst->m_scale, x_offset, y_offset,
 						std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
 						std::max<u32>(TEX0.TBW, 1u) * 64, TEX0.PSM);
 				}
 				else
 				{
+					if (dst->m_rt_alpha_scale && shader == ShaderConvert::COPY)
+						shader = ShaderConvert::RTA_DECORRECTION;
+						
 					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
 					g_gs_device->StretchRect(
 						sTex, sRectF, dTex, GSVector4(destX, destY, new_size.x, new_size.y), shader, false);
@@ -5035,7 +5154,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	if (it != m_hash_cache.end())
 	{
 		// super easy, cache hit. remove paltex if it's a replacement texture.
-		GL_CACHE("HC Hit: %" PRIx64 " %" PRIx64 " R-%" PRIx64, key.TEX0Hash, key.CLUTHash, key.region.bits);
+		GL_CACHE("HC Hit: %" PRIx64 " %" PRIx64 " R-%ux%u", key.TEX0Hash, key.CLUTHash, key.region_width, key.region_height);
 		HashCacheEntry* entry = &it->second;
 		paltex &= (entry->texture->GetFormat() == GSTexture::Format::UNorm8);
 		entry->refcount++;
@@ -5043,7 +5162,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	}
 
 	// cache miss.
-	GL_CACHE("HC Miss: %" PRIx64 " %" PRIx64 " R-%" PRIx64, key.TEX0Hash, key.CLUTHash, key.region.bits);
+	GL_CACHE("HC Miss: %" PRIx64 " %" PRIx64 " R-%ux%u", key.TEX0Hash, key.CLUTHash, key.region_width, key.region_height);
 
 	// check for a replacement texture with the full clut key
 	if (replace)
@@ -5288,6 +5407,9 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 
 		offset = this_offset;
 		*scale = t->m_scale;
+
+		t->RTADecorrect(t);
+
 		return t->m_texture;
 	}
 
@@ -5328,7 +5450,11 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 			else
 			{
 				fmt = GSTexture::Format::Color;
-				ps_shader = ShaderConvert::COPY;
+				if (t->m_rt_alpha_scale)
+					ps_shader = ShaderConvert::RTA_DECORRECTION;
+				else
+					ps_shader = ShaderConvert::COPY;
+
 				dltex = &m_color_download_texture;
 			}
 		}
@@ -5378,7 +5504,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	const GSVector4 src(GSVector4(r) * GSVector4(t->m_scale) / GSVector4(t->m_texture->GetSize()).xyxy());
 	const GSVector4i drc(0, 0, r.width(), r.height());
-	const bool direct_read = (t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY);
+	const bool direct_read = t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY;
 
 	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
 		return;
@@ -5856,7 +5982,7 @@ GSTextureCache::Target::~Target()
 #endif
 }
 
-void GSTextureCache::Target::Update()
+void GSTextureCache::Target::Update(bool cannot_scale)
 {
 	m_age = 0;
 
@@ -5903,7 +6029,7 @@ void GSTextureCache::Target::Update()
 	const bool mapped = t->Map(m);
 
 	GIFRegTEXA TEXA = {};
-	TEXA.AEM = 1;
+	TEXA.AEM = 0;
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
@@ -5994,6 +6120,14 @@ void GSTextureCache::Target::Update()
 
 	if (ndrects > 0)
 	{
+		if (m_type == RenderTarget && transferring_alpha && bpp >= 16)
+		{
+			if (alpha_minmax.second > 128 || (m_TEX0.PSM & 0xf) == PSMCT24)
+				this->RTADecorrect(this);
+			else if (!cannot_scale && total_rect.eq(m_valid))
+				m_rt_alpha_scale = true;
+		}
+
 		ShaderConvert depth_shader = upscaled ? ShaderConvert::RGBA8_TO_FLOAT32_BILN : ShaderConvert::RGBA8_TO_FLOAT32;
 		if (m_type == DepthStencil && GSLocalMemory::m_psm[m_TEX0.PSM].trbpp != 32)
 		{
@@ -6010,8 +6144,9 @@ void GSTextureCache::Target::Update()
 			}
 		}
 
+		const ShaderConvert rt_shader = m_rt_alpha_scale ? ShaderConvert::RTA_CORRECTION : ShaderConvert::COPY;
 		// No need to sort here, it's all the one texture.
-		const ShaderConvert shader = (m_type == RenderTarget) ? ShaderConvert::COPY : depth_shader;
+		const ShaderConvert shader = (m_type == RenderTarget) ? rt_shader : depth_shader;
 
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, m_texture, shader);
 	}
@@ -6028,6 +6163,8 @@ void GSTextureCache::Target::Update()
 			m_alpha_min = alpha_minmax.first;
 			m_alpha_max = alpha_minmax.second;
 		}
+
+		m_alpha_range |= alpha_minmax.first != alpha_minmax.second;
 	}
 	g_gs_device->Recycle(t);
 	m_dirty.clear();
@@ -7005,6 +7142,8 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 GSTextureCache::HashCacheKey::HashCacheKey()
 	: TEX0Hash(0)
 	, CLUTHash(0)
+	, region_width(0)
+	, region_height(0)
 {
 	TEX0.U64 = 0;
 	TEXA.U64 = 0;
@@ -7015,10 +7154,11 @@ GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTE
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 
 	HashCacheKey ret;
-	ret.TEX0.U64 = TEX0.U64 & 0x00000007FFF00000ULL;
+	ret.TEX0.U64 = TEX0.U64 & 0x00000003FFF00000ULL; // PSM, TW, TH
 	ret.TEXA.U64 = (psm.pal == 0 && psm.fmt > 0) ? (TEXA.U64 & 0x000000FF000080FFULL) : 0;
 	ret.CLUTHash = clut ? GSTextureCache::PaletteKeyHash{}({clut, psm.pal}) : 0;
-	ret.region = region;
+	ret.region_width = static_cast<u16>(region.GetWidth());
+	ret.region_height = static_cast<u16>(region.GetHeight());
 
 	BlockHashState hash_st;
 	BlockHashReset(hash_st);
@@ -7058,6 +7198,7 @@ void GSTextureCache::HashCacheKey::RemoveCLUTHash()
 u64 GSTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& key) const
 {
 	std::size_t h = 0;
-	HashCombine(h, key.TEX0Hash, key.CLUTHash, key.TEX0.U64, key.TEXA.U64, key.region.bits);
+	HashCombine(h, key.TEX0Hash, key.CLUTHash, key.TEX0.U64, key.TEXA.U64,
+		static_cast<u64>(key.region_width) | (static_cast<u64>(key.region_height) << 16));
 	return h;
 }

@@ -3,207 +3,210 @@
 
 #pragma once
 
+#include "common/Pcsx2Types.h"
+
 #include <cstdint>
 #include <vector>
 
 /* binary representation */
 #pragma pack(push, 1)
-	typedef struct USBDescriptor {
-		uint8_t bLength;
-		uint8_t bDescriptorType;
-		union
+typedef struct USBDescriptor
+{
+	u8 bLength;
+	u8 bDescriptorType;
+	union
+	{
+		struct
 		{
-			struct
+			u8 bcdUSB_lo;
+			u8 bcdUSB_hi;
+			u8 bDeviceClass;
+			u8 bDeviceSubClass;
+			u8 bDeviceProtocol;
+			u8 bMaxPacketSize0;
+			u8 idVendor_lo;
+			u8 idVendor_hi;
+			u8 idProduct_lo;
+			u8 idProduct_hi;
+			u8 bcdDevice_lo;
+			u8 bcdDevice_hi;
+			u8 iManufacturer;
+			u8 iProduct;
+			u8 iSerialNumber;
+			u8 bNumConfigurations;
+		} device;
+		struct
+		{
+			u8 bcdUSB_lo;
+			u8 bcdUSB_hi;
+			u8 bDeviceClass;
+			u8 bDeviceSubClass;
+			u8 bDeviceProtocol;
+			u8 bMaxPacketSize0;
+			u8 bNumConfigurations;
+			u8 bReserved;
+		} device_qualifier;
+		struct
+		{
+			u8 wTotalLength_lo;
+			u8 wTotalLength_hi;
+			u8 bNumInterfaces;
+			u8 bConfigurationValue;
+			u8 iConfiguration;
+			u8 bmAttributes;
+			u8 bMaxPower;
+		} config;
+		struct
+		{
+			u8 bInterfaceNumber;
+			u8 bAlternateSetting;
+			u8 bNumEndpoints;
+			u8 bInterfaceClass;
+			u8 bInterfaceSubClass;
+			u8 bInterfaceProtocol;
+			u8 iInterface;
+		} intf;
+		struct
+		{
+			u8 bEndpointAddress;
+			u8 bmAttributes;
+			u8 wMaxPacketSize_lo;
+			u8 wMaxPacketSize_hi;
+			u8 bInterval;
+			u8 bRefresh; /* only audio ep */
+			u8 bSynchAddress; /* only audio ep */
+		} endpoint;
+		struct
+		{
+			u8 bMaxBurst;
+			u8 bmAttributes;
+			u8 wBytesPerInterval_lo;
+			u8 wBytesPerInterval_hi;
+		} super_endpoint;
+		struct
+		{
+			u8 wTotalLength_lo;
+			u8 wTotalLength_hi;
+			u8 bNumDeviceCaps;
+		} bos;
+		struct
+		{
+			u8 bDevCapabilityType;
+			union
 			{
-				uint8_t bcdUSB_lo;
-				uint8_t bcdUSB_hi;
-				uint8_t bDeviceClass;
-				uint8_t bDeviceSubClass;
-				uint8_t bDeviceProtocol;
-				uint8_t bMaxPacketSize0;
-				uint8_t idVendor_lo;
-				uint8_t idVendor_hi;
-				uint8_t idProduct_lo;
-				uint8_t idProduct_hi;
-				uint8_t bcdDevice_lo;
-				uint8_t bcdDevice_hi;
-				uint8_t iManufacturer;
-				uint8_t iProduct;
-				uint8_t iSerialNumber;
-				uint8_t bNumConfigurations;
-			} device;
-			struct
-			{
-				uint8_t bcdUSB_lo;
-				uint8_t bcdUSB_hi;
-				uint8_t bDeviceClass;
-				uint8_t bDeviceSubClass;
-				uint8_t bDeviceProtocol;
-				uint8_t bMaxPacketSize0;
-				uint8_t bNumConfigurations;
-				uint8_t bReserved;
-			} device_qualifier;
-			struct
-			{
-				uint8_t wTotalLength_lo;
-				uint8_t wTotalLength_hi;
-				uint8_t bNumInterfaces;
-				uint8_t bConfigurationValue;
-				uint8_t iConfiguration;
-				uint8_t bmAttributes;
-				uint8_t bMaxPower;
-			} config;
-			struct
-			{
-				uint8_t bInterfaceNumber;
-				uint8_t bAlternateSetting;
-				uint8_t bNumEndpoints;
-				uint8_t bInterfaceClass;
-				uint8_t bInterfaceSubClass;
-				uint8_t bInterfaceProtocol;
-				uint8_t iInterface;
-			} intf;
-			struct
-			{
-				uint8_t bEndpointAddress;
-				uint8_t bmAttributes;
-				uint8_t wMaxPacketSize_lo;
-				uint8_t wMaxPacketSize_hi;
-				uint8_t bInterval;
-				uint8_t bRefresh;      /* only audio ep */
-				uint8_t bSynchAddress; /* only audio ep */
-			} endpoint;
-			struct
-			{
-				uint8_t bMaxBurst;
-				uint8_t bmAttributes;
-				uint8_t wBytesPerInterval_lo;
-				uint8_t wBytesPerInterval_hi;
-			} super_endpoint;
-			struct
-			{
-				uint8_t wTotalLength_lo;
-				uint8_t wTotalLength_hi;
-				uint8_t bNumDeviceCaps;
-			} bos;
-			struct
-			{
-				uint8_t bDevCapabilityType;
-				union
+				struct
 				{
-					struct
-					{
-						uint8_t bmAttributes_1;
-						uint8_t bmAttributes_2;
-						uint8_t bmAttributes_3;
-						uint8_t bmAttributes_4;
-					} usb2_ext;
-					struct
-					{
-						uint8_t bmAttributes;
-						uint8_t wSpeedsSupported_lo;
-						uint8_t wSpeedsSupported_hi;
-						uint8_t bFunctionalitySupport;
-						uint8_t bU1DevExitLat;
-						uint8_t wU2DevExitLat_lo;
-						uint8_t wU2DevExitLat_hi;
-					} super;
-				} u;
-			} cap;
-		} u;
-	} USBDescriptor;
+					u8 bmAttributes_1;
+					u8 bmAttributes_2;
+					u8 bmAttributes_3;
+					u8 bmAttributes_4;
+				} usb2_ext;
+				struct
+				{
+					u8 bmAttributes;
+					u8 wSpeedsSupported_lo;
+					u8 wSpeedsSupported_hi;
+					u8 bFunctionalitySupport;
+					u8 bU1DevExitLat;
+					u8 wU2DevExitLat_lo;
+					u8 wU2DevExitLat_hi;
+				} super;
+			} u;
+		} cap;
+	} u;
+} USBDescriptor;
 #pragma pack(pop)
 
 struct USBDescID
 {
-	uint16_t idVendor;
-	uint16_t idProduct;
-	uint16_t bcdDevice;
-	uint8_t iManufacturer;
-	uint8_t iProduct;
-	uint8_t iSerialNumber;
+	u16 idVendor;
+	u16 idProduct;
+	u16 bcdDevice;
+	u8 iManufacturer;
+	u8 iProduct;
+	u8 iSerialNumber;
 };
 
 struct USBDescDevice
 {
-	uint16_t bcdUSB;
-	uint8_t bDeviceClass;
-	uint8_t bDeviceSubClass;
-	uint8_t bDeviceProtocol;
-	uint8_t bMaxPacketSize0;
-	uint8_t bNumConfigurations;
+	u16 bcdUSB;
+	u8 bDeviceClass;
+	u8 bDeviceSubClass;
+	u8 bDeviceProtocol;
+	u8 bMaxPacketSize0;
+	u8 bNumConfigurations;
 
 	std::vector<USBDescConfig> confs;
 };
 
 struct USBDescConfig
 {
-	uint8_t bNumInterfaces;
-	uint8_t bConfigurationValue;
-	uint8_t iConfiguration;
-	uint8_t bmAttributes;
-	uint8_t bMaxPower;
+	u8 bNumInterfaces;
+	u8 bConfigurationValue;
+	u8 iConfiguration;
+	u8 bmAttributes;
+	u8 bMaxPower;
 
 	/* grouped interfaces */
-	//uint8_t                   nif_groups;
+	//u8                   nif_groups;
 	std::vector<USBDescIfaceAssoc> if_groups;
 
 	/* "normal" interfaces */
-	//uint8_t                   nif;
+	//u8                   nif;
 	std::vector<USBDescIface> ifs;
 };
 
 /* conceptually an Interface Association Descriptor, and releated interfaces */
 struct USBDescIfaceAssoc
 {
-	uint8_t bFirstInterface;
-	uint8_t bInterfaceCount;
-	uint8_t bFunctionClass;
-	uint8_t bFunctionSubClass;
-	uint8_t bFunctionProtocol;
-	uint8_t iFunction;
+	u8 bFirstInterface;
+	u8 bInterfaceCount;
+	u8 bFunctionClass;
+	u8 bFunctionSubClass;
+	u8 bFunctionProtocol;
+	u8 iFunction;
 
-	//uint8_t                   nif;
+	//u8                   nif;
 	std::vector<USBDescIface> ifs;
 };
 
 struct USBDescIface
 {
-	uint8_t bInterfaceNumber;
-	uint8_t bAlternateSetting;
-	uint8_t bNumEndpoints;
-	uint8_t bInterfaceClass;
-	uint8_t bInterfaceSubClass;
-	uint8_t bInterfaceProtocol;
-	uint8_t iInterface;
+	u8 bInterfaceNumber;
+	u8 bAlternateSetting;
+	u8 bNumEndpoints;
+	u8 bInterfaceClass;
+	u8 bInterfaceSubClass;
+	u8 bInterfaceProtocol;
+	u8 iInterface;
 
-	//uint8_t                   ndesc;
+	//u8                   ndesc;
 	std::vector<USBDescOther> descs;
 	std::vector<USBDescEndpoint> eps;
 };
 
 struct USBDescEndpoint
 {
-	uint8_t bEndpointAddress;
-	uint8_t bmAttributes;
-	uint16_t wMaxPacketSize;
-	uint8_t bInterval;
-	uint8_t bRefresh;
-	uint8_t bSynchAddress;
+	u8 bEndpointAddress;
+	u8 bmAttributes;
+	u16 wMaxPacketSize;
+	u8 bInterval;
+	u8 bRefresh;
+	u8 bSynchAddress;
 
-	uint8_t is_audio; /* has bRefresh + bSynchAddress */
-	const uint8_t* extra;
+	u8 is_audio; /* has bRefresh + bSynchAddress */
+	const u8* extra;
 
 	/* superspeed endpoint companion */
-	uint8_t bMaxBurst;
-	uint8_t bmAttributes_super;
-	uint16_t wBytesPerInterval;
+	u8 bMaxBurst;
+	u8 bmAttributes_super;
+	u16 wBytesPerInterval;
 };
 
 struct USBDescOther
 {
-	uint8_t length;
-	const uint8_t* data;
+	u8 length;
+	const u8* data;
 };
 
 struct USBDescMSOS
@@ -228,43 +231,43 @@ struct USBDesc
 #define USB_DESC_FLAG_SUPER (1 << 1)
 
 /* little helpers */
-static inline uint8_t usb_lo(uint16_t val)
+static inline u8 usb_lo(u16 val)
 {
 	return val & 0xff;
 }
 
-static inline uint8_t usb_hi(uint16_t val)
+static inline u8 usb_hi(u16 val)
 {
 	return (val >> 8) & 0xff;
 }
 
 /* generate usb packages from structs */
 int usb_desc_device(const USBDescID* id, const USBDescDevice* dev,
-					bool msos, uint8_t* dest, size_t len);
+					bool msos, u8* dest, size_t len);
 int usb_desc_device_qualifier(const USBDescDevice* dev,
-							  uint8_t* dest, size_t len);
+							  u8* dest, size_t len);
 int usb_desc_config(const USBDescConfig& conf, int flags,
-					uint8_t* dest, size_t len);
+					u8* dest, size_t len);
 int usb_desc_iface_group(const USBDescIfaceAssoc& iad, int flags,
-						 uint8_t* dest, size_t len);
+						 u8* dest, size_t len);
 int usb_desc_iface(const USBDescIface& iface, int flags,
-				   uint8_t* dest, size_t len);
+				   u8* dest, size_t len);
 int usb_desc_endpoint(const USBDescEndpoint& ep, int flags,
-					  uint8_t* dest, size_t len);
-int usb_desc_other(const USBDescOther& desc, uint8_t* dest, size_t len);
+					  u8* dest, size_t len);
+int usb_desc_other(const USBDescOther& desc, u8* dest, size_t len);
 //int usb_desc_msos(const USBDesc *desc, USBPacket *p,
-//                  int index, uint8_t *dest, size_t len);
-int usb_desc_parse_dev(const uint8_t* data, int len, USBDesc& desc, USBDescDevice& dev);
-int usb_desc_parse_config(const uint8_t* data, int len, USBDescDevice& dev);
+//                  int index, u8 *dest, size_t len);
+int usb_desc_parse_dev(const u8* data, int len, USBDesc& desc, USBDescDevice& dev);
+int usb_desc_parse_config(const u8* data, int len, USBDescDevice& dev);
 
 /* control message emulation helpers */
 void usb_desc_init(USBDevice* dev);
 void usb_desc_attach(USBDevice* dev);
-int usb_desc_string(USBDevice* dev, int index, uint8_t* dest, size_t len);
+int usb_desc_string(USBDevice* dev, int index, u8* dest, size_t len);
 int usb_desc_get_descriptor(USBDevice* dev, USBPacket* p,
-							int value, uint8_t* dest, size_t len);
+							int value, u8* dest, size_t len);
 int usb_desc_handle_control(USBDevice* dev, USBPacket* p,
-							int request, int value, int index, int length, uint8_t* data);
+							int request, int value, int index, int length, u8* data);
 
 int usb_desc_set_config(USBDevice* dev, int value);
 int usb_desc_set_interface(USBDevice* dev, int index, int value);

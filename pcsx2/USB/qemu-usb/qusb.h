@@ -482,8 +482,6 @@ void usb_packet_setup(USBPacket* p, int pid,
 					  USBEndpoint* ep, unsigned int stream,
 					  uint64_t id, bool short_not_ok, bool int_req);
 void usb_packet_addbuf(USBPacket* p, void* ptr, size_t len);
-//int usb_packet_map(USBPacket *p, QEMUSGList *sgl);
-//void usb_packet_unmap(USBPacket *p, QEMUSGList *sgl);
 void usb_packet_copy(USBPacket* p, void* ptr, size_t bytes);
 void usb_packet_skip(USBPacket* p, size_t bytes);
 size_t usb_packet_size(USBPacket* p);
@@ -540,10 +538,6 @@ void usb_ep_set_halted(USBDevice* dev, int pid, int ep, bool halted);
 USBPacket* usb_ep_find_packet_by_id(USBDevice* dev, int pid, int ep,
 									uint64_t id);
 
-void usb_ep_combine_input_packets(USBEndpoint* ep);
-void usb_combined_input_packet_complete(USBDevice* dev, USBPacket* p);
-void usb_combined_packet_cancel(USBDevice* dev, USBPacket* p);
-
 void usb_pick_speed(USBPort* port);
 void usb_attach(USBPort* port);
 void usb_detach(USBPort* port);
@@ -552,17 +546,9 @@ void usb_device_reset(USBDevice* dev);
 void usb_wakeup(USBEndpoint* ep, unsigned int stream);
 void usb_generic_async_ctrl_complete(USBDevice* s, USBPacket* p);
 
-
-int usb_generic_handle_packet(USBDevice* s, int pid,
-							  uint8_t devaddr, uint8_t devep,
-							  uint8_t* data, int len);
 void usb_reattach(USBPort* port);
-void usb_send_msg(USBDevice* dev, int msg);
-
 
 /* usb hub */
-USBDevice* usb_hub_init(int nb_ports);
-
 USBDevice* usb_device_find_device(USBDevice* dev, uint8_t addr);
 
 void usb_device_cancel_packet(USBDevice* dev, USBPacket* p);
@@ -586,7 +572,5 @@ void usb_device_ep_stopped(USBDevice* dev, USBEndpoint* ep);
 int usb_device_alloc_streams(USBDevice* dev, USBEndpoint** eps, int nr_eps,
 							 int streams);
 void usb_device_free_streams(USBDevice* dev, USBEndpoint** eps, int nr_eps);
-
-const char* usb_device_get_product_desc(USBDevice* dev);
 
 const USBDesc* usb_device_get_usb_desc(USBDevice* dev);

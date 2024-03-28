@@ -19,8 +19,12 @@ enum class ShaderConvert
 	RGBA8_TO_16_BITS,
 	DATM_1,
 	DATM_0,
+	DATM_1_RTA_CORRECTION,
+	DATM_0_RTA_CORRECTION,
 	HDR_INIT,
 	HDR_RESOLVE,
+	RTA_CORRECTION,
+	RTA_DECORRECTION,
 	TRANSPARENCY_FILTER,
 	FLOAT32_TO_16_BITS,
 	FLOAT32_TO_32_BITS,
@@ -41,6 +45,14 @@ enum class ShaderConvert
 	CLUT_8,
 	YUV,
 	Count
+};
+
+enum class SetDATM : u8
+{
+	DATM0 = 0U,
+	DATM1,
+	DATM0_RTA_CORRECTION,
+	DATM1_RTA_CORRECTION
 };
 
 enum class ShaderInterlace
@@ -78,6 +90,8 @@ static inline bool HasStencilOutput(ShaderConvert shader)
 	{
 		case ShaderConvert::DATM_0:
 		case ShaderConvert::DATM_1:
+		case ShaderConvert::DATM_0_RTA_CORRECTION:
+		case ShaderConvert::DATM_1_RTA_CORRECTION:
 			return true;
 		default:
 			return false;
@@ -138,6 +152,7 @@ enum class PresentShader
 
 /// Get the name of a shader
 /// (Can't put methods on an enum class)
+int SetDATMShader(SetDATM datm);
 const char* shaderName(ShaderConvert value);
 const char* shaderName(PresentShader value);
 
@@ -289,6 +304,7 @@ struct alignas(16) GSHWDrawConfig
 				// Pixel test
 				u32 date : 3;
 				u32 atst : 3;
+				u32 afail : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
 				u32 tfx : 3;
@@ -302,33 +318,36 @@ struct alignas(16) GSHWDrawConfig
 				u32 shuffle  : 1;
 				u32 shuffle_same : 1;
 				u32 real16src: 1;
-				u32 read_ba  : 1;
+				u32 process_ba : 2;
+				u32 process_rg : 2;
+				u32 shuffle_across : 1;
 				u32 write_rg : 1;
 				u32 fbmask   : 1;
 
 				// Blend and Colclip
-				u32 blend_a     : 2;
-				u32 blend_b     : 2;
-				u32 blend_c     : 2;
-				u32 blend_d     : 2;
-				u32 fixed_one_a : 1;
-				u32 blend_hw    : 2;
-				u32 a_masked    : 1;
-				u32 hdr         : 1;
-				u32 colclip     : 1;
-				u32 blend_mix   : 2;
-				u32 round_inv   : 1; // Blending will invert the value, so rounding needs to go the other way
-				u32 pabe        : 1;
-				u32 no_color    : 1; // disables color output entirely (depth only)
-				u32 no_color1   : 1; // disables second color output (when unnecessary)
-				u32 no_ablend   : 1; // output alpha blend in col0 (for no-DSB)
-				u32 only_alpha  : 1; // don't bother computing RGB
+				u32 blend_a        : 2;
+				u32 blend_b        : 2;
+				u32 blend_c        : 2;
+				u32 blend_d        : 2;
+				u32 fixed_one_a    : 1;
+				u32 blend_hw       : 2;
+				u32 a_masked       : 1;
+				u32 hdr            : 1;
+				u32 rta_correction : 1;
+				u32 rta_source_correction : 1;
+				u32 colclip        : 1;
+				u32 blend_mix      : 2;
+				u32 round_inv      : 1; // Blending will invert the value, so rounding needs to go the other way
+				u32 pabe           : 1;
+				u32 no_color       : 1; // disables color output entirely (depth only)
+				u32 no_color1      : 1; // disables second color output (when unnecessary)
 
 				// Others ways to fetch the texture
 				u32 channel : 3;
 
 				// Dithering
 				u32 dither : 2;
+				u32 dither_adjust : 1;
 
 				// Depth clamp
 				u32 zclamp : 1;
@@ -469,9 +488,9 @@ struct alignas(16) GSHWDrawConfig
 			};
 			u8 key;
 		};
-		DepthStencilSelector(): key(0) {}
-		DepthStencilSelector(u8 k): key(k) {}
-		static DepthStencilSelector NoDepth()
+		constexpr DepthStencilSelector(): key(0) {}
+		constexpr DepthStencilSelector(u8 k): key(k) {}
+		static constexpr DepthStencilSelector NoDepth()
 		{
 			DepthStencilSelector out;
 			out.ztst = ZTST_ALWAYS;
@@ -497,8 +516,8 @@ struct alignas(16) GSHWDrawConfig
 			};
 			u8 key;
 		};
-		ColorMaskSelector(): key(0xF) {}
-		ColorMaskSelector(u8 c): key(0) { wrgba = c; }
+		constexpr ColorMaskSelector(): key(0xF) {}
+		constexpr ColorMaskSelector(u8 c): key(0) { wrgba = c; }
 	};
 #pragma pack(pop)
 	struct alignas(16) VSConstantBuffer
@@ -596,14 +615,17 @@ struct alignas(16) GSHWDrawConfig
 				u8 enable : 1;
 				u8 constant_enable : 1;
 				u8 op : 6;
-				u8 src_factor;
-				u8 dst_factor;
+				u8 src_factor : 4;
+				u8 dst_factor : 4;
+				u8 src_factor_alpha : 4;
+				u8 dst_factor_alpha : 4;
 				u8 constant;
 			};
 			u32 key;
 		};
-		BlendState(): key(0) {}
-		BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_, bool constant_enable_, u8 constant_)
+		constexpr BlendState(): key(0) {}
+		constexpr BlendState(bool enable_, u8 src_factor_, u8 dst_factor_, u8 op_,
+			u8 src_alpha_factor_, u8 dst_alpha_factor_, bool constant_enable_, u8 constant_)
 			: key(0)
 		{
 			enable = enable_;
@@ -611,8 +633,13 @@ struct alignas(16) GSHWDrawConfig
 			src_factor = src_factor_;
 			dst_factor = dst_factor_;
 			op = op_;
+			src_factor_alpha = src_alpha_factor_;
+			dst_factor_alpha = dst_alpha_factor_;
 			constant = constant_;
 		}
+
+		// Blending has no effect if RGB is masked.
+		bool IsEffective(ColorMaskSelector colormask) const;
 	};
 	enum class DestinationAlphaMode : u8
 	{
@@ -649,10 +676,8 @@ struct alignas(16) GSHWDrawConfig
 	bool require_full_barrier; ///< Require texture barrier between all prims
 
 	DestinationAlphaMode destination_alpha;
-	bool datm : 1;
+	SetDATM datm : 2;
 	bool line_expand : 1;
-	bool separate_alpha_pass : 1;
-	bool second_separate_alpha_pass : 1;
 
 	struct AlphaPass
 	{
@@ -743,7 +768,6 @@ private:
 	u64 m_pool_memory_usage = 0;
 
 	static const std::array<HWBlend, 3*3*3*3> m_blendMap;
-	static const std::array<u8, 16> m_replaceDualSrcBlendMap;
 
 protected:
 	static constexpr int NUM_INTERLACE_SHADERS = 5;
@@ -898,7 +922,7 @@ public:
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) = 0;
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) = 0;
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) = 0;
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader = ShaderConvert::COPY) = 0;
 
 	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
 
@@ -940,8 +964,7 @@ public:
 
 	__fi static constexpr bool IsDualSourceBlendFactor(u8 factor)
 	{
-		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR
-			/* || factor == INV_SRC1_COLOR*/); // not used
+		return (factor == SRC1_ALPHA || factor == INV_SRC1_ALPHA || factor == SRC1_COLOR || factor == INV_SRC1_COLOR);
 	}
 	__fi static constexpr bool IsConstantBlendFactor(u16 factor)
 	{
@@ -950,28 +973,8 @@ public:
 
 	// Convert the GS blend equations to HW blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
-	__ri static HWBlend GetBlend(u32 index, bool replace_dual_src)
-	{
-		HWBlend ret = m_blendMap[index];
-		if (replace_dual_src)
-		{
-			ret.src = m_replaceDualSrcBlendMap[ret.src];
-			ret.dst = m_replaceDualSrcBlendMap[ret.dst];
-		}
-		return ret;
-	}
+	__ri static HWBlend GetBlend(u32 index) { return m_blendMap[index]; }
 	__ri static u16 GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
-	__fi static bool IsDualSourceBlend(u32 index)
-	{
-		return (IsDualSourceBlendFactor(m_blendMap[index].src) ||
-				IsDualSourceBlendFactor(m_blendMap[index].dst));
-	}
-
-	/// Alters the pipeline configuration for drawing the separate alpha pass.
-	static void SetHWDrawConfigForAlphaPass(GSHWDrawConfig::PSSelector* ps,
-		GSHWDrawConfig::ColorMaskSelector* cms,
-		GSHWDrawConfig::BlendState* bs,
-		GSHWDrawConfig::DepthStencilSelector* dss);
 };
 
 template <>

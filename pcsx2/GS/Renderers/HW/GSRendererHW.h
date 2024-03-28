@@ -38,6 +38,7 @@ private:
 	void ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, u32 vert_color);
 	bool DetectDoubleHalfClear(bool& no_rt, bool& no_ds);
 	bool DetectStripedDoubleClear(bool& no_rt, bool& no_ds);
+	bool DetectRedundantBufferClear(bool& no_rt, bool& no_ds, u32 fm_mask);
 	bool TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Target* ds, bool preserve_rt_color, bool preserve_depth);
 	void SetNewFRAME(u32 bp, u32 bw, u32 psm);
 	void SetNewZBUF(u32 bp, u32 psm);
@@ -65,6 +66,13 @@ private:
 		CLUTDrawOnGPU,
 	};
 
+	enum ShuffleProcessing
+	{
+		SHUFFLE_READ = 1,
+		SHUFFLE_WRITE,
+		SHUFFLE_READWRITE,
+	};
+
 	bool HasEEUpload(GSVector4i r);
 	CLUTDrawTestResult PossibleCLUTDraw();
 	CLUTDrawTestResult PossibleCLUTDrawAggressive();
@@ -80,7 +88,7 @@ private:
 	void SetupIA(float target_scale, float sx, float sy);
 	void EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	bool EmulateChannelShuffle(GSTextureCache::Target* src, bool test_only);
-	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, bool& blending_alpha_pass);
+	void EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt);
 	void CleanupDraw(bool invalidate_temp_src);
 
 	void EmulateTextureSampler(const GSTextureCache::Target* rt, const GSTextureCache::Target* ds,
@@ -156,6 +164,8 @@ private:
 	u32 m_split_texture_shuffle_fbw = 0;
 
 	u32 m_last_channel_shuffle_fbmsk = 0;
+	u32 m_last_channel_shuffle_fbp = 0;
+	u32 m_last_channel_shuffle_end_block = 0;
 
 	GIFRegFRAME m_split_clear_start = {};
 	GIFRegZBUF m_split_clear_start_Z = {};
@@ -192,7 +202,7 @@ public:
 	void Lines2Sprites();
 	bool VerifyIndices();
 	void ExpandLineIndices();
-	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba, GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+	void ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2i& rtsize, float rtscale);
 	void MergeSprite(GSTextureCache::Source* tex);

@@ -573,6 +573,22 @@ void MainWindow::resetSettings(bool ui)
 	g_main_window->recreateSettings();
 }
 
+void MainWindow::quit()
+{
+	// Make sure VM is gone. It really should be if we're here.
+	if (s_vm_valid)
+	{
+		g_emu_thread->shutdownVM(false);
+		while (s_vm_valid)
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+	}
+
+	// Ensure subwindows are removed before quitting. That way the log window cancelling
+	// the close event won't cancel the quit process.
+	destroySubWindows();
+	QGuiApplication::quit();
+}
+
 void MainWindow::destroySubWindows()
 {
 	if (m_debugger_window)
@@ -747,7 +763,7 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages)
 {
 	const QString message =
-		tr("RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.").arg(display_name).arg(points).arg(sc_points).arg(unread_messages);
+		tr("RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.").arg(display_name).arg(points).arg(sc_points).arg(unread_messages);
 	m_ui.statusBar->showMessage(message);
 }
 
@@ -1218,7 +1234,7 @@ void MainWindow::requestExit(bool allow_confirm)
 	if (vm_was_valid)
 		m_is_closing = true;
 	else
-		QGuiApplication::quit();
+		quit();
 }
 
 void MainWindow::checkForSettingChanges()
@@ -1908,8 +1924,7 @@ void MainWindow::onVMStopped()
 	// If we're closing or in batch mode, quit the whole application now.
 	if (m_is_closing || QtHost::InBatchMode())
 	{
-		QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-		QCoreApplication::quit();
+		quit();
 		return;
 	}
 

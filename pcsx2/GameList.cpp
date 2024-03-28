@@ -1260,11 +1260,11 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 			{
 				std::string url(url_template);
 				if (has_title)
-					StringUtil::ReplaceAll(&url, "${title}", HTTPDownloader::URLEncode(entry.title));
+					StringUtil::ReplaceAll(&url, "${title}", Path::URLEncode(entry.title));
 				if (has_file_title)
-					StringUtil::ReplaceAll(&url, "${filetitle}", HTTPDownloader::URLEncode(Path::GetFileTitle(entry.path)));
+					StringUtil::ReplaceAll(&url, "${filetitle}", Path::URLEncode(Path::GetFileTitle(entry.path)));
 				if (has_serial)
-					StringUtil::ReplaceAll(&url, "${serial}", HTTPDownloader::URLEncode(entry.serial));
+					StringUtil::ReplaceAll(&url, "${serial}", Path::URLEncode(entry.serial));
 
 				download_urls.emplace_back(entry.path, std::move(url));
 			}
@@ -1305,7 +1305,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 		}
 
 		// we could actually do a few in parallel here...
-		std::string filename(HTTPDownloader::URLDecode(url));
+		std::string filename = Path::URLDecode(url);
 		downloader->CreateRequest(
 			std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
 								s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {

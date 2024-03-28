@@ -7,6 +7,10 @@
 #define FMT_24 1
 #define FMT_16 2
 
+#define SHUFFLE_READ  1
+#define SHUFFLE_WRITE 2
+#define SHUFFLE_READWRITE 3
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -82,14 +86,12 @@ in SHADER
 	#endif
 #endif
 
-#if !PS_NO_COLOR
-#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
+#if !PS_NO_COLOR && !PS_NO_COLOR1
 	// Same buffer but 2 colors for dual source blending
 	layout(location = 0, index = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
 	layout(location = 0, index = 1) out vec4 SV_Target1;
-#else
+#elif !PS_NO_COLOR
 	layout(location = 0) TARGET_0_QUALIFIER vec4 SV_Target0;
-#endif
 #endif
 
 #if NEEDS_TEX
@@ -281,8 +283,12 @@ uvec4 sample_4_index(vec4 uv)
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
-
+	
+#if PS_RTA_SRC_CORRECTION 
+	uvec4 i = uvec4(c * 128.55f); // Denormalize value
+#else
 	uvec4 i = uvec4(c * 255.5f); // Denormalize value
+#endif
 
 #if PS_PAL_FMT == 1
 	// 4HL
@@ -591,6 +597,10 @@ vec4 sample_color(vec2 st)
 	t = c[0];
 #endif
 
+#if PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION
+	t.a = t.a * (128.5f / 255.0f);
+#endif
+
 	// The 0.05f helps to fix the overbloom of sotc
 	// I think the issue is related to the rounding of texture coodinate. The linear (from fixed unit)
 	// interpolation could be slightly below the correct one.
@@ -630,20 +640,21 @@ vec4 tfx(vec4 T, vec4 C)
 	return C_out;
 }
 
-void atst(vec4 C)
+bool atst(vec4 C)
 {
 	float a = C.a;
 
-#if (PS_ATST == 0)
-	// nothing to do
-#elif (PS_ATST == 1)
-	if (a > AREF) discard;
+#if (PS_ATST == 1)
+	return (a <= AREF);
 #elif (PS_ATST == 2)
-	if (a < AREF) discard;
+	return (a >= AREF);
 #elif (PS_ATST == 3)
-	if (abs(a - AREF) > 0.5f) discard;
+	return (abs(a - AREF) <= 0.5f);
 #elif (PS_ATST == 4)
-	if (abs(a - AREF) < 0.5f) discard;
+	return (abs(a - AREF) >= 0.5f);
+#else
+	// nothing to do
+	return true;
 #endif
 }
 
@@ -687,9 +698,9 @@ vec4 ps_color()
 	vec4 T = sample_color(st);
 #endif
 
-	#if PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC
+	#if SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
 		uvec4 denorm_c_before = uvec4(T);
-		#if PS_READ_BA
+		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			T.r = float((denorm_c_before.b << 3) & 0xF8);
 			T.g = float(((denorm_c_before.b >> 2) & 0x38) | ((denorm_c_before.a << 6) & 0xC0));
 			T.b = float((denorm_c_before.a << 1) & 0xF8);
@@ -720,7 +731,7 @@ void ps_fbmask(inout vec4 C)
 #endif
 }
 
-void ps_dither(inout vec3 C)
+void ps_dither(inout vec3 C, float As)
 {
 #if PS_DITHER
 	#if PS_DITHER == 2
@@ -729,6 +740,19 @@ void ps_dither(inout vec3 C)
 		ivec2 fpos = ivec2(gl_FragCoord.xy * RcpScaleFactor);
 	#endif
 		float value = DitherMatrix[fpos.y&3][fpos.x&3];
+
+	// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
+	// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
+	#if PS_DITHER_ADJUST
+		#if PS_BLEND_C == 2
+			float Alpha = Af;
+		#else
+			float Alpha = As;
+		#endif
+
+		value *= Alpha > 0.0f ? min(1.0f / Alpha, 1.0f) : 1.0f;
+	#endif
+
 	#if PS_ROUND_INV
 		C -= value;
 	#else
@@ -759,7 +783,7 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 	// GS: Color = 1, Alpha = 255 => output 1
 	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-#if PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0
+#if PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 	C = vec3(ivec3(C) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 || PS_HDR == 1
@@ -783,17 +807,20 @@ float As = As_rgba.a;
 #endif
 
 #if SW_BLEND_NEEDS_RT
-	vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
+	vec4 RT = fetch_rt();
 #else
 	// Not used, but we define it to make the selection below simpler.
 	vec4 RT = vec4(0.0f);
 #endif
-	// FIXME FMT_16 case
-	// FIXME Ad or Ad * 2?
-	float Ad = RT.a / 128.0f;
+
+	#if PS_RTA_CORRECTION
+		float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
+	#else
+		float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
+	#endif
 
 	// Let the compiler do its jobs !
-	vec3 Cd = RT.rgb;
+	vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
 	vec3 Cs = Color.rgb;
 
 #if PS_BLEND_A == 0
@@ -831,7 +858,7 @@ float As = As_rgba.a;
 	// As/Af clamp alpha for Blend mix
 	// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 	float C_clamped = C;
-#if PS_BLEND_MIX > 0 && PS_BLEND_HW != 1
+#if PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2
 	C_clamped = min(C_clamped, 1.0f);
 #endif
 
@@ -863,13 +890,12 @@ float As = As_rgba.a;
 	vec3 alpha_compensate = max(vec3(1.0f), Color.rgb / vec3(255.0f));
 	As_rgba.rgb -= alpha_compensate;
 #elif PS_BLEND_HW == 2
-	// Compensate slightly for Cd*(As + 1) - Cs*As.
-	// The initial factor we chose is 1 (0.00392)
-	// as that is the minimum color Cd can be,
-	// then we multiply by alpha to get the minimum
-	// blended value it can be.
-	float color_compensate = 1.0f * (C + 1.0f);
-	Color.rgb -= vec3(color_compensate);
+	// Since we can't do Cd*(Alpha + 1) - Cs*Alpha in hw blend
+	// what we can do is adjust the Cs value that will be
+	// subtracted, this way we can get a better result in hw blend.
+	// Result is still wrong but less wrong than before.
+	float division_alpha = 1.0f + C;
+	Color.rgb /= vec3(division_alpha);
 #elif PS_BLEND_HW == 3
 	// As, Ad or Af clamped.
 	As_rgba.rgb = vec3(C_clamped);
@@ -895,7 +921,7 @@ float As = As_rgba.a;
 
 	Color.rgb = max(vec3(0.0f), (Alpha - vec3(1.0f)));
 	Color.rgb *= vec3(255.0f);
-#elif PS_BLEND_HW == 3
+#elif PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0
 	// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 	// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
 	// When any color channel is higher than 128 then adjust the compensation automatically
@@ -928,10 +954,18 @@ void ps_main()
 
 #if (PS_DATE & 3) == 1
 	// DATM == 0: Pixel with alpha equal to 1 will failed
-	bool bad = (127.5f / 255.0f) < rt_a;
+	#if PS_RTA_CORRECTION
+		bool bad = (254.5f / 255.0f) < rt_a;
+	#else
+		bool bad = (127.5f / 255.0f) < rt_a;
+	#endif
 #elif (PS_DATE & 3) == 2
 	// DATM == 1: Pixel with alpha equal to 0 will failed
-	bool bad = rt_a < (127.5f / 255.0f);
+	#if PS_RTA_CORRECTION
+		bool bad = rt_a < (254.5f / 255.0f);
+	#else
+		bool bad = rt_a < (127.5f / 255.0f);
+	#endif
 #endif
 
 	if (bad) {
@@ -951,6 +985,12 @@ void ps_main()
 #endif
 
 	vec4 C = ps_color();
+	bool atst_pass = atst(C);
+
+#if PS_AFAIL == 0 // KEEP or ATST off
+	if (!atst_pass)
+		discard;
+#endif
 
 	// Must be done before alpha correction
 
@@ -960,7 +1000,12 @@ void ps_main()
 #endif
 
 #if SW_AD_TO_HW
-	vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
+	#if PS_RTA_CORRECTION
+		vec4 RT = trunc(fetch_rt() * 128.0f + 0.1f);
+	#else
+		vec4 RT = trunc(fetch_rt() * 255.0f + 0.1f);
+	#endif
+
 	vec4 alpha_blend = vec4(RT.a / 128.0f);
 #else
 	vec4 alpha_blend = vec4(C.a / 128.0f);
@@ -991,9 +1036,9 @@ void ps_main()
 
 
 #if PS_SHUFFLE
-	#if !PS_SHUFFLE_SAME && !PS_READ16_SRC
+	#if SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
 		uvec4 denorm_c_after = uvec4(C);
-		#if PS_READ_BA
+		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
 			C.a = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
 		#else
@@ -1007,7 +1052,7 @@ void ps_main()
 
 // Special case for 32bit input and 16bit output, shuffle used by The Godfather
 #if PS_SHUFFLE_SAME
-#if (PS_READ_BA)
+#if (PS_PROCESS_BA & SHUFFLE_READ)
 	C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 #else
 	C.ga = C.rg;
@@ -1019,66 +1064,69 @@ void ps_main()
 		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
 	else
 		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
-// Write RB part. Mask will take care of the correct destination
-#elif PS_READ_BA
-	C.rb = C.bb;
-	// FIXME precompute my_TA & 0x80
-
-	// Write GA part. Mask will take care of the correct destination
-	// Note: GLSL 4.50/GL_EXT_shader_integer_mix support a mix instruction to select a component\n"
-	// However Nvidia emulate it with an if (at least on kepler arch) ...\n"
-
-	// bit field operation requires GL4 HW. Could be nice to merge it with step/mix below
-	// uint my_ta = (bool(bitfieldExtract(denorm_c.a, 7, 1))) ? denorm_TA.y : denorm_TA.x;
-	// denorm_c.a = bitfieldInsert(denorm_c.a, bitfieldExtract(my_ta, 7, 1), 7, 1);
-	// c.ga = vec2(float(denorm_c.a));
-
-	if (bool(denorm_c.a & 0x80u))
-		C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+#elif PS_SHUFFLE_ACROSS
+	#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
+		C.rb = C.br;
+		if ((denorm_c.a & 0x80u) != 0u)
+			C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
+		else
+			C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
+			
+		if ((denorm_c.g & 0x80u) != 0u)
+			C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
+		else
+			C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
+		
+	#elif(PS_PROCESS_BA & SHUFFLE_READ)
+		C.rb = C.bb;
+		if ((denorm_c.a & 0x80u) != 0u)
+			C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
+		else
+			C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+	#else
+		C.rb = C.rr;
+		if ((denorm_c.g & 0x80u) != 0u)
+			C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+		else
+			C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+	#endif // PS_PROCESS_BA
+#else // PS_SHUFFLE_ACROSS
+	if ((denorm_c.g & 0x80u) != 0u)
+		C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
 	else
-		C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
-
-#else
-	C.rb = C.rr;
-	if (bool(denorm_c.g & 0x80u))
-		C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
+		C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
+	if ((denorm_c.a & 0x80u) != 0u)
+		C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
 	else
-		C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
-
-	// Nice idea but step/mix requires 4 instructions
-	// set / trunc / I2F / Mad
-	//
-	// float sel = step(128.0f, c.g);
-	// vec2 c_shuffle = vec2((denorm_c.gg & 0x7Fu) | (denorm_TA & 0x80u));
-	// c.ga = mix(c_shuffle.xx, c_shuffle.yy, sel);
-
-#endif // PS_SHUFFLE_SAME
+		C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
+#endif // PS_SHUFFLE_ACROSS
 #endif // PS_SHUFFLE
 
-	ps_dither(C.rgb);
+	ps_dither(C.rgb, alpha_blend.a);
 
 	// Color clamp/wrap needs to be done after sw blending and dithering
 	ps_color_clamp_wrap(C.rgb);
 
 	ps_fbmask(C);
 
+#if PS_AFAIL == 3 // RGB_ONLY
+	// Use alpha blend factor to determine whether to update A.
+	alpha_blend.a = float(atst_pass);
+#endif
+
 #if !PS_NO_COLOR
-	#if PS_HDR == 1
-		SV_Target0 = vec4(C.rgb / 65535.0f, C.a / 255.0f);
+	#if PS_RTA_CORRECTION
+		SV_Target0.a = C.a / 128.0f;
 	#else
-		SV_Target0 = C / 255.0f;
+		SV_Target0.a = C.a / 255.0f;
+	#endif
+	#if PS_HDR == 1
+		SV_Target0.rgb = vec3(C.rgb / 65535.0f);
+	#else
+		SV_Target0.rgb = C.rgb / 255.0f;
 	#endif
 	#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;
-	#endif
-
-	#if PS_NO_ABLEND
-		// write alpha blend factor into col0
-		SV_Target0.a = alpha_blend.a;
-	#endif
-	#if PS_ONLY_ALPHA
-		// rgb isn't used
-		SV_Target0.rgb = vec3(0.0f);
 	#endif
 #endif
 

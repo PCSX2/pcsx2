@@ -608,7 +608,7 @@ bool GSHwHack::GSC_NFSUndercover(GSRendererHW& r, int& skip)
 	if (RPRIM->TME && Frame.PSM == PSMCT16S && Frame.FBMSK != 0 && Frame.FBW == 10 && Texture.TBW == 1 && Texture.TBP0 == 0x02800 && Texture.PSM == PSMZ16S)
 	{
 		GSVertex* v = &r.m_vertex.buff[1];
-		v[0].XYZ.X = static_cast<u16>(RCONTEXT->XYOFFSET.OFX + (r.m_r.z << 4));
+		v[0].XYZ.X = static_cast<u16>(RCONTEXT->XYOFFSET.OFX + ((r.m_r.z * 2) << 4));
 		v[0].XYZ.Y = static_cast<u16>(RCONTEXT->XYOFFSET.OFY + (r.m_r.w << 4));
 		v[0].U = r.m_r.z << 4;
 		v[0].V = r.m_r.w << 4;
@@ -681,7 +681,6 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	if (RFBMSK != 0x00FFFFFFu)
 	{
 		GL_PUSH("GSC_PolyphonyDigitalGames(): HLE Gran Turismo RGB channel shuffle");
-
 		GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
 			src->GetTexture(), nullptr, src->GetScale(), src->GetTexture(), src->GetScale(), src->GetUnscaledRect());
 		config.pal = palette->GetPaletteGSTexture();
@@ -730,11 +729,11 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 
 			// Need the alpha channel.
 			dst->m_TEX0.PSM = PSMCT32;
-
+			dst->m_rt_alpha_scale = false;
 			// Alpha is unknown, since it comes from RGB.
 			dst->m_alpha_min = 0;
 			dst->m_alpha_max = 255;
-
+			dst->m_alpha_range = true;
 			dst->UpdateValidChannels(PSMCT32, fbmsk);
 			dst->UpdateValidity(GSVector4i::loadh(size));
 
@@ -1017,6 +1016,7 @@ bool GSHwHack::OI_RozenMaidenGebetGarden(GSRendererHW& r, GSTexture* rt, GSTextu
 				tmp_rt->UpdateDrawn(tmp_rt->m_valid);
 				tmp_rt->m_alpha_max = 0;
 				tmp_rt->m_alpha_min = 0;
+				tmp_rt->m_alpha_range = false;
 			}
 
 			return false;
@@ -1432,6 +1432,11 @@ bool GSHwHack::MV_Ico(GSRendererHW& r)
 	const GSVector4i draw_rc = GSVector4i(0, 0, RWIDTH, RHEIGHT).rintersect(dst->GetUnscaledRect());
 	dst->UpdateValidChannels(PSMCT32, 0);
 	dst->UpdateValidity(draw_rc);
+
+	if (dst->m_rt_alpha_scale)
+	{
+		dst->RTADecorrect(dst);
+	}
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(
 		dst->GetTexture(), nullptr, dst->GetScale(), src->GetTexture(), src->GetScale(), draw_rc);

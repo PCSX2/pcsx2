@@ -88,10 +88,27 @@ fragment void ps_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 		discard_fragment();
 }
 
+fragment void ps_datm0_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	if (tex.read(p).a > (254.5f / 255.f))
+		discard_fragment();
+}
+
+fragment void ps_datm1_rta_correction(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	if (tex.read(p).a < (254.5f / 255.f))
+		discard_fragment();
+}
+
 fragment void ps_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
 	if (tex.read(p).a > (127.5f / 255.f))
 		discard_fragment();
+}
+
+fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
 }
 
 fragment float4 ps_primid_init_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
@@ -99,9 +116,26 @@ fragment float4 ps_primid_init_datm0(float4 p [[position]], DirectReadTextureIn<
 	return tex.read(p).a > (127.5f / 255.f) ? -1 : FLT_MAX;
 }
 
-fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
+fragment float4 ps_primid_rta_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
+	return tex.read(p).a < (254.5f / 255.f) ? -1 : FLT_MAX;
+}
+
+fragment float4 ps_primid_rta_init_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
+{
+	return tex.read(p).a > (254.5f / 255.f) ? -1 : FLT_MAX;
+}
+
+fragment float4 ps_rta_correction(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	float4 in = res.sample(data.t);
+	return float4(in.rgb, in.a / (127.5f / 255.0f));
+}
+
+fragment float4 ps_rta_decorrection(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	float4 in = res.sample(data.t);
+	return float4(in.rgb, in.a * (128.25f / 255.0f));
 }
 
 fragment float4 ps_hdr_init(float4 p [[position]], DirectReadTextureIn<float> tex)

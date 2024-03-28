@@ -140,6 +140,7 @@ void GSState::Reset(bool hardware_reset)
 	memset(&m_v, 0, sizeof(m_v));
 
 	m_env.Reset();
+	m_mem.m_clut.Reset();
 
 	PRIM = &m_env.PRIM;
 
@@ -181,6 +182,7 @@ void GSState::Reset(bool hardware_reset)
 	m_index.tail = 0;
 	m_scanmask_used = 0;
 	m_texflush_flag = false;
+	m_channel_shuffle = false;
 	m_dirty_gs_regs = 0;
 	m_backed_up_ctx = -1;
 
@@ -2708,6 +2710,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	ReadState(&m_q, data);
 
+	m_prev_env = m_env;
 	PRIM = &m_env.PRIM;
 
 	UpdateContext();
@@ -2724,6 +2727,10 @@ int GSState::Defrost(const freezeData* fd)
 	}
 
 	UpdateScissor();
+
+	// Force CLUT to be reloaded.
+	m_mem.m_clut.Reset();
+	(PRIM->CTXT == 0) ? ApplyTEX0<0>(m_context->TEX0) : ApplyTEX0<1>(m_context->TEX0);
 
 	g_perfmon.SetFrame(5000);
 
@@ -2823,7 +2830,9 @@ bool GSState::TrianglesAreQuads() const
 		{
 			const u16* const prev_tri= m_index.buff + (idx - 3);
 			const GSVertex& vert = v[i[0]];
-			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
+			const GSVertex& last_vert = v[i[2]];
+			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ &&
+				last_vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
@@ -3960,6 +3969,41 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 	m_vt.m_alpha.min = min;
 	m_vt.m_alpha.max = max;
 	m_vt.m_alpha.valid = true;
+}
+
+void GSState::CorrectATEAlphaMinMax(const u32 atst, const int aref)
+{
+	const GSVertexTrace::VertexAlpha& aminmax = GetAlphaMinMax();
+	int amin = aminmax.min;
+	int amax = aminmax.max;
+	switch (atst)
+	{
+		case ATST_LESS:
+			amin = std::min(amin, std::max(aref - 1, amin));
+			amax = std::min(amax, std::max(aref - 1, amin));
+			break;
+		case ATST_LEQUAL:
+			amin = std::min(amin, std::max(aref, amin));
+			amax = std::min(amax, std::max(aref, amin));
+			break;
+		case ATST_EQUAL:
+			amax = aref;
+			amin = aref;
+			break;
+		case ATST_GEQUAL:
+			amax = std::max(amax, std::min(aref, amax));
+			amin = std::max(amin, std::min(aref, amax));
+			break;
+		case ATST_GREATER:
+			amax = std::max(amax, std::min(aref + 1, amax));
+			amin = std::max(amin, std::min(aref + 1, amax));
+			break;
+		default:
+			break;
+	}
+
+	m_vt.m_alpha.min = amin;
+	m_vt.m_alpha.max = amax;
 }
 
 bool GSState::TryAlphaTest(u32& fm, u32& zm)

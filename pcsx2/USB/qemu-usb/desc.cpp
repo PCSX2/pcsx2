@@ -10,9 +10,9 @@
 /* ------------------------------------------------------------------ */
 
 int usb_desc_device(const USBDescID* id, const USBDescDevice* dev,
-					bool msos, uint8_t* dest, size_t len)
+					bool msos, u8* dest, size_t len)
 {
-	uint8_t bLength = 0x12;
+	constexpr u8 bLength = 0x12;
 	USBDescriptor* d = (USBDescriptor*)dest;
 
 	if (len < bLength)
@@ -59,9 +59,9 @@ int usb_desc_device(const USBDescID* id, const USBDescDevice* dev,
 }
 
 int usb_desc_device_qualifier(const USBDescDevice* dev,
-							  uint8_t* dest, size_t len)
+							  u8* dest, size_t len)
 {
-	uint8_t bLength = 0x0a;
+	constexpr u8 bLength = 0x0a;
 	USBDescriptor* d = (USBDescriptor*)dest;
 
 	if (len < bLength)
@@ -85,10 +85,10 @@ int usb_desc_device_qualifier(const USBDescDevice* dev,
 }
 
 int usb_desc_config(const USBDescConfig& conf, int flags,
-					uint8_t* dest, size_t len)
+					u8* dest, size_t len)
 {
-	uint8_t bLength = 0x09;
-	uint16_t wTotalLength = 0;
+	constexpr u8 bLength = 0x09;
+	u16 wTotalLength = 0;
 	USBDescriptor* d = (USBDescriptor*)dest;
 	int rc;
 
@@ -138,12 +138,12 @@ int usb_desc_config(const USBDescConfig& conf, int flags,
 }
 
 int usb_desc_iface_group(const USBDescIfaceAssoc& iad, int flags,
-						 uint8_t* dest, size_t len)
+						 u8* dest, size_t len)
 {
 	int pos = 0;
 
 	/* handle interface association descriptor */
-	uint8_t bLength = 0x08;
+	constexpr u8 bLength = 0x08;
 
 	if (len < bLength)
 	{
@@ -175,9 +175,9 @@ int usb_desc_iface_group(const USBDescIfaceAssoc& iad, int flags,
 }
 
 int usb_desc_iface(const USBDescIface& iface, int flags,
-				   uint8_t* dest, size_t len)
+				   u8* dest, size_t len)
 {
-	uint8_t bLength = 0x09;
+	constexpr u8 bLength = 0x09;
 	int rc, pos = 0;
 	USBDescriptor* d = (USBDescriptor*)dest;
 
@@ -222,14 +222,14 @@ int usb_desc_iface(const USBDescIface& iface, int flags,
 }
 
 int usb_desc_endpoint(const USBDescEndpoint& ep, int flags,
-					  uint8_t* dest, size_t len)
+					  u8* dest, size_t len)
 {
-	uint8_t bLength = ep.is_audio ? 0x09 : 0x07;
-	uint8_t extralen = ep.extra ? ep.extra[0] : 0;
-	uint8_t superlen = (flags & USB_DESC_FLAG_SUPER) ? 0x06 : 0;
+	u8 bLength = ep.is_audio ? 0x09 : 0x07;
+	const u8 extralen = ep.extra ? ep.extra[0] : 0;
+	u8 superlen = (flags & USB_DESC_FLAG_SUPER) ? 0x06 : 0;
 	USBDescriptor* d = (USBDescriptor*)dest;
 
-	if (len < (size_t)(bLength + extralen + superlen))
+	if (len < static_cast<size_t>(bLength + extralen + superlen))
 	{
 		return -1;
 	}
@@ -271,11 +271,11 @@ int usb_desc_endpoint(const USBDescEndpoint& ep, int flags,
 	return bLength + extralen + superlen;
 }
 
-int usb_desc_other(const USBDescOther& desc, uint8_t* dest, size_t len)
+int usb_desc_other(const USBDescOther& desc, u8* dest, size_t len)
 {
-	int bLength = desc.length ? desc.length : desc.data[0];
+	const int bLength = desc.length ? desc.length : desc.data[0];
 
-	if (len < (size_t)bLength)
+	if (len < static_cast<size_t>(bLength))
 	{
 		return -1;
 	}
@@ -284,9 +284,9 @@ int usb_desc_other(const USBDescOther& desc, uint8_t* dest, size_t len)
 	return bLength;
 }
 
-static int usb_desc_cap_usb2_ext(const USBDesc* desc, uint8_t* dest, size_t len)
+static int usb_desc_cap_usb2_ext(const USBDesc* desc, u8* dest, size_t len)
 {
-	uint8_t bLength = 0x07;
+	constexpr u8 bLength = 0x07;
 	USBDescriptor* d = (USBDescriptor*)dest;
 
 	if (len < bLength)
@@ -306,9 +306,9 @@ static int usb_desc_cap_usb2_ext(const USBDesc* desc, uint8_t* dest, size_t len)
 	return bLength;
 }
 
-static int usb_desc_cap_super(const USBDesc* desc, uint8_t* dest, size_t len)
+static int usb_desc_cap_super(const USBDesc* desc, u8* dest, size_t len)
 {
-	uint8_t bLength = 0x0a;
+	constexpr u8 bLength = 0x0a;
 	USBDescriptor* d = (USBDescriptor*)dest;
 
 	if (len < bLength)
@@ -353,11 +353,11 @@ static int usb_desc_cap_super(const USBDesc* desc, uint8_t* dest, size_t len)
 	return bLength;
 }
 
-static int usb_desc_bos(const USBDesc* desc, uint8_t* dest, size_t len)
+static int usb_desc_bos(const USBDesc* desc, u8* dest, size_t len)
 {
-	uint8_t bLength = 0x05;
-	uint16_t wTotalLength = 0;
-	uint8_t bNumDeviceCaps = 0;
+	constexpr u8 bLength = 0x05;
+	u16 wTotalLength = 0;
+	u8 bNumDeviceCaps = 0;
 	USBDescriptor* d = (USBDescriptor*)dest;
 	int rc;
 
@@ -371,7 +371,7 @@ static int usb_desc_bos(const USBDesc* desc, uint8_t* dest, size_t len)
 
 	wTotalLength += bLength;
 
-	if (desc->high != NULL)
+	if (desc->high != nullptr)
 	{
 		rc = usb_desc_cap_usb2_ext(desc, dest + wTotalLength,
 								   len - wTotalLength);
@@ -383,7 +383,7 @@ static int usb_desc_bos(const USBDesc* desc, uint8_t* dest, size_t len)
 		bNumDeviceCaps++;
 	}
 
-	if (desc->super != NULL)
+	if (desc->super != nullptr)
 	{
 		rc = usb_desc_cap_super(desc, dest + wTotalLength,
 								len - wTotalLength);
@@ -401,7 +401,7 @@ static int usb_desc_bos(const USBDesc* desc, uint8_t* dest, size_t len)
 	return wTotalLength;
 }
 
-int usb_desc_parse_dev(const uint8_t* data, int len, USBDesc& desc, USBDescDevice& dev)
+int usb_desc_parse_dev(const u8* data, int len, USBDesc& desc, USBDescDevice& dev)
 {
 	USBDescriptor* d = (USBDescriptor*)data;
 	if (d->bLength != len || d->bDescriptorType != USB_DT_DEVICE)
@@ -422,7 +422,7 @@ int usb_desc_parse_dev(const uint8_t* data, int len, USBDesc& desc, USBDescDevic
 	return d->bLength;
 }
 
-int usb_desc_parse_config(const uint8_t* data, int len, USBDescDevice& dev)
+int usb_desc_parse_config(const u8* data, int len, USBDescDevice& dev)
 {
 	int pos = 0;
 	USBDescIface* iface = nullptr;
@@ -511,27 +511,6 @@ int usb_desc_parse_config(const uint8_t* data, int len, USBDescDevice& dev)
 	return pos;
 }
 
-// simple `dev = {};` seems to be enough
-/*void usb_desc_clear_device (USBDescDevice& dev)
-{
-	for (auto& conf : dev.confs)
-	{
-		for (auto& ifassoc : conf.if_groups)
-		{
-			ifassoc.ifs.clear();
-			ifassoc = {};
-		}
-
-		for (auto& iface : conf.ifs)
-		{
-			iface.descs.clear();
-			iface.eps.clear();
-			iface = {};
-		}
-	}
-	dev = {};
-}*/
-
 /* ------------------------------------------------------------------ */
 
 static void usb_desc_ep_init(USBDevice* dev)
@@ -543,7 +522,7 @@ static void usb_desc_ep_init(USBDevice* dev)
 	for (i = 0; i < dev->ninterfaces; i++)
 	{
 		iface = dev->ifaces[i];
-		if (iface == NULL)
+		if (iface == nullptr)
 		{
 			continue;
 		}
@@ -568,7 +547,7 @@ static const USBDescIface* usb_desc_find_interface(USBDevice* dev,
 {
 	if (!dev->config)
 	{
-		return NULL;
+		return nullptr;
 	}
 	for (auto& g : dev->config->if_groups)
 	{
@@ -589,7 +568,7 @@ static const USBDescIface* usb_desc_find_interface(USBDevice* dev,
 			return &iface;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //static
@@ -599,7 +578,7 @@ int usb_desc_set_interface(USBDevice* dev, int index, int value)
 	int old;
 
 	iface = usb_desc_find_interface(dev, index, value);
-	if (iface == NULL)
+	if (iface == nullptr)
 	{
 		return -1;
 	}
@@ -625,7 +604,7 @@ int usb_desc_set_config(USBDevice* dev, int value)
 	{
 		dev->configuration = 0;
 		dev->ninterfaces = 0;
-		dev->config = NULL;
+		dev->config = nullptr;
 	}
 	else
 	{
@@ -651,7 +630,7 @@ int usb_desc_set_config(USBDevice* dev, int value)
 	for (; i < USB_MAX_INTERFACES; i++)
 	{
 		dev->altsetting[i] = 0;
-		dev->ifaces[i] = NULL;
+		dev->ifaces[i] = nullptr;
 	}
 
 	return 0;
@@ -661,7 +640,7 @@ static void usb_desc_setdefaults(USBDevice* dev)
 {
 	const USBDesc* desc = usb_device_get_usb_desc(dev);
 
-	assert(desc != NULL);
+	assert(desc != nullptr);
 	switch (dev->speed)
 	{
 		case USB_SPEED_LOW:
@@ -684,7 +663,7 @@ void usb_desc_init(USBDevice* dev)
 {
 	const USBDesc* desc = usb_device_get_usb_desc(dev);
 
-	assert(desc != NULL);
+	assert(desc != nullptr);
 	dev->speed = USB_SPEED_FULL;
 	dev->speedmask = 0;
 	if (desc->full)
@@ -699,9 +678,9 @@ void usb_desc_attach(USBDevice* dev)
 	usb_desc_setdefaults(dev);
 }
 
-int usb_desc_string(USBDevice* dev, int index, uint8_t* dest, size_t len)
+int usb_desc_string(USBDevice* dev, int index, u8* dest, size_t len)
 {
-	uint8_t bLength, pos, i;
+	u8 bLength, pos, i;
 	const char* str;
 
 	if (len < 4)
@@ -720,7 +699,7 @@ int usb_desc_string(USBDevice* dev, int index, uint8_t* dest, size_t len)
 	}
 
 	str = usb_device_get_usb_desc(dev)->str[index];
-	if (str == NULL)
+	if (str == nullptr)
 	{
 		return 0;
 	}
@@ -739,14 +718,14 @@ int usb_desc_string(USBDevice* dev, int index, uint8_t* dest, size_t len)
 }
 
 int usb_desc_get_descriptor(USBDevice* dev, USBPacket* p,
-							int value, uint8_t* dest, size_t len)
+							int value, u8* dest, size_t len)
 {
-	bool msos = (dev->flags & (1 << USB_DEV_FLAG_MSOS_DESC_IN_USE));
+	const bool msos = (dev->flags & (1 << USB_DEV_FLAG_MSOS_DESC_IN_USE));
 	const USBDesc* desc = usb_device_get_usb_desc(dev);
 	const USBDescDevice* other_dev;
-	uint8_t buf[1024];
-	uint8_t type = value >> 8;
-	uint8_t index = value & 0xff;
+	u8 buf[1024];
+	const u8 type = value >> 8;
+	const u8 index = value & 0xff;
 	int flags, ret = -1;
 
 	if (dev->speed == USB_SPEED_HIGH)
@@ -784,14 +763,14 @@ int usb_desc_get_descriptor(USBDevice* dev, USBPacket* p,
 			//trace_usb_desc_string(dev->addr, index, len, ret);
 			break;
 		case USB_DT_DEVICE_QUALIFIER:
-			if (other_dev != NULL)
+			if (other_dev != nullptr)
 			{
 				ret = usb_desc_device_qualifier(other_dev, buf, sizeof(buf));
 			}
 			//trace_usb_desc_device_qualifier(dev->addr, len, ret);
 			break;
 		case USB_DT_OTHER_SPEED_CONFIG:
-			if (other_dev != NULL && index < other_dev->bNumConfigurations)
+			if (other_dev != nullptr && index < other_dev->bNumConfigurations)
 			{
 				ret = usb_desc_config(other_dev->confs[index], flags,
 									  buf, sizeof(buf));
@@ -814,7 +793,7 @@ int usb_desc_get_descriptor(USBDevice* dev, USBPacket* p,
 
 	if (ret > 0)
 	{
-		if ((size_t)ret > len)
+		if (static_cast<size_t>(ret) > len)
 		{
 			ret = len;
 		}
@@ -826,9 +805,9 @@ int usb_desc_get_descriptor(USBDevice* dev, USBPacket* p,
 }
 
 int usb_desc_handle_control(USBDevice* dev, USBPacket* p,
-							int request, int value, int index, int length, uint8_t* data)
+							int request, int value, int index, int length, u8* data)
 {
-	assert(usb_device_get_usb_desc(dev) != NULL);
+	assert(usb_device_get_usb_desc(dev) != nullptr);
 	int ret = -1;
 
 	switch (request)

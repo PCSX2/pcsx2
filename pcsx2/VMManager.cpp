@@ -53,6 +53,7 @@
 #include "common/Timer.h"
 
 #include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
 #include "cpuinfo.h"
 #include "discord_rpc.h"
 #include "fmt/core.h"
@@ -392,7 +393,6 @@ bool VMManager::Internal::CPUThreadInitialize()
 
 	InitializeCPUProviders();
 
-	GSinit();
 	USBinit();
 
 	// We want settings loaded so we choose the correct renderer for big picture mode.
@@ -424,9 +424,9 @@ void VMManager::Internal::CPUThreadShutdown()
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 
 	USBshutdown();
-	GSshutdown();
 
 	MTGS::ShutdownThread();
+	GSJoinSnapshotThreads();
 
 	ShutdownCPUProviders();
 
@@ -2980,8 +2980,8 @@ void VMManager::WarnAboutUnsafeSettings()
 	}
 	if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
 	{
-		append(ICON_FA_BLENDER,
-			TRANSLATE_SV("VMManager", "Blending is below basic, this may break effects in some games."));
+		append(ICON_FA_PAINT_BRUSH,
+			TRANSLATE_SV("VMManager", "Blending Accuracy is below Basic, this may break effects in some games."));
 	}
 	if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
 	{
@@ -2991,30 +2991,30 @@ void VMManager::WarnAboutUnsafeSettings()
 	}
 	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
-		append(ICON_FA_MICROCHIP,
+		append(ICON_PF_MICROCHIP,
 			TRANSLATE_SV("VMManager", "EE FPU Round Mode is not set to default, this may break some games."));
 	}
 	if (!EmuConfig.Cpu.Recompiler.fpuOverflow || EmuConfig.Cpu.Recompiler.fpuExtraOverflow ||
 		EmuConfig.Cpu.Recompiler.fpuFullMode)
 	{
-		append(ICON_FA_MICROCHIP,
+		append(ICON_PF_MICROCHIP,
 			TRANSLATE_SV("VMManager", "EE FPU Clamp Mode is not set to default, this may break some games."));
 	}
 	if (EmuConfig.Cpu.VU0FPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
-		append(ICON_FA_MICROCHIP,
+		append(ICON_PF_MICROCHIP,
 			TRANSLATE_SV("VMManager", "VU0 Round Mode is not set to default, this may break some games."));
 	}
 	if (EmuConfig.Cpu.VU1FPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
-		append(ICON_FA_MICROCHIP,
+		append(ICON_PF_MICROCHIP,
 			TRANSLATE_SV("VMManager", "VU1 Round Mode is not set to default, this may break some games."));
 	}
 	if (!EmuConfig.Cpu.Recompiler.vu0Overflow || EmuConfig.Cpu.Recompiler.vu0ExtraOverflow ||
 		EmuConfig.Cpu.Recompiler.vu0SignOverflow || !EmuConfig.Cpu.Recompiler.vu1Overflow ||
 		EmuConfig.Cpu.Recompiler.vu1ExtraOverflow || EmuConfig.Cpu.Recompiler.vu1SignOverflow)
 	{
-		append(ICON_FA_MICROCHIP,
+		append(ICON_PF_MICROCHIP,
 			TRANSLATE_SV("VMManager", "VU Clamp Mode is not set to default, this may break some games."));
 	}
 	if (!EmuConfig.EnableGameFixes)

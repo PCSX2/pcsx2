@@ -338,7 +338,7 @@ bool Patch::OpenPatchesZip()
 		static bool warning_shown = false;
 		if (!warning_shown)
 		{
-			Host::AddIconOSDMessage("PatchesZipOpenWarning", ICON_FA_MICROCHIP,
+			Host::AddIconOSDMessage("PatchesZipOpenWarning", ICON_FA_BAND_AID,
 				fmt::format(TRANSLATE_FS("Patch", "Failed to open {}. Built-in game patches are not available."),
 					PATCHES_ZIP_NAME),
 				Host::OSD_ERROR_DURATION);
@@ -719,12 +719,12 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	{
 		if (!message.empty())
 		{
-			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_BAND_AID,
 				fmt::format(TRANSLATE_FS("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
 		}
 		else
 		{
-			Host::AddIconOSDMessage("LoadPatches", ICON_FA_FILE_CODE,
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_BAND_AID,
 				TRANSLATE_SV(
 					"Patch", "No cheats or patches (widescreen, compatibility or others) are found / enabled."),
 				Host::OSD_INFO_DURATION);

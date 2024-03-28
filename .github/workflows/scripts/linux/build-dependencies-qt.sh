@@ -13,6 +13,10 @@ SDL=SDL2-2.30.1
 QT=6.6.2
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 
+if [ "${INSTALLDIR:0:1}" != "/" ]; then
+	INSTALLDIR="$PWD/$INSTALLDIR"
+fi
+
 mkdir -p deps-build
 cd deps-build
 

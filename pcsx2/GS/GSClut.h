@@ -13,16 +13,18 @@ class GSTexture;
 
 class alignas(32) GSClut final : public GSAlignedClass<32>
 {
+	static constexpr u32 CLUT_ALLOC_SIZE = 4096 * 2;
+
 	static const GSVector4i m_bm;
 	static const GSVector4i m_gm;
 	static const GSVector4i m_rm;
 
 	GSLocalMemory* m_mem;
 
-	u32 m_CBP[2];
-	u16* m_clut;
-	u32* m_buff32;
-	u64* m_buff64;
+	u32 m_CBP[2] = {};
+	u16* m_clut = nullptr;
+	u32* m_buff32 = nullptr;
+	u64* m_buff64 = nullptr;
 
 	struct alignas(32) WriteState
 	{
@@ -31,7 +33,7 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 		u8 dirty;
 		u64 next_tex0;
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
-	} m_write;
+	} m_write = {};
 
 	struct alignas(32) ReadState
 	{
@@ -42,7 +44,7 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 		int amin, amax;
 		bool IsDirty(const GIFRegTEX0& TEX0);
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
-	} m_read;
+	} m_read = {};
 
 	GSTexture* m_gpu_clut4 = nullptr;
 	GSTexture* m_gpu_clut8 = nullptr;
@@ -96,6 +98,7 @@ public:
 
 	__fi GSTexture* GetGPUTexture() const { return m_current_gpu_clut; }
 
+	void Reset();
 	bool InvalidateRange(u32 start_block, u32 end_block, bool is_draw = false);
 	u8 IsInvalid();
 	void ClearDrawInvalidity();

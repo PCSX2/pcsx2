@@ -1242,11 +1242,11 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, m_convert.bs[D3D11_COLOR_WRITE_ENABLE_ALL].get(), linear);
 }
 
-void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
+void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, ShaderConvert shader)
 {
 	const u8 index = static_cast<u8>(red) | (static_cast<u8>(green) << 1) | (static_cast<u8>(blue) << 2) |
 					 (static_cast<u8>(alpha) << 3);
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(ShaderConvert::COPY)].get(), nullptr,
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), nullptr,
 		m_convert.bs[index].get(), false);
 }
 
@@ -1667,6 +1667,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TCC", sel.tcc);
 		sm.AddMacro("PS_DATE", sel.date);
 		sm.AddMacro("PS_ATST", sel.atst);
+		sm.AddMacro("PS_AFAIL", sel.afail);
 		sm.AddMacro("PS_FOG", sel.fog);
 		sm.AddMacro("PS_IIP", sel.iip);
 		sm.AddMacro("PS_BLEND_HW", sel.blend_hw);
@@ -1679,7 +1680,9 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_REGION_RECT", sel.region_rect);
 		sm.AddMacro("PS_SHUFFLE", sel.shuffle);
 		sm.AddMacro("PS_SHUFFLE_SAME", sel.shuffle_same);
-		sm.AddMacro("PS_READ_BA", sel.read_ba);
+		sm.AddMacro("PS_PROCESS_BA", sel.process_ba);
+		sm.AddMacro("PS_PROCESS_RG", sel.process_rg);
+		sm.AddMacro("PS_SHUFFLE_ACROSS", sel.shuffle_across);
 		sm.AddMacro("PS_READ16_SRC", sel.real16src);
 		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
 		sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
@@ -1688,6 +1691,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
 		sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
 		sm.AddMacro("PS_HDR", sel.hdr);
+		sm.AddMacro("PS_RTA_CORRECTION", sel.rta_correction);
+		sm.AddMacro("PS_RTA_SRC_CORRECTION", sel.rta_source_correction);
 		sm.AddMacro("PS_COLCLIP", sel.colclip);
 		sm.AddMacro("PS_BLEND_A", sel.blend_a);
 		sm.AddMacro("PS_BLEND_B", sel.blend_b);
@@ -1698,6 +1703,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
 		sm.AddMacro("PS_PABE", sel.pabe);
 		sm.AddMacro("PS_DITHER", sel.dither);
+		sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
 		sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
@@ -1705,8 +1711,6 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
 		sm.AddMacro("PS_NO_COLOR", sel.no_color);
 		sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
-		sm.AddMacro("PS_NO_ABLEND", sel.no_ablend);
-		sm.AddMacro("PS_ONLY_ALPHA", sel.only_alpha);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -1827,7 +1831,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 
 	OMSetDepthStencilState(i->second.get(), 1);
 
-	auto j = std::as_const(m_om_bs).find(bsel);
+	auto j = std::as_const(m_om_bs).find(bsel.key);
 
 	if (j == m_om_bs.end())
 	{
@@ -1835,7 +1839,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 
 		memset(&bd, 0, sizeof(bd));
 
-		if (bsel.blend_enable && (bsel.wrgba & 0x7))
+		if (bsel.blend.IsEffective(bsel.colormask))
 		{
 			// clang-format off
 			static constexpr std::array<D3D11_BLEND, 16> s_d3d11_blend_factors = { {
@@ -1850,27 +1854,27 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 			// clang-format on
 
 			bd.RenderTarget[0].BlendEnable = TRUE;
-			bd.RenderTarget[0].BlendOp = s_d3d11_blend_ops[bsel.blend_op];
-			bd.RenderTarget[0].SrcBlend = s_d3d11_blend_factors[bsel.blend_src_factor];
-			bd.RenderTarget[0].DestBlend = s_d3d11_blend_factors[bsel.blend_dst_factor];
+			bd.RenderTarget[0].BlendOp = s_d3d11_blend_ops[bsel.blend.op];
+			bd.RenderTarget[0].SrcBlend = s_d3d11_blend_factors[bsel.blend.src_factor];
+			bd.RenderTarget[0].DestBlend = s_d3d11_blend_factors[bsel.blend.dst_factor];
 			bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-			bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-			bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+			bd.RenderTarget[0].SrcBlendAlpha = s_d3d11_blend_factors[bsel.blend.src_factor_alpha];
+			bd.RenderTarget[0].DestBlendAlpha = s_d3d11_blend_factors[bsel.blend.dst_factor_alpha];
 		}
 
-		if (bsel.wr)
+		if (bsel.colormask.wr)
 			bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;
-		if (bsel.wg)
+		if (bsel.colormask.wg)
 			bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-		if (bsel.wb)
+		if (bsel.colormask.wb)
 			bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-		if (bsel.wa)
+		if (bsel.colormask.wa)
 			bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 		m_dev->CreateBlendState(&bd, bs.put());
 
-		j = m_om_bs.try_emplace(bsel, std::move(bs)).first;
+		j = m_om_bs.try_emplace(bsel.key, std::move(bs)).first;
 	}
 
 	OMSetBlendState(j->second.get(), afix);
@@ -2087,7 +2091,7 @@ void GSDevice11::RenderImGui()
 	m_ctx->IASetVertexBuffers(0, 1, m_vb.addressof(), &m_state.vb_stride, &vb_offset);
 }
 
-void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
+void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, SetDATM datm)
 {
 	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
@@ -2115,7 +2119,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	// ps
 	PSSetShaderResource(0, rt);
 	PSSetSamplerState(m_convert.pt.get());
-	PSSetShader(m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].get(), nullptr);
+	PSSetShader(m_convert.ps[SetDATMShader(datm)].get(), nullptr);
 
 	//
 
@@ -2445,21 +2449,6 @@ D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr()
 	return (D3D_SHADER_MACRO*)mout.data();
 }
 
-static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector cm, GSHWDrawConfig::BlendState blend)
-{
-	GSDevice11::OMBlendSelector out;
-	out.wrgba = cm.wrgba;
-	if (blend.enable)
-	{
-		out.blend_enable = true;
-		out.blend_src_factor = blend.src_factor;
-		out.blend_dst_factor = blend.dst_factor;
-		out.blend_op = blend.op;
-	}
-
-	return out;
-}
-
 /// Checks that we weren't sent things we declared we don't support
 /// Clears things we don't support that can be quietly disabled
 static void preprocessSel(GSDevice11::PSSelector& sel)
@@ -2482,7 +2471,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			return;
 
 		StretchRect(config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
-			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[config.datm].get(), nullptr, false);
+			primid_tex, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, false);
 	}
 	else if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off)
 	{
@@ -2593,13 +2582,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		OMDepthStencilSelector dss = config.depth;
 		dss.zwe = 0;
-		OMBlendSelector blend;
-		blend.wrgba = 0;
-		blend.wr = 1;
-		blend.blend_enable = 1;
-		blend.blend_src_factor = CONST_ONE;
-		blend.blend_dst_factor = CONST_ONE;
-		blend.blend_op = 3; // MIN
+		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
+			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_tex, config.ds, &config.scissor);
 		DrawIndexedPrimitive();
@@ -2610,18 +2594,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(3, primid_tex);
 	}
 
-	SetupOM(config.depth, convertSel(config.colormask, config.blend), config.blend.constant);
+	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 	DrawIndexedPrimitive();
-
-	if (config.separate_alpha_pass)
-	{
-		GSHWDrawConfig::BlendState sap_blend = {};
-		SetHWDrawConfigForAlphaPass(&config.ps, &config.colormask, &sap_blend, &config.depth);
-		SetupOM(config.depth, convertSel(config.colormask, sap_blend), config.blend.constant);
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
-		DrawIndexedPrimitive();
-	}
 
 	if (config.alpha_second_pass.enable)
 	{
@@ -2637,17 +2612,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
 		}
 
-		SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
+		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 		DrawIndexedPrimitive();
-
-		if (config.second_separate_alpha_pass)
-		{
-			GSHWDrawConfig::BlendState sap_blend = {};
-			SetHWDrawConfigForAlphaPass(&config.alpha_second_pass.ps, &config.alpha_second_pass.colormask, &sap_blend, &config.alpha_second_pass.depth);
-			SetupOM(config.alpha_second_pass.depth, convertSel(config.alpha_second_pass.colormask, sap_blend), config.blend.constant);
-			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
-			DrawIndexedPrimitive();
-		}
 	}
 
 	if (rt_copy)

@@ -2805,7 +2805,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 	DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Change Search Directory"), "Folders", "Bios", EmuFolders::Bios);
 
 	const std::string bios_selection(GetEditingSettingsInterface()->GetStringValue("Filenames", "BIOS", ""));
-	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_MICROCHIP, "BIOS Selection"),
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_PF_MICROCHIP, "BIOS Selection"),
 			FSUI_CSTR("Changes the BIOS image used to start future sessions."),
 			bios_selection.empty() ? FSUI_CSTR("Automatic") : bios_selection.c_str()))
 	{
@@ -3556,8 +3556,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Framebuffer Fetch"),
 		FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Disable Dual-Source Blending"),
-		FSUI_CSTR("Prevents the usage of dual-source blending when supported by host GPU."), "EmuCore/GS", "DisableDualSourceBlend", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Shader Cache"), FSUI_CSTR("Prevents the loading and saving of shaders/pipelines to disk."),
 		"EmuCore/GS", "DisableShaderCache", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
@@ -5928,7 +5926,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 				{it.second ? (FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Disable Subdirectory Scanning")) :
 							 (FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Enable Subdirectory Scanning")),
 					false},
-				{FSUI_ICONSTR(ICON_FA_TIMES, "Remove From List"), false},
+				{FSUI_ICONSTR(ICON_FA_TRASH, "Remove From List"), false},
 				{FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
 			};
 
@@ -5939,12 +5937,12 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
 					if (index == 0)
 					{
-						// Open in file browser... todo
-						Host::ReportErrorAsync("Error", "Not implemented");
+						// Open In File Browser.
+						Host::OpenURL(Path::CreateFileURL(dir));
 					}
 					else if (index == 1)
 					{
-						// toggle subdirectory scanning
+						// Toggle Subdirectory Scanning.
 						{
 							auto lock = Host::GetSettingsLock();
 							SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
@@ -5967,7 +5965,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 					}
 					else if (index == 2)
 					{
-						// remove from list
+						// Remove From List.
 						auto lock = Host::GetSettingsLock();
 						SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
 						bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
@@ -6664,8 +6662,6 @@ TRANSLATE_NOOP("FullscreenUI", "GS Dump Compression");
 TRANSLATE_NOOP("FullscreenUI", "Sets the compression algorithm for GS dumps.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Framebuffer Fetch");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the usage of framebuffer fetch when supported by host GPU.");
-TRANSLATE_NOOP("FullscreenUI", "Disable Dual-Source Blending");
-TRANSLATE_NOOP("FullscreenUI", "Prevents the usage of dual-source blending when supported by host GPU.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Shader Cache");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the loading and saving of shaders/pipelines to disk.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Vertex Shader Expand");

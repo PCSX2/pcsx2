@@ -7,6 +7,10 @@ constant uint FMT_32 = 0;
 constant uint FMT_24 = 1;
 constant uint FMT_16 = 2;
 
+constant uint SHUFFLE_READ = 1;
+[[maybe_unused]] constant uint SHUFFLE_WRITE = 2;
+constant uint SHUFFLE_READWRITE = 3;
+
 constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAMEBUFFER_FETCH)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
@@ -21,6 +25,7 @@ constant bool PS_FBA                [[function_constant(GSMTLConstantIndex_PS_FB
 constant bool PS_FOG                [[function_constant(GSMTLConstantIndex_PS_FOG)]];
 constant uint PS_DATE               [[function_constant(GSMTLConstantIndex_PS_DATE)]];
 constant uint PS_ATST               [[function_constant(GSMTLConstantIndex_PS_ATST)]];
+constant uint PS_AFAIL              [[function_constant(GSMTLConstantIndex_PS_AFAIL)]];
 constant uint PS_TFX                [[function_constant(GSMTLConstantIndex_PS_TFX)]];
 constant bool PS_TCC                [[function_constant(GSMTLConstantIndex_PS_TCC)]];
 constant uint PS_WMS                [[function_constant(GSMTLConstantIndex_PS_WMS)]];
@@ -30,7 +35,9 @@ constant bool PS_ADJT               [[function_constant(GSMTLConstantIndex_PS_AD
 constant bool PS_LTF                [[function_constant(GSMTLConstantIndex_PS_LTF)]];
 constant bool PS_SHUFFLE            [[function_constant(GSMTLConstantIndex_PS_SHUFFLE)]];
 constant bool PS_SHUFFLE_SAME       [[function_constant(GSMTLConstantIndex_PS_SHUFFLE_SAME)]];
-constant bool PS_READ_BA            [[function_constant(GSMTLConstantIndex_PS_READ_BA)]];
+constant uint PS_PROCESS_BA         [[function_constant(GSMTLConstantIndex_PS_PROCESS_BA)]];
+constant uint PS_PROCESS_RG         [[function_constant(GSMTLConstantIndex_PS_PROCESS_RG)]];
+constant bool PS_SHUFFLE_ACROSS     [[function_constant(GSMTLConstantIndex_PS_SHUFFLE_ACROSS)]];
 constant bool PS_READ16_SRC         [[function_constant(GSMTLConstantIndex_PS_READ16_SRC)]];
 constant bool PS_WRITE_RG           [[function_constant(GSMTLConstantIndex_PS_WRITE_RG)]];
 constant bool PS_FBMASK             [[function_constant(GSMTLConstantIndex_PS_FBMASK)]];
@@ -41,6 +48,8 @@ constant uint PS_BLEND_D            [[function_constant(GSMTLConstantIndex_PS_BL
 constant uint PS_BLEND_HW           [[function_constant(GSMTLConstantIndex_PS_BLEND_HW)]];
 constant bool PS_A_MASKED           [[function_constant(GSMTLConstantIndex_PS_A_MASKED)]];
 constant bool PS_HDR                [[function_constant(GSMTLConstantIndex_PS_HDR)]];
+constant bool PS_RTA_CORRECTION     [[function_constant(GSMTLConstantIndex_PS_RTA_CORRECTION)]];
+constant bool PS_RTA_SRC_CORRECTION [[function_constant(GSMTLConstantIndex_PS_RTA_SRC_CORRECTION)]];
 constant bool PS_COLCLIP            [[function_constant(GSMTLConstantIndex_PS_COLCLIP)]];
 constant uint PS_BLEND_MIX          [[function_constant(GSMTLConstantIndex_PS_BLEND_MIX)]];
 constant bool PS_ROUND_INV          [[function_constant(GSMTLConstantIndex_PS_ROUND_INV)]];
@@ -48,9 +57,9 @@ constant bool PS_FIXED_ONE_A        [[function_constant(GSMTLConstantIndex_PS_FI
 constant bool PS_PABE               [[function_constant(GSMTLConstantIndex_PS_PABE)]];
 constant bool PS_NO_COLOR           [[function_constant(GSMTLConstantIndex_PS_NO_COLOR)]];
 constant bool PS_NO_COLOR1          [[function_constant(GSMTLConstantIndex_PS_NO_COLOR1)]];
-constant bool PS_ONLY_ALPHA         [[function_constant(GSMTLConstantIndex_PS_ONLY_ALPHA)]];
 constant uint PS_CHANNEL            [[function_constant(GSMTLConstantIndex_PS_CHANNEL)]];
 constant uint PS_DITHER             [[function_constant(GSMTLConstantIndex_PS_DITHER)]];
+constant uint PS_DITHER_ADJUST      [[function_constant(GSMTLConstantIndex_PS_DITHER_ADJUST)]];
 constant bool PS_ZCLAMP             [[function_constant(GSMTLConstantIndex_PS_ZCLAMP)]];
 constant bool PS_TCOFFSETHACK       [[function_constant(GSMTLConstantIndex_PS_TCOFFSETHACK)]];
 constant bool PS_URBAN_CHAOS_HLE    [[function_constant(GSMTLConstantIndex_PS_URBAN_CHAOS_HLE)]];
@@ -478,9 +487,18 @@ struct PSMain
 		c.y = sample_c(uv.zy).a;
 		c.z = sample_c(uv.xw).a;
 		c.w = sample_c(uv.zw).a;
-
-		uint4 i = uint4(c * 255.5f); // Denormalize value
-
+		
+		uint4 i;
+		
+		if (PS_RTA_SRC_CORRECTION)
+		{
+			i = uint4(c * 128.55f); // Denormalize value
+		}
+		else
+		{
+			i = uint4(c * 255.5f); // Denormalize value
+		}
+		
 		if (PS_PAL_FMT == 1)
 			return i & 0xF;
 		if (PS_PAL_FMT == 2)
@@ -712,9 +730,13 @@ struct PSMain
 		else
 			t = c[0];
 
+		if (PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION)
+			t.a = t.a * (128.5f / 255.0f);
+			
 		// The 0.05f helps to fix the overbloom of sotc
 		// I think the issue is related to the rounding of texture coodinate. The linear (from fixed unit)
 		// interpolation could be slightly below the correct one.
+		
 		return trunc(t * 255.f + 0.05f);
 	}
 
@@ -809,10 +831,10 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
+		if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_before = uint4(T);
-			if (PS_READ_BA)
+			if (PS_PROCESS_BA & SHUFFLE_READ)
 			{
 				T.r = float((denorm_c_before.b << 3) & 0xF8);
 				T.g = float(((denorm_c_before.b >> 2) & 0x38) | ((denorm_c_before.a << 6) & 0xC0));
@@ -829,8 +851,7 @@ struct PSMain
 		}
 	
 		float4 C = tfx(T, IIP ? in.c : in.fc);
-		if (!atst(C))
-			discard_fragment();
+
 		fog(C, in.t.z);
 
 		return C;
@@ -842,7 +863,7 @@ struct PSMain
 			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * 255.5) & cb.fbmask));
 	}
 
-	void ps_dither(thread float4& C)
+	void ps_dither(thread float4& C, float As)
 	{
 		if (PS_DITHER == 0)
 			return;
@@ -851,7 +872,16 @@ struct PSMain
 			fpos = ushort2(in.p.xy);
 		else
 			fpos = ushort2(in.p.xy * float2(cb.scale_factor.y));
-		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];;
+		float value = cb.dither_matrix[fpos.y & 3][fpos.x & 3];
+
+		// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
+		// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
+		if (PS_DITHER_ADJUST)
+		{
+			float Alpha = PS_BLEND_C == 2 ? cb.alpha_fix : As;
+			value *= Alpha > 0.f ? min(1.f / Alpha, 1.f) : 1.f;
+		}
+
 		if (PS_ROUND_INV)
 			C.rgb -= value;
 		else
@@ -877,7 +907,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0)
+		if (PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP || PS_HDR)
@@ -904,7 +934,7 @@ struct PSMain
 					return;
 			}
 
-			float Ad = trunc(current_color.a * 255.5f) / 128.f;
+			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 128.1f) / 128.f : trunc(current_color.a * 255.1f) / 128.f;
 
 			float3 Cd = trunc(current_color.rgb * 255.5f);
 			float3 Cs = Color.rgb;
@@ -917,7 +947,7 @@ struct PSMain
 			// As/Af clamp alpha for Blend mix
 			// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 			float C_clamped = C;
-			if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1)
+			if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
 				C_clamped = min(C_clamped, 1.f);
 
 			if (PS_BLEND_A == PS_BLEND_B)
@@ -950,13 +980,12 @@ struct PSMain
 			}
 			else if (PS_BLEND_HW == 2)
 			{
-				// Compensate slightly for Cd*(As + 1) - Cs*As.
-				// The initial factor we chose is 1 (0.00392)
-				// as that is the minimum color Cd can be,
-				// then we multiply by alpha to get the minimum
-				// blended value it can be.
-				float color_compensate = 1.f * (C + 1.f);
-				Color.rgb -= float3(color_compensate);
+				// Since we can't do Cd*(Alpha + 1) - Cs*Alpha in hw blend
+				// what we can do is adjust the Cs value that will be
+				// subtracted, this way we can get a better result in hw blend.
+				// Result is still wrong but less wrong than before.
+				float division_alpha = 1.f + C;
+				Color.rgb /= float3(division_alpha);
 			}
 			else if (PS_BLEND_HW == 3)
 			{
@@ -981,7 +1010,7 @@ struct PSMain
 				float Alpha = PS_BLEND_C == 2 ? cb.alpha_fix : As;
 				Color.rgb = saturate(Alpha - 1.f) * 255.f;
 			}
-			else if (PS_BLEND_HW == 3)
+			else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 			{
 				// Needed for Cs*Ad, Cs*Ad + Cd, Cd - Cs*Ad
 				// Multiply Color.rgb by (255/128) to compensate for wrong Ad/255 value when rgb are below 128.
@@ -1009,7 +1038,7 @@ struct PSMain
 		{
 			// 1 => DATM == 0, 2 => DATM == 1
 			float rt_a = PS_WRITE_RG ? current_color.g : current_color.a;
-			bool bad = (PS_DATE & 3) == 1 ? (rt_a > 0.5) : (rt_a < 0.5);
+			bool bad = PS_RTA_CORRECTION ? ((PS_DATE & 3) == 1 ? (rt_a > (254.5f / 255.f)) : (rt_a < (254.5f / 255.f))) : ((PS_DATE & 3) == 1 ? (rt_a > 0.5) : (rt_a < 0.5));
 
 			if (bad)
 				discard_fragment();
@@ -1025,6 +1054,9 @@ struct PSMain
 		}
 
 		float4 C = ps_color();
+		bool atst_pass = atst(C);
+		if (PS_AFAIL == 0 && !atst_pass)
+			discard_fragment();
 
 		// Must be done before alpha correction
 
@@ -1034,7 +1066,15 @@ struct PSMain
 			C.a = 128.0f;
 		}
 
-		float4 alpha_blend = SW_AD_TO_HW ? float4(trunc(current_color.a * 255.5f) / 128.f) : float4(C.a / 128.f);
+		float4 alpha_blend = float4(0.f);
+		if (SW_AD_TO_HW)
+		{
+			alpha_blend = PS_RTA_CORRECTION ? float4(trunc(current_color.a * 128.f) / 128.f) : float4(trunc(current_color.a * 255.5f) / 128.f);
+		}
+		else
+		{
+			alpha_blend = float4(C.a / 128.f);
+		}
 
 		if (PS_DST_FMT == FMT_16)
 		{
@@ -1065,10 +1105,10 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
+			if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 			{
 				uint4 denorm_c_after = uint4(C);
-				if (PS_READ_BA)
+				if (PS_PROCESS_BA & SHUFFLE_READ)
 				{
 					C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
 					C.a = float(((denorm_c_after.g >> 6) & 0x3) | ((denorm_c_after.b >> 1) & 0x7C) | (denorm_c_after.a & 0x80));
@@ -1086,44 +1126,79 @@ struct PSMain
 			// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 			if (PS_SHUFFLE_SAME)
 			{
-				if (PS_READ_BA)
-					C = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80);
+				if (PS_PROCESS_BA & SHUFFLE_READ)
+					C = (denorm_c.b & 0x7F) | (denorm_c.a & 0x80);
 				else
 					C.ga = C.rg;
 			}
 			// Copy of a 16bit source in to this target
 			else if (PS_READ16_SRC)
 			{
-				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
+				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7) << 5);
 				if (denorm_c.a & 0x80)
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
 				else
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
 			}
-			// Write RB part. Mask will take care of the correct destination
-			else if (PS_READ_BA)
+			else if (PS_SHUFFLE_ACROSS)
 			{
-				C.rb = C.bb;	
-				C.ga = (denorm_c.a & 0x7F) | (denorm_c.a & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
+				{
+					C.rb = C.br;
+					if ((denorm_c.a & 0x80) != 0)
+						C.g = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.g = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
+						
+					if ((denorm_c.g & 0x80) != 0)
+						C.a = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.a = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+				}
+				else if(PS_PROCESS_BA & SHUFFLE_READ)
+				{
+					C.rb = C.bb;
+					if ((denorm_c.a & 0x80) != 0)
+						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
+				}
+				else
+				{
+					C.rb = C.rr;
+					if ((denorm_c.g & 0x80) != 0)
+						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
+					else
+						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+				}
 			}
-			else
+			else // Basically a direct copy but a shuffle of both pairs of channels, so green and alpha get modified by TEXA
 			{
-				C.rb = C.rr;
-				C.ga = (denorm_c.g & 0x7F) | (denorm_c.g & 0x80 ? denorm_TA.y & 0x80 : denorm_TA.x & 0x80);
+				if ((denorm_c.g & 0x80) != 0)
+					C.g = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
+				else
+					C.g = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+				if ((denorm_c.a & 0x80) != 0)
+					C.a = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
+				else
+					C.a = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
 			}
 		}
 		
-		ps_dither(C);
+		ps_dither(C, alpha_blend.a);
 
 		// Color clamp/wrap needs to be done after sw blending and dithering
 		ps_color_clamp_wrap(C);
 
 		ps_fbmask(C);
 
+		// Use alpha blend factor to determine whether to update A.
+		if (PS_AFAIL == 3) // RGB_ONLY
+			alpha_blend.a = float(atst_pass);
+
 		if (PS_COLOR0)
-			out.c0 = PS_HDR ? float4(C.rgb / 65535.f, C.a / 255.f) : C / 255.f;
-		if (PS_COLOR0 && PS_ONLY_ALPHA)
-			out.c0.rgb = 0;
+			out.c0.a = PS_RTA_CORRECTION ? C.a / 128.f : C.a / 255.f;
+			out.c0.rgb = PS_HDR ? float3(C.rgb / 65535.f) : C.rgb / 255.f;
 		if (PS_COLOR1)
 			out.c1 = alpha_blend;
 		if (PS_ZCLAMP)
