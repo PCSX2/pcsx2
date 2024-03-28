@@ -58,7 +58,8 @@ public slots:
 	void contextRestoreFunction();
 	void contextShowOpcode();
 
-	void gotoAddress(u32 address, bool should_set_focus = true);
+	void gotoAddressAndSetFocus(u32 address);
+	void gotoAddress(u32 address, bool should_set_focus);
 
 	void setDemangle(bool demangle) { m_demangleFunctions = demangle; };
 signals:

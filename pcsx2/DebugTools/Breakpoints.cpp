@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Breakpoints.h"
-#include "SymbolMap.h"
+#include "SymbolGuardian.h"
 #include "MIPSAnalyst.h"
 #include <cstdio>
 #include "R5900.h"

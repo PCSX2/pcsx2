@@ -5,7 +5,7 @@
 #include "DebugTools/BiosDebugData.h"
 #include "MemoryTypes.h"
 #include "ExpressionParser.h"
-#include "SymbolMap.h"
+#include "SymbolGuardian.h"
 
 #include <string>
 
@@ -51,7 +51,10 @@ public:
 	virtual u64 read64(u32 address, bool& valid) = 0;
 	virtual u128 read128(u32 address) = 0;
 	virtual void write8(u32 address, u8 value) = 0;
+	virtual void write16(u32 address, u16 value) = 0;
 	virtual void write32(u32 address, u32 value) = 0;
+	virtual void write64(u32 address, u64 value) = 0;
+	virtual void write128(u32 address, u128 value) = 0;
 
 	// register stuff
 	virtual int getRegisterCategoryCount() = 0;
@@ -73,7 +76,7 @@ public:
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	virtual BreakPointCpu getCpuType() = 0;
-	[[nodiscard]] virtual SymbolMap& GetSymbolMap() const = 0;
+	[[nodiscard]] virtual SymbolGuardian& GetSymbolGuardian() const = 0;
 	[[nodiscard]] virtual std::vector<std::unique_ptr<BiosThread>> GetThreadList() const = 0;
 
 	bool initExpression(const char* exp, PostfixExpression& dest);
@@ -104,7 +107,10 @@ public:
 	u64 read64(u32 address, bool& valid) override;
 	u128 read128(u32 address) override;
 	void write8(u32 address, u8 value) override;
+	void write16(u32 address, u16 value) override;
 	void write32(u32 address, u32 value) override;
+	void write64(u32 address, u64 value) override;
+	void write128(u32 address, u128 value) override;
 
 	// register stuff
 	int getRegisterCategoryCount() override;
@@ -121,7 +127,7 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
+	[[nodiscard]] SymbolGuardian& GetSymbolGuardian() const override;
 	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
@@ -144,7 +150,10 @@ public:
 	u64 read64(u32 address, bool& valid) override;
 	u128 read128(u32 address) override;
 	void write8(u32 address, u8 value) override;
+	void write16(u32 address, u16 value) override;
 	void write32(u32 address, u32 value) override;
+	void write64(u32 address, u64 value) override;
+	void write128(u32 address, u128 value) override;
 
 	// register stuff
 	int getRegisterCategoryCount() override;
@@ -161,7 +170,7 @@ public:
 	bool getCPCOND0() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
-	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
+	[[nodiscard]] SymbolGuardian& GetSymbolGuardian() const override;
 	[[nodiscard]] std::vector<std::unique_ptr<BiosThread>> GetThreadList() const override;
 
 	std::string disasm(u32 address, bool simplify) override;

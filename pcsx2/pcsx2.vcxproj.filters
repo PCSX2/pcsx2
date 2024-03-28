@@ -277,6 +277,9 @@
     <Filter Include="System\Ps2\Iop\SIO\PAD">
       <UniqueIdentifier>{2ef3ebf7-d2a3-4b33-8059-a09b82c085ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\Debug\ccc">
+      <UniqueIdentifier>{ed1b8261-d8b2-423e-9b45-5a2476c7957a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\License.txt">
@@ -727,9 +730,6 @@
     </ClCompile>
     <ClCompile Include="CDVD\BlockdumpFileReader.cpp">
       <Filter>System\ISO</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugTools\SymbolMap.cpp">
-      <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
     <ClCompile Include="DebugTools\DebugInterface.cpp">
       <Filter>System\Ps2\Debug</Filter>
@@ -1407,6 +1407,54 @@
     <ClCompile Include="SIO\Pad\PadPopn.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="DebugTools\SymbolGuardian.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\ast.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\elf.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\elf_symtab.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\importer_flags.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\mdebug_analysis.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\mdebug_importer.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\mdebug_section.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\mdebug_symbols.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\sndll.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\stabs.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\stabs_to_ast.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\symbol_database.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\symbol_file.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\symbol_table.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools\ccc\util.cpp">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1639,9 +1687,6 @@
     </ClInclude>
     <ClInclude Include="AsyncFileReader.h">
       <Filter>System\ISO</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugTools\SymbolMap.h">
-      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="DebugTools\DebugInterface.h">
       <Filter>System\Ps2\Debug</Filter>
@@ -2324,6 +2369,54 @@
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
     <ClInclude Include="SupportURLs.h" />
+    <ClInclude Include="DebugTools\SymbolGuardian.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\ast.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\elf.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\elf_symtab.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\importer_flags.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\mdebug_analysis.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\mdebug_importer.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\mdebug_section.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\mdebug_symbols.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\sndll.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\stabs.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\stabs_to_ast.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\symbol_database.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\symbol_file.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\symbol_table.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools\ccc\util.h">
+      <Filter>System\Ps2\Debug\ccc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">

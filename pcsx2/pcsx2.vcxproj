@@ -62,6 +62,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\d3d12memalloc\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\xbyak</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zydis\include;$(SolutionDir)3rdparty\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\demangler\include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
@@ -135,6 +136,21 @@
     <ClCompile Include="CDVD\Windows\DriveUtility.cpp" />
     <ClCompile Include="CDVD\Windows\IOCtlSrc.cpp" />
     <ClCompile Include="DebugTools\Breakpoints.cpp" />
+    <ClCompile Include="DebugTools\ccc\ast.cpp" />
+    <ClCompile Include="DebugTools\ccc\elf.cpp" />
+    <ClCompile Include="DebugTools\ccc\elf_symtab.cpp" />
+    <ClCompile Include="DebugTools\ccc\importer_flags.cpp" />
+    <ClCompile Include="DebugTools\ccc\mdebug_analysis.cpp" />
+    <ClCompile Include="DebugTools\ccc\mdebug_importer.cpp" />
+    <ClCompile Include="DebugTools\ccc\mdebug_section.cpp" />
+    <ClCompile Include="DebugTools\ccc\mdebug_symbols.cpp" />
+    <ClCompile Include="DebugTools\ccc\sndll.cpp" />
+    <ClCompile Include="DebugTools\ccc\stabs.cpp" />
+    <ClCompile Include="DebugTools\ccc\stabs_to_ast.cpp" />
+    <ClCompile Include="DebugTools\ccc\symbol_database.cpp" />
+    <ClCompile Include="DebugTools\ccc\symbol_file.cpp" />
+    <ClCompile Include="DebugTools\ccc\symbol_table.cpp" />
+    <ClCompile Include="DebugTools\ccc\util.cpp" />
     <ClCompile Include="DebugTools\DebugInterface.cpp" />
     <ClCompile Include="DebugTools\DisassemblyManager.cpp" />
     <ClCompile Include="DebugTools\BiosDebugData.cpp" />
@@ -143,7 +159,7 @@
     <ClCompile Include="DebugTools\MipsAssembler.cpp" />
     <ClCompile Include="DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="DebugTools\MipsStackWalk.cpp" />
-    <ClCompile Include="DebugTools\SymbolMap.cpp" />
+    <ClCompile Include="DebugTools\SymbolGuardian.cpp" />
     <ClCompile Include="DEV9\AdapterUtils.cpp" />
     <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp" />
     <ClCompile Include="DEV9\ATA\Commands\ATA_CmdDMA.cpp" />
@@ -485,6 +501,21 @@
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
     <ClInclude Include="DebugTools\Breakpoints.h" />
+    <ClInclude Include="DebugTools\ccc\ast.h" />
+    <ClInclude Include="DebugTools\ccc\elf.h" />
+    <ClInclude Include="DebugTools\ccc\elf_symtab.h" />
+    <ClInclude Include="DebugTools\ccc\importer_flags.h" />
+    <ClInclude Include="DebugTools\ccc\mdebug_analysis.h" />
+    <ClInclude Include="DebugTools\ccc\mdebug_importer.h" />
+    <ClInclude Include="DebugTools\ccc\mdebug_section.h" />
+    <ClInclude Include="DebugTools\ccc\mdebug_symbols.h" />
+    <ClInclude Include="DebugTools\ccc\sndll.h" />
+    <ClInclude Include="DebugTools\ccc\stabs.h" />
+    <ClInclude Include="DebugTools\ccc\stabs_to_ast.h" />
+    <ClInclude Include="DebugTools\ccc\symbol_database.h" />
+    <ClInclude Include="DebugTools\ccc\symbol_file.h" />
+    <ClInclude Include="DebugTools\ccc\symbol_table.h" />
+    <ClInclude Include="DebugTools\ccc\util.h" />
     <ClInclude Include="DebugTools\DebugInterface.h" />
     <ClInclude Include="DebugTools\DisassemblyManager.h" />
     <ClInclude Include="DebugTools\BiosDebugData.h" />
@@ -493,7 +524,7 @@
     <ClInclude Include="DebugTools\MipsAssembler.h" />
     <ClInclude Include="DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="DebugTools\MipsStackWalk.h" />
-    <ClInclude Include="DebugTools\SymbolMap.h" />
+    <ClInclude Include="DebugTools\SymbolGuardian.h" />
     <ClInclude Include="DEV9\AdapterUtils.h" />
     <ClInclude Include="DEV9\ATA\ATA.h" />
     <ClInclude Include="DEV9\ATA\HddCreate.h" />
@@ -860,6 +891,9 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">
       <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\demangler\demangler.vcxproj">
+      <Project>{d31a6dd1-99ca-41d8-a230-1fae913c8989}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
