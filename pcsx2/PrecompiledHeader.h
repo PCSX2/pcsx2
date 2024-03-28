@@ -41,5 +41,7 @@
 #include <sys/stat.h>
 
 // We use fmt a fair bit now.
+// fmt pch breaks GCC in debug builds: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114370
+#if !defined(__GNUC__) || defined(__clang__)
 #include "fmt/core.h"
-
+#endif
