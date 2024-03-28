@@ -617,6 +617,7 @@ struct Pcsx2Config
 					AutoFlushSW : 1,
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
+					PreRoundSprites : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,

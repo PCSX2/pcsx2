@@ -642,6 +642,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
 	Mipmap = true;
+	PreRoundSprites = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -848,6 +849,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	GSSettingBool(OsdShowSettings);
 	GSSettingBool(OsdShowInputs);
 	GSSettingBool(OsdShowFrameTimes);
+	GSSettingBoolEx(PreRoundSprites, "preround_sprites");
 
 	GSSettingBool(HWSpinGPUForReadbacks);
 	GSSettingBool(HWSpinCPUForReadbacks);
