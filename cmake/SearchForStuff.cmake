@@ -12,6 +12,7 @@ find_package(Threads REQUIRED)
 set(FIND_FRAMEWORK_BACKUP ${CMAKE_FIND_FRAMEWORK})
 set(CMAKE_FIND_FRAMEWORK NEVER)
 find_package(PNG 1.6.40 REQUIRED)
+find_package(JPEG REQUIRED) # No version because flatpak uses libjpeg-turbo.
 find_package(ZLIB REQUIRED) # v1.3, but Mac uses the SDK version.
 find_package(Zstd 1.5.5 REQUIRED)
 find_package(LZ4 REQUIRED)

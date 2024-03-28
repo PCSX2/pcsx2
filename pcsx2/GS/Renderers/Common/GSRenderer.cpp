@@ -428,7 +428,7 @@ static const char* GetScreenshotSuffix()
 
 static void CompressAndWriteScreenshot(std::string filename, u32 width, u32 height, std::vector<u32> pixels)
 {
-	Common::RGBA8Image image;
+	RGBA8Image image;
 	image.SetPixels(width, height, std::move(pixels));
 
 	std::string key(fmt::format("GSScreenshot_{}", filename));

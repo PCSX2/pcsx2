@@ -978,7 +978,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
 		return;
 	}
 
-	Common::RGBA8Image image;
+	RGBA8Image image;
 	if (!image.LoadFromFile(sc.image_path.c_str()))
 	{
 		Console.Error("Failed to load software cursor %u image '%s'", index, sc.image_path.c_str());
@@ -991,7 +991,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
 			"Failed to upload %ux%u software cursor %u image '%s'", image.GetWidth(), image.GetHeight(), index, sc.image_path.c_str());
 		return;
 	}
-	sc.texture->Update(GSVector4i(0, 0, image.GetWidth(), image.GetHeight()), image.GetPixels(), image.GetByteStride(), 0);
+	sc.texture->Update(GSVector4i(0, 0, image.GetWidth(), image.GetHeight()), image.GetPixels(), image.GetPitch(), 0);
 
 	sc.extent_x = std::ceil(static_cast<float>(image.GetWidth()) * sc.scale * s_global_scale) / 2.0f;
 	sc.extent_y = std::ceil(static_cast<float>(image.GetHeight()) * sc.scale * s_global_scale) / 2.0f;
