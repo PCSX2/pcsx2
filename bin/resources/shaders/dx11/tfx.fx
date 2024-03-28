@@ -943,7 +943,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 
 			float Alpha = PS_BLEND_C == 2 ? Af : As;
 
-			Color.rgb = max((float3)0.0f, (Alpha - (float3)1.0f));
+			Color.rgb = saturate((float3)Alpha - (float3)1.0f);
 			Color.rgb *= (float3)255.0f;
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
