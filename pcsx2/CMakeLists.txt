@@ -386,6 +386,7 @@ set(pcsx2USBSources
 	USB/qemu-usb/input-keymap-qcode-to-qnum.cpp
 	USB/qemu-usb/usb-ohci.cpp
 	USB/shared/ringbuffer.cpp
+	USB/usb-eyetoy/cam-jpeg.cpp
 	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
@@ -415,6 +416,7 @@ set(pcsx2USBHeaders
 	USB/qemu-usb/queue.h
 	USB/qemu-usb/qusb.h
 	USB/shared/ringbuffer.h
+	USB/usb-eyetoy/cam-jpeg.h
 	USB/usb-eyetoy/jo_mpeg.h
 	USB/usb-eyetoy/ov519.h
 	USB/usb-eyetoy/usb-eyetoy-webcam.h
@@ -1083,7 +1085,6 @@ if(WIN32)
 endif()
 
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
-target_link_libraries(PCSX2_FLAGS INTERFACE jpgd)
 
 if(APPLE OR BSD)
 	if(APPLE)
@@ -1249,17 +1250,14 @@ function(setup_main_executable target)
 		if(MSVC)
 			install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_SOURCE_DIR}/bin)
 		endif()
-		if(TARGET SDL2::SDL2)
-			# Copy SDL2 DLL to binary directory.
-			if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-				get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_DEBUG)
-			else()
-				get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_RELEASE)
-			endif()
-			if(SDL2_DLL_PATH)
-				install(FILES ${SDL2_DLL_PATH} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
-			endif()
-		endif()
+
+		# Copy dependency libraries.
+		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
+		set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll liblzma.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL2.dll zlib1.dll zstd.dll)
+		foreach(DEP_TO_COPY ${DEPS_TO_COPY})
+			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
+		endforeach()
+
 		find_program(WINDEPLOYQT_EXE windeployqt HINTS "${QT_BINARY_DIRECTORY}")
 		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" --no-compiler-runtime --no-system-d3d-compiler --no-translations COMMAND_ERROR_IS_FATAL ANY)")
 		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")

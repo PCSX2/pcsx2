@@ -186,8 +186,8 @@ endif()
 
 target_link_libraries(common PRIVATE
 	${LIBC_LIBRARIES}
+	JPEG::JPEG
 	PNG::PNG
-	jpgd
 	WebP::libwebp
 )
 

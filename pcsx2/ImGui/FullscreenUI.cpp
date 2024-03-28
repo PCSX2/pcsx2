@@ -3219,6 +3219,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	static constexpr const char* s_screenshot_formats[] = {
 		FSUI_NSTR("PNG"),
 		FSUI_NSTR("JPEG"),
+		FSUI_NSTR("WebP"),
 	};
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
