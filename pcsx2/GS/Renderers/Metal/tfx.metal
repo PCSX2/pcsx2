@@ -8,7 +8,7 @@ constant uint FMT_24 = 1;
 constant uint FMT_16 = 2;
 
 constant uint SHUFFLE_READ = 1;
-constant uint SHUFFLE_WRITE = 2;
+[[maybe_unused]] constant uint SHUFFLE_WRITE = 2;
 constant uint SHUFFLE_READWRITE = 3;
 
 constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAMEBUFFER_FETCH)]];
