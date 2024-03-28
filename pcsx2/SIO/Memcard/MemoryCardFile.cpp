@@ -278,14 +278,11 @@ void FileMemoryCard::Open()
 
 		if (FileSystem::GetPathFileSize(fname.c_str()) <= 0)
 		{
-			// FIXME : Ideally this should prompt the user for the size of the
-			// memory card file they would like to create, instead of trying to
-			// create one automatically.
-
 			if (!Create(fname.c_str(), 8))
 			{
-				Host::ReportFormattedErrorAsync("Memory Card", "Could not create a memory card: \n\n%s\n\n",
-					fname.c_str());
+				Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Creation Failed"),
+					fmt::format(TRANSLATE_FS("MemoryCard", "Could not create the memory card:\n{}"),
+						fname.c_str()));
 			}
 		}
 
@@ -309,17 +306,13 @@ void FileMemoryCard::Open()
 
 		if (!m_file[slot])
 		{
-			// Translation note: detailed description should mention that the memory card will be disabled
-			// for the duration of this session.
-			Host::ReportFormattedErrorAsync("Memory Card", "Access denied to memory card: \n\n%s\n\n"
-														   "Another instance of PCSX2 may be using this memory card. Close any other instances of PCSX2, or restart your computer.%s",
-				fname.c_str(),
-#ifdef WIN32
-				"\n\nIf your memory card is in a write-protected folder such as \"Program Files\" or \"Program Files (x86)\", move it to another folder, such as \"Documents\" or \"Desktop\"."
-#else
-				""
-#endif
-			);
+			Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Read Failed"),
+				fmt::format(TRANSLATE_FS("MemoryCard", "Access to Memory Card {} has been denied.\n"
+													   "Memory Card will be disabed for the remainder of this session.\n"
+													   "Another instance of PCSX2 may be using this memory card\n"
+													   "or the memory card is stored in a write-protected folder.\n"
+													   "Close any other instances of PCSX2, or restart your computer\n."),
+					fname.c_str()));
 		}
 		else // Load checksum
 		{
@@ -335,7 +328,8 @@ void FileMemoryCard::Open()
 			{
 				const size_t read_result = std::fread(&m_chksum[slot], sizeof(m_chksum[slot]), 1, m_file[slot]);
 				if (read_result == 0)
-					Host::ReportFormattedErrorAsync("Memory Card", "Error reading memcard.\n");
+					Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Read Failed"),
+						TRANSLATE_SV("MemoryCard", "Error reading Memory Card."));
 			}
 		}
 	}
@@ -477,7 +471,8 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 
 		const size_t read_result = std::fread(m_currentdata.data(), size, 1, mcfp);
 		if (read_result == 0)
-			Host::ReportFormattedErrorAsync("Memory Card", "Error reading memcard.\n");
+			Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Read Failed"),
+				TRANSLATE_SV("MemoryCard", "Error reading Memory Card."));
 
 		for (int i = 0; i < size; i++)
 		{
@@ -871,7 +866,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 
 		// We only want relevant file types.
 		if (!(fd.FileName.ends_with(".ps2") || fd.FileName.ends_with(".mcr") ||
-			fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin")))
+				fd.FileName.ends_with(".mcd") || fd.FileName.ends_with(".bin")))
 			continue;
 
 		if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
@@ -940,7 +935,8 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 
 		if (!FileSystem::CreateDirectoryPath(full_path.c_str(), false))
 		{
-			Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to create directory '%s'.", full_path.c_str());
+			Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Creation Failed"),
+				fmt::format(TRANSLATE_FS("MemoryCard", "Failed to write folder Memory Card:\n{}"), full_path.c_str()));
 			return false;
 		}
 
@@ -948,7 +944,8 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 		auto fp = FileSystem::OpenManagedCFile(Path::Combine(full_path, s_folder_mem_card_id_file).c_str(), "wb");
 		if (!fp)
 		{
-			Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write memory card folder superblock '%s'.", full_path.c_str());
+			Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Creation Failed"),
+				fmt::format(TRANSLATE_FS("Memory Card", "Failed to write folder Memory Card superblock:\n{}"), full_path.c_str()));
 			return false;
 		}
 
@@ -970,7 +967,8 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 		auto fp = FileSystem::OpenManagedCFile(full_path.c_str(), "wb");
 		if (!fp)
 		{
-			Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to open file '%s'.", full_path.c_str());
+			Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Read Failed"),
+				fmt::format(TRANSLATE_FS("MemoryCard", "Failed to open Memory Card:\n{}"), full_path.c_str()));
 			return false;
 		}
 
@@ -987,7 +985,8 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 			{
 				if (std::fwrite(buf, sizeof(buf), 1, fp.get()) != 1)
 				{
-					Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write file '%s'.", full_path.c_str());
+					Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Creation Failed"),
+						fmt::format("Failed to write Memory Card file:\n{}", full_path.c_str()));
 					return false;
 				}
 			}
@@ -1007,7 +1006,8 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 			{
 				if (std::fwrite(buf, sizeof(buf), 1, fp.get()) != 1)
 				{
-					Host::ReportFormattedErrorAsync("Memory Card Creation Failed", "Failed to write file '%s'.", full_path.c_str());
+					Host::ReportErrorAsync(TRANSLATE_SV("MemoryCard", "Memory Card Creation Failed"),
+						fmt::format("Failed to write Memory Card file:\n{}", full_path.c_str()));
 					return false;
 				}
 			}
