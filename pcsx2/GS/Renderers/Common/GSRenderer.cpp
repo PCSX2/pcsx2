@@ -422,7 +422,7 @@ static GSVector4i CalculateDrawSrcRect(const GSTexture* src, const GSVector2i re
 static const char* GetScreenshotSuffix()
 {
 	static constexpr const char* suffixes[static_cast<u8>(GSScreenshotFormat::Count)] = {
-		"png", "jpg"};
+		"png", "jpg", "webp"};
 	return suffixes[static_cast<u8>(GSConfig.ScreenshotFormat)];
 }
 
