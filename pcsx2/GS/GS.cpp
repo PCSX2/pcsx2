@@ -310,8 +310,8 @@ bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* b
 	if (!res)
 	{
 		Host::ReportErrorAsync(
-			"Error", fmt::format("Failed to create render device. This may be due to your GPU not supporting the "
-								 "chosen renderer ({}), or because your graphics drivers need to be updated.",
+			"Error", fmt::format(TRANSLATE_FS("GS","Failed to create render device. This may be due to your GPU not supporting the "
+								 "chosen renderer ({}), or because your graphics drivers need to be updated."),
 						 Pcsx2Config::GSOptions::GetRendererName(GSConfig.Renderer)));
 		return false;
 	}
