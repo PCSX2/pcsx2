@@ -393,7 +393,6 @@ bool VMManager::Internal::CPUThreadInitialize()
 
 	InitializeCPUProviders();
 
-	GSinit();
 	USBinit();
 
 	// We want settings loaded so we choose the correct renderer for big picture mode.
@@ -425,9 +424,9 @@ void VMManager::Internal::CPUThreadShutdown()
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
 
 	USBshutdown();
-	GSshutdown();
 
 	MTGS::ShutdownThread();
+	GSJoinSnapshotThreads();
 
 	ShutdownCPUProviders();
 
