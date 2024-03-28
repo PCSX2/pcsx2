@@ -30,11 +30,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\zstd\zstd.vcxproj">
-      <Project>{52244028-937a-44e9-a76b-2bea18fd239a}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="lib\zip_add.c" />
     <ClCompile Include="lib\zip_add_dir.c" />
     <ClCompile Include="lib\zip_add_entry.c" />
@@ -167,7 +162,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zstd\zstd\lib;$(SolutionDir)3rdparty\zlib;$(ProjectDir)msvc;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)msvc;$(ProjectDir)lib;$(SolutionDir)deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -15,6 +15,11 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)build\lib-$(PlatformName)-$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\obj-$(ProjectName)-$(PlatformName)-$(Configuration)\</IntDir>
+    <DepsRootDir Condition="'$(Platform)'=='x64'">$(SolutionDir)deps\</DepsRootDir>
+    <DepsRootDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)deps-arm64\</DepsRootDir>
+    <DepsBinDir>$(DepsRootDir)bin\</DepsBinDir>
+    <DepsLibDir>$(DepsRootDir)lib\</DepsLibDir>
+    <DepsIncludeDir>$(DepsRootDir)include\</DepsIncludeDir>
   </PropertyGroup>
   <PropertyGroup>
     <LinkIncremental>false</LinkIncremental>
@@ -22,7 +27,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir);%(AdditionalIncludeDirectories);$(DepsIncludeDir)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>__WIN32__;WIN32;_WINDOWS;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_HAS_EXCEPTIONS=0;WINVER=0x0A00;_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -56,7 +61,7 @@
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(Release))"> -flto=thin %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;PowrProf.lib;d3dcompiler.lib;d3d11.lib;d3d12.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;OneCore.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
