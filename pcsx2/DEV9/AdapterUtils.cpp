@@ -8,22 +8,23 @@
 #include "common/StringUtil.h"
 
 #ifdef __POSIX__
+#include <unistd.h>
 #include <vector>
 #include <fstream>
 #include <net/if.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#ifdef __linux__
-#include <unistd.h>
 #include <sys/ioctl.h>
-#endif
 
 #if defined(__FreeBSD__) || (__APPLE__)
+#include <sys/types.h>
+#include <net/if_dl.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#include <sys/sockio.h>
 #include <net/route.h>
+#include <net/if_var.h>
 #endif
 #endif
 
@@ -244,29 +245,87 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 
 	return std::nullopt;
 }
-#elif defined(__POSIX__)
-#ifdef __linux__
-std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
-{
-	struct ifreq ifr;
-	strcpy(ifr.ifr_name, adapter->ifa_name);
-
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
-	int ret = ioctl(fd, SIOCGIFHWADDR, &ifr);
-	close(fd);
-
-	if (ret == 0)
-		return *(MAC_Address*)ifr.ifr_hwaddr.sa_data;
-
-	return std::nullopt;
-}
 #else
 std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 {
-	Console.Error("DEV9: Unsupported OS, can't get MAC address");
+	int sd;
+	struct ifreq ifr, *ifrp;
+	struct ifconf ifc;
+	char buf[1024];
+	int n, i;
+	unsigned char *addr;
+#ifdef AF_LINK
+	struct sockaddr_dl *sdlp;
+#endif
+
+/*
+ * BSD 4.4 defines the size of an ifreq to be
+ * max(sizeof(ifreq), sizeof(ifreq.ifr_name)+ifreq.ifr_addr.sa_len
+ * However, under earlier systems, sa_len isn't present, so the size is 
+ * just sizeof(struct ifreq)
+ */
+#ifdef HAVE_SA_LEN
+#ifndef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#endif
+#define ifreq_size(i) max(sizeof(struct ifreq),\
+     sizeof((i).ifr_name)+(i).ifr_addr.sa_len)
+#else
+#define ifreq_size(i) sizeof(struct ifreq)
+#endif /* HAVE_SA_LEN*/
+
+	sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+	if (sd < 0) {
+		return std::nullopt;
+	}
+	memset(buf, 0, sizeof(buf));
+	ifc.ifc_len = sizeof(buf);
+	ifc.ifc_buf = buf;
+	if (ioctl (sd, SIOCGIFCONF, (char *)&ifc) < 0) {
+		close(sd);
+		return std::nullopt;
+	}
+	n = ifc.ifc_len;
+	for (i = 0; i < n; i+= ifreq_size(*ifrp) ) {
+		ifrp = (struct ifreq *)((char *) ifc.ifc_buf+i);
+		strncpy(ifr.ifr_name, ifrp->ifr_name, IFNAMSIZ);
+#ifdef SIOCGIFHWADDR
+		if (ioctl(sd, SIOCGIFHWADDR, &ifr) < 0)
+			continue;
+		addr = (unsigned char *) &ifr.ifr_hwaddr.sa_data;
+#else
+#ifdef SIOCGENADDR
+		if (ioctl(sd, SIOCGENADDR, &ifr) < 0)
+			continue;
+		addr = (unsigned char *) ifr.ifr_enaddr;
+#else
+#ifdef AF_LINK
+		sdlp = (struct sockaddr_dl *) &ifrp->ifr_addr;
+		if ((sdlp->sdl_family != AF_LINK) || (sdlp->sdl_alen != 6))
+			continue;
+		addr = (unsigned char *) &sdlp->sdl_data[sdlp->sdl_nlen];
+#else
+		/*
+		 * XXX we don't have a way of getting the hardware
+		 * address
+		 */
+		Console.Error("DEV9: Unsupported OS, can't get MAC address");
+		close(sd);
+		return std::nullopt
+#endif /* AF_LINK */
+#endif /* SIOCGENADDR */
+#endif /* SIOCGIFHWADDR */
+		if (!addr[0] && !addr[1] && !addr[2] && !addr[3] && !addr[4] && !addr[5])
+			continue;
+			
+		// We have a valid MAC address.
+		close(sd);
+		return *(MAC_Address *)addr;
+	}
+	close(sd);
+	Console.Error("DEV9: Unsupported OS, can't get network features");
 	return std::nullopt;
 }
-#endif
 #endif
 
 // AdapterIP.
@@ -376,7 +435,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	}
 	return collection;
 }
-#elif defined(__FreeBSD__) || (__APPLE__)
+#elif defined(__FreeBSD__) || defined(__APPLE__)
 std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 {
 	if (adapter == nullptr)
