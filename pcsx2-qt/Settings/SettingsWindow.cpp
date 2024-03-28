@@ -269,7 +269,7 @@ void SettingsWindow::onRestoreDefaultsClicked()
 	QMessageBox msgbox(this);
 	msgbox.setIcon(QMessageBox::Question);
 	msgbox.setWindowTitle(tr("Confirm Restore Defaults"));
-	msgbox.setText(tr("Are you sure you want to restore the default settings? Any preferences will be lost."));
+	msgbox.setText(tr("Are you sure you want to restore the default settings? Any existing preferences will be lost."));
 
 	QCheckBox* ui_cb = new QCheckBox(tr("Reset UI Settings"), &msgbox);
 	msgbox.setCheckBox(ui_cb);

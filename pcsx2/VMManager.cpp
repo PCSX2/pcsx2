@@ -1702,7 +1702,7 @@ bool VMManager::DoLoadState(const char* filename)
 	Error error;
 	if (!SaveState_UnzipFromDisk(filename, &error))
 	{
-		Host::ReportErrorAsync("Failed to load save state", error.GetDescription());
+		Host::ReportErrorAsync(TRANSLATE_SV("VMManager","Failed to load save state"), error.GetDescription());
 		return false;
 	}
 
