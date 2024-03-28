@@ -2573,6 +2573,24 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SendHWDraw(config, psel.ps.IsFeedbackLoop());
 
+	if (config.blend_second_pass.enable)
+	{
+		if (config.blend.IsEffective(config.colormask))
+		{
+			OMSetBlendState(config.blend_second_pass.blend.enable, s_gl_blend_factors[config.blend_second_pass.blend.src_factor],
+				s_gl_blend_factors[config.blend_second_pass.blend.dst_factor], s_gl_blend_ops[config.blend_second_pass.blend.op],
+				s_gl_blend_factors[config.blend_second_pass.blend.src_factor_alpha], s_gl_blend_factors[config.blend_second_pass.blend.dst_factor_alpha],
+				config.blend_second_pass.blend.constant_enable, config.blend_second_pass.blend.constant);
+		}
+		else
+		{
+			OMSetBlendState();
+		}
+		psel.ps.blend_hw = config.blend_second_pass.blend_hw;
+		SetupPipeline(psel);
+		SendHWDraw(config, psel.ps.IsFeedbackLoop());
+	}
+
 	if (config.alpha_second_pass.enable)
 	{
 		// cbuffer will definitely be dirty if aref changes, no need to check it

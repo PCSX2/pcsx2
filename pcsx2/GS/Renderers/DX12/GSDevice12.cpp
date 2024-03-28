@@ -3942,6 +3942,18 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (BindDrawPipeline(pipe))
 		DrawIndexedPrimitive();
 
+	// blend second pass
+	if (config.blend_second_pass.enable)
+	{
+		if (config.blend_second_pass.blend.constant_enable)
+			SetBlendConstants(config.blend_second_pass.blend.constant);
+
+		pipe.bs = config.blend_second_pass.blend;
+		pipe.ps.blend_hw = config.blend_second_pass.blend_hw;
+		if (BindDrawPipeline(pipe))
+			DrawIndexedPrimitive();
+	}
+
 	// and the alpha pass
 	if (config.alpha_second_pass.enable)
 	{

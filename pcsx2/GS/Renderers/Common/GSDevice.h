@@ -221,16 +221,18 @@ static_assert(sizeof(InterlaceConstantBuffer) == 16, "InterlaceConstantBuffer is
 enum HWBlendFlags
 {
 	// Flags to determine blending behavior
-	BLEND_CD      = 0x1,   // Output is Cd, hw blend can handle it
-	BLEND_HW_CLR1 = 0x2,   // Clear color blending (use directly the destination color as blending factor)
-	BLEND_HW_CLR2 = 0x4,   // Clear color blending (use directly the destination color as blending factor)
-	BLEND_HW_CLR3 = 0x8,   // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
-	BLEND_MIX1    = 0x10,  // Mix of hw and sw, do Cs*F or Cs*As in shader
-	BLEND_MIX2    = 0x20,  // Mix of hw and sw, do Cs*(As + 1) or Cs*(F + 1) in shader
-	BLEND_MIX3    = 0x40,  // Mix of hw and sw, do Cs*(1 - As) or Cs*(1 - F) in shader
-	BLEND_ACCU    = 0x80,  // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
-	BLEND_NO_REC  = 0x100, // Doesn't require sampling of the RT as a texture
-	BLEND_A_MAX   = 0x200, // Impossible blending uses coeff bigger than 1
+	BLEND_CD     = 0x1,    // Output is Cd, hw blend can handle it
+	BLEND_HW1    = 0x2,    // Clear color blending (use directly the destination color as blending factor)
+	BLEND_HW2    = 0x4,    // Clear color blending (use directly the destination color as blending factor)
+	BLEND_HW3    = 0x8,    // Multiply Cs by (255/128) to compensate for wrong Ad/255 value, should be Ad/128
+	BLEND_HW4    = 0x10,   // HW rendering is split in 2 passes
+	BLEND_HW5    = 0x20,   // HW rendering is split in 2 passes
+	BLEND_MIX1   = 0x40,   // Mix of hw and sw, do Cs*F or Cs*As in shader
+	BLEND_MIX2   = 0x80,   // Mix of hw and sw, do Cs*(As + 1) or Cs*(F + 1) in shader
+	BLEND_MIX3   = 0x100,  // Mix of hw and sw, do Cs*(1 - As) or Cs*(1 - F) in shader
+	BLEND_ACCU   = 0x200,  // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
+	BLEND_NO_REC = 0x400,  // Doesn't require sampling of the RT as a texture
+	BLEND_A_MAX  = 0x800,  // Impossible blending uses coeff bigger than 1
 };
 
 // Determines the HW blend function for DX11/OGL
@@ -690,6 +692,16 @@ struct alignas(16) GSHWDrawConfig
 	static_assert(sizeof(AlphaPass) == 24, "alpha pass is 24 bytes");
 
 	AlphaPass alpha_second_pass;
+
+	struct BlendPass
+	{
+		BlendState blend;
+		u8 blend_hw;
+		bool enable;
+	};
+	static_assert(sizeof(BlendPass) == 8, "blend pass is 8 bytes");
+
+	BlendPass blend_second_pass;
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;

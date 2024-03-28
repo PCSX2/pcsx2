@@ -2624,6 +2624,14 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
 	DrawIndexedPrimitive();
 
+	if (config.blend_second_pass.enable)
+	{
+		config.ps.blend_hw = config.blend_second_pass.blend_hw;
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
+		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_second_pass.blend), config.blend_second_pass.blend.constant);
+		DrawIndexedPrimitive();
+	}
+
 	if (config.alpha_second_pass.enable)
 	{
 		preprocessSel(config.alpha_second_pass.ps);
