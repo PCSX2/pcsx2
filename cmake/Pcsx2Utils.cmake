@@ -140,16 +140,6 @@ function(check_no_parenthesis_in_path)
 	endif()
 endfunction()
 
-# Makes an imported target if it doesn't exist.  Useful for when find scripts from older versions of cmake don't make the targets you need
-function(make_imported_target_if_missing target lib)
-	if(${lib}_FOUND AND NOT TARGET ${target})
-		add_library(_${lib} INTERFACE)
-		target_link_libraries(_${lib} INTERFACE "${${lib}_LIBRARIES}")
-		target_include_directories(_${lib} INTERFACE "${${lib}_INCLUDE_DIRS}")
-		add_library(${target} ALIAS _${lib})
-	endif()
-endfunction()
-
 # like add_library(new ALIAS old) but avoids add_library cannot create ALIAS target "new" because target "old" is imported but not globally visible. on older cmake
 function(alias_library new old)
 	string(REPLACE "::" "" library_no_namespace ${old})

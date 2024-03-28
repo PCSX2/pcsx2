@@ -130,6 +130,7 @@ jobs:
         shell: cmd
         run: |
           call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          set PATH=%PATH%;%GITHUB_WORKSPACE%\bin
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact

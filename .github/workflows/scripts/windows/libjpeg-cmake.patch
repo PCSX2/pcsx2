@@ -1,0 +1,422 @@
+diff -ruN jpeg-9f/CMakeLists.txt jpeg-9f-new/CMakeLists.txt
+--- jpeg-9f/CMakeLists.txt	1970-01-01 10:00:00.000000000 +1000
++++ jpeg-9f-new/CMakeLists.txt	2024-03-23 21:29:37.969221600 +1000
+@@ -0,0 +1,110 @@
++# CMake configuration for IJG libjpeg
++# Modified from https://github.com/csparker247/jpeg-cmake/blob/develop/resources/CMakeLists.txt
++# To install, copy this file and jconfig.h.in into a libjpeg source directory
++# Adapted from LuaDist's CMakeLists
++# https://github.com/LuaDist/libjpeg/blob/master/CMakeLists.txt
++
++cmake_minimum_required(VERSION 3.5)
++
++### Setup the project ###
++file(READ "configure.ac" ac)
++string(REGEX MATCH "AC_INIT\\(\\[libjpeg\\],\ \\[([0-9]*\\.[0-9]*\\.[0-9]*)\\]\\)" _ ${ac})
++set(version ${CMAKE_MATCH_1})
++project(libjpeg VERSION ${version} LANGUAGES C)
++set(C_STANDARD 99)
++
++### Include extra packages ###
++include(CMakeDependentOption)
++include(GNUInstallDirs)
++
++### Options ###
++option(BUILD_SHARED_LIBS "Build shared libraries" ON)
++option(BUILD_STATIC_LIBS "Build static libraries" ON)
++
++# Make sure we build at least one library
++if(NOT(BUILD_SHARED_LIBS OR BUILD_STATIC_LIBS))
++  message(FATAL_ERROR "Both static and shared libraries are disabled. Nothing will be built.")
++endif()
++
++### Configure jconfig.h ###
++include(ConfigureJConfig.cmake)
++
++### Build the object library ###
++set(PUBLIC_HDRS
++  jconfig.h
++  jerror.h
++  jmorecfg.h
++  jpeglib.h
++)
++
++set(SRCS
++  jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c
++  jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c
++  jcparam.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdarith.c
++  jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdinput.c
++  jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdpostct.c jdsample.c jdtrans.c
++  jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c
++  jmemmgr.c jmemnobs.c jquant1.c jquant2.c jutils.c
++)
++
++### Create static and shared libs ###
++if(BUILD_SHARED_LIBS)
++  add_library(libjpeg SHARED ${SRCS})
++  target_compile_definitions(libjpeg PRIVATE COMPILING_LIBJPEG)
++  target_include_directories(libjpeg
++    PUBLIC
++      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
++      $<INSTALL_INTERFACE:include>
++  )
++  set_target_properties(libjpeg
++    PROPERTIES
++      VERSION ${PROJECT_VERSION_MAJOR}
++      POSITION_INDEPENDENT_CODE ON
++      CLEAN_DIRECT_OUTPUT ON
++      PUBLIC_HEADER "${PUBLIC_HDRS}"
++  )
++  install(TARGETS libjpeg
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++  )
++endif()
++
++if(BUILD_STATIC_LIBS)
++  add_library(libjpeg_static STATIC $<TARGET_OBJECTS:jpeg_objs>)
++  target_include_directories(libjpeg_static
++    PUBLIC
++      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
++      $<INSTALL_INTERFACE:include>
++  )
++  set_target_properties(libjpeg_static
++    PROPERTIES
++      OUTPUT_NAME jpeg
++      VERSION ${PROJECT_VERSION_MAJOR}
++      POSITION_INDEPENDENT_CODE ON
++      CLEAN_DIRECT_OUTPUT ON
++      PUBLIC_HEADER "${PUBLIC_HDRS}"
++  )
++  install(TARGETS libjpeg_static
++    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++  )
++endif()
++
++# Configure and install pkg-config and libtool files
++if(BUILD_STATIC_LIBS OR BUILD_SHARED_LIBS)
++  # Compute the la file's weird version number
++  math(EXPR JPEG_CONF_VER_MAJOR "${PROJECT_VERSION_MAJOR} + ${PROJECT_VERSION_MINOR}")
++  set(JPEG_LIB_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
++  set(JPEG_LIB_VERSION_MINOR ${PROJECT_VERSION_MINOR})
++
++  # Configure and install
++  configure_file(libjpeg.pc.cmakein libjpeg.pc @ONLY)
++  install(FILES
++    ${CMAKE_CURRENT_BINARY_DIR}/libjpeg.pc
++    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
++  )
++endif()
++
+diff -ruN jpeg-9f/ConfigureJConfig.cmake jpeg-9f-new/ConfigureJConfig.cmake
+--- jpeg-9f/ConfigureJConfig.cmake	1970-01-01 10:00:00.000000000 +1000
++++ jpeg-9f-new/ConfigureJConfig.cmake	2024-03-23 21:09:37.223882900 +1000
+@@ -0,0 +1,95 @@
++include(CheckIncludeFile)
++include(CheckSymbolExists)
++include(CheckTypeSize)
++
++# Define this if your system has an ANSI-conforming <stddef.h> file.
++check_include_file(stddef.h HAVE_STDDEF_H)
++
++# Define this if your system has an ANSI-conforming <stdlib.h> file.
++check_include_file(stdlib.h HAVE_STDLIB_H)
++
++# Does your compiler support function prototypes?
++# (If not, you also need to use ansi2knr, see install.txt)
++set(HAVE_PROTOTYPES true CACHE BOOL "Does your compiler support function prototypes?")
++
++# Does your compiler support the declaration "unsigned char" ?
++# How about "unsigned short" ?
++check_type_size("unsigned char" UNSIGNED_CHAR LANGUAGE C)
++check_type_size("unsigned short" UNSIGNED_SHORT LANGUAGE C)
++
++# Define "void" as "char" if your compiler doesn't know about type void.
++# NOTE: be sure to define void such that "void *" represents the most general
++# pointer type, e.g., that returned by malloc().
++# NOT IMPLEMENTED: Modify in jconfig.h.in #
++
++# Define "const" as empty if your compiler doesn't know the "const" keyword.
++# NOT IMPLEMENTED: Modify in jconfig.h.in #
++
++# Define this if an ordinary "char" type is unsigned.
++# If you're not sure, leaving it undefined will work at some cost in speed.
++# If you defined HAVE_UNSIGNED_CHAR then the speed difference is minimal.
++set(CHAR_IS_UNSIGNED false CACHE BOOL "char type is unsigned")
++
++# Define this if your system does not have an ANSI/SysV <string.h>,
++# but does have a BSD-style <strings.h>.
++set(NEED_BSD_STRINGS false CACHE BOOL "Use BSD <strings.h>. Use only if system lacks ANSI/SysV <strings.h>")
++
++# Define this if your system does not provide typedef size_t in any of the
++# ANSI-standard places (stddef.h, stdlib.h, or stdio.h), but places it in
++# <sys/types.h> instead.
++set(NEED_SYS_TYPES_H false CACHE BOOL "size_t defined in <sys/types.h>")
++
++# For 80x86 machines, you need to define NEED_FAR_POINTERS,
++# unless you are using a large-data memory model or 80386 flat-memory mode.
++# On less brain-damaged CPUs this symbol must not be defined.
++# (Defining this symbol causes large data structures to be referenced through
++# "far" pointers and to be allocated with a special version of malloc.)
++set(NEED_FAR_POINTERS false CACHE BOOL "Reference large data structures through 'far' pointers allocated with a special version of malloc")
++
++# Define this if your linker needs global names to be unique in less
++# than the first 15 characters.
++set(NEED_SHORT_EXTERNAL_NAMES false CACHE BOOL "Global names must be unique in less than the first 15 characters")
++
++# Although a real ANSI C compiler can deal perfectly well with pointers to
++# unspecified structures (see "incomplete types" in the spec), a few pre-ANSI
++# and pseudo-ANSI compilers get confused.  To keep one of these bozos happy,
++# define INCOMPLETE_TYPES_BROKEN.  This is not recommended unless you
++# actually get "missing structure definition" warnings or errors while
++# compiling the JPEG code.
++set(INCOMPLETE_TYPES_BROKEN false CACHE BOOL "Disable pointers to unspecified structures")
++
++# Define "boolean" as unsigned char, not enum, on Windows systems.
++# NOT IMPLEMENTED: Modify in jconfig.h.in #
++
++# The following options affect code selection within the JPEG library,
++# but they don't need to be visible to applications using the library.
++# To minimize application namespace pollution, the symbols won't be
++# defined unless JPEG_INTERNALS has been defined.
++#
++
++# Define this if your compiler implements ">>" on signed values as a logical
++# (unsigned) shift; leave it undefined if ">>" is a signed (arithmetic) shift,
++# which is the normal and rational definition.
++set(RIGHT_SHIFT_IS_UNSIGNED false CACHE BOOL "Compiler implements >> on signed values as a logical (unsigned) shift")
++
++# The remaining options do not affect the JPEG library proper,
++# but only the sample applications cjpeg/djpeg (see cjpeg.c, djpeg.c).
++# Other applications can ignore these.
++#
++
++mark_as_advanced(FORCE
++  HAVE_PROTOTYPES
++  HAVE_UNSIGNED_CHAR
++  HAVE_UNSIGNED_SHORT
++  CHAR_IS_UNSIGNED
++  HAVE_STDDEF_H
++  HAVE_STDLIB_H
++  NEED_BSD_STRINGS
++  NEED_SYS_TYPES_H
++  NEED_FAR_POINTERS
++  NEED_SHORT_EXTERNAL_NAMES
++  INCOMPLETE_TYPES_BROKEN
++  RIGHT_SHIFT_IS_UNSIGNED
++)
++
++configure_file(jconfig.h.in ${CMAKE_CURRENT_SOURCE_DIR}/jconfig.h)
+diff -ruN jpeg-9f/jconfig.h.in jpeg-9f-new/jconfig.h.in
+--- jpeg-9f/jconfig.h.in	1970-01-01 10:00:00.000000000 +1000
++++ jpeg-9f-new/jconfig.h.in	2024-03-23 21:06:05.204994600 +1000
+@@ -0,0 +1,173 @@
++/*
++ * jconfig.h.in
++ *
++ * Copyright (C) 1991-1994, Thomas G. Lane.
++ * Modified 2009-2013 by Guido Vollbeding.
++ * This file is part of the Independent JPEG Group's software.
++ * For conditions of distribution and use, see the accompanying README file.
++ *
++ * This file is a modification of jconfig.txt from libjpeg. In addition to
++ * documenting the configuration options that are required to customize the
++ * JPEG software for a particular system, it is used by jpeg-cmake to configure
++ * jconfig.h
++ */
++
++
++/*
++ * These symbols indicate the properties of your machine or compiler.
++ * #define the symbol if yes, #undef it if no.
++ */
++
++/* Does your compiler support function prototypes?
++ * (If not, you also need to use ansi2knr, see install.txt)
++ */
++#cmakedefine HAVE_PROTOTYPES
++
++/* Does your compiler support the declaration "unsigned char" ?
++ * How about "unsigned short" ?
++ */
++#cmakedefine HAVE_UNSIGNED_CHAR
++#cmakedefine HAVE_UNSIGNED_SHORT
++
++/* Define "void" as "char" if your compiler doesn't know about type void.
++ * NOTE: be sure to define void such that "void *" represents the most general
++ * pointer type, e.g., that returned by malloc().
++ */
++/* #define void char */
++
++/* Define "const" as empty if your compiler doesn't know the "const" keyword.
++ */
++/* #define const */
++
++/* Define this if an ordinary "char" type is unsigned.
++ * If you're not sure, leaving it undefined will work at some cost in speed.
++ * If you defined HAVE_UNSIGNED_CHAR then the speed difference is minimal.
++ */
++#cmakedefine CHAR_IS_UNSIGNED
++
++/* Define this if your system has an ANSI-conforming <stddef.h> file.
++ */
++#cmakedefine HAVE_STDDEF_H
++
++/* Define this if your system has an ANSI-conforming <stdlib.h> file.
++ */
++#cmakedefine HAVE_STDLIB_H
++
++/* Define this if your system does not have an ANSI/SysV <string.h>,
++ * but does have a BSD-style <strings.h>.
++ */
++#cmakedefine NEED_BSD_STRINGS
++
++/* Define this if your system does not provide typedef size_t in any of the
++ * ANSI-standard places (stddef.h, stdlib.h, or stdio.h), but places it in
++ * <sys/types.h> instead.
++ */
++#cmakedefine NEED_SYS_TYPES_H
++
++/* For 80x86 machines, you need to define NEED_FAR_POINTERS,
++ * unless you are using a large-data memory model or 80386 flat-memory mode.
++ * On less brain-damaged CPUs this symbol must not be defined.
++ * (Defining this symbol causes large data structures to be referenced through
++ * "far" pointers and to be allocated with a special version of malloc.)
++ */
++#cmakedefine NEED_FAR_POINTERS
++
++/* Define this if your linker needs global names to be unique in less
++ * than the first 15 characters.
++ */
++#cmakedefine NEED_SHORT_EXTERNAL_NAMES
++
++/* Although a real ANSI C compiler can deal perfectly well with pointers to
++ * unspecified structures (see "incomplete types" in the spec), a few pre-ANSI
++ * and pseudo-ANSI compilers get confused.  To keep one of these bozos happy,
++ * define INCOMPLETE_TYPES_BROKEN.  This is not recommended unless you
++ * actually get "missing structure definition" warnings or errors while
++ * compiling the JPEG code.
++ */
++#cmakedefine INCOMPLETE_TYPES_BROKEN
++
++/* Define "boolean" as unsigned char, not enum, on Windows systems.
++ */
++#ifdef _WIN32
++#ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
++typedef unsigned char boolean;
++#endif
++#ifndef FALSE			/* in case these macros already exist */
++#define FALSE	0		/* values of boolean */
++#endif
++#ifndef TRUE
++#define TRUE	1
++#endif
++#define HAVE_BOOLEAN		/* prevent jmorecfg.h from redefining it */
++#endif
++
++
++/*
++ * The following options affect code selection within the JPEG library,
++ * but they don't need to be visible to applications using the library.
++ * To minimize application namespace pollution, the symbols won't be
++ * defined unless JPEG_INTERNALS has been defined.
++ */
++
++#ifdef JPEG_INTERNALS
++
++/* Define this if your compiler implements ">>" on signed values as a logical
++ * (unsigned) shift; leave it undefined if ">>" is a signed (arithmetic) shift,
++ * which is the normal and rational definition.
++ */
++#cmakedefine RIGHT_SHIFT_IS_UNSIGNED
++
++
++#endif /* JPEG_INTERNALS */
++
++
++/*
++ * The remaining options do not affect the JPEG library proper,
++ * but only the sample applications cjpeg/djpeg (see cjpeg.c, djpeg.c).
++ * Other applications can ignore these.
++ */
++
++#ifdef JPEG_CJPEG_DJPEG
++
++/* These defines indicate which image (non-JPEG) file formats are allowed. */
++
++#cmakedefine BMP_SUPPORTED		/* BMP image file format */
++#cmakedefine GIF_SUPPORTED		/* GIF image file format */
++#cmakedefine PPM_SUPPORTED		/* PBMPLUS PPM/PGM image file format */
++#cmakedefine RLE_SUPPORTED		/* Utah RLE image file format */
++#cmakedefine TARGA_SUPPORTED		/* Targa image file format */
++
++/*
++ * This defines the default output format for djpeg. Must be one of the FMT_*
++ * enums found in djpeg.c or djpegalt.c
++ */
++#cmakedefine DEFAULT_FMT @DEFAULT_FMT@
++
++/* Define this if you want to name both input and output files on the command
++ * line, rather than using stdout and optionally stdin.  You MUST do this if
++ * your system can't cope with binary I/O to stdin/stdout.  See comments at
++ * head of cjpeg.c or djpeg.c.
++ */
++#cmakedefine TWO_FILE_COMMANDLINE
++
++/* Define this if your system needs explicit cleanup of temporary files.
++ * This is crucial under MS-DOS, where the temporary "files" may be areas
++ * of extended memory; on most other systems it's not as important.
++ */
++#cmakedefine NEED_SIGNAL_CATCHER
++
++/* By default, we open image files with fopen(...,"rb") or fopen(...,"wb").
++ * This is necessary on systems that distinguish text files from binary files,
++ * and is harmless on most systems that don't.  If you have one of the rare
++ * systems that complains about the "b" spec, define this symbol.
++ */
++#cmakedefine DONT_USE_B_MODE
++
++/* Define this if you want percent-done progress reports from cjpeg/djpeg.
++ */
++#cmakedefine PROGRESS_REPORT
++
++/* Define this if you *don't* want overwrite confirmation */
++#cmakedefine NO_OVERWRITE_CHECK
++
++#endif /* JPEG_CJPEG_DJPEG */
+diff -ruN jpeg-9f/jmorecfg.h jpeg-9f-new/jmorecfg.h
+--- jpeg-9f/jmorecfg.h	2022-03-31 19:41:26.000000000 +1000
++++ jpeg-9f-new/jmorecfg.h	2024-03-23 21:20:25.514814400 +1000
+@@ -244,8 +244,13 @@
+ #define LOCAL(type)		static type
+ /* a function referenced thru EXTERNs: */
+ #define GLOBAL(type)		type
++
+ /* a reference to a GLOBAL function: */
+-#define EXTERN(type)		extern type
++#ifdef COMPILING_LIBJPEG
++#define EXTERN(type)		__declspec(dllexport) extern type
++#else
++#define EXTERN(type)		__declspec(dllimport) extern type
++#endif
+ 
+ 
+ /* This macro is used to declare a "method", that is, a function pointer.
+diff -ruN jpeg-9f/libjpeg.pc.cmakein jpeg-9f-new/libjpeg.pc.cmakein
+--- jpeg-9f/libjpeg.pc.cmakein	1970-01-01 10:00:00.000000000 +1000
++++ jpeg-9f-new/libjpeg.pc.cmakein	2024-03-23 21:06:13.922695100 +1000
+@@ -0,0 +1,10 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=${prefix}
++libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
++includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
++
++Name: libjpeg
++Description: Reads and writes JPEG files
++Version: @JPEG_LIB_VERSION_MAJOR@.@JPEG_LIB_VERSION_MINOR@.0
++Libs: -L${libdir} -ljpeg
++Cflags: -I${includedir}
