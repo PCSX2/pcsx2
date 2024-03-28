@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContext.h"
@@ -17,6 +17,7 @@
 #endif
 
 #include "common/Console.h"
+#include "common/Error.h"
 
 #include "glad.h"
 
@@ -27,7 +28,7 @@ GLContext::GLContext(const WindowInfo& wi)
 
 GLContext::~GLContext() = default;
 
-std::unique_ptr<GLContext> GLContext::Create(const WindowInfo& wi)
+std::unique_ptr<GLContext> GLContext::Create(const WindowInfo& wi, Error* error)
 {
 	// We need at least GL3.3.
 	static constexpr Version vlist[] = {
@@ -42,6 +43,7 @@ std::unique_ptr<GLContext> GLContext::Create(const WindowInfo& wi)
 	};
 
 	std::unique_ptr<GLContext> context;
+	Error local_error;
 #if defined(_WIN32)
 	context = GLContextWGL::Create(wi, vlist);
 #elif defined(__APPLE__)
@@ -49,17 +51,20 @@ std::unique_ptr<GLContext> GLContext::Create(const WindowInfo& wi)
 #else // Linux
 #if defined(X11_API)
 	if (wi.type == WindowInfo::Type::X11)
-		context = GLContextEGLX11::Create(wi, vlist);
+		context = GLContextEGLX11::Create(wi, vlist, error ? error : &local_error);
 #endif
 
 #if defined(WAYLAND_API)
 	if (wi.type == WindowInfo::Type::Wayland)
-		context = GLContextEGLWayland::Create(wi, vlist);
+		context = GLContextEGLWayland::Create(wi, vlist, error ? error : &local_error);
 #endif
 #endif
 
 	if (!context)
+	{
+		Console.ErrorFmt("Failed to create GL context: {}", (error ? error : &local_error)->GetDescription());
 		return nullptr;
+	}
 
 	// NOTE: Not thread-safe. But this is okay, since we're not going to be creating more than one context at a time.
 	static GLContext* context_being_created;

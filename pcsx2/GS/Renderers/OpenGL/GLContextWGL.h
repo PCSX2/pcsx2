@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -25,6 +25,7 @@ public:
 	bool ChangeSurface(const WindowInfo& new_wi) override;
 	void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 	bool SwapBuffers() override;
+	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
 	bool SetSwapInterval(s32 interval) override;

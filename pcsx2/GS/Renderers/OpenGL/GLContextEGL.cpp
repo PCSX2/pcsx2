@@ -3,7 +3,9 @@
 
 #include "GS/Renderers/OpenGL/GLContextEGL.h"
 
+#include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/Error.h"
 
 #include <algorithm>
 #include <cstring>
@@ -21,30 +23,32 @@ GLContextEGL::~GLContextEGL()
 	DestroyContext();
 }
 
-std::unique_ptr<GLContext> GLContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
+std::unique_ptr<GLContext> GLContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error)
 {
 	std::unique_ptr<GLContextEGL> context = std::make_unique<GLContextEGL>(wi);
-	if (!context->Initialize(versions_to_try))
+	if (!context->Initialize(versions_to_try, error))
 		return nullptr;
 
 	return context;
 }
 
-bool GLContextEGL::Initialize(std::span<const Version> versions_to_try)
+bool GLContextEGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
 	if (!gladLoadEGL())
 	{
-		Console.Error("Loading GLAD EGL functions failed");
+		Error::SetStringView(error, "Loading GLAD EGL functions failed");
 		return false;
 	}
 
-	if (!SetDisplay())
+	m_display = GetPlatformDisplay(nullptr, error);
+	if (m_display == EGL_NO_DISPLAY)
 		return false;
 
 	int egl_major, egl_minor;
 	if (!eglInitialize(m_display, &egl_major, &egl_minor))
 	{
-		Console.Error("eglInitialize() failed: %d", eglGetError());
+		const int gerror = static_cast<int>(eglGetError());
+		Error::SetStringFmt(error, "eglInitialize() failed: {} (0x{:X})", gerror, gerror);
 		return false;
 	}
 	Console.WriteLn("EGL Version: %d.%d", egl_major, egl_minor);
@@ -61,19 +65,55 @@ bool GLContextEGL::Initialize(std::span<const Version> versions_to_try)
 			return true;
 	}
 
+	Error::SetStringView(error, "Failed to create any context versions");
 	return false;
 }
 
-bool GLContextEGL::SetDisplay()
+bool GLContextEGL::CheckExtension(const char* name, const char* alt_name, Error* error) const
 {
-	m_display = eglGetDisplay(static_cast<EGLNativeDisplayType>(m_wi.display_connection));
-	if (!m_display)
+	const char* client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (!client_extensions)
 	{
-		Console.Error("eglGetDisplay() failed: %d", eglGetError());
+		Error::SetStringView(error, "EGL_EXT_client_extensions is not supported");
+		return false;
+	}
+
+	if (!std::strstr(client_extensions, name) && (!alt_name || !std::strstr(client_extensions, alt_name)))
+	{
+		Error::SetStringFmt(error, "EGL extension {} is not supported", name);
 		return false;
 	}
 
 	return true;
+}
+
+EGLDisplay GLContextEGL::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+{
+	if (!CheckExtension("EGL_MESA_platform_surfaceless", nullptr, error))
+		return EGL_NO_DISPLAY;
+
+	EGLDisplay dpy = eglGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, m_wi.display_connection, attribs);
+	if (dpy == EGL_NO_DISPLAY)
+	{
+		const EGLint err = eglGetError();
+		Error::SetStringFmt(error, "eglGetPlatformDisplay() failed: {} (0x{:X})", err, err);
+	}
+
+	return dpy;
+}
+
+EGLSurface GLContextEGL::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
+{
+	// for surfaceless
+	pxAssert(!m_wi.window_handle);
+	EGLSurface surface = eglCreatePlatformWindowSurface(m_display, config, nullptr, attribs);
+	if (surface == EGL_NO_SURFACE)
+	{
+		const EGLint err = eglGetError();
+		Error::SetStringFmt(error, "eglCreatePlatformWindowSurface() failed: {} (0x{:X})", err, err);
+	}
+
+	return surface;
 }
 
 void* GLContextEGL::GetProcAddress(const char* name)
@@ -133,6 +173,11 @@ bool GLContextEGL::SwapBuffers()
 	return eglSwapBuffers(m_display, m_surface);
 }
 
+bool GLContextEGL::IsCurrent()
+{
+	return m_context && eglGetCurrentContext() == m_context;
+}
+
 bool GLContextEGL::MakeCurrent()
 {
 	if (!eglMakeCurrent(m_display, m_surface, m_surface, m_context))
@@ -166,11 +211,6 @@ std::unique_ptr<GLContext> GLContextEGL::CreateSharedContext(const WindowInfo& w
 	return context;
 }
 
-EGLNativeWindowType GLContextEGL::GetNativeWindow(EGLConfig config)
-{
-	return {};
-}
-
 bool GLContextEGL::CreateSurface()
 {
 	if (m_wi.type == WindowInfo::Type::Surfaceless)
@@ -181,11 +221,11 @@ bool GLContextEGL::CreateSurface()
 			return CreatePBufferSurface();
 	}
 
-	EGLNativeWindowType native_window = GetNativeWindow(m_config);
-	m_surface = eglCreateWindowSurface(m_display, m_config, native_window, nullptr);
-	if (!m_surface)
+	Error error;
+	m_surface = CreatePlatformSurface(m_config, nullptr, &error);
+	if (m_surface == EGL_NO_SURFACE)
 	{
-		Console.Error("eglCreateWindowSurface() failed: %d", eglGetError());
+		Console.ErrorFmt("Failed to create platform surface: {}", error.GetDescription());
 		return false;
 	}
 
@@ -287,19 +327,21 @@ bool GLContextEGL::CreateContext(const Version& version, EGLContext share_contex
 	}
 	configs.resize(static_cast<u32>(num_configs));
 
-	m_config = [this, &configs]() {
-		const auto found_config = std::find_if(std::begin(configs), std::end(configs),
-			[this](const auto& check_config) { return CheckConfigSurfaceFormat(check_config); });
-		if (found_config == std::end(configs))
+	std::optional<EGLConfig> config;
+	for (EGLConfig check_config : configs)
+	{
+		if (CheckConfigSurfaceFormat(check_config))
 		{
-			Console.Warning("No EGL configs matched exactly, using first.");
-			return configs.front();
+			config = check_config;
+			break;
 		}
-		else
-		{
-			return *found_config;
-		}
-	}();
+	}
+
+	if (!config.has_value())
+	{
+		Console.Warning("No EGL configs matched exactly, using first.");
+		config = configs.front();
+	}
 
 	const std::array<int, 5> attribs = {
 		{EGL_CONTEXT_MAJOR_VERSION, version.major_version, EGL_CONTEXT_MINOR_VERSION, version.minor_version, EGL_NONE}};
@@ -310,7 +352,7 @@ bool GLContextEGL::CreateContext(const Version& version, EGLContext share_contex
 		return false;
 	}
 
-	m_context = eglCreateContext(m_display, m_config, share_context, attribs.data());
+	m_context = eglCreateContext(m_display, config.value(), share_context, attribs.data());
 	if (!m_context)
 	{
 		Console.Error("eglCreateContext() failed: %d", eglGetError());
@@ -318,6 +360,8 @@ bool GLContextEGL::CreateContext(const Version& version, EGLContext share_contex
 	}
 
 	Console.WriteLn("eglCreateContext() succeeded for version %u.%u", version.major_version, version.minor_version);
+
+	m_config = config.value();
 	m_version = version;
 	return true;
 }

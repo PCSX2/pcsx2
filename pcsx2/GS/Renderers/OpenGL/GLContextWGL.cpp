@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContextWGL.h"
@@ -118,6 +118,11 @@ void GLContextWGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_
 bool GLContextWGL::SwapBuffers()
 {
 	return ::SwapBuffers(m_dc);
+}
+
+bool GLContextWGL::IsCurrent()
+{
+	return (m_rc && wglGetCurrentContext() == m_rc);
 }
 
 bool GLContextWGL::MakeCurrent()

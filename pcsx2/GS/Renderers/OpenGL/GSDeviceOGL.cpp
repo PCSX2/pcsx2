@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/Renderers/OpenGL/GLContext.h"
@@ -11,6 +11,7 @@
 #include "Host.h"
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/StringUtil.h"
 
 #include "imgui.h"
@@ -171,10 +172,11 @@ bool GSDeviceOGL::Create()
 	if (!AcquireWindow(true))
 		return false;
 
-	m_gl_context = GLContext::Create(m_window_info);
+	Error error;
+	m_gl_context = GLContext::Create(m_window_info, &error);
 	if (!m_gl_context)
 	{
-		Console.Error("Failed to create any GL context");
+		Console.ErrorFmt("Failed to create any GL context: {}", error.GetDescription());
 		return false;
 	}
 

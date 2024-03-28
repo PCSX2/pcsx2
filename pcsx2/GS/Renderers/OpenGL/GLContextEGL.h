@@ -15,22 +15,25 @@ public:
 	GLContextEGL(const WindowInfo& wi);
 	~GLContextEGL() override;
 
-	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
+	static std::unique_ptr<GLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
 	void* GetProcAddress(const char* name) override;
 	virtual bool ChangeSurface(const WindowInfo& new_wi) override;
 	virtual void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 	bool SwapBuffers() override;
+	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
 	bool SetSwapInterval(s32 interval) override;
 	virtual std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi) override;
 
 protected:
-	virtual bool SetDisplay();
-	virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
+	virtual EGLDisplay GetPlatformDisplay(const EGLAttrib* attribs, Error* error);
+	virtual EGLSurface CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error);
 
-	bool Initialize(std::span<const Version> versions_to_try);
+	bool CheckExtension(const char* name, const char* alt_name, Error* error) const;
+
+	bool Initialize(std::span<const Version> versions_to_try, Error* error);
 	bool CreateDisplay();
 	bool CreateContext(const Version& version, EGLContext share_context);
 	bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
