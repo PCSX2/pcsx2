@@ -186,7 +186,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 
 			GIFRegTEX0 TEX0 = context->GetSizeFixedTEX0(vt.m_min.t.xyxy(vt.m_max.t), vt.IsLinear(), mipmap);
 
-			const GSVector4i r = hw.GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true).coverage;
+			const GSVector4i r = hw.GetTextureMinMax(TEX0, context->CLAMP, gd.sel.ltf, true, hw.m_index.tail < 3).coverage;
 
 			if (!hw.m_sw_texture[0])
 				hw.m_sw_texture[0] = std::make_unique<GSTextureCacheSW::Texture>(0, TEX0, env.TEXA);
@@ -287,7 +287,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 					else
 						hw.m_sw_texture[i]->Reset(gd.sel.tw + 3, MIP_TEX0, env.TEXA);
 
-					GSVector4i r = hw.GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true).coverage;
+					GSVector4i r = hw.GetTextureMinMax(MIP_TEX0, MIP_CLAMP, gd.sel.ltf, true, hw.m_index.tail < 3).coverage;
 					hw.m_sw_texture[i]->Update(r);
 					gd.tex[i] = hw.m_sw_texture[i]->m_buff;
 				}
