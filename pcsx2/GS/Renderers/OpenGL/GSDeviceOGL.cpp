@@ -2528,10 +2528,17 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(3, primid_texture);
 	}
 
-	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
-		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
-		s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
-		config.blend.constant_enable, config.blend.constant);
+	if (config.blend.IsEffective(config.colormask))
+	{
+		OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+			s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+			s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
+			config.blend.constant_enable, config.blend.constant);
+	}
+	else
+	{
+		OMSetBlendState();
+	}
 
 	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
 	GSTexture* draw_rt = hdr_rt ? hdr_rt : config.rt;
@@ -2573,6 +2580,17 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		psel.ps = config.alpha_second_pass.ps;
 		SetupPipeline(psel);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
+		if (config.blend.IsEffective(config.alpha_second_pass.colormask))
+		{
+			OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+				s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+				s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
+				config.blend.constant_enable, config.blend.constant);
+		}
+		else
+		{
+			OMSetBlendState();
+		}
 		SetupOM(config.alpha_second_pass.depth);
 		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 	}
