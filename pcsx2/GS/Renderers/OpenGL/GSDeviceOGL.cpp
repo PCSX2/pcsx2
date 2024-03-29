@@ -733,7 +733,6 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	m_features.bptc_textures =
 		GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
 	m_features.prefer_new_textures = false;
-	m_features.dual_source_blend = true;
 	m_features.clip_control = GLAD_GL_ARB_clip_control;
 	if (!m_features.clip_control)
 		Host::AddOSDMessage(
