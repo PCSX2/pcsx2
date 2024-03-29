@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GS.h"
@@ -14,6 +14,7 @@
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
+#include "common/Error.h"
 #include "common/HostSys.h"
 #include "common/ScopedGuard.h"
 #include "common/SmallString.h"
@@ -855,9 +856,19 @@ bool GSDevice12::CreateSwapChain()
 			Console.Warning("Failed to create windowed swap chain.");
 	}
 
-	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
-	if (FAILED(hr))
-		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
+	// MWA needs to be called on the correct factory.
+	wil::com_ptr_nothrow<IDXGIFactory> swap_chain_factory;
+	hr = m_swap_chain->GetParent(IID_PPV_ARGS(swap_chain_factory.put()));
+	if (SUCCEEDED(hr))
+	{
+		hr = swap_chain_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+		if (FAILED(hr))
+			Console.ErrorFmt("MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
+	}
+	else
+	{
+		Console.ErrorFmt("GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
+	}
 
 	if (!CreateSwapChainRTV())
 	{
