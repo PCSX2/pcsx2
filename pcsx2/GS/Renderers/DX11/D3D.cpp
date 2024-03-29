@@ -359,6 +359,7 @@ GSRendererType D3D::GetPreferredRenderer()
 		static const D3D_FEATURE_LEVEL check[] = {
 			D3D_FEATURE_LEVEL_12_0,
 			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_0,
 		};
 
 		D3D_FEATURE_LEVEL feature_level;
@@ -484,6 +485,13 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEAT
 	const char* target;
 	switch (feature_level)
 	{
+		case D3D_FEATURE_LEVEL_10_0:
+		{
+			static constexpr std::array<const char*, 4> targets = {{"vs_4_0", "ps_4_0", "cs_4_0"}};
+			target = targets[static_cast<int>(type)];
+		}
+		break;
+
 		case D3D_FEATURE_LEVEL_11_0:
 		{
 			static constexpr std::array<const char*, 4> targets = {{"vs_5_0", "ps_5_0", "cs_5_0"}};
