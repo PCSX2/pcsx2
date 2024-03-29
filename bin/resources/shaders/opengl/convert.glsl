@@ -80,11 +80,7 @@ void ps_convert_rgba8_16bits()
 void ps_convert_float32_32bits()
 {
 	// Convert a GL_FLOAT32 depth texture into a 32 bits UINT texture
-#if HAS_CLIP_CONTROL
 	SV_Target1 = uint(exp2(32.0f) * sample_c().r);
-#else
-	SV_Target1 = uint(exp2(24.0f) * sample_c().r);
-#endif
 }
 #endif
 
@@ -92,11 +88,7 @@ void ps_convert_float32_32bits()
 void ps_convert_float32_rgba8()
 {
 	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
-#if HAS_CLIP_CONTROL
 	uint d = uint(sample_c().r * exp2(32.0f));
-#else
-	uint d = uint(sample_c().r * exp2(24.0f));
-#endif
 	SV_Target0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24))) / vec4(255.0);
 }
 #endif
@@ -105,11 +97,7 @@ void ps_convert_float32_rgba8()
 void ps_convert_float16_rgb5a1()
 {
 	// Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-#if HAS_CLIP_CONTROL
 	uint d = uint(sample_c().r * exp2(32.0f));
-#else
-	uint d = uint(sample_c().r * exp2(24.0f));
-#endif
 	SV_Target0 = vec4(uvec4(d << 3, d >> 2, d >> 7, d >> 8) & uvec4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
 }
 #endif
@@ -117,41 +105,25 @@ void ps_convert_float16_rgb5a1()
 float rgba8_to_depth32(vec4 unorm)
 {
 	uvec4 c = uvec4(unorm * vec4(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
-#else
-	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-24.0f);
-#endif
 }
 
 float rgba8_to_depth24(vec4 unorm)
 {
 	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
-#else
-	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-24.0f);
-#endif
 }
 
 float rgba8_to_depth16(vec4 unorm)
 {
 	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(c.r | (c.g << 8)) * exp2(-32.0f);
-#else
-	return float(c.r | (c.g << 8)) * exp2(-24.0f);
-#endif
 }
 
 float rgb5a1_to_depth16(vec4 unorm)
 {
 	uvec4 c = uvec4(unorm * vec4(255.5f));
-#if HAS_CLIP_CONTROL
 	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
-#else
-	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-24.0f);
-#endif
 }
 
 #ifdef ps_convert_rgba8_float32

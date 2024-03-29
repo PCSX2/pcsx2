@@ -2795,7 +2795,7 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 
 float GSTextureCache::ConvertColorToDepth(u32 c, ShaderConvert convert)
 {
-	const float mult = std::exp2(g_gs_device->Features().clip_control ? -32.0f : -24.0f);
+	const float mult = std::exp2(-32.0f);
 	switch (convert)
 	{
 		case ShaderConvert::RGB5A1_TO_FLOAT16:
@@ -2817,7 +2817,7 @@ float GSTextureCache::ConvertColorToDepth(u32 c, ShaderConvert convert)
 
 u32 GSTextureCache::ConvertDepthToColor(float d, ShaderConvert convert)
 {
-	const float mult = std::exp2(g_gs_device->Features().clip_control ? 32.0f : 24.0f);
+	const float mult = std::exp2(32.0f);
 	switch (convert)
 	{
 		case ShaderConvert::FLOAT16_TO_RGB5A1:
