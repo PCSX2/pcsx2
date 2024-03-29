@@ -1125,7 +1125,7 @@ void ps_main()
 	#else
 		SV_Target0.rgb = C.rgb / 255.0f;
 	#endif
-	#if !defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
+	#if !PS_NO_COLOR1
 		SV_Target1 = alpha_blend;
 	#endif
 #endif

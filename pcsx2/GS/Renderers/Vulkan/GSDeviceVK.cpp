@@ -2669,12 +2669,8 @@ bool GSDeviceVK::CheckFeatures()
 
 	m_features.prefer_new_textures = true;
 	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
-	m_features.dual_source_blend = m_device_features.dualSrcBlend;
 	m_features.clip_control = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
-
-	if (!m_features.dual_source_blend)
-		Console.Warning("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
 	if (!m_features.texture_barrier)
 		Console.Warning("Texture buffers are disabled. This may break some graphical effects.");
@@ -2705,7 +2701,6 @@ bool GSDeviceVK::CheckFeatures()
 
 	DevCon.WriteLn("Optional features:%s%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
-		m_features.dual_source_blend ? " dual_source_blend" : "",
 		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "");
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "vertex expanding",
@@ -3661,8 +3656,6 @@ static void AddShaderHeader(std::stringstream& ss)
 
 	if (!features.texture_barrier)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
-	if (!features.dual_source_blend)
-		ss << "#define DISABLE_DUAL_SOURCE 1\n";
 	if (features.texture_barrier && dev->UseFeedbackLoopLayout())
 		ss << "#define HAS_FEEDBACK_LOOP_LAYOUT 1\n";
 }
