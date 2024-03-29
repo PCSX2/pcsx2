@@ -1298,10 +1298,14 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 			pxAssert(0);
 	}
 
-	// Select the entry point ie the main function
-	header += "#define ";
-	header += entry;
-	header += " main\n";
+	// Don't remove this, the recursive macro breaks some Intel drivers.
+	if (entry != "main")
+	{
+		// Select the entry point ie the main function
+		header += "#define ";
+		header += entry;
+		header += " main\n";
+	}
 
 	header += macro;
 
