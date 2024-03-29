@@ -15,6 +15,7 @@
 #include "common/StringUtil.h"
 
 #include "imgui.h"
+#include "IconsFontAwesome5.h"
 
 #include <bit>
 #include <fstream>
@@ -94,8 +95,10 @@ bool GSDevice11::Create()
 
 	wil::com_ptr_nothrow<IDXGIAdapter1> dxgi_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
 
-	static constexpr std::array<D3D_FEATURE_LEVEL, 1> requested_feature_levels = {
-		{D3D_FEATURE_LEVEL_11_0}};
+	static constexpr std::array<D3D_FEATURE_LEVEL, 2> requested_feature_levels = {{
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_0,
+	}};
 
 	wil::com_ptr_nothrow<ID3D11Device> temp_dev;
 	wil::com_ptr_nothrow<ID3D11DeviceContext> temp_ctx;
@@ -103,13 +106,13 @@ bool GSDevice11::Create()
 	HRESULT hr =
 		D3D11CreateDevice(dxgi_adapter.get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE,
 			nullptr, create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
-			D3D11_SDK_VERSION, temp_dev.put(), nullptr, temp_ctx.put());
+			D3D11_SDK_VERSION, temp_dev.put(), &m_feature_level, temp_ctx.put());
 
 	if (FAILED(hr) || !temp_dev.try_query_to(&m_dev) || !temp_ctx.try_query_to(&m_ctx))
 	{
 		Host::ReportErrorAsync("GS",
 			fmt::format(
-				"Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 11.0 is required.",
+				"Failed to create D3D device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.",
 				hr));
 		return false;
 	}
@@ -165,7 +168,7 @@ bool GSDevice11::Create()
 	if (GSConfig.UseDebugDevice)
 		m_annotation = m_ctx.try_query<ID3DUserDefinedAnnotation>();
 
-	if (!m_shader_cache.Open(m_dev->GetFeatureLevel(), GSConfig.UseDebugDevice))
+	if (!m_shader_cache.Open(m_feature_level, GSConfig.UseDebugDevice))
 		Console.Warning("Shader cache failed to open.");
 
 	{
@@ -496,11 +499,19 @@ bool GSDevice11::Create()
 			return false;
 	}
 
-	if (!CreateCASShaders())
+	if (m_features.cas_sharpening && !CreateCASShaders())
 		return false;
 
 	if (!CreateImGuiResources())
 		return false;
+
+	if (m_feature_level < D3D_FEATURE_LEVEL_11_0)
+	{
+		Host::AddIconOSDMessage("d3d11_feature_level_warning", ICON_FA_EXCLAMATION_TRIANGLE,
+			TRANSLATE_SV("GS", "The Direct3D renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.\n"
+							   "Do not request support, please upgrade your hardware/drivers first."),
+			Host::OSD_WARNING_DURATION);
+	}
 
 	return true;
 }
@@ -568,8 +579,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 
 	m_features.bptc_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC7_UNORM);
 
-	const D3D_FEATURE_LEVEL feature_level = m_dev->GetFeatureLevel();
-	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && feature_level >= D3D_FEATURE_LEVEL_11_0);
+	m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && m_feature_level >= D3D_FEATURE_LEVEL_11_0);
+	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 
 	// NVIDIA GPUs prior to Kepler appear to have broken vertex shader buffer loading.
 	if (m_features.vs_expand && (D3D::GetVendorID(adapter) == D3D::VendorID::Nvidia))
@@ -584,6 +595,13 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 			m_features.vs_expand = false;
 		}
 	}
+}
+
+int GSDevice11::GetMaxTextureSize() const
+{
+	return (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
+			   D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION :
+			   D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 }
 
 bool GSDevice11::HasSurface() const
@@ -823,15 +841,14 @@ std::string GSDevice11::GetDriverInfo() const
 {
 	std::string ret = "Unknown Feature Level";
 
-	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
+	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 2> feature_level_names = {{
+		{D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
 		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
-		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
 	}};
 
-	const D3D_FEATURE_LEVEL fl = m_dev->GetFeatureLevel();
 	for (size_t i = 0; i < std::size(feature_level_names); i++)
 	{
-		if (fl == std::get<0>(feature_level_names[i]))
+		if (m_feature_level == std::get<0>(feature_level_names[i]))
 		{
 			ret = std::get<1>(feature_level_names[i]);
 			break;
@@ -1155,8 +1172,8 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	D3D11_TEXTURE2D_DESC desc = {};
 
 	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
-	desc.Width = std::clamp(width, 1, D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION);
-	desc.Height = std::clamp(height, 1, D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION);
+	desc.Width = std::clamp(width, 1, GetMaxTextureSize());
+	desc.Height = std::clamp(height, 1, GetMaxTextureSize());
 	desc.Format = GSTexture11::GetDXGIFormat(format);
 	desc.MipLevels = levels;
 	desc.ArraySize = 1;
@@ -1586,7 +1603,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		}
 
 		ShaderMacro sm;
-		sm.AddMacro("FXAA_HLSL_5", "1");
+		sm.AddMacro("FXAA_HLSL", "1");
 		m_fxaa_ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm.GetPtr(), "main");
 		if (!m_fxaa_ps)
 			return;
