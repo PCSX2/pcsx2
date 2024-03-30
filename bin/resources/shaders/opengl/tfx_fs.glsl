@@ -678,7 +678,7 @@ vec4 ps_color()
 	vec4 T = sample_color(st);
 #endif
 
-	#if PS_SHUFFLE && !PS_READ16_SRC && !PS_SHUFFLE_SAME
+	#if PS_SHUFFLE && !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 		uvec4 denorm_c_before = uvec4(T);
 		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			T.r = float((denorm_c_before.b << 3) & 0xF8u);
@@ -1061,7 +1061,7 @@ void ps_main()
 
 
 #if PS_SHUFFLE
-	#if !PS_READ16_SRC && !PS_SHUFFLE_SAME
+	#if !PS_READ16_SRC && !PS_SHUFFLE_SAME && !(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 		uvec4 denorm_c_after = uvec4(C);
 		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			C.b = float(((denorm_c_after.r >> 3) & 0x1Fu) | ((denorm_c_after.g << 2) & 0xE0u));
