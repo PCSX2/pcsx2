@@ -183,8 +183,14 @@ public:
 		DoArray(data->data(), data->size());
 	}
 
-	template <typename T, size_t N>
-	void Do(HeapArray<T, N>* data)
+	template <typename T, size_t N, size_t A>
+	void Do(FixedHeapArray<T, N, A>* data)
+	{
+		DoArray(data->data(), data->size());
+	}
+
+	template <typename T, size_t A>
+	void Do(DynamicHeapArray<T, A>* data)
 	{
 		DoArray(data->data(), data->size());
 	}
