@@ -49,7 +49,6 @@ declare -a PCSX2_PACKAGES=(
 	"libgtk-3-dev"
 	"libharfbuzz-dev"
 	"libjpeg-dev"
-	"liblzma-dev"
 	"libpcap0.8-dev"
 	"libpng-dev"
 	"libpulse-dev"
