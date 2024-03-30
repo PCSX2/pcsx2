@@ -2367,7 +2367,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 
 	dst->m_last_draw = GSState::s_n;
 
-	if (dst->m_dirty.empty())
+	if (dst->m_dirty.empty() && (GSUtil::GetChannelMask(TEX0.PSM) & 0x8))
 		dst->m_rt_alpha_scale = true;
 	else
 		dst->m_last_draw -= 1; // If we preload and it needs to decorrect and we couldn't catch it early, we need to make sure it decorrects the data.
