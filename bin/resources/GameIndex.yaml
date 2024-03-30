@@ -3097,9 +3097,12 @@ SCED-51905:
   region: "PAL-E"
 SCED-51922:
   name: "Ghosthunter [Demo]"
-  region: "PAL-G"
+  region: "PAL-M6"
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes sporadic white triangle SPS.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SCED-51935:
   name: "Official PlayStation 2 Magazine Demo 38" # German
   region: "PAL-E-G"
@@ -4792,7 +4795,10 @@ SCES-51463:
   region: "PAL-M6"
   compat: 5
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes sporadic white triangle SPS.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-51480:
   name: "Twisted Metal - Black - Online"
   region: "PAL-M5"
@@ -5041,7 +5047,10 @@ SCES-52156:
   name: "Ghosthunter - Hunter on the spectres"
   region: "PAL-M3"
   clampModes:
-    vuClampMode: 3 # Fixes SPS.
+    vu1ClampMode: 3 # Fixes sporadic white triangle SPS.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-52268:
   name: "SingStar"
   region: "PAL-E"
@@ -5963,6 +5972,8 @@ SCES-54625:
 SCES-54637:
   name: "Gaelic Games - Hurling"
   region: "PAL-E-GA"
+  gsHWFixes:
+    halfPixelOffset: 4 # Fixes offset bloom.
 SCES-54638:
   name: "Gaelic Games - Football 2"
   region: "PAL-E-GA"
@@ -17777,6 +17788,9 @@ SLES-52002:
   region: "PAL-M6"
   speedHacks:
     eeCycleRate: 2 # Fixes hang on opening memory card screen.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52005:
   name: "007 - Everything or Nothing"
   region: "PAL-M5"
@@ -18252,7 +18266,6 @@ SLES-52259:
   name: "Outlaw Volleyball"
   region: "PAL-M3"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes playing field color.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLES-52265:
@@ -20803,7 +20816,6 @@ SLES-53138:
   name: "Outlaw Volleyball Remixed"
   region: "PAL-M4"
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes playing field color.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLES-53139:
@@ -21340,6 +21352,7 @@ SLES-53386:
   region: "PAL-M6"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes offset bloom.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLES-53387:
@@ -39179,6 +39192,9 @@ SLPM-65534:
   region: "NTSC-J"
   speedHacks:
     eeCycleRate: 2 # Fixes hang on opening memory card screen.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65535:
   name: おしえて! ぽぽたん
   name-sort: おしえて! ぽぽたん
@@ -40077,6 +40093,11 @@ SLPM-65701:
   name-sort: ごーすとはんたー
   name-en: "Ghost Hunter"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 3 # Fixes sporadic white triangle SPS.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65702:
   name: コーエー定番シリーズ 三國志戦記
   name-sort: さんごくしせんき [こーえーていばんしりーず]
@@ -58093,6 +58114,9 @@ SLUS-20197:
   roundModes:
     eeRoundMode: 2 # Fixes game board jittering.
     vu0RoundMode: 2 # Fixes Gauntlet Golf drawbridges not operating.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20198:
   name: "FireBlade"
   region: "NTSC-U"
@@ -60929,6 +60953,9 @@ SLUS-20746:
   compat: 5
   speedHacks:
     eeCycleRate: 2 # Fixes hang on opening memory card screen.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20748:
   name: "Super Trucks Racing"
   region: "NTSC-U"
@@ -62325,6 +62352,11 @@ SLUS-20993:
   name: "Ghosthunter"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 3 # Fixes sporadic white triangle SPS.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20994:
   name: "Full Metal Alchemist and The Broken Angel"
   region: "NTSC-U"
@@ -62682,7 +62714,6 @@ SLUS-21049:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 3 # Fixes playing field color.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLUS-21050:
@@ -63825,6 +63856,7 @@ SLUS-21246:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 4 # Fixes offset bloom.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
 SLUS-21247:
@@ -67782,6 +67814,9 @@ SLUS-28039:
   region: "NTSC-U"
   speedHacks:
     eeCycleRate: 2 # Fixes hang on opening memory card screen.
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-28040:
   name: "Transformers [Trade Demo]"
   region: "NTSC-U"
