@@ -5397,7 +5397,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// If we Correct/Decorrect and tex is rt, we will need to update the texture reference
 	const bool req_src_update = tex && rt && tex->m_target && tex->m_target_direct && tex->m_texture == rt->m_texture;
 
-	m_can_correct_alpha = !needs_ad;
+	m_can_correct_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8);
 
 	if (rt)
 	{
@@ -5464,7 +5464,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			}
 		}
 		else if (!rt->m_rt_alpha_scale)
-			m_can_correct_alpha = rt->m_alpha_max <= 128 && !needs_ad;
+			m_can_correct_alpha = rt->m_alpha_max <= 128 && m_can_correct_alpha;
 
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
@@ -6412,7 +6412,8 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 		{
 			const u32 c = GetConstantDirectWriteMemClearColor();
 			u32 clear_c = c;
-			const bool alpha_one_or_less = (c >> 24) <= 0x80;
+			const bool has_alpha = GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp != 24;
+			const bool alpha_one_or_less = has_alpha && (c >> 24) <= 0x80;
 			GL_INS("TryTargetClear(): RT at %x <= %08X", rt->m_TEX0.TBP0, c);
 
 			if (rt->m_rt_alpha_scale || alpha_one_or_less)
@@ -6431,7 +6432,7 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 			g_gs_device->ClearRenderTarget(rt->m_texture, clear_c);
 
-			if (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp != 24)
+			if (has_alpha)
 			{
 				rt->m_alpha_max = c >> 24;
 				rt->m_alpha_min = c >> 24;
