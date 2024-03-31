@@ -151,8 +151,8 @@ public:
 	static void SetCorePaused(bool b) { corePaused = b; };
 
 	// This will have to do until a full fledged debugger host interface is made
-	static void SetUpdateHandler(std::function<void()> f) {cb_bpUpdated_ = f; };
-	static std::function<void()> GetUpdateHandler() { return cb_bpUpdated_; };
+	static void SetUpdateHandler(std::function<void()> f) {cb_bpUpdated_ = std::move(f); };
+	static const std::function<void()>& GetUpdateHandler() { return cb_bpUpdated_; };
 
 private:
 	static size_t FindBreakpoint(BreakPointCpu cpu, u32 addr, bool matchTemp = false, bool temp = false);

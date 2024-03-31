@@ -76,7 +76,11 @@ public slots:
 	{
 		if (!QtHost::IsOnUIThread())
 		{
-			QtHost::RunOnUIThread(CBreakPoints::GetUpdateHandler());
+			const auto& updateHandler = CBreakPoints::GetUpdateHandler();
+			if (updateHandler)
+			{
+				QtHost::RunOnUIThread(updateHandler);
+			}
 			return;
 		}
 

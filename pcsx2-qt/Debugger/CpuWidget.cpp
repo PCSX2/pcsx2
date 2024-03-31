@@ -43,7 +43,7 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	m_ui.setupUi(this);
 
 	connect(g_emu_thread, &EmuThread::onVMPaused, this, &CpuWidget::onVMPaused);
-	connect(g_emu_thread, &EmuThread::onGameChanged, [this](const QString& title) {
+	connect(g_emu_thread, &EmuThread::onGameChanged, this, [this](const QString& title) {
 		if (title.isEmpty())
 			return;
 		// Don't overwrite users BPs/Saved Addresses unless they have a clean state.
