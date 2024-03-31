@@ -7119,11 +7119,10 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 	{
 		rtx(mem, off, block_rect, map.bits, map.pitch, TEXA);
 		tex->Unmap();
+
 		// Temporary, can't read the texture here so we need to come up with a smarter solution, but this will get around it being broken.
 		if (alpha_minmax)
-		{
 			*alpha_minmax = std::make_pair<u8, u8>(0, 255);
-		}
 	}
 	else
 	{
@@ -7134,11 +7133,10 @@ void GSTextureCache::PreloadTexture(const GIFRegTEX0& TEX0, const GIFRegTEXA& TE
 
 		const u8* ptr = buff + (pitch * static_cast<u32>(rect.top - block_rect.top)) +
 						(static_cast<u32>(rect.left - block_rect.left) << (paltex ? 0 : 2));
+
 		if (alpha_minmax)
-		{
-			pxAssert(GSLocalMemory::m_psm[TEX0.PSM].pal == 0);
-			*alpha_minmax = GSGetRGBA8AlphaMinMax(buff, unoffset_rect.width(), unoffset_rect.height(), pitch);
-		}
+			*alpha_minmax = GSGetRGBA8AlphaMinMax(ptr, unoffset_rect.width(), unoffset_rect.height(), pitch);
+
 		tex->Update(unoffset_rect, ptr, pitch, level);
 	}
 }
