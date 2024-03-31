@@ -2104,7 +2104,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// puzzle of pages and can't be expecting to have legitimate data. Tokimeki Memorial 3 reuses a BW 17
 				// buffer as BW 10, and if we don't discard the BW 17 buffer, the BW 10 buffer ends up twice the size.
 				const u32 shuffle_bw = (psm_s.bpp > t_psm_s.bpp) ? (TEX0.TBW / 2u) : (TEX0.TBW * 2u);
-				if (t->m_TEX0.TBW != TEX0.TBW && t->m_TEX0.TBW != shuffle_bw)
+				if (t->m_TEX0.TBW != TEX0.TBW && (t->m_TEX0.TBW != shuffle_bw && !is_shuffle))
 				{
 					// But we'll make sure the whole existing target's actually being drawn over to be safe.
 					const u32 end_block = GSLocalMemory::GetUnwrappedEndBlockAddress(TEX0.TBP0, TEX0.TBW, TEX0.PSM, draw_rect);
