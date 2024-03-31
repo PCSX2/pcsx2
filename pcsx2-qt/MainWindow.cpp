@@ -1913,7 +1913,14 @@ void MainWindow::onVMStopped()
 {
 	s_vm_valid = false;
 	s_vm_paused = false;
-	m_last_fps_status = QString();
+
+	const QString empty_string;
+	m_last_fps_status = empty_string;
+	m_status_renderer_widget->setText(empty_string);
+	m_status_resolution_widget->setText(empty_string);
+	m_status_fps_widget->setText(empty_string);
+	m_status_vps_widget->setText(empty_string);
+
 	updateEmulationActions(false, false, false);
 	updateGameDependentActions();
 	updateWindowTitle();

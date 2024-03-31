@@ -223,7 +223,7 @@ private:
 	float m_last_video_fps = 0.0f;
 	int m_last_internal_width = 0;
 	int m_last_internal_height = 0;
-	GSRendererType m_last_renderer = GSRendererType::Null;
+	GSRendererType m_last_renderer = GSRendererType::Auto;
 };
 
 extern EmuThread* g_emu_thread;

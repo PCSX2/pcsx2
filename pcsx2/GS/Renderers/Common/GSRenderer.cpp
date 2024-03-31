@@ -97,7 +97,10 @@ bool GSRenderer::Merge(int field)
 	PCRTCDisplays.CheckSameSource();
 
 	if (!PCRTCDisplays.PCRTCDisplays[0].enabled && !PCRTCDisplays.PCRTCDisplays[1].enabled)
+	{
+		m_real_size = GSVector2i(0, 0);
 		return false;
+	}
 
 	// Need to do this here, if the user has Anti-Blur enabled, these offsets can get wiped out/changed.
 	const bool game_deinterlacing = (m_regs->DISP[0].DISPFB.DBY != PCRTCDisplays.PCRTCDisplays[0].prevFramebufferReg.DBY) !=
@@ -127,7 +130,10 @@ bool GSRenderer::Merge(int field)
 	}
 
 	if (!tex[0] && !tex[1])
+	{
+		m_real_size = GSVector2i(0, 0);
 		return false;
+	}
 
 	s_n++;
 
