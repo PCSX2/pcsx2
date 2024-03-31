@@ -517,8 +517,7 @@ bool GSDeviceOGL::Create()
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
 	// Change depth convention
-	if (m_features.clip_control)
-		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
 	// HW renderer shader
@@ -671,6 +670,12 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 			"GS", "GL_ARB_copy_image is not supported, this is required for the OpenGL renderer.");
 		return false;
 	}
+	if (!GLAD_GL_VERSION_4_5 && !GLAD_GL_ARB_clip_control)
+	{
+		Host::ReportFormattedErrorAsync(
+			"GS", "GL_ARB_clip_control is not supported, this is required for the OpenGL renderer.");
+		return false;
+	}
 
 	if (!GLAD_GL_ARB_viewport_array)
 	{
@@ -733,11 +738,6 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 	m_features.bptc_textures =
 		GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
 	m_features.prefer_new_textures = false;
-	m_features.dual_source_blend = true;
-	m_features.clip_control = GLAD_GL_ARB_clip_control;
-	if (!m_features.clip_control)
-		Host::AddOSDMessage(
-			"GL_ARB_clip_control is not supported, this will cause rendering issues.", Host::OSD_ERROR_DURATION);
 	m_features.stencil_buffer = true;
 	m_features.test_and_sample_depth = m_features.texture_barrier;
 
@@ -1282,11 +1282,6 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 	else
 		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
 
-	if (m_features.clip_control)
-		header += "#define HAS_CLIP_CONTROL 1\n";
-	else
-		header += "#define HAS_CLIP_CONTROL 0\n";
-
 	// Allow to puts several shader in 1 files
 	switch (type)
 	{
@@ -1303,10 +1298,14 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view& entry, GLenum typ
 			pxAssert(0);
 	}
 
-	// Select the entry point ie the main function
-	header += "#define ";
-	header += entry;
-	header += " main\n";
+	// Don't remove this, the recursive macro breaks some Intel drivers.
+	if (entry != "main")
+	{
+		// Select the entry point ie the main function
+		header += "#define ";
+		header += entry;
+		header += " main\n";
+	}
 
 	header += macro;
 
@@ -2533,10 +2532,17 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(3, primid_texture);
 	}
 
-	OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
-		s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
-		s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
-		config.blend.constant_enable, config.blend.constant);
+	if (config.blend.IsEffective(config.colormask))
+	{
+		OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+			s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+			s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
+			config.blend.constant_enable, config.blend.constant);
+	}
+	else
+	{
+		OMSetBlendState();
+	}
 
 	// avoid changing framebuffer just to switch from rt+depth to rt and vice versa
 	GSTexture* draw_rt = hdr_rt ? hdr_rt : config.rt;
@@ -2578,6 +2584,17 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		psel.ps = config.alpha_second_pass.ps;
 		SetupPipeline(psel);
 		OMSetColorMaskState(config.alpha_second_pass.colormask);
+		if (config.blend.IsEffective(config.alpha_second_pass.colormask))
+		{
+			OMSetBlendState(config.blend.enable, s_gl_blend_factors[config.blend.src_factor],
+				s_gl_blend_factors[config.blend.dst_factor], s_gl_blend_ops[config.blend.op],
+				s_gl_blend_factors[config.blend.src_factor_alpha], s_gl_blend_factors[config.blend.dst_factor_alpha],
+				config.blend.constant_enable, config.blend.constant);
+		}
+		else
+		{
+			OMSetBlendState();
+		}
 		SetupOM(config.alpha_second_pass.depth);
 		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 	}

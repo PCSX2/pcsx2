@@ -1,11 +1,20 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "GSDump.h"
-#include "GSExtra.h"
-#include "GSState.h"
+#include "GS/GSDump.h"
+#include "GS/GSExtra.h"
+#include "GS/GSLzma.h"
+#include "GS/GSState.h"
+
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/HeapArray.h"
+#include "common/ScopedGuard.h"
+
+#include <7zCrc.h>
+#include <XzCrc64.h>
+#include <XzEnc.h>
+#include <zstd.h>
 
 GSDumpBase::GSDumpBase(std::string fn)
 	: m_filename(std::move(fn))
@@ -14,13 +23,13 @@ GSDumpBase::GSDumpBase(std::string fn)
 {
 	m_gs = FileSystem::OpenCFile(m_filename.c_str(), "wb");
 	if (!m_gs)
-		Console.Error("GSDump: Error failed to open %s", m_filename.c_str());
+		Console.ErrorFmt("GSDump: Error failed to open {}", m_filename);
 }
 
 GSDumpBase::~GSDumpBase()
 {
 	if (m_gs)
-		fclose(m_gs);
+		std::fclose(m_gs);
 }
 
 void GSDumpBase::AddHeader(const std::string& serial, u32 crc,
@@ -104,201 +113,315 @@ void GSDumpBase::Write(const void* data, size_t size)
 
 	size_t written = fwrite(data, 1, size, m_gs);
 	if (written != size)
-		fprintf(stderr, "GSDump: Error failed to write data\n");
+		Console.Error("GSDump: Error failed to write data");
 }
 
 //////////////////////////////////////////////////////////////////////
 // GSDump implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpUncompressed::GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc,
+namespace
+{
+	class GSDumpUncompressed final : public GSDumpBase
+	{
+		void AppendRawData(const void* data, size_t size) final;
+		void AppendRawData(u8 c) final;
+
+	public:
+		GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc,
+			u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+			const freezeData& fd, const GSPrivRegSet* regs);
+		virtual ~GSDumpUncompressed() = default;
+	};
+
+	GSDumpUncompressed::GSDumpUncompressed(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs)
+		: GSDumpBase(fn + ".gs")
+	{
+		AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
+	}
+
+	void GSDumpUncompressed::AppendRawData(const void* data, size_t size)
+	{
+		Write(data, size);
+	}
+
+	void GSDumpUncompressed::AppendRawData(u8 c)
+	{
+		Write(&c, 1);
+	}
+} // namespace
+
+std::unique_ptr<GSDumpBase> GSDumpBase::CreateUncompressedDump(
+	const std::string& fn, const std::string& serial, u32 crc,
 	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
 	const freezeData& fd, const GSPrivRegSet* regs)
-	: GSDumpBase(fn + ".gs")
 {
-	AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
+	return std::make_unique<GSDumpUncompressed>(fn, serial, crc,
+		screenshot_width, screenshot_height, screenshot_pixels,
+		fd, regs);
 }
 
-void GSDumpUncompressed::AppendRawData(const void* data, size_t size)
+namespace
 {
-	Write(data, size);
-}
+	class GsDumpBuffered : public GSDumpBase
+	{
+	protected:
+		void AppendRawData(const void* data, size_t size) override final;
+		void AppendRawData(u8 c) override final;
 
-void GSDumpUncompressed::AppendRawData(u8 c)
-{
-	Write(&c, 1);
-}
+		void EnsureSpace(size_t size);
+
+		DynamicHeapArray<u8, 64> m_buffer;
+		size_t m_buffer_size = 0;
+
+	public:
+		GsDumpBuffered(std::string fn);
+		virtual ~GsDumpBuffered() override = default;
+	};
+
+	GsDumpBuffered::GsDumpBuffered(std::string fn)
+		: GSDumpBase(std::move(fn))
+	{
+		m_buffer.resize(_1mb);
+	}
+
+	void GsDumpBuffered::AppendRawData(const void* data, size_t size)
+	{
+		if (size == 0) [[unlikely]]
+			return;
+
+		EnsureSpace(size);
+		std::memcpy(&m_buffer[m_buffer_size], data, size);
+		m_buffer_size += size;
+	}
+
+	void GsDumpBuffered::AppendRawData(u8 c)
+	{
+		EnsureSpace(1);
+		m_buffer[m_buffer_size++] = c;
+	}
+
+	void GsDumpBuffered::EnsureSpace(size_t size)
+	{
+		const size_t new_size = m_buffer_size + size;
+		if (new_size <= m_buffer.size())
+			return;
+
+		const size_t alloc_size = std::max(m_buffer.size() * 2, new_size);
+		m_buffer.resize(alloc_size);
+	}
+} // namespace
 
 //////////////////////////////////////////////////////////////////////
 // GSDumpXz implementation
 //////////////////////////////////////////////////////////////////////
-
-GSDumpXz::GSDumpXz(const std::string& fn, const std::string& serial, u32 crc,
-	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
-	const freezeData& fd, const GSPrivRegSet* regs)
-	: GSDumpBase(fn + ".gs.xz")
+namespace
 {
-	m_strm = LZMA_STREAM_INIT;
-	lzma_ret ret = lzma_easy_encoder(&m_strm, 6 /*level*/, LZMA_CHECK_CRC64);
-	if (ret != LZMA_OK)
+	class GSDumpXz final : public GsDumpBuffered
 	{
-		fprintf(stderr, "GSDumpXz: Error initializing LZMA encoder ! (error code %u)\n", ret);
-		return;
+		void Compress();
+
+	public:
+		GSDumpXz(const std::string& fn, const std::string& serial, u32 crc,
+			u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+			const freezeData& fd, const GSPrivRegSet* regs);
+		~GSDumpXz() override;
+	};
+
+	GSDumpXz::GSDumpXz(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs)
+		: GsDumpBuffered(fn + ".gs.xz")
+	{
+		AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
 	}
 
-	AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
-}
-
-GSDumpXz::~GSDumpXz()
-{
-	Flush();
-
-	// Finish the stream
-	m_strm.avail_in = 0;
-	Compress(LZMA_FINISH, LZMA_STREAM_END);
-
-	lzma_end(&m_strm);
-}
-
-void GSDumpXz::AppendRawData(const void* data, size_t size)
-{
-	size_t old_size = m_in_buff.size();
-	m_in_buff.resize(old_size + size);
-	memcpy(&m_in_buff[old_size], data, size);
-
-	// Enough data was accumulated, time to write/compress it.  If compression
-	// is enabled, it will freeze PCSX2. 1GB should be enough for long dump.
-	//
-	// Note: long dumps are currently not supported so this path won't be executed
-	if (m_in_buff.size() > 1024 * 1024 * 1024)
-		Flush();
-}
-
-void GSDumpXz::AppendRawData(u8 c)
-{
-	m_in_buff.push_back(c);
-}
-
-void GSDumpXz::Flush()
-{
-	if (m_in_buff.empty())
-		return;
-
-	m_strm.next_in = m_in_buff.data();
-	m_strm.avail_in = m_in_buff.size();
-
-	Compress(LZMA_RUN, LZMA_OK);
-
-	m_in_buff.clear();
-}
-
-void GSDumpXz::Compress(lzma_action action, lzma_ret expected_status)
-{
-	std::vector<u8> out_buff(1024 * 1024);
-	do
+	GSDumpXz::~GSDumpXz()
 	{
-		m_strm.next_out = out_buff.data();
-		m_strm.avail_out = out_buff.size();
+		Compress();
+	}
 
-		lzma_ret ret = lzma_code(&m_strm, action);
-
-		if (ret != expected_status)
+	void GSDumpXz::Compress()
+	{
+		struct MemoryInStream
 		{
-			fprintf(stderr, "GSDumpXz: Error %d\n", (int)ret);
+			ISeqInStream vt;
+			const u8* buffer;
+			size_t buffer_size;
+			size_t read_pos;
+		};
+		MemoryInStream mis = {
+			{.Read = [](const ISeqInStream* p, void* buf, size_t* size) -> SRes {
+				MemoryInStream* mis = CONTAINER_FROM_VTBL(p, MemoryInStream, vt);
+				const size_t avail = mis->buffer_size - mis->read_pos;
+				const size_t copy = std::min(avail, *size);
+
+				std::memcpy(buf, &mis->buffer[mis->read_pos], copy);
+				mis->read_pos += copy;
+				*size = copy;
+				return SZ_OK;
+			}},
+			m_buffer.data(),
+			m_buffer_size,
+			0};
+
+		struct DumpOutStream
+		{
+			ISeqOutStream vt;
+			GSDumpXz* real;
+		};
+		DumpOutStream dos = {
+			{.Write = [](const ISeqOutStream* p, const void* buf, size_t size) -> size_t {
+				DumpOutStream* dos = CONTAINER_FROM_VTBL(p, DumpOutStream, vt);
+				dos->real->Write(buf, size);
+				return size;
+			}},
+			this};
+
+		pxAssert(m_buffer_size > 0);
+
+		GSInit7ZCRCTables();
+
+		CXzProps props;
+		XzProps_Init(&props);
+		const SRes res = Xz_Encode(&dos.vt, &mis.vt, &props, nullptr);
+		if (res != SZ_OK)
+		{
+			Console.ErrorFmt("Xz_Encode() failed: {}", static_cast<int>(res));
 			return;
 		}
+	}
+} // namespace
 
-		size_t write_size = out_buff.size() - m_strm.avail_out;
-		Write(out_buff.data(), write_size);
-
-	} while (m_strm.avail_out == 0);
+std::unique_ptr<GSDumpBase> GSDumpBase::CreateXzDump(
+	const std::string& fn, const std::string& serial, u32 crc,
+	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+	const freezeData& fd, const GSPrivRegSet* regs)
+{
+	return std::make_unique<GSDumpXz>(fn, serial, crc,
+		screenshot_width, screenshot_height, screenshot_pixels,
+		fd, regs);
 }
 
 //////////////////////////////////////////////////////////////////////
 // GSDumpZstd implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpZst::GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
-	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
-	const freezeData& fd, const GSPrivRegSet* regs)
-	: GSDumpBase(fn + ".gs.zst")
+namespace
 {
-	m_strm = ZSTD_createCStream();
-
-	// Compression level 6 provides a good balance between speed and ratio.
-	ZSTD_CCtx_setParameter(m_strm, ZSTD_c_compressionLevel, 6);
-
-	m_in_buff.reserve(_1mb);
-	m_out_buff.resize(_1mb);
-
-	AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
-}
-
-GSDumpZst::~GSDumpZst()
-{
-	// Finish the stream
-	Compress(ZSTD_e_end);
-
-	ZSTD_freeCStream(m_strm);
-}
-
-void GSDumpZst::AppendRawData(const void* data, size_t size)
-{
-	size_t old_size = m_in_buff.size();
-	m_in_buff.resize(old_size + size);
-	memcpy(&m_in_buff[old_size], data, size);
-	MayFlush();
-}
-
-void GSDumpZst::AppendRawData(u8 c)
-{
-	m_in_buff.push_back(c);
-	MayFlush();
-}
-
-void GSDumpZst::MayFlush()
-{
-	if (m_in_buff.size() >= _1mb)
-		Compress(ZSTD_e_continue);
-}
-
-void GSDumpZst::Compress(ZSTD_EndDirective action)
-{
-	if (m_in_buff.empty())
-		return;
-
-	ZSTD_inBuffer inbuf = {m_in_buff.data(), m_in_buff.size(), 0};
-
-	for (;;)
+	class GSDumpZst final : public GSDumpBase
 	{
-		ZSTD_outBuffer outbuf = {m_out_buff.data(), m_out_buff.size(), 0};
+		ZSTD_CStream* m_strm;
 
-		const size_t remaining = ZSTD_compressStream2(m_strm, &outbuf, &inbuf, action);
-		if (ZSTD_isError(remaining))
-		{
-			fprintf(stderr, "GSDumpZstd: Error %s\n", ZSTD_getErrorName(remaining));
-			return;
-		}
+		std::vector<u8> m_in_buff;
+		std::vector<u8> m_out_buff;
 
-		if (outbuf.pos > 0)
-		{
-			Write(m_out_buff.data(), outbuf.pos);
-			outbuf.pos = 0;
-		}
+		void MayFlush();
+		void Compress(ZSTD_EndDirective action);
+		void AppendRawData(const void* data, size_t size);
+		void AppendRawData(u8 c);
 
-		if (action == ZSTD_e_end)
-		{
-			// break when compression output has finished
-			if (remaining == 0)
-				break;
-		}
-		else
-		{
-			// break when all input data is consumed
-			if (inbuf.pos == inbuf.size)
-				break;
-		}
+	public:
+		GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
+			u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+			const freezeData& fd, const GSPrivRegSet* regs);
+		virtual ~GSDumpZst();
+	};
+
+	GSDumpZst::GSDumpZst(const std::string& fn, const std::string& serial, u32 crc,
+		u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+		const freezeData& fd, const GSPrivRegSet* regs)
+		: GSDumpBase(fn + ".gs.zst")
+	{
+		m_strm = ZSTD_createCStream();
+
+		// Compression level 6 provides a good balance between speed and ratio.
+		ZSTD_CCtx_setParameter(m_strm, ZSTD_c_compressionLevel, 6);
+
+		m_in_buff.reserve(_1mb);
+		m_out_buff.resize(_1mb);
+
+		AddHeader(serial, crc, screenshot_width, screenshot_height, screenshot_pixels, fd, regs);
 	}
 
-	m_in_buff.clear();
+	GSDumpZst::~GSDumpZst()
+	{
+		// Finish the stream
+		Compress(ZSTD_e_end);
+
+		ZSTD_freeCStream(m_strm);
+	}
+
+	void GSDumpZst::AppendRawData(const void* data, size_t size)
+	{
+		size_t old_size = m_in_buff.size();
+		m_in_buff.resize(old_size + size);
+		memcpy(&m_in_buff[old_size], data, size);
+		MayFlush();
+	}
+
+	void GSDumpZst::AppendRawData(u8 c)
+	{
+		m_in_buff.push_back(c);
+		MayFlush();
+	}
+
+	void GSDumpZst::MayFlush()
+	{
+		if (m_in_buff.size() >= _1mb)
+			Compress(ZSTD_e_continue);
+	}
+
+	void GSDumpZst::Compress(ZSTD_EndDirective action)
+	{
+		if (m_in_buff.empty())
+			return;
+
+		ZSTD_inBuffer inbuf = {m_in_buff.data(), m_in_buff.size(), 0};
+
+		for (;;)
+		{
+			ZSTD_outBuffer outbuf = {m_out_buff.data(), m_out_buff.size(), 0};
+
+			const size_t remaining = ZSTD_compressStream2(m_strm, &outbuf, &inbuf, action);
+			if (ZSTD_isError(remaining))
+			{
+				Console.ErrorFmt("GSDumpZstd: Error {}", ZSTD_getErrorName(remaining));
+				return;
+			}
+
+			if (outbuf.pos > 0)
+			{
+				Write(m_out_buff.data(), outbuf.pos);
+				outbuf.pos = 0;
+			}
+
+			if (action == ZSTD_e_end)
+			{
+				// break when compression output has finished
+				if (remaining == 0)
+					break;
+			}
+			else
+			{
+				// break when all input data is consumed
+				if (inbuf.pos == inbuf.size)
+					break;
+			}
+		}
+
+		m_in_buff.clear();
+	}
+} // namespace
+
+std::unique_ptr<GSDumpBase> GSDumpBase::CreateZstDump(
+	const std::string& fn, const std::string& serial, u32 crc,
+	u32 screenshot_width, u32 screenshot_height, const u32* screenshot_pixels,
+	const freezeData& fd, const GSPrivRegSet* regs)
+{
+	return std::make_unique<GSDumpZst>(fn, serial, crc,
+		screenshot_width, screenshot_height, screenshot_pixels,
+		fd, regs);
 }

@@ -36,7 +36,6 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\fmt\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\wil\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\xz\xz\src\liblzma\api</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zlib</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\lz4\lz4\lib</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\libpng</AdditionalIncludeDirectories>
@@ -60,6 +59,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\glslang\glslang</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\vulkan-headers\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\d3d12memalloc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\lzma\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\xbyak</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\des</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\zydis\include;$(SolutionDir)3rdparty\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
@@ -814,9 +814,6 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
       <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
-      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\libchdr\libchdr.vcxproj">
       <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
     </ProjectReference>
@@ -852,6 +849,9 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\lz4\lz4.vcxproj">
       <Project>{39098635-446a-4fc3-9b1c-8609d94598a8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\lzma\lzma.vcxproj">
+      <Project>{a4323327-3f2b-4271-83d9-7f9a3c66b6b2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\rainterface\rainterface.vcxproj">
       <Project>{95dd0a0c-d14d-4cff-a593-820ef26efcc8}</Project>

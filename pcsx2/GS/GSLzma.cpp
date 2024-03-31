@@ -1,65 +1,32 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "common/AlignedMalloc.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
+#include "common/BitUtils.h"
+#include "common/Error.h"
+#include "common/HeapArray.h"
 
 #include "GS/GSDump.h"
 #include "GS/GSLzma.h"
 #include "GS/GSExtra.h"
 
+#include <Alloc.h>
+#include <7zCrc.h>
+#include <Xz.h>
+#include <XzCrc64.h>
+#include <zstd.h>
+
+#include <mutex>
+
 using namespace GSDumpTypes;
 
-GSDumpFile::GSDumpFile(FILE* file, FILE* repack_file)
-	: m_fp(file)
-	, m_repack_fp(repack_file)
-{
-}
+GSDumpFile::GSDumpFile() = default;
 
-void GSDumpFile::Repack(void* ptr, size_t size)
-{
-	if (m_repack_fp == nullptr)
-		return;
-
-	size_t ret = fwrite(ptr, 1, size, m_repack_fp);
-	if (ret != size)
-		fprintf(stderr, "Failed to repack\n");
-}
-
-GSDumpFile::~GSDumpFile()
-{
-	if (m_fp)
-		fclose(m_fp);
-	if (m_repack_fp)
-		fclose(m_repack_fp);
-}
-
-std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, const char* repack_filename /*= nullptr*/)
-{
-	std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
-	if (!fp)
-		return nullptr;
-
-	std::FILE* repack_fp = nullptr;
-	if (repack_filename && std::strlen(repack_filename) > 0)
-	{
-		repack_fp = FileSystem::OpenCFile(repack_filename, "wb");
-		if (!repack_fp)
-		{
-			std::fclose(fp);
-			return nullptr;
-		}
-	}
-
-	if (StringUtil::EndsWithNoCase(filename, ".xz"))
-		return std::make_unique<GSDumpLzma>(fp, nullptr);
-	else if (StringUtil::EndsWithNoCase(filename, ".zst"))
-		return std::make_unique<GSDumpDecompressZst>(fp, nullptr);
-	else
-		return std::make_unique<GSDumpRaw>(fp, nullptr);
-}
+GSDumpFile::~GSDumpFile() = default;
 
 bool GSDumpFile::GetPreviewImageFromDump(const char* filename, u32* width, u32* height, std::vector<u32>* pixels)
 {
@@ -102,15 +69,21 @@ bool GSDumpFile::GetPreviewImageFromDump(const char* filename, u32* width, u32* 
 	return true;
 }
 
-bool GSDumpFile::ReadFile()
+bool GSDumpFile::ReadFile(Error* error)
 {
 	u32 ss;
 	if (Read(&m_crc, sizeof(m_crc)) != sizeof(m_crc) || Read(&ss, sizeof(ss)) != sizeof(ss))
+	{
+		Error::SetString(error, "Failed to read header");
 		return false;
+	}
 
 	m_state_data.resize(ss);
 	if (Read(m_state_data.data(), ss) != ss)
+	{
+		Error::SetString(error, "Failed to read state data");
 		return false;
+	}
 
 	// Pull serial out of new header, if present.
 	if (m_crc == 0xFFFFFFFFu)
@@ -118,7 +91,7 @@ bool GSDumpFile::ReadFile()
 		GSDumpHeader header;
 		if (m_state_data.size() < sizeof(header))
 		{
-			Console.Error("GSDump header is corrupted.");
+			Error::SetString(error, "GSDump header is corrupted.");
 			return false;
 		}
 
@@ -130,7 +103,7 @@ bool GSDumpFile::ReadFile()
 		{
 			if (header.serial_offset > ss || (static_cast<u64>(header.serial_offset) + header.serial_size) > ss)
 			{
-				Console.Error("GSDump header is corrupted.");
+				Error::SetString(error, "GSDump header is corrupted.");
 				return false;
 			}
 
@@ -141,12 +114,18 @@ bool GSDumpFile::ReadFile()
 		// Read the real state data
 		m_state_data.resize(header.state_size);
 		if (Read(m_state_data.data(), header.state_size) != header.state_size)
+		{
+			Error::SetString(error, "Failed to read real state data");
 			return false;
+		}
 	}
 
 	m_regs_data.resize(8192);
 	if (Read(m_regs_data.data(), m_regs_data.size()) != m_regs_data.size())
+	{
+		Error::SetString(error, "Failed to read regs data");
 		return false;
+	}
 
 	// read all the packet data in
 	// TODO: make this suck less by getting the full/extracted size and preallocating
@@ -160,7 +139,10 @@ bool GSDumpFile::ReadFile()
 		if (read != read_size)
 		{
 			if (!IsEof())
+			{
+				Error::SetString(error, "Failed to read packet");
 				return false;
+			}
 
 			m_packet_data.resize(packet_data_size + read);
 			m_packet_data.shrink_to_fit();
@@ -175,7 +157,10 @@ bool GSDumpFile::ReadFile()
 	do \
 	{ \
 		if (remaining < sizeof(u8)) \
+		{ \
+			Error::SetString(error, "Failed to read byte"); \
 			return false; \
+		} \
 		std::memcpy(dst, data, sizeof(u8)); \
 		data++; \
 		remaining--; \
@@ -184,7 +169,10 @@ bool GSDumpFile::ReadFile()
 	do \
 	{ \
 		if (remaining < sizeof(u32)) \
+		{ \
+			Error::SetString(error, "Failed to read word"); \
 			return false; \
+		} \
 		std::memcpy(dst, data, sizeof(u32)); \
 		data += sizeof(u32); \
 		remaining -= sizeof(u32); \
@@ -212,6 +200,7 @@ bool GSDumpFile::ReadFile()
 				packet.length = 8192;
 				break;
 			default:
+				Error::SetString(error, fmt::format("Unknown packet type {}", static_cast<u32>(packet.id)));
 				return false;
 		}
 
@@ -242,224 +231,423 @@ bool GSDumpFile::ReadFile()
 }
 
 /******************************************************************/
-GSDumpLzma::GSDumpLzma(FILE* file, FILE* repack_file)
-	: GSDumpFile(file, repack_file)
+
+static std::once_flag s_lzma_crc_table_init;
+
+void GSInit7ZCRCTables()
 {
-	Initialize();
+	std::call_once(s_lzma_crc_table_init, []() {
+		CrcGenerateTable();
+		Crc64GenerateTable();
+	});
 }
 
-void GSDumpLzma::Initialize()
+namespace
 {
-	memset(&m_strm, 0, sizeof(lzma_stream));
-
-	lzma_ret ret = lzma_stream_decoder(&m_strm, UINT32_MAX, 0);
-
-	if (ret != LZMA_OK)
+	class GSDumpLzma final : public GSDumpFile
 	{
-		Console.Error("Error initializing the decoder! (error code %u)", ret);
-		pxFailRel("Failed to initialize LZMA decoder.");
+	public:
+		GSDumpLzma();
+		~GSDumpLzma() override;
+
+	protected:
+		bool Open(std::FILE* fp, Error* error) override;
+		bool IsEof() override;
+		size_t Read(void* ptr, size_t size) override;
+
+	private:
+		static constexpr size_t kInputBufSize = static_cast<size_t>(1) << 18;
+
+		struct Block
+		{
+			size_t file_offset;
+			size_t stream_offset;
+			size_t compressed_size;
+			size_t uncompressed_size;
+			CXzStreamFlags stream_flags;
+		};
+
+		bool DecompressNextBlock();
+
+		std::FILE* m_fp = nullptr;
+		std::vector<Block> m_blocks;
+		size_t m_stream_size = 0;
+
+		DynamicHeapArray<u8, 64> m_block_buffer;
+		size_t m_block_index = 0;
+		size_t m_block_size = 0;
+		size_t m_block_pos = 0;
+
+		DynamicHeapArray<u8, 64> m_block_read_buffer;
+		alignas(64) CXzUnpacker m_unpacker = {};
+	};
+
+	GSDumpLzma::GSDumpLzma() = default;
+
+	GSDumpLzma::~GSDumpLzma()
+	{
+
+
+		XzUnpacker_Free(&m_unpacker);
 	}
 
-	m_buff_size = 1024*1024;
-	m_area      = (uint8_t*)_aligned_malloc(m_buff_size, VECTOR_ALIGNMENT);
-	m_inbuf     = (uint8_t*)_aligned_malloc(BUFSIZ, VECTOR_ALIGNMENT);
-	m_avail     = 0;
-	m_start     = 0;
-
-	m_strm.avail_in  = 0;
-	m_strm.next_in   = m_inbuf;
-
-	m_strm.avail_out = m_buff_size;
-	m_strm.next_out  = m_area;
-}
-
-void GSDumpLzma::Decompress()
-{
-	lzma_action action = LZMA_RUN;
-
-	m_strm.next_out  = m_area;
-	m_strm.avail_out = m_buff_size;
-
-	// Nothing left in the input buffer. Read data from the file
-	if (m_strm.avail_in == 0 && !feof(m_fp))
+	bool GSDumpLzma::Open(std::FILE* fp, Error* error)
 	{
-		m_strm.next_in   = m_inbuf;
-		m_strm.avail_in  = fread(m_inbuf, 1, BUFSIZ, m_fp);
+		m_fp = fp;
 
-		if (ferror(m_fp))
+		GSInit7ZCRCTables();
+
+		struct MyFileInStream
 		{
-			Console.Error("Read error: %s", strerror(errno));
-			pxFailRel("LZMA read error.");
+			ISeekInStream vt;
+			std::FILE* fp;
+		};
+
+		MyFileInStream fis = {
+			{.Read = [](const ISeekInStream* p, void* buf, size_t* size) -> SRes {
+				 MyFileInStream* fis = CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
+				 const size_t size_to_read = *size;
+				 const auto bytes_read = std::fread(buf, 1, size_to_read, fis->fp);
+				 *size = (bytes_read >= 0) ? bytes_read : 0;
+				 return (bytes_read == size_to_read) ? SZ_OK : SZ_ERROR_READ;
+			 },
+				.Seek = [](const ISeekInStream* p, Int64* pos, ESzSeek origin) -> SRes {
+					MyFileInStream* fis = CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
+					static_assert(SZ_SEEK_CUR == SEEK_CUR && SZ_SEEK_SET == SEEK_SET && SZ_SEEK_END == SEEK_END);
+					if (FileSystem::FSeek64(fis->fp, *pos, static_cast<int>(origin)) != 0)
+						return SZ_ERROR_READ;
+
+					const s64 new_pos = FileSystem::FTell64(fis->fp);
+					if (new_pos < 0)
+						return SZ_ERROR_READ;
+
+					*pos = new_pos;
+					return SZ_OK;
+				}},
+			m_fp};
+
+		CLookToRead2 look_stream = {};
+		LookToRead2_Init(&look_stream);
+		LookToRead2_CreateVTable(&look_stream, False);
+		look_stream.realStream = &fis.vt;
+		look_stream.bufSize = kInputBufSize;
+		look_stream.buf = static_cast<Byte*>(ISzAlloc_Alloc(&g_Alloc, kInputBufSize));
+		if (!look_stream.buf)
+		{
+			Error::SetString(error, "Failed to allocate lookahead buffer");
+			return false;
 		}
-	}
+		ScopedGuard guard = [&look_stream]() {
+			if (look_stream.buf)
+				ISzAlloc_Free(&g_Alloc, look_stream.buf);
+		};
 
-	lzma_ret ret = lzma_code(&m_strm, action);
+		// Read blocks
+		CXzs xzs;
+		Xzs_Construct(&xzs);
+		const ScopedGuard xzs_guard([&xzs]() {
+			Xzs_Free(&xzs, &g_Alloc);
+		});
 
-	if (ret != LZMA_OK)
-	{
-		if (ret != LZMA_STREAM_END)
+		const s64 file_size = FileSystem::FSize64(m_fp);
+		Int64 start_pos = file_size;
+		SRes res = Xzs_ReadBackward(&xzs, &look_stream.vt, &start_pos, nullptr, &g_Alloc);
+		if (res != SZ_OK)
 		{
-			Console.Error("Decoder error: (error code %u)", ret);
-			pxFailRel("LZMA decoder error.");
-		}
-	}
-
-	m_start = 0;
-	m_avail = m_buff_size - m_strm.avail_out;
-}
-
-bool GSDumpLzma::IsEof()
-{
-	return feof(m_fp) && m_avail == 0 && m_strm.avail_in == 0;
-}
-
-size_t GSDumpLzma::Read(void* ptr, size_t size)
-{
-	size_t off = 0;
-	uint8_t* dst = (uint8_t*)ptr;
-	while (size && !IsEof())
-	{
-		if (m_avail == 0)
-		{
-			Decompress();
+			Error::SetString(error, fmt::format("Xzs_ReadBackward() failed: {}", res));
+			return false;
 		}
 
-		size_t l = std::min(size, m_avail);
-		memcpy(dst + off, m_area + m_start, l);
-		m_avail -= l;
-		size    -= l;
-		m_start += l;
-		off     += l;
-	}
-
-	if (off > 0)
-		Repack(ptr, off);
-
-	return off;
-}
-
-GSDumpLzma::~GSDumpLzma()
-{
-	lzma_end(&m_strm);
-
-	if (m_inbuf)
-		_aligned_free(m_inbuf);
-	if (m_area)
-		_aligned_free(m_area);
-}
-
-/******************************************************************/
-GSDumpDecompressZst::GSDumpDecompressZst(FILE* file, FILE* repack_file)
-	: GSDumpFile(file, repack_file)
-{
-	Initialize();
-}
-
-void GSDumpDecompressZst::Initialize()
-{
-	m_strm = ZSTD_createDStream();
-
-	m_area      = (uint8_t*)_aligned_malloc(OUTPUT_BUFFER_SIZE, 32);
-	m_inbuf.src = (uint8_t*)_aligned_malloc(INPUT_BUFFER_SIZE, 32);
-	m_inbuf.pos = 0;
-	m_inbuf.size = 0;
-	m_avail     = 0;
-	m_start     = 0;
-}
-
-void GSDumpDecompressZst::Decompress()
-{
-	ZSTD_outBuffer outbuf = { m_area, OUTPUT_BUFFER_SIZE, 0 };
-	while (outbuf.pos == 0)
-	{
-		// Nothing left in the input buffer. Read data from the file
-		if (m_inbuf.pos == m_inbuf.size && !feof(m_fp))
+		const size_t num_blocks = Xzs_GetNumBlocks(&xzs);
+		if (num_blocks == 0)
 		{
-			m_inbuf.size = fread((void*)m_inbuf.src, 1, INPUT_BUFFER_SIZE, m_fp);
-			m_inbuf.pos = 0;
+			Error::SetString(error, "Stream has no blocks.");
+			return false;
+		}
 
-			if (ferror(m_fp))
+		m_blocks.reserve(num_blocks);
+		for (int sn = xzs.num - 1; sn >= 0; sn--)
+		{
+			const CXzStream& stream = xzs.streams[sn];
+			size_t src_offset = stream.startOffset + XZ_STREAM_HEADER_SIZE;
+			for (size_t bn = 0; bn < stream.numBlocks; bn++)
 			{
-				Console.Error("Zst read error: %s", strerror(errno));
-				pxFailRel("Zst read error.");
+				const CXzBlockSizes& block = stream.blocks[bn];
+
+				Block out_block;
+				out_block.file_offset = src_offset;
+				out_block.stream_offset = m_stream_size;
+				out_block.compressed_size = std::min<size_t>(Common::AlignUpPow2(block.totalSize, 4),
+					static_cast<size_t>(file_size - static_cast<s64>(src_offset))); // LZMA blocks are 4 byte aligned?
+				out_block.uncompressed_size = block.unpackSize;
+				out_block.stream_flags = stream.flags;
+				m_stream_size += out_block.uncompressed_size;
+				src_offset += out_block.compressed_size;
+				m_blocks.push_back(std::move(out_block));
 			}
 		}
 
-		size_t ret = ZSTD_decompressStream(m_strm, &outbuf, &m_inbuf);
-		if (ZSTD_isError(ret))
-		{
-			Console.Error("Decoder error: (error code %s)", ZSTD_getErrorName(ret));
-			pxFailRel("Zst decoder error.");
-		}
+		DevCon.WriteLnFmt("XZ stream is {} bytes across {} blocks", m_stream_size, m_blocks.size());
+		XzUnpacker_Construct(&m_unpacker, &g_Alloc);
+		return true;
 	}
 
-	m_start = 0;
-	m_avail = outbuf.pos;
-}
-
-bool GSDumpDecompressZst::IsEof()
-{
-	return feof(m_fp) && m_avail == 0 && m_inbuf.pos == m_inbuf.size;
-}
-
-size_t GSDumpDecompressZst::Read(void* ptr, size_t size)
-{
-	size_t off = 0;
-	uint8_t* dst = (uint8_t*)ptr;
-	while (size && !IsEof())
+	bool GSDumpLzma::DecompressNextBlock()
 	{
-		if (m_avail == 0)
+		if (m_block_index == m_blocks.size())
+			return false;
+
+		const Block& block = m_blocks[m_block_index];
+
+		if (block.compressed_size > m_block_read_buffer.size())
+			m_block_read_buffer.resize(Common::AlignUpPow2(block.compressed_size, _128kb));
+
+		if (FileSystem::FSeek64(m_fp, static_cast<s64>(block.file_offset), SEEK_SET) != 0 ||
+			std::fread(m_block_read_buffer.data(), block.compressed_size, 1, m_fp) != 1)
 		{
-			Decompress();
+			Console.ErrorFmt("Failed to read {} bytes from offset {}", block.file_offset, block.compressed_size);
+			return false;
 		}
 
-		size_t l = std::min(size, m_avail);
-		memcpy(dst + off, m_area + m_start, l);
-		m_avail -= l;
-		size    -= l;
-		m_start += l;
-		off     += l;
+		if (block.uncompressed_size > m_block_buffer.size())
+			m_block_buffer.resize(Common::AlignUpPow2(block.uncompressed_size, _128kb));
+
+		XzUnpacker_Init(&m_unpacker);
+		m_unpacker.streamFlags = block.stream_flags;
+		XzUnpacker_PrepareToRandomBlockDecoding(&m_unpacker);
+		XzUnpacker_SetOutBuf(&m_unpacker, m_block_buffer.data(), block.uncompressed_size);
+		SizeT out_uncompressed_size = block.uncompressed_size;
+		SizeT out_compressed_size = block.compressed_size;
+
+		ECoderStatus status;
+		const SRes res = XzUnpacker_Code(&m_unpacker, nullptr, &out_uncompressed_size,
+			m_block_read_buffer.data(), &out_compressed_size, true, CODER_FINISH_END, &status);
+		if (res != SZ_OK || status != CODER_STATUS_FINISHED_WITH_MARK) [[unlikely]]
+		{
+			Console.ErrorFmt("XzUnpacker_Code() failed: {} (status {})", res, static_cast<unsigned>(status));
+			return false;
+		}
+
+		if (out_compressed_size != block.compressed_size || out_uncompressed_size != block.uncompressed_size)
+		{
+			Console.WarningFmt("Decompress size mismatch: {}/{} vs {}/{}", out_compressed_size, out_uncompressed_size,
+				block.compressed_size, block.uncompressed_size);
+		}
+
+		m_block_size = out_uncompressed_size;
+		m_block_pos = 0;
+		m_block_index++;
+		return true;
 	}
 
-	if (off > 0)
-		Repack(ptr, off);
+	bool GSDumpLzma::IsEof()
+	{
+		return (m_block_pos == m_block_size && m_block_index == m_blocks.size());
+	}
 
-	return off;
-}
+	size_t GSDumpLzma::Read(void* ptr, size_t size)
+	{
+		u8* dst = static_cast<u8*>(ptr);
+		size_t remain = size;
+		while (remain > 0)
+		{
+			if (m_block_size == m_block_pos && !DecompressNextBlock()) [[unlikely]]
+				break;
 
-GSDumpDecompressZst::~GSDumpDecompressZst()
-{
-	ZSTD_freeDStream(m_strm);
+			const size_t avail = (m_block_size - m_block_pos);
+			const size_t read = std::min(avail, remain);
+			pxAssert(avail > 0 && read > 0);
+			std::memcpy(dst, &m_block_buffer[m_block_pos], read);
+			dst += read;
+			remain -= read;
+			m_block_pos += read;
+		}
 
-	if (m_inbuf.src)
-		_aligned_free((void*)m_inbuf.src);
-	if (m_area)
-		_aligned_free(m_area);
-}
+		return size - remain;
+	}
+
+	/******************************************************************/
+
+	class GSDumpDecompressZst final : public GSDumpFile
+	{
+		static constexpr u32 INPUT_BUFFER_SIZE = 512 * _1kb;
+		static constexpr u32 OUTPUT_BUFFER_SIZE = 2 * _1mb;
+
+		std::FILE* m_fp = nullptr;
+
+		ZSTD_DStream* m_strm = nullptr;
+		ZSTD_inBuffer m_inbuf = {};
+
+		uint8_t* m_area = nullptr;
+
+		size_t m_avail = 0;
+		size_t m_start = 0;
+
+		bool Decompress();
+
+	public:
+		GSDumpDecompressZst();
+		~GSDumpDecompressZst() override;
+
+		bool Open(std::FILE* fp, Error* error) override;
+		bool IsEof() override;
+		size_t Read(void* ptr, size_t size) override;
+	};
+
+	GSDumpDecompressZst::GSDumpDecompressZst() = default;
+
+	GSDumpDecompressZst::~GSDumpDecompressZst()
+	{
+		if (m_strm)
+			ZSTD_freeDStream(m_strm);
+
+		if (m_inbuf.src)
+			_aligned_free((void*)m_inbuf.src);
+		if (m_area)
+			_aligned_free(m_area);
+
+		if (m_fp)
+			std::fclose(m_fp);
+	}
+
+	bool GSDumpDecompressZst::Open(std::FILE* fp, Error* error)
+	{
+		m_fp = fp;
+		m_strm = ZSTD_createDStream();
+
+		m_area = (uint8_t*)_aligned_malloc(OUTPUT_BUFFER_SIZE, 32);
+		m_inbuf.src = (uint8_t*)_aligned_malloc(INPUT_BUFFER_SIZE, 32);
+		m_inbuf.pos = 0;
+		m_inbuf.size = 0;
+		m_avail = 0;
+		m_start = 0;
+		return true;
+	}
+
+	bool GSDumpDecompressZst::Decompress()
+	{
+		ZSTD_outBuffer outbuf = {m_area, OUTPUT_BUFFER_SIZE, 0};
+		while (outbuf.pos == 0)
+		{
+			// Nothing left in the input buffer. Read data from the file
+			if (m_inbuf.pos == m_inbuf.size && !std::feof(m_fp))
+			{
+				m_inbuf.size = fread((void*)m_inbuf.src, 1, INPUT_BUFFER_SIZE, m_fp);
+				m_inbuf.pos = 0;
+
+				if (ferror(m_fp))
+				{
+					Console.Error("Zst read error: %s", strerror(errno));
+					return false;
+				}
+			}
+
+			const size_t ret = ZSTD_decompressStream(m_strm, &outbuf, &m_inbuf);
+			if (ZSTD_isError(ret))
+			{
+				Console.Error("Decoder error: (error code %s)", ZSTD_getErrorName(ret));
+				return false;
+			}
+		}
+
+		m_start = 0;
+		m_avail = outbuf.pos;
+		return true;
+	}
+
+	bool GSDumpDecompressZst::IsEof()
+	{
+		return feof(m_fp) && m_avail == 0 && m_inbuf.pos == m_inbuf.size;
+	}
+
+	size_t GSDumpDecompressZst::Read(void* ptr, size_t size)
+	{
+		size_t off = 0;
+		uint8_t* dst = (uint8_t*)ptr;
+		while (size && !IsEof())
+		{
+			if (m_avail == 0)
+			{
+				if (!Decompress()) [[unlikely]]
+					break;
+			}
+
+			const size_t l = std::min(size, m_avail);
+			std::memcpy(dst + off, m_area + m_start, l);
+			m_avail -= l;
+			size -= l;
+			m_start += l;
+			off += l;
+		}
+
+		return off;
+	}
+
+	/******************************************************************/
+
+	class GSDumpRaw final : public GSDumpFile
+	{
+		std::FILE* m_fp;
+
+	public:
+		GSDumpRaw();
+		~GSDumpRaw() override;
+
+		bool Open(std::FILE* fp, Error* error) override;
+		bool IsEof() override;
+		size_t Read(void* ptr, size_t size) override;
+	};
+
+	GSDumpRaw::GSDumpRaw() = default;
+
+	GSDumpRaw::~GSDumpRaw()
+	{
+		if (m_fp)
+			std::fclose(m_fp);
+	}
+
+	bool GSDumpRaw::Open(std::FILE* fp, Error* error)
+	{
+		m_fp = fp;
+		return true;
+	}
+
+	bool GSDumpRaw::IsEof()
+	{
+		return !!feof(m_fp);
+	}
+
+	size_t GSDumpRaw::Read(void* ptr, size_t size)
+	{
+		size_t ret = fread(ptr, 1, size, m_fp);
+		if (ret != size && ferror(m_fp))
+		{
+			fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
+			return ret;
+		}
+
+		return ret;
+	}
+} // namespace
 
 /******************************************************************/
 
-GSDumpRaw::GSDumpRaw(FILE* file, FILE* repack_file)
-	: GSDumpFile(file, repack_file)
+std::unique_ptr<GSDumpFile> GSDumpFile::OpenGSDump(const char* filename, Error* error)
 {
-}
+	std::FILE* fp = FileSystem::OpenCFile(filename, "rb", error);
+	if (!fp)
+		return nullptr;
 
-bool GSDumpRaw::IsEof()
-{
-	return !!feof(m_fp);
-}
+	std::unique_ptr<GSDumpFile> file;
+	if (StringUtil::EndsWithNoCase(filename, ".xz"))
+		file = std::make_unique<GSDumpLzma>();
+	else if (StringUtil::EndsWithNoCase(filename, ".zst"))
+		file = std::make_unique<GSDumpDecompressZst>();
+	else
+		file = std::make_unique<GSDumpRaw>();
 
-size_t GSDumpRaw::Read(void* ptr, size_t size)
-{
-	size_t ret = fread(ptr, 1, size, m_fp);
-	if (ret != size && ferror(m_fp))
-	{
-		fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
-		return ret;
-	}
+	if (!file->Open(fp, error))
+		file = {};
 
-	if (ret > 0)
-		Repack(ptr, ret);
-
-	return ret;
+	return file;
 }

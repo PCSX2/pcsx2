@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GS.h"
@@ -14,6 +14,7 @@
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
+#include "common/Error.h"
 #include "common/HostSys.h"
 #include "common/ScopedGuard.h"
 #include "common/SmallString.h"
@@ -855,9 +856,19 @@ bool GSDevice12::CreateSwapChain()
 			Console.Warning("Failed to create windowed swap chain.");
 	}
 
-	hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
-	if (FAILED(hr))
-		Console.Warning("MakeWindowAssociation() to disable ALT+ENTER failed");
+	// MWA needs to be called on the correct factory.
+	wil::com_ptr_nothrow<IDXGIFactory> swap_chain_factory;
+	hr = m_swap_chain->GetParent(IID_PPV_ARGS(swap_chain_factory.put()));
+	if (SUCCEEDED(hr))
+	{
+		hr = swap_chain_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+		if (FAILED(hr))
+			Console.ErrorFmt("MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
+	}
+	else
+	{
+		Console.ErrorFmt("GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
+	}
 
 	if (!CreateSwapChainRTV())
 	{
@@ -1195,8 +1206,6 @@ bool GSDevice12::CheckFeatures()
 	m_features.point_expand = false;
 	m_features.line_expand = false;
 	m_features.framebuffer_fetch = false;
-	m_features.dual_source_blend = true;
-	m_features.clip_control = true;
 	m_features.stencil_buffer = true;
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = false;
@@ -1591,14 +1600,14 @@ void GSDevice12::BeginRenderPassForStretchRect(
 		BeginRenderPass(load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			dTex->GetClearColor());
+			dTex->GetUNormClearColor());
 	}
 	else
 	{
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			0, dTex->GetClearDepth());
+			GSVector4::zero(), dTex->GetClearDepth());
 	}
 }
 
@@ -1715,7 +1724,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, GSVector4::unorm8(c));
 		SetUtilityRootSignature();
 		SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
 		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
@@ -1757,7 +1766,8 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		OMSetRenderTargets(dTex, nullptr, darea);
 		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, c);
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			GSVector4::unorm8(c));
 		dTex->SetState(GSTexture::State::Dirty);
 	}
 	else if (!InRenderPass())
@@ -2673,7 +2683,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 		}
 
 		ShaderMacro sm;
-		sm.AddMacro("FXAA_HLSL_5", "1");
+		sm.AddMacro("FXAA_HLSL", "1");
 		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, sm.GetPtr());
 		if (!ps)
 			return false;
@@ -3361,7 +3371,7 @@ bool GSDevice12::InRenderPass()
 void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_begin,
 	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE color_end, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE depth_begin,
 	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE depth_end, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin,
-	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end, u32 clear_color, float clear_depth, u8 clear_stencil)
+	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end, GSVector4 clear_color, float clear_depth, u8 clear_stencil)
 {
 	if (m_in_render_pass)
 		EndRenderPass();
@@ -3380,8 +3390,7 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		{
 			LookupNativeFormat(m_current_render_target->GetFormat(), nullptr,
 				&rt.BeginningAccess.Clear.ClearValue.Format, nullptr, nullptr);
-			GSVector4::store<false>(rt.BeginningAccess.Clear.ClearValue.Color,
-				GSVector4::unorm8(clear_color));
+			GSVector4::store<false>(rt.BeginningAccess.Clear.ClearValue.Color, clear_color);
 		}
 	}
 
@@ -3676,7 +3685,8 @@ void GSDevice12::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 	SetStencilRef(1);
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
-		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, 0, 0.0f, 0);
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		GSVector4::zero(), 0.0f, 0);
 	if (ApplyUtilityState())
 		DrawPrimitive();
 
@@ -3711,7 +3721,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 					D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		config.ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-		0, config.ds ? config.ds->GetClearDepth() : 0.0f);
+		GSVector4::zero(), config.ds ? config.ds->GetClearDepth() : 0.0f);
 
 	// draw the quad to prefill the image
 	const GSVector4 src = GSVector4(config.drawarea) / GSVector4(rtsize).xyxy();
@@ -3893,6 +3903,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// Begin render pass if new target or out of the area.
 	if (!m_in_render_pass)
 	{
+		GSVector4 clear_color = draw_rt ? draw_rt->GetUNormClearColor() : GSVector4::zero();
+		if (pipe.ps.hdr)
+		{
+			// Denormalize clear color for HDR.
+			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
+		}
 		BeginRenderPass(GetLoadOpForTexture(draw_rt),
 			draw_rt ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			GetLoadOpForTexture(draw_ds),
@@ -3901,7 +3917,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 						   D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			stencil_DATE ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD :
 						   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			draw_rt ? draw_rt->GetClearColor() : 0, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
+			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
 	}
 
 	// rt -> hdr blit if enabled
@@ -3966,7 +3982,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			GetLoadOpForTexture(draw_ds),
 			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			draw_rt->GetClearColor(), 0.0f, 0);
+			draw_rt->GetUNormClearColor(), 0.0f, 0);
 
 		const GSVector4 sRect(GSVector4(render_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
 		SetPipeline(m_hdr_finish_pipelines[pipe.ds].get());

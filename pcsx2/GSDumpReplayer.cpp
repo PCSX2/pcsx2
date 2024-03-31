@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS.h"
@@ -18,7 +18,9 @@
 
 #include "fmt/core.h"
 
+#include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 #include "common/Timer.h"
@@ -87,10 +89,12 @@ bool GSDumpReplayer::Initialize(const char* filename)
 	Common::Timer timer;
 	Console.WriteLn("(GSDumpReplayer) Reading file '%s'...", filename);
 
-	s_dump_file = GSDumpFile::OpenGSDump(filename);
-	if (!s_dump_file || !s_dump_file->ReadFile())
+	Error error;
+	s_dump_file = GSDumpFile::OpenGSDump(filename, &error);
+	if (!s_dump_file || !s_dump_file->ReadFile(&error))
 	{
-		Host::ReportFormattedErrorAsync("GSDumpReplayer", "Failed to open or read '%s'.", filename);
+		Host::ReportErrorAsync("GSDumpReplayer", fmt::format("Failed to open or read '{}': {}",
+													 Path::GetFileName(filename), error.GetDescription()));
 		s_dump_file.reset();
 		return false;
 	}
@@ -119,10 +123,12 @@ bool GSDumpReplayer::ChangeDump(const char* filename)
 		return false;
 	}
 
+	Error error;
 	std::unique_ptr<GSDumpFile> new_dump(GSDumpFile::OpenGSDump(filename));
-	if (!new_dump || !new_dump->ReadFile())
+	if (!new_dump || !new_dump->ReadFile(&error))
 	{
-		Host::ReportFormattedErrorAsync("GSDumpReplayer", "Failed to open or read '%s'.", filename);
+		Host::ReportErrorAsync("GSDumpReplayer", fmt::format("Failed to open or read '{}': {}",
+													 Path::GetFileName(filename), error.GetDescription()));
 		return false;
 	}
 

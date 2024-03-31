@@ -9,7 +9,6 @@ if (WIN32)
 	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libpng EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/libwebp EXCLUDE_FROM_ALL)
-	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/zstd EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/lz4 EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
@@ -23,8 +22,6 @@ if (WIN32)
 	add_subdirectory(3rdparty/wil EXCLUDE_FROM_ALL)
 else()
 	find_package(PCAP REQUIRED)
-	find_package(LibLZMA REQUIRED)
-	make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)
 
 	# Using find_package OpenGL without either setting your opengl preference to GLVND or LEGACY
 	# is deprecated as of cmake 3.11.

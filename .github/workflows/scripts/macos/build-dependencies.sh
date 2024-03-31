@@ -12,7 +12,6 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.30.1
-XZ=5.4.5
 ZSTD=1.5.5
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 PNG=1.6.37
@@ -42,7 +41,6 @@ CMAKE_COMMON=(
 
 cat > SHASUMS <<EOF
 01215ffbc8cfc4ad165ba7573750f15ddda1f971d5a66e9dcaffd37c587f473a  $SDL.tar.gz
-135c90b934aee8fbc0d467de87a05cb70d627da36abe518c357a873709e5b7d6  xz-$XZ.tar.gz
 9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca  libpng-$PNG.tar.xz
@@ -58,7 +56,6 @@ EOF
 
 curl -L \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
-	-O "https://github.com/tukaani-project/xz/releases/download/v$XZ/xz-$XZ.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 	-O "https://github.com/lz4/lz4/archive/$LZ4.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$PNG/libpng-$PNG.tar.xz" \
@@ -94,15 +91,6 @@ LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
 	--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
 	--enable-protocol=file
 make "-j$NPROCS"
-make install
-cd ..
-
-echo "Installing XZ..."
-tar xf "xz-$XZ.tar.gz"
-cd "xz-$XZ"
-cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -B build
-make -C build "-j$NPROCS"
-make -C build install
 make install
 cd ..
 

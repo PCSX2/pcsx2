@@ -92,6 +92,7 @@ oprofile_data/
 /bin/inputprofiles
 /bin/videos
 /bin/portable.ini
+/bin/portable.txt
 
 # Manually added by user.
 /bin/resources/patches.zip
