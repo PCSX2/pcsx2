@@ -993,7 +993,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 
 		if (palette)
 		{
-			AttachPaletteToSource(src, psm_s.pal, true);
+			AttachPaletteToSource(src, psm_s.pal, true, true);
 		}
 	}
 	else
@@ -1645,7 +1645,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								if (TEX0.PSM == PSMT8H)
 								{
 									// Attach palette for GPU texture conversion
-									AttachPaletteToSource(src, psm_s.pal, true);
+									AttachPaletteToSource(src, psm_s.pal, true, true);
 								}
 
 								return src;
@@ -1666,7 +1666,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 									if (TEX0.PSM == PSMT8H)
 									{
 										// Attach palette for GPU texture conversion
-										AttachPaletteToSource(src, psm_s.pal, true);
+										AttachPaletteToSource(src, psm_s.pal, true, true);
 									}
 
 									return src;
@@ -1715,6 +1715,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		// Guard against merged targets which don't actually link.
 		if (src->m_target && src->m_from_target)
 		{
+			src->m_valid_alpha_minmax = true;
+
 			if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 			{
 				src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
@@ -1739,7 +1741,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		if (gpu_clut)
 			AttachPaletteToSource(src, gpu_clut);
 		else if (src->m_palette && (!src->m_palette_obj || !src->ClutMatch({clut, psm_s.pal})))
-			AttachPaletteToSource(src, psm_s.pal, true);
+			AttachPaletteToSource(src, psm_s.pal, true, true);
 	}
 
 	src->Update(r);
@@ -4375,6 +4377,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_from_target = dst;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 
+		src->m_valid_alpha_minmax = true;
 		if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 		{
 			src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
@@ -4399,7 +4402,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		if (psm.pal > 0)
 		{
 			// Attach palette for GPU texture conversion
-			AttachPaletteToSource(src, psm.pal, true);
+			AttachPaletteToSource(src, psm.pal, true, true);
 		}
 
 #ifdef PCSX2_DEVBUILD
@@ -4455,6 +4458,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Do this first as we could be adding in alpha from an upgraded 24bit target.
 		dst->Update();
 
+		src->m_valid_alpha_minmax = true;
 		if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 		{
 			src->m_alpha_minmax.first = TEXA.AEM ? 0 : TEXA.TA0;
@@ -4710,7 +4714,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Because the texture is already on the GPU, CPU can't convert it.
 		if (psm.pal > 0)
 		{
-			AttachPaletteToSource(src, psm.pal, true);
+			AttachPaletteToSource(src, psm.pal, true, true);
 		}
 
 		// Offset hack. Can be enabled via GS options.
@@ -4742,11 +4746,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			src->m_texture = src->m_from_hash_cache->texture;
 			src->m_alpha_minmax = src->m_from_hash_cache->alpha_minmax;
+			src->m_valid_alpha_minmax = src->m_from_hash_cache->valid_alpha_minmax;
 
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
 			else if (psm.pal > 0)
-				AttachPaletteToSource(src, psm.pal, paltex);
+				AttachPaletteToSource(src, psm.pal, paltex, false);
 		}
 		else if (paltex)
 		{
@@ -4762,7 +4767,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
 			else
-				AttachPaletteToSource(src, psm.pal, true);
+				AttachPaletteToSource(src, psm.pal, true, true);
 		}
 		else
 		{
@@ -4778,7 +4783,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			if (gpu_clut)
 				AttachPaletteToSource(src, gpu_clut);
 			else if (psm.pal > 0)
-				AttachPaletteToSource(src, psm.pal, false);
+				AttachPaletteToSource(src, psm.pal, false, true);
 		}
 
 #ifdef PCSX2_DEVBUILD
@@ -5231,10 +5236,12 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 		return nullptr;
 	}
 
-	// upload base level
-	const bool is_direct = (GSLocalMemory::m_psm[TEX0.PSM].pal == 0);
+	// compute alpha minmax on all textures, unless paltex is on, because not all CLUT colors are used.
+	const bool compute_alpha_minmax = !paltex;
 	std::pair<u8, u8> alpha_minmax = {0u, 255u};
-	PreloadTexture(TEX0, TEXA, region, g_gs_renderer->m_mem, paltex, tex, 0, is_direct ? &alpha_minmax : nullptr);
+
+	// upload base level
+	PreloadTexture(TEX0, TEXA, region, g_gs_renderer->m_mem, paltex, tex, 0, compute_alpha_minmax ? &alpha_minmax : nullptr);
 
 	// upload mips if present
 	if (lod)
@@ -5246,8 +5253,8 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 			const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + mip)};
 			std::pair<u8, u8> mip_alpha_minmax;
 			PreloadTexture(MIP_TEX0, TEXA, region.AdjustForMipmap(mip), g_gs_renderer->m_mem, paltex, tex, mip,
-				is_direct ? &mip_alpha_minmax : nullptr);
-			if (!is_direct)
+				compute_alpha_minmax ? &mip_alpha_minmax : nullptr);
+			if (compute_alpha_minmax)
 			{
 				alpha_minmax.first = std::min(alpha_minmax.first, mip_alpha_minmax.first);
 				alpha_minmax.second = std::max(alpha_minmax.second, mip_alpha_minmax.second);
@@ -5260,7 +5267,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 		key.RemoveCLUTHash();
 
 	// insert into the cache cache, and we're done
-	const HashCacheEntry entry{tex, 1u, 0u, alpha_minmax, false};
+	const HashCacheEntry entry{tex, 1u, 0u, alpha_minmax, compute_alpha_minmax, false};
 	m_hash_cache_memory_usage += tex->GetMemUsage();
 	return &m_hash_cache.emplace(key, entry).first->second;
 }
@@ -5916,7 +5923,7 @@ void GSTextureCache::Source::PreloadLevel(int level)
 	m_layer_hash[level] = hash;
 
 	// And upload the texture.
-	if (IsPaletteFormat())
+	if (!m_valid_alpha_minmax)
 	{
 		PreloadTexture(m_TEX0, m_TEXA, m_region.AdjustForMipmap(level), g_gs_renderer->m_mem, m_palette != nullptr,
 			m_texture, level, nullptr);
@@ -6435,11 +6442,15 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 	delete s;
 }
 
-void GSTextureCache::AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture)
+void GSTextureCache::AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture, bool update_alpha_minmax)
 {
 	s->m_palette_obj = m_palette_map.LookupPalette(pal, need_gs_texture);
 	s->m_palette = need_gs_texture ? s->m_palette_obj->GetPaletteGSTexture() : nullptr;
-	s->m_alpha_minmax = s->m_palette_obj->GetAlphaMinMax();
+	if (update_alpha_minmax)
+	{
+		s->m_alpha_minmax = s->m_palette_obj->GetAlphaMinMax();
+		s->m_valid_alpha_minmax = true;
+	}
 }
 
 void GSTextureCache::AttachPaletteToSource(Source* s, GSTexture* gpu_clut)
@@ -6448,6 +6459,7 @@ void GSTextureCache::AttachPaletteToSource(Source* s, GSTexture* gpu_clut)
 	s->m_palette = gpu_clut;
 
 	// Unknown.
+	s->m_valid_alpha_minmax = false;
 	s->m_alpha_minmax.first = 0;
 	s->m_alpha_minmax.second = 255;
 }
@@ -6657,7 +6669,7 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 	{
 		// We must've got evicted before we finished loading. No matter, add it in there anyway;
 		// if it's not used again, it'll get tossed out later.
-		const HashCacheEntry entry{tex, 1u, 0u, alpha_minmax, true};
+		const HashCacheEntry entry{tex, 1u, 0u, alpha_minmax, true, true};
 		m_hash_cache.emplace(key, entry);
 		return;
 	}
@@ -6665,6 +6677,7 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 	// Reset age so we don't get thrown out too early.
 	it->second.age = 0;
 	it->second.alpha_minmax = alpha_minmax;
+	it->second.valid_alpha_minmax = true;
 
 	// Update memory usage, swap the textures, and recycle the old one for reuse.
 	if (!it->second.is_replacement)

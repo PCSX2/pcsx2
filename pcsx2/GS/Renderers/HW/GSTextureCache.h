@@ -116,6 +116,7 @@ public:
 		u32 refcount;
 		u16 age;
 		std::pair<u8, u8> alpha_minmax;
+		bool valid_alpha_minmax;
 		bool is_replacement;
 	};
 
@@ -286,6 +287,7 @@ public:
 		bool m_target = false;
 		bool m_target_direct = false;
 		bool m_repeating = false;
+		bool m_valid_alpha_minmax = false;
 		std::pair<u8, u8> m_alpha_minmax = {0u, 255u};
 		std::vector<GSVector2i>* m_p2t = nullptr;
 		// Keep a trace of the target origin. There is no guarantee that pointer will
@@ -537,7 +539,7 @@ public:
 		return (type == DepthStencil) ? "Depth" : "Color";
 	}
 
-	void AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture);
+	void AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture, bool update_alpha_minmax);
 	void AttachPaletteToSource(Source* s, GSTexture* gpu_clut);
 	SurfaceOffset ComputeSurfaceOffset(const GSOffset& off, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);

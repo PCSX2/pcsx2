@@ -122,6 +122,8 @@ private:
 	} m_tr;
 
 protected:
+	static constexpr int INVALID_ALPHA_MINMAX = 500;
+
 	GSVertex m_v = {};
 	float m_q = 1.0f;
 	GSVector4i m_scissor_cull_min = {};
@@ -163,7 +165,7 @@ protected:
 	GSVertexTrace::VertexAlpha& GetAlphaMinMax()
 	{
 		if (!m_vt.m_alpha.valid)
-			CalcAlphaMinMax(0, 500);
+			CalcAlphaMinMax(0, INVALID_ALPHA_MINMAX);
 		return m_vt.m_alpha;
 	}
 	struct TextureMinMaxResult
