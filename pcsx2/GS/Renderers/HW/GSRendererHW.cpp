@@ -4368,7 +4368,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		const bool rta_correction = m_can_correct_alpha && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
-			rt->RTACorrect(rt);
+			rt->RTACorrect();
 			m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 			m_conf.rt = rt->m_texture;
 		}
@@ -5411,7 +5411,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					m_can_correct_alpha = false;
 
-					rt->RTADecorrect(rt);
+					rt->RTADecorrect();
 					m_conf.rt = rt->m_texture;
 
 					if (req_src_update)
@@ -5427,7 +5427,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
 					{
 						m_can_correct_alpha = false;
-						rt->RTADecorrect(rt);
+						rt->RTADecorrect();
 						m_conf.rt = rt->m_texture;
 
 						if (req_src_update)
@@ -5440,7 +5440,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt->m_alpha_max > 128)
 				{
 					m_can_correct_alpha = false;
-					rt->RTADecorrect(rt);
+					rt->RTADecorrect();
 					m_conf.rt = rt->m_texture;
 
 					if (req_src_update)
@@ -5455,7 +5455,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			else
 			{
 				m_can_correct_alpha = false;
-				rt->RTADecorrect(rt);
+				rt->RTADecorrect();
 				m_conf.rt = rt->m_texture;
 
 				if (req_src_update)
@@ -5489,7 +5489,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 			if (!full_cover)
 			{
-				rt->RTACorrect(rt);
+				rt->RTACorrect();
 				m_conf.rt = rt->m_texture;
 			}
 			else
@@ -5959,7 +5959,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, r);
 			if (tgt)
 			{
-				tgt->RTADecorrect(tgt);
+				tgt->RTADecorrect();
 				bool is_dirty = false;
 				for (const GSDirtyRect& rc : tgt->m_dirty)
 				{

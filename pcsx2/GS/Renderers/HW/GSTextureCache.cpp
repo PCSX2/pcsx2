@@ -932,7 +932,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 				dst = t;
 
 				if (GSUtil::GetChannelMask(TEX0.PSM) & 0x8)
-					t->RTADecorrect(t);
+					t->RTADecorrect();
 
 				inside_target = false;
 				break;
@@ -1339,7 +1339,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							// The hack can fix glitches in some games.
 							if (!t->m_drawn_since_read.rempty())
 							{
-								t->RTADecorrect(t);
+								t->RTADecorrect();
 
 								Read(t, t->m_drawn_since_read);
 
@@ -2244,7 +2244,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 					else if (dst_match->m_texture->GetState() == GSTexture::State::Dirty)
 					{
-						dst_match->RTADecorrect(dst_match);
+						dst_match->RTADecorrect();
 						g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					}
@@ -2669,53 +2669,55 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	return can_create ? CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true) : nullptr;
 }
 
-void GSTextureCache::Target::RTACorrect(Target* rt)
+void GSTextureCache::Target::RTACorrect()
 {
-	if (rt && !rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	if (!m_rt_alpha_scale && m_type == RenderTarget)
 	{
-		if (rt->m_alpha_max > 0)
+		if (m_alpha_max > 0)
 		{
-			const GSVector2i rtsize(rt->m_texture->GetSize());
-			const GSVector4i valid_rect = GSVector4i(GSVector4(rt->m_valid) * GSVector4(rt->m_scale));
+			const GSVector2i rtsize(m_texture->GetSize());
+			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
+			GL_PUSH("RTACorrect(valid=({},{}=>{},{}))", m_valid.x, m_valid.y, m_valid.z, m_valid.w);
 
 			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
 			{
 				// Only copy up the valid area, since there's no point in "correcting" nothing.
-				const GSVector4 dRect(rt->m_texture->GetRect().rintersect(valid_rect));
+				const GSVector4 dRect(m_texture->GetRect().rintersect(valid_rect));
 				const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-				g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION, false);
+				g_gs_device->StretchRect(m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION, false);
 				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-				g_gs_device->Recycle(rt->m_texture);
-				rt->m_texture = temp_rt;
+				g_gs_device->Recycle(m_texture);
+				m_texture = temp_rt;
 			}
 		}
 
-		rt->m_rt_alpha_scale = true;
+		m_rt_alpha_scale = true;
 	}
 }
 
-void GSTextureCache::Target::RTADecorrect(Target* rt)
+void GSTextureCache::Target::RTADecorrect()
 {
-	if (rt->m_rt_alpha_scale && rt->m_type == RenderTarget)
+	if (m_rt_alpha_scale && m_type == RenderTarget)
 	{
-		if (rt->m_alpha_max > 0)
+		if (m_alpha_max > 0)
 		{
-			const GSVector2i rtsize(rt->m_texture->GetSize());
-			const GSVector4i valid_rect = GSVector4i(GSVector4(rt->m_valid) * GSVector4(rt->m_scale));
+			const GSVector2i rtsize(m_texture->GetSize());
+			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
+			GL_PUSH("RTADecorrect(valid=({},{}=>{},{}))", m_valid.x, m_valid.y, m_valid.z, m_valid.w);
 
 			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
 			{
 				// Only copy up the valid area, since there's no point in "correcting" nothing.
-				const GSVector4 dRect(rt->m_texture->GetRect().rintersect(valid_rect));
+				const GSVector4 dRect(m_texture->GetRect().rintersect(valid_rect));
 				const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-				g_gs_device->StretchRect(rt->m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION, false);
+				g_gs_device->StretchRect(m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION, false);
 				g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-				g_gs_device->Recycle(rt->m_texture);
-				rt->m_texture = temp_rt;
+				g_gs_device->Recycle(m_texture);
+				m_texture = temp_rt;
 			}
 		}
 
-		rt->m_rt_alpha_scale = false;
+		m_rt_alpha_scale = false;
 	}
 }
 
@@ -3716,8 +3718,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const bool cover_whole_target = dst->m_type == RenderTarget && GSVector4i(dx, dy, dx + w, dy + h).rintersect(dst->m_valid).eq(dst->m_valid);
 	if (!cover_whole_target)
 	{
-		src->RTADecorrect(src);
-		dst->RTADecorrect(dst);
+		src->RTADecorrect();
+		dst->RTADecorrect();
 	}
 
 	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
@@ -3888,7 +3890,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h);
 
 	if (read_ba || !write_rg)
-		tgt->RTADecorrect(tgt);
+		tgt->RTADecorrect();
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
@@ -4665,7 +4667,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				{
 					if (dst->m_rt_alpha_scale)
 					{
-						dst->RTADecorrect(dst);
+						dst->RTADecorrect();
 						sTex = dst->m_texture;
 					}
 
@@ -5411,7 +5413,7 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 		offset = this_offset;
 		*scale = t->m_scale;
 
-		t->RTADecorrect(t);
+		t->RTADecorrect();
 
 		return t->m_texture;
 	}
@@ -6127,7 +6129,7 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 		if (m_type == RenderTarget && transferring_alpha && bpp >= 16)
 		{
 			if (alpha_minmax.second > 128 || (m_TEX0.PSM & 0xf) == PSMCT24)
-				this->RTADecorrect(this);
+				RTADecorrect();
 			else if (!cannot_scale && total_rect.eq(m_valid))
 				m_rt_alpha_scale = true;
 		}
