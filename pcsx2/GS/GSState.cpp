@@ -2981,6 +2981,106 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 	return overlap;
 }
 
+bool GSState::PrimitiveCoversWithoutGaps()
+{
+	if (m_primitive_covers_without_gaps.has_value())
+		return m_primitive_covers_without_gaps.value();
+
+	// Draw shouldn't be offset.
+	if (((m_r.eq32(GSVector4i::zero())).mask() & 0xff) != 0xff)
+	{
+		m_primitive_covers_without_gaps = false;
+		return false;
+	}
+
+	if (m_vt.m_primclass == GS_POINT_CLASS)
+	{
+		m_primitive_covers_without_gaps = (m_vertex.next < 2);
+		return m_primitive_covers_without_gaps.value();
+	}
+	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		m_primitive_covers_without_gaps = (m_index.tail == 6 && TrianglesAreQuads());
+		return m_primitive_covers_without_gaps.value();
+	}
+	else if (m_vt.m_primclass != GS_SPRITE_CLASS)
+	{
+		m_primitive_covers_without_gaps = false;
+		return false;
+	}
+
+	// Simple case: one sprite.
+	if (m_index.tail == 2)
+	{
+		m_primitive_covers_without_gaps = true;
+		return true;
+	}
+
+	// Check that the height matches. Xenosaga 3 draws a letterbox around
+	// the FMV with a sprite at the top and bottom of the framebuffer.
+	const GSVertex* v = &m_vertex.buff[0];
+	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
+	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+
+	// Horizontal Match.
+	if ((first_dpX >> 4) == m_r_no_scissor.z)
+	{
+		// Borrowed from MergeSprite() modified to calculate heights.
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int last_pY = v[i - 1].XYZ.Y;
+			const int dpY = v[i + 1].XYZ.Y - v[i].XYZ.Y;
+			if (std::abs(dpY - first_dpY) >= 16 || std::abs(static_cast<int>(v[i].XYZ.Y) - last_pY) >= 16)
+			{
+				m_primitive_covers_without_gaps = false;
+				return false;
+			}
+		}
+
+		m_primitive_covers_without_gaps = true;
+		return true;
+	}
+
+	// Vertical Match.
+	if ((first_dpY >> 4) == m_r_no_scissor.w)
+	{
+		// Borrowed from MergeSprite().
+		const int offset_X = m_context->XYOFFSET.OFX;
+		for (u32 i = 2; i < m_vertex.next; i += 2)
+		{
+			const int last_pX = v[i - 1].XYZ.X;
+			const int this_start_X = v[i].XYZ.X;
+			const int last_start_X = v[i - 2].XYZ.X;
+
+			const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+
+			if (this_start_X < last_start_X)
+			{
+				const int prev_X = last_start_X - offset_X;
+				if (std::abs(dpX - prev_X) >= 16 || std::abs(this_start_X - offset_X) >= 16)
+				{
+					m_primitive_covers_without_gaps = false;
+					return false;
+				}
+			}
+			else
+			{
+				if (std::abs(dpX - first_dpX) >= 16 || std::abs(this_start_X - last_pX) >= 16)
+				{
+					m_primitive_covers_without_gaps = false;
+					return false;
+				}
+			}
+		}
+
+		m_primitive_covers_without_gaps = true;
+		return true;
+	}
+
+	m_primitive_covers_without_gaps = false;
+	return false;
+}
+
 __forceinline bool GSState::IsAutoFlushDraw(u32 prim)
 {
 	if (!PRIM->TME || (GSConfig.UserHacks_AutoFlush == GSHWAutoFlushLevel::SpritesOnly && prim != GS_SPRITE))

@@ -56,7 +56,6 @@ private:
 	bool IsDiscardingDstColor();
 	bool IsDiscardingDstRGB();
 	bool IsDiscardingDstAlpha() const;
-	bool PrimitiveCoversWithoutGaps();
 	bool TextureCoversWithoutGapsNotEqual();
 
 	enum class CLUTDrawTestResult
@@ -123,9 +122,6 @@ private:
 	bool IsUsingCsInBlend();
 	bool IsUsingAsInBlend();
 
-	GSVector4i m_r = {};
-	GSVector4i m_r_no_scissor = {};
-	
 	// We modify some of the context registers to optimize away unnecessary operations.
 	// Instead of messing with the real context, we copy them and use those instead.
 	struct HWCachedCtx
@@ -173,7 +169,6 @@ private:
 	u32 m_split_clear_pages = 0; // if zero, inactive
 	u32 m_split_clear_color = 0;
 
-	std::optional<bool> m_primitive_covers_without_gaps;
 	bool m_userhacks_tcoffset = false;
 	float m_userhacks_tcoffset_x = 0.0f;
 	float m_userhacks_tcoffset_y = 0.0f;

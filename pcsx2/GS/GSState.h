@@ -219,6 +219,9 @@ public:
 	u32 m_dirty_gs_regs = 0;
 	int m_backed_up_ctx = 0;
 	std::vector<GSUploadQueue> m_draw_transfers;
+	std::optional<bool> m_primitive_covers_without_gaps;
+	GSVector4i m_r = {};
+	GSVector4i m_r_no_scissor = {};
 
 	static int s_n;
 	static int s_last_transfer_draw_n;
@@ -406,6 +409,7 @@ public:
 
 	bool TrianglesAreQuads() const;
 	PRIM_OVERLAP PrimitiveOverlap();
+	bool PrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };
 
