@@ -6,6 +6,7 @@
 #include "CDVD/IsoReader.h"
 #include "Counters.h"
 #include "DEV9/DEV9.h"
+#include "DebugTools/DebugInterface.h"
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
 #include "Elfheader.h"
@@ -1320,7 +1321,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Hle_ClearHostRoot();
 	}
 
-	// Check for resuming with hardcore mode.
+	// Check for resuming and 'Boot and Debug' with hardcore mode.
 	// Why do we need the boot param? Because we need some way of telling BootSystem() that
 	// the user allowed HC mode to be disabled, because otherwise we'll ResetHardcoreMode()
 	// and send ourselves into an infinite loop.
@@ -1328,26 +1329,44 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		Achievements::DisableHardcoreMode();
 	else
 		Achievements::ResetHardcoreMode();
-	if (!state_to_load.empty() && Achievements::IsHardcoreModeActive())
+	if (Achievements::IsHardcoreModeActive())
 	{
-		if (FullscreenUI::IsInitialized())
+		auto confirmHardcoreModeDisable = [&boot_params, &state_to_load](const char* trigger) mutable {
+			if (FullscreenUI::IsInitialized())
+			{
+				boot_params.elf_override = std::move(s_elf_override);
+				boot_params.save_state = std::move(state_to_load);
+				boot_params.disable_achievements_hardcore_mode = true;
+				s_elf_override = {};
+
+				Achievements::ConfirmHardcoreModeDisableAsync(trigger,
+					[boot_params = std::move(boot_params)](bool approved) mutable {
+						if (approved && Initialize(std::move(boot_params)))
+							SetState(VMState::Running);
+					});
+
+				return false;
+			}
+			else if (!Achievements::ConfirmHardcoreModeDisable(trigger))
+			{
+				return false;
+			}
+			return true;
+		};
+
+		if (!state_to_load.empty())
 		{
-			boot_params.elf_override = std::move(s_elf_override);
-			boot_params.save_state = std::move(state_to_load);
-			boot_params.disable_achievements_hardcore_mode = true;
-			s_elf_override = {};
-
-			Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("VMManager", "Resuming state"),
-				[boot_params = std::move(boot_params)](bool approved) mutable {
-					if (approved && Initialize(std::move(boot_params)))
-						SetState(VMState::Running);
-				});
-
-			return false;
+			if (!confirmHardcoreModeDisable(TRANSLATE("VMManager", "Resuming state")))
+			{
+				return false;
+			}
 		}
-		else if (!Achievements::ConfirmHardcoreModeDisable(TRANSLATE("VMManager", "Resuming state")))
+		if (DebugInterface::getPauseOnEntry())
 		{
-			return false;
+			if (!confirmHardcoreModeDisable(TRANSLATE("VMManager", "Boot and Debug")))
+			{
+				return false;
+			}
 		}
 	}
 

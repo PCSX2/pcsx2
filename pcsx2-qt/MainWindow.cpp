@@ -776,7 +776,9 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
 	m_ui.actionDebugger->setDisabled(enabled);
 	if (enabled)
 	{
-		if (m_debugger_window)
+		// If PauseOnEntry is enabled, we prompt the user to disable Hardcore Mode
+		// or cancel the action later, so we should keep the debugger around
+		if (m_debugger_window && !DebugInterface::getPauseOnEntry())
 		{
 			m_debugger_window->close();
 			m_debugger_window->deleteLater();
