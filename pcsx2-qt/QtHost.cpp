@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "AutoUpdaterDialog.h"
@@ -928,6 +928,7 @@ void Host::OnVMStarting()
 
 void Host::OnVMStarted()
 {
+	g_emu_thread->updatePerformanceMetrics(true);
 	emit g_emu_thread->onVMStarted();
 }
 
@@ -1002,49 +1003,41 @@ void EmuThread::updatePerformanceMetrics(bool force)
 	if (iwidth != m_last_internal_width || iheight != m_last_internal_height || speed != m_last_speed || gfps != m_last_game_fps ||
 		vfps != m_last_video_fps || renderer != m_last_renderer || force)
 	{
-		if (iwidth == 0 && iheight == 0)
+		if (renderer != m_last_renderer || force)
 		{
-			// if we don't have width/height yet, we're not going to have fps either.
-			// and we'll probably be <100% due to compiling. so just leave it blank for now.
-			QString blank;
-			QMetaObject::invokeMethod(
-				g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
-			QMetaObject::invokeMethod(
-				g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
-			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
-			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, blank));
-			return;
+			QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection,
+				Q_ARG(const QString&, QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))));
+			m_last_renderer = renderer;
 		}
-		else
+
+		if (iwidth != m_last_internal_width || iheight != m_last_internal_height || force)
 		{
-			if (renderer != m_last_renderer || force)
-			{
-				QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))));
-				m_last_renderer = renderer;
-			}
-			if (iwidth != m_last_internal_width || iheight != m_last_internal_height || force)
-			{
-				QMetaObject::invokeMethod(g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("%1x%2").arg(iwidth).arg(iheight)));
-				m_last_internal_width = iwidth;
-				m_last_internal_height = iheight;
-			}
+			QString text;
+			if (iwidth == 0 || iheight == 0)
+				text = tr("N/A");
+			else
+				text = tr("%1x%2").arg(iwidth).arg(iheight);
 
-			if (gfps != m_last_game_fps || force)
-			{
-				QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("Game: %1 FPS").arg(gfps, 0, 'f', 0)));
-				m_last_game_fps = gfps;
-			}
+			QMetaObject::invokeMethod(
+				g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, text));
 
-			if (speed != m_last_speed || vfps != m_last_video_fps || force)
-			{
-				QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("Video: %1 FPS (%2%)").arg(vfps, 0, 'f', 0).arg(speed, 0, 'f', 0)));
-				m_last_speed = speed;
-				m_last_video_fps = vfps;
-			}
+			m_last_internal_width = iwidth;
+			m_last_internal_height = iheight;
+		}
+
+		if (gfps != m_last_game_fps || force)
+		{
+			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
+				Q_ARG(const QString&, tr("Game: %1 FPS").arg(gfps, 0, 'f', 0)));
+			m_last_game_fps = gfps;
+		}
+
+		if (speed != m_last_speed || vfps != m_last_video_fps || force)
+		{
+			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
+				Q_ARG(const QString&, tr("Video: %1 FPS (%2%)").arg(vfps, 0, 'f', 0).arg(speed, 0, 'f', 0)));
+			m_last_speed = speed;
+			m_last_video_fps = vfps;
 		}
 	}
 }
