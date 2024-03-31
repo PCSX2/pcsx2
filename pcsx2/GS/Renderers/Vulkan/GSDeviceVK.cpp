@@ -5793,7 +5793,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
 		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
-		const GSVector4i render_area = GSVector4i::loadh(rtsize);
+		const GSVector4i render_area = pipe.ps.hdr ? config.drawarea : GSVector4i::loadh(rtsize);
 
 		if (is_clearing_rt)
 		{
@@ -5801,7 +5801,15 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			alignas(16) VkClearValue cvs[2];
 			u32 cv_count = 0;
 			if (draw_rt)
-				GSVector4::store<true>(&cvs[cv_count++].color, draw_rt->GetUNormClearColor());
+			{
+				GSVector4 clear_color = draw_rt->GetUNormClearColor();
+				if (pipe.ps.hdr)
+				{
+					// Denormalize clear color for HDR.
+					clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
+				}
+				GSVector4::store<true>(&cvs[cv_count++].color, clear_color);
+			}
 			if (draw_ds)
 				cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 0};
 
@@ -5871,7 +5879,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// now blit the hdr texture back to the original target
 	if (hdr_rt)
 	{
-		GL_INS("Blit HDR back to RT");
+		GL_PUSH("Blit HDR back to RT");
 
 		EndRenderPass();
 		hdr_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
