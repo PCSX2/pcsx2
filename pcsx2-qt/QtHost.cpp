@@ -183,13 +183,13 @@ void EmuThread::startFullscreenUI(bool fullscreen)
 
 	// this should just set the flag so it gets automatically started
 	ImGuiManager::InitializeFullscreenUI();
-	m_run_fullscreen_ui = true;
+	m_run_fullscreen_ui.store(true, std::memory_order_release);
 	m_is_rendering_to_main = shouldRenderToMain();
 	m_is_fullscreen = fullscreen;
 
 	if (!MTGS::WaitForOpen())
 	{
-		m_run_fullscreen_ui = false;
+		m_run_fullscreen_ui.store(false, std::memory_order_release);
 		return;
 	}
 
@@ -207,20 +207,21 @@ void EmuThread::stopFullscreenUI()
 		QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
 		// wait until the host display is gone
-		while (!QtHost::IsVMValid() && MTGS::IsOpen())
+		// have to test the bool, because MTGS::IsOpen() goes false as soon as the close request happens.
+		while (m_run_fullscreen_ui.load(std::memory_order_acquire) || (!QtHost::IsVMValid() && MTGS::IsOpen()))
 			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
 
 		return;
 	}
 
-	if (m_run_fullscreen_ui)
-	{
-		m_run_fullscreen_ui = false;
-		emit onFullscreenUIStateChange(false);
-	}
-
 	if (MTGS::IsOpen() && !VMManager::HasValidVM())
 		MTGS::WaitForClose();
+
+	if (m_run_fullscreen_ui.load(std::memory_order_acquire))
+	{
+		m_run_fullscreen_ui.store(false, std::memory_order_release);
+		emit onFullscreenUIStateChange(false);
+	}
 }
 
 void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)

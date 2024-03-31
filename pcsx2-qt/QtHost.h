@@ -61,7 +61,7 @@ public:
 	__fi bool isExclusiveFullscreen() const { return m_is_exclusive_fullscreen; }
 	__fi bool isRenderingToMain() const { return m_is_rendering_to_main; }
 	__fi bool isSurfaceless() const { return m_is_surfaceless; }
-	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
+	__fi bool isRunningFullscreenUI() const { return m_run_fullscreen_ui.load(std::memory_order_acquire); }
 
 	__fi bool isOnEmuThread() const { return (QThread::currentThread() == this); }
 	__fi bool isOnUIThread() const { return (QThread::currentThread() == m_ui_thread); }
@@ -206,9 +206,9 @@ private:
 	QTimer* m_background_controller_polling_timer = nullptr;
 
 	std::atomic_bool m_shutdown_flag{false};
+	std::atomic_bool m_run_fullscreen_ui{false};
 
 	bool m_verbose_status = false;
-	bool m_run_fullscreen_ui = false;
 	bool m_is_rendering_to_main = false;
 	bool m_is_fullscreen = false;
 	bool m_is_exclusive_fullscreen = false;

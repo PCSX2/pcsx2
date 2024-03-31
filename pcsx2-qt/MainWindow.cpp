@@ -1972,6 +1972,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	// If there's no VM, we can just exit as normal.
 	if (!s_vm_valid || !m_display_created)
 	{
+		m_is_closing = true;
 		saveStateToConfig();
 		if (m_display_created)
 			g_emu_thread->stopFullscreenUI();
@@ -2213,6 +2214,13 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 	// if we're going to surfaceless, we're done here
 	if (surfaceless)
 		return WindowInfo();
+
+	// very low-chance race here, if the user starts the fullscreen UI, and immediately closes the window.
+	if (m_is_closing)
+	{
+		m_display_created = false;
+		return std::nullopt;
+	}
 
 	createDisplayWidget(fullscreen, render_to_main);
 
