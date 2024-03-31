@@ -139,7 +139,7 @@ PS_OUTPUT ps_rta_correction(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	float4 value = sample_c(input.t);
-	output.c = float4(value.rgb, value.a / (127.5f / 255.0f));
+	output.c = float4(value.rgb, value.a / (128.25f / 255.0f));
 	return output;
 }
 
