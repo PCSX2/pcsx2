@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -162,6 +162,12 @@ namespace FileSystem
 	/// Does not apply the compression flag recursively if called for a directory.
 	/// Does nothing and returns false on non-Windows platforms.
 	bool SetPathCompression(const char* path, bool enable);
+
+#ifdef _WIN32
+	// Path limit remover, but also converts to a wide string at the same time.
+	bool GetWin32Path(std::wstring* dest, std::string_view str);
+	std::wstring GetWin32Path(std::string_view str);
+#endif
 
 	/// Abstracts a POSIX file lock.
 #ifndef _WIN32

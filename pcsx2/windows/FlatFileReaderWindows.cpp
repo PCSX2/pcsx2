@@ -3,7 +3,7 @@
 
 #include "AsyncFileReader.h"
 
-#include "common/StringUtil.h"
+#include "common/FileSystem.h"
 #include "common/Error.h"
 
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
@@ -30,7 +30,7 @@ bool FlatFileReader::Open(std::string filename, Error* error)
 		shareMode |= FILE_SHARE_WRITE;
 
 	hOverlappedFile = CreateFile(
-		StringUtil::UTF8StringToWideString(m_filename).c_str(),
+		FileSystem::GetWin32Path(m_filename).c_str(),
 		GENERIC_READ,
 		shareMode,
 		NULL,

@@ -493,8 +493,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	{
 		const std::string full_path = destination_directory + FS_OSPATH_SEPARATOR_STR + actual_exe;
 		progress.DisplayFormattedInformation("Moving '%s' to '%S'", full_path.c_str(), program_to_launch.c_str());
-		const bool ok = MoveFileExW(StringUtil::UTF8StringToWideString(full_path).c_str(),
-			program_to_launch.c_str(), MOVEFILE_REPLACE_EXISTING);
+		const bool ok = MoveFileExW(FileSystem::GetWin32Path(full_path).c_str(),
+			FileSystem::GetWin32Path(StringUtil::WideStringToUTF8String(program_to_launch)).c_str(),
+			MOVEFILE_REPLACE_EXISTING);
 		if (!ok)
 		{
 			progress.DisplayFormattedModalError("Failed to rename '%s' to %S", full_path.c_str(), program_to_launch.c_str());

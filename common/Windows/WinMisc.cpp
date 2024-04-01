@@ -3,6 +3,7 @@
 
 #if defined(_WIN32)
 
+#include "common/FileSystem.h"
 #include "common/HostSys.h"
 #include "common/RedtapeWindows.h"
 #include "common/StringUtil.h"
@@ -91,7 +92,7 @@ bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
 
 bool Common::PlaySoundAsync(const char* path)
 {
-	const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+	const std::wstring wpath = FileSystem::GetWin32Path(path);
 	return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);
 }
 
