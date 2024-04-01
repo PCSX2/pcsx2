@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
 #include "Pcsx2Defs.h"
+
 #include <cstdio>
 #include <ctime>
 #include <memory>
@@ -88,7 +90,7 @@ namespace FileSystem
 	bool DeleteFilePath(const char* path);
 
 	/// Rename file
-	bool RenamePath(const char* OldPath, const char* NewPath);
+	bool RenamePath(const char* OldPath, const char* NewPath, Error* error = nullptr);
 
 	/// Deleter functor for managed file pointers
 	struct FileDeleter
@@ -134,11 +136,11 @@ namespace FileSystem
 	/// if the directory already exists, the return value will be true.
 	/// if Recursive is specified, all parent directories will be created
 	/// if they do not exist.
-	bool CreateDirectoryPath(const char* path, bool recursive);
+	bool CreateDirectoryPath(const char* path, bool recursive, Error* error = nullptr);
 
 	/// Creates a directory if it doesn't already exist.
 	/// Returns false if it does not exist and creation failed.
-	bool EnsureDirectoryExists(const char* path, bool recursive);
+	bool EnsureDirectoryExists(const char* path, bool recursive, Error* error = nullptr);
 
 	/// Removes a directory.
 	bool DeleteDirectory(const char* path);
