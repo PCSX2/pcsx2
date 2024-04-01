@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -24,6 +24,7 @@
 	} \
 	;
 
+class Error;
 class SettingsInterface;
 class SettingsWrapper;
 
@@ -1226,7 +1227,9 @@ namespace EmuFolders
 	extern std::string Videos;
 
 	/// Initializes critical folders (AppRoot, DataRoot, Settings). Call once on startup.
-	bool InitializeCriticalFolders();
+	void SetAppRoot();
+	bool SetResourcesDirectory();
+	bool SetDataDirectory(Error* error);
 
 	// Assumes that AppRoot and DataRoot have been initialized.
 	void SetDefaults(SettingsInterface& si);

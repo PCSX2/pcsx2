@@ -167,10 +167,7 @@ namespace EmuFolders
 	std::string InputProfiles;
 	std::string Videos;
 
-	static void SetAppRoot();
-	static void SetResourcesDirectory();
 	static bool ShouldUsePortableMode();
-	static void SetDataDirectory();
 } // namespace EmuFolders
 
 TraceFiltersEE::TraceFiltersEE()
@@ -1845,26 +1842,28 @@ void Pcsx2Config::ClearConfiguration(SettingsInterface* dest_si)
 	temp.LoadSaveCore(wrapper);
 }
 
-bool EmuFolders::InitializeCriticalFolders()
+void EmuFolders::SetAppRoot()
 {
-	SetAppRoot();
-	SetResourcesDirectory();
-	SetDataDirectory();
+	const std::string program_path = FileSystem::GetProgramPath();
+	Console.WriteLnFmt("Program Path: {}", program_path);
+
+	AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
 
 	// logging of directories in case something goes wrong super early
-	Console.WriteLn("AppRoot Directory: %s", AppRoot.c_str());
-	Console.WriteLn("DataRoot Directory: %s", DataRoot.c_str());
-	Console.WriteLn("Resources Directory: %s", Resources.c_str());
+	Console.WriteLnFmt("AppRoot Directory: {}", AppRoot);
+}
 
-	// allow SetDataDirectory() to change settings directory (if we want to split config later on)
-	if (Settings.empty())
-	{
-		Settings = Path::Combine(DataRoot, "inis");
+bool EmuFolders::SetResourcesDirectory()
+{
+#ifndef __APPLE__
+	// On Windows/Linux, these are in the binary directory.
+	Resources = Path::Combine(AppRoot, "resources");
+#else
+	// On macOS, this is in the bundle resources directory.
+	Resources = Path::Canonicalize(Path::Combine(AppRoot, "../Resources"));
+#endif
 
-		// Create settings directory if it doesn't exist. If we're not using portable mode, it won't.
-		if (!FileSystem::DirectoryExists(Settings.c_str()))
-			FileSystem::CreateDirectoryPath(Settings.c_str(), false);
-	}
+	Console.WriteLnFmt("Resources Directory: {}", Resources);
 
 	// the resources directory should exist, bail out if not
 	if (!FileSystem::DirectoryExists(Resources.c_str()))
@@ -1876,87 +1875,65 @@ bool EmuFolders::InitializeCriticalFolders()
 	return true;
 }
 
-void EmuFolders::SetAppRoot()
-{
-	const std::string program_path = FileSystem::GetProgramPath();
-	Console.WriteLn("Program Path: %s", program_path.c_str());
-
-	AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-}
-
-void EmuFolders::SetResourcesDirectory()
-{
-#ifndef __APPLE__
-	// On Windows/Linux, these are in the binary directory.
-	Resources = Path::Combine(AppRoot, "resources");
-#else
-	// On macOS, this is in the bundle resources directory.
-	Resources = Path::Canonicalize(Path::Combine(AppRoot, "../Resources"));
-#endif
-}
-
 bool EmuFolders::ShouldUsePortableMode()
 {
 	// Check whether portable.ini exists in the program directory.
 	return FileSystem::FileExists(Path::Combine(AppRoot, "portable.ini").c_str()) || FileSystem::FileExists(Path::Combine(AppRoot, "portable.txt").c_str());
 }
 
-void EmuFolders::SetDataDirectory()
+bool EmuFolders::SetDataDirectory(Error* error)
 {
-	if (ShouldUsePortableMode())
+	if (!ShouldUsePortableMode())
 	{
-		DataRoot = AppRoot;
-		return;
-	}
-
 #if defined(_WIN32)
-	// On Windows, use My Documents\PCSX2 to match old installs.
-	PWSTR documents_directory;
-	if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
-	{
-		if (std::wcslen(documents_directory) > 0)
-			DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
-		CoTaskMemFree(documents_directory);
-	}
+		// On Windows, use My Documents\PCSX2 to match old installs.
+		PWSTR documents_directory;
+		if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
+		{
+			if (std::wcslen(documents_directory) > 0)
+				DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
+			CoTaskMemFree(documents_directory);
+		}
 #elif defined(__linux__) || defined(__FreeBSD__)
-	// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
-	const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
-	if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
-	{
-		DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
-	}
-	else
-	{
-		// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+		// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+		const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+		if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
+		{
+			DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
+		}
+		else
+		{
+			// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+			const char* home_dir = getenv("HOME");
+			if (home_dir)
+			{
+				// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
+				const std::string config_dir(Path::Combine(home_dir, ".config"));
+				if (!FileSystem::DirectoryExists(config_dir.c_str()))
+					FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
+
+				DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
+			}
+		}
+#elif defined(__APPLE__)
+		static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
 		const char* home_dir = getenv("HOME");
 		if (home_dir)
-		{
-			// ~/.config should exist, but just in case it doesn't and this is a fresh profile..
-			const std::string config_dir(Path::Combine(home_dir, ".config"));
-			if (!FileSystem::DirectoryExists(config_dir.c_str()))
-				FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
-
-			DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
-		}
-	}
-#elif defined(__APPLE__)
-	static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
-	const char* home_dir = getenv("HOME");
-	if (home_dir)
-		DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
+			DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
-
-	// make sure it exists
-	if (!DataRoot.empty() && !FileSystem::DirectoryExists(DataRoot.c_str()))
-	{
-		// we're in trouble if we fail to create this directory... but try to hobble on with portable
-		if (!FileSystem::CreateDirectoryPath(DataRoot.c_str(), false))
-			DataRoot.clear();
 	}
 
-	// couldn't determine the data directory? fallback to portable.
+	// couldn't determine the data directory, or using portable mode? fallback to portable.
 	if (DataRoot.empty())
 		DataRoot = AppRoot;
+
+	// inis is always below the data root
+	Settings = Path::Combine(DataRoot, "inis");
+
+	// make sure it exists
+	Console.WriteLnFmt("DataRoot Directory: {}", DataRoot);
+	return (FileSystem::EnsureDirectoryExists(DataRoot.c_str(), false, error) &&
+			FileSystem::EnsureDirectoryExists(Settings.c_str(), false, error));
 }
 
 void EmuFolders::SetDefaults(SettingsInterface& si)

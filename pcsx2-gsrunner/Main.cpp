@@ -88,7 +88,8 @@ static u32 s_total_drawn_frames = 0;
 
 bool GSRunner::InitializeConfig()
 {
-	if (!EmuFolders::InitializeCriticalFolders())
+	EmuFolders::SetAppRoot();
+	if (!EmuFolders::SetResourcesDirectory() || !EmuFolders::SetDataDirectory(nullptr))
 		return false;
 
 	const char* error;
