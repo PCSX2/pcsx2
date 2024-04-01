@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "FileSystem.h"
@@ -8,6 +8,7 @@
 #include "Console.h"
 #include "StringUtil.h"
 #include "Path.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdlib>
@@ -1093,13 +1094,13 @@ bool FileSystem::WriteStringToFile(const char* filename, const std::string_view&
 	return true;
 }
 
-bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive)
+bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive, Error* error)
 {
 	if (FileSystem::DirectoryExists(path))
 		return true;
 
 	// if it fails to create, we're not going to be able to use it anyway
-	return FileSystem::CreateDirectoryPath(path, recursive);
+	return FileSystem::CreateDirectoryPath(path, recursive, error);
 }
 
 bool FileSystem::RecursiveDeleteDirectory(const char* path)
@@ -1545,33 +1546,39 @@ bool FileSystem::DirectoryIsEmpty(const char* path)
 	return true;
 }
 
-bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
+bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive, Error* error)
 {
 	const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
 
 	// has a path
-	if (wpath.empty())
+	if (wpath.empty()) [[unlikely]]
+	{
+		Error::SetStringView(error, "Path is empty.");
 		return false;
+	}
 
 	// try just flat-out, might work if there's no other segments that have to be made
 	if (CreateDirectoryW(wpath.c_str(), nullptr))
 		return true;
-
-	if (!Recursive)
-		return false;
 
 	// check error
 	DWORD lastError = GetLastError();
 	if (lastError == ERROR_ALREADY_EXISTS)
 	{
 		// check the attributes
-		u32 Attributes = GetFileAttributesW(wpath.c_str());
+		const u32 Attributes = GetFileAttributesW(wpath.c_str());
 		if (Attributes != INVALID_FILE_ATTRIBUTES && Attributes & FILE_ATTRIBUTE_DIRECTORY)
 			return true;
-		else
-			return false;
 	}
-	else if (lastError == ERROR_PATH_NOT_FOUND)
+
+	if (!Recursive)
+	{
+		Error::SetWin32(error, "CreateDirectoryW() failed: ", lastError);
+		return false;
+	}
+
+	// check error
+	if (lastError == ERROR_PATH_NOT_FOUND)
 	{
 		// part of the path does not exist, so we'll create the parent folders, then
 		// the full path again.
@@ -1589,7 +1596,10 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 				{
 					lastError = GetLastError();
 					if (lastError != ERROR_ALREADY_EXISTS) // fine, continue to next path segment
+					{
+						Error::SetWin32(error, "CreateDirectoryW() failed: ", lastError);
 						return false;
+					}
 				}
 
 				// replace / with \.
@@ -1609,7 +1619,10 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 			{
 				lastError = GetLastError();
 				if (lastError != ERROR_ALREADY_EXISTS)
+				{
+					Error::SetWin32(error, "CreateDirectoryW() failed: ", lastError);
 					return false;
+				}
 			}
 		}
 
@@ -1619,6 +1632,7 @@ bool FileSystem::CreateDirectoryPath(const char* Path, bool Recursive)
 	else
 	{
 		// unhandled error
+		Error::SetWin32(error, "CreateDirectoryW() failed: ", lastError);
 		return false;
 	}
 }
@@ -1636,14 +1650,16 @@ bool FileSystem::DeleteFilePath(const char* path)
 	return (DeleteFileW(wpath.c_str()) == TRUE);
 }
 
-bool FileSystem::RenamePath(const char* old_path, const char* new_path)
+bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)
 {
 	const std::wstring old_wpath(StringUtil::UTF8StringToWideString(old_path));
 	const std::wstring new_wpath(StringUtil::UTF8StringToWideString(new_path));
 
 	if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
 	{
-		Console.Error("MoveFileEx('%s', '%s') failed: %08X", old_path, new_path, GetLastError());
+		const DWORD err = GetLastError();
+		Error::SetWin32(error, "MoveFileExW() failed: ", err);
+		Console.Error("MoveFileEx('%s', '%s') failed: %08X", old_path, new_path, err);
 		return false;
 	}
 
@@ -2031,7 +2047,7 @@ bool FileSystem::DirectoryIsEmpty(const char* path)
 	return true;
 }
 
-bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
+bool FileSystem::CreateDirectoryPath(const char* path, bool recursive, Error* error)
 {
 	// has a path
 	const size_t pathLength = std::strlen(path);
@@ -2042,9 +2058,6 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 	if (mkdir(path, 0777) == 0)
 		return true;
 
-	if (!recursive)
-		return false;
-
 	// check error
 	int lastError = errno;
 	if (lastError == EEXIST)
@@ -2053,10 +2066,15 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 		struct stat sysStatData;
 		if (stat(path, &sysStatData) == 0 && S_ISDIR(sysStatData.st_mode))
 			return true;
-		else
-			return false;
 	}
-	else if (lastError == ENOENT)
+
+	if (!recursive)
+	{
+		Error::SetErrno(error, "mkdir() failed: ", lastError);
+		return false;
+	}
+
+	if (lastError == ENOENT)
 	{
 		// part of the path does not exist, so we'll create the parent folders, then
 		// the full path again.
@@ -2072,7 +2090,10 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 				{
 					lastError = errno;
 					if (lastError != EEXIST) // fine, continue to next path segment
+					{
+						Error::SetErrno(error, "mkdir() failed: ", lastError);
 						return false;
+					}
 				}
 			}
 
@@ -2086,7 +2107,10 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 			{
 				lastError = errno;
 				if (lastError != EEXIST)
+				{
+					Error::SetErrno(error, "mkdir() failed: ", lastError);
 					return false;
+				}
 			}
 		}
 
@@ -2096,6 +2120,7 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive)
 	else
 	{
 		// unhandled error
+		Error::SetErrno(error, "mkdir() failed: ", lastError);
 		return false;
 	}
 }
@@ -2112,14 +2137,19 @@ bool FileSystem::DeleteFilePath(const char* path)
 	return (unlink(path) == 0);
 }
 
-bool FileSystem::RenamePath(const char* old_path, const char* new_path)
+bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)
 {
 	if (old_path[0] == '\0' || new_path[0] == '\0')
+	{
+		Error::SetStringView(error, "Path is empty.");
 		return false;
+	}
 
 	if (rename(old_path, new_path) != 0)
 	{
-		Console.Error("rename('%s', '%s') failed: %d", old_path, new_path, errno);
+		const int err = errno;
+		Error::SetErrno(error, "rename() failed: ", err);
+		Console.Error("rename('%s', '%s') failed: %d", old_path, new_path, err);
 		return false;
 	}
 
