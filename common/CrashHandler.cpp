@@ -180,7 +180,7 @@ void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
 	if (!s_veh_handle)
 		return;
 
-	s_write_directory = StringUtil::UTF8StringToWideString(dump_directory);
+	s_write_directory = FileSystem::GetWin32Path(dump_directory);
 }
 
 void CrashHandler::WriteDumpForCaller()

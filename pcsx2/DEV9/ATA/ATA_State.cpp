@@ -3,7 +3,6 @@
 
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
-#include "common/StringUtil.h"
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
@@ -117,7 +116,7 @@ void ATA::InitSparseSupport(const std::string& hddPath)
 #ifdef _WIN32
 	hddSparse = false;
 
-	const std::wstring wHddPath(StringUtil::UTF8StringToWideString(hddPath));
+	const std::wstring wHddPath = FileSystem::GetWin32Path(hddPath);
 	const DWORD fileAttributes = GetFileAttributes(wHddPath.c_str());
 	hddSparse = fileAttributes & FILE_ATTRIBUTE_SPARSE_FILE;
 

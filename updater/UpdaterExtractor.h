@@ -55,7 +55,7 @@ static inline bool ExtractUpdater(const char* archive_path, const char* destinat
 	});
 
 #ifdef _WIN32
-	WRes wres = InFile_OpenW(&instream.file, StringUtil::UTF8StringToWideString(archive_path).c_str());
+	WRes wres = InFile_OpenW(&instream.file, FileSystem::GetWin32Path(archive_path).c_str());
 #else
 	WRes wres = InFile_Open(&instream.file, archive_path);
 #endif

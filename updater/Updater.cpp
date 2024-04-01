@@ -82,7 +82,7 @@ bool Updater::OpenUpdateZip(const char* path)
 	LookToRead2_Init(&m_look_stream);
 
 #ifdef _WIN32
-	WRes wres = InFile_OpenW(&m_archive_stream.file, StringUtil::UTF8StringToWideString(path).c_str());
+	WRes wres = InFile_OpenW(&m_archive_stream.file, FileSystem::GetWin32Path(path).c_str());
 #else
 	WRes wres = InFile_Open(&m_archive_stream.file, path);
 #endif
@@ -137,7 +137,7 @@ bool Updater::RecursiveDeleteDirectory(const char* path)
 {
 #ifdef _WIN32
 	// making this safer on Win32...
-	std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+	std::wstring wpath = FileSystem::GetWin32Path(path);
 	wpath += L'\0';
 
 	SHFILEOPSTRUCTW op = {};
@@ -353,8 +353,8 @@ bool Updater::CommitUpdate()
 		m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
 #ifdef _WIN32
 		const bool result =
-			MoveFileExW(StringUtil::UTF8StringToWideString(staging_file_name).c_str(),
-				StringUtil::UTF8StringToWideString(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);
+			MoveFileExW(FileSystem::GetWin32Path(staging_file_name).c_str(),
+				FileSystem::GetWin32Path(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);
 #else
 		const bool result = (rename(staging_file_name.c_str(), dest_file_name.c_str()) == 0);
 #endif
