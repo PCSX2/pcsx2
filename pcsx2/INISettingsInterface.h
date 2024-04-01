@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -20,7 +20,7 @@ public:
 	bool IsDirty() const { return m_dirty; }
 
 	bool Load();
-	bool Save() override;
+	bool Save(Error* error = nullptr) override;
 
 	void Clear() override;
 

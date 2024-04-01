@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
 #include "common/SettingsInterface.h"
+
 #include <array>
 
 class LayeredSettingsInterface final : public SettingsInterface
@@ -23,7 +25,7 @@ public:
 	SettingsInterface* GetLayer(Layer layer) const { return m_layers[layer]; }
 	void SetLayer(Layer layer, SettingsInterface* sif) { m_layers[layer] = sif; }
 
-	bool Save() override;
+	bool Save(Error* error = nullptr) override;
 
 	void Clear() override;
 

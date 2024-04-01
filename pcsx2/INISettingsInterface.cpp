@@ -1,10 +1,13 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "INISettingsInterface.h"
+
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Console.h"
 #include "common/StringUtil.h"
+
 #include <algorithm>
 #include <iterator>
 #include <mutex>
@@ -66,15 +69,18 @@ bool INISettingsInterface::Load()
 	return (err == SI_OK);
 }
 
-bool INISettingsInterface::Save()
+bool INISettingsInterface::Save(Error* error)
 {
 	if (m_filename.empty())
+	{
+		Error::SetStringView(error, "Filename is not set.");
 		return false;
+	}
 
 	std::unique_lock lock(s_ini_load_save_mutex);
 	std::string temp_filename(GetTemporaryFileName(m_filename));
 	SI_Error err = SI_FAIL;
-	std::FILE* fp = FileSystem::OpenCFile(temp_filename.c_str(), "wb");
+	std::FILE* fp = FileSystem::OpenCFile(temp_filename.c_str(), "wb", error);
 	if (fp)
 	{
 		err = m_ini.SaveFile(fp, false);
@@ -82,10 +88,12 @@ bool INISettingsInterface::Save()
 
 		if (err != SI_OK)
 		{
+			Error::SetStringFmt(error, "INI SaveFile() failed: {}", static_cast<int>(err));
+
 			// remove temporary file
 			FileSystem::DeleteFilePath(temp_filename.c_str());
 		}
-		else if (!FileSystem::RenamePath(temp_filename.c_str(), m_filename.c_str()))
+		else if (!FileSystem::RenamePath(temp_filename.c_str(), m_filename.c_str(), error))
 		{
 			Console.Error("Failed to rename '%s' to '%s'", temp_filename.c_str(), m_filename.c_str());
 			FileSystem::DeleteFilePath(temp_filename.c_str());

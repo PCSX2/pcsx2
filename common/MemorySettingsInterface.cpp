@@ -1,15 +1,17 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "common/MemorySettingsInterface.h"
-#include "common/StringUtil.h"
+#include "MemorySettingsInterface.h"
+#include "Error.h"
+#include "StringUtil.h"
 
 MemorySettingsInterface::MemorySettingsInterface() = default;
 
 MemorySettingsInterface::~MemorySettingsInterface() = default;
 
-bool MemorySettingsInterface::Save()
+bool MemorySettingsInterface::Save(Error* error)
 {
+	Error::SetStringView(error, "Memory settings cannot be saved.");
 	return false;
 }
 
