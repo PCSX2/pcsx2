@@ -34,6 +34,7 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/CrashHandler.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/HTTPDownloader.h"
 #include "common/Path.h"
@@ -1197,23 +1198,41 @@ void Host::OnCaptureStopped()
 
 bool QtHost::InitializeConfig()
 {
-	if (!EmuFolders::InitializeCriticalFolders())
+	Error error;
+
+	EmuFolders::SetAppRoot();
+
+	if (!EmuFolders::SetResourcesDirectory())
 	{
 		QMessageBox::critical(nullptr, QStringLiteral("PCSX2"),
-			QStringLiteral("One or more critical directories are missing, your installation may be incomplete."));
+			QStringLiteral("Resources directory is missing, your installation is incomplete."));
+		return false;
+	}
+
+	if (!EmuFolders::SetDataDirectory(&error))
+	{
+		// no point translating, config isn't loaded
+		QMessageBox::critical(
+			nullptr, QStringLiteral("PCSX2"),
+			QStringLiteral("Failed to create data directory at path\n\n%1\n\n"
+				"The error was: %2\n"
+				"Please ensure this directory is writable. You can also try portable mode "
+				"by creating portable.txt in the same directory you installed PCSX2 into.")
+				.arg(QString::fromStdString(EmuFolders::DataRoot))
+				.arg(QString::fromStdString(error.GetDescription())));
 		return false;
 	}
 
 	// Write crash dumps to the data directory, since that'll be accessible for certain.
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
-	const std::string path(Path::Combine(EmuFolders::Settings, "PCSX2.ini"));
-	s_run_setup_wizard = s_run_setup_wizard || !FileSystem::FileExists(path.c_str());
-	Console.WriteLn("Loading config from %s.", path.c_str());
+	const std::string path = Path::Combine(EmuFolders::Settings, "PCSX2.ini");
+	const bool settings_exists = FileSystem::FileExists(path.c_str());
+	Console.WriteLnFmt("Loading config from {}.", path);
 
 	s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(path));
 	Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
-	if (!s_base_settings_interface->Load() || !VMManager::Internal::CheckSettingsVersion())
+	if (!settings_exists || !s_base_settings_interface->Load() || !VMManager::Internal::CheckSettingsVersion())
 	{
 		// If the config file doesn't exist, assume this is a new install and don't prompt to overwrite.
 		if (FileSystem::FileExists(s_base_settings_interface->GetFileName().c_str()) &&
@@ -1225,6 +1244,22 @@ bool QtHost::InitializeConfig()
 		}
 
 		VMManager::SetDefaultSettings(*s_base_settings_interface, true, true, true, true, true);
+
+		// Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
+		s_base_settings_interface->SetBoolValue("UI", "SetupWizardIncomplete", true);
+
+		// Make sure we can actually save the config, and the user doesn't have some permission issue.
+		if (!s_base_settings_interface->Save(&error))
+		{
+			QMessageBox::critical(
+				nullptr, QStringLiteral("PCSX2"),
+				QStringLiteral(
+					"Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
+					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
+					.arg(QString::fromStdString(s_base_settings_interface->GetFileName()))
+					.arg(QString::fromStdString(error.GetDescription())));
+			return false;
+		}
 
 		// Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
 		if (!s_run_setup_wizard)
@@ -1379,8 +1414,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 	const std::string::size_type url_file_part_pos = url.rfind('/');
 	QtModalProgressCallback progress(parent);
 	progress.GetDialog().setLabelText(
-		qApp->translate("EmuThread", "Downloading %1...").arg(QtUtils::StringViewToQString(
-			std::string_view(url).substr((url_file_part_pos != std::string::npos) ? (url_file_part_pos + 1) : 0))));
+		qApp->translate("EmuThread", "Downloading %1...").arg(QtUtils::StringViewToQString(std::string_view(url).substr((url_file_part_pos != std::string::npos) ? (url_file_part_pos + 1) : 0))));
 	progress.GetDialog().setWindowTitle(title);
 	progress.GetDialog().setWindowIcon(GetAppIcon());
 	progress.SetCancellable(true);
@@ -1403,8 +1437,8 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 				QMessageBox::critical(parent, qApp->translate("EmuThread", "Error"),
 					qApp->translate("EmuThread", "Download failed: Data is empty.").arg(status_code));
 
-			download_result = false;
-			return;
+				download_result = false;
+				return;
 			}
 
 			*data = std::move(hdata);
@@ -1851,10 +1885,6 @@ void QtHost::RegisterTypes()
 
 bool QtHost::RunSetupWizard()
 {
-	// Set a flag in the config so that even though we created the ini, we'll run the wizard next time.
-	Host::SetBaseBoolSettingValue("UI", "SetupWizardIncomplete", true);
-	Host::CommitBaseSettingChanges();
-
 	SetupWizardDialog dialog;
 	if (dialog.exec() == QDialog::Rejected)
 		return false;
