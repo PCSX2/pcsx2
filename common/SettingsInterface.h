@@ -1,19 +1,22 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
 #include "Pcsx2Defs.h"
+
 #include <string>
 #include <optional>
 #include <vector>
+
+class Error;
 
 class SettingsInterface
 {
 public:
 	virtual ~SettingsInterface() = default;
 
-	virtual bool Save() = 0;
+	virtual bool Save(Error* error = nullptr) = 0;
 	virtual void Clear() = 0;
 
 	virtual bool GetIntValue(const char* section, const char* key, int* value) const = 0;
