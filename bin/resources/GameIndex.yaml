@@ -5534,7 +5534,7 @@ SCES-53449:
   name: "AFL Premiership 2005"
   region: "PAL-A"
 SCES-53450:
-  name: "Gaelic Football 2005"
+  name: "Gaelic Games - Football"
   region: "PAL-E-GA"
 SCES-53565:
   name: "SingStar Pop"
@@ -15665,6 +15665,8 @@ SLES-51134:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes hangs in certain locations like building under construction.
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes color saturation.
 SLES-51141:
   name: "Summoner 2"
   region: "PAL-E"
@@ -18368,6 +18370,10 @@ SLES-52283:
   region: "PAL-M5"
   gsHWFixes:
     autoFlush: 2 # Fixes environment lights visible through player model.
+    halfPixelOffset: 4 # Fixes depth line and misaligned bloom.
+    minimumBlendingLevel: 3 # Fixes incorrect bloom rendering.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-52284:
   name: "Deadly Skies III"
   region: "PAL-M5"
@@ -40874,6 +40880,10 @@ SLPM-65837:
   region: "NTSC-J"
   gsHWFixes:
     autoFlush: 2 # Fixes environment lights visible through player model.
+    halfPixelOffset: 4 # Fixes depth line and misaligned bloom.
+    minimumBlendingLevel: 3 # Fixes incorrect bloom rendering.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-65838:
   name: 半熟銀河弁当 半熟英雄4 〜7人の半熟英雄〜 [限定版]
   name-sort: はんじゅくぎんがべんとう はんじゅくひーろー4 7にんのはんじゅくひーろー [げんていばん]
@@ -60120,6 +60130,8 @@ SLUS-20585:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes hangs in certain locations like building under construction.
+  gsHWFixes:
+    recommendedBlendingLevel: 2 # Fixes color saturation.
 SLUS-20586:
   name: "IHRA Drag Racing 2"
   region: "NTSC-U"
@@ -61508,6 +61520,10 @@ SLUS-20852:
   compat: 5
   gsHWFixes:
     autoFlush: 2 # Fixes environment lights visible through player model.
+    halfPixelOffset: 4 # Fixes depth line and misaligned bloom.
+    minimumBlendingLevel: 3 # Fixes incorrect bloom rendering.
+    mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20853:
   name: "Looney Tunes - Back in Action"
   region: "NTSC-U"
