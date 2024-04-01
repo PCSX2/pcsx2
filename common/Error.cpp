@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Error.h"
+#include "StringUtil.h"
+
+#include "fmt/format.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
-
-#include "fmt/format.h"
 
 // Platform-specific includes
 #if defined(_WIN32)
@@ -30,20 +32,25 @@ void Error::Clear()
 
 void Error::SetErrno(int err)
 {
+	SetErrno(std::string_view(), err);
+}
+
+void Error::SetErrno(std::string_view prefix, int err)
+{
 	m_type = Type::Errno;
 
 #ifdef _MSC_VER
 	char buf[128];
 	if (strerror_s(buf, sizeof(buf), err) == 0)
-		m_description = fmt::format("errno {}: {}", err, buf);
+		m_description = fmt::format("{}errno {}: {}", prefix, err, buf);
 	else
-		m_description = fmt::format("errno {}: <Could not get error message>", err);
+		m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
 #else
 	const char* buf = std::strerror(err);
 	if (buf)
-		m_description = fmt::format("errno {}: {}", err, buf);
+		m_description = fmt::format("{}errno {}: {}", prefix, err, buf);
 	else
-		m_description = fmt::format("errno {}: <Could not get error message>", err);
+		m_description = fmt::format("{}errno {}: <Could not get error message>", prefix, err);
 #endif
 }
 
@@ -53,10 +60,22 @@ void Error::SetErrno(Error* errptr, int err)
 		errptr->SetErrno(err);
 }
 
+void Error::SetErrno(Error* errptr, std::string_view prefix, int err)
+{
+	if (errptr)
+		errptr->SetErrno(prefix, err);
+}
+
 void Error::SetString(std::string description)
 {
 	m_type = Type::User;
 	m_description = std::move(description);
+}
+
+void Error::SetStringView(std::string_view description)
+{
+	m_type = Type::User;
+	m_description = std::string(description);
 }
 
 void Error::SetString(Error* errptr, std::string description)
@@ -65,17 +84,35 @@ void Error::SetString(Error* errptr, std::string description)
 		errptr->SetString(std::move(description));
 }
 
+void Error::SetStringView(Error* errptr, std::string_view description)
+{
+	if (errptr)
+		errptr->SetStringView(std::move(description));
+}
+
 #ifdef _WIN32
+
 void Error::SetWin32(unsigned long err)
+{
+	SetWin32(std::string_view(), err);
+}
+
+void Error::SetWin32(std::string_view prefix, unsigned long err)
 {
 	m_type = Type::Win32;
 
-	char buf[128];
-	const DWORD r = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, 0, buf, sizeof(buf), nullptr);
+	WCHAR buf[128];
+	const DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+		static_cast<DWORD>(std::size(buf)), nullptr);
 	if (r > 0)
-		m_description = fmt::format("Win32 Error {}: {}", err, std::string_view(buf, r));
+	{
+		m_description =
+			fmt::format("{}Win32 Error {}: {}", prefix, err, StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
+	}
 	else
-		m_description = fmt::format("Win32 Error {}: <Could not resolve system error ID>", err);
+	{
+		m_description = fmt::format("{}Win32 Error {}: <Could not resolve system error ID>", prefix, err);
+	}
 }
 
 void Error::SetWin32(Error* errptr, unsigned long err)
@@ -84,16 +121,33 @@ void Error::SetWin32(Error* errptr, unsigned long err)
 		errptr->SetWin32(err);
 }
 
+void Error::SetWin32(Error* errptr, std::string_view prefix, unsigned long err)
+{
+	if (errptr)
+		errptr->SetWin32(prefix, err);
+}
+
 void Error::SetHResult(long err)
+{
+	SetHResult(std::string_view(), err);
+}
+
+void Error::SetHResult(std::string_view prefix, long err)
 {
 	m_type = Type::HResult;
 
-	char buf[128];
-	const DWORD r = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, 0, buf, sizeof(buf), nullptr);
+	WCHAR buf[128];
+	const DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+		static_cast<DWORD>(std::size(buf)), nullptr);
 	if (r > 0)
-		m_description = fmt::format("HRESULT {:08X}: {}", err, std::string_view(buf, r));
+	{
+		m_description =
+			fmt::format("{}HRESULT {:08X}: {}", prefix, err, StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
+	}
 	else
-		m_description = fmt::format("HRESULT {:08X}: <Could not resolve system error ID>", err);
+	{
+		m_description = fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix, err);
+	}
 }
 
 void Error::SetHResult(Error* errptr, long err)
@@ -102,15 +156,26 @@ void Error::SetHResult(Error* errptr, long err)
 		errptr->SetHResult(err);
 }
 
+void Error::SetHResult(Error* errptr, std::string_view prefix, long err)
+{
+	if (errptr)
+		errptr->SetHResult(prefix, err);
+}
+
 #endif
 
 void Error::SetSocket(int err)
 {
+	SetSocket(std::string_view(), err);
+}
+
+void Error::SetSocket(std::string_view prefix, int err)
+{
 	// Socket errors are win32 errors on windows
 #ifdef _WIN32
-	SetWin32(err);
+	SetWin32(prefix, err);
 #else
-	SetErrno(err);
+	SetErrno(prefix, err);
 #endif
 	m_type = Type::Socket;
 }
@@ -119,6 +184,12 @@ void Error::SetSocket(Error* errptr, int err)
 {
 	if (errptr)
 		errptr->SetSocket(err);
+}
+
+void Error::SetSocket(Error* errptr, std::string_view prefix, int err)
+{
+	if (errptr)
+		errptr->SetSocket(prefix, err);
 }
 
 Error Error::CreateNone()
@@ -163,6 +234,28 @@ Error Error::CreateHResult(long err)
 }
 
 #endif
+
+void Error::AddPrefix(std::string_view prefix)
+{
+	m_description.insert(0, prefix);
+}
+
+void Error::AddSuffix(std::string_view suffix)
+{
+	m_description.append(suffix);
+}
+
+void Error::AddPrefix(Error* errptr, std::string_view prefix)
+{
+	if (errptr)
+		errptr->AddPrefix(prefix);
+}
+
+void Error::AddSuffix(Error* errptr, std::string_view prefix)
+{
+	if (errptr)
+		errptr->AddSuffix(prefix);
+}
 
 Error& Error::operator=(const Error& e) = default;
 
