@@ -831,7 +831,7 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+		if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 		{
 			uint4 denorm_c_before = uint4(T);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -935,6 +935,25 @@ struct PSMain
 			}
 
 			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 128.1f) / 128.f : trunc(current_color.a * 255.1f) / 128.f;
+
+			if (PS_SHUFFLE && NEEDS_RT)
+			{
+				uint4 denorm_rt = uint4(current_color);
+				if (PS_PROCESS_BA & SHUFFLE_WRITE)
+				{
+					current_color.r = float((denorm_rt.b << 3) & 0xF8);
+					current_color.g = float(((denorm_rt.b >> 2) & 0x38) | ((denorm_rt.a << 6) & 0xC0));
+					current_color.b = float((denorm_rt.a << 1) & 0xF8);
+					current_color.a = float(denorm_rt.a & 0x80);
+				}
+				else
+				{
+					current_color.r = float((denorm_rt.r << 3) & 0xF8);
+					current_color.g = float(((denorm_rt.r >> 2) & 0x38) | ((denorm_rt.g << 6) & 0xC0));
+					current_color.b = float((denorm_rt.g << 1) & 0xF8);
+					current_color.a = float(denorm_rt.g & 0x80);
+				}
+			}
 
 			float3 Cd = trunc(current_color.rgb * 255.5f);
 			float3 Cs = Color.rgb;
@@ -1105,7 +1124,7 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if (SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+			if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
 			{
 				uint4 denorm_c_after = uint4(C);
 				if (PS_PROCESS_BA & SHUFFLE_READ)

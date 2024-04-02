@@ -948,7 +948,6 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 			// FIXME: do I need to allow m_age == 1 as a potential match (as DepthStencil) ???
 			if (t->m_age <= 1 && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
-				pxAssert(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 				dst = t;
 				inside_target = false;
 				break;
