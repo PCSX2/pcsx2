@@ -88,8 +88,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "darkfusionblue")
 	{
@@ -124,8 +122,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "UntouchedLagoon")
 	{
@@ -160,8 +156,6 @@ void QtHost::SetStyleFromSettings()
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, tameTeal);
 
 		qApp->setPalette(standardPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "BabyPastel")
 	{
@@ -198,8 +192,6 @@ void QtHost::SetStyleFromSettings()
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(standardPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "PizzaBrown")
 	{
@@ -235,8 +227,6 @@ void QtHost::SetStyleFromSettings()
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, gray.lighter());
 
 		qApp->setPalette(standardPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #cc3f18; border: 1px solid white; }");
 	}
 	else if (theme == "PCSX2Blue")
 	{
@@ -271,8 +261,6 @@ void QtHost::SetStyleFromSettings()
 		standardPalette.setColor(QPalette::Disabled, QPalette::Light, darkBlue);
 
 		qApp->setPalette(standardPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "ScarletDevilRed")
 	{
@@ -305,8 +293,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkRed);
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "CobaltSky")
 	{
@@ -343,8 +329,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #000080; border: 1px solid white; }");
 	}
 	else if (theme == "VioletAngelPurple")
 	{
@@ -377,8 +361,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, nauticalPurple);
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "Ruby")
 	{
@@ -411,8 +393,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "Sapphire")
 	{
@@ -445,8 +425,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
 		qApp->setPalette(darkPalette);
-
-		qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
 	}
 	else if (theme == "Custom")
 	{
