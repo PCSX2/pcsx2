@@ -354,6 +354,7 @@ bool QtHost::DownloadMissingFont(QWidget* dialog_parent, const char* font_name, 
 		QMessageBox msgbox(dialog_parent);
 		msgbox.setWindowTitle(qApp->translate("MainWindow", "Missing Font File"));
 		msgbox.setWindowIcon(QtHost::GetAppIcon());
+		msgbox.setWindowModality(Qt::WindowModal);
 		msgbox.setIcon(QMessageBox::Critical);
 		msgbox.setTextFormat(Qt::RichText);
 		msgbox.setText(qApp->translate("MainWindow",

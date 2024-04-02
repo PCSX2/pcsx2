@@ -659,6 +659,8 @@ void MainWindow::onShowAdvancedSettingsToggled(bool checked)
 	{
 		QCheckBox* cb = new QCheckBox(tr("Do not show again"));
 		QMessageBox mb(this);
+		mb.setWindowIcon(QtHost::GetAppIcon());
+		mb.setWindowModality(Qt::WindowModal);
 		mb.setWindowTitle(tr("Show Advanced Settings"));
 		mb.setText(tr("Changing advanced settings can have unpredictable effects on games, including graphical glitches, lock-ups, and "
 					  "even corrupted save files. "
@@ -1182,6 +1184,8 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 		QMessageBox msgbox(lock.getDialogParent());
 		msgbox.setIcon(QMessageBox::Question);
 		msgbox.setWindowTitle(tr("Confirm Shutdown"));
+		msgbox.setWindowModality(Qt::WindowModal);
+		msgbox.setWindowIcon(QtHost::GetAppIcon());
 		msgbox.setText(tr("Are you sure you want to shut down the virtual machine?"));
 
 		QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
@@ -1596,6 +1600,7 @@ void MainWindow::checkForUpdates(bool display_message, bool force_check)
 		{
 			QMessageBox mbox(this);
 			mbox.setWindowTitle(tr("Updater Error"));
+			mbox.setWindowIcon(QtHost::GetAppIcon());
 			mbox.setTextFormat(Qt::RichText);
 
 			QString message;
@@ -2687,7 +2692,9 @@ std::optional<bool> MainWindow::promptForResumeState(const QString& save_state_p
 
 	QMessageBox msgbox(this);
 	msgbox.setIcon(QMessageBox::Question);
+	msgbox.setWindowIcon(QtHost::GetAppIcon());
 	msgbox.setWindowTitle(tr("Load Resume State"));
+	msgbox.setWindowModality(Qt::WindowModal);
 	msgbox.setText(
 		tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, or start from a fresh boot?")
 			.arg(fi.lastModified().toLocalTime().toString()));

@@ -267,6 +267,7 @@ void SettingsWindow::onCategoryCurrentRowChanged(int row)
 void SettingsWindow::onRestoreDefaultsClicked()
 {
 	QMessageBox msgbox(this);
+	msgbox.setWindowIcon(QtHost::GetAppIcon());
 	msgbox.setIcon(QMessageBox::Question);
 	msgbox.setWindowTitle(tr("Confirm Restore Defaults"));
 	msgbox.setText(tr("Are you sure you want to restore the default settings? Any existing preferences will be lost."));
