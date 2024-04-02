@@ -953,7 +953,7 @@ vec4 ps_color()
 	vec4 T = sample_color(st);
 #endif
 
-	#if SW_BLEND && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
+	#if (SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
 		uvec4 denorm_c_before = uvec4(T);
 		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			T.r = float((denorm_c_before.b << 3) & 0xF8);
@@ -1072,6 +1072,21 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
 		#else
 			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
+		#endif
+		
+		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED
+			uvec4 denorm_rt = uvec4(RT);
+			#if (PS_PROCESS_BA & SHUFFLE_WRITE)
+				RT.r = float((denorm_rt.b << 3) & 0xF8);
+				RT.g = float(((denorm_rt.b >> 2) & 0x38) | ((denorm_rt.a << 6) & 0xC0));
+				RT.b = float((denorm_rt.a << 1) & 0xF8);
+				RT.a = float(denorm_rt.a & 0x80);
+			#else
+				RT.r = float((denorm_rt.r << 3) & 0xF8);
+				RT.g = float(((denorm_rt.r >> 2) & 0x38) | ((denorm_rt.g << 6) & 0xC0));
+				RT.b = float((denorm_rt.g << 1) & 0xF8);
+				RT.a = float(denorm_rt.g & 0x80);
+			#endif
 		#endif
 
 			// Let the compiler do its jobs !
@@ -1289,7 +1304,7 @@ void main()
 	ps_blend(C, alpha_blend);
 
 #if PS_SHUFFLE
-		#if SW_BLEND && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
+		#if (SW_BLEND || PS_TFX != 1) && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
 			uvec4 denorm_c_after = uvec4(C);
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
 				C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));

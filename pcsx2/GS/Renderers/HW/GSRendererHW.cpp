@@ -4018,7 +4018,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	// Condition 1: Require full sw blend for full barrier.
 	// Condition 2: One barrier is already enabled, prims don't overlap so let's use sw blend instead.
 	// Condition 3: A shuffle is unlikely to overlap, so when a barrier is enabled like from fbmask we can prefer full sw blend.
-	const bool prefer_sw_blend = (features.texture_barrier && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_conf.ps.shuffle));
+	const bool prefer_sw_blend = (features.texture_barrier && m_conf.require_full_barrier) || (m_conf.require_one_barrier && no_prim_overlap) || m_conf.ps.shuffle;
 	const bool free_blend = blend_non_recursive // Free sw blending, doesn't require barriers or reading fb
 							|| accumulation_blend; // Mix of hw/sw blending
 
