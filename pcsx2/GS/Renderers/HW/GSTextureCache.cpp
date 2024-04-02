@@ -4054,6 +4054,23 @@ GSTextureCache::Target* GSTextureCache::GetTargetWithSharedBits(u32 BP, u32 PSM)
 	return nullptr;
 }
 
+GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(GSTextureCache::Target* target) const
+{
+	for (int i = 0; i < 2; i++)
+	{
+		for (Target* tgt : m_dst[i])
+		{
+			if (tgt == target)
+				continue;
+
+			if (CheckOverlap(tgt->m_TEX0.TBP0, tgt->m_end_block, target->m_TEX0.TBP0, target->m_end_block))
+				return tgt;
+		}
+	}
+
+	return nullptr;
+}
+
 GSTextureCache::Target* GSTextureCache::FindOverlappingTarget(u32 BP, u32 end_bp) const
 {
 	for (int i = 0; i < 2; i++)
@@ -4254,11 +4271,13 @@ void GSTextureCache::IncAge()
 
 	AgeHashCache();
 
-	// Clearing of Rendertargets causes flickering in many scene transitions.
-	// Sigh, this seems to be used to invalidate surfaces. So set a huge maxage to avoid flicker,
-	// but still invalidate surfaces. (Disgaea 2 fmv when booting the game through the BIOS)
+	// As of 04/15/2024 this is s et to 60 (just 1 second of targets), which should be fine now as it doesn't destroy targets which haven't been coevred.
+	// 
+	// For reference, here are some games sensitive to killing old targets:
 	// Original maxage was 4 here, Xenosaga 2 needs at least 240, else it flickers on scene transitions.
-	static constexpr int max_rt_age = 400; // ffx intro scene changes leave the old image untouched for a couple of frames and only then start using it
+	// ffx intro scene changes leave the old image untouched for a couple of frames and only then start using it
+	// Disgaea 2 fmv when booting the game through the BIOS
+	static constexpr int max_rt_age = 60;
 
 	// Toss and recompute sizes after 2 seconds of not being used. Should be sufficient for most loading screens.
 	static constexpr int max_size_age = 120;
@@ -4272,11 +4291,22 @@ void GSTextureCache::IncAge()
 
 			if (++t->m_age > max_rt_age)
 			{
-				i = list.erase(i);
-				GL_CACHE("TC: Remove Target(%s): (0x%x) due to age", to_string(type),
-					t->m_TEX0.TBP0);
+				const Target* overlapping_tgt = FindOverlappingTarget(t);
 
-				delete t;
+				if (!t->m_dirty.empty() || overlapping_tgt != nullptr)
+				{
+					i = list.erase(i);
+					GL_CACHE("TC: Remove Target(%s): (0x%x) due to age", to_string(type),
+						t->m_TEX0.TBP0);
+
+					delete t;
+				}
+				else
+				{
+					GL_CACHE("Extending life of target for %x", t->m_TEX0.TBP0);
+					t->m_age = 10;
+					++i;
+				}
 			}
 			else
 			{
