@@ -1558,6 +1558,7 @@ SCAJ-20109:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -3811,8 +3812,10 @@ SCED-53622:
   clampModes:
     vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
-    autoFlush: 2 # Fixes pause menu backgrounds.
+    autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCED-53660:
   name: "Jak X & Ratchet Gladiator [Demo]"
   region: "PAL"
@@ -5194,6 +5197,7 @@ SCES-52456:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -5504,8 +5508,10 @@ SCES-53358:
   clampModes:
     vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
-    autoFlush: 2 # Fixes pause menu backgrounds.
+    autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-53372:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "PAL-M5"
@@ -6700,6 +6706,7 @@ SCKA-20037:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -8270,6 +8277,7 @@ SCPS-15084:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -9011,6 +9019,7 @@ SCPS-19309:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -10687,6 +10696,7 @@ SCUS-97353:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -10891,6 +10901,7 @@ SCUS-97411:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -10913,6 +10924,7 @@ SCUS-97413:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -11447,6 +11459,7 @@ SCUS-97518:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
@@ -13232,6 +13245,7 @@ SLES-50111:
   region: "PAL-M4"
   gsHWFixes:
     gpuPaletteConversion: 2 # Improves FPS and reduces HC size.
+    deinterlace: 5 # Improves image clarity in motion.
 SLES-50112:
   name: "Shadow of Memories"
   region: "PAL-M5"
@@ -16479,6 +16493,8 @@ SLES-51434:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
   gameFixes:
     - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu transparancy effects and text.
   memcardFilters:
     - "SLES-51434"
     - "SLES-50382"
@@ -21535,7 +21551,7 @@ SLES-53433:
   name: "NHL '06"
   region: "PAL-M6"
 SLES-53434:
-  name: "WWI - Red Baron"
+  name: "Red Baron"
   region: "PAL-M3"
 SLES-53435:
   name: "SAS Anti-Terror Force"
@@ -27152,6 +27168,9 @@ SLES-55329:
 SLES-55330:
   name: "Secret Service"
   region: "PAL-E"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-55331:
   name: "Cabela's Dangerous Adventures"
   region: "PAL-E"
@@ -28712,6 +28731,8 @@ SLKA-25065:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
   gameFixes:
     - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu transparancy effects and text.
 SLKA-25066:
   name: "Zone of the Enders - The 2nd Runner SE"
   region: "NTSC-K"
@@ -37698,6 +37719,8 @@ SLPM-65257:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
   gameFixes:
     - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu transparancy effects and text.
   memcardFilters:
     - "SLPM-65257"
     - "SLPM-65622"
@@ -39654,6 +39677,8 @@ SLPM-65622:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
   gameFixes:
     - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu transparancy effects and text.
   memcardFilters:
     - "SLPM-65257"
     - "SLPM-65622"
@@ -41884,6 +41909,8 @@ SLPM-66018:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
   gameFixes:
     - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu transparancy effects and text.
   memcardFilters:
     - "SLPM-65257"
     - "SLPM-65622"
@@ -60316,6 +60343,8 @@ SLUS-20622:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
   gameFixes:
     - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu transparancy effects and text.
   memcardFilters: # Reads Silent Hill 2 for easter egg.
     - "SLUS-20622"
     - "SLUS-20228"
@@ -64029,8 +64058,10 @@ SLUS-21268:
   clampModes:
     vuClampMode: 2 # Fixes mini-map HUD.
   gsHWFixes:
-    autoFlush: 2 # Fixes pause menu backgrounds.
+    autoFlush: 1 # Fixes pause menu backgrounds.
     roundSprite: 1 # Corrects proportions of fonts and pause-screen lines, adjusts display closer to software.
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21269:
   name: "Bully"
   region: "NTSC-U"
@@ -67149,9 +67180,12 @@ SLUS-21835:
   region: "NTSC-U"
   compat: 5
 SLUS-21836:
-  name: "Secret Service - Ultimate Sacrifice"
+  name: "Secret Service"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-21838:
   name: "Monster Lab"
   region: "NTSC-U"
@@ -68760,6 +68794,7 @@ TCES-52456:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves color and luminosity of surfaces.
     mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
     trilinearFiltering: 1
     disablePartialInvalidation: 1 # Prevents the situation that a level (Aquatos) doesn't render characters and geometry.
