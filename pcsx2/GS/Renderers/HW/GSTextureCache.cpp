@@ -1308,6 +1308,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					const u32 dirty_end = GSLocalMemory::GetUnwrappedEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, dirty_rect);
 
 					overlapping_dirty = read_start <= dirty_end && read_end >= dirty_start;
+
+					if (overlapping_dirty && (psm == PSMT8 || psm == PSMT4))
+						continue;
 				}
 
 				const bool t_clean = ((t->m_dirty.GetDirtyChannels() & GSUtil::GetChannelMask(psm)) == 0) || rect_clean;
