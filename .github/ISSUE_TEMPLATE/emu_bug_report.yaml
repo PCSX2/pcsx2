@@ -123,9 +123,9 @@ body:
       description: |
         Any non-default core settings. If you don't want to list them out, please provide screenshots of your configuration window.
 
-        Please note that the safe preset works for most games. MTVU can have some compatibility issues so please disable it before making a report.
+        Please note that defaults tend to work best.
 
-        If you need to modify the settings manually because a game requires you to do so to work, please state that explicitly.
+        If you need to modify the settings manually to fix an issue , please state that explicitly.
     validations:
       required: false
   - type: textarea
