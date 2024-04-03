@@ -4381,7 +4381,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = (rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE_PRIMID || DATE_BARRIER || !always_passing_alpha || (m_cached_ctx.TEST.ZTE && m_cached_ctx.TEST.ZTST != ZTST_ALWAYS)) || m_channel_shuffle);
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE_PRIMID || DATE_BARRIER || !always_passing_alpha || !IsDepthAlwaysPassing());
 
 			if (!full_cover)
 			{
