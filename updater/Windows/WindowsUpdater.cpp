@@ -6,6 +6,7 @@
 
 #include "common/FileSystem.h"
 #include "common/Console.h"
+#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
 #include "common/RedtapeWindows.h"
@@ -419,6 +420,12 @@ static void WaitForProcessToExit(int process_id)
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
 	Win32ProgressCallback progress;
+
+	const bool com_initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	const ScopedGuard com_guard = [com_initialized]() {
+		if (com_initialized)
+			CoUninitialize();
+	};
 
 	int argc = 0;
 	wil::unique_hlocal_ptr<LPWSTR[]> argv(CommandLineToArgvW(GetCommandLineW(), &argc));
