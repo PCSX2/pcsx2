@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
+#include "Settings/BIOSSettingsWidget.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/InterfaceSettingsWidget.h"
 #include "SetupWizardDialog.h"
@@ -18,14 +19,7 @@ SetupWizardDialog::SetupWizardDialog()
 	updatePageButtons();
 }
 
-SetupWizardDialog::~SetupWizardDialog()
-{
-	if (m_bios_refresh_thread)
-	{
-		m_bios_refresh_thread->wait();
-		delete m_bios_refresh_thread;
-	}
-}
+SetupWizardDialog::~SetupWizardDialog() = default;
 
 void SetupWizardDialog::resizeEvent(QResizeEvent* event)
 {
@@ -222,18 +216,7 @@ void SetupWizardDialog::setupBIOSPage()
 
 void SetupWizardDialog::refreshBiosList()
 {
-	if (m_bios_refresh_thread)
-	{
-		m_bios_refresh_thread->wait();
-		delete m_bios_refresh_thread;
-	}
-
-	QSignalBlocker blocker(m_ui.biosList);
-	m_ui.biosList->clear();
-	m_ui.biosList->setEnabled(false);
-
-	m_bios_refresh_thread = new BIOSSettingsWidget::RefreshThread(this, m_ui.biosSearchDirectory->text());
-	m_bios_refresh_thread->start();
+	BIOSSettingsWidget::populateList(m_ui.biosList, m_ui.biosSearchDirectory->text().toStdString());
 }
 
 void SetupWizardDialog::biosListItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous)
@@ -241,13 +224,6 @@ void SetupWizardDialog::biosListItemChanged(const QTreeWidgetItem* current, cons
 	Host::SetBaseStringSettingValue("Filenames", "BIOS", current->text(0).toUtf8().constData());
 	Host::CommitBaseSettingChanges();
 	g_emu_thread->applySettings();
-}
-
-void SetupWizardDialog::listRefreshed(const QVector<BIOSInfo>& items)
-{
-	QSignalBlocker sb(m_ui.biosList);
-	BIOSSettingsWidget::populateList(m_ui.biosList, items);
-	m_ui.biosList->setEnabled(true);
 }
 
 void SetupWizardDialog::setupGameListPage()

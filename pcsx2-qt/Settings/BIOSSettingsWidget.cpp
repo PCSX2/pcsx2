@@ -1,18 +1,20 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
-
-#include <QtGui/QIcon>
-#include <QtWidgets/QFileDialog>
-#include <algorithm>
-
-#include "pcsx2/Host.h"
-#include "pcsx2/ps2/BiosTools.h"
 
 #include "BIOSSettingsWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
+
+#include "pcsx2/Host.h"
+#include "pcsx2/ps2/BiosTools.h"
+
+#include "common/FileSystem.h"
+
+#include <QtGui/QIcon>
+#include <QtWidgets/QFileDialog>
+#include <algorithm>
 
 BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
@@ -41,48 +43,42 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	connect(m_ui.fastBoot, &QCheckBox::stateChanged, this, &BIOSSettingsWidget::fastBootChanged);
 }
 
-BIOSSettingsWidget::~BIOSSettingsWidget()
-{
-	if (m_refresh_thread)
-		m_refresh_thread->wait();
-}
+BIOSSettingsWidget::~BIOSSettingsWidget() = default;
 
 void BIOSSettingsWidget::refreshList()
 {
-	if (m_refresh_thread)
-	{
-		m_refresh_thread->requestInterruption();
-		m_refresh_thread->wait();
-		delete m_refresh_thread;
-	}
-
-	QSignalBlocker blocker(m_ui.fileList);
-	m_ui.fileList->clear();
-	m_ui.fileList->setEnabled(false);
-
-	m_refresh_thread = new RefreshThread(this, m_ui.searchDirectory->text());
-	m_refresh_thread->start();
+	const std::string search_dir = m_ui.searchDirectory->text().toStdString();
+	populateList(m_ui.fileList, search_dir);
 }
 
-void BIOSSettingsWidget::listRefreshed(const QVector<BIOSInfo>& items)
+void BIOSSettingsWidget::populateList(QTreeWidget* list, const std::string& directory)
 {
-	QSignalBlocker sb(m_ui.fileList);
-	populateList(m_ui.fileList, items);
-	m_ui.fileList->setEnabled(true);
-}
+	const std::string selected_bios = Host::GetBaseStringSettingValue("Filenames", "BIOS");
+	const QString res_path = QtHost::GetResourcesBasePath();
 
-void BIOSSettingsWidget::populateList(QTreeWidget* list, const QVector<BIOSInfo>& items)
-{
-	const std::string selected_bios(Host::GetBaseStringSettingValue("Filenames", "BIOS"));
-	const QString res_path(QtHost::GetResourcesBasePath());
+	QSignalBlocker blocker(list);
+	list->clear();
+	list->setEnabled(false);
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
-	for (const BIOSInfo& bi : items)
+	FileSystem::FindResultsArray files;
+	FileSystem::FindFiles(directory.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
+
+	u32 bios_version, bios_region;
+	std::string bios_description, bios_zone;
+
+	for (const FILESYSTEM_FIND_DATA& fd : files)
 	{
+		if (!IsBIOS(fd.FileName.c_str(), bios_version, bios_description, bios_region, bios_zone))
+			continue;
+
+		const std::string_view bios_name = Path::GetFileName(fd.FileName);
+
 		QTreeWidgetItem* item = new QTreeWidgetItem();
-		item->setText(0, QString::fromStdString(bi.filename));
-		item->setText(1, QString::fromStdString(bi.description));
+		item->setText(0, QtUtils::StringViewToQString(bios_name));
+		item->setText(1, QString::fromStdString(bios_description));
 
-		switch (bi.region)
+		switch (bios_region)
 		{
 			case 0: // Japan
 				item->setIcon(0, QIcon(QStringLiteral("%1/icons/flags/NTSC-J.png").arg(res_path)));
@@ -124,12 +120,14 @@ void BIOSSettingsWidget::populateList(QTreeWidget* list, const QVector<BIOSInfo>
 
 		list->addTopLevelItem(item);
 
-		if (bi.filename == selected_bios)
+		if (selected_bios == bios_name)
 		{
 			list->selectionModel()->setCurrentIndex(list->indexFromItem(item), QItemSelectionModel::Select);
 			item->setSelected(true);
 		}
 	}
+
+	list->setEnabled(true);
 }
 
 void BIOSSettingsWidget::listItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous)
@@ -144,37 +142,4 @@ void BIOSSettingsWidget::fastBootChanged()
 {
 	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore", "EnableFastBoot", true);
 	m_ui.fastBootFastForward->setEnabled(enabled);
-}
-
-BIOSSettingsWidget::RefreshThread::RefreshThread(QWidget* parent, const QString& directory)
-	: QThread(parent)
-	, m_directory(directory)
-{
-}
-
-BIOSSettingsWidget::RefreshThread::~RefreshThread() = default;
-
-void BIOSSettingsWidget::RefreshThread::run()
-{
-	QVector<BIOSInfo> items;
-
-	QDir dir(m_directory);
-	if (dir.exists())
-	{
-		for (const QFileInfo& info : dir.entryInfoList(QDir::Files))
-		{
-			if (isInterruptionRequested())
-				break;
-
-			BIOSInfo bi;
-			QString full_path(info.absoluteFilePath());
-			if (!IsBIOS(full_path.toUtf8().constData(), bi.version, bi.description, bi.region, bi.zone))
-				continue;
-
-			bi.filename = info.fileName().toStdString();
-			items.push_back(std::move(bi));
-		}
-	}
-
-	QMetaObject::invokeMethod(parent(), "listRefreshed", Qt::QueuedConnection, Q_ARG(const QVector<BIOSInfo>&, items));
 }
