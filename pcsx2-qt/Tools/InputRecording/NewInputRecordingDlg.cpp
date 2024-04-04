@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "NewInputRecordingDlg.h"
 
 #include "QtUtils.h"
+#include <QtCore/QDir>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/qfiledialog.h>
@@ -66,7 +67,8 @@ void NewInputRecordingDlg::onRecordingTypeSaveStateChecked(bool checked)
 void NewInputRecordingDlg::onBrowseForPathClicked()
 {
 	QString filter = tr("Input Recording Files (*.p2m2)");
-	QString filename = QFileDialog::getSaveFileName(this, tr("Select a File"), QString(), filter, &filter);
+	QString filename = QDir::toNativeSeparators(QFileDialog::getSaveFileName(
+		this, tr("Select a File"), QString(), filter, &filter));
 	if (filename.isEmpty())
 		return;
 
