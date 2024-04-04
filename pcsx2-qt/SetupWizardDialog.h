@@ -1,9 +1,7 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
-
-#include "Settings/BIOSSettingsWidget.h"
 
 #include "ui_SetupWizardDialog.h"
 
@@ -33,7 +31,6 @@ private Q_SLOTS:
 
 	void refreshBiosList();
 	void biosListItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
-	void listRefreshed(const QVector<BIOSInfo>& items);
 
 	void onDirectoryListContextMenuRequested(const QPoint& point);
 	void onAddSearchDirectoryButtonClicked();
@@ -77,8 +74,6 @@ private:
 	Ui::SetupWizardDialog m_ui;
 
 	std::array<QLabel*, Page_Count> m_page_labels;
-
-	BIOSSettingsWidget::RefreshThread* m_bios_refresh_thread = nullptr;
 
 	QList<QPair<QString, QString>> m_device_list;
 };
