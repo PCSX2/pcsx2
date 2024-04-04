@@ -40,6 +40,7 @@
 #include "common/FileSystem.h"
 
 #include <QtCore/QDateTime>
+#include <QtCore/QDir>
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -727,7 +728,7 @@ void MainWindow::onToolsVideoCaptureToggled(bool checked)
 	const QString filter(tr("%1 Files (*.%2)").arg(container.toUpper()).arg(container));
 
 	QString path(QStringLiteral("%1.%2").arg(QString::fromStdString(GSGetBaseVideoFilename())).arg(container));
-	path = QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter);
+	path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter));
 	if (path.isEmpty())
 		return;
 
@@ -1425,8 +1426,8 @@ void MainWindow::onStartBIOSActionTriggered()
 void MainWindow::onChangeDiscFromFileActionTriggered()
 {
 	VMLock lock(pauseAndLockVM());
-	QString filename =
-		QFileDialog::getOpenFileName(lock.getDialogParent(), tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+	QString filename = QDir::toNativeSeparators(
+		QFileDialog::getOpenFileName(lock.getDialogParent(), tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr));
 	if (filename.isEmpty())
 		return;
 
@@ -2770,7 +2771,8 @@ void MainWindow::populateLoadStateMenu(QMenu* menu, const QString& filename, con
 
 	QAction* action = menu->addAction(is_right_click_menu ? tr("Load State File...") : tr("Load From File..."));
 	connect(action, &QAction::triggered, [this, filename]() {
-		const QString path(QFileDialog::getOpenFileName(this, tr("Select Save State File"), QString(), tr("Save States (*.p2s *.p2s.backup)")));
+		const QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this,
+			tr("Select Save State File"), QString(), tr("Save States (*.p2s *.p2s.backup)")));
 		if (path.isEmpty())
 			return;
 
@@ -2840,7 +2842,8 @@ void MainWindow::populateSaveStateMenu(QMenu* menu, const QString& serial, quint
 		return;
 
 	connect(menu->addAction(tr("Save To File...")), &QAction::triggered, [this]() {
-		const QString path(QFileDialog::getSaveFileName(this, tr("Select Save State File"), QString(), tr("Save States (*.p2s)")));
+		const QString path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(
+			this, tr("Select Save State File"), QString(), tr("Save States (*.p2s)")));
 		if (path.isEmpty())
 			return;
 
