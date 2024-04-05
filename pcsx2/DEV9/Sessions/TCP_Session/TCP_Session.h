@@ -68,7 +68,7 @@ namespace Sessions
 		std::vector<u32> receivedPS2SeqNumbers; //Accesed By Out Thread Only
 
 		std::mutex myNumberSentry;
-		const int oldMyNumCount = 2;
+		const int oldMyNumCount = 64;
 		u32 _MySequenceNumber = 1;
 		std::vector<u32> _OldMyNumbers;
 		std::atomic<bool> myNumberACKed{true};
