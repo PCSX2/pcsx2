@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "common/DynamicLibrary.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/Error.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 
 #include <cstring>
@@ -15,13 +17,13 @@
 #include <dlfcn.h>
 #endif
 
-using namespace Common;
-
 DynamicLibrary::DynamicLibrary() = default;
 
 DynamicLibrary::DynamicLibrary(const char* filename)
 {
-	Open(filename);
+	Error error;
+	if (!Open(filename, &error))
+		Console.ErrorFmt("DynamicLibrary open failed: {}", error.GetDescription());
 }
 
 DynamicLibrary::DynamicLibrary(DynamicLibrary&& move)
@@ -74,13 +76,13 @@ std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major,
 #endif
 }
 
-bool DynamicLibrary::Open(const char* filename)
+bool DynamicLibrary::Open(const char* filename, Error* error)
 {
 #ifdef _WIN32
 	m_handle = reinterpret_cast<void*>(LoadLibraryW(StringUtil::UTF8StringToWideString(filename).c_str()));
 	if (!m_handle)
 	{
-		Console.Error(fmt::format("(DynamicLibrary) Loading {} failed: {}", filename, GetLastError()));
+		Error::SetWin32(error, TinyString::from_fmt("Loading {} failed: ", filename), GetLastError());
 		return false;
 	}
 
@@ -90,7 +92,7 @@ bool DynamicLibrary::Open(const char* filename)
 	if (!m_handle)
 	{
 		const char* err = dlerror();
-		Console.Error(fmt::format("(DynamicLibrary) Loading {} failed: {}", filename, err ? err : ""));
+		Error::SetStringFmt(error, "Loading {} failed: {}", filename, err ? err : "<UNKNOWN>");
 		return false;
 	}
 
