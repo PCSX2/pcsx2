@@ -1298,13 +1298,17 @@ void QtHost::SaveSettings()
 	pxAssertRel(!g_emu_thread->isOnEmuThread(), "Saving should happen on the UI thread.");
 
 	{
+		Error error;
 		auto lock = Host::GetSettingsLock();
-		if (!s_base_settings_interface->Save())
-			Console.Error("Failed to save settings.");
+		if (!s_base_settings_interface->Save(&error))
+			Console.ErrorFmt("Failed to save settings: {}", error.GetDescription());
 	}
 
-	s_settings_save_timer->deleteLater();
-	s_settings_save_timer.release();
+	if (s_settings_save_timer)
+	{
+		s_settings_save_timer->deleteLater();
+		s_settings_save_timer.release();
+	}
 }
 
 void Host::CommitBaseSettingChanges()
