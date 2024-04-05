@@ -11961,6 +11961,7 @@ SLAJ-25041:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLAJ-25042:
   name: "Virtua Fighter - Cyber Generation"
   region: "NTSC-Unk"
@@ -16522,6 +16523,8 @@ SLES-51443:
 SLES-51445:
   name: "Rygar - The Legendary Adventure"
   region: "PAL-M5"
+  gsHWFixes:
+    halfPixelOffset: 4 # Improves misaligned effect such as character shadows.
 SLES-51448:
   name: "Resident Evil - Dead Aim"
   region: "PAL-M5"
@@ -18720,6 +18723,7 @@ SLES-52440:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-52444:
   name: "Hyper Street Fighter II - The Anniversary Edition"
   region: "PAL-E"
@@ -18948,6 +18952,7 @@ SLES-52527:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-52531:
   name: "The Suffering"
   name-sort: "Suffering, The"
@@ -19221,6 +19226,7 @@ SLES-52600:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-52601:
   name: "Ex Zeus"
   region: "PAL-E"
@@ -19565,8 +19571,10 @@ SLES-52710:
   region: "PAL-M5"
   compat: 5
 SLES-52711:
-  name: "Titeuf Mega Compet"
+  name: "Titeuf Méga-Compet"
   region: "PAL-F"
+  gsHWFixes:
+    autoFlush: 1 # Fixes sun occlusion through buildings.
   gameFixes:
     - GIFFIFOHack # Fixes corrupted textures.
   patches:
@@ -23510,8 +23518,7 @@ SLES-54021:
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
   gsHWFixes:
-    cpuCLUTRender: 1 # Bring back blooming scattering like in software mode.
-    halfPixelOffset: 1 # Fixes misalignment like volcano lighting.
+    halfPixelOffset: 4 # Fixes misalignment like volcano lighting.
   patches:
     B02C81E5:
       content: |-
@@ -27037,15 +27044,23 @@ SLES-55247:
 SLES-55248:
   name: "Harry Potter and the Half-Blood Prince"
   region: "PAL-M6"
+  gameFixes:
+    - InstantDMAHack # Avoids freezes in (starter) FMV with IPU issues.
   gsHWFixes:
     mipmap: 1
-    halfPixelOffset: 1 # Reduces ghosting and vertical lines.
+    halfPixelOffset: 4 # Reduces ghosting and vertical lines, also don't break other effects.
+    alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLES-55249:
   name: "Harry Potter and the Half-Blood Prince"
   region: "PAL-M10"
+  gameFixes:
+    - InstantDMAHack # Avoids freezes in (starter) FMV with IPU issues.
   gsHWFixes:
     mipmap: 1
-    halfPixelOffset: 1 # Reduces ghosting and vertical lines.
+    halfPixelOffset: 4 # Reduces ghosting and vertical lines, also don't break other effects.
+    alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
   patches:
     CA5F8BC1:
       content: |-
@@ -29134,6 +29149,7 @@ SLKA-25172:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLKA-25173:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-K"
@@ -39613,6 +39629,7 @@ SLPM-65612:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLPM-65613:
   name: 遊戯王 カプセルモンスターコロシアム
   name-sort: ゆうぎおう かぷせるもんすたーころしあむ
@@ -55796,6 +55813,10 @@ SLPS-25827:
   name-sort: そうこうきへいぼとむず
   name-en: "Soukou Kihei Votoms"
   region: "NTSC-J"
+  gsHWFixes:
+    alignSprite: 1 # Fixes vertical lines.
+    halfPixelOffset: 4 # Fixes blooming and lighting offset.
+    autoFlush: 1 # Improves lighting brightness.
 SLPS-25828:
   name: ぱちんこ必殺仕事人III パチってちょんまげ達人13
   name-sort: ぱちんこひっさつしごとじんIII ぱちってちょんまげたつじん13
@@ -59547,6 +59568,8 @@ SLUS-20471:
   name: "Rygar - The Legendary Adventure"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 4 # Improves misaligned effect such as character shadows.
 SLUS-20472:
   name: "Micro Machines"
   region: "NTSC-U"
@@ -62012,6 +62035,7 @@ SLUS-20926:
     mipmap: 1
     cpuFramebufferConversion: 1 # Fixes right side of the screen from garbage textures.
     halfPixelOffset: 2 # Aligns mirror reflections, removes some bloom-related ghosting.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLUS-20927:
   name: "Time Crisis - Crisis Zone"
   region: "NTSC-U"
@@ -64383,8 +64407,7 @@ SLUS-21314:
   gameFixes:
     - EETimingHack # Needed to go ingame.
   gsHWFixes:
-    cpuCLUTRender: 1 # Bring back blooming scattering like in software mode.
-    halfPixelOffset: 1 # Fixes misalignment like volcano lighting.
+    halfPixelOffset: 4 # Fixes misalignment like volcano lighting.
   patches:
     F73488D5:
       content: |-
@@ -67075,9 +67098,13 @@ SLUS-21808:
   name: "Harry Potter and the Half-Blood Prince"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - InstantDMAHack # Avoids freezes in (starter) FMV with IPU issues.
   gsHWFixes:
     mipmap: 1
-    halfPixelOffset: 1 # Reduces ghosting and vertical lines.
+    halfPixelOffset: 4 # Reduces ghosting and vertical lines, also don't break other effects.
+    alignSprite: 1 # Fixes vertical lines.
+    recommendedBlendingLevel: 4 # Improves lighting effects.
 SLUS-21809:
   name: "Backyard Football '09"
   region: "NTSC-U"
