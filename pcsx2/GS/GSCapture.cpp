@@ -222,11 +222,11 @@ VISIT_SWRESAMPLE_IMPORTS(DECLARE_IMPORT);
 #ifndef USE_LINKED_FFMPEG
 static void UnloadFFmpegFunctions(std::unique_lock<std::mutex>& lock);
 
-static Common::DynamicLibrary s_avcodec_library;
-static Common::DynamicLibrary s_avformat_library;
-static Common::DynamicLibrary s_avutil_library;
-static Common::DynamicLibrary s_swscale_library;
-static Common::DynamicLibrary s_swresample_library;
+static DynamicLibrary s_avcodec_library;
+static DynamicLibrary s_avformat_library;
+static DynamicLibrary s_avutil_library;
+static DynamicLibrary s_swscale_library;
+static DynamicLibrary s_swresample_library;
 static bool s_library_loaded = false;
 static std::mutex s_load_mutex;
 
@@ -236,9 +236,9 @@ bool GSCapture::LoadFFmpeg(bool report_errors)
 	if (s_library_loaded)
 		return true;
 
-	const auto open_dynlib = [](Common::DynamicLibrary& lib, const char* name, int major_version) {
-		std::string full_name(Common::DynamicLibrary::GetVersionedFilename(name, major_version));
-		return lib.Open(full_name.c_str());
+	const auto open_dynlib = [](DynamicLibrary& lib, const char* name, int major_version) {
+		std::string full_name(DynamicLibrary::GetVersionedFilename(name, major_version));
+		return lib.Open(full_name.c_str(), nullptr);
 	};
 
 	bool result = true;
