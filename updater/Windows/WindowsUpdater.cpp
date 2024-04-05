@@ -421,7 +421,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 {
 	Win32ProgressCallback progress;
 
-	const bool com_initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	const bool com_initialized = SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
 	const ScopedGuard com_guard = [com_initialized]() {
 		if (com_initialized)
 			CoUninitialize();
