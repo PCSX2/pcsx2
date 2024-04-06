@@ -55,6 +55,11 @@ namespace Sessions
 		std::lock_guard numberlock(myNumberSentry);
 		return GetDelta(_MySequenceNumber, _ReceivedAckNumber);
 	}
+	bool TCP_Session::ShouldWaitForAck()
+	{
+		std::lock_guard numberlock(myNumberSentry);
+		return _OldMyNumbers[0] == _ReceivedAckNumber;
+	}
 	std::tuple<u32, std::vector<u32>> TCP_Session::GetAllMyNumbers()
 	{
 		std::lock_guard numberlock(myNumberSentry);
