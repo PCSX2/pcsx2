@@ -2591,11 +2591,8 @@ void Achievements::DrawLeaderboardsWindow()
 				const float tab_width = (ImGui::GetWindowWidth() / ImGuiFullscreen::g_layout_scale) * 0.5f;
 				ImGui::SetCursorPos(ImVec2(0.0f, top + spacing_small));
 
-				if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed) ||
-					ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
-				{
+				if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false))
 					s_is_showing_all_leaderboard_entries = !s_is_showing_all_leaderboard_entries;
-				}
 
 				for (const bool show_all : {false, true})
 				{

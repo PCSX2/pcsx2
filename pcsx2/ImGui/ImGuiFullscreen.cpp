@@ -556,15 +556,15 @@ bool ImGuiFullscreen::WantsToCloseMenu()
 	// Wait for the Close button to be released, THEN pressed
 	if (s_close_button_state == 0)
 	{
-		if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Pressed))
+		if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
 			s_close_button_state = 1;
-	}
-	else if (s_close_button_state == 1)
-	{
-		if (ImGui::IsNavInputTest(ImGuiNavInput_Cancel, ImGuiNavReadMode_Released))
-		{
+		else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadCancel, false))
 			s_close_button_state = 2;
-		}
+	}
+	else if ((s_close_button_state == 1 && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
+			 (s_close_button_state == 2 && ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
+	{
+		s_close_button_state = 3;
 	}
 	return s_close_button_state > 1;
 }
@@ -2578,9 +2578,9 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 		ImDrawList* dl = ImGui::GetForegroundDrawList();
 		dl->AddRectFilled(ImVec2(box_min.x + shadow_size, box_min.y + shadow_size),
 			ImVec2(box_max.x + shadow_size, box_max.y + shadow_size),
-			IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawCornerFlags_All);
-		dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawCornerFlags_All);
-		dl->AddRect(box_min, box_max, border_color, rounding, ImDrawCornerFlags_All, ImGuiFullscreen::LayoutScale(1.0f));
+			IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawFlags_RoundCornersAll);
+		dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
+		dl->AddRect(box_min, box_max, border_color, rounding, ImDrawFlags_RoundCornersAll, ImGuiFullscreen::LayoutScale(1.0f));
 
 		const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
 		const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
