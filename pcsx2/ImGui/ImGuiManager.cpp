@@ -354,7 +354,7 @@ void ImGuiManager::SetKeyMap()
 {
 	struct KeyMapping
 	{
-		int index;
+		ImGuiKey index;
 		const char* name;
 		const char* alt_name;
 	};
