@@ -10,7 +10,7 @@ fi
 export MACOSX_DEPLOYMENT_TARGET=11.0
 
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
-#SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
+SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 INSTALLDIR="$1"
 if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
@@ -27,6 +27,11 @@ LIBWEBP=1.3.2
 FFMPEG=6.0
 MOLTENVK=1.2.8
 QT=6.7.0
+
+SHADERC=2024.0
+SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
+SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
+SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
 
 mkdir -p deps-build
 cd deps-build
@@ -59,6 +64,10 @@ cat > SHASUMS <<EOF
 1518f40e08ff5e6153a6e26e5b95b033413ac143b70795dc1317e7f73ebf922d  qtsvg-everywhere-src-$QT.tar.xz
 c8da6b239e82fe1e23465cbf0936c0da5a334438d3fb433e19c503cbb1abee7b  qttools-everywhere-src-$QT.tar.xz
 26fc8047062ca4bacd1bd953be86fd39c6e0a5f5e9920c72ba9d40876cea4b56  qttranslations-everywhere-src-$QT.tar.xz
+c761044e4e204be8e0b9a2d7494f08671ca35b92c4c791c7049594ca7514197f  shaderc-$SHADERC.tar.gz
+d27f7359156a92749f8fd4681d1d518c736864213c431cf8144ecc2fb6689a2d  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
+cfeed5f9a97d12a9761a26e7f5bd10fedb1a8ce92033075151ae3bc7206fc229  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
+c0d01e758a543b3a358cb97af02c6817ebd3f5ff13a2edf9fb220646a3d67999  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 EOF
 
 curl -L \
@@ -77,6 +86,10 @@ curl -L \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
+	-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
+	-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
+	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
+	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
@@ -271,6 +284,24 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+
+echo "Building shaderc..."
+rm -fr "shaderc-$SHADERC"
+tar xf "shaderc-$SHADERC.tar.gz"
+cd "shaderc-$SHADERC"
+cd third_party
+tar xf "../../shaderc-glslang-$SHADERC_GLSLANG.tar.gz"
+mv "glslang-$SHADERC_GLSLANG" "glslang"
+tar xf "../../shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz"
+mv "SPIRV-Headers-$SHADERC_SPIRVHEADERS" "spirv-headers"
+tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
+mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
+cd ..
+patch -p1 < "$SCRIPTDIR/../common/shaderc-install.patch"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build
+make -C build "-j$NPROCS"
+make -C build install
+cd ..
 
 echo "Installing Qt Translations..."
 rm -fr "qttranslations-everywhere-src-$QT"

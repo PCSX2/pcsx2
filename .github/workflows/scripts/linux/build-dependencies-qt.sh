@@ -7,7 +7,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-#SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
+SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 INSTALLDIR="$1"
 if [ "${INSTALLDIR:0:1}" != "/" ]; then
@@ -25,6 +25,11 @@ SDL=SDL2-2.30.2
 QT=6.7.0
 ZLIB=1.3.1
 ZSTD=1.5.5
+
+SHADERC=2024.0
+SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
+SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
+SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
 
 mkdir -p deps-build
 cd deps-build
@@ -46,6 +51,10 @@ fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.
 c8da6b239e82fe1e23465cbf0936c0da5a334438d3fb433e19c503cbb1abee7b  qttools-everywhere-src-$QT.tar.xz
 26fc8047062ca4bacd1bd953be86fd39c6e0a5f5e9920c72ba9d40876cea4b56  qttranslations-everywhere-src-$QT.tar.xz
 d73470e4217da388d8cd2a517ee8bb373853f33c569306e80f04397845157aea  qtwayland-everywhere-src-$QT.tar.xz
+c761044e4e204be8e0b9a2d7494f08671ca35b92c4c791c7049594ca7514197f  shaderc-$SHADERC.tar.gz
+d27f7359156a92749f8fd4681d1d518c736864213c431cf8144ecc2fb6689a2d  shaderc-glslang-$SHADERC_GLSLANG.tar.gz
+cfeed5f9a97d12a9761a26e7f5bd10fedb1a8ce92033075151ae3bc7206fc229  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
+c0d01e758a543b3a358cb97af02c6817ebd3f5ff13a2edf9fb220646a3d67999  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 EOF
 
 curl -C - -L \
@@ -64,7 +73,11 @@ curl -C - -L \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
-	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz"
+	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" \
+	-o "shaderc-$SHADERC.tar.gz" "https://github.com/google/shaderc/archive/refs/tags/v$SHADERC.tar.gz" \
+	-o "shaderc-glslang-$SHADERC_GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/$SHADERC_GLSLANG.tar.gz" \
+	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
+	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
@@ -280,6 +293,24 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+
+echo "Building shaderc..."
+rm -fr "shaderc-$SHADERC"
+tar xf "shaderc-$SHADERC.tar.gz"
+cd "shaderc-$SHADERC"
+cd third_party
+tar xf "../../shaderc-glslang-$SHADERC_GLSLANG.tar.gz"
+mv "glslang-$SHADERC_GLSLANG" "glslang"
+tar xf "../../shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz"
+mv "SPIRV-Headers-$SHADERC_SPIRVHEADERS" "spirv-headers"
+tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
+mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
+cd ..
+patch -p1 < "$SCRIPTDIR/../common/shaderc-install.patch"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
 echo "Cleaning up..."
 cd ..
