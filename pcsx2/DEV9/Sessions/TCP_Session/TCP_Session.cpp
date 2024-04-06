@@ -81,9 +81,9 @@ namespace Sessions
 		ret->destinationPort = srcPort;
 
 		ret->sequenceNumber = GetMyNumber();
-		//DevCon.WriteLn("With MySeq: %d", ret->sequenceNumber);
+		//DevCon.WriteLn("With MySeq: %u", ret->sequenceNumber);
 		ret->acknowledgementNumber = expectedSeqNumber;
-		//DevCon.WriteLn("With MyAck: %d", ret->acknowledgementNumber);
+		//DevCon.WriteLn("With MyAck: %u", ret->acknowledgementNumber);
 
 		ret->windowSize = 2 * maxSegmentSize;
 
