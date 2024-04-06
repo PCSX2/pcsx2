@@ -1015,7 +1015,7 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		{
 			QString text;
 			if (iwidth == 0 || iheight == 0)
-				text = tr("N/A");
+				text = tr("No Image");
 			else
 				text = tr("%1x%2").arg(iwidth).arg(iheight);
 
