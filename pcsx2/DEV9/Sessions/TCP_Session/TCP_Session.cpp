@@ -39,10 +39,21 @@ namespace Sessions
 
 		_MySequenceNumber += amount;
 	}
+	void TCP_Session::UpdateReceivedAckNumber(u32 ack)
+	{
+		std::lock_guard numberlock(myNumberSentry);
+		if (GetDelta(ack, _ReceivedAckNumber) > 0)
+			_ReceivedAckNumber = ack;
+	}
 	u32 TCP_Session::GetMyNumber()
 	{
 		std::lock_guard numberlock(myNumberSentry);
 		return _MySequenceNumber;
+	}
+	u32 TCP_Session::GetOutstandingSequenceLength()
+	{
+		std::lock_guard numberlock(myNumberSentry);
+		return GetDelta(_MySequenceNumber, _ReceivedAckNumber);
 	}
 	std::tuple<u32, std::vector<u32>> TCP_Session::GetAllMyNumbers()
 	{

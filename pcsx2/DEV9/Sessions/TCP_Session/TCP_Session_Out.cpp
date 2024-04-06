@@ -442,6 +442,8 @@ namespace Sessions
 			myNumberACKed.store(true);
 		}
 
+		UpdateReceivedAckNumber(tcp->acknowledgementNumber);
+
 		if (tcp->sequenceNumber != expectedSeqNumber)
 		{
 			if (tcp->GetPayload()->GetLength() == 0)

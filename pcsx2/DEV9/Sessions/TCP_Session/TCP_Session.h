@@ -71,6 +71,7 @@ namespace Sessions
 		const int oldMyNumCount = 64;
 		u32 _MySequenceNumber = 1;
 		std::vector<u32> _OldMyNumbers;
+		u32 _ReceivedAckNumber = 1;
 		std::atomic<bool> myNumberACKed{true};
 
 	public:
@@ -89,7 +90,9 @@ namespace Sessions
 		PacketReader::IP::TCP::TCP_Packet* PopRecvBuff();
 
 		void IncrementMyNumber(u32 amount);
+		void UpdateReceivedAckNumber(u32 ack);
 		u32 GetMyNumber();
+		u32 GetOutstandingSequenceLength();
 		std::tuple<u32, std::vector<u32>> GetAllMyNumbers();
 		void ResetMyNumbers();
 
