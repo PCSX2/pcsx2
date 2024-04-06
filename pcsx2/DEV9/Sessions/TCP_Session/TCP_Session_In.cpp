@@ -67,6 +67,8 @@ namespace Sessions
 				return nullptr;
 		}
 
+		if (ShouldWaitForAck())
+			return nullptr;
 
 		//Note, windowSize will be updated before _ReceivedAckNumber, potential race condition
 		//in practice, we just get a smaller or -ve maxSize
@@ -78,8 +80,7 @@ namespace Sessions
 		else
 			maxSize = std::min<int>(maxSegmentSize, windowSize.load() - outstanding);
 
-		if (maxSize > 0 &&
-			myNumberACKed.load())
+		if (maxSize > 0)
 		{
 			std::unique_ptr<u8[]> buffer;
 			int err = 0;

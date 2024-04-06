@@ -93,6 +93,7 @@ namespace Sessions
 		void UpdateReceivedAckNumber(u32 ack);
 		u32 GetMyNumber();
 		u32 GetOutstandingSequenceLength();
+		bool ShouldWaitForAck();
 		std::tuple<u32, std::vector<u32>> GetAllMyNumbers();
 		void ResetMyNumbers();
 
