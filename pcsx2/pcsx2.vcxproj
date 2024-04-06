@@ -51,7 +51,6 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\glad\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\glslang\glslang</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\vulkan-headers\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\d3d12memalloc\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\lzma\include</AdditionalIncludeDirectories>
@@ -821,9 +820,6 @@
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\discord-rpc\discord-rpc.vcxproj">
       <Project>{e960dfdf-1bd3-4c29-b251-d1a0919c9b09}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\3rdparty\glslang\glslang.vcxproj">
-      <Project>{ef6834a9-11f3-4331-bc34-21b325abb180}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\libzip\libzip.vcxproj">
       <Project>{20b2e9fe-f020-42a0-b324-956f5b06ea68}</Project>

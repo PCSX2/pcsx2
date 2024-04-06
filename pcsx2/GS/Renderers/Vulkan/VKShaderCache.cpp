@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "GS/GS.h"
@@ -15,12 +15,8 @@
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 
-// glslang includes
-#include "SPIRV/GlslangToSpv.h"
-#include "StandAlone/ResourceLimits.h"
-#include "glslang/Public/ShaderLang.h"
-
 #include "fmt/format.h"
+#include "shaderc/shaderc.hpp"
 
 #include <cstring>
 #include <fstream>
@@ -29,6 +25,9 @@
 // TODO: store the driver version and stuff in the shader header
 
 std::unique_ptr<VKShaderCache> g_vulkan_shader_cache;
+
+static std::unique_ptr<shaderc::Compiler> s_shaderc_compiler;
+static u32 s_next_bad_shader_id = 0;
 
 namespace
 {
@@ -100,49 +99,34 @@ static void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
 	std::memcpy(header->uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().pipelineCacheUUID, VK_UUID_SIZE);
 }
 
-static unsigned s_next_bad_shader_id = 1;
-static bool s_glslang_initialized = false;
-
-// Registers itself for cleanup via atexit
-static bool InitializeGlslang()
+std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(u32 stage, std::string_view source, bool debug)
 {
-	if (s_glslang_initialized)
-		return true;
+	// TODO: NOT thread safe, yet.
+	if (!s_shaderc_compiler)
+		s_shaderc_compiler = std::make_unique<shaderc::Compiler>();
 
-	if (!glslang::InitializeProcess())
+	shaderc::CompileOptions options;
+	options.SetSourceLanguage(shaderc_source_language_glsl);
+	options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+
+	if (debug)
 	{
-		pxFailRel("Failed to initialize glslang shader compiler");
-		return false;
+		options.SetOptimizationLevel(shaderc_optimization_level_zero);
+		options.SetGenerateDebugInfo();
+	}
+	else
+	{
+		options.SetOptimizationLevel(shaderc_optimization_level_performance);
 	}
 
-	std::atexit(&glslang::FinalizeProcess);
-	s_glslang_initialized = true;
-	return true;
-}
-
-std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
-	u32 stage, std::string_view source, bool debug)
-{
-	if (!InitializeGlslang())
-		return std::nullopt;
-
-	std::unique_ptr<glslang::TShader> shader = std::make_unique<glslang::TShader>(static_cast<EShLanguage>(stage));
-	std::unique_ptr<glslang::TProgram> program;
-	glslang::TShader::ForbidIncluder includer;
-	const EProfile profile = ECoreProfile;
-	const EShMessages messages =
-		static_cast<EShMessages>(EShMsgDefault | EShMsgSpvRules | EShMsgVulkanRules | (debug ? EShMsgDebugInfo : 0));
-	const int default_version = 450;
-
-	std::string full_source_code;
-	const char* pass_source_code = source.data();
-	int pass_source_code_length = static_cast<int>(source.size());
-	shader->setStringsWithLengths(&pass_source_code, &pass_source_code_length, 1);
-
-	auto DumpBadShader = [&shader, &source, &program](const char* msg) {
+	const shaderc::SpvCompilationResult result = s_shaderc_compiler->CompileGlslToSpv(
+		source.data(), source.length(), static_cast<shaderc_shader_kind>(stage), "source", "main", options);
+	if (result.GetCompilationStatus() != shaderc_compilation_status_success)
+	{
+		const std::string msg = result.GetErrorMessage();
 		const std::string filename =
-			Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++));
-		Console.Error("CompileShaderToSPV: %s, writing to %s", msg, filename.c_str());
+			Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", ++s_next_bad_shader_id));
+		Console.ErrorFmt("CompileShaderToSPV(): {}, writing to {}", msg, filename.c_str());
 
 		std::ofstream ofs(filename, std::ofstream::out | std::ofstream::binary);
 		if (ofs.is_open())
@@ -151,62 +135,17 @@ std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
 			ofs << "\n";
 
 			ofs << msg << std::endl;
-			ofs << "Shader Info Log:" << std::endl;
-			ofs << shader->getInfoLog() << std::endl;
-			ofs << shader->getInfoDebugLog() << std::endl;
-			if (program)
-			{
-				ofs << "Program Info Log:" << std::endl;
-				ofs << program->getInfoLog() << std::endl;
-				ofs << program->getInfoDebugLog() << std::endl;
-			}
-
 			ofs.close();
 		}
-	};
 
-	if (!shader->parse(&glslang::DefaultTBuiltInResource, default_version, profile, false, true, messages, includer))
-	{
-		DumpBadShader("Failed to parse shader");
 		return std::nullopt;
 	}
-
-	// Even though there's only a single shader, we still need to link it to generate SPV
-	program = std::make_unique<glslang::TProgram>();
-	program->addShader(shader.get());
-	if (!program->link(messages))
+	else if (result.GetNumWarnings() > 0)
 	{
-		DumpBadShader("Failed to link program");
-		return std::nullopt;
+		Console.WarningFmt("CompileShaderToSPV(): Shader compiled with warnings:\n{}", result.GetErrorMessage());
 	}
 
-	glslang::TIntermediate* intermediate = program->getIntermediate(static_cast<EShLanguage>(stage));
-	if (!intermediate)
-	{
-		DumpBadShader("Failed to generate SPIR-V");
-		return std::nullopt;
-	}
-
-	SPIRVCodeVector out_code;
-	spv::SpvBuildLogger logger;
-	glslang::SpvOptions options;
-	options.generateDebugInfo = debug;
-	glslang::GlslangToSpv(*intermediate, out_code, &logger, &options);
-
-	// Write out messages
-	if (std::strlen(shader->getInfoLog()) > 0)
-		Console.Warning("Shader info log: %s", shader->getInfoLog());
-	if (std::strlen(shader->getInfoDebugLog()) > 0)
-		Console.Warning("Shader debug info log: %s", shader->getInfoDebugLog());
-	if (std::strlen(program->getInfoLog()) > 0)
-		Console.Warning("Program info log: %s", program->getInfoLog());
-	if (std::strlen(program->getInfoDebugLog()) > 0)
-		Console.Warning("Program debug info log: %s", program->getInfoDebugLog());
-	std::string spv_messages = logger.getAllMessages();
-	if (!spv_messages.empty())
-		Console.Warning("SPIR-V conversion messages: %s", spv_messages.c_str());
-
-	return out_code;
+	return SPIRVCodeVector(result.cbegin(), result.cend());
 }
 
 VKShaderCache::VKShaderCache() = default;
@@ -595,17 +534,17 @@ VkShaderModule VKShaderCache::GetShaderModule(u32 type, std::string_view shader_
 
 VkShaderModule VKShaderCache::GetVertexShader(std::string_view shader_code)
 {
-	return GetShaderModule(EShLangVertex, std::move(shader_code));
+	return GetShaderModule(shaderc_glsl_vertex_shader, std::move(shader_code));
 }
 
 VkShaderModule VKShaderCache::GetFragmentShader(std::string_view shader_code)
 {
-	return GetShaderModule(EShLangFragment, std::move(shader_code));
+	return GetShaderModule(shaderc_glsl_fragment_shader, std::move(shader_code));
 }
 
 VkShaderModule VKShaderCache::GetComputeShader(std::string_view shader_code)
 {
-	return GetShaderModule(EShLangCompute, std::move(shader_code));
+	return GetShaderModule(shaderc_glsl_compute_shader, std::move(shader_code));
 }
 
 std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileAndAddShaderSPV(

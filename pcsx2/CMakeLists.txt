@@ -626,7 +626,7 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/VKStreamBuffer.h
 		GS/Renderers/Vulkan/VKSwapChain.h
 	)
-	target_link_libraries(PCSX2_FLAGS INTERFACE Vulkan-Headers glslang)
+	target_link_libraries(PCSX2_FLAGS INTERFACE Vulkan-Headers Shaderc::shaderc_shared)
 endif()
 
 set(pcsx2GSMetalShaders
@@ -1243,7 +1243,7 @@ function(setup_main_executable target)
 
 		# Copy dependency libraries.
 		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
-		set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL2.dll zlib1.dll zstd.dll)
+		set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll libpng16.dll libsharpyuv.dll libwebp.dll lz4.dll SDL2.dll shaderc_shared.dll zlib1.dll zstd.dll)
 		foreach(DEP_TO_COPY ${DEPS_TO_COPY})
 			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 		endforeach()

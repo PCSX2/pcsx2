@@ -19,6 +19,10 @@ find_package(LZ4 REQUIRED)
 find_package(WebP REQUIRED) # v1.3.2, spews an error on Linux because no pkg-config.
 find_package(SDL2 2.30.2 REQUIRED)
 
+if(USE_VULKAN)
+	find_package(Shaderc REQUIRED)
+endif()
+
 # Platform-specific dependencies.
 if (WIN32)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
@@ -110,7 +114,6 @@ if(USE_OPENGL)
 endif()
 
 if(USE_VULKAN)
-	add_subdirectory(3rdparty/glslang EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/vulkan-headers EXCLUDE_FROM_ALL)
 endif()
 
