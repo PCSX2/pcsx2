@@ -29,6 +29,7 @@
     "modules/11-libaio.json",
     "modules/20-sdl2.json",
     "modules/21-libbacktrace.json",
+    "modules/22-shaderc.json",
     {
       "name": "pcsx2",
       "buildsystem": "simple",

@@ -53,6 +53,11 @@ set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.5
 
+set SHADERC=2024.0
+set SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
+set SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
+set SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
+
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
@@ -67,6 +72,11 @@ call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/off
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 69241747af86bc5b6c2829de4a28d56d3c1119dd21c379b84615178d45b8f3aa || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" c5c8daa1d40dabc51790c62a5b86af2b36dfc4e1a738ff10dc4a46ea4e68ee51 || goto error
+
+call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 5397160432fb5b780e9372327060b1be47acafcd0689fea44fd939e7305668ba || goto error
+call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 58a0d4b670986f8618c371b088f2ee11006596e8c71fe499ec044d5ea469d39b || goto error
+call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" 1385538d16f8875e76209388187b3814cb0b0e9cecc3bc440faa7665b570ff47 || goto error
+call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" 4eb9a3fc940ed1b05f968c181763dfdb8e637cbfbf57c625112b3ad0f76e2c28 || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
@@ -227,6 +237,24 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+
+echo Building shaderc...
+rmdir /S /Q "shaderc-%SHADERC%"
+%SEVENZIP% x "shaderc-%SHADERC%.zip" || goto error
+cd "shaderc-%SHADERC%" || goto error
+cd third_party || goto error
+%SEVENZIP% x "..\..\shaderc-glslang-%SHADERC_GLSLANG%.zip" || goto error
+rename "glslang-%SHADERC_GLSLANG%" "glslang" || goto error
+%SEVENZIP% x "..\..\shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" || goto error
+rename "SPIRV-Headers-%SHADERC_SPIRVHEADERS%" "spirv-headers" || goto error
+%SEVENZIP% x "..\..\shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" || goto error
+rename "SPIRV-Tools-%SHADERC_SPIRVTOOLS%" "spirv-tools" || goto error
+cd .. || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\..\common\shaderc-install.patch" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
 
 echo Cleaning up...
 cd ..

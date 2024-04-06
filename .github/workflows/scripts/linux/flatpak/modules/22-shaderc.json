@@ -1,0 +1,50 @@
+{
+  "name": "shaderc",
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
+  "config-opts": [
+    "-DSHADERC_SKIP_TESTS=ON",
+    "-DSHADERC_SKIP_EXAMPLES=ON",
+    "-DSHADERC_SKIP_COPYRIGHT_CHECK=ON"
+  ],
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://github.com/google/shaderc.git",
+      "commit": "d792558a8902cb39b1c237243cc4edab226513a5"
+    },
+    {
+      "type": "archive",
+      "url": "https://github.com/KhronosGroup/glslang/archive/d73712b8f6c9047b09e99614e20d456d5ada2390.tar.gz",
+      "sha256": "d27f7359156a92749f8fd4681d1d518c736864213c431cf8144ecc2fb6689a2d",
+      "dest": "third_party/glslang"
+    },
+    {
+      "type": "archive",
+      "url": "https://github.com/KhronosGroup/SPIRV-Headers/archive/8b246ff75c6615ba4532fe4fde20f1be090c3764.tar.gz",
+      "sha256": "cfeed5f9a97d12a9761a26e7f5bd10fedb1a8ce92033075151ae3bc7206fc229",
+      "dest": "third_party/spirv-headers"
+    },
+    {
+      "type": "archive",
+      "url": "https://github.com/KhronosGroup/SPIRV-Tools/archive/04896c462d9f3f504c99a4698605b6524af813c1.tar.gz",
+      "sha256": "c0d01e758a543b3a358cb97af02c6817ebd3f5ff13a2edf9fb220646a3d67999",
+      "dest": "third_party/spirv-tools"
+    },
+    {
+      "type": "patch",
+      "path": "../../../common/shaderc-install.patch"
+    }
+  ],
+  "cleanup": [
+    "/bin",
+    "/include",
+    "/lib/*.a",
+    "/lib/*.la",
+    "/lib/cmake",
+    "/lib/pkgconfig"
+  ]
+}
