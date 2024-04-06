@@ -308,7 +308,9 @@ namespace Sessions
 		windowSize.store(tcp->windowSize << windowScale);
 
 		const NumCheckResult Result = CheckNumbers(tcp);
+		//Check if we already have some of the data sent
 		const uint delta = GetDelta(expectedSeqNumber, tcp->sequenceNumber);
+		pxAssert(delta >= 0);
 		//if (Result == NumCheckResult::GotOldData)
 		//{
 		//	DevCon.WriteLn("[PS2] New Data Offset: %d bytes", delta);
@@ -463,17 +465,6 @@ namespace Sessions
 		}
 
 		return NumCheckResult::OK;
-	}
-	u32 TCP_Session::GetDelta(u32 parExpectedSeq, u32 parGotSeq)
-	{
-		u32 delta = parExpectedSeq - parGotSeq;
-		if (delta > 0.5 * UINT_MAX)
-		{
-			delta = UINT_MAX - parExpectedSeq + parGotSeq;
-			Console.Error("DEV9: TCP: [PS2] SequenceNumber Overflow Detected");
-			Console.Error("DEV9: TCP: [PS2] New Data Offset: %d bytes", delta);
-		}
-		return delta;
 	}
 	bool TCP_Session::ErrorOnNonEmptyPacket(TCP_Packet* tcp)
 	{

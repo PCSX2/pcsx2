@@ -95,7 +95,7 @@ namespace Sessions
 
 		NumCheckResult CheckRepeatSYNNumbers(PacketReader::IP::TCP::TCP_Packet* tcp);
 		NumCheckResult CheckNumbers(PacketReader::IP::TCP::TCP_Packet* tcp);
-		u32 GetDelta(u32 parExpectedSeq, u32 parGotSeq);
+		s32 GetDelta(u32 a, u32 b); //Returns a - b
 		//Returns true if errored
 		bool ErrorOnNonEmptyPacket(PacketReader::IP::TCP::TCP_Packet* tcp);
 
