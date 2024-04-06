@@ -68,6 +68,24 @@ namespace Sessions
 	{
 	}
 
+	s32 TCP_Session::GetDelta(u32 a, u32 b)
+	{
+		s64 delta = static_cast<s64>(a) - static_cast<s64>(b);
+		if (delta > 0.5 * UINT_MAX)
+		{
+			delta = -static_cast<s64>(UINT_MAX) + a - b - 1;
+			Console.Error("DEV9: TCP: [PS2] SequenceNumber Overflow Detected");
+			Console.Error("DEV9: TCP: [PS2] New Data Offset: %d bytes", delta);
+		}
+		if (delta < -0.5 * UINT_MAX)
+		{
+			delta = UINT_MAX - b + a + 1;
+			Console.Error("DEV9: TCP: [PS2] SequenceNumber Overflow Detected");
+			Console.Error("DEV9: TCP: [PS2] New Data Offset: %d bytes", delta);
+		}
+		return delta;
+	}
+
 	TCP_Packet* TCP_Session::CreateBasePacket(PayloadData* data)
 	{
 		//DevCon.WriteLn("Creating Base Packet");
