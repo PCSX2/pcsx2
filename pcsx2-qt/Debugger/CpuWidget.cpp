@@ -57,8 +57,8 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.memoryviewWidget, &MemoryViewWidget::gotoInDisasm, m_ui.disassemblyWidget, &DisassemblyWidget::gotoAddress);
 	connect(m_ui.memoryviewWidget, &MemoryViewWidget::addToSavedAddresses, this, &CpuWidget::addAddressToSavedAddressesList);
 
-	connect(m_ui.registerWidget, &RegisterWidget::gotoInMemory, m_ui.memoryviewWidget, &MemoryViewWidget::gotoAddress);
-	connect(m_ui.disassemblyWidget, &DisassemblyWidget::gotoInMemory, m_ui.memoryviewWidget, &MemoryViewWidget::gotoAddress);
+	connect(m_ui.registerWidget, &RegisterWidget::gotoInMemory, this, &CpuWidget::onGotoInMemory);
+	connect(m_ui.disassemblyWidget, &DisassemblyWidget::gotoInMemory, this, &CpuWidget::onGotoInMemory);
 
 	connect(m_ui.memoryviewWidget, &MemoryViewWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 	connect(m_ui.registerWidget, &RegisterWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
@@ -385,6 +385,12 @@ void CpuWidget::onBPListContextMenu(QPoint pos)
 	}
 
 	contextMenu->popup(m_ui.breakpointList->viewport()->mapToGlobal(pos));
+}
+
+void CpuWidget::onGotoInMemory(u32 address)
+{
+	m_ui.memoryviewWidget->gotoAddress(address);
+	m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
 }
 
 void CpuWidget::contextBPListCopy()
@@ -752,6 +758,7 @@ void CpuWidget::onFuncListContextMenu(QPoint pos)
 		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.listFunctions);
 		connect(gotoMemory, &QAction::triggered, [this] {
 			m_ui.memoryviewWidget->gotoAddress(m_ui.listFunctions->selectedItems().first()->data(Qt::UserRole).toUInt());
+			m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
 		});
 
 		m_funclistContextMenu->addAction(gotoMemory);
@@ -827,6 +834,7 @@ void CpuWidget::onModuleTreeContextMenu(QPoint pos)
 		QAction* gotoMemory = new QAction(tr("Go to in Memory View"), m_ui.treeModules);
 		connect(gotoMemory, &QAction::triggered, [this] {
 			m_ui.memoryviewWidget->gotoAddress(m_ui.treeModules->selectedItems().first()->data(0, Qt::UserRole).toUInt());
+			m_ui.tabWidget->setCurrentWidget(m_ui.tab_memory);
 		});
 		m_moduleTreeContextMenu->addAction(gotoMemory);
 	}

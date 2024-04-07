@@ -42,6 +42,7 @@ public slots:
 	void updateBreakpoints();
 	void onBPListDoubleClicked(const QModelIndex& index);
 	void onBPListContextMenu(QPoint pos);
+	void onGotoInMemory(u32 address);
 
 	void contextBPListCopy();
 	void contextBPListDelete();
