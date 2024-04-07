@@ -64,6 +64,8 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 	connect(m_ui.registerWidget, &RegisterWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 	connect(m_ui.disassemblyWidget, &DisassemblyWidget::VMUpdate, this, &CpuWidget::reloadCPUWidgets);
 
+	connect(m_ui.disassemblyWidget, &DisassemblyWidget::breakpointsChanged, this, &CpuWidget::updateBreakpoints);
+
 	connect(m_ui.breakpointList, &QTableView::customContextMenuRequested, this, &CpuWidget::onBPListContextMenu);
 	connect(m_ui.breakpointList, &QTableView::doubleClicked, this, &CpuWidget::onBPListDoubleClicked);
 
@@ -73,6 +75,8 @@ CpuWidget::CpuWidget(QWidget* parent, DebugInterface& cpu)
 		m_ui.breakpointList->horizontalHeader()->setSectionResizeMode(i, mode);
 		i++;
 	}
+
+	connect(&m_bpModel, &BreakpointModel::dataChanged, this, &CpuWidget::updateBreakpoints);
 
 	connect(m_ui.threadList, &QTableView::customContextMenuRequested, this, &CpuWidget::onThreadListContextMenu);
 	connect(m_ui.threadList, &QTableView::doubleClicked, this, &CpuWidget::onThreadListDoubleClick);
@@ -160,6 +164,16 @@ void CpuWidget::refreshDebugger()
 	}
 }
 
+void CpuWidget::reloadCPUWidgets()
+{
+	updateThreads();
+	updateStackFrames();
+
+	m_ui.registerWidget->update();
+	m_ui.disassemblyWidget->update();
+	m_ui.memoryviewWidget->update();
+}
+
 void CpuWidget::paintEvent(QPaintEvent* event)
 {
 	m_ui.registerWidget->update();
@@ -205,9 +219,9 @@ void CpuWidget::onStepInto()
 	if (info.isSyscall)
 		bpAddr = info.branchTarget; // Syscalls are always taken
 
-	Host::RunOnCPUThread([&] {
-		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), bpAddr, true);
-		m_cpu.resumeCpu();
+	Host::RunOnCPUThread([cpu = &m_cpu, bpAddr] {
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), bpAddr, true);
+		cpu->resumeCpu();
 	});
 
 	this->repaint();
@@ -224,9 +238,9 @@ void CpuWidget::onStepOut()
 	if (m_stackModel.rowCount() < 2)
 		return;
 
-	Host::RunOnCPUThread([&] {
-		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), m_stackModel.data(m_stackModel.index(1, StackModel::PC), Qt::UserRole).toUInt(), true);
-		m_cpu.resumeCpu();
+	Host::RunOnCPUThread([cpu = &m_cpu, stackModel = &m_stackModel] {
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), stackModel->data(stackModel->index(1, StackModel::PC), Qt::UserRole).toUInt(), true);
+		cpu->resumeCpu();
 	});
 
 	this->repaint();
@@ -270,9 +284,9 @@ void CpuWidget::onStepOver()
 		}
 	}
 
-	Host::RunOnCPUThread([&] {
-		CBreakPoints::AddBreakPoint(m_cpu.getCpuType(), bpAddr, true);
-		m_cpu.resumeCpu();
+	Host::RunOnCPUThread([cpu = &m_cpu, bpAddr] {
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), bpAddr, true);
+		cpu->resumeCpu();
 	});
 
 	this->repaint();

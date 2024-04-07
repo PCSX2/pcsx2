@@ -296,6 +296,7 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 					MemCheckResult(mc.result ^ MEMCHECK_BREAK));
 			});
 		}
+		emit dataChanged(index, index);
 		return true;
 	}
 	else if (role == Qt::EditRole && index.column() == BreakpointColumns::CONDITION)
@@ -336,8 +337,9 @@ bool BreakpointModel::setData(const QModelIndex& index, const QVariant& value, i
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp, cond] {
 				CBreakPoints::ChangeBreakPointAddCond(cpu, bp.addr, cond);
 			});
-			return true;
 		}
+		emit dataChanged(index, index);
+		return true;
 	}
 
 	return false;
@@ -364,6 +366,9 @@ bool BreakpointModel::removeRows(int row, int count, const QModelIndex& index)
 			});
 		}
 	}
+	const auto begin = m_breakpoints.begin() + row;
+	const auto end = begin + count;
+	m_breakpoints.erase(begin, end);
 
 	endRemoveRows();
 	return true;
@@ -407,23 +412,20 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 
 void BreakpointModel::refreshData()
 {
-	beginResetModel();
+	Host::RunOnCPUThread([this]() mutable {
 
-	m_breakpoints.clear();
+		std::vector<BreakpointMemcheck> all_breakpoints;
+		std::ranges::move(CBreakPoints::GetBreakpoints(m_cpu.getCpuType(), false), std::back_inserter(all_breakpoints));
+		std::ranges::move(CBreakPoints::GetMemChecks(m_cpu.getCpuType()), std::back_inserter(all_breakpoints));
 
-	auto breakpoints = CBreakPoints::GetBreakpoints(m_cpu.getCpuType(), false);
-	for (const auto& bp : breakpoints)
-	{
-		m_breakpoints.push_back(bp);
-	}
+		QtHost::RunOnUIThread([this, breakpoints = std::move(all_breakpoints)]() mutable {
+			
+			beginResetModel();
+			m_breakpoints = std::move(breakpoints);
+			endResetModel();
+		});
 
-	auto memchecks = CBreakPoints::GetMemChecks(m_cpu.getCpuType());
-	for (const auto& mc : memchecks)
-	{
-		m_breakpoints.push_back(mc);
-	}
-
-	endResetModel();
+	});
 }
 
 void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
