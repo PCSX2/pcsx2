@@ -45,14 +45,9 @@ DebuggerWindow::DebuggerWindow(QWidget* parent)
 
 	m_ui.cpuTabs->addTab(m_cpuWidget_r5900, "R5900");
 	m_ui.cpuTabs->addTab(m_cpuWidget_r3000, "R3000");
-
-	CBreakPoints::SetUpdateHandler(std::bind(&DebuggerWindow::onBreakpointsChanged, this));
 }
 
-DebuggerWindow::~DebuggerWindow()
-{
-	CBreakPoints::SetUpdateHandler(nullptr);
-}
+DebuggerWindow::~DebuggerWindow() = default;
 
 // There is no straightforward way to set the tab text to bold in Qt
 // Sorry colour blind people, but this is the best we can do for now
@@ -131,10 +126,4 @@ void DebuggerWindow::onStepOut()
 {
 	CpuWidget* currentCpu = static_cast<CpuWidget*>(m_ui.cpuTabs->currentWidget());
 	currentCpu->onStepOut();
-}
-
-void DebuggerWindow::onBreakpointsChanged()
-{
-	m_cpuWidget_r5900->reloadCPUWidgets();
-	m_cpuWidget_r3000->reloadCPUWidgets();
 }
