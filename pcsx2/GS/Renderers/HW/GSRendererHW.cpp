@@ -3995,10 +3995,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	else
 		blend_ad_alpha_masked = false;
 
-	u8 blend_index = static_cast<u8>(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
-	const HWBlend blend_preliminary = GSDevice::GetBlend(blend_index);
+	const u8 blend_index = static_cast<u8>(((m_conf.ps.blend_a * 3 + m_conf.ps.blend_b) * 3 + m_conf.ps.blend_c) * 3 + m_conf.ps.blend_d);
 	HWBlend blend = GSDevice::GetBlend(blend_index);
-	const int blend_flag = blend_preliminary.flags;
+	const int blend_flag = blend.flags;
 
 	// Re set alpha, it was modified, must be done after index calculation
 	if (blend_ad_alpha_masked)
@@ -4012,7 +4011,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	// If alpha == 1.0, almost everything is an accumulation blend!
 	// Ones that use (1 + Alpha) can't guarante the mixed sw+hw blending this enables will give an identical result to sw due to clamping
 	// But enable for everything else that involves dst color
-	if (alpha_one && (m_conf.ps.blend_a != m_conf.ps.blend_d) && blend_preliminary.dst != GSDevice::CONST_ZERO)
+	if (alpha_one && (m_conf.ps.blend_a != m_conf.ps.blend_d) && blend.dst != GSDevice::CONST_ZERO)
 		accumulation_blend = true;
 
 	// Blending doesn't require barrier, or sampling of the rt
@@ -4210,7 +4209,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	if (m_draw_env->PABE.PABE && GetAlphaMinMax().min < 128)
 	{
 		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing, Simple 2000 Series Vol.81, SOTC, Super Robot Wars.
-
 		if (sw_blending)
 		{
 			GL_INS("PABE mode ENABLED");
@@ -4233,12 +4231,6 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			{
 				m_conf.ps.pabe = !(accumulation_blend || blend_mix);
 			}
-		}
-		else if (m_conf.ps.blend_a == 0 && m_conf.ps.blend_b == 1 && m_conf.ps.blend_c == 0 && m_conf.ps.blend_d == 1)
-		{
-			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
-			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
-			blend_index = 0;
 		}
 	}
 
