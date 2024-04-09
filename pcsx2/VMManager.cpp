@@ -3126,6 +3126,11 @@ void VMManager::WarnAboutUnsafeSettings()
 		append(ICON_FA_EXCLAMATION_CIRCLE,
 			TRANSLATE_SV("VMManager", "Estimate texture region is enabled, this may reduce performance."));
 	}
+	if (EmuConfig.GS.DumpReplaceableTextures)
+	{
+		append(ICON_FA_EXCLAMATION_CIRCLE,
+			TRANSLATE_SV("VMManager", "Texture dumping is enabled, this will continually dump textures to disk."));
+	}
 
 	if (!messages.empty())
 	{
