@@ -2706,19 +2706,19 @@ void ImGuiFullscreen::SetTheme(bool light)
 	else
 	{
 		// light
-		UIBackgroundColor = HEX_TO_IMVEC4(0xf5f5f6, 0xff);
+		UIBackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xff);
 		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
 		UIBackgroundLineColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
 		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
-		UIPrimaryColor = HEX_TO_IMVEC4(0x0d47a1, 0xff);
-		UIPrimaryLightColor = HEX_TO_IMVEC4(0x5472d3, 0xff);
-		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x002171, 0xff);
+		UIPrimaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
+		UIPrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
+		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
 		UIPrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-		UIDisabledColor = HEX_TO_IMVEC4(0xaaaaaa, 0xff);
+		UIDisabledColor = HEX_TO_IMVEC4(0x999999, 0xff);
 		UITextHighlightColor = HEX_TO_IMVEC4(0x8e8e8e, 0xff);
 		UIPrimaryLineColor = HEX_TO_IMVEC4(0x000000, 0xff);
-		UISecondaryColor = HEX_TO_IMVEC4(0x3d5afe, 0xff);
-		UISecondaryStrongColor = HEX_TO_IMVEC4(0x0031ca, 0xff);
+		UISecondaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
+		UISecondaryStrongColor = HEX_TO_IMVEC4(0x464db1, 0xff);
 		UISecondaryWeakColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
 		UISecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
 	}
