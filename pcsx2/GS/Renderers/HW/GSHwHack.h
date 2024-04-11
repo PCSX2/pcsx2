@@ -24,7 +24,6 @@ public:
 	static bool GSC_Simple2000Vol114(GSRendererHW& r, int& skip);
 	static bool GSC_UrbanReign(GSRendererHW& r, int& skip);
 	static bool GSC_SteambotChronicles(GSRendererHW& r, int& skip);
-	static bool GSC_GetawayGames(GSRendererHW& r, int& skip);
 	static bool GSC_BlueTongueGames(GSRendererHW& r, int& skip);
 	static bool GSC_Battlefield2(GSRendererHW& r, int& skip);
 	static bool GSC_NFSUndercover(GSRendererHW& r, int& skip);
