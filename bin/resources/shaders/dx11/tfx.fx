@@ -898,7 +898,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
 		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
-			C_clamped = min(C_clamped, 1.0f);
+			C_clamped = saturate(C_clamped);
 
 		if (PS_BLEND_A == PS_BLEND_B)
 			Color.rgb = D;
@@ -953,17 +953,13 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
-
 			Color.rgb = (float3)255.0f;
 		}
 		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
-
 			float Alpha = PS_BLEND_C == 2 ? Af : As;
-
-			Color.rgb = saturate((float3)Alpha - (float3)1.0f);
-			Color.rgb *= (float3)255.0f;
+			Color.rgb = saturate((float3)Alpha - (float3)1.0f) * (float3)255.0f;
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{
