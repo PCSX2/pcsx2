@@ -31,7 +31,7 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
 
 	pxAssert(dialog->getSettingsInterface());
 	m_ui.enabled->setChecked(enabled);
-	connect(m_ui.enabled, &QCheckBox::stateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
+	connect(m_ui.enabled, &QCheckBox::checkStateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
 }
 
 GamePatchDetailsWidget::~GamePatchDetailsWidget() = default;
@@ -61,7 +61,7 @@ GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowPatchesForAllCRCs", false);
 
 	connect(m_ui.reload, &QPushButton::clicked, this, &GamePatchSettingsWidget::onReloadClicked);
-	connect(m_ui.allCRCsCheckbox, &QCheckBox::stateChanged, this, &GamePatchSettingsWidget::reloadList);
+	connect(m_ui.allCRCsCheckbox, &QCheckBox::checkStateChanged, this, &GamePatchSettingsWidget::reloadList);
 
 	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Patches For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));

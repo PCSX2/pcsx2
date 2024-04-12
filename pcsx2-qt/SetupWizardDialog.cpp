@@ -318,7 +318,7 @@ void SetupWizardDialog::addPathToTable(const std::string& path, bool recursive)
 	m_ui.searchDirectoryList->setCellWidget(row, 1, cb);
 	cb->setChecked(recursive);
 
-	connect(cb, &QCheckBox::stateChanged, [item](int state) {
+	connect(cb, &QCheckBox::checkStateChanged, this, [item](Qt::CheckState state) {
 		const std::string path(item->text().toStdString());
 		if (state == Qt::Checked)
 		{

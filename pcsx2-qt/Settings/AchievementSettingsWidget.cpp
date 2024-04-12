@@ -46,11 +46,11 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
 	dialog->registerWidgetHelp(m_ui.spectatorMode, tr("Enable Spectator Mode"), tr("Unchecked"), tr("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."));
 	dialog->registerWidgetHelp(m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"), tr("When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time."));
 
-	connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-	connect(m_ui.hardcoreMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-	connect(m_ui.hardcoreMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onHardcoreModeStateChanged);
-	connect(m_ui.achievementNotifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-	connect(m_ui.leaderboardNotifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+	connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+	connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+	connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::onHardcoreModeStateChanged);
+	connect(m_ui.achievementNotifications, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+	connect(m_ui.leaderboardNotifications, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
 	connect(m_ui.achievementNotificationsDuration, &QSlider::valueChanged, this, &AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged);
 	connect(m_ui.leaderboardNotificationsDuration, &QSlider::valueChanged, this, &AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged);
 

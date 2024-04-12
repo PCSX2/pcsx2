@@ -33,7 +33,7 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	SettingWidgetBinder::BindWidgetToFolderSetting(
 		sif, m_ui.swDumpDirectory, m_ui.swDumpBrowse, m_ui.swDumpOpen, nullptr, "EmuCore/GS", "SWDumpDirectory", std::string(), false);
 
-	connect(m_ui.dumpGSDraws, &QCheckBox::stateChanged, this, &DebugSettingsWidget::onDrawDumpingChanged);
+	connect(m_ui.dumpGSDraws, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onDrawDumpingChanged);
 	onDrawDumpingChanged();
 }
 

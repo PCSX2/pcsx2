@@ -25,13 +25,13 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.allCRCsCheckbox, "EmuCore", "ShowCheatsForAllCRCs", false);
 	updateListEnabled();
 
-	connect(m_ui.enableCheats, &QCheckBox::stateChanged, this, &GameCheatSettingsWidget::updateListEnabled);
+	connect(m_ui.enableCheats, &QCheckBox::checkStateChanged, this, &GameCheatSettingsWidget::updateListEnabled);
 	connect(m_ui.cheatList, &QTreeWidget::itemDoubleClicked, this, &GameCheatSettingsWidget::onCheatListItemDoubleClicked);
 	connect(m_ui.cheatList, &QTreeWidget::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
 	connect(m_ui.reloadCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
 	connect(m_ui.enableAll, &QPushButton::clicked, this, [this]() { setStateForAll(true); });
 	connect(m_ui.disableAll, &QPushButton::clicked, this, [this]() { setStateForAll(false); });
-	connect(m_ui.allCRCsCheckbox, &QCheckBox::stateChanged, this, &GameCheatSettingsWidget::onReloadClicked);
+	connect(m_ui.allCRCsCheckbox, &QCheckBox::checkStateChanged, this, &GameCheatSettingsWidget::onReloadClicked);
 
 	dialog->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));

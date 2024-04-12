@@ -40,7 +40,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
 	connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 	connect(m_ui.fileList, &QTreeWidget::currentItemChanged, this, &BIOSSettingsWidget::listItemChanged);
-	connect(m_ui.fastBoot, &QCheckBox::stateChanged, this, &BIOSSettingsWidget::fastBootChanged);
+	connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &BIOSSettingsWidget::fastBootChanged);
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;

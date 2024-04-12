@@ -20,7 +20,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
-	connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
+	connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
 #ifdef _WIN32
@@ -64,7 +64,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	if (dialog->isEditingProfile())
 	{
 		m_ui.useProfileHotkeyBindings->setChecked(m_dialog->getBoolValue("Pad", "UseProfileHotkeyBindings", false));
-		connect(m_ui.useProfileHotkeyBindings, &QCheckBox::stateChanged, this, [this](int new_state) {
+		connect(m_ui.useProfileHotkeyBindings, &QCheckBox::checkStateChanged, this, [this](int new_state) {
 			m_dialog->setBoolValue("Pad", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
 			emit bindingSetupChanged();
 		});
@@ -78,7 +78,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	}
 
 	for (QCheckBox* cb : {m_ui.multitapPort1, m_ui.multitapPort2})
-		connect(cb, &QCheckBox::stateChanged, this, [this]() { emit bindingSetupChanged(); });
+		connect(cb, &QCheckBox::checkStateChanged, this, [this]() { emit bindingSetupChanged(); });
 
 	updateSDLOptionsEnabled();
 }
