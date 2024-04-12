@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Pcsx2Defs.h"
+#include "SmallString.h"
 
 #include <string>
 #include <optional>
@@ -25,6 +26,7 @@ public:
 	virtual bool GetDoubleValue(const char* section, const char* key, double* value) const = 0;
 	virtual bool GetBoolValue(const char* section, const char* key, bool* value) const = 0;
 	virtual bool GetStringValue(const char* section, const char* key, std::string* value) const = 0;
+	virtual bool GetStringValue(const char* section, const char* key, SmallStringBase* value) const = 0;
 
 	virtual void SetIntValue(const char* section, const char* key, int value) = 0;
 	virtual void SetUIntValue(const char* section, const char* key, uint value) = 0;
@@ -83,6 +85,22 @@ public:
 		return value;
 	}
 
+	__fi SmallString GetSmallStringValue(const char* section, const char* key, const char* default_value = "") const
+	{
+		SmallString value;
+		if (!GetStringValue(section, key, &value))
+			value.assign(default_value);
+		return value;
+	}
+
+	__fi SmallString GetTinyStringValue(const char* section, const char* key, const char* default_value = "") const
+	{
+		TinyString value;
+		if (!GetStringValue(section, key, &value))
+			value.assign(default_value);
+		return value;
+	}
+
 	__fi std::optional<int> GetOptionalIntValue(const char* section, const char* key, std::optional<int> default_value = std::nullopt) const
 	{
 		int ret;
@@ -116,7 +134,29 @@ public:
 	__fi std::optional<std::string> GetOptionalStringValue(const char* section, const char* key, std::optional<const char*> default_value = std::nullopt) const
 	{
 		std::string ret;
-		return GetStringValue(section, key, &ret) ? std::optional<std::string>(ret) : default_value;
+		return GetStringValue(section, key, &ret) ? std::optional<std::string>(ret) :
+													(default_value.has_value() ? std::optional<std::string>(default_value.value()) :
+																				 std::optional<std::string>());
+	}
+
+	__fi std::optional<SmallString> GetOptionalSmallStringValue(const char* section, const char* key,
+		std::optional<const char*> default_value = std::nullopt) const
+	{
+		SmallString ret;
+		return GetStringValue(section, key, &ret) ?
+				   std::optional<SmallString>(ret) :
+				   (default_value.has_value() ? std::optional<SmallString>(default_value.value()) :
+												std::optional<SmallString>());
+	}
+
+	__fi std::optional<TinyString> GetOptionalTinyStringValue(const char* section, const char* key,
+		std::optional<const char*> default_value = std::nullopt) const
+	{
+		TinyString ret;
+		return GetStringValue(section, key, &ret) ?
+				   std::optional<TinyString>(ret) :
+				   (default_value.has_value() ? std::optional<TinyString>(default_value.value()) :
+												std::optional<TinyString>());
 	}
 
 	__fi void SetOptionalIntValue(const char* section, const char* key, const std::optional<int>& value)

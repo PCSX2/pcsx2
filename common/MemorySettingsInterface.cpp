@@ -124,6 +124,20 @@ bool MemorySettingsInterface::GetStringValue(const char* section, const char* ke
 	return true;
 }
 
+bool MemorySettingsInterface::GetStringValue(const char* section, const char* key, SmallStringBase* value) const
+{
+	const auto sit = m_sections.find(section);
+	if (sit == m_sections.end())
+		return false;
+
+	const auto iter = sit->second.find(key);
+	if (iter == sit->second.end())
+		return false;
+
+	value->assign(iter->second);
+	return true;
+}
+
 void MemorySettingsInterface::SetIntValue(const char* section, const char* key, s32 value)
 {
 	SetValue(section, key, std::to_string(value));

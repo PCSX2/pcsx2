@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
 #include "common/Pcsx2Defs.h"
+#include "common/SmallString.h"
 
 #include "fmt/format.h"
 
@@ -92,6 +93,8 @@ namespace Host
 
 	/// Base setting retrieval, bypasses layers.
 	std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
+	SmallString GetBaseSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
+	TinyString GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
 	bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);
 	int GetBaseIntSettingValue(const char* section, const char* key, int default_value = 0);
 	uint GetBaseUIntSettingValue(const char* section, const char* key, uint default_value = 0);
@@ -115,6 +118,8 @@ namespace Host
 
 	/// Settings access, thread-safe.
 	std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
+	SmallString GetSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
+	TinyString GetTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
 	bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
 	int GetIntSettingValue(const char* section, const char* key, int default_value = 0);
 	uint GetUIntSettingValue(const char* section, const char* key, uint default_value = 0);
