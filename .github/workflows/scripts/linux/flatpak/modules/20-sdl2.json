@@ -1,26 +1,12 @@
 {
   "name": "sdl2",
-  "buildsystem": "autotools",
-  "no-autogen": true,
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
   "config-opts": [
-    "--disable-dbus",
-    "--without-x",
-    "--disable-video-opengl",
-    "--disable-video-opengles",
-    "--disable-video-vulkan",
-    "--disable-wayland-shared",
-    "--disable-ime",
-    "--disable-oss",
-    "--disable-alsa",
-    "--disable-jack",
-    "--disable-esd",
-    "--disable-pipewire",
-    "--disable-pulseaudio",
-    "--disable-arts",
-    "--disable-nas",
-    "--disable-sndio",
-    "--disable-fusionsound",
-    "--disable-diskaudio"
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DSDL_SHARED=ON",
+    "-DSDL_STATIC=OFF",
+    "-DSDL_TESTS=OFF"
   ],
   "build-options": {
     "strip": true
@@ -42,4 +28,3 @@
     "/share/aclocal"
   ]
 }
-
