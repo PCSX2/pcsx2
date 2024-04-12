@@ -1326,7 +1326,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
 	if (!visible)
 		return false;
 
-	const std::string value_text(StringUtil::StdStringFromFormat(format, *value));
+	const SmallString value_text = SmallString::from_sprintf(format, *value);
 	const ImVec2 value_size(ImGui::CalcTextSize(value_text.c_str()));
 
 	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
@@ -1396,7 +1396,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
 	if (!visible)
 		return false;
 
-	const std::string value_text(StringUtil::StdStringFromFormat(format, *value));
+	const SmallString value_text = SmallString::from_sprintf(format, *value);
 	const ImVec2 value_size(ImGui::CalcTextSize(value_text.c_str()));
 
 	const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
