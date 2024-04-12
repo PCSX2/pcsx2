@@ -805,18 +805,18 @@ void SaveStateSelectorUI::DestroyTextures()
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
-	auto format_legend_entry = [](std::string binding, std::string_view caption) {
+	auto format_legend_entry = [](SmallString binding, std::string_view caption) {
 		InputManager::PrettifyInputBinding(binding);
 		return fmt::format("{} - {}", binding, caption);
 	};
 
-	s_load_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "LoadStateFromSlot"),
+	s_load_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "LoadStateFromSlot"),
 		TRANSLATE_STR("ImGuiOverlays", "Load"));
-	s_save_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SaveStateToSlot"),
+	s_save_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SaveStateToSlot"),
 		TRANSLATE_STR("ImGuiOverlays", "Save"));
-	s_prev_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "PreviousSaveStateSlot"),
+	s_prev_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "PreviousSaveStateSlot"),
 		TRANSLATE_STR("ImGuiOverlays", "Select Previous"));
-	s_next_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "NextSaveStateSlot"),
+	s_next_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "NextSaveStateSlot"),
 		TRANSLATE_STR("ImGuiOverlays", "Select Next"));
 }
 

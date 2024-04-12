@@ -349,12 +349,12 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
 	return ss.str();
 }
 
-bool InputManager::PrettifyInputBinding(std::string& binding)
+bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
 {
 	if (binding.empty())
 		return false;
 
-	const std::string_view binding_view(binding);
+	const std::string_view binding_view = binding.view();
 
 	SmallString ret;
 	bool changed = false;
@@ -387,7 +387,7 @@ bool InputManager::PrettifyInputBinding(std::string& binding)
 	}
 
 	if (changed)
-		binding = ret.view();
+		binding = ret;
 
 	return changed;
 }

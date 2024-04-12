@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -15,6 +15,8 @@
 #include "common/WindowInfo.h"
 
 #include "pcsx2/Config.h"
+
+class SmallStringBase;
 
 /// Class, or source of an input event.
 enum class InputSourceType : u32
@@ -207,7 +209,7 @@ namespace InputManager
 	std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys, size_t num_keys);
 
 	/// Represents a binding with icon fonts, if available.
-	bool PrettifyInputBinding(std::string& binding);
+	bool PrettifyInputBinding(SmallStringBase& binding);
 
 	/// Returns a list of all hotkeys.
 	std::vector<const HotkeyInfo*> GetHotkeyList();
