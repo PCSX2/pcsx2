@@ -1,14 +1,18 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
 #include "common/Pcsx2Defs.h"
+
 #include "IconsFontAwesome5.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+
 #include <functional>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -30,6 +34,11 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
+	static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
+	static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
+	static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
+	static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
+	static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
 
 	extern ImFont* g_standard_font;
 	extern ImFont* g_medium_font;
@@ -106,9 +115,9 @@ namespace ImGuiFullscreen
 
 	/// Texture cache.
 	const std::shared_ptr<GSTexture>& GetPlaceholderTexture();
-	std::shared_ptr<GSTexture> LoadTexture(const char* path);
-	GSTexture* GetCachedTexture(const char* name);
-	GSTexture* GetCachedTextureAsync(const char* name);
+	std::shared_ptr<GSTexture> LoadTexture(std::string_view path);
+	GSTexture* GetCachedTexture(std::string_view name);
+	GSTexture* GetCachedTextureAsync(std::string_view name);
 	bool InvalidateCachedTexture(const std::string& path);
 	void UploadAsyncTextures();
 
@@ -120,6 +129,9 @@ namespace ImGuiFullscreen
 
 	void QueueResetFocus();
 	bool ResetFocusHere();
+	bool IsFocusResetQueued();
+	void ForceKeyNavEnabled();
+
 	bool WantsToCloseMenu();
 	void ResetCloseMenuIfNeeded();
 
@@ -128,7 +140,7 @@ namespace ImGuiFullscreen
 
 	void DrawWindowTitle(const char* title);
 
-	bool BeginFullscreenColumns(const char* title = nullptr, float pos_y = 0.0f, bool expand_to_screen_width = false);
+	bool BeginFullscreenColumns(const char* title = nullptr, float pos_y = 0.0f, bool expand_to_screen_width = false, bool footer = false);
 	void EndFullscreenColumns();
 
 	bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background = UIBackgroundColor);
@@ -139,6 +151,12 @@ namespace ImGuiFullscreen
 	bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
 		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, float padding = 0.0f, ImGuiWindowFlags flags = 0);
 	void EndFullscreenWindow();
+
+	bool IsGamepadInputSource();
+	void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
+	void SetFullscreenFooterText(std::string_view text);
+	void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+	void DrawFullscreenFooter();
 
 	void PrerenderMenuButtonBorder();
 	void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
@@ -209,17 +227,21 @@ namespace ImGuiFullscreen
 	bool NavTab(const char* title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
 		ImFont* font = g_large_font);
 
+	bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, u32 num_items);
+	void EndHorizontalMenu();
+	bool HorizontalMenuItem(GSTexture* icon, const char* title, const char* description);
+
 	using FileSelectorCallback = std::function<void(const std::string& path)>;
 	using FileSelectorFilters = std::vector<std::string>;
 	bool IsFileSelectorOpen();
-	void OpenFileSelector(const char* title, bool select_directory, FileSelectorCallback callback,
+	void OpenFileSelector(std::string_view title, bool select_directory, FileSelectorCallback callback,
 		FileSelectorFilters filters = FileSelectorFilters(), std::string initial_directory = std::string());
 	void CloseFileSelector();
 
 	using ChoiceDialogCallback = std::function<void(s32 index, const std::string& title, bool checked)>;
 	using ChoiceDialogOptions = std::vector<std::pair<std::string, bool>>;
 	bool IsChoiceDialogOpen();
-	void OpenChoiceDialog(const char* title, bool checkable, ChoiceDialogOptions options, ChoiceDialogCallback callback);
+	void OpenChoiceDialog(std::string_view title, bool checkable, ChoiceDialogOptions options, ChoiceDialogCallback callback);
 	void CloseChoiceDialog();
 
 	using InputStringDialogCallback = std::function<void(std::string text)>;
@@ -253,4 +275,9 @@ namespace ImGuiFullscreen
 
 	void ShowToast(std::string title, std::string message, float duration = 10.0f);
 	void ClearToast();
+
+	// Message callbacks.
+	void GetChoiceDialogHelpText(SmallStringBase& dest);
+	void GetFileSelectorHelpText(SmallStringBase& dest);
+	void GetInputDialogHelpText(SmallStringBase& dest);
 } // namespace ImGuiFullscreen

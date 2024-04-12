@@ -161,7 +161,11 @@ void Host::OnCaptureStopped()
 {
 }
 
-void Host::RequestExit(bool save_state_if_running)
+void Host::RequestExitApplication(bool allow_confirm)
+{
+}
+
+void Host::RequestExitBigPicture()
 {
 }
 
