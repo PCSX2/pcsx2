@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include <algorithm>
+#include <bit>
 #include <thread>
 
 #ifdef __POSIX__
@@ -124,15 +125,15 @@ namespace Sessions
 				case 1: //Nop
 					continue;
 				case 2: //MSS
-					maxSegmentSize = ((TCPopMSS*)(tcp->options[i]))->maxSegmentSize;
+					maxSegmentSize = static_cast<TCPopMSS*>(tcp->options[i])->maxSegmentSize;
 					break;
 				case 3: //WindowScale
-					windowScale = ((TCPopWS*)(tcp->options[i]))->windowScale;
+					windowScale = static_cast<TCPopWS*>(tcp->options[i])->windowScale;
 					if (windowScale > 0)
 						Console.Error("DEV9: TCP: Non-Zero WindowScale Option");
 					break;
 				case 8: //TimeStamp
-					lastRecivedTimeStamp = ((TCPopTS*)(tcp->options[i]))->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
 					sendTimeStamps = true;
 					timeStampStart = std::chrono::steady_clock::now();
 					break;
@@ -163,9 +164,9 @@ namespace Sessions
 		int ret;
 		if (adapterIP.integer != 0)
 		{
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
-			*(IP_Address*)&endpoint.sin_addr = adapterIP;
+			endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
 
 			ret = bind(client, (const sockaddr*)&endpoint, sizeof(endpoint));
 
@@ -196,7 +197,7 @@ namespace Sessions
 
 
 		const int noDelay = true; //BOOL
-		ret = setsockopt(client, IPPROTO_TCP, TCP_NODELAY, (const char*)&noDelay, sizeof(noDelay));
+		ret = setsockopt(client, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&noDelay), sizeof(noDelay));
 
 		if (ret != 0)
 			Console.Error("DEV9: TCP: Failed to set TCP_NODELAY. Error: %d",
@@ -206,9 +207,9 @@ namespace Sessions
 				errno);
 #endif
 
-		sockaddr_in endpoint{0};
+		sockaddr_in endpoint{};
 		endpoint.sin_family = AF_INET;
-		*(IP_Address*)&endpoint.sin_addr = destIP;
+		endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 		endpoint.sin_port = htons(destPort);
 
 		ret = connect(client, (const sockaddr*)&endpoint, sizeof(endpoint));
@@ -263,7 +264,7 @@ namespace Sessions
 				case 1: //Nop
 					continue;
 				case 8: //Timestamp
-					lastRecivedTimeStamp = ((TCPopTS*)(tcp->options[i]))->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
 					break;
 				default:
 					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
@@ -297,7 +298,7 @@ namespace Sessions
 				case 1: //Nop
 					continue;
 				case 8:
-					lastRecivedTimeStamp = ((TCPopTS*)(tcp->options[i]))->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
 					break;
 				default:
 					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
@@ -323,7 +324,7 @@ namespace Sessions
 			//if (Result == NumCheckResult::OldSeq)
 			//{
 			//	DevCon.WriteLn("[PS2] New Data Offset: %d bytes", delta);
-			//	DevCon.WriteLn("[PS2] New Data Length: %d bytes", ((uint)tcp->GetPayload()->GetLength() - delta));
+			//	DevCon.WriteLn("[PS2] New Data Length: %d bytes", tcp->GetPayload()->GetLength() - delta);
 			//}
 			if (tcp->GetPayload()->GetLength() - delta > 0)
 			{
@@ -337,7 +338,7 @@ namespace Sessions
 				PayloadPtr* payload = static_cast<PayloadPtr*>(tcp->GetPayload());
 				while (sent != payload->GetLength())
 				{
-					int ret = send(client, (const char*)&payload->data[sent], payload->GetLength() - sent, 0);
+					int ret = send(client, reinterpret_cast<const char*>(&payload->data[sent]), payload->GetLength() - sent, 0);
 
 					if (sent == SOCKET_ERROR)
 					{
@@ -360,7 +361,7 @@ namespace Sessions
 						sent += ret;
 				}
 
-				expectedSeqNumber += ((uint)tcp->GetPayload()->GetLength() - delta);
+				expectedSeqNumber += tcp->GetPayload()->GetLength() - delta;
 				//Done send
 			}
 			//ACK data
@@ -389,7 +390,7 @@ namespace Sessions
 				case 1: //Nop
 					continue;
 				case 8:
-					lastRecivedTimeStamp = ((TCPopTS*)(tcp->options[i]))->senderTimeStamp;
+					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
 					break;
 				default:
 					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
