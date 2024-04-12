@@ -106,6 +106,20 @@ bool LayeredSettingsInterface::GetStringValue(const char* section, const char* k
 	return false;
 }
 
+bool LayeredSettingsInterface::GetStringValue(const char* section, const char* key, SmallStringBase* value) const
+{
+	for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
+	{
+		if (SettingsInterface* sif = m_layers[layer]; sif != nullptr)
+		{
+			if (sif->GetStringValue(section, key, value))
+				return true;
+		}
+	}
+
+	return false;
+}
+
 void LayeredSettingsInterface::SetIntValue(const char* section, const char* key, int value)
 {
 	pxFailRel("Attempt to call SetIntValue() on layered settings interface");

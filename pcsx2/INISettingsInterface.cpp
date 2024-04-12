@@ -196,6 +196,16 @@ bool INISettingsInterface::GetStringValue(const char* section, const char* key, 
 	return true;
 }
 
+bool INISettingsInterface::GetStringValue(const char* section, const char* key, SmallStringBase* value) const
+{
+	const char* str_value = m_ini.GetValue(section, key);
+	if (!str_value)
+		return false;
+
+	value->assign(str_value);
+	return true;
+}
+
 void INISettingsInterface::SetIntValue(const char* section, const char* key, int value)
 {
 	m_dirty = true;
@@ -314,8 +324,7 @@ std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyVal
 				entries.emplace_back(key.pItem, value);
 		}
 	}
-	std::sort(entries.begin(), entries.end(), [](const KVEntry& a, const KVEntry& b)
-	{
+	std::sort(entries.begin(), entries.end(), [](const KVEntry& a, const KVEntry& b) {
 		return a.second.nOrder < b.second.nOrder;
 	});
 	for (const KVEntry& entry : entries)
