@@ -250,7 +250,7 @@ rename "SPIRV-Headers-%SHADERC_SPIRVHEADERS%" "spirv-headers" || goto error
 %SEVENZIP% x "..\..\shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" || goto error
 rename "SPIRV-Tools-%SHADERC_SPIRVTOOLS%" "spirv-tools" || goto error
 cd .. || goto error
-%PATCH% -p1 < "%SCRIPTDIR%\..\common\shaderc-install.patch" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\..\common\shaderc-changes.patch" || goto error
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
