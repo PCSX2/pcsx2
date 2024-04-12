@@ -31,6 +31,7 @@ namespace FullscreenUI
 	bool IsLeaderboardsWindowOpen();
 	void ReturnToPreviousWindow();
 	void ReturnToMainWindow();
+	void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 
 	void Shutdown(bool clear_state);
 	void Render();
@@ -41,6 +42,13 @@ namespace FullscreenUI
 // Host UI triggers from Big Picture mode.
 namespace Host
 {
-void OnCoverDownloaderOpenRequested();
-void OnCreateMemoryCardOpenRequested();
-}
+	/// Requests shut down and exit of the hosting application. This may not actually exit,
+	/// if the user cancels the shutdown confirmation.
+	void RequestExitApplication(bool allow_confirm);
+
+	/// Requests Big Picture mode to be shut down, returning to the desktop interface.
+	void RequestExitBigPicture();
+
+	void OnCoverDownloaderOpenRequested();
+	void OnCreateMemoryCardOpenRequested();
+} // namespace Host

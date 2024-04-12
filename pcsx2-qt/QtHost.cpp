@@ -215,6 +215,8 @@ void EmuThread::stopFullscreenUI()
 		return;
 	}
 
+	setFullscreen(false, true);
+
 	if (MTGS::IsOpen() && !VMManager::HasValidVM())
 		MTGS::WaitForClose();
 
@@ -1145,9 +1147,14 @@ void Host::CancelGameListRefresh()
 	QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
-void Host::RequestExit(bool allow_confirm)
+void Host::RequestExitApplication(bool allow_confirm)
 {
 	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, allow_confirm));
+}
+
+void Host::RequestExitBigPicture()
+{
+	g_emu_thread->stopFullscreenUI();
 }
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)

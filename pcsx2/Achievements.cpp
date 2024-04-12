@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -1729,16 +1729,7 @@ void Achievements::ShowLoginSuccess(const rc_client_t* client)
 
 	if (EmuConfig.Achievements.Notifications && MTGS::IsOpen())
 	{
-		std::string badge_path = GetUserBadgePath(user->username);
-		if (!FileSystem::FileExists(badge_path.c_str()))
-		{
-			char url[512];
-			const int res = rc_client_user_get_image_url(user, url, std::size(url));
-			if (res == RC_OK)
-				DownloadImage(url, badge_path);
-			else
-				ReportRCError(res, "rc_client_user_get_image_url() failed: ");
-		}
+		std::string badge_path = GetLoggedInUserBadgePath();
 
 		//: Summary for login notification.
 		std::string title = user->display_name;
@@ -1753,6 +1744,37 @@ void Achievements::ShowLoginSuccess(const rc_client_t* client)
 			}
 		});
 	}
+}
+
+const char* Achievements::GetLoggedInUserName()
+{
+	const rc_client_user_t* user = rc_client_get_user_info(s_client);
+	if (!user) [[unlikely]]
+		return nullptr;
+
+	return user->username;
+}
+
+std::string Achievements::GetLoggedInUserBadgePath()
+{
+	std::string badge_path;
+
+	const rc_client_user_t* user = rc_client_get_user_info(s_client);
+	if (!user) [[unlikely]]
+		return badge_path;
+
+	badge_path = GetUserBadgePath(user->username);
+	if (!FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
+	{
+		char url[512];
+		const int res = rc_client_user_get_image_url(user, url, std::size(url));
+		if (res == RC_OK)
+			DownloadImage(url, badge_path);
+		else
+			ReportRCError(res, "rc_client_user_get_image_url() failed: ");
+	}
+
+	return badge_path;
 }
 
 void Achievements::Logout()
@@ -2279,6 +2301,7 @@ void Achievements::DrawAchievementsWindow()
 		ImGuiFullscreen::EndMenuButtons();
 	}
 	ImGuiFullscreen::EndFullscreenWindow();
+	FullscreenUI::SetStandardSelectionFooterText(true);
 }
 
 void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
@@ -2657,6 +2680,7 @@ void Achievements::DrawLeaderboardsWindow()
 		}
 	}
 	ImGuiFullscreen::EndFullscreenWindow();
+	FullscreenUI::SetStandardSelectionFooterText(true);
 
 	if (!is_leaderboard_open)
 	{
