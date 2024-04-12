@@ -100,7 +100,7 @@ namespace Sessions
 					Console.WriteLn("DEV9: TCP: Got a lot of data: %lu Using: %d", available, maxSize);
 
 				buffer = std::make_unique<u8[]>(maxSize);
-				recived = recv(client, (char*)buffer.get(), maxSize, 0);
+				recived = recv(client, reinterpret_cast<char*>(buffer.get()), maxSize, 0);
 				if (recived == -1)
 #ifdef _WIN32
 					err = WSAGetLastError();
@@ -223,11 +223,11 @@ namespace Sessions
 			int error = 0;
 #ifdef _WIN32
 			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 				Console.Error("DEV9: TCP: Unkown TCP Connection Error (getsockopt Error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 				Console.Error("DEV9: TCP: Unkown TCP Connection Error (getsockopt Error: %d)", errno);
 #endif
 			else
