@@ -38,7 +38,7 @@ namespace Sessions
 		enum struct NumCheckResult
 		{
 			OK,
-			GotOldData,
+			OldSeq,
 			Bad
 		};
 
@@ -98,10 +98,10 @@ namespace Sessions
 		void ResetMyNumbers();
 
 		NumCheckResult CheckRepeatSYNNumbers(PacketReader::IP::TCP::TCP_Packet* tcp);
-		NumCheckResult CheckNumbers(PacketReader::IP::TCP::TCP_Packet* tcp);
+		NumCheckResult CheckNumbers(PacketReader::IP::TCP::TCP_Packet* tcp, bool rejectOldSeq = false);
 		s32 GetDelta(u32 a, u32 b); //Returns a - b
 		//Returns true if errored
-		bool ErrorOnNonEmptyPacket(PacketReader::IP::TCP::TCP_Packet* tcp);
+		bool ValidateEmptyPacket(PacketReader::IP::TCP::TCP_Packet* tcp, bool ignoreOld = true);
 
 		//PS2 sent SYN
 		PacketReader::IP::TCP::TCP_Packet* ConnectTCPComplete(bool success);
