@@ -135,7 +135,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.casMode, "EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
 
-	connect(m_ui.shadeBoost, QOverload<int>::of(&QCheckBox::stateChanged), this, &GraphicsSettingsWidget::onShadeBoostChanged);
+	connect(m_ui.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -188,8 +188,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	connect(m_ui.cpuSpriteRenderBW, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
 		&GraphicsSettingsWidget::onCPUSpriteRenderBWChanged);
-	connect(m_ui.gpuPaletteConversion, QOverload<int>::of(&QCheckBox::stateChanged), this,
-		&GraphicsSettingsWidget::onGpuPaletteConversionChanged);
+	connect(m_ui.gpuPaletteConversion, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGpuPaletteConversionChanged);
 	onCPUSpriteRenderBWChanged();
 	onGpuPaletteConversionChanged(m_ui.gpuPaletteConversion->checkState());
 
@@ -273,7 +272,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	}
 
 	connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GraphicsSettingsWidget::onRendererChanged);
-	connect(m_ui.enableHWFixes, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
+	connect(m_ui.enableHWFixes, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updateRendererDependentOptions);
 	connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onTextureFilteringChange);
 	connect(m_ui.swTextureFiltering, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onSWTextureFilteringChange);
 	updateRendererDependentOptions();
@@ -366,10 +365,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		SettingWidgetBinder::BindWidgetToBoolSetting(
 			sif, m_ui.enableVideoCaptureArguments, "EmuCore/GS", "EnableVideoCaptureParameters", false);
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureArguments, "EmuCore/GS", "VideoCaptureParameters");
-		connect(m_ui.enableVideoCapture, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableVideoCaptureChanged);
+		connect(m_ui.enableVideoCapture, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onEnableVideoCaptureChanged);
 		connect(
-			m_ui.videoCaptureResolutionAuto, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onVideoCaptureAutoResolutionChanged);
-		connect(m_ui.enableVideoCaptureArguments, &QCheckBox::stateChanged, this,
+			m_ui.videoCaptureResolutionAuto, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onVideoCaptureAutoResolutionChanged);
+		connect(m_ui.enableVideoCaptureArguments, &QCheckBox::checkStateChanged, this,
 			&GraphicsSettingsWidget::onEnableVideoCaptureArgumentsChanged);
 
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableAudioCapture, "EmuCore/GS", "EnableAudioCapture", true);
@@ -378,8 +377,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		SettingWidgetBinder::BindWidgetToBoolSetting(
 			sif, m_ui.enableAudioCaptureArguments, "EmuCore/GS", "EnableAudioCaptureParameters", false);
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureArguments, "EmuCore/GS", "AudioCaptureParameters");
-		connect(m_ui.enableAudioCapture, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onEnableAudioCaptureChanged);
-		connect(m_ui.enableAudioCaptureArguments, &QCheckBox::stateChanged, this,
+		connect(m_ui.enableAudioCapture, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onEnableAudioCaptureChanged);
+		connect(m_ui.enableAudioCaptureArguments, &QCheckBox::checkStateChanged, this,
 			&GraphicsSettingsWidget::onEnableAudioCaptureArgumentsChanged);
 
 		onCaptureContainerChanged();

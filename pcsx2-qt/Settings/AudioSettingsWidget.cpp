@@ -53,8 +53,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	connect(m_ui.backend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputBackendChanged);
 	connect(m_ui.targetLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
 	connect(m_ui.outputLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
-	connect(m_ui.outputLatencyMinimal, &QCheckBox::stateChanged, this, &AudioSettingsWidget::updateLatencyLabels);
-	connect(m_ui.outputLatencyMinimal, &QCheckBox::stateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyStateChanged);
+	connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::updateLatencyLabels);
+	connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyStateChanged);
 	outputModuleChanged();
 
 	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));

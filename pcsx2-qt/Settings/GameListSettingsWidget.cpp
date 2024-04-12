@@ -26,7 +26,7 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
 	m_ui.setupUi(this);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferEnglishGameList, "UI", "PreferEnglishGameList", false);
-	connect(m_ui.preferEnglishGameList, &QCheckBox::stateChanged, [this]{ emit preferEnglishGameListChanged(); });
+	connect(m_ui.preferEnglishGameList, &QCheckBox::checkStateChanged, this, [this]{ emit preferEnglishGameListChanged(); });
 
 	dialog->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Titles"), tr("Unchecked"),
 		tr("For games with both a title in the game's native language and one in English, prefer the English title."));
@@ -111,7 +111,7 @@ void GameListSettingsWidget::addPathToTable(const std::string& path, bool recurs
 	m_ui.searchDirectoryList->setCellWidget(row, 1, cb);
 	cb->setChecked(recursive);
 
-	connect(cb, &QCheckBox::stateChanged, [item](int state) {
+	connect(cb, &QCheckBox::checkStateChanged, this, [item](Qt::CheckState state) {
 		const std::string path(item->text().toStdString());
 		if (state == Qt::Checked)
 		{

@@ -59,7 +59,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	//but we then need to manually call onEthAutoChanged to update the UI on fist load
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethEnabled, "DEV9/Eth", "EthEnable", false);
 	onEthEnabledChanged(m_ui.ethEnabled->checkState());
-	connect(m_ui.ethEnabled, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onEthEnabledChanged);
+	connect(m_ui.ethEnabled, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onEthEnabledChanged);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Eth Device Settings
@@ -146,7 +146,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethInterceptDHCP, "DEV9/Eth", "InterceptDHCP", false);
 	onEthDHCPInterceptChanged(m_ui.ethInterceptDHCP->checkState());
-	connect(m_ui.ethInterceptDHCP, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onEthDHCPInterceptChanged);
+	connect(m_ui.ethInterceptDHCP, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onEthDHCPInterceptChanged);
 
 	//IP settings
 	const IPValidator* ipValidator = new IPValidator(this, m_dialog->isPerGameSettings());
@@ -191,11 +191,11 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	//Auto
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethNetMaskAuto, "DEV9/Eth", "AutoMask", true);
 	onEthAutoChanged(m_ui.ethNetMaskAuto, m_ui.ethNetMaskAuto->checkState(), m_ui.ethNetMask, "DEV9/Eth", "AutoMask");
-	connect(m_ui.ethNetMaskAuto, QOverload<int>::of(&QCheckBox::stateChanged), this, [&](int state) { onEthAutoChanged(m_ui.ethNetMaskAuto, state, m_ui.ethNetMask, "DEV9/Eth", "AutoMask"); });
+	connect(m_ui.ethNetMaskAuto, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state) { onEthAutoChanged(m_ui.ethNetMaskAuto, state, m_ui.ethNetMask, "DEV9/Eth", "AutoMask"); });
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethGatewayAuto, "DEV9/Eth", "AutoGateway", true);
 	onEthAutoChanged(m_ui.ethGatewayAuto, m_ui.ethGatewayAuto->checkState(), m_ui.ethGatewayAddr, "DEV9/Eth", "AutoGateway");
-	connect(m_ui.ethGatewayAuto, QOverload<int>::of(&QCheckBox::stateChanged), this, [&](int state) { onEthAutoChanged(m_ui.ethGatewayAuto, state, m_ui.ethGatewayAddr, "DEV9/Eth", "AutoGateway"); });
+	connect(m_ui.ethGatewayAuto, &QCheckBox::checkStateChanged, this, [&](Qt::CheckState state) { onEthAutoChanged(m_ui.ethGatewayAuto, state, m_ui.ethGatewayAddr, "DEV9/Eth", "AutoGateway"); });
 
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.ethDNS1Mode, "DEV9/Eth", "ModeDNS1",
 		s_dns_name, Pcsx2Config::DEV9Options::DnsModeNames, Pcsx2Config::DEV9Options::DnsModeNames[static_cast<int>(Pcsx2Config::DEV9Options::DnsMode::Auto)], "DEV9SettingsWidget");
@@ -242,7 +242,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	//////////////////////////////////////////////////////////////////////////
 	// HDD Settings
 	//////////////////////////////////////////////////////////////////////////
-	connect(m_ui.hddEnabled, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onHddEnabledChanged);
+	connect(m_ui.hddEnabled, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onHddEnabledChanged);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hddEnabled, "DEV9/Hdd", "HddEnable", false);
 
 	if (m_dialog->isPerGameSettings())
@@ -253,7 +253,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	else
 		m_ui.hddFile->setText(QString::fromUtf8(m_dialog->getStringValue("DEV9/Hdd", "HddFile", "DEV9hdd.raw").value().c_str()));
 
-	connect(m_ui.hddLBA48, QOverload<int>::of(&QCheckBox::stateChanged), this, &DEV9SettingsWidget::onHddLBA48Changed);
+	connect(m_ui.hddLBA48, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onHddLBA48Changed);
 
 	UpdateHddSizeUIValues();
 
@@ -267,7 +267,7 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	connect(m_ui.hddCreate, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddCreateClicked);
 }
 
-void DEV9SettingsWidget::onEthEnabledChanged(int state)
+void DEV9SettingsWidget::onEthEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "EthEnable", false) : state;
 
@@ -356,7 +356,7 @@ void DEV9SettingsWidget::onEthDeviceChanged(int index)
 	}
 }
 
-void DEV9SettingsWidget::onEthDHCPInterceptChanged(int state)
+void DEV9SettingsWidget::onEthDHCPInterceptChanged(Qt::CheckState state)
 {
 	const bool enabled = (state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "InterceptDHCP", false) : state) ||
 						 ((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::DHCP_ForcedOn);
@@ -411,7 +411,7 @@ void DEV9SettingsWidget::onEthIPChanged(QLineEdit* sender, const char* section, 
 		m_dialog->setStringSettingValue(section, key, neatStr.c_str());
 }
 
-void DEV9SettingsWidget::onEthAutoChanged(QCheckBox* sender, int state, QLineEdit* input, const char* section, const char* key)
+void DEV9SettingsWidget::onEthAutoChanged(QCheckBox* sender, Qt::CheckState state, QLineEdit* input, const char* section, const char* key)
 {
 	if (sender->isEnabled())
 	{
@@ -661,7 +661,7 @@ void DEV9SettingsWidget::onEthHostEdit(QStandardItem* item)
 	}
 }
 
-void DEV9SettingsWidget::onHddEnabledChanged(int state)
+void DEV9SettingsWidget::onHddEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Hdd", "HddEnable", false) : state;
 
@@ -722,17 +722,17 @@ void DEV9SettingsWidget::onHddSizeAccessorSpin()
 	m_ui.hddSizeSlider->setValue(m_ui.hddSizeSpinBox->value());
 }
 
-void DEV9SettingsWidget::onHddLBA48Changed(int state)
+void DEV9SettingsWidget::onHddLBA48Changed(Qt::CheckState state)
 {
-	m_ui.hddSizeSlider->setMaximum(state ? 2000 : 120);
-	m_ui.hddSizeSpinBox->setMaximum(state ? 2000 : 120);
-	m_ui.hddSizeMaxLabel->setText(state ? tr("2000") : tr("120"));
+	m_ui.hddSizeSlider->setMaximum((state != Qt::Unchecked) ? 2000 : 120);
+	m_ui.hddSizeSpinBox->setMaximum((state != Qt::Unchecked) ? 2000 : 120);
+	m_ui.hddSizeMaxLabel->setText((state != Qt::Unchecked) ? tr("2000") : tr("120"));
 	// Bump up min size to have ticks align with 100GiB sizes
-	m_ui.hddSizeSlider->setMinimum(state ? 100 : 40);
-	m_ui.hddSizeSpinBox->setMinimum(state ? 100 : 40);
-	m_ui.hddSizeMinLabel->setText(state ? tr("100") : tr("40"));
+	m_ui.hddSizeSlider->setMinimum((state != Qt::Unchecked) ? 100 : 40);
+	m_ui.hddSizeSpinBox->setMinimum((state != Qt::Unchecked) ? 100 : 40);
+	m_ui.hddSizeMinLabel->setText((state != Qt::Unchecked) ? tr("100") : tr("40"));
 
-	m_ui.hddSizeSlider->setTickInterval(state ? 100 : 5);
+	m_ui.hddSizeSlider->setTickInterval((state != Qt::Unchecked) ? 100 : 5);
 }
 
 void DEV9SettingsWidget::onHddCreateClicked()

@@ -32,7 +32,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxFrameLatency, "EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "EmuCore/GS", "SyncToHostRefreshRate", false);
-	connect(m_ui.optimalFramePacing, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::onOptimalFramePacingChanged);
+	connect(m_ui.optimalFramePacing, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onOptimalFramePacingChanged);
 	m_ui.optimalFramePacing->setTristate(dialog->isPerGameSettings());
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeCycleSkipping, "EmuCore/Speedhacks", "EECycleSkip", DEFAULT_EE_CYCLE_SKIP);

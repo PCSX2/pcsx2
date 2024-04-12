@@ -106,7 +106,7 @@ void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 	port->enable = new QCheckBox(tr("Slot %1").arg(slot + 1), port->root);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, port->enable, CONFIG_SECTION, StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1), true);
-	connect(port->enable, &QCheckBox::stateChanged, this, &MemoryCardSettingsWidget::refresh);
+	connect(port->enable, &QCheckBox::checkStateChanged, this, &MemoryCardSettingsWidget::refresh);
 
 	port->eject = new QToolButton(port->root);
 	port->eject->setIcon(QIcon::fromTheme(perGame ? QStringLiteral("delete-back-2-line") : QStringLiteral("eject-line")));
