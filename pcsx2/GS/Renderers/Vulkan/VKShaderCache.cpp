@@ -111,8 +111,11 @@ std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
 
 	if (debug)
 	{
-		options.SetOptimizationLevel(shaderc_optimization_level_zero);
 		options.SetGenerateDebugInfo();
+		if (GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_khr_shader_non_semantic_info)
+			options.SetEmitNonSemanticDebugInfo();
+
+		options.SetOptimizationLevel(shaderc_optimization_level_zero);
 	}
 	else
 	{
