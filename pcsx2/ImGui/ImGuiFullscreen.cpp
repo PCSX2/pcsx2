@@ -69,6 +69,7 @@ namespace ImGuiFullscreen
 	ImVec4 UIBackgroundTextColor;
 	ImVec4 UIBackgroundLineColor;
 	ImVec4 UIBackgroundHighlightColor;
+	ImVec4 UIPopupBackgroundColor;
 	ImVec4 UIDisabledColor;
 	ImVec4 UIPrimaryColor;
 	ImVec4 UIPrimaryLightColor;
@@ -541,7 +542,7 @@ void ImGuiFullscreen::PushResetLayout()
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIPrimaryColor);
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, UIPrimaryLightColor);
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, UIPrimaryDarkColor);
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIBackgroundColor, 0.95f));
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
 }
 
 void ImGuiFullscreen::PopResetLayout()
@@ -2089,7 +2090,6 @@ void ImGuiFullscreen::DrawFileSelector()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
 	bool is_open = !WantsToCloseMenu();
 	bool directory_selected = false;
@@ -2130,7 +2130,7 @@ void ImGuiFullscreen::DrawFileSelector()
 		is_open = false;
 	}
 
-	ImGui::PopStyleColor(4);
+	ImGui::PopStyleColor(3);
 	ImGui::PopStyleVar(3);
 	ImGui::PopFont();
 
@@ -2216,7 +2216,6 @@ void ImGuiFullscreen::DrawChoiceDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
 	const float width = LayoutScale(600.0f);
 	const float title_height = g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
@@ -2283,7 +2282,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 		is_open = false;
 	}
 
-	ImGui::PopStyleColor(4);
+	ImGui::PopStyleColor(3);
 	ImGui::PopStyleVar(3);
 	ImGui::PopFont();
 
@@ -2339,7 +2338,6 @@ void ImGuiFullscreen::DrawInputDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
 	bool is_open = true;
 	if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
@@ -2394,7 +2392,7 @@ void ImGuiFullscreen::DrawInputDialog()
 	else
 		GetInputDialogHelpText(s_fullscreen_footer_text);
 
-	ImGui::PopStyleColor(4);
+	ImGui::PopStyleColor(3);
 	ImGui::PopStyleVar(3);
 	ImGui::PopFont();
 }
@@ -2492,7 +2490,6 @@ void ImGuiFullscreen::DrawMessageDialog()
 	ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
 	bool is_open = true;
 	const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -2521,7 +2518,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 		ImGui::EndPopup();
 	}
 
-	ImGui::PopStyleColor(4);
+	ImGui::PopStyleColor(3);
 	ImGui::PopStyleVar(4);
 	ImGui::PopFont();
 
@@ -2950,6 +2947,7 @@ void ImGuiFullscreen::SetTheme(bool light)
 		UIBackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
 		UIBackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
 		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0x4b4b4b, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
 		UIPrimaryColor = HEX_TO_IMVEC4(0x2e2e2e, 0xff);
 		UIPrimaryLightColor = HEX_TO_IMVEC4(0x484848, 0xff);
 		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
@@ -2969,6 +2967,7 @@ void ImGuiFullscreen::SetTheme(bool light)
 		UIBackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
 		UIBackgroundLineColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
 		UIBackgroundHighlightColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
+		UIPopupBackgroundColor = HEX_TO_IMVEC4(0xd8d8d8, 0xf2);
 		UIPrimaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
 		UIPrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
 		UIPrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
