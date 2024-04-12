@@ -941,7 +941,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 		ImGuiKey_GamepadL2, // R2
 	};
 
-	if (!ImGui::GetCurrentContext() || !s_imgui_wants_keyboard.load(std::memory_order_acquire))
+	if (!ImGui::GetCurrentContext())
 		return false;
 
 	if (static_cast<u32>(key) >= std::size(key_map) || key_map[static_cast<u32>(key)] == ImGuiKey_None)
@@ -950,7 +950,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 	MTGS::RunOnGSThread(
 		[key = key_map[static_cast<u32>(key)], value]() { ImGui::GetIO().AddKeyAnalogEvent(key, (value > 0.0f), value); });
 
-	return true;
+	return s_imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
 void ImGuiManager::CreateSoftwareCursorTextures()
