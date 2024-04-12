@@ -5704,6 +5704,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		{
 			hdr_rt->SetState(GSTexture::State::Cleared);
 			hdr_rt->SetClearColor(draw_rt->GetClearColor());
+
+			// If depth is cleared, we need to commit it, because we're only going to draw to the active part of the FB.
+			if (draw_ds && draw_ds->GetState() == GSTexture::State::Cleared && !config.drawarea.eq(GSVector4i::loadh(rtsize)))
+				draw_ds->CommitClear(m_current_command_buffer);
 		}
 		else if (draw_rt->GetState() == GSTexture::State::Dirty)
 		{
@@ -5793,7 +5797,11 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
 		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
-		const GSVector4i render_area = pipe.ps.hdr ? config.drawarea : GSVector4i::loadh(rtsize);
+
+		// Only draw to the active area of the HDR target. Except when depth is cleared, we need to use the full
+		// buffer size, otherwise it'll only clear the draw part of the depth buffer.
+		const GSVector4i render_area = (pipe.ps.hdr && ds_op != VK_ATTACHMENT_LOAD_OP_CLEAR) ? config.drawarea :
+																							   GSVector4i::loadh(rtsize);
 
 		if (is_clearing_rt)
 		{
