@@ -308,9 +308,6 @@ namespace Sessions
 		windowSize.store(tcp->windowSize << windowScale);
 
 		const NumCheckResult Result = CheckNumbers(tcp);
-		//Check if we already have some of the data sent
-		const uint delta = GetDelta(expectedSeqNumber, tcp->sequenceNumber);
-		pxAssert(delta >= 0);
 
 		if (Result == NumCheckResult::Bad)
 		{
@@ -320,6 +317,9 @@ namespace Sessions
 		}
 		if (tcp->GetPayload()->GetLength() != 0)
 		{
+			//Check if we already have sent some of this data
+			const int delta = GetDelta(expectedSeqNumber, tcp->sequenceNumber);
+			pxAssert(delta >= 0);
 			//if (Result == NumCheckResult::OldSeq)
 			//{
 			//	DevCon.WriteLn("[PS2] New Data Offset: %d bytes", delta);
@@ -486,7 +486,8 @@ namespace Sessions
 		}
 		if (tcp->GetPayload()->GetLength() > 0)
 		{
-			uint delta = GetDelta(expectedSeqNumber, tcp->sequenceNumber);
+			const int delta = GetDelta(expectedSeqNumber, tcp->sequenceNumber);
+			pxAssert(delta >= 0);
 			//Check if packet contains only old data
 			if (delta >= tcp->GetPayload()->GetLength())
 				return false;
