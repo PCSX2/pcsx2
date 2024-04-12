@@ -308,14 +308,14 @@ void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::s
 	{
 		// Non-standard fonts always go to the user resources directory, since they're downloaded on demand.
 		font_path = Path::Combine(EmuFolders::UserResources,
-			SmallString::from_fmt("fonts" FS_OSPATH_SEPARATOR_STR "{}", imgui_font_name));
+			SmallString::from_format("fonts" FS_OSPATH_SEPARATOR_STR "{}", imgui_font_name));
 		if (!DownloadMissingFont(dialog_parent, imgui_font_name, font_path))
 			font_path.clear();
 	}
 	if (font_path.empty())
 	{
 		// Use the default font.
-		font_path = EmuFolders::GetOverridableResourcePath(SmallString::from_fmt(
+		font_path = EmuFolders::GetOverridableResourcePath(SmallString::from_format(
 			"fonts" FS_OSPATH_SEPARATOR_STR "{}", DEFAULT_IMGUI_FONT_NAME));
 	}
 

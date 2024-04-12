@@ -2943,7 +2943,7 @@ bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Fo
 	}
 
 #ifdef PCSX2_DEVBUILD
-	(*tex)->SetDebugName(TinyString::from_fmt("Texture Cache {}x{} {} Readback",
+	(*tex)->SetDebugName(TinyString::from_format("Texture Cache {}x{} {} Readback",
 		new_width, new_height, GSTexture::GetFormatName(format)));
 #endif
 
@@ -4414,12 +4414,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			if (psm.pal > 0)
 			{
-				src->m_texture->SetDebugName(TinyString::from_fmt("Offset {},{} from 0x{:X} {} CBP 0x{:X}", x_offset, y_offset,
+				src->m_texture->SetDebugName(TinyString::from_format("Offset {},{} from 0x{:X} {} CBP 0x{:X}", x_offset, y_offset,
 					static_cast<u32>(TEX0.TBP0), psm_str(TEX0.PSM), static_cast<u32>(TEX0.CBP)));
 			}
 			else
 			{
-				src->m_texture->SetDebugName(TinyString::from_fmt("Offset {},{} from 0x{:X} {} ", x_offset, y_offset,
+				src->m_texture->SetDebugName(TinyString::from_format("Offset {},{} from 0x{:X} {} ", x_offset, y_offset,
 					static_cast<u32>(TEX0.TBP0), psm_str(TEX0.PSM), static_cast<u32>(TEX0.CBP)));
 			}
 		}
@@ -4664,7 +4664,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 #ifdef PCSX2_DEVBUILD
 				if (GSConfig.UseDebugDevice)
 				{
-					src->m_texture->SetDebugName(TinyString::from_fmt("{}x{} copy of 0x{:X} {}", new_size.x, new_size.y,
+					src->m_texture->SetDebugName(TinyString::from_format("{}x{} copy of 0x{:X} {}", new_size.x, new_size.y,
 						static_cast<u32>(TEX0.TBP0), psm_str(TEX0.PSM)));
 				}
 #endif
@@ -4700,12 +4700,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				{
 					if (psm.pal > 0)
 					{
-						src->m_texture->SetDebugName(TinyString::from_fmt("Reinterpret 0x{:X} from {} to {} CBP 0x{:X}",
+						src->m_texture->SetDebugName(TinyString::from_format("Reinterpret 0x{:X} from {} to {} CBP 0x{:X}",
 							static_cast<u32>(TEX0.TBP0), psm_str(dst->m_TEX0.PSM), psm_str(TEX0.PSM), static_cast<u32>(TEX0.CBP)));
 					}
 					else
 					{
-						src->m_texture->SetDebugName(TinyString::from_fmt("Reinterpret 0x{:X} from {} to {}",
+						src->m_texture->SetDebugName(TinyString::from_format("Reinterpret 0x{:X} from {} to {}",
 							static_cast<u32>(TEX0.TBP0), psm_str(dst->m_TEX0.PSM), psm_str(TEX0.PSM)));
 					}
 				}
@@ -4795,13 +4795,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		{
 			if (psm.pal > 0)
 			{
-				src->m_texture->SetDebugName(TinyString::from_fmt("{}x{} {} @ 0x{:X} TBW={} CBP=0x{:X}",
+				src->m_texture->SetDebugName(TinyString::from_format("{}x{} {} @ 0x{:X} TBW={} CBP=0x{:X}",
 					tw, th, psm_str(TEX0.PSM), static_cast<u32>(TEX0.TBP0), static_cast<u32>(TEX0.TBW),
 					static_cast<u32>(TEX0.CBP)));
 			}
 			else
 			{
-				src->m_texture->SetDebugName(TinyString::from_fmt("{}x{} {} @ 0x{:X} TBW={}",
+				src->m_texture->SetDebugName(TinyString::from_format("{}x{} {} @ 0x{:X} TBW={}",
 					tw, th, psm_str(TEX0.PSM), static_cast<u32>(TEX0.TBP0), static_cast<u32>(TEX0.TBW)));
 			}
 		}
@@ -6373,7 +6373,7 @@ void GSTextureCache::Target::UpdateTextureDebugName()
 #ifdef PCSX2_DEVBUILD
 	if (GSConfig.UseDebugDevice)
 	{
-		m_texture->SetDebugName(SmallString::from_fmt("{} 0x{:X} {} BW={} {}x{}",
+		m_texture->SetDebugName(SmallString::from_format("{} 0x{:X} {} BW={} {}x{}",
 			m_type ? "DS" : "RT", static_cast<u32>(m_TEX0.TBP0), psm_str(m_TEX0.PSM), static_cast<u32>(m_TEX0.TBW),
 			m_unscaled_size.x, m_unscaled_size.y));
 	}

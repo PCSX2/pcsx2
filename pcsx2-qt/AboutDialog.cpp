@@ -24,11 +24,11 @@ static QString GetDocFileUrl(std::string_view name)
 #ifdef _WIN32
 	// Windows uses the docs directory in bin.
 	const std::string path = Path::Combine(EmuFolders::AppRoot,
-		TinyString::from_fmt("docs" FS_OSPATH_SEPARATOR_STR "{}", name));
+		TinyString::from_format("docs" FS_OSPATH_SEPARATOR_STR "{}", name));
 #else
 	// Linux/Mac has this in the Resources directory.
 	const std::string path = Path::Combine(EmuFolders::Resources,
-		TinyString::from_fmt("docs" FS_OSPATH_SEPARATOR_STR "{}", name));
+		TinyString::from_format("docs" FS_OSPATH_SEPARATOR_STR "{}", name));
 #endif
 	return QUrl::fromLocalFile(QString::fromStdString(path)).toString();
 }

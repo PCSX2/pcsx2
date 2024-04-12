@@ -82,7 +82,7 @@ bool DynamicLibrary::Open(const char* filename, Error* error)
 	m_handle = reinterpret_cast<void*>(LoadLibraryW(StringUtil::UTF8StringToWideString(filename).c_str()));
 	if (!m_handle)
 	{
-		Error::SetWin32(error, TinyString::from_fmt("Loading {} failed: ", filename), GetLastError());
+		Error::SetWin32(error, TinyString::from_format("Loading {} failed: ", filename), GetLastError());
 		return false;
 	}
 

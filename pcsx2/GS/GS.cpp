@@ -607,7 +607,7 @@ void GSgetStats(SmallStringBase& info)
 	{
 		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info.fmt("{} SW | {} S | {} P | {} D | {:.2f} U | {:.2f} D | {:.2f} mpps",
+		info.format("{} SW | {} S | {} P | {} D | {:.2f} U | {:.2f} D | {:.2f} mpps",
 			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
@@ -622,7 +622,7 @@ void GSgetStats(SmallStringBase& info)
 	}
 	else
 	{
-		info.fmt("{} HW | {} P | {} D | {} DC | {} B | {} RP | {} RB | {} TC | {} TU",
+		info.format("{} HW | {} P | {} D | {} DC | {} B | {} RP | {} RB | {} TC | {} TU",
 			api_name,
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),

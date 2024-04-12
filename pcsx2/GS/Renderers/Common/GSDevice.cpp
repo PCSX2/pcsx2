@@ -455,7 +455,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 			{
 				const TextureLabel label = GetTextureLabel(type, format);
 				const u32 id = ++s_texture_counts[static_cast<u32>(label)];
-				t->SetDebugName(TinyString::from_fmt("{} {}", TextureLabelString(label), id));
+				t->SetDebugName(TinyString::from_format("{} {}", TextureLabelString(label), id));
 			}
 #endif
 		}

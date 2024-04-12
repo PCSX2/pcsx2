@@ -526,13 +526,13 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapSection("EmuCore/CPU");
 
 	const auto read_fpcr = [&wrap, &CURRENT_SETTINGS_SECTION](FPControlRegister& fpcr, std::string_view prefix) {
-		fpcr.SetDenormalsAreZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.DenormalsAreZero", prefix),
+		fpcr.SetDenormalsAreZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_format("{}.DenormalsAreZero", prefix),
 			fpcr.GetDenormalsAreZero(), fpcr.GetDenormalsAreZero()));
-		fpcr.SetFlushToZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.DenormalsAreZero", prefix),
+		fpcr.SetFlushToZero(wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, TinyString::from_format("{}.DenormalsAreZero", prefix),
 			fpcr.GetFlushToZero(), fpcr.GetFlushToZero()));
 
 		uint round_mode = static_cast<uint>(fpcr.GetRoundMode());
-		wrap.Entry(CURRENT_SETTINGS_SECTION, TinyString::from_fmt("{}.Roundmode", prefix), round_mode, round_mode);
+		wrap.Entry(CURRENT_SETTINGS_SECTION, TinyString::from_format("{}.Roundmode", prefix), round_mode, round_mode);
 		round_mode = std::min(round_mode, static_cast<uint>(FPRoundMode::MaxCount) - 1u);
 		fpcr.SetRoundMode(static_cast<FPRoundMode>(round_mode));
 	};

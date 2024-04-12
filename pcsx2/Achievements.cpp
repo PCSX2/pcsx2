@@ -262,7 +262,7 @@ void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... a
 {
 	SmallString str;
 	fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));
-	str.append_fmt("{} ({})", rc_error_str(err), err);
+	str.append_format("{} ({})", rc_error_str(err), err);
 	ReportError(str);
 }
 
@@ -1560,7 +1560,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
 		return path;
 
 	path = Path::Combine(s_image_directory,
-		TinyString::from_fmt("achievement_{}_{}_{}.png", s_game_id, achievement->id, s_achievement_state_strings[state]));
+		TinyString::from_format("achievement_{}_{}_{}.png", s_game_id, achievement->id, s_achievement_state_strings[state]));
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{
@@ -1581,7 +1581,7 @@ std::string Achievements::GetUserBadgePath(const std::string_view& username)
 	std::string path;
 	const std::string clean_username = Path::SanitizeFileName(username);
 	if (!clean_username.empty())
-		path = Path::Combine(s_image_directory, TinyString::from_fmt("user_{}.png", clean_username));
+		path = Path::Combine(s_image_directory, TinyString::from_format("user_{}.png", clean_username));
 	return path;
 }
 
@@ -2188,12 +2188,12 @@ void Achievements::DrawAchievementsWindow()
 			{
 				if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
 				{
-					text.fmt(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
+					text.format(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
 						s_game_summary.points_unlocked);
 				}
 				else
 				{
-					text.fmt(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
+					text.format(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
 						s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
 						s_game_summary.points_core);
 				}
@@ -2220,7 +2220,7 @@ void Achievements::DrawAchievementsWindow()
 				dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
 					ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
 
-				text.fmt("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+				text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
 				text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
 				const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
 					progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
@@ -2312,7 +2312,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
 	ImRect bb;
 	bool visible, hovered;
-	ImGuiFullscreen::MenuButtonFrame(TinyString::from_fmt("chv_{}", cheevo->id), true,
+	ImGuiFullscreen::MenuButtonFrame(TinyString::from_format("chv_{}", cheevo->id), true,
 		!is_measured ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_size :
 					   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + progress_height_unscaled + progress_spacing_unscaled,
 		&visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
@@ -2347,7 +2347,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 	SmallString text;
 
 	const float midpoint = bb.Min.y + g_large_font->FontSize + spacing;
-	text.fmt((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") : TRANSLATE_FS("Achievements", "{} point"), cheevo->points);
+	text.format((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") : TRANSLATE_FS("Achievements", "{} point"), cheevo->points);
 
 	const ImVec2 points_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr()));
 	const float points_template_start = bb.Max.x - points_template_size.x;
@@ -2398,7 +2398,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
 	if (is_unlocked)
 	{
-		text.fmt(TRANSLATE_FS("Achievements", "Unlocked: {}"), FullscreenUI::TimeToPrintableString(cheevo->unlock_time));
+		text.format(TRANSLATE_FS("Achievements", "Unlocked: {}"), FullscreenUI::TimeToPrintableString(cheevo->unlock_time));
 
 		const ImRect unlock_bb(summary_bb.Min.x, summary_bb.Max.y + spacing, summary_bb.Max.x, bb.Max.y);
 		ImGui::RenderTextClipped(unlock_bb.Min, unlock_bb.Max, text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), &unlock_bb);
@@ -2564,7 +2564,7 @@ void Achievements::DrawLeaderboardsWindow()
 				u32 count = 0;
 				for (u32 i = 0; i < s_leaderboard_list->num_buckets; i++)
 					count += s_leaderboard_list->buckets[i].num_leaderboards;
-				text.fmt(TRANSLATE_FS("Achievements", "This game has {} leaderboards."), count);
+				text.format(TRANSLATE_FS("Achievements", "This game has {} leaderboards."), count);
 			}
 
 			const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
@@ -2764,7 +2764,7 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 	float text_start_x = bb.Min.x + LayoutScale(15.0f);
 	SmallString text;
 
-	text.fmt("{}", entry.rank);
+	text.format("{}", entry.rank);
 
 	ImGui::PushFont(g_large_font);
 
@@ -2831,7 +2831,7 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 	static constexpr float alpha = 0.8f;
 
 	TinyString id_str;
-	id_str.fmt("{}", lboard->id);
+	id_str.format("{}", lboard->id);
 
 	ImRect bb;
 	bool visible, hovered;
