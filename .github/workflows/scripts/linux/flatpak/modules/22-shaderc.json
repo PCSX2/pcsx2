@@ -3,6 +3,7 @@
   "buildsystem": "cmake-ninja",
   "builddir": true,
   "config-opts": [
+    "-DCMAKE_BUILD_TYPE=Release",
     "-DSHADERC_SKIP_TESTS=ON",
     "-DSHADERC_SKIP_EXAMPLES=ON",
     "-DSHADERC_SKIP_COPYRIGHT_CHECK=ON"
@@ -36,7 +37,7 @@
     },
     {
       "type": "patch",
-      "path": "../../../common/shaderc-install.patch"
+      "path": "../../../common/shaderc-changes.patch"
     }
   ],
   "cleanup": [

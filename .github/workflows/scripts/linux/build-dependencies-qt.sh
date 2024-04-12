@@ -306,7 +306,7 @@ mv "SPIRV-Headers-$SHADERC_SPIRVHEADERS" "spirv-headers"
 tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
 mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
 cd ..
-patch -p1 < "$SCRIPTDIR/../common/shaderc-install.patch"
+patch -p1 < "$SCRIPTDIR/../common/shaderc-changes.patch"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
