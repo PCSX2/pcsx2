@@ -324,15 +324,15 @@ TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
 		if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
 		{
 			const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
-			ret.fmt("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_axis_names[key.data]);
+			ret.format("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_axis_names[key.data]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
 		{
-			ret.fmt("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
+			ret.format("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerMotor)
 		{
-			ret.fmt("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+			ret.format("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
 		}
 	}
 
@@ -349,14 +349,14 @@ TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
 		{
 			if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
 			{
-				ret.fmt("XInput-{}  {}", static_cast<u32>(key.source_index),
+				ret.format("XInput-{}  {}", static_cast<u32>(key.source_index),
 					s_axis_icons[key.data][key.modifier == InputModifier::None]);
 			}
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
 			if (key.data < std::size(s_button_icons))
-				ret.fmt("XInput-{}  {}", static_cast<u32>(key.source_index), s_button_icons[key.data]);
+				ret.format("XInput-{}  {}", static_cast<u32>(key.source_index), s_button_icons[key.data]);
 		}
 	}
 

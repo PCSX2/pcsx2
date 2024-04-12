@@ -103,7 +103,7 @@ __ri void Log::WriteToConsole(LOGLEVEL level, ConsoleColors color, std::string_v
 	buffer.append(s_ansi_color_codes[color]);
 
 	if (s_log_timestamps)
-		buffer.append_fmt(TIMESTAMP_FORMAT_STRING, Log::GetCurrentMessageTime());
+		buffer.append_format(TIMESTAMP_FORMAT_STRING, Log::GetCurrentMessageTime());
 
 	buffer.append(message);
 	buffer.append('\n');
@@ -352,7 +352,7 @@ bool Log::SetFileOutputLevel(LOGLEVEL level, std::string path)
 					s_file_path = {};
 
 					if (IsConsoleOutputEnabled())
-						WriteToConsole(LOGLEVEL_ERROR, Color_StrongRed, TinyString::from_fmt("Failed to open log file '{}'", path));
+						WriteToConsole(LOGLEVEL_ERROR, Color_StrongRed, TinyString::from_format("Failed to open log file '{}'", path));
 				}
 			}
 		}

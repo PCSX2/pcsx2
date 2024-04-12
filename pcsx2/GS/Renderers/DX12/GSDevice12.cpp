@@ -2452,7 +2452,7 @@ bool GSDevice12::CompileConvertPipelines()
 		if (!m_convert[index])
 			return false;
 
-		D3D12::SetObjectName(m_convert[index].get(), TinyString::from_fmt("Convert pipeline {}", static_cast<int>(i)));
+		D3D12::SetObjectName(m_convert[index].get(), TinyString::from_format("Convert pipeline {}", static_cast<int>(i)));
 
 		if (i == ShaderConvert::COPY)
 		{
@@ -2468,7 +2468,7 @@ bool GSDevice12::CompileConvertPipelines()
 				if (!m_color_copy[j])
 					return false;
 
-				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_fmt("Color copy pipeline (r={}, g={}, b={}, a={})",
+				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_format("Color copy pipeline (r={}, g={}, b={}, a={})",
 					j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
 			}
 		}
@@ -2493,7 +2493,7 @@ bool GSDevice12::CompileConvertPipelines()
 				if (!m_color_copy[j])
 					return false;
 
-				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_fmt("Color copy pipeline (r={}, g={}, b={}, a={})",
+				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_format("Color copy pipeline (r={}, g={}, b={}, a={})",
 																j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
 			}
 		}
@@ -2511,7 +2511,7 @@ bool GSDevice12::CompileConvertPipelines()
 				if (!arr[ds])
 					return false;
 
-				D3D12::SetObjectName(arr[ds].get(), TinyString::from_fmt("HDR {}/copy pipeline (ds={})", is_setup ? "setup" : "finish", ds));
+				D3D12::SetObjectName(arr[ds].get(), TinyString::from_format("HDR {}/copy pipeline (ds={})", is_setup ? "setup" : "finish", ds));
 			}
 		}
 	}
@@ -2539,7 +2539,7 @@ bool GSDevice12::CompileConvertPipelines()
 				return false;
 
 			D3D12::SetObjectName(m_date_image_setup_pipelines[ds][datm].get(),
-				TinyString::from_fmt("DATE image clear pipeline (ds={}, datm={})", ds, (datm == 1 || datm == 3)));
+				TinyString::from_format("DATE image clear pipeline (ds={}, datm={})", ds, (datm == 1 || datm == 3)));
 		}
 	}
 
@@ -2584,7 +2584,7 @@ bool GSDevice12::CompilePresentPipelines()
 		if (!m_present[index])
 			return false;
 
-		D3D12::SetObjectName(m_present[index].get(), TinyString::from_fmt("Present pipeline {}", static_cast<int>(i)));
+		D3D12::SetObjectName(m_present[index].get(), TinyString::from_format("Present pipeline {}", static_cast<int>(i)));
 	}
 
 	return true;
@@ -2620,7 +2620,7 @@ bool GSDevice12::CompileInterlacePipelines()
 		if (!m_interlace[i])
 			return false;
 
-		D3D12::SetObjectName(m_convert[i].get(), TinyString::from_fmt("Interlace pipeline {}", static_cast<int>(i)));
+		D3D12::SetObjectName(m_convert[i].get(), TinyString::from_format("Interlace pipeline {}", static_cast<int>(i)));
 	}
 
 	return true;
@@ -2657,7 +2657,7 @@ bool GSDevice12::CompileMergePipelines()
 		if (!m_merge[i])
 			return false;
 
-		D3D12::SetObjectName(m_convert[i].get(), TinyString::from_fmt("Merge pipeline {}", i));
+		D3D12::SetObjectName(m_convert[i].get(), TinyString::from_format("Merge pipeline {}", i));
 	}
 
 	return true;
@@ -2990,7 +2990,7 @@ GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const Pipe
 	if (pipeline)
 	{
 		D3D12::SetObjectName(
-			pipeline.get(), TinyString::from_fmt("TFX Pipeline {:08X}/{:08X}{:016X}", p.vs.key, p.ps.key_hi, p.ps.key_lo));
+			pipeline.get(), TinyString::from_format("TFX Pipeline {:08X}/{:08X}{:016X}", p.vs.key, p.ps.key_hi, p.ps.key_lo));
 	}
 
 	return pipeline;

@@ -844,7 +844,7 @@ bool GSCapture::DeliverVideoFrame(GSTexture* stex)
 		}
 
 #ifdef PCSX2_DEVBUILD
-		pf.tex->SetDebugName(TinyString::from_fmt("GSCapture {}x{} Download Texture", stex->GetWidth(), stex->GetHeight()));
+		pf.tex->SetDebugName(TinyString::from_format("GSCapture {}x{} Download Texture", stex->GetWidth(), stex->GetHeight()));
 #endif
 	}
 
@@ -1361,7 +1361,7 @@ TinyString GSCapture::GetElapsedTime()
 
 	TinyString ret;
 	if (seconds >= 0)
-		ret.fmt("{:02d}:{:02d}:{:02d}", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+		ret.format("{:02d}:{:02d}:{:02d}", seconds / 3600, (seconds % 3600) / 60, seconds % 60);
 	return ret;
 }
 

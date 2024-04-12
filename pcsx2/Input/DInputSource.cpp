@@ -384,17 +384,17 @@ TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
 			const char* modifier = (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
-			ret.fmt("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
+			ret.format("DInput-{}/{}Axis{}{}", u32(key.source_index), modifier, u32(key.data), (key.invert && !ShouldIgnoreInversion()) ? "~" : "");
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton && key.data >= MAX_NUM_BUTTONS)
 		{
 			const u32 hat_num = (key.data - MAX_NUM_BUTTONS) / NUM_HAT_DIRECTIONS;
 			const u32 hat_dir = (key.data - MAX_NUM_BUTTONS) % NUM_HAT_DIRECTIONS;
-			ret.fmt("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
+			ret.format("DInput-{}/Hat{}{}", u32(key.source_index), hat_num, s_hat_directions[hat_dir]);
 		}
 		else if (key.source_subtype == InputSubclass::ControllerButton)
 		{
-			ret.fmt("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
+			ret.format("DInput-{}/Button{}", u32(key.source_index), u32(key.data));
 		}
 	}
 

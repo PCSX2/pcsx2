@@ -102,7 +102,7 @@ namespace Patch
 
 		SmallString ToString() const
 		{
-			return SmallString::from_fmt("{},{},{},{:08x},{:x}", s_place_to_string[static_cast<u8>(placetopatch)],
+			return SmallString::from_format("{},{},{},{:08x},{:x}", s_place_to_string[static_cast<u8>(placetopatch)],
 				s_cpu_to_string[static_cast<u8>(cpu)], s_type_to_string[static_cast<u8>(type)], addr, data);
 		}
 	};
