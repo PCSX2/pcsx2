@@ -146,6 +146,7 @@ bool ImGuiManager::Initialize()
 	io.BackendUsingLegacyKeyArrays = 0;
 	io.BackendUsingLegacyNavInputArray = 0;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+	io.KeyRepeatDelay = 0.5f;
 
 	s_window_width = static_cast<float>(g_gs_device->GetWindowWidth());
 	s_window_height = static_cast<float>(g_gs_device->GetWindowHeight());
