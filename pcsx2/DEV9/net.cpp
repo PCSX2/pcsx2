@@ -205,7 +205,7 @@ NetAdapter::~NetAdapter()
 
 void NetAdapter::InspectSend(NetPacket* pkt)
 {
-	if (EmuConfig.DEV9.EthLogDNS)
+	if (EmuConfig.DEV9.EthLogDNS || EmuConfig.DEV9.EthLogDHCP)
 	{
 		EthernetFrame frame(pkt);
 		if (frame.protocol == (u16)EtherType::IPv4)
@@ -218,11 +218,18 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
 
-				if (udppkt.destinationPort == 53)
+				if (EmuConfig.DEV9.EthLogDNS && udppkt.destinationPort == 53)
 				{
 					Console.WriteLn("DEV9: DNS: Packet Sent To %i.%i.%i.%i",
 						ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
 					dnsLogger.InspectSend(&udppkt);
+				}
+
+				if (EmuConfig.DEV9.EthLogDHCP && udppkt.destinationPort == 67)
+				{
+					Console.WriteLn("DEV9: DHCP: Packet Sent To %i.%i.%i.%i",
+						ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
+					dhcpLogger.InspectSend(&udppkt);
 				}
 			}
 		}
@@ -230,7 +237,7 @@ void NetAdapter::InspectSend(NetPacket* pkt)
 }
 void NetAdapter::InspectRecv(NetPacket* pkt)
 {
-	if (EmuConfig.DEV9.EthLogDNS)
+	if (EmuConfig.DEV9.EthLogDNS || EmuConfig.DEV9.EthLogDHCP)
 	{
 		EthernetFrame frame(pkt);
 		if (frame.protocol == (u16)EtherType::IPv4)
@@ -243,11 +250,18 @@ void NetAdapter::InspectRecv(NetPacket* pkt)
 				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
 				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
 
-				if (udppkt.sourcePort == 53)
+				if (EmuConfig.DEV9.EthLogDNS && udppkt.sourcePort == 53)
 				{
 					Console.WriteLn("DEV9: DNS: Packet Sent From %i.%i.%i.%i",
 						ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
 					dnsLogger.InspectRecv(&udppkt);
+				}
+
+				if (EmuConfig.DEV9.EthLogDHCP && udppkt.sourcePort == 67)
+				{
+					Console.WriteLn("DEV9: DHCP: Packet Sent From %i.%i.%i.%i",
+						ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
+					dhcpLogger.InspectRecv(&udppkt);
 				}
 			}
 		}
@@ -293,6 +307,8 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter, bool dhcpForceEnable, IP_A
 	if (adapter == nullptr)
 		Console.Error("DEV9: InitInternalServer() got nullptr for adapter");
 
+	dhcpLogger.Init(adapter);
+
 	dhcpOn = EmuConfig.DEV9.InterceptDHCP || dhcpForceEnable;
 	if (dhcpOn)
 		dhcpServer.Init(adapter, ipOverride, subnetOverride, gatewayOvveride);
@@ -336,6 +352,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		frame.destinationMAC = ps2MAC;
 		frame.protocol = (u16)EtherType::IPv4;
 		frame.WritePacket(pkt);
+		InspectRecv(pkt);
 		return true;
 	}
 

@@ -884,6 +884,9 @@
     <ClCompile Include="DEV9\flash.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
+    <ClCompile Include="DEV9\InternalServers\DHCP_Logger.cpp">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClCompile>
     <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp">
       <Filter>System\Ps2\DEV9\InternalServers</Filter>
     </ClCompile>
@@ -1735,6 +1738,9 @@
     </ClInclude>
     <ClInclude Include="DEV9\DEV9.h">
       <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\InternalServers\DHCP_Logger.h">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h">
       <Filter>System\Ps2\DEV9\InternalServers</Filter>

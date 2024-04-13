@@ -152,6 +152,7 @@
     <ClCompile Include="DEV9\ATA\HddCreate.cpp" />
     <ClCompile Include="DEV9\DEV9.cpp" />
     <ClCompile Include="DEV9\flash.cpp" />
+    <ClCompile Include="DEV9\InternalServers\DHCP_Logger.cpp" />
     <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp" />
     <ClCompile Include="DEV9\InternalServers\DNS_Logger.cpp" />
     <ClCompile Include="DEV9\InternalServers\DNS_Server.cpp" />
@@ -490,6 +491,7 @@
     <ClInclude Include="DEV9\ATA\ATA.h" />
     <ClInclude Include="DEV9\ATA\HddCreate.h" />
     <ClInclude Include="DEV9\DEV9.h" />
+    <ClInclude Include="DEV9\InternalServers\DHCP_Logger.h" />
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />
     <ClInclude Include="DEV9\InternalServers\DNS_Logger.h" />
     <ClInclude Include="DEV9\InternalServers\DNS_Server.h" />

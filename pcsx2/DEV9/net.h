@@ -24,6 +24,7 @@
 
 #include "PacketReader/MAC_Address.h"
 #include "PacketReader/IP/IP_Address.h"
+#include "InternalServers/DHCP_Logger.h"
 #include "InternalServers/DHCP_Server.h"
 #include "InternalServers/DNS_Logger.h"
 #include "InternalServers/DNS_Server.h"
@@ -99,6 +100,7 @@ private:
 	bool dhcpOn = false;
 
 protected:
+	InternalServers::DHCP_Logger dhcpLogger;
 	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
 	InternalServers::DNS_Logger dnsLogger;
 	InternalServers::DNS_Server dnsServer = InternalServers::DNS_Server([&] { InternalSignalReceived(); });
