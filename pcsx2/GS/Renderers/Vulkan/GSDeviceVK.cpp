@@ -380,8 +380,15 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
 		require_line_rasterization);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
-	m_optional_extensions.vk_khr_shader_non_semantic_info =
-	 SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
+
+	// glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug info
+	// is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging until
+	// this is fixed.
+	if (const char* val = std::getenv("USE_NON_SEMANTIC_DEBUG_INFO"); val && StringUtil::FromChars<bool>(val).value_or(false))
+	{
+		m_optional_extensions.vk_khr_shader_non_semantic_info =
+			SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
+	}
 
 #ifdef _WIN32
 	m_optional_extensions.vk_ext_full_screen_exclusive =
