@@ -83,7 +83,16 @@ extern "C" {
 	X(avio_open) \
 	X(avio_closep)
 
+#if LIBAVUTIL_VERSION_MAJOR < 57
+#define AVUTIL_57_IMPORTS(X)
+#else
+#define AVUTIL_57_IMPORTS(X) \
+	X(av_channel_layout_default) \
+	X(av_channel_layout_copy)
+#endif
+
 #define VISIT_AVUTIL_IMPORTS(X) \
+	AVUTIL_57_IMPORTS(X) \
 	X(av_frame_alloc) \
 	X(av_frame_get_buffer) \
 	X(av_frame_free) \
@@ -648,10 +657,15 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		const s32 sample_rate = SPU2::GetConsoleSampleRate();
 		s_audio_codec_context->codec_type = AVMEDIA_TYPE_AUDIO;
 		s_audio_codec_context->bit_rate = GSConfig.AudioCaptureBitrate * 1000;
-		s_audio_codec_context->channels = AUDIO_CHANNELS;
 		s_audio_codec_context->sample_fmt = AV_SAMPLE_FMT_S16;
 		s_audio_codec_context->sample_rate = sample_rate;
 		s_audio_codec_context->time_base = {1, sample_rate};
+#if LIBAVUTIL_VERSION_MAJOR < 57
+		s_audio_codec_context->channels = AUDIO_CHANNELS;
+		s_audio_codec_context->channel_layout = AV_CH_LAYOUT_STEREO;
+#else
+		wrap_av_channel_layout_default(&s_audio_codec_context->ch_layout, AUDIO_CHANNELS);
+#endif
 
 		bool supports_format = false;
 		for (const AVSampleFormat* p = acodec->sample_fmts; *p != AV_SAMPLE_FMT_NONE; p++)
@@ -689,8 +703,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			}
 		}
 
-		// TODO: Check channel layout support, this is different in v4.x and v5.x.
-		s_audio_codec_context->channel_layout = AV_CH_LAYOUT_STEREO;
+		// TODO: Check channel layout support
 
 		if (GSConfig.EnableAudioCaptureParameters)
 		{
@@ -738,9 +751,13 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		}
 
 		s_converted_audio_frame->format = s_audio_codec_context->sample_fmt;
+		s_converted_audio_frame->nb_samples = s_audio_frame_size;
+#if LIBAVUTIL_VERSION_MAJOR < 57
 		s_converted_audio_frame->channels = AUDIO_CHANNELS;
 		s_converted_audio_frame->channel_layout = s_audio_codec_context->channel_layout;
-		s_converted_audio_frame->nb_samples = s_audio_frame_size;
+#else
+		wrap_av_channel_layout_copy(&s_converted_audio_frame->ch_layout, &s_audio_codec_context->ch_layout);
+#endif
 		res = wrap_av_frame_get_buffer(s_converted_audio_frame, 0);
 		if (res < 0)
 		{
