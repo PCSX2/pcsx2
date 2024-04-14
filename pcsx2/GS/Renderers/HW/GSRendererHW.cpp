@@ -5233,7 +5233,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_prim_overlap = PrimitiveOverlap();
 
-	EmulateTextureShuffleAndFbmask(rt, tex);
+	if (rt)
+		EmulateTextureShuffleAndFbmask(rt, tex);
 
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
 
