@@ -12254,6 +12254,7 @@ SLED-50359:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLED-50439:
   name: "MX 2002 featuring Ricky Carmichael [Demo]"
   region: "PAL-E"
@@ -13861,6 +13862,7 @@ SLES-50358:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLES-50362:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-E"
@@ -32033,6 +32035,7 @@ SLPM-61008:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -32046,6 +32049,7 @@ SLPM-61010:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-61011:
   name: "Silent Hill 2 (Black Ribbon) [Video Trial]"
   region: "NTSC-J"
@@ -36487,6 +36491,7 @@ SLPM-65023:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-65024:
   name: バイオハザード コード:ベロニカ 完全版 [ディスク1/2]
   name-sort: ばいおはざーど こーど べろにか かんぜんばん [でぃすく1/2]
@@ -36561,6 +36566,7 @@ SLPM-65038:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-65039:
   name: 電車でGO!新幹線 山陽新幹線編
   name-sort: でんしゃでごーしんかんせん さんようしんかんせんへん
@@ -44922,6 +44928,7 @@ SLPM-66502:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-66503:
   name: METAL GEAR SOLID 2 SONS OF LIBERTY MEGA HITS!
   name-sort: めたるぎあそりっど2 さんずおぶりばてぃ [MEGA HITS!]
@@ -47861,6 +47868,7 @@ SLPM-67502:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-67503:
   name: "FIFA 2002"
   region: "NTSC-K"
@@ -48408,6 +48416,7 @@ SLPM-74230:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLPM-74231:
   name: 決戦III PlayStation 2 the Best
   name-sort: けっせん3 PlayStation 2 the Best
@@ -58274,6 +58283,7 @@ SLUS-20216:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
   patches:
     79B8A95F:
       content: |-
@@ -68020,6 +68030,7 @@ SLUS-29009:
   gsHWFixes:
     disablePartialInvalidation: 1 # Fixes corrupt textures.
     halfPixelOffset: 2 # Alleviates blur from upscaling.
+    pointListPalette: 1 # Fixes subtitles background when upscaling
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
