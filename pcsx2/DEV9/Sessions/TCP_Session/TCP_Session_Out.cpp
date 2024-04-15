@@ -168,7 +168,7 @@ namespace Sessions
 			endpoint.sin_family = AF_INET;
 			endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
 
-			ret = bind(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 			if (ret != 0)
 				Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
@@ -212,7 +212,7 @@ namespace Sessions
 		endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 		endpoint.sin_port = htons(destPort);
 
-		ret = connect(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+		ret = connect(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 		if (ret != 0)
 		{
