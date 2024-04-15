@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>698</width>
-    <height>740</height>
+    <height>494</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -167,15 +167,19 @@
       <string>Automatic Updater</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="1">
+       <widget class="QLabel" name="autoUpdateCurrentVersion">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Update Channel:</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="autoUpdateTag"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">
@@ -184,34 +188,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="autoUpdateCurrentVersion">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="autoUpdateTag"/>
       </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QCheckBox" name="autoUpdateEnabled">
-        <property name="text">
-         <string>Enable Automatic Update Check</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
         <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+         <widget class="QCheckBox" name="autoUpdateEnabled">
+          <property name="text">
+           <string>Enable Automatic Update Check</string>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="checkForUpdates">
