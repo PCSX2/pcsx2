@@ -123,6 +123,41 @@ void QtHost::SetStyleFromSettings()
 
 		qApp->setPalette(darkPalette);
 	}
+	else if (theme == "GreyMatter")
+	{
+		// Custom palette by KamFretoZ, A sleek and stylish gray
+		// that are meant to be easy on the eyes as the main color.
+		// Alternative dark theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor darkGray(46, 52, 64);
+		const QColor lighterGray(59, 66, 82);
+		const QColor gray(111, 111, 111);
+		const QColor blue(198, 238, 255);
+
+		QPalette darkPalette;
+		darkPalette.setColor(QPalette::Window, darkGray);
+		darkPalette.setColor(QPalette::WindowText, Qt::white);
+		darkPalette.setColor(QPalette::Base, lighterGray);
+		darkPalette.setColor(QPalette::AlternateBase, darkGray);
+		darkPalette.setColor(QPalette::ToolTipBase, darkGray);
+		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+		darkPalette.setColor(QPalette::Text, Qt::white);
+		darkPalette.setColor(QPalette::Button, lighterGray);
+		darkPalette.setColor(QPalette::ButtonText, Qt::white);
+		darkPalette.setColor(QPalette::Link, blue);
+		darkPalette.setColor(QPalette::Highlight, lighterGray.lighter());
+		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+		darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
+
+		darkPalette.setColor(QPalette::Active, QPalette::Button, lighterGray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.lighter());
+		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.lighter());
+		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray.lighter());
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+
+		qApp->setPalette(darkPalette);
+	}
 	else if (theme == "UntouchedLagoon")
 	{
 		// Custom palette by RedDevilus, Tame (Light/Washed out) Green as main color and Grayish Blue as complimentary.
@@ -294,6 +329,38 @@ void QtHost::SetStyleFromSettings()
 
 		qApp->setPalette(darkPalette);
 	}
+	else if (theme == "VioletAngelPurple")
+	{
+		// Custom palette by RedDevilus, Blue as main color and Purple as complimentary.
+		// Alternative dark theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor blackishblue(50, 25, 70);
+		const QColor darkerPurple(90, 30, 105);
+		const QColor nauticalPurple(110, 30, 125);
+
+		QPalette darkPalette;
+		darkPalette.setColor(QPalette::Window, blackishblue);
+		darkPalette.setColor(QPalette::WindowText, Qt::white);
+		darkPalette.setColor(QPalette::Base, nauticalPurple);
+		darkPalette.setColor(QPalette::AlternateBase, blackishblue);
+		darkPalette.setColor(QPalette::ToolTipBase, nauticalPurple);
+		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+		darkPalette.setColor(QPalette::Text, Qt::white);
+		darkPalette.setColor(QPalette::Button, nauticalPurple.darker());
+		darkPalette.setColor(QPalette::ButtonText, Qt::white);
+		darkPalette.setColor(QPalette::Link, darkerPurple.lighter());
+		darkPalette.setColor(QPalette::Highlight, darkerPurple.lighter());
+		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+		darkPalette.setColor(QPalette::Active, QPalette::Button, nauticalPurple.darker());
+		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkerPurple.lighter());
+		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkerPurple.lighter());
+		darkPalette.setColor(QPalette::Disabled, QPalette::Text, darkerPurple.darker());
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, nauticalPurple);
+
+		qApp->setPalette(darkPalette);
+	}
 	else if (theme == "CobaltSky")
 	{
 		// Custom palette by KamFretoZ, A soothing deep royal blue
@@ -327,38 +394,6 @@ void QtHost::SetStyleFromSettings()
 		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
 		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
 		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
-
-		qApp->setPalette(darkPalette);
-	}
-	else if (theme == "VioletAngelPurple")
-	{
-		// Custom palette by RedDevilus, Blue as main color and Purple as complimentary.
-		// Alternative dark theme.
-		qApp->setStyle(QStyleFactory::create("Fusion"));
-
-		const QColor blackishblue(50, 25, 70);
-		const QColor darkerPurple(90, 30, 105);
-		const QColor nauticalPurple(110, 30, 125);
-
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, blackishblue);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, nauticalPurple);
-		darkPalette.setColor(QPalette::AlternateBase, blackishblue);
-		darkPalette.setColor(QPalette::ToolTipBase, nauticalPurple);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, nauticalPurple.darker());
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::Highlight, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
-
-		darkPalette.setColor(QPalette::Active, QPalette::Button, nauticalPurple.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkerPurple.lighter());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, darkerPurple.darker());
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, nauticalPurple);
 
 		qApp->setPalette(darkPalette);
 	}
