@@ -1934,7 +1934,7 @@ bool ImGuiFullscreen::HorizontalMenuItem(GSTexture* icon, const char* title, con
 	const ImVec2 icon_pos = bb.Min + ImVec2((avail_width - icon_size) * 0.5f, 0.0f);
 
 	ImDrawList* dl = ImGui::GetWindowDrawList();
-	dl->AddImage(reinterpret_cast<ImTextureID>(icon), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
+	dl->AddImage(icon->GetNativeHandle(), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
 
 	ImFont* title_font = g_large_font;
 	const ImVec2 title_size = title_font->CalcTextSizeA(title_font->FontSize, avail_width, 0.0f, title);
