@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>500</height>
+    <height>482</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -274,14 +274,38 @@
       <string>Hard Disk Drive</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="0">
-       <widget class="QLabel" name="hddFileLabel">
+      <item row="1" column="2">
+       <widget class="QPushButton" name="hddBrowseFile">
         <property name="text">
-         <string>HDD File:</string>
+         <string>Browse</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="hddFile"/>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QCheckBox" name="hddEnabled">
+          <property name="text">
+           <string comment="HDD">Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="hddLBA48">
+          <property name="text">
+           <string>Enable 48-Bit LBA</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="1" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="hddSizeMinLabel">
@@ -319,15 +343,29 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QSpinBox" name="hddSizeSpinBox">
+          <property name="minimum">
+           <number>40</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="hddCreate">
+          <property name="text">
+           <string>Create Image</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
-      <item row="2" column="2">
-       <widget class="QSpinBox" name="hddSizeSpinBox">
-        <property name="minimum">
-         <number>40</number>
-        </property>
-        <property name="maximum">
-         <number>120</number>
+      <item row="1" column="0">
+       <widget class="QLabel" name="hddFileLabel">
+        <property name="text">
+         <string>HDD File:</string>
         </property>
        </widget>
       </item>
@@ -335,47 +373,6 @@
        <widget class="QLabel" name="hddSizeLabel">
         <property name="text">
          <string>HDD Size (GiB):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="hddEnabled">
-        <property name="text">
-         <string comment="HDD">Enabled</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="hddBrowseFile">
-        <property name="text">
-         <string>Browse</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="hddFile"/>
-      </item>
-      <item row="4" column="2">
-       <widget class="QPushButton" name="hddCreate">
-        <property name="text">
-         <string>Create Image</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="hddLBA48Label">
-        <property name="text">
-         <string>48-bit LBA:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QCheckBox" name="hddLBA48">
-        <property name="text">
-         <string>Enabled</string>
         </property>
        </widget>
       </item>
