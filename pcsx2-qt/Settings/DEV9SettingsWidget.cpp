@@ -336,6 +336,7 @@ void DEV9SettingsWidget::onEthDeviceTypeChanged(int index)
 			break;
 	}
 
+	m_ui.ethInterceptDHCPLabel->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	m_ui.ethInterceptDHCP->setEnabled((m_adapter_options & AdapterOptions::DHCP_ForcedOn) == AdapterOptions::None);
 	onEthDHCPInterceptChanged(m_ui.ethInterceptDHCP->checkState());
 }
