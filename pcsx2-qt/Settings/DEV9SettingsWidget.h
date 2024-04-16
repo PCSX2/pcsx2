@@ -52,6 +52,7 @@ protected:
 
 private:
 	void AddAdapter(const AdapterEntry& adapter);
+	void LoadAdapters();
 	void RefreshHostList();
 	int CountHostsConfig();
 	std::optional<std::vector<HostEntryUi>> ListHostsConfig();
@@ -69,6 +70,7 @@ private:
 	QStandardItemModel* m_ethHost_model;
 	QSortFilterProxyModel* m_ethHosts_proxy;
 
+	bool m_adaptersLoaded{false};
 	std::vector<Pcsx2Config::DEV9Options::NetApi> m_api_list;
 	std::vector<const char*> m_api_namelist;
 	std::vector<const char*> m_api_valuelist;
