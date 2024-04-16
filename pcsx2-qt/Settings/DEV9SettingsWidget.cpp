@@ -790,6 +790,7 @@ void DEV9SettingsWidget::UpdateHddSizeUIEnabled()
 	else
 		enableSizeUI = m_ui.hddFile->isEnabled();
 
+	m_ui.hddLBA48->setEnabled(enableSizeUI);
 	m_ui.hddSizeLabel->setEnabled(enableSizeUI);
 	m_ui.hddSizeSlider->setEnabled(enableSizeUI);
 	m_ui.hddSizeMaxLabel->setEnabled(enableSizeUI);
