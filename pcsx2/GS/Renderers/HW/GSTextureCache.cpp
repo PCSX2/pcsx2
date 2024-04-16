@@ -6510,6 +6510,12 @@ void GSTextureCache::AttachPaletteToSource(Source* s, u16 pal, bool need_gs_text
 	{
 		s->m_alpha_minmax = s->m_palette_obj->GetAlphaMinMax();
 		s->m_valid_alpha_minmax = true;
+
+		// Pretty unlikely, but if we know the RT's alpha, we can reduce the range of the palette to only the alpha's RT range.
+		if (s->m_TEX0.PSM == PSMT8H && s->m_from_target && s->m_from_target->HasValidAlpha())
+		{
+			s->m_alpha_minmax = s->m_palette_obj->GetAlphaMinMax(static_cast<u8>(s->m_from_target->m_alpha_min), static_cast<u8>(s->m_from_target->m_alpha_max));
+		}
 	}
 }
 
@@ -6777,6 +6783,12 @@ GSTextureCache::Palette::~Palette()
 	}
 
 	_aligned_free(m_clut);
+}
+
+std::pair<u8, u8> GSTextureCache::Palette::GetAlphaMinMax(u8 min_index, u8 max_index) const
+{
+	pxAssert(min_index <= max_index);
+	return GSGetRGBA8AlphaMinMax(m_clut + min_index, max_index - min_index + 1, 1, 0);
 }
 
 GSTexture* GSTextureCache::Palette::GetPaletteGSTexture()
