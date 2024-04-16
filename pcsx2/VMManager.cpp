@@ -2621,7 +2621,7 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	const bool reset_speed_limiter = (EmuConfig.EnableFastBootFastForward && IsFastBootInProgress());
 
 	Console.WriteLn(
-		Color_StrongGreen, fmt::format("ELF {} with entry point at 0x{} is executing.", s_elf_path, s_elf_entry_point));
+		Color_StrongGreen, fmt::format("ELF {} with entry point at 0x{:08X} is executing.", s_elf_path, s_elf_entry_point));
 	s_elf_executed = true;
 
 	if (reset_speed_limiter)
