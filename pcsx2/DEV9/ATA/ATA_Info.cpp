@@ -42,8 +42,8 @@ void ATA::CreateHDDinfo(u64 sizeSectors)
 	sizeSectors = std::min<u64>(sizeSectors, maxSize);
 
 	constexpr u16 sectorSize = 512;
-	DevCon.WriteLn("DEV9: HddSize : %i", sizeSectors * sectorSize / (1024 * 1024));
-	DevCon.WriteLn("DEV9: sizeSectors : %i", sizeSectors); // SizeSectors will keep 48-bit size
+	DevCon.WriteLn("DEV9: ATA: HddSize : %i", sizeSectors * sectorSize / (1024 * 1024));
+	DevCon.WriteLn("DEV9: ATA: sizeSectors : %i", sizeSectors); // SizeSectors will keep 48-bit size
 
 	memset(&identifyData, 0, sizeof(identifyData));
 	//Defualt CHS translation
@@ -399,6 +399,4 @@ void ATA::CreateHDDinfoCsum()
 
 	for (int i = 0; i < (512); i++)
 		counter += identifyData[i];
-
-	DevCon.WriteLn("DEV9: %i", counter);
 }

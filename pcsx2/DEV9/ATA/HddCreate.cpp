@@ -251,12 +251,12 @@ void HddCreate::WriteImage(const std::string& hddPath, u64 fileBytes, u64 zeroSi
 
 void HddCreate::SetFileProgress(u64 currentSize)
 {
-	Console.WriteLn(fmt::format("{} / {} Bytes", currentSize, neededSize).c_str());
+	Console.WriteLn(fmt::format("DEV9: HddCreate: {} / {} Bytes", currentSize, neededSize).c_str());
 }
 
 void HddCreate::SetError()
 {
-	Console.WriteLn("Failed to create HDD file");
+	Console.WriteLn("DEV9: HddCreate: Failed to create HDD file");
 }
 
 void HddCreate::SetCanceled()
