@@ -834,8 +834,8 @@ void DEV9SettingsWidget::showEvent(QShowEvent* event)
 	//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
 	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
 
-	//disconnect temporally to prevent saving a vaule already in the config file
-	disconnect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
+	//SignalBlocker to prevent saving a value already in the config file
+	QSignalBlocker sb(m_ui.ethDev);
 	for (int i = 0; m_api_namelist[i] != nullptr; i++)
 	{
 		if (value == m_api_valuelist[i])
@@ -844,7 +844,6 @@ void DEV9SettingsWidget::showEvent(QShowEvent* event)
 			break;
 		}
 	}
-	connect(m_ui.ethDev, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DEV9SettingsWidget::onEthDeviceChanged);
 }
 
 /*
