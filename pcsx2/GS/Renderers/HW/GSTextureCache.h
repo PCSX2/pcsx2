@@ -177,6 +177,7 @@ public:
 		~Palette();
 
 		__fi std::pair<u8, u8> GetAlphaMinMax() const { return m_alpha_minmax; }
+		std::pair<u8, u8> GetAlphaMinMax(u8 min_index, u8 max_index) const;
 
 		// Disable copy constructor and copy operator
 		Palette(const Palette&) = delete;
