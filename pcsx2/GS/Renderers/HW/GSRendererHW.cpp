@@ -2454,20 +2454,25 @@ void GSRendererHW::Draw()
 
 		GIFRegTEX0 FRAME_TEX0;
 		bool shuffle_target = false;
-		if (!no_rt && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16)
+		if (!no_rt && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16)
 		{
-			// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
-			FRAME_TEX0.U64 = 0;
-			FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
-			FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
-			FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
+			if (m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0)
+			{
+				// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
+				FRAME_TEX0.U64 = 0;
+				FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
+				FRAME_TEX0.TBW = m_cached_ctx.FRAME.FBW;
+				FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
 
-			GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(FRAME_TEX0, GSVector2i(m_vt.m_max.p.x, m_vt.m_max.p.y), GetTextureScaleFactor(), GSTextureCache::RenderTarget, false,
-				fm);
+				GSTextureCache::Target* tgt = g_texture_cache->LookupTarget(FRAME_TEX0, GSVector2i(m_vt.m_max.p.x, m_vt.m_max.p.y), GetTextureScaleFactor(), GSTextureCache::RenderTarget, false,
+					fm);
 
-			if (tgt)
-				shuffle_target = tgt->m_32_bits_fmt;
-			else
+				if (tgt)
+					shuffle_target = tgt->m_32_bits_fmt;
+
+				tgt = nullptr;
+			}
+			if (!shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16)
 			{
 				const GSVertex* v = &m_vertex.buff[0];
 
@@ -2480,8 +2485,6 @@ void GSRendererHW::Draw()
 
 				shuffle_target = shuffle_coords && draw_width == 8 && draw_width == read_width;
 			}
-
-			tgt = nullptr;
 		}
 		const bool possible_shuffle = !no_rt && (((shuffle_target && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) || (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && ((m_cached_ctx.TEX0.PSM & 0x6) || m_cached_ctx.FRAME.PSM != m_cached_ctx.TEX0.PSM))) || IsPossibleChannelShuffle());
 		const bool need_aem_color = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 24 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal == 0 && m_context->ALPHA.C == 0 && m_env.TEXA.AEM;
