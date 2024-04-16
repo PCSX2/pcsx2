@@ -940,12 +940,13 @@ std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height,
 	{
 		const u32 aligned_width = Common::AlignDownPow2(width, 4);
 		static constexpr const GSVector4i masks[3][2] = {
-			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0), GSVector4i::cxpr(0, 0, 0, 0xFFFFFFFF)},
-			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0, 0), GSVector4i::cxpr(0, 0, 0xFFFFFFFF, 0xFFFFFFFF)},
 			{GSVector4i::cxpr(0xFFFFFFFF, 0, 0, 0), GSVector4i::cxpr(0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF)},
+			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0, 0), GSVector4i::cxpr(0, 0, 0xFFFFFFFF, 0xFFFFFFFF)},
+			{GSVector4i::cxpr(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0), GSVector4i::cxpr(0, 0, 0, 0xFFFFFFFF)},
 		};
-		const GSVector4i last_mask_and = masks[(width & 3) - 1][0];
-		const GSVector4i last_mask_or = masks[(width & 3) - 1][1];
+		const u32 unaligned_pixels = width & 3;
+		const GSVector4i last_mask_and = masks[unaligned_pixels - 1][0];
+		const GSVector4i last_mask_or = masks[unaligned_pixels - 1][1];
 
 		for (u32 r = 0; r < height; r++)
 		{
@@ -958,7 +959,24 @@ std::pair<u8, u8> GSGetRGBA8AlphaMinMax(const void* data, u32 width, u32 height,
 				maxc = maxc.max_u32(v);
 			}
 
-			const GSVector4i v = GSVector4i::load<false>(rptr);
+			GSVector4i v;
+			u32 vu;
+			if (unaligned_pixels == 3)
+			{
+				v = GSVector4i::loadl(rptr);
+				std::memcpy(&vu, rptr + sizeof(u32) * 2, sizeof(vu));
+				v = v.insert32<2>(vu);
+			}
+			else if (unaligned_pixels == 2)
+			{
+				v = GSVector4i::loadl(rptr);
+			}
+			else
+			{
+				std::memcpy(&vu, rptr, sizeof(vu));
+				v = GSVector4i::load(vu);
+			}
+
 			minc = minc.min_u32(v | last_mask_or);
 			maxc = maxc.max_u32(v & last_mask_and);
 
