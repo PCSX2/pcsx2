@@ -3721,7 +3721,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 				"UserHacks_EstimateTextureRegion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("GPU Palette Conversion"),
 				FSUI_CSTR("When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU."),
-				"EmuCore/GS", "paltex", false);
+				"EmuCore/GS", "paltex", false, manual_hw_fixes);
 
 			MenuHeading(FSUI_CSTR("Upscaling Fixes"));
 			DrawIntListSetting(bsi, FSUI_CSTR("Half Pixel Offset"), FSUI_CSTR("Adjusts vertices relative to upscaling."), "EmuCore/GS",
