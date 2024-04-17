@@ -1004,18 +1004,19 @@ void SaveStateSelectorUI::Draw()
 				ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 		{
 			ImGui::SetCursorPosX(padding);
-			ImGui::BeginTable("table", 2);
+			if (ImGui::BeginTable("table", 2))
+			{
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(s_load_legend.c_str());
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(s_prev_legend.c_str());
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(s_save_legend.c_str());
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(s_next_legend.c_str());
 
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(s_load_legend.c_str());
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(s_prev_legend.c_str());
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(s_save_legend.c_str());
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(s_next_legend.c_str());
-
-			ImGui::EndTable();
+				ImGui::EndTable();
+			}
 		}
 		ImGui::EndChild();
 	}
