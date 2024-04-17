@@ -125,7 +125,7 @@ namespace Achievements
 	static std::string GetGameHash(const std::string& elf_path);
 	static void SetHardcoreMode(bool enabled, bool force_display_message);
 	static bool IsLoggedInOrLoggingIn();
-	static bool IsUnknownGame();
+	static bool CanEnableHardcoreMode();
 	static void ShowLoginSuccess(const rc_client_t* client);
 	static void IdentifyGame(u32 disc_crc, u32 crc);
 	static void BeginLoadGame();
@@ -510,7 +510,7 @@ void Achievements::UpdateSettings(const Pcsx2Config::AchievementsOptions& old_co
 		// Hardcore mode can only be enabled through reset (ResetChallengeMode()).
 		if (s_hardcore_mode && !EmuConfig.Achievements.HardcoreMode)
 		{
-			ResetHardcoreMode();
+			ResetHardcoreMode(false);
 		}
 		else if (!s_hardcore_mode && EmuConfig.Achievements.HardcoreMode)
 		{
@@ -1393,7 +1393,7 @@ void Achievements::DisableHardcoreMode()
 		SetHardcoreMode(false, true);
 }
 
-bool Achievements::ResetHardcoreMode()
+bool Achievements::ResetHardcoreMode(bool is_booting)
 {
 	if (!IsActive())
 		return false;
@@ -1407,7 +1407,10 @@ bool Achievements::ResetHardcoreMode()
 	// which gets called before ResetHardcoreMode().
 	const bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_load_game_request) &&
 									  EmuConfig.Achievements.HardcoreMode;
-	if (s_hardcore_mode == wanted_hardcore_mode || (wanted_hardcore_mode && IsUnknownGame()))
+	if (s_hardcore_mode == wanted_hardcore_mode)
+		return false;
+
+	if (!is_booting && wanted_hardcore_mode && !CanEnableHardcoreMode())
 		return false;
 
 	SetHardcoreMode(wanted_hardcore_mode, false);
@@ -1608,9 +1611,9 @@ bool Achievements::IsLoggedInOrLoggingIn()
 	return (rc_client_get_user_info(s_client) != nullptr || s_login_request);
 }
 
-bool Achievements::IsUnknownGame()
+bool Achievements::CanEnableHardcoreMode()
 {
-	return (s_game_id == 0 && !s_load_game_request);
+	return (s_load_game_request || s_has_achievements || s_has_leaderboards);
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)

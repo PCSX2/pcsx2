@@ -65,7 +65,7 @@ namespace Achievements
 	void GameChanged(u32 disc_crc, u32 crc);
 
 	/// Re-enables hardcode mode if it is enabled in the settings.
-	bool ResetHardcoreMode();
+	bool ResetHardcoreMode(bool is_booting);
 
 	/// Forces hardcore mode off until next reset.
 	void DisableHardcoreMode();
