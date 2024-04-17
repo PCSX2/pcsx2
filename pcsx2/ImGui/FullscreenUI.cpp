@@ -5289,7 +5289,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 	bool close_handled = false;
 	if (s_save_state_selector_open &&
-		ImGui::BeginChild("state_list", ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y), false, ImGuiWindowFlags_NavFlattened))
+		ImGui::BeginChild("state_list", ImVec2(io.DisplaySize.x, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - heading_size.y),
+			false, ImGuiWindowFlags_NavFlattened))
 	{
 		BeginMenuButtons();
 
