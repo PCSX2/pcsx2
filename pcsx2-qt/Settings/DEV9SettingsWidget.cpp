@@ -56,9 +56,8 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	// Eth Enabled
 	//////////////////////////////////////////////////////////////////////////
 	//Connect needs to be after BindWidgetToBoolSetting to ensure correct order of execution for disabling a per game setting
-	//but we then need to manually call onEthAutoChanged to update the UI on fist load
+	//we then need to manually call onEthAutoChanged to update the UI on fist load (done in show)
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethEnabled, "DEV9/Eth", "EthEnable", false);
-	onEthEnabledChanged(m_ui.ethEnabled->checkState());
 	connect(m_ui.ethEnabled, &QCheckBox::checkStateChanged, this, &DEV9SettingsWidget::onEthEnabledChanged);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -197,6 +196,10 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* dialog, QWidget* parent)
 void DEV9SettingsWidget::onEthEnabledChanged(Qt::CheckState state)
 {
 	const bool enabled = state == Qt::CheckState::PartiallyChecked ? Host::GetBaseBoolSettingValue("DEV9/Eth", "EthEnable", false) : state;
+
+	//Populate Eth Device Settings
+	if (enabled)
+		LoadAdapters();
 
 	m_ui.ethDevType->setEnabled(enabled);
 	m_ui.ethDevTypeLabel->setEnabled(enabled);
@@ -759,23 +762,29 @@ void DEV9SettingsWidget::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 
-	//Populate Eth Device Settings
-	LoadAdapters();
+	//Update the ethernet UI, as not done by constructor
+	if (m_firstShow)
+		onEthEnabledChanged(m_ui.ethEnabled->checkState());
 
-	//The API combobox dosn't set the EthApi field, that is performed by the device combobox (in addition to saving the device)
-	//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
-	const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
-
-	//SignalBlocker to prevent saving a value already in the config file
-	QSignalBlocker sb(m_ui.ethDev);
-	for (int i = 0; m_api_namelist[i] != nullptr; i++)
+	if (m_adaptersLoaded)
 	{
-		if (value == m_api_valuelist[i])
+		//The API combobox dosn't set the EthApi field, that is performed by the device combobox (in addition to saving the device)
+		//This means that this setting can get out of sync with true value, so revert to that if the ui is closed and opened
+		const std::string value = m_dialog->getStringValue("DEV9/Eth", "EthApi", Pcsx2Config::DEV9Options::NetApiNames[static_cast<int>(Pcsx2Config::DEV9Options::NetApi::Unset)]).value();
+
+		//SignalBlocker to prevent saving a value already in the config file
+		QSignalBlocker sb(m_ui.ethDev);
+		for (int i = 0; m_api_namelist[i] != nullptr; i++)
 		{
-			m_ui.ethDevType->setCurrentIndex(i);
-			break;
+			if (value == m_api_valuelist[i])
+			{
+				m_ui.ethDevType->setCurrentIndex(i);
+				break;
+			}
 		}
 	}
+
+	m_firstShow = false;
 }
 
 /*
