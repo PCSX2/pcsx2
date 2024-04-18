@@ -562,7 +562,7 @@ void DisassemblyFunction::load()
 		}
 
 		MIPSAnalyst::MipsOpcodeInfo opInfo = MIPSAnalyst::GetOpcodeInfo(cpu,funcPos);
-		u32 opAddress = funcPos;
+		//u32 opAddress = funcPos;
 		funcPos += 4;
 
 		// skip branches and their delay slots
@@ -572,6 +572,25 @@ void DisassemblyFunction::load()
 			continue;
 		}
 
+/*
+	The QT debugger doesn't follow the same logic as the disassembler
+	It _should_ follow the path of the disassembler, but instead it is naively reading the
+	disassembler output for every single instruction.
+	This causes issues disassembling:
+		0x1000 lui $t0, 0x1234
+		0x1004 ori $t0, $t0, 0x5678
+		0x1008 nop
+	Into:
+		0x1000 li $t0, 0x12345678
+		0x1004 li $t0, 0x12346789
+		0x1008 nop
+	Where it should be:
+		0x1000 li $t0, 0x12345678
+		0x1008 nop
+
+	As a quick remedy, I'm disabling the macro generation.
+*/
+#if 0
 		// lui
 		if (MIPS_GET_OP(opInfo.encodedOpcode) == 0x0F && funcPos < funcEnd && funcPos != nextData)
 		{
@@ -660,7 +679,7 @@ void DisassemblyFunction::load()
 				}
 			}
 		}
-
+#endif
 		// just a normal opcode
 	}
 
