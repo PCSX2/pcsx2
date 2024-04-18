@@ -2259,7 +2259,9 @@ void Achievements::DrawAchievementsWindow()
 
 	ImGui::SetNextWindowBgAlpha(alpha);
 
-	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
+	if (ImGuiFullscreen::BeginFullscreenWindow(
+			ImVec2(0.0f, heading_height),
+			ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
 			"achievements", background, 0.0f, 0.0f, 0))
 	{
 		static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
@@ -2687,7 +2689,9 @@ void Achievements::DrawLeaderboardsWindow()
 
 	if (!is_leaderboard_open)
 	{
-		if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
+		if (ImGuiFullscreen::BeginFullscreenWindow(
+				ImVec2(0.0f, heading_height),
+				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
 				"leaderboards", background, 0.0f, 0.0f, 0))
 		{
 			ImGuiFullscreen::BeginMenuButtons();
@@ -2705,7 +2709,9 @@ void Achievements::DrawLeaderboardsWindow()
 	}
 	else
 	{
-		if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, heading_height), ImVec2(display_size.x, display_size.y - heading_height),
+		if (ImGuiFullscreen::BeginFullscreenWindow(
+				ImVec2(0.0f, heading_height),
+				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
 				"leaderboard", background, 0.0f, 0.0f, 0))
 		{
 			ImGuiFullscreen::BeginMenuButtons();
