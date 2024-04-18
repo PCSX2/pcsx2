@@ -1200,6 +1200,9 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			float max_color = max(max(Color.r, Color.g), Color.b);
 			float color_compensate = 255.0f / max(128.0f, max_color);
 			Color.rgb *= vec3(color_compensate);
+		#elif PS_BLEND_HW == 4
+			// Needed for Cd * (1 - Ad)
+			Color.rgb = vec3(128.0f);
 		#endif
 	#endif
 }
