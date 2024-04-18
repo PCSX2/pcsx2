@@ -4185,6 +4185,17 @@ SCED-55120:
 SCED-55432:
   name: "Buzz! Junior - Ace Racers [Demo]"
   region: "PAL-M15"
+SCES-00000:
+  name: "Ico"
+  region: "PAL-M5"
+  compat: 5
+  clampModes:
+    eeClampMode: 2 # Otherwise freezes in various spots, check full intro.
+    vuClampMode: 1 # Otherwise camera does not focus correctly on main character.
+  gsHWFixes:
+    mipmap: 1
+    halfPixelOffset: 1 # Fixes effect misalignment.
+    moveHandler: "MV_Ico" # Fixes depth buffer post-processing.
 SCES-50000:
   name: "Ridge Racer V"
   region: "PAL-M5"
