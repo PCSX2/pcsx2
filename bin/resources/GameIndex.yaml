@@ -54074,8 +54074,6 @@ SLPS-25529:
   name-sort: うるとらまん Fighting Evolution Rebirth
   name-en: "Ultraman Fighting Evolution - Rebirth"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_UltramanFightingEvolution"
 SLPS-25530:
   name: 餓狼伝 Breakblow
   name-sort: がろうでん Breakblow
@@ -55667,8 +55665,6 @@ SLPS-25800:
   name-sort: うるとらまん Fighting Evolution Rebirth [ばんぷれすとべすと]
   name-en: "Ultraman Fighting Evolution - Rebirth [Banpresto Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    getSkipCount: "GSC_UltramanFightingEvolution"
 SLPS-25801:
   name: 今日からマ王！ 眞マ国の休日
   name-sort: きょうからまおう しんまこくのきゅうじつ
