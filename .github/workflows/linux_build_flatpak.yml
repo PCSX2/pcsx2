@@ -49,7 +49,7 @@ jobs:
     name: ${{ inputs.jobName }}
     runs-on: ${{ inputs.os }}
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.6
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
       options: --privileged
     timeout-minutes: 60
 
