@@ -484,19 +484,6 @@ bool GSHwHack::GSC_SakuraWarsSoLongMyLove(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && RTME && RFBP == 0x2a00 && RFPSM == PSMZ24 && RTBP0 == 0x1c00 && RTPSM == PSMZ24)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 5; // blur
-		}
-	}
-
-	return true;
-}
 
 bool GSHwHack::GSC_TalesofSymphonia(GSRendererHW& r, int& skip)
 {
@@ -1498,9 +1485,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 	// Texture shuffle
 	CRC_F(GSC_DeathByDegreesTekkenNinaWilliams), // + Upscaling issues
 	CRC_F(GSC_BigMuthaTruckers),
-
-	// Upscaling hacks
-	CRC_F(GSC_UltramanFightingEvolution),
 
 	// Accurate Blending
 	CRC_F(GSC_GetawayGames),
