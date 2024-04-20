@@ -3058,6 +3058,10 @@ void GSRendererHW::Draw()
 			ds->ResizeTexture(new_w, new_h);
 	}
 
+	bool skip_draw = false;
+	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear)
+		skip_draw = TryTargetClear(rt, ds, preserve_rt_color, preserve_depth);
+
 	if (rt)
 	{
 		if (m_texture_shuffle || m_channel_shuffle || (!rt->m_dirty.empty() && !rt->m_dirty.GetTotalRect(rt->m_TEX0, rt->m_unscaled_size).rintersect(m_r).rempty()))
@@ -3137,10 +3141,6 @@ void GSRendererHW::Draw()
 		CleanupDraw(true);
 		return;
 	}
-
-	bool skip_draw = false;
-	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear)
-		skip_draw = TryTargetClear(rt, ds, preserve_rt_color, preserve_depth);
 
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
 	// Note: first hack corrects both position and texture coordinate
@@ -6583,6 +6583,7 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 			}
 
 			g_gs_device->ClearRenderTarget(rt->m_texture, clear_c);
+			rt->m_dirty.clear();
 
 			if (has_alpha)
 			{
@@ -6612,6 +6613,7 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 			const float d = static_cast<float>(z) * 0x1p-32f;
 			GL_INS("TryTargetClear(): DS at %x <= %f", ds->m_TEX0.TBP0, d);
 			g_gs_device->ClearDepth(ds->m_texture, d);
+			ds->m_dirty.clear();
 			ds->m_alpha_max = z >> 24;
 			ds->m_alpha_min = z >> 24;
 
