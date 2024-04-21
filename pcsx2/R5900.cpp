@@ -80,6 +80,7 @@ void cpuReset()
 
 	AllowParams1 = !VMManager::Internal::IsFastBootInProgress();
 	AllowParams2 = !VMManager::Internal::IsFastBootInProgress();
+	ParamsRead = false;
 
 	g_eeloadMain = 0;
 	g_eeloadExec = 0;
