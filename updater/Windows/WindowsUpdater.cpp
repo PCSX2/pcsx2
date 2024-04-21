@@ -488,7 +488,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (!updater.CommitUpdate())
 	{
 		progress.ModalError(
-			"Failed to commit update. Your installation may be corrupted, please re-download a fresh version from GitHub.");
+			"Failed to commit update. Your installation may be corrupted, please re-download a fresh version from pcsx2.net.");
 		return 1;
 	}
 
