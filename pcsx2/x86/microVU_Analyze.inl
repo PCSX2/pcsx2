@@ -228,7 +228,7 @@ __fi void mVUanalyzeIALU2(mV, int Is, int It)
 __fi void mVUanalyzeIADDI(mV, int Is, int It, s16 imm)
 {
 	mVUanalyzeIALU2(mVU, Is, It);
-	if (!Is)
+	if (!Is && !EmuConfig.Gamefixes.IbitHack)
 	{
 		setConstReg(It, imm);
 	}
