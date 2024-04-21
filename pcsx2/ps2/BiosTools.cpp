@@ -7,6 +7,7 @@
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+#include "CDVD/CDVD.h"
 
 #include "Common.h"
 #include "BiosTools.h"
@@ -36,6 +37,9 @@ static_assert(sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 b
 u32 BiosVersion;
 u32 BiosChecksum;
 u32 BiosRegion;
+ConfigParam configParams1;
+Config2Param configParams2;
+bool ParamsRead;
 bool NoOSD;
 bool AllowParams1;
 bool AllowParams2;
@@ -45,6 +49,29 @@ std::string BiosSerial;
 std::string BiosPath;
 BiosDebugInformation CurrentBiosInformation;
 std::vector<u8> BiosRom;
+
+void ReadOSDConfigParames()
+{
+	if (ParamsRead)
+		return;
+
+	ParamsRead = true;
+
+	u8 params[16];
+	cdvdReadLanguageParams(params);
+
+	configParams1.UC[0] = params[1] & 0x1F; // SPDIF, Screen mode, RGB/Comp, Jap/Eng Switch (Early bios).
+	configParams1.ps1drvConfig = params[0]; // PS1 Mode Settings.
+	configParams1.version = (params[2] & 0xE0) >> 5; // OSD Ver (Not sure but best guess).
+	configParams1.language = params[2] & 0x1F; // Language.
+	configParams1.timezoneOffset = params[4] | ((u32)(params[3] & 0x7) << 8);  // Timezone offset in minutes.
+
+	// Region settings for time/date and extended language
+	configParams2.UC[1] = ((u32)params[3] & 0x78) << 1; // Daylight Savings, 24hr clock, Date format
+	// FIXME: format, version and language are set manually by the bios. Not sure if any game needs them, but it seems to set version to 2 and duplicate the language value.
+	configParams2.version = 2;
+	configParams2.language = configParams1.language;
+}
 
 static bool LoadBiosVersion(std::FILE* fp, u32& version, std::string& description, u32& region, std::string& zone, std::string& serial)
 {
