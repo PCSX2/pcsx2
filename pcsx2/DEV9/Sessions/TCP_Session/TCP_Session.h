@@ -32,7 +32,7 @@ namespace Sessions
 			Closing_ClosedByPS2ThenRemote_WaitingForAck,
 			Closing_ClosedByRemote,
 			Closing_ClosedByRemoteThenPS2_WaitingForAck,
-			CloseCompletedFlushBuffer, //Packets in recvBuff to send
+			CloseCompletedFlushBuffer, // Send any remaining packets in recvBuff
 			CloseCompleted,
 		};
 		enum struct NumCheckResult
@@ -55,17 +55,17 @@ namespace Sessions
 		u16 srcPort = 0;
 		u16 destPort = 0;
 
-		u16 maxSegmentSize = 1460; //Accesed By Both In and Out Threads, but set only on Connect Thread
+		u16 maxSegmentSize = 1460; // Accesed by both in and out threads, but set only on connect thread
 		int windowScale = 0;
-		std::atomic<int> windowSize{1460}; //Make atomic instead
+		std::atomic<int> windowSize{1460};
 
-		u32 lastRecivedTimeStamp; //Accesed By Both In and Out Threads
-		std::chrono::steady_clock::time_point timeStampStart; //Set By In on connect, read by In and Out Threads, unsure as to correct C++ type
-		bool sendTimeStamps = false; //Accesed By Out Thread Only
+		u32 lastRecivedTimeStamp; // Accesed by both in and out threads
+		std::chrono::steady_clock::time_point timeStampStart; // Set by in thread on connect, read by in and out threads
+		bool sendTimeStamps = false; // Accesed by out thread only
 
 		const int receivedPS2SeqNumberCount = 5;
-		u32 expectedSeqNumber; //Accesed By Out Thread Only
-		std::vector<u32> receivedPS2SeqNumbers; //Accesed By Out Thread Only
+		u32 expectedSeqNumber; // Accesed by out thread only
+		std::vector<u32> receivedPS2SeqNumbers; // Accesed by out thread only
 
 		std::mutex myNumberSentry;
 		const int oldMyNumCount = 64;
@@ -84,8 +84,7 @@ namespace Sessions
 		virtual ~TCP_Session();
 
 	private:
-		//Async stuff
-
+		// Async functions
 		void PushRecvBuff(PacketReader::IP::TCP::TCP_Packet* tcp);
 		PacketReader::IP::TCP::TCP_Packet* PopRecvBuff();
 
@@ -99,11 +98,12 @@ namespace Sessions
 
 		NumCheckResult CheckRepeatSYNNumbers(PacketReader::IP::TCP::TCP_Packet* tcp);
 		NumCheckResult CheckNumbers(PacketReader::IP::TCP::TCP_Packet* tcp, bool rejectOldSeq = false);
-		s32 GetDelta(u32 a, u32 b); //Returns a - b
-		//Returns true if errored
+		// Returns a - b, accounting for overflow
+		s32 GetDelta(u32 a, u32 b);
+		// Returns true if errored
 		bool ValidateEmptyPacket(PacketReader::IP::TCP::TCP_Packet* tcp, bool ignoreOld = true);
 
-		//PS2 sent SYN
+		// PS2 sent SYN
 		PacketReader::IP::TCP::TCP_Packet* ConnectTCPComplete(bool success);
 		bool SendConnect(PacketReader::IP::TCP::TCP_Packet* tcp);
 		bool SendConnected(PacketReader::IP::TCP::TCP_Packet* tcp);
@@ -111,33 +111,35 @@ namespace Sessions
 		bool SendData(PacketReader::IP::TCP::TCP_Packet* tcp);
 		bool SendNoData(PacketReader::IP::TCP::TCP_Packet* tcp);
 
-		//On Close by PS2
-		//S1: PS2 Sends FIN+ACK
-		//S2: CloseByPS2Stage1_2 sends ACK, state set to Closing_ClosedByPS2
-		//S3: When server closes socket, we send FIN in CloseByPS2Stage3
-		//and set state to Closing_ClosedByPS2ThenRemote_WaitingForAck
-		//S4: PS2 then Sends ACK
-
+		/*
+		 * On close by PS2
+		 * S1: PS2 Sends FIN+ACK
+		 * S2: CloseByPS2Stage1_2 sends ACK, state set to Closing_ClosedByPS2
+		 * S3: When server closes socket, we send FIN in CloseByPS2Stage3
+		 * and set state to Closing_ClosedByPS2ThenRemote_WaitingForAck
+		 * S4: PS2 then Sends ACK
+		 */
 		bool CloseByPS2Stage1_2(PacketReader::IP::TCP::TCP_Packet* tcp);
 		PacketReader::IP::TCP::TCP_Packet* CloseByPS2Stage3();
 		bool CloseByPS2Stage4(PacketReader::IP::TCP::TCP_Packet* tcp);
 
-		//On Close By Server
-		//S1: CloseByRemoteStage1 sends FIN+ACK, state set to Closing_ClosedByRemote
-		//S2: PS2 Will then sends ACK, this is only checked after stage4
-		//S3: PS2 Will send FIN, possible in the previous ACK packet
-		//S4: CloseByRemoteStage3_4 sends ACK, state set to
-		//Closing_ClosedByRemoteThenPS2_WaitingForAck
-		//We Then Check if S3 has been compleated
-
+		/*
+		 * On close By Server
+		 * S1: CloseByRemoteStage1 sends FIN+ACK, state set to Closing_ClosedByRemote
+		 * S2: PS2 Will then sends ACK, this is only checked after stage4
+		 * S3: PS2 Will send FIN, possible in the previous ACK packet
+		 * S4: CloseByRemoteStage3_4 sends ACK, state set to
+		 * Closing_ClosedByRemoteThenPS2_WaitingForAck
+		 * we then check if S3 has been completed
+		 */
 		PacketReader::IP::TCP::TCP_Packet* CloseByRemoteStage1();
 		bool CloseByRemoteStage2_ButAfter4(PacketReader::IP::TCP::TCP_Packet* tcp);
 		bool CloseByRemoteStage3_4(PacketReader::IP::TCP::TCP_Packet* tcp);
 
-		//Error on sending data
+		// Error on sending data
 		void CloseByRemoteRST();
 
-		//Returned TCP_Packet Takes ownership of data
+		// Returned TCP_Packet takes ownership of data
 		PacketReader::IP::TCP::TCP_Packet* CreateBasePacket(PacketReader::PayloadData* data = nullptr);
 
 		void CloseSocket();

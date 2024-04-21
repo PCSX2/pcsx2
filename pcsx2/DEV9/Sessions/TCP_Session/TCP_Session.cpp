@@ -110,7 +110,7 @@ namespace Sessions
 
 		TCP_Packet* ret = new TCP_Packet(data);
 
-		//and now to setup THE ENTIRE THING
+		// Setup common packet infomation
 		ret->sourcePort = destPort;
 		ret->destinationPort = srcPort;
 
@@ -149,7 +149,6 @@ namespace Sessions
 
 	void TCP_Session::Reset()
 	{
-		//CloseSocket();
 		RaiseEventConnectionClosed();
 	}
 
@@ -157,7 +156,7 @@ namespace Sessions
 	{
 		CloseSocket();
 
-		//Clear out _recvBuff
+		// Clear out _recvBuff
 		while (!_recvBuff.IsQueueEmpty())
 		{
 			TCP_Packet* retPay;
