@@ -46,7 +46,7 @@ namespace Sessions
 			if (client != INVALID_SOCKET)
 				CloseSocket();
 			else
-				Console.Error("DEV9: TCP: RESET CLOSED CONNECTION");
+				Console.Error("DEV9: TCP: Reset closed connection");
 			//PS2 sent RST
 			//clearly not expecting
 			//more data
@@ -62,7 +62,7 @@ namespace Sessions
 			case TCP_State::SendingSYN_ACK:
 				if (CheckRepeatSYNNumbers(&tcp) == NumCheckResult::Bad)
 				{
-					Console.Error("DEV9: TCP: Invalid Repeated SYN (SendingSYN_ACK)");
+					Console.Error("DEV9: TCP: Invalid repeated SYN (SendingSYN_ACK)");
 					return false;
 				}
 				return true; //Ignore reconnect attempts while we are still attempting connection
@@ -91,7 +91,7 @@ namespace Sessions
 				return false;
 			default:
 				CloseByRemoteRST();
-				Console.Error("DEV9: TCP: Invalid TCP State");
+				Console.Error("DEV9: TCP: Invalid TCP state");
 				return true;
 		}
 	}
@@ -106,7 +106,7 @@ namespace Sessions
 		if (tcp->GetSYN() == false)
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Attempt To Send Data On Non Connected Connection");
+			Console.Error("DEV9: TCP: Attempt to send data to a non connected connection");
 			return true;
 		}
 		expectedSeqNumber = tcp->sequenceNumber + 1;
@@ -130,7 +130,7 @@ namespace Sessions
 				case 3: //WindowScale
 					windowScale = static_cast<TCPopWS*>(tcp->options[i])->windowScale;
 					if (windowScale > 0)
-						Console.Error("DEV9: TCP: Non-Zero WindowScale Option");
+						Console.Error("DEV9: TCP: Non-zero window scale option");
 					break;
 				case 8: //TimeStamp
 					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
@@ -138,7 +138,7 @@ namespace Sessions
 					timeStampStart = std::chrono::steady_clock::now();
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got unknown option %d", tcp->options[i]->GetCode());
 					break;
 			}
 		}
@@ -188,7 +188,7 @@ namespace Sessions
 #endif
 
 		if (ret != 0)
-			Console.Error("DEV9: TCP: Failed to set non blocking. Error: %d",
+			Console.Error("DEV9: TCP: Failed to set non-blocking. Error: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
@@ -243,7 +243,7 @@ namespace Sessions
 			if (CheckRepeatSYNNumbers(tcp) == NumCheckResult::Bad)
 			{
 				CloseByRemoteRST();
-				Console.Error("DEV9: TCP: Invalid Repeated SYN (SentSYN_ACK)");
+				Console.Error("DEV9: TCP: Invalid repeated SYN (SentSYN_ACK)");
 				return true;
 			}
 			return true; //Ignore reconnect attempts while we are still attempting connection
@@ -252,7 +252,7 @@ namespace Sessions
 		if (Result == NumCheckResult::Bad)
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Bad TCP Numbers Received");
+			Console.Error("DEV9: TCP: Bad TCP numbers received");
 			return true;
 		}
 
@@ -267,7 +267,7 @@ namespace Sessions
 					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got unknown option %d", tcp->options[i]->GetCode());
 					break;
 			}
 		}
@@ -281,13 +281,13 @@ namespace Sessions
 		if (tcp->GetSYN())
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Attempt to Connect to an open Port");
+			Console.Error("DEV9: TCP: Attempt to connect to an existing connection");
 			return true;
 		}
 		if (tcp->GetURG())
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Urgent Data Not Supported");
+			Console.Error("DEV9: TCP: Urgent data not supported");
 			return true;
 		}
 		for (size_t i = 0; i < tcp->options.size(); i++)
@@ -301,7 +301,7 @@ namespace Sessions
 					lastRecivedTimeStamp = static_cast<TCPopTS*>(tcp->options[i])->senderTimeStamp;
 					break;
 				default:
-					Console.Error("DEV9: TCP: Got Unknown Option %d", tcp->options[i]->GetCode());
+					Console.Error("DEV9: TCP: Got unknown option %d", tcp->options[i]->GetCode());
 					break;
 			}
 		}
@@ -313,7 +313,7 @@ namespace Sessions
 		if (Result == NumCheckResult::Bad)
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Bad TCP Numbers Received");
+			Console.Error("DEV9: TCP: Bad TCP numbers received");
 			return true;
 		}
 		if (tcp->GetPayload()->GetLength() != 0)
@@ -323,8 +323,8 @@ namespace Sessions
 			pxAssert(delta >= 0);
 			//if (Result == NumCheckResult::OldSeq)
 			//{
-			//	DevCon.WriteLn("[PS2] New Data Offset: %d bytes", delta);
-			//	DevCon.WriteLn("[PS2] New Data Length: %d bytes", tcp->GetPayload()->GetLength() - delta);
+			//	DevCon.WriteLn("[PS2] New data offset: %d bytes", delta);
+			//	DevCon.WriteLn("[PS2] New data length: %d bytes", tcp->GetPayload()->GetLength() - delta);
 			//}
 			if (tcp->GetPayload()->GetLength() - delta > 0)
 			{
@@ -353,7 +353,7 @@ namespace Sessions
 						else
 						{
 							CloseByRemoteRST();
-							Console.Error("DEV9: TCP: Send Error: %d", err);
+							Console.Error("DEV9: TCP: Send error: %d", err);
 							return true;
 						}
 					}
@@ -365,7 +365,7 @@ namespace Sessions
 				//Done send
 			}
 			//ACK data
-			//DevCon.WriteLn("[SRV] ACK Data: %u", expectedSeqNumber);
+			//DevCon.WriteLn("[SRV] ACK data: %u", expectedSeqNumber);
 			TCP_Packet* ret = CreateBasePacket();
 			ret->SetACK(true);
 
@@ -379,7 +379,7 @@ namespace Sessions
 		if (tcp->GetSYN() == true)
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Attempt to Connect to an open Port");
+			Console.Error("DEV9: TCP: Attempt to connect to an existing connection");
 			return true;
 		}
 		for (size_t i = 0; i < tcp->options.size(); i++)
@@ -406,11 +406,11 @@ namespace Sessions
 	TCP_Session::NumCheckResult TCP_Session::CheckRepeatSYNNumbers(TCP_Packet* tcp)
 	{
 		//DevCon.WriteLn("DEV9: TCP: CHECK_REPEAT_SYN_NUMBERS");
-		//DevCon.WriteLn("DEV9: TCP: [SRV] CurrAckNumber = %u [PS2] Seq Number = %u", expectedSeqNumber, tcp->sequenceNumber);
+		//DevCon.WriteLn("DEV9: TCP: [SRV] CurrAckNumber = %u [PS2] Seq number = %u", expectedSeqNumber, tcp->sequenceNumber);
 
 		if (tcp->sequenceNumber != expectedSeqNumber - 1)
 		{
-			Console.Error("DEV9: TCP: [PS2] Sent Unexpected Sequence Number From Repeated SYN Packet, Got %u Expected %u", tcp->sequenceNumber, (expectedSeqNumber - 1));
+			Console.Error("DEV9: TCP: [PS2] Sent unexpected sequence number from repeated SYN packet, got %u expected %u", tcp->sequenceNumber, (expectedSeqNumber - 1));
 			return NumCheckResult::Bad;
 		}
 		return NumCheckResult::OK;
@@ -423,24 +423,24 @@ namespace Sessions
 		std::tie(seqNum, oldSeqNums) = GetAllMyNumbers();
 
 		//DevCon.WriteLn("DEV9: TCP: CHECK_NUMBERS");
-		//DevCon.WriteLn("DEV9: TCP: [SRV] CurrSeqNumber = %u [PS2] Ack Number = %u", seqNum, tcp->acknowledgementNumber);
-		//DevCon.WriteLn("DEV9: TCP: [SRV] CurrAckNumber = %u [PS2] Seq Number = %u", expectedSeqNumber, tcp->sequenceNumber);
-		//DevCon.WriteLn("DEV9: TCP: [PS2] Data Length = %u",  tcp->GetPayload()->GetLength());
+		//DevCon.WriteLn("DEV9: TCP: [SRV] CurrSeqNumber = %u [PS2] Ack number = %u", seqNum, tcp->acknowledgementNumber);
+		//DevCon.WriteLn("DEV9: TCP: [SRV] CurrAckNumber = %u [PS2] Seq number = %u", expectedSeqNumber, tcp->sequenceNumber);
+		//DevCon.WriteLn("DEV9: TCP: [PS2] Data length = %u",  tcp->GetPayload()->GetLength());
 
 		if (tcp->acknowledgementNumber != seqNum)
 		{
-			//DevCon.WriteLn("DEV9: TCP: [PS2] Sent Outdated Acknowledgement Number, Got %u Expected %u", tcp->acknowledgementNumber, seqNum);
+			//DevCon.WriteLn("DEV9: TCP: [PS2] Sent outdated acknowledgement number, got %u expected %u", tcp->acknowledgementNumber, seqNum);
 
 			//Check if oldSeqNums contains tcp->acknowledgementNumber
 			if (std::find(oldSeqNums.begin(), oldSeqNums.end(), tcp->acknowledgementNumber) == oldSeqNums.end())
 			{
-				Console.Error("DEV9: TCP: [PS2] Sent Unexpected Acknowledgement Number, did not Match Old Numbers, Got %u Expected %u", tcp->acknowledgementNumber, seqNum);
+				Console.Error("DEV9: TCP: [PS2] Sent unexpected acknowledgement number, did not match old numbers, got %u expected %u", tcp->acknowledgementNumber, seqNum);
 				return NumCheckResult::Bad;
 			}
 		}
 		else
 		{
-			//DevCon.WriteLn("[PS2] CurrSeqNumber Acknowleged By PS2");
+			//DevCon.WriteLn("[PS2] CurrSeqNumber acknowledged by PS2");
 			myNumberACKed.store(true);
 		}
 
@@ -450,12 +450,12 @@ namespace Sessions
 		{
 			if (rejectOldSeq)
 			{
-				Console.Error("DEV9: TCP: [PS2] Sent Unexpected Sequence Number, Got %u Expected %u", tcp->sequenceNumber, expectedSeqNumber);
+				Console.Error("DEV9: TCP: [PS2] Sent unexpected sequence number, got %u expected %u", tcp->sequenceNumber, expectedSeqNumber);
 				return NumCheckResult::Bad;
 			} 
 			else if (tcp->GetPayload()->GetLength() == 0)
 			{
-				Console.Error("DEV9: TCP: [PS2] Sent Unexpected Sequence Number From ACK Packet, Got %u Expected %u", tcp->sequenceNumber, expectedSeqNumber);
+				Console.Error("DEV9: TCP: [PS2] Sent unexpected sequence number in a empty packet, got %u expected %u", tcp->sequenceNumber, expectedSeqNumber);
 				return NumCheckResult::OldSeq;
 			}
 			else
@@ -463,12 +463,12 @@ namespace Sessions
 				//Check if receivedPS2SeqNumbers contains tcp->sequenceNumber
 				if (std::find(receivedPS2SeqNumbers.begin(), receivedPS2SeqNumbers.end(), tcp->sequenceNumber) == receivedPS2SeqNumbers.end())
 				{
-					Console.Error("DEV9: TCP: [PS2] Sent an Old Seq Number on an Data packet, Got %u Expected %u", tcp->sequenceNumber, expectedSeqNumber);
+					Console.Error("DEV9: TCP: [PS2] Sent outdated sequence number in an data packet, got %u expected %u", tcp->sequenceNumber, expectedSeqNumber);
 					return NumCheckResult::OldSeq;
 				}
 				else
 				{
-					Console.Error("DEV9: TCP: [PS2] Sent Unexpected Sequence Number From Data Packet, Got %u Expected %u", tcp->sequenceNumber, expectedSeqNumber);
+					Console.Error("DEV9: TCP: [PS2] Sent unexpected sequence number in a data packet, got %u expected %u", tcp->sequenceNumber, expectedSeqNumber);
 					return NumCheckResult::Bad;
 				}
 			}
@@ -482,7 +482,7 @@ namespace Sessions
 		if (ResultFIN == NumCheckResult::Bad)
 		{
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Bad TCP Numbers Received");
+			Console.Error("DEV9: TCP: Bad TCP numbers received");
 			return true;
 		}
 		if (tcp->GetPayload()->GetLength() > 0)
@@ -494,7 +494,7 @@ namespace Sessions
 				return false;
 
 			CloseByRemoteRST();
-			Console.Error("DEV9: TCP: Invalid Packet, Packet Has Data");
+			Console.Error("DEV9: TCP: Invalid packet, packet has data");
 			return true;
 		}
 		return false;
@@ -516,7 +516,7 @@ namespace Sessions
 
 		const int result = shutdown(client, SD_SEND);
 		if (result == SOCKET_ERROR)
-			Console.Error("DEV9: TCP: Shutdown SD_SEND Error: %d",
+			Console.Error("DEV9: TCP: Shutdown SD_SEND error: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
@@ -536,7 +536,7 @@ namespace Sessions
 	bool TCP_Session::CloseByPS2Stage4(TCP_Packet* tcp)
 	{
 		//Close Part 4, Receive ACK from PS2
-		//Console.WriteLn("DEV9: TCP: Completed Close By PS2");
+		//Console.WriteLn("DEV9: TCP: Completed close by PS2");
 
 		if (ValidateEmptyPacket(tcp))
 			return true;
@@ -555,7 +555,7 @@ namespace Sessions
 
 	bool TCP_Session::CloseByRemoteStage2_ButAfter4(TCP_Packet* tcp)
 	{
-		//Console.WriteLn("DEV9: TCP: Completed Close By PS2");
+		//Console.WriteLn("DEV9: TCP: Completed close by PS2");
 
 		if (ValidateEmptyPacket(tcp))
 			return true;
@@ -583,7 +583,7 @@ namespace Sessions
 
 		int result = shutdown(client, SD_SEND);
 		if (result == SOCKET_ERROR)
-			Console.Error("DEV9: TCP: Shutdown SD_SEND Error: %d",
+			Console.Error("DEV9: TCP: Shutdown SD_SEND error: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
