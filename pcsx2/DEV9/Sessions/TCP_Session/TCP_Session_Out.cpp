@@ -335,7 +335,7 @@ namespace Sessions
 				PayloadPtr* payload = static_cast<PayloadPtr*>(tcp->GetPayload());
 				while (sent != payload->GetLength())
 				{
-					int ret = send(client, reinterpret_cast<const char*>(&payload->data[sent]), payload->GetLength() - sent, 0);
+					const int ret = send(client, reinterpret_cast<const char*>(&payload->data[sent]), payload->GetLength() - sent, 0);
 
 					if (ret == SOCKET_ERROR)
 					{
@@ -475,7 +475,7 @@ namespace Sessions
 	}
 	bool TCP_Session::ValidateEmptyPacket(TCP_Packet* tcp, bool ignoreOld)
 	{
-		NumCheckResult ResultFIN = CheckNumbers(tcp, !ignoreOld);
+		const NumCheckResult ResultFIN = CheckNumbers(tcp, !ignoreOld);
 		if (ResultFIN == NumCheckResult::Bad)
 		{
 			CloseByRemoteRST();
@@ -578,7 +578,7 @@ namespace Sessions
 		receivedPS2SeqNumbers.push_back(expectedSeqNumber);
 		expectedSeqNumber += 1;
 
-		int result = shutdown(client, SD_SEND);
+		const int result = shutdown(client, SD_SEND);
 		if (result == SOCKET_ERROR)
 			Console.Error("DEV9: TCP: Shutdown SD_SEND error: %d",
 #ifdef _WIN32
