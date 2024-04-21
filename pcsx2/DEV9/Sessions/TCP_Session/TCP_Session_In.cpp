@@ -97,7 +97,7 @@ namespace Sessions
 			if (err != SOCKET_ERROR)
 			{
 				if (available > static_cast<uint>(maxSize))
-					Console.WriteLn("DEV9: TCP: Got a lot of data: %lu Using: %d", available, maxSize);
+					Console.WriteLn("DEV9: TCP: Got a lot of data: %lu using: %d", available, maxSize);
 
 				buffer = std::make_unique<u8[]>(maxSize);
 				recived = recv(client, reinterpret_cast<char*>(buffer.get()), maxSize, 0);
@@ -133,7 +133,7 @@ namespace Sessions
 						break;
 					default:
 						CloseByRemoteRST();
-						Console.Error("DEV9: TCP: Recv Error: %d", err);
+						Console.Error("DEV9: TCP: Recv error: %d", err);
 						return nullptr;
 				}
 
@@ -142,7 +142,7 @@ namespace Sessions
 				{
 					int result = shutdown(client, SD_RECEIVE);
 					if (result == SOCKET_ERROR)
-						Console.Error("DEV9: TCP: Shutdown SD_RECEIVE Error: %d",
+						Console.Error("DEV9: TCP: Shutdown SD_RECEIVE error: %d",
 #ifdef _WIN32
 							WSAGetLastError());
 #elif defined(__POSIX__)
@@ -157,7 +157,7 @@ namespace Sessions
 							return CloseByPS2Stage3();
 						default:
 							CloseByRemoteRST();
-							Console.Error("DEV9: TCP: Remote Close In Invalid State");
+							Console.Error("DEV9: TCP: Remote close occured with invalid TCP state");
 							break;
 					}
 					return nullptr;
@@ -174,7 +174,7 @@ namespace Sessions
 				iRet->SetPSH(true);
 
 				myNumberACKed.store(false);
-				//DevCon.WriteLn("DEV9: TCP: myNumberACKed Reset");
+				//DevCon.WriteLn("DEV9: TCP: myNumberACKed reset");
 				return iRet;
 			}
 		}
@@ -224,14 +224,14 @@ namespace Sessions
 #ifdef _WIN32
 			int len = sizeof(error);
 			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: TCP: Unkown TCP Connection Error (getsockopt Error: %d)", WSAGetLastError());
+				Console.Error("DEV9: TCP: Unkown TCP connection error (getsockopt error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
 			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: TCP: Unkown TCP Connection Error (getsockopt Error: %d)", errno);
+				Console.Error("DEV9: TCP: Unkown TCP connection error (getsockopt error: %d)", errno);
 #endif
 			else
-				Console.Error("DEV9: TCP: Send Error: %d", error);
+				Console.Error("DEV9: TCP: Send error: %d", error);
 
 			state = TCP_State::CloseCompleted;
 			RaiseEventConnectionClosed();
@@ -250,7 +250,7 @@ namespace Sessions
 		ret->SetFIN(true);
 
 		myNumberACKed.store(false);
-		//DevCon.WriteLn("myNumberACKed Reset");
+		//DevCon.WriteLn("myNumberACKed reset");
 
 		state = TCP_State::Closing_ClosedByPS2ThenRemote_WaitingForAck;
 		return ret;
@@ -267,7 +267,7 @@ namespace Sessions
 		ret->SetFIN(true);
 
 		myNumberACKed.store(false);
-		//DevCon.WriteLn("myNumberACKed Reset");
+		//DevCon.WriteLn("myNumberACKed reset");
 
 		state = TCP_State::Closing_ClosedByRemote;
 		return ret;
