@@ -3215,8 +3215,6 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		"TurboScalar", 2.00f, speed_entries, speed_values, std::size(speed_entries), true);
 	DrawFloatListSetting(bsi, FSUI_CSTR("Slow Motion Speed"), FSUI_CSTR("Sets the speed when using the slow motion hotkey."), "Framerate",
 		"SlomoScalar", 0.50f, speed_entries, speed_values, std::size(speed_entries), true);
-	DrawToggleSetting(bsi, FSUI_CSTR("Enable Speed Limiter"), FSUI_CSTR("When disabled, the game will run as fast as possible."),
-		"EmuCore/GS", "FrameLimitEnable", true);
 
 	MenuHeading(FSUI_CSTR("System Settings"));
 
@@ -6850,7 +6848,6 @@ TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the fast forward hotkey.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Motion Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the slow motion hotkey.");
-TRANSLATE_NOOP("FullscreenUI", "Enable Speed Limiter");
 TRANSLATE_NOOP("FullscreenUI", "When disabled, the game will run as fast as possible.");
 TRANSLATE_NOOP("FullscreenUI", "System Settings");
 TRANSLATE_NOOP("FullscreenUI", "EE Cycle Rate");
