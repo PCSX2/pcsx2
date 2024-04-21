@@ -337,7 +337,7 @@ namespace Sessions
 				{
 					int ret = send(client, reinterpret_cast<const char*>(&payload->data[sent]), payload->GetLength() - sent, 0);
 
-					if (sent == SOCKET_ERROR)
+					if (ret == SOCKET_ERROR)
 					{
 #ifdef _WIN32
 						const int err = WSAGetLastError();
