@@ -96,8 +96,8 @@ using ImGuiFullscreen::UIBackgroundColor;
 using ImGuiFullscreen::UIBackgroundHighlightColor;
 using ImGuiFullscreen::UIBackgroundLineColor;
 using ImGuiFullscreen::UIBackgroundTextColor;
-using ImGuiFullscreen::UIPopupBackgroundColor;
 using ImGuiFullscreen::UIDisabledColor;
+using ImGuiFullscreen::UIPopupBackgroundColor;
 using ImGuiFullscreen::UIPrimaryColor;
 using ImGuiFullscreen::UIPrimaryDarkColor;
 using ImGuiFullscreen::UIPrimaryLightColor;
@@ -3014,6 +3014,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left "
 				  "off next time."),
 		"EmuCore", "SaveStateOnShutdown", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARCHIVE, "Create Save State Backups"),
+		FSUI_CSTR("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix"),
+		"EmuCore", "BackupSavestate", true);
 	if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Use Light Theme"),
 			FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "UI", "UseLightFullscreenUITheme", false))
 	{
@@ -7477,6 +7480,7 @@ TRANSLATE_NOOP("FullscreenUI", "Pause On Focus Loss");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Menu");
 TRANSLATE_NOOP("FullscreenUI", "Confirm Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
+TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
 TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
