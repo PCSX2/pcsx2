@@ -141,7 +141,7 @@ namespace Sessions
 				// Server closed the Socket
 				if (recived == 0)
 				{
-					int result = shutdown(client, SD_RECEIVE);
+					const int result = shutdown(client, SD_RECEIVE);
 					if (result == SOCKET_ERROR)
 						Console.Error("DEV9: TCP: Shutdown SD_RECEIVE error: %d",
 #ifdef _WIN32
