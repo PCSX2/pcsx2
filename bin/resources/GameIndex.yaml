@@ -1632,13 +1632,15 @@ SCAJ-20104:
     alignSprite: 1 # Fixes vertical lines.
     mergeSprite: 1 # Fixes vertical lines.
 SCAJ-20105:
-  name: "Armored Core - Nine breaker"
+  name: "Armored Core - Nine Breaker"
   region: "NTSC-Unk"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes misaligned blur.
     recommendedBlendingLevel: 3 # Fixes level brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-20107:
   name: "Bakufuu Slash! Kizna Arashi"
   region: "NTSC-Unk"
@@ -1892,6 +1894,7 @@ SCAJ-20143:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SCAJ-20144:
   name: "Zhuo Hou La 3"
   region: "NTSC-C"
@@ -4492,6 +4495,10 @@ SCES-50354:
 SCES-50360:
   name: "Twisted Metal - Black"
   region: "PAL-M5"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-50361:
   name: "Jak and Daxter - The Precursor Legacy"
   region: "PAL-M6"
@@ -4996,8 +5003,12 @@ SCES-51463:
     mipmap: 2 # Mipmap + trilinear, improves textures to match sw renderer.
     trilinearFiltering: 1
 SCES-51480:
-  name: "Twisted Metal - Black - Online"
+  name: "Twisted Metal - Black ONLINE"
   region: "PAL-M5"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-51513:
   name: "EyeToy - Play"
   region: "PAL-M11"
@@ -7061,6 +7072,8 @@ SCKA-20047:
     recommendedBlendingLevel: 3 # Fixes level brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   memcardFilters:
     - "SCKA-20047"
     - "SLKA-25201"
@@ -10164,6 +10177,10 @@ SCUS-97101:
   name: "Twisted Metal - Black"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97102:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-U"
@@ -10440,8 +10457,12 @@ SCUS-97163:
   name: "Jampack Demo Disc - Winter 2001"
   region: "NTSC-U"
 SCUS-97164:
-  name: "Twisted Metal Black [Demo]"
+  name: "Twisted Metal - Black [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97165:
   name: "Official U.S. PlayStation Magazine Demo Disc 051"
   region: "NTSC-U"
@@ -10506,9 +10527,13 @@ SCUS-97178:
   name: "NFL GameDay 2002"
   region: "NTSC-U"
 SCUS-97179:
-  name: "Twisted Metal Black"
+  name: "Twisted Metal - Black"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97181:
   name: "Official U.S. PlayStation Magazine Demo Disc 055"
   region: "NTSC-U"
@@ -10549,12 +10574,20 @@ SCUS-97194:
   name: "NFL GameDay 2003"
   region: "NTSC-U"
 SCUS-97195:
-  name: "Twisted Metal Black - Online"
+  name: "Twisted Metal - Black ONLINE"
   region: "NTSC-U"
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97196:
-  name: "Twisted Metal Black - Online [Demo]"
+  name: "Twisted Metal - Black ONLINE"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97197:
   name: "War of the Monsters"
   region: "NTSC-U"
@@ -24009,6 +24042,8 @@ SLES-53819:
     recommendedBlendingLevel: 3 # Fixes level brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   memcardFilters:
     - "SLES-53819"
     - "SLES-82036"
@@ -24021,6 +24056,7 @@ SLES-53820:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SLES-53821:
   name: "Radio Helicopter II"
   region: "PAL-E"
@@ -33677,6 +33713,7 @@ SLPM-61118:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SLPM-61119:
   name: "Armored Core - Last Raven [Trial]"
   region: "NTSC-J"
@@ -33685,6 +33722,7 @@ SLPM-61119:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SLPM-61120:
   name: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Trial Version]"
   region: "NTSC-J"
@@ -49699,13 +49737,14 @@ SLPM-68519:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-68520:
-  name: "Armored Core - Last Raven [Monthly Champion magazine Special Edition]"
+  name: "Armored Core - Last Raven [Monthly Champion Magazine Special Edition]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SLPM-68521:
   name: ".hack frägment [Senkou Release-ban]"
   region: "NTSC-J"
@@ -55022,6 +55061,8 @@ SLPS-25408:
     recommendedBlendingLevel: 3 # Fixes level brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   memcardFilters:
     - "SLPS-25408"
     - "SCAJ-20076"
@@ -55347,6 +55388,7 @@ SLPS-25462:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -56924,6 +56966,9 @@ SLPS-25730:
   gsHWFixes:
     halfPixelOffset: 2 # Corrects shadow alignment and reduces blurriness.
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
+    mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
+    trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SLPS-25731:
   name: ARMORED CORE 2 (ARMORED CORE PREMIUM BOX同梱用)
   name-sort: あーまーどこあ2
@@ -58766,6 +58811,7 @@ SLPS-73247:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
   memcardFilters:
     - "SLPS-25338"
     - "SLPS-25339"
@@ -65513,6 +65559,8 @@ SLUS-21200:
     recommendedBlendingLevel: 3 # Fixes level brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    cpuSpriteRenderBW: 2 # Fixes broken water on "Upper Sea" level.
+    cpuSpriteRenderLevel: 2 # Needed for above.
   memcardFilters: # Can import data from AC:Nexus.
     - "SLUS-21200"
     - "SLUS-20986"
@@ -66529,6 +66577,7 @@ SLUS-21338:
     recommendedBlendingLevel: 3 # Fixes level and map menu brightness.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
+    preloadFrameData: 1 # Fixes glowing emblems.
 SLUS-21339:
   name: "Puzzle Collection - Crosswords & More!"
   region: "NTSC-U"
