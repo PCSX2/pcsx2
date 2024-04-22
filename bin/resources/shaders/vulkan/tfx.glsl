@@ -349,7 +349,7 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 #endif
 
 #if PS_FEEDBACK_LOOP_IS_NEEDED
-	#if defined(DISABLE_TEXTURE_BARRIER) || defined(HAS_FEEDBACK_LOOP_LAYOUT)
+	#if defined(DISABLE_TEXTURE_BARRIER)
 		layout(set = 1, binding = 2) uniform texture2D RtSampler;
 		vec4 sample_from_rt() { return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0); }
 	#else

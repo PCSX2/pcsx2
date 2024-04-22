@@ -39,7 +39,6 @@ public:
 		bool vk_ext_memory_budget : 1;
 		bool vk_ext_calibrated_timestamps : 1;
 		bool vk_ext_rasterization_order_attachment_access : 1;
-		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_full_screen_exclusive : 1;
 		bool vk_ext_line_rasterization : 1;
 		bool vk_khr_driver_properties : 1;
@@ -55,13 +54,6 @@ public:
 	__fi u32 GetPresentQueueFamilyIndex() const { return m_present_queue_family_index; }
 	__fi const VkPhysicalDeviceProperties& GetDeviceProperties() const { return m_device_properties; }
 	__fi const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
-
-	// The interaction between raster order attachment access and fbfetch is unclear.
-	__fi bool UseFeedbackLoopLayout() const
-	{
-		return (m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
-				!m_optional_extensions.vk_ext_rasterization_order_attachment_access);
-	}
 
 	// Helpers for getting constants
 	__fi u32 GetBufferCopyOffsetAlignment() const
@@ -593,7 +585,6 @@ public:
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
 	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
-	VkDependencyFlags GetColorBufferBarrierFlags() const;
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
