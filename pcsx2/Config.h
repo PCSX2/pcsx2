@@ -3,8 +3,11 @@
 
 #pragma once
 
+#include "Host/AudioStreamTypes.h"
+
 #include "common/Pcsx2Defs.h"
 #include "common/FPControl.h"
+
 #include <array>
 #include <string>
 #include <optional>
@@ -765,28 +768,22 @@ struct Pcsx2Config
 
 	struct SPU2Options
 	{
-		enum class SynchronizationMode
+		enum class SPU2SyncMode : u8
 		{
+			Disabled,
 			TimeStretch,
-			ASync,
-			NoSync,
+			Count
 		};
 
 		static constexpr s32 MAX_VOLUME = 200;
-		
-		static constexpr s32 MIN_LATENCY = 3;
-		static constexpr s32 MIN_LATENCY_TIMESTRETCH = 15;
-		static constexpr s32 MAX_LATENCY = 750;
+		static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::Cubeb;
+		static constexpr SPU2SyncMode DEFAULT_SYNC_MODE = SPU2SyncMode::TimeStretch;
 
-		static constexpr s32 MIN_SEQUENCE_LEN = 20;
-		static constexpr s32 MAX_SEQUENCE_LEN = 100;
-		static constexpr s32 MIN_SEEKWINDOW = 10;
-		static constexpr s32 MAX_SEEKWINDOW = 30;
-		static constexpr s32 MIN_OVERLAP = 5;
-		static constexpr s32 MAX_OVERLAP = 15;
+		static std::optional<SPU2SyncMode> ParseSyncMode(const char* str);
+		static const char* GetSyncModeName(SPU2SyncMode backend);
+		static const char* GetSyncModeDisplayName(SPU2SyncMode backend);
 
 		BITFIELD32()
-		bool OutputLatencyMinimal : 1;
 		bool
 			DebugEnabled : 1,
 			MsgToConsole : 1,
@@ -794,7 +791,6 @@ struct Pcsx2Config
 			MsgVoiceOff : 1,
 			MsgDMA : 1,
 			MsgAutoDMA : 1,
-			MsgOverruns : 1,
 			MsgCache : 1,
 			AccessLog : 1,
 			DMALog : 1,
@@ -805,25 +801,22 @@ struct Pcsx2Config
 			VisualDebugEnabled : 1;
 		BITFIELD_END
 
-		SynchronizationMode SynchMode = SynchronizationMode::TimeStretch;
+		u32 OutputVolume = 100;
+		u32 FastForwardVolume = 100;
+		bool OutputMuted = false;
 
-		s32 FinalVolume = 100;
-		s32 Latency = 60;
-		s32 OutputLatency = 20;
-		s32 SpeakerConfiguration = 0;
-		s32 DplDecodingLevel = 0;
+		AudioBackend Backend = DEFAULT_BACKEND;
+		SPU2SyncMode SyncMode = DEFAULT_SYNC_MODE;
+		AudioStreamParameters StreamParameters;
 
-		s32 SequenceLenMS = 30;
-		s32 SeekWindowMS = 20;
-		s32 OverlapMS = 10;
-
-		std::string OutputModule;
-		std::string BackendName;
+		std::string DriverName;
 		std::string DeviceName;
 
 		SPU2Options();
 
 		void LoadSave(SettingsWrapper& wrap);
+
+		bool IsTimeStretchEnabled() const { return (SyncMode == SPU2SyncMode::TimeStretch); }
 
 		bool operator==(const SPU2Options& right) const;
 		bool operator!=(const SPU2Options& right) const;

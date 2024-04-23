@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "SPU2/Global.h"
+#include "SPU2/defs.h"
+#include "SPU2/Debug.h"
 #include "SPU2/Dma.h"
 #include "SPU2/spu2.h"
 #include "R3000A.h"

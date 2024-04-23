@@ -240,7 +240,8 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		if (GSConfig.OsdShowIndicators)
 		{
 			const float target_speed = VMManager::GetTargetSpeed();
-			const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar);
+			const bool is_normal_speed = (target_speed == EmuConfig.EmulationSpeed.NominalScalar ||
+										  VMManager::IsTargetSpeedAdjustedToHost());
 			if (!is_normal_speed)
 			{
 				if (target_speed == EmuConfig.EmulationSpeed.SlomoScalar) // Slow-Motion

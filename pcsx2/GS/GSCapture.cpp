@@ -8,8 +8,8 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "SPU2/spu2.h"
-#include "SPU2/SndOut.h"
 #include "Host.h"
+#include "Host/AudioStream.h"
 #include "IconsFontAwesome5.h"
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -133,7 +133,7 @@ namespace GSCapture
 {
 	static constexpr u32 NUM_FRAMES_IN_FLIGHT = 3;
 	static constexpr u32 MAX_PENDING_FRAMES = NUM_FRAMES_IN_FLIGHT * 2;
-	static constexpr u32 AUDIO_BUFFER_SIZE = Common::AlignUpPow2((MAX_PENDING_FRAMES * 48000) / 60, SndOutPacketSize);
+	static constexpr u32 AUDIO_BUFFER_SIZE = Common::AlignUpPow2((MAX_PENDING_FRAMES * 48000) / 60, AudioStream::CHUNK_SIZE);
 	static constexpr u32 AUDIO_CHANNELS = 2;
 
 	struct PendingFrame
@@ -729,7 +729,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 		// Use packet size for frame if it supports it... but most don't.
 		if (acodec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
-			s_audio_frame_size = SndOutPacketSize;
+			s_audio_frame_size = AudioStream::CHUNK_SIZE;
 		else
 			s_audio_frame_size = s_audio_codec_context->frame_size;
 		if (s_audio_frame_size >= AUDIO_BUFFER_SIZE)
@@ -1070,7 +1070,7 @@ void GSCapture::DeliverAudioPacket(const s16* frames)
 	// through and clear them out for the next capture. If we happen to fill the buffer, *then* we'll lock, and check if
 	// the capture has stopped.
 
-	static constexpr u32 num_frames = static_cast<u32>(SndOutPacketSize);
+	static constexpr u32 num_frames = AudioStream::CHUNK_SIZE;
 
 	if ((AUDIO_BUFFER_SIZE - s_audio_buffer_size.load(std::memory_order_acquire)) < num_frames)
 	{
@@ -1113,7 +1113,7 @@ bool GSCapture::ProcessAudioPackets(s64 video_pts)
 	while (pending_frames > 0 && (!s_video_codec_context || wrap_av_compare_ts(video_pts, s_video_codec_context->time_base,
 																s_next_audio_pts, s_audio_codec_context->time_base) > 0))
 	{
-		pxAssert(pending_frames >= static_cast<u32>(SndOutPacketSize));
+		pxAssert(pending_frames >= AudioStream::CHUNK_SIZE);
 
 		// In case the encoder is still using it.
 		if (s_audio_frame_pos == 0)

@@ -5,6 +5,8 @@
 
 #include "Config.h"
 
+#include "SPU2/defs.h"
+
 namespace SPU2
 {
 #ifdef PCSX2_DEVBUILD
@@ -17,7 +19,6 @@ namespace SPU2
 	__fi static bool MsgVoiceOff() { return EmuConfig.SPU2.MsgVoiceOff; }
 	__fi static bool MsgDMA() { return EmuConfig.SPU2.MsgDMA; }
 	__fi static bool MsgAutoDMA() { return EmuConfig.SPU2.MsgAutoDMA; }
-	__fi static bool MsgOverruns() { return EmuConfig.SPU2.MsgOverruns; }
 	__fi static bool MsgCache() { return EmuConfig.SPU2.MsgCache; }
 
 	__fi static bool AccessLog() { return EmuConfig.SPU2.AccessLog; }
@@ -93,7 +94,7 @@ namespace WaveDump
 	extern void Open();
 	extern void Close();
 	extern void WriteCore(uint coreidx, CoreSourceType src, s16 left, s16 right);
-	extern void WriteCore(uint coreidx, CoreSourceType src, const StereoOut16& sample);
+	extern void WriteCore(uint coreidx, CoreSourceType src, const StereoOut32& sample);
 } // namespace WaveDump
 
 using WaveDump::CoreSrc_DryVoiceMix;

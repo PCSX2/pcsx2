@@ -247,15 +247,12 @@ set(pcsx2CDVDHeaders
 set(pcsx2SPU2Sources
 	SPU2/ADSR.cpp
 	SPU2/Debug.cpp
-	SPU2/DplIIdecoder.cpp
 	SPU2/Dma.cpp
 	SPU2/Mixer.cpp
 	SPU2/spu2.cpp
 	SPU2/ReadInput.cpp
 	SPU2/RegTable.cpp
 	SPU2/Reverb.cpp
-	SPU2/SndOut.cpp
-	SPU2/SndOut_Cubeb.cpp
 	SPU2/spu2freeze.cpp
 	SPU2/spu2sys.cpp
 	SPU2/Wavedump_wav.cpp
@@ -270,20 +267,11 @@ set(pcsx2SPU2Headers
 	SPU2/Debug.h
 	SPU2/defs.h
 	SPU2/Dma.h
-	SPU2/Global.h
 	SPU2/interpolate_table.h
-	SPU2/Mixer.h
 	SPU2/spu2.h
 	SPU2/regs.h
-	SPU2/SndOut.h
 	SPU2/spdif.h
 )
-
-if(WIN32)
-	list(APPEND pcsx2SPU2Sources
-		SPU2/SndOut_XAudio2.cpp
-	)
-endif()
 
 # DEV9 sources
 set(pcsx2DEV9Sources

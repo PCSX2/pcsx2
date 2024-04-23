@@ -1,11 +1,16 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
 
+#include "ui_AudioSettingsWidget.h"
+
+#include "common/Pcsx2Defs.h"
+
 #include <QtWidgets/QWidget>
 
-#include "ui_AudioSettingsWidget.h"
+enum class AudioBackend : u8;
+enum class AudioExpansionMode : u8;
 
 class SettingsWindow;
 
@@ -18,22 +23,28 @@ public:
 	~AudioSettingsWidget();
 
 private Q_SLOTS:
-	void expansionModeChanged();
-	void outputModuleChanged();
-	void outputBackendChanged();
-	void updateDevices();
-	void volumeChanged(int value);
-	void volumeContextMenuRequested(const QPoint& pt);
-	void updateTargetLatencyRange();
-	void updateLatencyLabels();
-	void onMinimalOutputLatencyStateChanged();
-	void resetTimestretchDefaults();
+	void onExpansionModeChanged();
+	void onSyncModeChanged();
+
+	void updateDriverNames();
+	void updateDeviceNames();
+	void updateLatencyLabel();
+	void updateVolumeLabel();
+	void onMinimalOutputLatencyChanged();
+	void onOutputVolumeChanged(int new_value);
+	void onFastForwardVolumeChanged(int new_value);
+	void onOutputMutedChanged(int new_state);
+
+	void onExpansionSettingsClicked();
+	void onStretchSettingsClicked();
 
 private:
-	void populateOutputModules();
-	void updateVolumeLabel();
+	AudioBackend getEffectiveBackend() const;
+	AudioExpansionMode getEffectiveExpansionMode() const;
+	u32 getEffectiveExpansionBlockSize() const;
+	void resetVolume(bool fast_forward);
 
-	SettingsWindow* m_dialog;
 	Ui::AudioSettingsWidget m_ui;
+	SettingsWindow* m_dialog;
 	u32 m_output_device_latency = 0;
 };

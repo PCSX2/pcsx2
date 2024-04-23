@@ -150,6 +150,9 @@ namespace VMManager
 	/// EmuConfig.EmulationSpeed without going through the usual config apply.
 	void UpdateTargetSpeed();
 
+	/// Returns true if the target speed is being synchronized with the host's refresh rate.
+	bool IsTargetSpeedAdjustedToHost();
+
 	/// Returns the current frame rate of the virtual machine.
 	float GetFrameRate();
 

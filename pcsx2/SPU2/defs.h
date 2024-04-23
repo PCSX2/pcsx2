@@ -3,10 +3,6 @@
 
 #pragma once
 
-#include "SPU2/Mixer.h"
-#include "SPU2/SndOut.h"
-#include "SPU2/Global.h"
-
 #include "GS/MultiISA.h"
 
 #include <array>
@@ -23,10 +19,54 @@ extern const std::array<u16*, 0x401> regtable;
 #define spu2Rs16(mmem) (*(s16*)((s8*)spu2regs + ((mmem)&0x1fff)))
 #define spu2Ru16(mmem) (*(u16*)((s8*)spu2regs + ((mmem)&0x1fff)))
 
+struct StereoOut32
+{
+	static const StereoOut32 Empty;
+
+	s32 Left;
+	s32 Right;
+
+	StereoOut32() = default;
+
+	StereoOut32(s32 left, s32 right)
+		: Left(left)
+		, Right(right)
+	{
+	}
+
+	StereoOut32 operator*(const int& factor) const
+	{
+		return StereoOut32(
+			Left * factor,
+			Right * factor);
+	}
+
+	StereoOut32& operator*=(const int& factor)
+	{
+		Left *= factor;
+		Right *= factor;
+		return *this;
+	}
+
+	StereoOut32 operator+(const StereoOut32& right) const
+	{
+		return StereoOut32(
+			Left + right.Left,
+			Right + right.Right);
+	}
+
+	StereoOut32 operator/(int src) const
+	{
+		return StereoOut32(Left / src, Right / src);
+	}
+};
+
 extern s16* GetMemPtr(u32 addr);
 extern s16 spu2M_Read(u32 addr);
 extern void spu2M_Write(u32 addr, s16 value);
 extern void spu2M_Write(u32 addr, u16 value);
+extern void spu2Mix();
+extern void spu2Output(StereoOut32 out);
 
 static __forceinline s16 SignExtend16(u16 v)
 {
