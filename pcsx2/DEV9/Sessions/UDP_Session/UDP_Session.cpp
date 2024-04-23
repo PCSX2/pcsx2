@@ -80,7 +80,7 @@ namespace Sessions
 		fd_set sReady;
 		fd_set sExcept;
 
-		timeval nowait{0};
+		timeval nowait{};
 		FD_ZERO(&sReady);
 		FD_ZERO(&sExcept);
 		FD_SET(client, &sReady);
@@ -105,11 +105,11 @@ namespace Sessions
 			int error = 0;
 #ifdef _WIN32
 			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", errno);
 #endif
 			else
@@ -123,7 +123,7 @@ namespace Sessions
 			unsigned long available = 0;
 			PayloadData* recived = nullptr;
 			std::unique_ptr<u8[]> buffer;
-			sockaddr endpoint{0};
+			sockaddr_in endpoint{};
 
 			//FIONREAD returns total size of all available messages
 			//but we will read one message at a time
@@ -141,7 +141,7 @@ namespace Sessions
 #elif defined(__POSIX__)
 				socklen_t fromlen = sizeof(endpoint);
 #endif
-				ret = recvfrom(client, (char*)buffer.get(), available, 0, &endpoint, &fromlen);
+				ret = recvfrom(client, reinterpret_cast<char*>(buffer.get()), available, 0, reinterpret_cast<sockaddr*>(&endpoint), &fromlen);
 			}
 
 			if (ret == SOCKET_ERROR)
@@ -235,7 +235,7 @@ namespace Sessions
 			}
 
 			const int reuseAddress = true; //BOOL
-			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseAddress, sizeof(reuseAddress));
+			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 			if (ret == SOCKET_ERROR)
 				Console.Error("DEV9: UDP: Failed to set SO_REUSEADDR. Error: %d",
@@ -247,11 +247,11 @@ namespace Sessions
 
 			if (adapterIP.integer != 0)
 			{
-				sockaddr_in endpoint{0};
+				sockaddr_in endpoint{};
 				endpoint.sin_family = AF_INET;
-				*(IP_Address*)&endpoint.sin_addr = adapterIP;
+				endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
 
-				ret = bind(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+				ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 				if (ret == SOCKET_ERROR)
 					Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
@@ -264,12 +264,12 @@ namespace Sessions
 
 			pxAssert(isMulticast == false);
 
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
-			*(IP_Address*)&endpoint.sin_addr = destIP;
+			endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 			endpoint.sin_port = htons(destPort);
 
-			ret = connect(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = connect(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 			if (ret == SOCKET_ERROR)
 			{
@@ -293,24 +293,24 @@ namespace Sessions
 		int ret = SOCKET_ERROR;
 		if (isBroadcast)
 		{
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
 			endpoint.sin_addr.s_addr = INADDR_BROADCAST;
 			endpoint.sin_port = htons(destPort);
 
-			ret = sendto(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 		}
 		else if (isMulticast | isFixedPort)
 		{
-			sockaddr_in endpoint{0};
+			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
-			*(IP_Address*)&endpoint.sin_addr = destIP;
+			endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 			endpoint.sin_port = htons(destPort);
 
-			ret = sendto(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+			ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 		}
 		else
-			ret = send(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0);
+			ret = send(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0);
 
 		if (ret == SOCKET_ERROR)
 		{
@@ -335,16 +335,16 @@ namespace Sessions
 				pxAssert(isBroadcast == false && isMulticast == false);
 				if (isFixedPort)
 				{
-					sockaddr_in endpoint{0};
+					sockaddr_in endpoint{};
 					endpoint.sin_family = AF_INET;
-					*(IP_Address*)&endpoint.sin_addr = destIP;
+					endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
 					endpoint.sin_port = htons(destPort);
 
-					ret = sendto(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0, (const sockaddr*)&endpoint, sizeof(endpoint));
+					ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 				}
 				else
 					//Do we need to clear the error somehow?
-					ret = send(client, (const char*)udpPayload->data, udpPayload->GetLength(), 0);
+					ret = send(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0);
 
 				if (ret == SOCKET_ERROR)
 				{

@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
+#include <bit>
+
 #include "common/Assertions.h"
 #include "common/Console.h"
 
@@ -47,7 +49,7 @@ namespace Sessions
 		}
 
 		const int reuseAddress = true; //BOOL
-		ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuseAddress, sizeof(reuseAddress));
+		ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 		if (ret == SOCKET_ERROR)
 			Console.Error("DEV9: UDP: Failed to set SO_REUSEADDR. Error: %d",
@@ -58,7 +60,7 @@ namespace Sessions
 #endif
 
 		const int broadcastEnable = true; //BOOL
-		ret = setsockopt(client, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcastEnable, sizeof(broadcastEnable));
+		ret = setsockopt(client, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadcastEnable), sizeof(broadcastEnable));
 
 		if (ret == SOCKET_ERROR)
 			Console.Error("DEV9: UDP: Failed to set SO_BROADCAST. Error: %d",
@@ -68,12 +70,12 @@ namespace Sessions
 				errno);
 #endif
 
-		sockaddr_in endpoint{0};
+		sockaddr_in endpoint{};
 		endpoint.sin_family = AF_INET;
-		*(IP_Address*)&endpoint.sin_addr = adapterIP;
+		endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
 		endpoint.sin_port = htons(parPort);
 
-		ret = bind(client, (const sockaddr*)&endpoint, sizeof(endpoint));
+		ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 		if (ret == SOCKET_ERROR)
 			Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
@@ -93,7 +95,7 @@ namespace Sessions
 		fd_set sReady;
 		fd_set sExcept;
 
-		timeval nowait{0};
+		timeval nowait{};
 		FD_ZERO(&sReady);
 		FD_ZERO(&sExcept);
 		FD_SET(client, &sReady);
@@ -118,11 +120,11 @@ namespace Sessions
 			int error = 0;
 #ifdef _WIN32
 			int len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
-			if (getsockopt(client, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0)
+			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
 				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", errno);
 #endif
 			else
@@ -136,7 +138,7 @@ namespace Sessions
 			unsigned long available = 0;
 			PayloadData* recived = nullptr;
 			std::unique_ptr<u8[]> buffer;
-			sockaddr endpoint{0};
+			sockaddr_in endpoint{};
 
 			//FIONREAD returns total size of all available messages
 			//but we will read one message at a time
@@ -154,7 +156,7 @@ namespace Sessions
 #elif defined(__POSIX__)
 				socklen_t fromlen = sizeof(endpoint);
 #endif
-				ret = recvfrom(client, (char*)buffer.get(), available, 0, &endpoint, &fromlen);
+				ret = recvfrom(client, reinterpret_cast<char*>(buffer.get()), available, 0, reinterpret_cast<sockaddr*>(&endpoint), &fromlen);
 			}
 
 			if (ret == SOCKET_ERROR)
@@ -175,9 +177,8 @@ namespace Sessions
 			UDP_Packet* iRet = new UDP_Packet(recived);
 			iRet->destinationPort = port;
 
-			sockaddr_in* sockaddr = (sockaddr_in*)&endpoint;
-			destIP = *(IP_Address*)&sockaddr->sin_addr;
-			iRet->sourcePort = ntohs(sockaddr->sin_port);
+			destIP = std::bit_cast<IP_Address>(endpoint.sin_addr);
+			iRet->sourcePort = ntohs(endpoint.sin_port);
 			{
 				std::lock_guard numberlock(connectionSentry);
 
@@ -213,7 +214,6 @@ namespace Sessions
 		UDP_Session* s = new UDP_Session(parNewKey, adapterIP, parIsBrodcast, parIsMulticast, client);
 
 		s->AddConnectionClosedHandler([&](BaseSession* session) { HandleChildConnectionClosed(session); });
-
 		{
 			std::lock_guard numberlock(connectionSentry);
 			connections.push_back(s);
