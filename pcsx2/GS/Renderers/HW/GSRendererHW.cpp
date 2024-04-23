@@ -1413,24 +1413,39 @@ bool GSRendererHW::IsTBPFrameOrZ(u32 tbp)
 
 void GSRendererHW::HandleManualDeswizzle()
 {
+	if (!m_vt.m_eq.z)
+		return;
+
 	// Check if it's doing manual deswizzling first (draws are 32x16), if they are, check if the Z is flat, if not, we're gonna have to get creative and swap around the quandrants, but that's a TODO.
 	GSVertex* v = &m_vertex.buff[0];
 
-	for (u32 i = 0; i < m_vertex.tail; i += 2)
+	if (PRIM->FST)
 	{
-		if ((abs((v[i + 1].U) - (v[i].U)) >> 4) != 32 || (abs((v[i + 1].V) - (v[i].V)) >> 4) != 16)
-			return;
-	}
+		for (u32 i = 0; i < m_index.tail; i += 2)
+		{
+			const u32 index_first = m_index.buff[i];
+			const u32 index_last = m_index.buff[i + 1];
 
-	if (m_vt.m_eq.z)
-	{
-		GSVector4i tex_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y);
-		ReplaceVerticesWithSprite(m_r, tex_rect, GSVector2i(1 << m_cached_ctx.TEX0.TW, 1 << m_cached_ctx.TEX0.TH), m_context->scissor.in);
+			if ((abs((v[index_last].U) - (v[index_first].U)) >> 4) != 32 || (abs((v[index_last].V) - (v[index_first].V)) >> 4) != 16)
+				return;
+		}
 	}
 	else
 	{
-		DevCon.Warning("Swizzled depth palette draw with non-flat Z draw %d", s_n);
+		for (u32 i = 0; i < m_index.tail; i += 2)
+		{
+			const u32 index_first = m_index.buff[i];
+			const u32 index_last = m_index.buff[i + 1];
+			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW)));
+			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH)));
+
+			if (x != 32 || y != 16)
+				return;
+		}
 	}
+
+	GSVector4i tex_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y);
+	ReplaceVerticesWithSprite(m_r, tex_rect, GSVector2i(1 << m_cached_ctx.TEX0.TW, 1 << m_cached_ctx.TEX0.TH), m_context->scissor.in);
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
@@ -4754,7 +4769,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		const GSVector4 half_pixel = RealignTargetTextureCoordinate(tex);
 		m_conf.cb_vs.texture_offset = GSVector2(half_pixel.x, half_pixel.y);
 
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal > 0 && (tex->m_from_target_TEX0.PSM & 0x30) == 0x30 && m_index.tail >= 4)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal > 0 && m_index.tail >= 4)
 		{
 			HandleManualDeswizzle();
 		}
