@@ -4124,6 +4124,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	}
 	else
 	{
+		const bool ad_second_pass = blend_second_pass_support && alpha_c1_high_no_rta_correct && COLCLAMP.CLAMP &&
+									(blend_flag & (BLEND_HW3 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW9));
+
 		switch (GSConfig.AccurateBlendingUnit)
 		{
 			case AccBlendLevel::Maximum:
@@ -4143,8 +4146,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				sw_blending |= (m_conf.ps.blend_a == m_conf.ps.blend_d == 1) && no_prim_overlap;
 				[[fallthrough]];
 			case AccBlendLevel::Medium:
-				// Enable sw blend on Ad cases where prims don't overlap, blend_ad_alpha_masked or rta correction isn't possible.
-				sw_blending |= !blend_ad_alpha_masked && (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) && no_prim_overlap;
+				// Enable sw blend on Ad cases where prims don't overlap, blend_ad_alpha_masked, rta correction or ad_second_pass isn't possible.
+				sw_blending |= !(blend_ad_alpha_masked || ad_second_pass) && (alpha_c1_high_max_one || alpha_c1_high_no_rta_correct) && no_prim_overlap;
 				[[fallthrough]];
 			case AccBlendLevel::Basic:
 				// Prefer sw blend if possible.
