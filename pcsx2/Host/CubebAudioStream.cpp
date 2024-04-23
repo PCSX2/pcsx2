@@ -342,15 +342,4 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
 	}
 
 	return ret;
-
-	for (size_t i = 0; i < devices.count; i++)
-	{
-		const cubeb_device_info& di = devices.device[i];
-		if (!di.device_id)
-			continue;
-
-		ret.emplace_back(di.device_id, di.friendly_name ? di.friendly_name : di.device_id, 0);
-	}
-
-	return ret;
 }

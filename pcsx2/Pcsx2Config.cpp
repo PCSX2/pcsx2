@@ -10,12 +10,13 @@
 #include "Config.h"
 #include "GS.h"
 #include "CDVD/CDVDcommon.h"
+#include "Host.h"
+#include "Host/AudioStream.h"
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Pad/Pad.h"
 #include "USB/USB.h"
 
 #include "fmt/format.h"
-
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
 #include <KnownFolders.h>
@@ -1025,10 +1026,42 @@ bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 	return (Renderer != GSRendererType::Null && Renderer != GSRendererType::SW);
 }
 
+static constexpr const std::array s_spu2_sync_mode_names = {
+	"Disabled",
+	"TimeStretch"
+};
+static constexpr const std::array s_spu2_sync_mode_display_names = {
+	TRANSLATE_NOOP("Pcsx2Config", "Disabled (Noisy)"),
+	TRANSLATE_NOOP("Pcsx2Config", "TimeStretch (Recommended)"),
+};
+
+const char* Pcsx2Config::SPU2Options::GetSyncModeName(SPU2SyncMode mode)
+{
+	return (static_cast<size_t>(mode) < s_spu2_sync_mode_names.size()) ? s_spu2_sync_mode_names[static_cast<size_t>(mode)] : "";
+}
+
+const char* Pcsx2Config::SPU2Options::GetSyncModeDisplayName(SPU2SyncMode mode)
+{
+	return (static_cast<size_t>(mode) < s_spu2_sync_mode_display_names.size()) ?
+			   Host::TranslateToCString("Pcsx2Config", s_spu2_sync_mode_display_names[static_cast<size_t>(mode)]) :
+			   "";
+}
+
+std::optional<Pcsx2Config::SPU2Options::SPU2SyncMode> Pcsx2Config::SPU2Options::ParseSyncMode(const char* name)
+{
+	for (u8 i = 0; i < static_cast<u8>(SPU2SyncMode::Count); i++)
+	{
+		if (std::strcmp(name, s_spu2_sync_mode_names[i]) == 0)
+			return static_cast<SPU2SyncMode>(i);
+	}
+
+	return std::nullopt;
+}
+
+
 Pcsx2Config::SPU2Options::SPU2Options()
 {
 	bitset = 0;
-	OutputModule = "cubeb";
 }
 
 void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
@@ -1042,7 +1075,6 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapBitBoolEx(MsgVoiceOff, "Show_Messages_Voice_Off");
 		SettingsWrapBitBoolEx(MsgDMA, "Show_Messages_DMA_Transfer");
 		SettingsWrapBitBoolEx(MsgAutoDMA, "Show_Messages_AutoDMA");
-		SettingsWrapBitBoolEx(MsgOverruns, "Show_Messages_Overruns");
 		SettingsWrapBitBoolEx(MsgCache, "Show_Messages_CacheStats");
 
 		SettingsWrapBitBoolEx(AccessLog, "Log_Register_Access");
@@ -1061,7 +1093,6 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 			MsgVoiceOff = false;
 			MsgDMA = false;
 			MsgAutoDMA = false;
-			MsgOverruns = false;
 			MsgCache = false;
 			AccessLog = false;
 			DMALog = false;
@@ -1071,28 +1102,19 @@ void Pcsx2Config::SPU2Options::LoadSave(SettingsWrapper& wrap)
 			RegDump = false;
 		}
 	}
-	{
-		SettingsWrapSection("SPU2/Mixing");
-
-		SettingsWrapEntry(FinalVolume);
-	}
 
 	{
 		SettingsWrapSection("SPU2/Output");
-
-		SettingsWrapEntry(OutputModule);
-		SettingsWrapEntry(BackendName);
+		SettingsWrapEntry(OutputVolume);
+		SettingsWrapEntry(FastForwardVolume);
+		SettingsWrapEntry(OutputMuted);
+		SettingsWrapParsedEnum(Backend, "Backend", &AudioStream::ParseBackendName, &AudioStream::GetBackendName);
+		SettingsWrapParsedEnum(SyncMode, "SyncMode", &ParseSyncMode, &GetSyncModeName);
+		SettingsWrapEntry(DriverName);
 		SettingsWrapEntry(DeviceName);
-		SettingsWrapEntry(Latency);
-		SettingsWrapEntry(OutputLatency);
-		SettingsWrapBitBool(OutputLatencyMinimal);
-		SynchMode = static_cast<SynchronizationMode>(wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, "SynchMode", static_cast<int>(SynchMode), static_cast<int>(SynchMode)));
-		SettingsWrapEntry(SpeakerConfiguration);
-		SettingsWrapEntry(DplDecodingLevel);
+		StreamParameters.LoadSave(wrap, CURRENT_SETTINGS_SECTION);
 	}
-
-	// clampy clamp
-}
+	}
 
 bool Pcsx2Config::SPU2Options::operator!=(const SPU2Options& right) const
 {
@@ -1102,21 +1124,12 @@ bool Pcsx2Config::SPU2Options::operator!=(const SPU2Options& right) const
 bool Pcsx2Config::SPU2Options::operator==(const SPU2Options& right) const
 {
 	return OpEqu(bitset) &&
-
-		   OpEqu(SynchMode) &&
-
-		   OpEqu(FinalVolume) &&
-		   OpEqu(Latency) &&
-		   OpEqu(OutputLatency) &&
-		   OpEqu(SpeakerConfiguration) &&
-		   OpEqu(DplDecodingLevel) &&
-
-		   OpEqu(SequenceLenMS) &&
-		   OpEqu(SeekWindowMS) &&
-		   OpEqu(OverlapMS) &&
-
-		   OpEqu(OutputModule) &&
-		   OpEqu(BackendName) &&
+		   OpEqu(OutputVolume) &&
+		   OpEqu(FastForwardVolume) &&
+		   OpEqu(OutputMuted) &&
+		   OpEqu(Backend) &&
+		   OpEqu(StreamParameters) &&
+		   OpEqu(DriverName) &&
 		   OpEqu(DeviceName);
 }
 

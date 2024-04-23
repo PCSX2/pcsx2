@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "Global.h"
 #include "Dma.h"
 #include "IopDma.h"
 #include "IopHw.h"
-
-#include "spu2.h" // required for ENABLE_NEW_IOPDMA_SPU2 define
+#include "SPU2/Debug.h"
+#include "SPU2/defs.h"
+#include "SPU2/spu2.h"
 
 // Core 0 Input is "SPDIF mode" - Source audio is AC3 compressed.
 

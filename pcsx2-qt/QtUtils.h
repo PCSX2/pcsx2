@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -20,7 +20,9 @@ class QAction;
 class QComboBox;
 class QFileInfo;
 class QFrame;
+class QLabel;
 class QKeyEvent;
+class QSlider;
 class QTableView;
 class QTreeView;
 class QVariant;
@@ -70,6 +72,9 @@ namespace QtUtils
 
 	/// Sets a widget to italics if the setting value is inherited.
 	void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
+
+	/// Binds a label to a slider's value.
+	void BindLabelToSlider(QSlider* slider, QLabel* label, float range = 1.0f);
 
 	/// Changes whether a window is resizable.
 	void SetWindowResizeable(QWidget* widget, bool resizeable);

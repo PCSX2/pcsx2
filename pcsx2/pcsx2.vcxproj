@@ -250,11 +250,7 @@
     <ClCompile Include="SIO\Sio2.cpp" />
     <ClCompile Include="SPU2\Debug.cpp" />
     <ClCompile Include="SPU2\Dma.cpp" />
-    <ClCompile Include="SPU2\DplIIdecoder.cpp" />
-    <ClCompile Include="SPU2\SndOut_Cubeb.cpp" />
-    <ClCompile Include="SPU2\SndOut_XAudio2.cpp" />
     <ClCompile Include="SPU2\wavedump_wav.cpp" />
-    <ClCompile Include="SPU2\SndOut.cpp" />
     <ClCompile Include="SPU2\RegTable.cpp" />
     <ClCompile Include="SPU2\spu2freeze.cpp" />
     <ClCompile Include="SPU2\spu2sys.cpp" />
@@ -603,13 +599,10 @@
     <ClInclude Include="SIO\SioTypes.h" />
     <ClInclude Include="SPU2\Debug.h" />
     <ClInclude Include="SPU2\Dma.h" />
-    <ClInclude Include="SPU2\Global.h" />
     <ClInclude Include="SPU2\interpolate_table.h" />
-    <ClInclude Include="SPU2\SndOut.h" />
     <ClInclude Include="SPU2\spdif.h" />
     <ClInclude Include="SPU2\defs.h" />
     <ClInclude Include="SPU2\regs.h" />
-    <ClInclude Include="SPU2\Mixer.h" />
     <ClInclude Include="SPU2\spu2.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS\GS.h" />

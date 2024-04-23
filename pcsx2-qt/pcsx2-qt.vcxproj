@@ -432,6 +432,12 @@
     <QtUi Include="Settings\ControllerMacroWidget.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="Settings\AudioStretchSettingsDialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="Settings\ControllerBindingWidget_Popn.ui" />
     <None Include="Settings\ControllerMappingSettingsDialog.ui" />
     <None Include="Settings\FolderSettingsWidget.ui" />

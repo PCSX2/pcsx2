@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "SPU2/Global.h"
+#include "SPU2/defs.h"
 #include "SPU2/spu2.h" // hopefully temporary, until I resolve lClocks depdendency
 #include "IopMem.h"
 
@@ -110,8 +110,6 @@ s32 SPU2Savestate::ThawIt(DataBlock& spud)
 	}
 	else
 	{
-		SndBuffer::ClearContents();
-
 		memcpy(spu2regs, spud.unkregs, sizeof(spud.unkregs));
 		memcpy(_spu2mem, spud.mem, sizeof(spud.mem));
 

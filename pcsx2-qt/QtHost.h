@@ -112,6 +112,8 @@ public Q_SLOTS:
 	void queueSnapshot(quint32 gsdump_frames);
 	void beginCapture(const QString& path);
 	void endCapture();
+	void setAudioOutputVolume(int volume, int fast_forward_volume);
+	void setAudioOutputMuted(bool muted);
 
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);

@@ -44,11 +44,11 @@ static void HotkeyAdjustVolume(s32 fixed, s32 delta)
 	if (!VMManager::HasValidVM())
 		return;
 
-	const s32 current_vol = SPU2::GetOutputVolume();
+	const s32 current_vol = static_cast<s32>(SPU2::GetOutputVolume());
 	const s32 new_volume =
-		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, Pcsx2Config::SPU2Options::MAX_VOLUME);
+		std::clamp((fixed >= 0) ? fixed : (current_vol + delta), 0, static_cast<s32>(Pcsx2Config::SPU2Options::MAX_VOLUME));
 	if (current_vol != new_volume)
-		SPU2::SetOutputVolume(new_volume);
+		SPU2::SetOutputVolume(static_cast<u32>(new_volume));
 
 	if (new_volume == 0)
 	{
@@ -197,7 +197,7 @@ DEFINE_HOTKEY("DecreaseVolume", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_N
 	})
 DEFINE_HOTKEY("Mute", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"), [](s32 pressed) {
 	if (!pressed && VMManager::HasValidVM())
-		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? EmuConfig.SPU2.FinalVolume : 0, 0);
+		HotkeyAdjustVolume((SPU2::GetOutputVolume() == 0) ? SPU2::GetResetVolume() : 0, 0);
 })
 DEFINE_HOTKEY(
 	"FrameAdvance", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Frame Advance"), [](s32 pressed) {

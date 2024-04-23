@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "QtUtils.h"
@@ -14,11 +14,13 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QTreeView>
@@ -200,6 +202,15 @@ namespace QtUtils
 			new_font.setItalic(inherited);
 			widget->setFont(new_font);
 		}
+	}
+
+	void BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
+	{
+		auto update_label = [label, range](int new_value) {
+			label->setText(QString::number(static_cast<int>(new_value) / range));
+		};
+		update_label(slider->value());
+		QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
 	}
 
 	void SetWindowResizeable(QWidget* widget, bool resizeable)

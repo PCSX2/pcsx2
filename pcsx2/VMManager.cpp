@@ -186,6 +186,7 @@ static LimiterModeType s_limiter_mode = LimiterModeType::Nominal;
 static s64 s_limiter_ticks_per_frame = 0;
 static u64 s_limiter_frame_start = 0;
 static float s_target_speed = 0.0f;
+static bool s_target_speed_synced_to_host = false;
 static bool s_use_vsync_for_timing = false;
 
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
@@ -1988,7 +1989,7 @@ double VMManager::AdjustToHostRefreshRate(float frame_rate, float target_speed)
 {
 	if (!EmuConfig.EmulationSpeed.SyncToHostRefreshRate || target_speed != 1.0f)
 	{
-		SPU2::SetDeviceSampleRateMultiplier(1.0);
+		s_target_speed_synced_to_host = false;
 		s_use_vsync_for_timing = false;
 		return target_speed;
 	}
@@ -1997,23 +1998,19 @@ double VMManager::AdjustToHostRefreshRate(float frame_rate, float target_speed)
 	if (!GSGetHostRefreshRate(&host_refresh_rate))
 	{
 		Console.Warning("Cannot sync to host refresh since the query failed.");
-		SPU2::SetDeviceSampleRateMultiplier(1.0);
+		s_target_speed_synced_to_host = false;
 		s_use_vsync_for_timing = false;
 		return target_speed;
 	}
 
-	const double ratio = host_refresh_rate / frame_rate;
+	const float ratio = host_refresh_rate / frame_rate;
 	const bool syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
+	s_target_speed_synced_to_host = syncing_to_host;
 	s_use_vsync_for_timing = (syncing_to_host && !EmuConfig.GS.SkipDuplicateFrames && EmuConfig.GS.VsyncEnable != VsyncMode::Off);
 	Console.WriteLn("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s %s", host_refresh_rate, frame_rate, ratio,
 		syncing_to_host ? "can sync" : "can't sync", s_use_vsync_for_timing ? "and using vsync for pacing" : "and using sleep for pacing");
 
-	if (!syncing_to_host)
-		return target_speed;
-
-	target_speed *= ratio;
-	SPU2::SetDeviceSampleRateMultiplier(ratio);
-	return target_speed;
+	return syncing_to_host ? ratio : target_speed;
 }
 
 float VMManager::GetTargetSpeedForLimiterMode(LimiterModeType mode)
@@ -2061,6 +2058,11 @@ void VMManager::UpdateTargetSpeed()
 		SPU2::OnTargetSpeedChanged();
 		ResetFrameLimiter();
 	}
+}
+
+bool VMManager::IsTargetSpeedAdjustedToHost()
+{
+	return s_target_speed_synced_to_host;
 }
 
 float VMManager::GetFrameRate()
@@ -2928,9 +2930,6 @@ void VMManager::EnforceAchievementsChallengeModeSettings()
 	EmuConfig.Speedhacks.EECycleRate =
 		std::max<decltype(EmuConfig.Speedhacks.EECycleRate)>(EmuConfig.Speedhacks.EECycleRate, 0);
 	EmuConfig.Speedhacks.EECycleSkip = 0;
-
-	// Async mix breaks games.
-	EmuConfig.SPU2.SynchMode = Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch;
 }
 
 void VMManager::LogUnsafeSettingsToConsole(const std::string& messages)
@@ -2972,11 +2971,6 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		append(ICON_FA_TACHOMETER_ALT,
 			TRANSLATE_SV("VMManager", "Cycle rate/skip is not at default, this may crash or make games run too slow."));
-	}
-	if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::ASync)
-	{
-		append(ICON_FA_VOLUME_MUTE,
-			TRANSLATE_SV("VMManager", "Audio is using async mix, expect desynchronization in FMVs."));
 	}
 	if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
 		append(ICON_FA_TV, TRANSLATE_SV("VMManager", "Upscale multiplier is below native, this will break rendering."));

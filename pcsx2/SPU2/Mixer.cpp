@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "common/Assertions.h"
-
-#include "SPU2/Global.h"
+#include "Host/AudioStream.h"
+#include "SPU2/Debug.h"
+#include "SPU2/defs.h"
 #include "SPU2/spu2.h"
 #include "SPU2/interpolate_table.h"
+
+#include "common/Assertions.h"
 
 static const s32 tbl_XA_Factor[16][2] =
 	{
@@ -565,16 +567,7 @@ static StereoOut32 DCFilter(StereoOut32 input) {
 	return output;
 }
 
-// used to throttle the output rate of cache stat reports
-static int p_cachestat_counter = 0;
-
-// Gcc does not want to inline it when lto is enabled because some functions growth too much.
-// The function is big enought to see any speed impact. -- Gregory
-#ifndef __POSIX__
-__forceinline
-#endif
-	void
-	Mix()
+__forceinline void spu2Mix()
 {
 	// Note: Playmode 4 is SPDIF, which overrides other inputs.
 	StereoOut32 InputData[2] =
@@ -638,17 +631,23 @@ __forceinline
 	Out = ApplyVolume(Out, {0x4fff, 0x4fff});
 	Out = DCFilter(Out);
 
-	// Final clamp, take care not to exceed 16 bits from here on
-	Out = clamp_mix(Out);
-	SndBuffer::Write(StereoOut16(Out));
+#ifdef PCSX2_DEVBUILD
+	// Log final output to wavefile.
+	WaveDump::WriteCore(1, CoreSrc_External, Out);
+#endif
+
+	spu2Output(Out);
 
 	// Update AutoDMA output positioning
 	OutPos++;
 	if (OutPos >= 0x200)
 		OutPos = 0;
 
-	if (IsDevBuild)
+	if constexpr (IsDevBuild)
 	{
+		// used to throttle the output rate of cache stat reports
+		static int p_cachestat_counter = 0;
+
 		p_cachestat_counter++;
 		if (p_cachestat_counter > (48000 * 10))
 		{

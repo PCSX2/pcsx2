@@ -1,12 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
-
-#include <QtWidgets/QMessageBox>
-#include <algorithm>
-
-#include "pcsx2/SPU2/Global.h"
-#include "pcsx2/SPU2/spu2.h"
-#include "pcsx2/VMManager.h"
 
 #include "AudioSettingsWidget.h"
 #include "QtHost.h"
@@ -14,16 +7,16 @@
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
 
-static constexpr s32 DEFAULT_SYNCHRONIZATION_MODE = 0;
-static constexpr s32 DEFAULT_EXPANSION_MODE = 0;
-static constexpr s32 DEFAULT_DPL_DECODING_LEVEL = 0;
-static const char* DEFAULT_OUTPUT_MODULE = "cubeb";
-static constexpr s32 DEFAULT_TARGET_LATENCY = 60;
-static constexpr s32 DEFAULT_OUTPUT_LATENCY = 20;
-static constexpr s32 DEFAULT_VOLUME = 100;
-static constexpr s32 DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH = 30;
-static constexpr s32 DEFAULT_SOUNDTOUCH_SEEK_WINDOW = 20;
-static constexpr s32 DEFAULT_SOUNDTOUCH_OVERLAP = 10;
+#include "ui_AudioExpansionSettingsDialog.h"
+#include "ui_AudioStretchSettingsDialog.h"
+
+#include "pcsx2/Host/AudioStream.h"
+#include "pcsx2/SPU2/spu2.h"
+#include "pcsx2/VMManager.h"
+
+#include <QtWidgets/QMessageBox>
+#include <algorithm>
+#include <bit>
 
 AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent)
 	: QWidget(parent)
@@ -32,317 +25,481 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	SettingsInterface* sif = dialog->getSettingsInterface();
 
 	m_ui.setupUi(this);
-	populateOutputModules();
 
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.syncMode, "SPU2/Output", "SynchMode", DEFAULT_SYNCHRONIZATION_MODE);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.expansionMode, "SPU2/Output", "SpeakerConfiguration", DEFAULT_EXPANSION_MODE);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.dplLevel, "SPU2/Output", "DplDecodingLevel", DEFAULT_DPL_DECODING_LEVEL);
-	connect(m_ui.syncMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AudioSettingsWidget::updateTargetLatencyRange);
-	connect(m_ui.expansionMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AudioSettingsWidget::expansionModeChanged);
-	updateTargetLatencyRange();
-	expansionModeChanged();
+	for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
+		m_ui.audioBackend->addItem(QString::fromUtf8(AudioStream::GetBackendDisplayName(static_cast<AudioBackend>(i))));
 
-	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.outputModule, "SPU2/Output", "OutputModule", DEFAULT_OUTPUT_MODULE);
-	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
-		//: Measuring unit that will appear after the number selected in its option. Adapt the space depending on your language's rules.
-		sif, m_ui.targetLatency, m_ui.targetLatencyLabel, tr(" ms"), "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
-	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
-		sif, m_ui.outputLatency, m_ui.outputLatencyLabel, tr(" ms"), "SPU2/Output", "OutputLatency", DEFAULT_OUTPUT_LATENCY);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "SPU2/Output", "OutputLatencyMinimal", false);
-	connect(m_ui.outputModule, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputModuleChanged);
-	connect(m_ui.backend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputBackendChanged);
-	connect(m_ui.targetLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
-	connect(m_ui.outputLatency, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabels);
-	connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::updateLatencyLabels);
-	connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyStateChanged);
-	outputModuleChanged();
-
-	m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME));
-	connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::volumeChanged);
-	updateVolumeLabel();
-	if (dialog->isPerGameSettings())
+	for (u32 i = 0; i < static_cast<u32>(AudioExpansionMode::Count); i++)
 	{
-		connect(m_ui.volume, &QSlider::customContextMenuRequested, this, &AudioSettingsWidget::volumeContextMenuRequested);
-		m_ui.volume->setContextMenuPolicy(Qt::CustomContextMenu);
-		if (sif->ContainsValue("SPU2/Mixing", "FinalVolume"))
-		{
-			QFont bold_font(m_ui.volume->font());
-			bold_font.setBold(true);
-			m_ui.volumeLabel->setFont(bold_font);
-		}
+		m_ui.expansionMode->addItem(
+			QString::fromUtf8(AudioStream::GetExpansionModeDisplayName(static_cast<AudioExpansionMode>(i))));
 	}
 
-	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.sequenceLength, m_ui.sequenceLengthLabel, tr(" ms"), "Soundtouch",
-		"SequenceLengthMS", DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
-	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
-		sif, m_ui.seekWindowSize, m_ui.seekWindowSizeLabel, tr(" ms"), "Soundtouch", "SeekWindowMS", DEFAULT_SOUNDTOUCH_SEEK_WINDOW);
-	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
-		sif, m_ui.overlap, m_ui.overlapLabel, tr(" ms"), "Soundtouch", "OverlapMS", DEFAULT_SOUNDTOUCH_OVERLAP);
-	connect(m_ui.resetTimestretchDefaults, &QPushButton::clicked, this, &AudioSettingsWidget::resetTimestretchDefaults);
+	for (u32 i = 0; i < static_cast<u32>(Pcsx2Config::SPU2Options::SPU2SyncMode::Count); i++)
+	{
+		m_ui.syncMode->addItem(
+			QString::fromUtf8(Pcsx2Config::SPU2Options::GetSyncModeDisplayName(
+				static_cast<Pcsx2Config::SPU2Options::SPU2SyncMode>(i))));
+	}
 
-	m_ui.label_3b->setVisible(false);
-	m_ui.dplLevel->setVisible(false);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "SPU2/Output", "Backend",
+		&AudioStream::ParseBackendName, &AudioStream::GetBackendName,
+		Pcsx2Config::SPU2Options::DEFAULT_BACKEND);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.expansionMode, "SPU2/Output", "ExpansionMode",
+		&AudioStream::ParseExpansionMode, &AudioStream::GetExpansionModeName,
+		AudioStreamParameters::DEFAULT_EXPANSION_MODE);
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.syncMode, "SPU2/Output", "SyncMode",
+		&Pcsx2Config::SPU2Options::ParseSyncMode, &Pcsx2Config::SPU2Options::GetSyncModeName,
+		Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferMS, "SPU2/Output", "BufferMS",
+		AudioStreamParameters::DEFAULT_BUFFER_MS);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "SPU2/Output", "OutputLatencyMS",
+		AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "SPU2/Output", "OutputLatencyMinimal", false);
+	connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
+	connect(m_ui.expansionMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onExpansionModeChanged);
+	connect(m_ui.expansionSettings, &QToolButton::clicked, this, &AudioSettingsWidget::onExpansionSettingsClicked);
+	connect(m_ui.syncMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onSyncModeChanged);
+	connect(m_ui.stretchSettings, &QToolButton::clicked, this, &AudioSettingsWidget::onStretchSettingsClicked);
+	onExpansionModeChanged();
+	onSyncModeChanged();
+	updateDriverNames();
 
-	onMinimalOutputLatencyStateChanged();
-	updateLatencyLabels();
+	connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
+	connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
+	connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onMinimalOutputLatencyChanged);
+	onMinimalOutputLatencyChanged();
+	updateLatencyLabel();
 
+	// for per-game, just use the normal path, since it needs to re-read/apply
+	if (!dialog->isPerGameSettings())
+	{
+		m_ui.volume->setValue(m_dialog->getEffectiveIntValue("SPU2/Output", "OutputVolume", 100));
+		m_ui.fastForwardVolume->setValue(m_dialog->getEffectiveIntValue("SPU2/Output", "FastForwardVolume", 100));
+		m_ui.muted->setChecked(m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputMuted", false));
+		connect(m_ui.volume, &QSlider::valueChanged, this, &AudioSettingsWidget::onOutputVolumeChanged);
+		connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
+		connect(m_ui.muted, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
+		updateVolumeLabel();
+	}
+	else
+	{
+		SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.volume, m_ui.volumeLabel, tr("%"), "SPU2/Output", "OutputVolume", 100);
+		SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel, tr("%"), "SPU2/Output", "FastForwardVolume", 100);
+		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "SPU2/Output", "OutputMuted", false);
+	}
+	connect(m_ui.resetVolume, &QToolButton::clicked, this, [this]() { resetVolume(false); });
+	connect(m_ui.resetFastForwardVolume, &QToolButton::clicked, this, [this]() { resetVolume(true); });
+
+	dialog->registerWidgetHelp(
+		m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
+		tr("The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the "
+		   "lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio "
+		   "output."));
+	dialog->registerWidgetHelp(
+		m_ui.bufferMS, tr("Buffer Size"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_BUFFER_MS),
+		tr("Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the "
+		   "average latency, as audio will be stretched/shrunk to keep the buffer size within check."));
+	dialog->registerWidgetHelp(
+		m_ui.outputLatencyMS, tr("Output Latency"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS),
+		tr("Determines the latency from the buffer to the host audio output. This can be set lower than the target latency "
+		   "to reduce audio delay."));
+	dialog->registerWidgetHelp(m_ui.volume, tr("Output Volume"), "100%",
+		tr("Controls the volume of the audio played on the host."));
+	dialog->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",
+		tr("Controls the volume of the audio played on the host when fast forwarding."));
+	dialog->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
+		tr("Prevents the emulator from producing any audible sound."));
+	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion Mode"), tr("Disabled (Stereo)"),
+		tr("Determines how audio is expanded from stereo to surround for supported games. This "
+		   "includes games that support Dolby Pro Logic/Pro Logic II."));
+	dialog->registerWidgetHelp(m_ui.expansionSettings, tr("Expansion Settings"), tr("N/A"),
+		tr("These settings fine-tune the behavior of the FreeSurround-based channel expander."));
 	dialog->registerWidgetHelp(m_ui.syncMode, tr("Synchronization"), tr("TimeStretch (Recommended)"),
 		tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces much nicer fast-forward/slowdown audio."));
-
-	dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion"), tr("Stereo (None, Default)"), 
-		tr("Determines how the stereo output from the emulated system is upmixed into a greater number of the output speakers."));
-
-	//: Cubeb is an audio engine name. Leave as-is.
-	dialog->registerWidgetHelp(m_ui.outputModule, tr("Output Module"), tr("Cubeb (Cross-platform)"), 
-		tr("Selects the library to be used for audio output."));
-
-	dialog->registerWidgetHelp(m_ui.backend, tr("Output Backend"), tr("Default"), 
-		tr("When the sound output module supports multiple audio backends, determines the API to be used for audio output to the system."));
-
-	dialog->registerWidgetHelp(m_ui.outputDevice, tr("Output Device"), tr("Default"), 
-		tr("Determines which audio device to output the sound to."));
-
-	dialog->registerWidgetHelp(m_ui.targetLatency, tr("Target Latency"), tr("60 ms"),
-		tr("Determines the buffer size which the time stretcher will try to keep filled. It effectively selects the average latency, as "
-		   "audio will be stretched/shrunk to keep the buffer size within check."));
-	dialog->registerWidgetHelp(m_ui.outputLatency, tr("Output Latency"), tr("20 ms"),
-		tr("Determines the latency from the buffer to the host audio output. This can be set lower than the target latency to reduce audio "
-		   "delay."));
-
-	dialog->registerWidgetHelp(m_ui.sequenceLength, tr("Sequence Length"), tr("30 ms"), tr("This is the default length of a single processing sequence which determines how the original sound is chopped in the time-stretch algorithm. "
-	"Larger values mean fewer sequences are used in processing. In principle a larger value sounds better when slowing down the tempo, but worse when increasing the tempo."));
-
-	//: Seek Window: the region of samples (window) the audio stretching algorithm is allowed to search.
-	dialog->registerWidgetHelp(m_ui.seekWindowSize, tr("Seek Window Size"), tr("20 ms"), tr("The seeking window is for the algorithm that seeks the best possible overlapping location. "
-
-	"This determines from how wide a sample window the algorithm can use to find an optimal mixing location when the sound sequences are to be linked back together."));
-
-	dialog->registerWidgetHelp(m_ui.overlap, tr("Overlap"), tr("10 ms"), tr("When the sound sequences are mixed back together to form again a continuous sound stream, this parameter defines how much the ends of the consecutive sequences will overlap with each other."));
-
-	dialog->registerWidgetHelp(m_ui.volume, tr("Volume"), tr("100%"),
-		tr("Pre-applies a volume modifier to the game's audio output before forwarding it to your computer."));
+	dialog->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"), tr("N/A"),
+		tr("These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed."));
+	dialog->registerWidgetHelp(m_ui.resetVolume, tr("Reset Volume"), tr("N/A"),
+		m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
+										tr("Resets volume back to the default, i.e. full."));
+	dialog->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
+		m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
+										tr("Resets volume back to the default, i.e. full."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
 
-void AudioSettingsWidget::expansionModeChanged()
+AudioExpansionMode AudioSettingsWidget::getEffectiveExpansionMode() const
 {
-	const bool expansion51 = m_dialog->getEffectiveIntValue("SPU2/Output", "SpeakerConfiguration", 0) == 2;
-	m_ui.dplLevel->setDisabled(!expansion51);
+	return AudioStream::ParseExpansionMode(
+		m_dialog->getEffectiveStringValue("SPU2/Output", "ExpansionMode",
+					AudioStream::GetExpansionModeName(AudioStreamParameters::DEFAULT_EXPANSION_MODE))
+			.c_str())
+		.value_or(AudioStreamParameters::DEFAULT_EXPANSION_MODE);
 }
 
-void AudioSettingsWidget::populateOutputModules()
+u32 AudioSettingsWidget::getEffectiveExpansionBlockSize() const
 {
-	for (const SndOutModule* mod : GetSndOutModules())
-		m_ui.outputModule->addItem(qApp->translate("SPU2", mod->GetDisplayName()), QString::fromUtf8(mod->GetIdent()));
+	const AudioExpansionMode expansion_mode = getEffectiveExpansionMode();
+	if (expansion_mode == AudioExpansionMode::Disabled)
+		return 0;
+
+	const u32 config_block_size = m_dialog->getEffectiveIntValue("SPU2/Output", "ExpandBlockSize",
+		AudioStreamParameters::DEFAULT_EXPAND_BLOCK_SIZE);
+	return std::has_single_bit(config_block_size) ? config_block_size : std::bit_ceil(config_block_size);
 }
 
-void AudioSettingsWidget::outputModuleChanged()
+void AudioSettingsWidget::onExpansionModeChanged()
 {
-	const std::string module_name(m_dialog->getEffectiveStringValue("SPU2/Output", "OutputModule", DEFAULT_OUTPUT_MODULE));
-	const char* const* backend_names = GetOutputModuleBackends(module_name.c_str());
-
-	const std::string backend_name(m_dialog->getEffectiveStringValue("SPU2/Output", "BackendName", ""));
-
-	QSignalBlocker sb(m_ui.backend);
-	m_ui.backend->clear();
-
-	if (m_dialog->isPerGameSettings())
-	{
-		const QString global_backend(QString::fromStdString(Host::GetStringSettingValue("SPU2/Output", "BackendName", "")));
-		m_ui.backend->addItem(tr("Use Global Setting [%1]").arg(global_backend.isEmpty() ? tr("Default") : global_backend));
-	}
-
-	m_ui.backend->setEnabled(backend_names != nullptr);
-	m_ui.backend->addItem(tr("Default"));
-	if (!backend_names || backend_name.empty())
-		m_ui.backend->setCurrentIndex(0);
-
-	if (backend_names)
-	{
-		for (u32 i = 0; backend_names[i] != nullptr; i++)
-		{
-			const int index = m_ui.backend->count();
-			m_ui.backend->addItem(QString::fromUtf8(backend_names[i]));
-			if (backend_name == backend_names[i])
-				m_ui.backend->setCurrentIndex(index);
-		}
-	}
-
-	updateDevices();
+	const AudioExpansionMode expansion_mode = getEffectiveExpansionMode();
+	m_ui.expansionSettings->setEnabled(expansion_mode != AudioExpansionMode::Disabled);
+	updateLatencyLabel();
 }
 
-void AudioSettingsWidget::outputBackendChanged()
+void AudioSettingsWidget::onSyncModeChanged()
 {
-	int index = m_ui.backend->currentIndex();
-	if (m_dialog->isPerGameSettings())
+	const Pcsx2Config::SPU2Options::SPU2SyncMode sync_mode =
+		Pcsx2Config::SPU2Options::ParseSyncMode(
+			m_dialog
+				->getEffectiveStringValue("SPU2/Output", "SyncMode",
+					Pcsx2Config::SPU2Options::GetSyncModeName(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE))
+				.c_str())
+			.value_or(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE);
+	m_ui.stretchSettings->setEnabled(sync_mode == Pcsx2Config::SPU2Options::SPU2SyncMode::TimeStretch);
+}
+
+AudioBackend AudioSettingsWidget::getEffectiveBackend() const
+{
+	return AudioStream::ParseBackendName(m_dialog->getEffectiveStringValue("SPU2/Output", "Backend",
+													 AudioStream::GetBackendName(Pcsx2Config::SPU2Options::DEFAULT_BACKEND))
+											 .c_str())
+		.value_or(Pcsx2Config::SPU2Options::DEFAULT_BACKEND);
+}
+
+void AudioSettingsWidget::updateDriverNames()
+{
+	const AudioBackend backend = getEffectiveBackend();
+	const std::vector<std::pair<std::string, std::string>> names = AudioStream::GetDriverNames(backend);
+
+	m_ui.driver->disconnect();
+	m_ui.driver->clear();
+	if (names.empty())
 	{
-		if (index == 0)
-		{
-			m_dialog->setStringSettingValue("SPU2/Output", "BackendName", std::nullopt);
-			return;
-		}
-
-		index--;
+		m_ui.driver->addItem(tr("Default"), QString());
+		m_ui.driver->setEnabled(false);
 	}
-
-	if (index == 0)
-		m_dialog->setStringSettingValue("SPU2/Output", "BackendName", "");
 	else
-		m_dialog->setStringSettingValue("SPU2/Output", "BackendName", m_ui.backend->currentText().toUtf8().constData());
+	{
+		m_ui.driver->setEnabled(true);
+		for (const std::pair<std::string, std::string>& it : names)
+			m_ui.driver->addItem(QString::fromStdString(it.second), QString::fromStdString(it.first));
 
-	updateDevices();
+		SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.driver, "SPU2/Output", "DriverName",
+			std::move(names.front().first));
+		connect(m_ui.driver, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDeviceNames);
+	}
+
+	updateDeviceNames();
 }
 
-void AudioSettingsWidget::updateDevices()
+void AudioSettingsWidget::updateDeviceNames()
 {
-	const std::string module_name(m_dialog->getEffectiveStringValue("SPU2/Output", "OutputModule", DEFAULT_OUTPUT_MODULE));
-	const std::string backend_name(m_dialog->getEffectiveStringValue("SPU2/Output", "BackendName", ""));
+	const AudioBackend backend = getEffectiveBackend();
+	const std::string driver_name = m_dialog->getEffectiveStringValue("SPU2/Output", "DriverName", "");
+	const std::string current_device = m_dialog->getEffectiveStringValue("SPU2/Output", "DeviceName", "");
+	const std::vector<AudioStream::DeviceInfo> devices = AudioStream::GetOutputDevices(backend, driver_name.c_str());
 
 	m_ui.outputDevice->disconnect();
 	m_ui.outputDevice->clear();
 	m_output_device_latency = 0;
 
-	std::vector<SndOutDeviceInfo> devices(GetOutputDeviceList(module_name.c_str(), backend_name.c_str()));
 	if (devices.empty())
 	{
-		m_ui.outputDevice->addItem(tr("Default"));
+		m_ui.outputDevice->addItem(tr("Default"), QString());
 		m_ui.outputDevice->setEnabled(false);
 	}
 	else
 	{
-		const std::string current_device(m_dialog->getEffectiveStringValue("SPU2/Output", "DeviceName", ""));
-
 		m_ui.outputDevice->setEnabled(true);
-		for (const SndOutDeviceInfo& devi : devices)
+
+		bool is_known_device = false;
+		for (const AudioStream::DeviceInfo& di : devices)
 		{
-			m_ui.outputDevice->addItem(QString::fromStdString(devi.display_name), QString::fromStdString(devi.name));
-			if (devi.name == current_device)
-				m_output_device_latency = devi.minimum_latency_frames;
+			m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
+			if (di.name == current_device)
+			{
+				m_output_device_latency = di.minimum_latency_frames;
+				is_known_device = true;
+			}
 		}
 
-		SettingWidgetBinder::BindWidgetToStringSetting(
-			m_dialog->getSettingsInterface(), m_ui.outputDevice, "SPU2/Output", "DeviceName", std::move(devices.front().name));
+		if (!is_known_device)
+		{
+			m_ui.outputDevice->addItem(tr("Unknown Device \"%1\"").arg(QString::fromStdString(current_device)),
+				QString::fromStdString(current_device));
+		}
+
+		SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.outputDevice, "SPU2/Output",
+			"DeviceName", std::move(devices.front().name));
 	}
+
+	updateLatencyLabel();
 }
 
-void AudioSettingsWidget::volumeChanged(int value)
+void AudioSettingsWidget::updateLatencyLabel()
 {
-	// Nasty, but needed so we don't do a full settings apply and lag while dragging.
-	if (SettingsInterface* sif = m_dialog->getSettingsInterface())
+	const u32 expand_buffer_ms = AudioStream::GetMSForBufferSize(SPU2::SAMPLE_RATE, getEffectiveExpansionBlockSize());
+	const u32 config_buffer_ms = m_dialog->getEffectiveIntValue("SPU2/Output", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS);
+	const u32 config_output_latency_ms = m_dialog->getEffectiveIntValue("SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+	const bool minimal_output = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
+
+	//: Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language's ruleset.
+	m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(config_output_latency_ms));
+
+	const u32 output_latency_ms = minimal_output ? AudioStream::GetMSForBufferSize(SPU2::SAMPLE_RATE, m_output_device_latency) : config_output_latency_ms;
+	if (output_latency_ms > 0)
 	{
-		if (!m_ui.volumeLabel->font().bold())
+		if (expand_buffer_ms > 0)
 		{
-			QFont bold_font(m_ui.volumeLabel->font());
-			bold_font.setBold(true);
-			m_ui.volumeLabel->setFont(bold_font);
+			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms expand + %4 ms output)")
+											 .arg(config_buffer_ms + expand_buffer_ms + output_latency_ms)
+											 .arg(config_buffer_ms)
+											 .arg(expand_buffer_ms)
+											 .arg(output_latency_ms));
 		}
-
-		sif->SetIntValue("SPU2/Mixing", "FinalVolume", value);
-		sif->Save();
-
-		// There's two separate interfaces - one we're editing, and the active one.
-		// We need to reload the latter.
-		g_emu_thread->reloadGameSettings();
+		else
+		{
+			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
+											 .arg(config_buffer_ms + output_latency_ms)
+											 .arg(config_buffer_ms)
+											 .arg(output_latency_ms));
+		}
 	}
 	else
 	{
-		Host::SetBaseIntSettingValue("SPU2/Mixing", "FinalVolume", value);
-		Host::CommitBaseSettingChanges();
-
-		// Push through to emu thread since we're not applying.
-		if (QtHost::IsVMValid())
+		if (expand_buffer_ms > 0)
 		{
-			Host::RunOnCPUThread([]() {
-				if (!VMManager::HasValidVM())
-					return;
-
-				EmuConfig.SPU2.FinalVolume = Host::GetIntSettingValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME);
-				SPU2::SetOutputVolume(EmuConfig.SPU2.FinalVolume);
-			});
+			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms expand, minimum output latency unknown)")
+											 .arg(expand_buffer_ms + config_buffer_ms)
+											 .arg(expand_buffer_ms));
+		}
+		else
+		{
+			m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (minimum output latency unknown)").arg(config_buffer_ms));
 		}
 	}
-
-	updateVolumeLabel();
-}
-
-void AudioSettingsWidget::volumeContextMenuRequested(const QPoint& pt)
-{
-	QMenu menu(m_ui.volume);
-	m_ui.volume->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, this, [this]() {
-		const s32 global_value = Host::GetBaseIntSettingValue("SPU2/Mixing", "FinalVolume", DEFAULT_VOLUME);
-		{
-			QSignalBlocker sb(m_ui.volume);
-			m_ui.volume->setValue(global_value);
-			updateVolumeLabel();
-		}
-
-		if (m_ui.volumeLabel->font().bold())
-		{
-			QFont orig_font(m_ui.volumeLabel->font());
-			orig_font.setBold(false);
-			m_ui.volumeLabel->setFont(orig_font);
-		}
-
-		SettingsInterface* sif = m_dialog->getSettingsInterface();
-		if (sif->ContainsValue("SPU2/Mixing", "FinalVolume"))
-		{
-			sif->DeleteValue("SPU2/Mixing", "FinalVolume");
-			sif->Save();
-			g_emu_thread->reloadGameSettings();
-		}
-	});
-	menu.exec(m_ui.volume->mapToGlobal(pt));
 }
 
 void AudioSettingsWidget::updateVolumeLabel()
 {
-	//: Variable value that indicates a percentage. Preserve the %1 variable, adapt the latter % (and/or any possible spaces) to your language's ruleset.
 	m_ui.volumeLabel->setText(tr("%1%").arg(m_ui.volume->value()));
+	m_ui.fastForwardVolumeLabel->setText(tr("%1%").arg(m_ui.fastForwardVolume->value()));
 }
 
-void AudioSettingsWidget::updateTargetLatencyRange()
+void AudioSettingsWidget::onMinimalOutputLatencyChanged()
 {
-	const Pcsx2Config::SPU2Options::SynchronizationMode sync_mode = static_cast<Pcsx2Config::SPU2Options::SynchronizationMode>(
-		m_dialog->getIntValue("SPU2/Output", "SynchMode", DEFAULT_SYNCHRONIZATION_MODE).value_or(DEFAULT_SYNCHRONIZATION_MODE));
-
-	m_ui.targetLatency->setMinimum((sync_mode == Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch) ?
-									   Pcsx2Config::SPU2Options::MIN_LATENCY_TIMESTRETCH :
-									   Pcsx2Config::SPU2Options::MIN_LATENCY);
-	m_ui.targetLatency->setMaximum(Pcsx2Config::SPU2Options::MAX_LATENCY);
+	const bool minimal = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
+	m_ui.outputLatencyMS->setEnabled(!minimal);
+	updateLatencyLabel();
 }
 
-void AudioSettingsWidget::updateLatencyLabels()
+void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 {
-	const bool minimal_output = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
+	// only called for base settings
+	pxAssert(!m_dialog->isPerGameSettings());
+	Host::SetBaseIntSettingValue("SPU2/Output", "OutputVolume", new_value);
+	Host::CommitBaseSettingChanges();
+	g_emu_thread->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
 
-	//: Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language's ruleset.
-	m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(m_ui.outputLatency->value()));
+	updateVolumeLabel();
+}
 
-	const u32 output_latency_ms =
-		minimal_output ? (((m_output_device_latency * 1000u) + 47999u) / 48000u) : static_cast<u32>(m_ui.outputLatency->value());
-	const u32 buffer_ms = static_cast<u32>(m_ui.targetLatency->value());
-	if (output_latency_ms > 0)
+void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
+{
+	// only called for base settings
+	pxAssert(!m_dialog->isPerGameSettings());
+	Host::SetBaseIntSettingValue("SPU2/Output", "FastForwardVolume", new_value);
+	Host::CommitBaseSettingChanges();
+	g_emu_thread->setAudioOutputVolume(m_ui.volume->value(), new_value);
+
+	updateVolumeLabel();
+}
+
+void AudioSettingsWidget::onOutputMutedChanged(int new_state)
+{
+	// only called for base settings
+	pxAssert(!m_dialog->isPerGameSettings());
+
+	const bool muted = (new_state != 0);
+	Host::SetBaseBoolSettingValue("SPU2/Output", "OutputMuted", muted);
+	Host::CommitBaseSettingChanges();
+	g_emu_thread->setAudioOutputMuted(muted);
+}
+
+void AudioSettingsWidget::onExpansionSettingsClicked()
+{
+	QDialog dlg(QtUtils::GetRootWidget(this));
+	Ui::AudioExpansionSettingsDialog dlgui;
+	dlgui.setupUi(&dlg);
+	dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("volume-up-line")).pixmap(32, 32));
+
+	SettingsInterface* sif = m_dialog->getSettingsInterface();
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.blockSize, "SPU2/Output", "ExpandBlockSize",
+		AudioStreamParameters::DEFAULT_EXPAND_BLOCK_SIZE, 0);
+	QtUtils::BindLabelToSlider(dlgui.blockSize, dlgui.blockSizeLabel);
+	SettingWidgetBinder::BindWidgetToFloatSetting(sif, dlgui.circularWrap, "SPU2/Output", "ExpandCircularWrap",
+		AudioStreamParameters::DEFAULT_EXPAND_CIRCULAR_WRAP);
+	QtUtils::BindLabelToSlider(dlgui.circularWrap, dlgui.circularWrapLabel);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.shift, "SPU2/Output", "ExpandShift", 100.0f,
+		AudioStreamParameters::DEFAULT_EXPAND_SHIFT);
+	QtUtils::BindLabelToSlider(dlgui.shift, dlgui.shiftLabel, 100.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.depth, "SPU2/Output", "ExpandDepth", 10.0f,
+		AudioStreamParameters::DEFAULT_EXPAND_DEPTH);
+	QtUtils::BindLabelToSlider(dlgui.depth, dlgui.depthLabel, 10.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.focus, "SPU2/Output", "ExpandFocus", 100.0f,
+		AudioStreamParameters::DEFAULT_EXPAND_FOCUS);
+	QtUtils::BindLabelToSlider(dlgui.focus, dlgui.focusLabel, 100.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.centerImage, "SPU2/Output", "ExpandCenterImage", 100.0f,
+		AudioStreamParameters::DEFAULT_EXPAND_CENTER_IMAGE);
+	QtUtils::BindLabelToSlider(dlgui.centerImage, dlgui.centerImageLabel, 100.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.frontSeparation, "SPU2/Output", "ExpandFrontSeparation",
+		10.0f, AudioStreamParameters::DEFAULT_EXPAND_FRONT_SEPARATION);
+	QtUtils::BindLabelToSlider(dlgui.frontSeparation, dlgui.frontSeparationLabel, 10.0f);
+	SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.rearSeparation, "SPU2/Output", "ExpandRearSeparation", 10.0f,
+		AudioStreamParameters::DEFAULT_EXPAND_REAR_SEPARATION);
+	QtUtils::BindLabelToSlider(dlgui.rearSeparation, dlgui.rearSeparationLabel, 10.0f);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.lowCutoff, "SPU2/Output", "ExpandLowCutoff",
+		AudioStreamParameters::DEFAULT_EXPAND_LOW_CUTOFF);
+	QtUtils::BindLabelToSlider(dlgui.lowCutoff, dlgui.lowCutoffLabel);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.highCutoff, "SPU2/Output", "ExpandHighCutoff",
+		AudioStreamParameters::DEFAULT_EXPAND_HIGH_CUTOFF);
+	QtUtils::BindLabelToSlider(dlgui.highCutoff, dlgui.highCutoffLabel);
+
+	connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+	connect(dlgui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [this, &dlg]() {
+		m_dialog->setIntSettingValue("SPU2/Output", "ExpandBlockSize",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_BLOCK_SIZE));
+
+		m_dialog->setFloatSettingValue("SPU2/Output", "ExpandCircularWrap",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_CIRCULAR_WRAP));
+		m_dialog->setFloatSettingValue(
+			"SPU2/Output", "ExpandShift",
+			m_dialog->isPerGameSettings() ? std::nullopt : std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_SHIFT));
+		m_dialog->setFloatSettingValue(
+			"SPU2/Output", "ExpandDepth",
+			m_dialog->isPerGameSettings() ? std::nullopt : std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_DEPTH));
+		m_dialog->setFloatSettingValue(
+			"SPU2/Output", "ExpandFocus",
+			m_dialog->isPerGameSettings() ? std::nullopt : std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_FOCUS));
+		m_dialog->setFloatSettingValue("SPU2/Output", "ExpandCenterImage",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_CENTER_IMAGE));
+		m_dialog->setFloatSettingValue("SPU2/Output", "ExpandFrontSeparation",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_FRONT_SEPARATION));
+		m_dialog->setFloatSettingValue("SPU2/Output", "ExpandRearSeparation",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_REAR_SEPARATION));
+		m_dialog->setIntSettingValue("SPU2/Output", "ExpandLowCutoff",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_LOW_CUTOFF));
+		m_dialog->setIntSettingValue("SPU2/Output", "ExpandHighCutoff",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_HIGH_CUTOFF));
+
+		dlg.done(0);
+
+		QMetaObject::invokeMethod(this, &AudioSettingsWidget::onExpansionSettingsClicked, Qt::QueuedConnection);
+	});
+
+	dlg.exec();
+	updateLatencyLabel();
+}
+
+void AudioSettingsWidget::onStretchSettingsClicked()
+{
+	QDialog dlg(QtUtils::GetRootWidget(this));
+	Ui::AudioStretchSettingsDialog dlgui;
+	dlgui.setupUi(&dlg);
+	dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("volume-up-line")).pixmap(32, 32));
+
+	SettingsInterface* sif = m_dialog->getSettingsInterface();
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.sequenceLength, "SPU2/Output", "StretchSequenceLengthMS",
+		AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH, 0);
+	QtUtils::BindLabelToSlider(dlgui.sequenceLength, dlgui.sequenceLengthLabel);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.seekWindowSize, "SPU2/Output", "StretchSeekWindowMS",
+		AudioStreamParameters::DEFAULT_STRETCH_SEEKWINDOW, 0);
+	QtUtils::BindLabelToSlider(dlgui.seekWindowSize, dlgui.seekWindowSizeLabel);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.overlap, "SPU2/Output", "StretchOverlapMS",
+		AudioStreamParameters::DEFAULT_STRETCH_OVERLAP, 0);
+	QtUtils::BindLabelToSlider(dlgui.overlap, dlgui.overlapLabel);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, dlgui.useQuickSeek, "SPU2/Output", "StretchUseQuickSeek",
+		AudioStreamParameters::DEFAULT_STRETCH_USE_QUICKSEEK);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, dlgui.useAAFilter, "SPU2/Output", "StretchUseAAFilter",
+		AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER);
+
+	connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+	connect(dlgui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [this, &dlg]() {
+		m_dialog->setIntSettingValue("SPU2/Output", "StretchSequenceLengthMS",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<int>(AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH));
+		m_dialog->setIntSettingValue("SPU2/Output", "StretchSeekWindowMS",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<int>(AudioStreamParameters::DEFAULT_STRETCH_SEEKWINDOW));
+		m_dialog->setIntSettingValue("SPU2/Output", "StretchOverlapMS",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<int>(AudioStreamParameters::DEFAULT_STRETCH_OVERLAP));
+		m_dialog->setBoolSettingValue("SPU2/Output", "StretchUseQuickSeek",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<bool>(AudioStreamParameters::DEFAULT_STRETCH_USE_QUICKSEEK));
+		m_dialog->setBoolSettingValue("SPU2/Output", "StretchUseAAFilter",
+			m_dialog->isPerGameSettings() ?
+				std::nullopt :
+				std::optional<bool>(AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER));
+
+		dlg.done(0);
+
+		QMetaObject::invokeMethod(this, &AudioSettingsWidget::onStretchSettingsClicked, Qt::QueuedConnection);
+	});
+
+	dlg.exec();
+}
+
+void AudioSettingsWidget::resetVolume(bool fast_forward)
+{
+	const char* key = fast_forward ? "FastForwardVolume" : "OutputVolume";
+	QSlider* const slider = fast_forward ? m_ui.fastForwardVolume : m_ui.volume;
+	QLabel* const label = fast_forward ? m_ui.fastForwardVolumeLabel : m_ui.volumeLabel;
+
+	if (m_dialog->isPerGameSettings())
 	{
-		m_ui.latencySummary->setText(tr("Average Latency: %1 ms (%2 ms buffer + %3 ms output)")
-										 .arg(buffer_ms + output_latency_ms)
-										 .arg(buffer_ms)
-										 .arg(output_latency_ms));
+		m_dialog->removeSettingValue("Audio", key);
+
+		const int value = m_dialog->getEffectiveIntValue("Audio", key, 100);
+		QSignalBlocker sb(slider);
+		slider->setValue(value);
+		label->setText(QStringLiteral("%1%2").arg(value).arg(tr("%")));
+
+		// remove bold font if it was previously overridden
+		QFont font(label->font());
+		font.setBold(false);
+		label->setFont(font);
 	}
 	else
 	{
-		m_ui.latencySummary->setText(tr("Average Latency: %1 ms (minimum output latency unknown)").arg(buffer_ms));
+		slider->setValue(100);
 	}
-}
-
-void AudioSettingsWidget::onMinimalOutputLatencyStateChanged()
-{
-	m_ui.outputLatency->setEnabled(!m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false));
-}
-
-void AudioSettingsWidget::resetTimestretchDefaults()
-{
-	m_ui.sequenceLength->setValue(DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
-	m_ui.seekWindowSize->setValue(DEFAULT_SOUNDTOUCH_SEEK_WINDOW);
-	m_ui.overlap->setValue(DEFAULT_SOUNDTOUCH_OVERLAP);
 }

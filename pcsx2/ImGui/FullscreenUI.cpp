@@ -10,6 +10,7 @@
 #include "CDVD/CDVDdiscReader.h"
 #include "GameList.h"
 #include "Host.h"
+#include "Host/AudioStream.h"
 #include "INISettingsInterface.h"
 #include "ImGui/FullscreenUI.h"
 #include "ImGui/ImGuiFullscreen.h"
@@ -323,6 +324,7 @@ namespace FullscreenUI
 	static void SetSettingsChanged(SettingsInterface* bsi);
 	static bool GetEffectiveBoolSetting(SettingsInterface* bsi, const char* section, const char* key, bool default_value);
 	static s32 GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, const char* key, s32 default_value);
+	static u32 GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, const char* key, u32 default_value);
 	static void DoCopyGameSettings();
 	static void DoClearGameSettings();
 	static void CopyGlobalControllerSettingsToGame();
@@ -371,6 +373,14 @@ namespace FullscreenUI
 		float default_value, const char* const* options, const float* option_values, size_t option_count, bool translate_options,
 		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
 		ImFont* summary_font = g_medium_font);
+	template <typename DataType, typename SizeType>
+	static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+		const char* key, DataType default_value,
+		std::optional<DataType> (*from_string_function)(const char* str),
+		const char* (*to_string_function)(DataType value),
+		const char* (*to_display_string_function)(DataType value), SizeType option_count,
+		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
 		const std::string& runtime_var, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
 		ImFont* summary_font = g_medium_font);
@@ -1441,6 +1451,18 @@ s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* sec
 	return Host::Internal::GetBaseSettingsLayer()->GetIntValue(section, key, default_value);
 }
 
+u32 FullscreenUI::GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, const char* key, u32 default_value)
+{
+	if (IsEditingGameSettings(bsi))
+	{
+		std::optional<u32> value = bsi->GetOptionalUIntValue(section, key, std::nullopt);
+		if (value.has_value())
+			return value.value();
+	}
+
+	return Host::Internal::GetBaseSettingsLayer()->GetUIntValue(section, key, default_value);
+}
+
 void FullscreenUI::DrawInputBindingButton(
 	SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, const char* icon_name, bool show_type)
 {
@@ -2433,6 +2455,57 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
 					else
 					{
 						bsi->SetFloatValue(section, key, option_values[index]);
+					}
+
+					SetSettingsChanged(bsi);
+				}
+
+				CloseChoiceDialog();
+			});
+	}
+}
+
+template <typename DataType, typename SizeType>
+void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+	const char* key, DataType default_value, std::optional<DataType> (*from_string_function)(const char* str),
+	const char* (*to_string_function)(DataType value), const char* (*to_display_string_function)(DataType value), SizeType option_count,
+	bool enabled, float height, ImFont* font, ImFont* summary_font)
+{
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
+		section, key, game_settings ? std::nullopt : std::optional<const char*>(to_string_function(default_value))));
+
+	const std::optional<DataType> typed_value(value.has_value() ? from_string_function(value->c_str()) : std::nullopt);
+
+	if (MenuButtonWithValue(title, summary,
+			typed_value.has_value() ? to_display_string_function(typed_value.value()) :
+									  FSUI_CSTR("Use Global Setting"),
+			enabled, height, font, summary_font))
+	{
+		ImGuiFullscreen::ChoiceDialogOptions cd_options;
+		cd_options.reserve(static_cast<u32>(option_count) + 1);
+		if (game_settings)
+			cd_options.emplace_back(FSUI_CSTR("Use Global Setting"), !value.has_value());
+		for (u32 i = 0; i < static_cast<u32>(option_count); i++)
+			cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
+				(typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
+		OpenChoiceDialog(
+			title, false, std::move(cd_options),
+			[section, key, to_string_function, game_settings](s32 index, const std::string& title, bool checked) {
+				if (index >= 0)
+				{
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+					if (game_settings)
+					{
+						if (index == 0)
+							bsi->DeleteValue(section, key);
+						else
+							bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+					}
+					else
+					{
+						bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
 					}
 
 					SetSettingsChanged(bsi);
@@ -3851,67 +3924,62 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
 void FullscreenUI::DrawAudioSettingsPage()
 {
-	static constexpr const char* synchronization_modes[] = {
-		FSUI_NSTR("TimeStretch (Recommended)"),
-		FSUI_NSTR("Async Mix (Breaks some games!)"),
-		FSUI_NSTR("None (Audio can skip.)"),
-	};
-	static constexpr const char* expansion_modes[] = {
-		FSUI_NSTR("Stereo (None, Default)"),
-		FSUI_NSTR("Quadraphonic"),
-		FSUI_NSTR("Surround 5.1"),
-		FSUI_NSTR("Surround 7.1"),
-	};
-	static constexpr const char* output_entries[] = {
-		FSUI_NSTR("No Sound (Emulate SPU2 only)"),
-		FSUI_NSTR("Cubeb (Cross-platform)"),
-#ifdef _WIN32
-		FSUI_NSTR("XAudio2"),
-#endif
-	};
-	static constexpr const char* output_values[] = {
-		"nullout",
-		"cubeb",
-#ifdef _WIN32
-		"xaudio2",
-#endif
-	};
-	static constexpr const char* default_output_module = "cubeb";
-
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
 	BeginMenuButtons();
 
-	MenuHeading(FSUI_CSTR("Runtime Settings"));
-	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_VOLUME_UP, "Output Volume"),
-		FSUI_CSTR("Applies a global volume modifier to all sound produced by the game."), "SPU2/Mixing", "FinalVolume", 100, 0, 200,
-		FSUI_CSTR("%d%%"));
+	MenuHeading(FSUI_CSTR("Audio Control"));
 
-	MenuHeading(FSUI_CSTR("Mixing Settings"));
-	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SYNC_ALT, "Synchronization Mode"),
-		FSUI_CSTR("Changes when SPU samples are generated relative to system emulation."), "SPU2/Output", "SynchMode",
-		static_cast<int>(Pcsx2Config::SPU2Options::SynchronizationMode::TimeStretch), synchronization_modes,
-		std::size(synchronization_modes), true);
-	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_PF_SPEAKER_ALT, "Expansion Mode"),
-		FSUI_CSTR("Determines how the stereo output is transformed to greater speaker counts."), "SPU2/Output", "SpeakerConfiguration", 0,
-		expansion_modes, std::size(expansion_modes), true);
+	DrawIntRangeSetting(bsi, FSUI_CSTR("Output Volume"),
+		FSUI_CSTR("Controls the volume of the audio played on the host."), "SPU2/Output", "OutputVolume", 100,
+		0, 100, "%d%%");
+	DrawIntRangeSetting(bsi, FSUI_CSTR("Fast Forward Volume"),
+		FSUI_CSTR("Controls the volume of the audio played on the host when fast forwarding."), "SPU2/Output",
+		"FastForwardVolume", 100, 0, 100, "%d%%");
+	DrawToggleSetting(bsi, FSUI_CSTR("Mute All Sound"),
+		FSUI_CSTR("Prevents the emulator from producing any audible sound."), "SPU2/Output", "OutputMuted",
+		false);
 
-	MenuHeading(FSUI_CSTR("Output Settings"));
-	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PLAY_CIRCLE, "Output Module"),
-		FSUI_CSTR("Determines which API is used to play back audio samples on the host."), "SPU2/Output", "OutputModule",
-		default_output_module, output_entries, output_values, std::size(output_entries), true);
-	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Latency"),
-		FSUI_CSTR("Sets the average output latency when using the cubeb backend."), "SPU2/Output", "Latency", 100, 15, 200, FSUI_CSTR("%d ms (avg)"));
+	MenuHeading(FSUI_CSTR("Backend Settings"));
 
-	MenuHeading(FSUI_CSTR("Timestretch Settings"));
-	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER_HORIZONTAL, "Sequence Length"),
-		FSUI_CSTR("Affects how the timestretcher operates when not running at 100% speed."), "Soundtouch", "SequenceLengthMS", 30, 20, 100,
-		FSUI_CSTR("%d ms"));
-	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Seekwindow Size"),
-		FSUI_CSTR("Affects how the timestretcher operates when not running at 100% speed."), "Soundtouch", "SeekWindowMS", 20, 10, 30,
-		FSUI_CSTR("%d ms"));
-	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_RECEIPT, "Overlap"),
-		FSUI_CSTR("Affects how the timestretcher operates when not running at 100% speed."), "Soundtouch", "OverlapMS", 20, 5, 15, FSUI_CSTR("%d ms"));
+	DrawEnumSetting(
+		bsi, FSUI_CSTR("Audio Backend"),
+		FSUI_CSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "SPU2/Output",
+		"Backend", Pcsx2Config::SPU2Options::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
+		&AudioStream::GetBackendDisplayName, AudioBackend::Count);
+	DrawEnumSetting(bsi, FSUI_CSTR("Expansion"),
+		FSUI_CSTR("Determines how audio is expanded from stereo to surround for supported games."), "SPU2/Output",
+		"ExpansionMode", AudioStreamParameters::DEFAULT_EXPANSION_MODE, &AudioStream::ParseExpansionMode,
+		&AudioStream::GetExpansionModeName, &AudioStream::GetExpansionModeDisplayName,
+		AudioExpansionMode::Count);
+	DrawEnumSetting(bsi, FSUI_CSTR("Synchronization"),
+		FSUI_CSTR("Changes when SPU samples are generated relative to system emulation."),
+		"SPU2/Output", "SyncMode", Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE,
+		&Pcsx2Config::SPU2Options::ParseSyncMode, &Pcsx2Config::SPU2Options::GetSyncModeName,
+		&Pcsx2Config::SPU2Options::GetSyncModeDisplayName, Pcsx2Config::SPU2Options::SPU2SyncMode::Count);
+	DrawIntRangeSetting(bsi, FSUI_CSTR("Buffer Size"),
+		FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
+		"SPU2/Output", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, "%d ms");
+
+	const u32 output_latency =
+		GetEffectiveUIntSetting(bsi, "SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+	bool output_latency_minimal = (output_latency == 0);
+	if (ToggleButton(FSUI_CSTR("Minimal Output Latency"),
+			FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
+			&output_latency_minimal))
+	{
+		bsi->SetUIntValue("SPU2/Output", "OutputLatencyMS",
+			output_latency_minimal ? 0 : AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+		SetSettingsChanged(bsi);
+	}
+	if (!output_latency_minimal)
+	{
+		DrawIntRangeSetting(
+			bsi, FSUI_CSTR("Output Latency"),
+			FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
+					  "played through speakers."),
+			"SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
+	}
 
 	EndMenuButtons();
 }

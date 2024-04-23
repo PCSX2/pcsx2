@@ -665,6 +665,12 @@
     <QtUi Include="Settings\USBBindingWidget_GunCon2.ui">
       <Filter>Settings</Filter>
     </QtUi>
+    <QtUi Include="Settings\AudioExpansionSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\AudioStretchSettingsDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
   </ItemGroup>
   <ItemGroup>
     <None Include="Settings\FolderSettingsWidget.ui">

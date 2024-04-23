@@ -11,8 +11,10 @@
 #include "IopDma.h"
 #include "IopHw.h"
 #include "R3000A.h"
+#include "SPU2/Debug.h"
+#include "SPU2/defs.h"
 #include "SPU2/Dma.h"
-#include "SPU2/Global.h"
+#include "SPU2/regs.h"
 #include "SPU2/spu2.h"
 
 #include "common/Console.h"
@@ -214,10 +216,10 @@ void V_Voice::Stop()
 	ADSR.Phase = V_ADSR::PHASE_STOPPED;
 }
 
-uint TickInterval = 768;
-static const int SanityInterval = 4800;
+static constexpr uint TickInterval = 768;
+static constexpr int SanityInterval = 4800;
 
-__forceinline bool StartQueuedVoice(uint coreidx, uint voiceidx)
+__forceinline static bool StartQueuedVoice(uint coreidx, uint voiceidx)
 {
 	V_Voice& vc(Cores[coreidx].Voices[voiceidx]);
 
@@ -275,11 +277,6 @@ __forceinline void TimeUpdate(u32 cClocks)
 		lClocks = cClocks - dClocks;
 	}
 
-	if (EmuConfig.SPU2.SynchMode == Pcsx2Config::SPU2Options::SynchronizationMode::ASync)
-		SndBuffer::UpdateTempoChangeAsyncMixing();
-	else
-		TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
-
 	//Update Mixing Progress
 	while (dClocks >= TickInterval)
 	{
@@ -307,10 +304,8 @@ __forceinline void TimeUpdate(u32 cClocks)
 				if(Cores[c].KeyOn & (1 << v))
 					if(StartQueuedVoice(c, v))
 						Cores[c].KeyOn &= ~(1 << v);
-		// Note: IOP does not use MMX regs, so no need to save them.
-		//SaveMMXRegs();
-		Mix();
-		//RestoreMMXRegs();
+
+		spu2Mix();
 	}
 
 	//Update DMA4 interrupt delay counter

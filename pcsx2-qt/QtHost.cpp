@@ -29,6 +29,7 @@
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/MTGS.h"
 #include "pcsx2/PerformanceMetrics.h"
+#include "pcsx2/SPU2/spu2.h"
 #include "pcsx2/VMManager.h"
 
 #include "common/Assertions.h"
@@ -887,6 +888,38 @@ void EmuThread::endCapture()
 		return;
 
 	MTGS::RunOnGSThread(&GSEndCapture);
+}
+
+void EmuThread::setAudioOutputVolume(int volume, int fast_forward_volume)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "setAudioOutputVolume", Qt::QueuedConnection, Q_ARG(int, volume),
+			Q_ARG(int, fast_forward_volume));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	EmuConfig.SPU2.OutputVolume = static_cast<u32>(volume);
+	EmuConfig.SPU2.FastForwardVolume = static_cast<u32>(fast_forward_volume);
+	SPU2::SetOutputVolume(SPU2::GetResetVolume());
+}
+
+void EmuThread::setAudioOutputMuted(bool muted)
+{
+	if (!isOnEmuThread())
+	{
+		QMetaObject::invokeMethod(this, "setAudioOutputMuted", Qt::QueuedConnection, Q_ARG(bool, muted));
+		return;
+	}
+
+	if (!VMManager::HasValidVM())
+		return;
+
+	EmuConfig.SPU2.OutputMuted = muted;
+	SPU2::SetOutputVolume(SPU2::GetResetVolume());
 }
 
 std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)

@@ -57,9 +57,11 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/AdvancedSettingsWidget.cpp
 	Settings/AdvancedSettingsWidget.h
 	Settings/AdvancedSettingsWidget.ui
+	Settings/AudioExpansionSettingsDialog.ui
 	Settings/AudioSettingsWidget.cpp
 	Settings/AudioSettingsWidget.h
 	Settings/AudioSettingsWidget.ui
+	Settings/AudioStretchSettingsDialog.ui
 	Settings/BIOSSettingsWidget.cpp
 	Settings/BIOSSettingsWidget.h
 	Settings/BIOSSettingsWidget.ui
