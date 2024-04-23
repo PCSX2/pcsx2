@@ -6222,6 +6222,14 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 					if (!rc.GetDirtyRect(m_cached_ctx.TEX0, false).rintersect(tr).rempty())
 						return true;
 				}
+
+				// Make sure it actually makes sense to use this target as a source, given the formats, and it wouldn't just sample as garbage.
+				// We can't rely exclusively on the dirty rect check above, because sometimes the targets are from older frames and too large.
+				if (!GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) &&
+					(!src_target->m_32_bits_fmt || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp != 16))
+				{
+					return true;
+				}
 			}
 
 			return false;
