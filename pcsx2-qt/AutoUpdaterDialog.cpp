@@ -503,6 +503,11 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 		},
 		&progress);
 
+
+	// Since we're going to block, don't allow the timer to poll, otherwise the progress callback can cause the timer to
+	// run, and recursively poll again.
+	m_http_poll_timer->stop();
+
 	// Block until completion.
 	while (m_http->HasAnyRequests())
 	{
