@@ -2587,7 +2587,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								// Clear the dirty first
 								dst->Update();
 								// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
-								if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low))
+								if (!t->m_valid_rgb || !(t->m_valid_alpha_high || t->m_valid_alpha_low) || t->m_scale != dst->m_scale)
 								{
 									const GSVector4 src_rect = GSVector4(0, 0, copy_width, copy_height) / (GSVector4(t->m_texture->GetSize()).xyxy());
 									const GSVector4 dst_rect = GSVector4(0, dst_offset, copy_width, copy_height);
