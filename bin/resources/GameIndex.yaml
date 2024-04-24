@@ -16771,6 +16771,7 @@ SLES-51252:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -16780,6 +16781,7 @@ SLES-51253:
   region: "PAL-F"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -16789,6 +16791,7 @@ SLES-51254:
   region: "PAL-G"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -16798,6 +16801,7 @@ SLES-51255:
   region: "PAL-I"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -16808,6 +16812,7 @@ SLES-51256:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -38879,6 +38884,7 @@ SLPM-65212:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -49334,6 +49340,7 @@ SLPM-67005:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -49624,6 +49631,7 @@ SLPM-67546:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -58259,6 +58267,7 @@ SLPS-29003:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -58271,6 +58280,7 @@ SLPS-29004:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
@@ -61973,6 +61983,7 @@ SLUS-20578:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned lighting and other effects.
+    cpuSpriteRenderBW: 1 # Fixes flickering textures caused by mipmapping.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
     trilinearFiltering: 1
   clampModes:
