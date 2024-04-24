@@ -16,31 +16,49 @@
 #include <io.h> // _mktemp_s
 #else
 #include <stdlib.h> // mktemp
+#include <unistd.h>
 #endif
 
 // To prevent races between saving and loading settings, particularly with game settings,
 // we only allow one ini to be parsed at any point in time.
 static std::mutex s_ini_load_save_mutex;
 
-static std::string GetTemporaryFileName(const std::string& original_filename)
+static std::FILE* GetTemporaryFile(std::string* temporary_filename, const std::string& original_filename,
+	const char* mode, Error* error)
 {
-	std::string temporary_filename;
-	temporary_filename.reserve(original_filename.length() + 8);
-	temporary_filename.append(original_filename);
+	temporary_filename->clear();
+	temporary_filename->reserve(original_filename.length() + 8);
+	temporary_filename->append(original_filename);
 
 #ifdef _WIN32
-	temporary_filename.append(".XXXXXXX");
-	_mktemp_s(temporary_filename.data(), temporary_filename.length() + 1);
-#else
-	temporary_filename.append(".XXXXXX");
-#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	mkstemp(temporary_filename.data());
-#else
-	mktemp(temporary_filename.data());
-#endif
-#endif
+	temporary_filename->append(".XXXXXXX");
+	const errno_t err = _mktemp_s(temporary_filename->data(), temporary_filename->length() + 1);
+	if (err != 0)
+	{
+		Error::SetErrno(error, "_mktemp_s() failed: ", err);
+		return nullptr;
+	}
 
-	return temporary_filename;
+	return FileSystem::OpenCFile(temporary_filename->c_str(), mode, error);
+#else
+	temporary_filename->append(".XXXXXX");
+	const int fd = mkstemp(temporary_filename->data());
+	if (fd < 0)
+	{
+		Error::SetErrno(error, "mkstemp() failed: ", errno);
+		return nullptr;
+	}
+
+	std::FILE* fp = fdopen(fd, mode);
+	if (!fp)
+	{
+		Error::SetErrno(error, "mkstemp() failed: ", errno);
+		close(fd);
+		return nullptr;
+	}
+
+	return fp;
+#endif
 }
 
 INISettingsInterface::INISettingsInterface(std::string filename)
@@ -78,9 +96,9 @@ bool INISettingsInterface::Save(Error* error)
 	}
 
 	std::unique_lock lock(s_ini_load_save_mutex);
-	std::string temp_filename(GetTemporaryFileName(m_filename));
+	std::string temp_filename;
+	std::FILE* fp = GetTemporaryFile(&temp_filename, m_filename, "wb", error);
 	SI_Error err = SI_FAIL;
-	std::FILE* fp = FileSystem::OpenCFile(temp_filename.c_str(), "wb", error);
 	if (fp)
 	{
 		err = m_ini.SaveFile(fp, false);
