@@ -109,6 +109,7 @@ add_subdirectory(3rdparty/libzip EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rcheevos EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/rapidjson EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/discord-rpc EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/freesurround EXCLUDE_FROM_ALL)
 
 if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
