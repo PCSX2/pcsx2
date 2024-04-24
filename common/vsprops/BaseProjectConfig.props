@@ -5,24 +5,48 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Devel|x64">
-      <Configuration>Devel</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="Debug AVX2|x64">
+      <Configuration>Debug AVX2</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug Clang|x64">
       <Configuration>Debug Clang</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Clang AVX2|x64">
+      <Configuration>Debug Clang AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|x64">
+      <Configuration>Devel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+	<ProjectConfiguration Include="Devel AVX2|x64">
+      <Configuration>Devel AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Devel Clang|x64">
       <Configuration>Devel Clang</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel Clang AVX2|x64">
+      <Configuration>Devel Clang AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release AVX2|x64">
+      <Configuration>Release AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release Clang|x64">
       <Configuration>Release Clang</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Clang AVX2|x64">
+      <Configuration>Release Clang AVX2</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
