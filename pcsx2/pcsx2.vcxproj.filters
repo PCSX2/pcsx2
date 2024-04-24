@@ -277,6 +277,9 @@
     <Filter Include="System\Ps2\Iop\SIO\PAD">
       <UniqueIdentifier>{2ef3ebf7-d2a3-4b33-8059-a09b82c085ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Misc\Host">
+      <UniqueIdentifier>{9f0d3bda-76d4-42d3-87e9-ce65db9163ef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\License.txt">
@@ -1410,6 +1413,15 @@
     <ClCompile Include="USB\usb-eyetoy\cam-jpeg.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
+    <ClCompile Include="Host\AudioStream.cpp">
+      <Filter>Misc\Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Host\SDLAudioStream.cpp">
+      <Filter>Misc\Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Host\CubebAudioStream.cpp">
+      <Filter>Misc\Host</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2329,6 +2341,12 @@
     <ClInclude Include="SupportURLs.h" />
     <ClInclude Include="USB\usb-eyetoy\cam-jpeg.h">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClInclude>
+    <ClInclude Include="Host\AudioStream.h">
+      <Filter>Misc\Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Host\AudioStreamTypes.h">
+      <Filter>Misc\Host</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

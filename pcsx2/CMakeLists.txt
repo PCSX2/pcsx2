@@ -795,6 +795,15 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/DisVUops.h
 	DebugTools/BiosDebugData.h)
 
+set(pcsx2HostSources
+	Host/AudioStream.cpp
+	Host/CubebAudioStream.cpp
+	Host/SDLAudioStream.cpp)
+
+set(pcsx2HostHeaders
+	Host/AudioStream.h
+	Host/AudioStreamTypes.h)
+
 set(pcsx2ImGuiSources
 	ImGui/FullscreenUI.cpp
 	ImGui/ImGuiFullscreen.cpp
@@ -1052,6 +1061,8 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2RecordingSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2DebugToolsHeaders}
+	${pcsx2HostSources}
+	${pcsx2HostHeaders}
 	${pcsx2ImGuiSources}
 	${pcsx2ImGuiHeaders}
 	${pcsx2InputSources}
@@ -1105,6 +1116,9 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	cubeb
 	rcheevos
 	discord-rpc
+	demangler
+	simpleini
+	freesurround
 	SDL2::SDL2
 	ZLIB::ZLIB
 	LZ4::LZ4
@@ -1113,11 +1127,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	LZMA::LZMA
 	Zstd::Zstd
 	${LIBC_LIBRARIES}
-)
-
-target_link_libraries(PCSX2_FLAGS INTERFACE
-	demangler
-	simpleini
 )
 
 if(WIN32)
