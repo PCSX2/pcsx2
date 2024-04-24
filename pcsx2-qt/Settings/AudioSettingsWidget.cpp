@@ -43,10 +43,10 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	expansionModeChanged();
 
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.outputModule, "SPU2/Output", "OutputModule", DEFAULT_OUTPUT_MODULE);
-	SettingWidgetBinder::BindSliderToIntSetting(
+	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
 		//: Measuring unit that will appear after the number selected in its option. Adapt the space depending on your language's rules.
 		sif, m_ui.targetLatency, m_ui.targetLatencyLabel, tr(" ms"), "SPU2/Output", "Latency", DEFAULT_TARGET_LATENCY);
-	SettingWidgetBinder::BindSliderToIntSetting(
+	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
 		sif, m_ui.outputLatency, m_ui.outputLatencyLabel, tr(" ms"), "SPU2/Output", "OutputLatency", DEFAULT_OUTPUT_LATENCY);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "SPU2/Output", "OutputLatencyMinimal", false);
 	connect(m_ui.outputModule, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::outputModuleChanged);
@@ -72,11 +72,11 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 		}
 	}
 
-	SettingWidgetBinder::BindSliderToIntSetting(sif, m_ui.sequenceLength, m_ui.sequenceLengthLabel, tr(" ms"), "Soundtouch",
+	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.sequenceLength, m_ui.sequenceLengthLabel, tr(" ms"), "Soundtouch",
 		"SequenceLengthMS", DEFAULT_SOUNDTOUCH_SEQUENCE_LENGTH);
-	SettingWidgetBinder::BindSliderToIntSetting(
+	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
 		sif, m_ui.seekWindowSize, m_ui.seekWindowSizeLabel, tr(" ms"), "Soundtouch", "SeekWindowMS", DEFAULT_SOUNDTOUCH_SEEK_WINDOW);
-	SettingWidgetBinder::BindSliderToIntSetting(
+	SettingWidgetBinder::BindWidgetAndLabelToIntSetting(
 		sif, m_ui.overlap, m_ui.overlapLabel, tr(" ms"), "Soundtouch", "OverlapMS", DEFAULT_SOUNDTOUCH_OVERLAP);
 	connect(m_ui.resetTimestretchDefaults, &QPushButton::clicked, this, &AudioSettingsWidget::resetTimestretchDefaults);
 
