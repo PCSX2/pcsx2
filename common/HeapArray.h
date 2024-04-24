@@ -362,7 +362,7 @@ private:
 
 			if (prev_ptr)
 			{
-				std::memcpy(m_data, prev_ptr, prev_size * sizeof(T));
+				std::memcpy(m_data, prev_ptr, std::min(size, prev_size) * sizeof(T));
 				std::free(prev_ptr);
 			}
 #endif
