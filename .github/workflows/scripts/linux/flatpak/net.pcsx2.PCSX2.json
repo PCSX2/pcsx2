@@ -32,17 +32,27 @@
     "modules/22-shaderc.json",
     {
       "name": "pcsx2",
-      "buildsystem": "simple",
+      "buildsystem": "cmake-ninja",
+      "builddir": true,
+      "no-make-install": true,
       "build-options": {
         "strip": false,
         "no-debuginfo": true,
-        "env": {
-          "DEPS_PREFIX": "/app",
-          "COMPILER": "clang",
-          "CLANG_PATH": "/usr/lib/sdk/llvm17/bin/clang",
-          "CLANGXX_PATH": "/usr/lib/sdk/llvm17/bin/clang++",
-          "ADDITIONAL_CMAKE_ARGS": "-DUSE_LINKED_FFMPEG=ON"
-        }
+        "cflags": "",
+        "cflags-override": true,
+        "cxxflags": "",
+        "cxxflags-override": true,
+        "config-opts": [
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
+          "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm17/bin/clang",
+          "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm17/bin/clang++",
+          "-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld",
+          "-DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld",
+          "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld",
+          "-DUSE_LINKED_FFMPEG=ON",
+          "-DDISABLE_ADVANCE_SIMD=TRUE"
+	]
       },
       "sources": [
         {
@@ -50,18 +60,13 @@
           "path": "../../../../.."
         }
       ],
-      "build-commands": [
-        ".github/workflows/scripts/linux/generate-cmake-qt.sh",
-        "cd build && ../.github/workflows/scripts/linux/compile.sh && cd ..",
-        "cp -a build/bin ${FLATPAK_DEST}",
-        "cd build && ninja unittests && cd .."
-      ],
       "post-install": [
-        "install -Dm644 bin/resources/icons/AppIconLarge.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png",
-        "install -Dm644 .github/workflows/scripts/linux/pcsx2-qt.desktop ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
-        "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 ${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop",
-        "install -Dm644 .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml ${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml",
-        "mkdir -p ${FLATPAK_DEST}/lib/ffmpeg"
+        "cp -a bin \"${FLATPAK_DEST}\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/bin/resources/icons/AppIconLarge.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/pcsx2-qt.desktop\" \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
+	"desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
+	"install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml\" \"${FLATPAK_DEST}/share/metainfo/net.pcsx2.PCSX2.metainfo.xml\"",
+        "mkdir -p \"${FLATPAK_DEST}/lib/ffmpeg\""
       ]
     }
   ]

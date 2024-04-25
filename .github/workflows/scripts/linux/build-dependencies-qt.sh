@@ -14,8 +14,6 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-FREETYPE=2.13.2
-HARFBUZZ=8.3.1
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEG=9f
 LIBPNG=1.6.43
@@ -23,7 +21,6 @@ LIBWEBP=1.3.2
 LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 SDL=SDL2-2.30.2
 QT=6.7.0
-ZLIB=1.3.1
 ZSTD=1.5.5
 
 SHADERC=2024.0
@@ -35,15 +32,12 @@ mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
-12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
-19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
 04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
 2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$LIBWEBP.tar.gz
 0728800155f3ed0a0c87e03addbd30ecbe374f7b080678bbca1506051d50dec3  $LZ4.tar.gz
 891d66ac8cae51361d3229e3336ebec1c407a8a2a063b61df14f5fdf3ab5ac31  $SDL.tar.gz
-9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23  zlib-$ZLIB.tar.gz
 9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
 11b2e29e2e52fb0e3b453ea13bbe51a10fdff36e1c192d8868c5a40233b8b254  qtbase-everywhere-src-$QT.tar.xz
 516ce07ec8dd5a11c59816fe33ddb71d4f691d0ebbc1798ac338f23b86c029a7  qtimageformats-everywhere-src-$QT.tar.xz
@@ -90,15 +84,6 @@ make
 make install
 cd ..
 
-echo "Building Zlib..."
-rm -fr "zlib-$ZLIB"
-tar xf "zlib-$ZLIB.tar.gz"
-cd "zlib-$ZLIB"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DZLIB_BUILD_EXAMPLES=OFF -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
-cd ..
-
 echo "Building libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
@@ -126,33 +111,6 @@ cd "lz4-$LZ4"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -B build-dir -G Ninja build/cmake
 cmake --build build-dir --parallel
 ninja -C build-dir install
-cd ..
-
-echo "Building FreeType without HarfBuzz..."
-rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.xz"
-cd "freetype-$FREETYPE"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
-cd ..
-
-echo "Building HarfBuzz..."
-rm -fr "harfbuzz-$HARFBUZZ"
-tar xf "harfbuzz-$HARFBUZZ.tar.gz"
-cd "harfbuzz-$HARFBUZZ"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
-cd ..
-
-echo "Building FreeType with HarfBuzz..."
-rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.xz"
-cd "freetype-$FREETYPE"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja
-cmake --build build --parallel
-ninja -C build install
 cd ..
 
 echo "Building Zstandard..."
@@ -195,7 +153,7 @@ tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -- -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 cmake --build . --parallel
 ninja install
 cd ../../

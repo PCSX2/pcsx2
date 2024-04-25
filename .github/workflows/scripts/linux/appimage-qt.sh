@@ -26,7 +26,6 @@
 # For more information, please refer to <http://unlicense.org/>
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
-source "$SCRIPTDIR/functions.sh"
 
 if [ "$#" -ne 4 ]; then
     echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name>"
@@ -60,17 +59,17 @@ APPIMAGETOOL=./appimagetool-x86_64.AppImage
 PATCHELF=patchelf
 
 if [ ! -f "$LINUXDEPLOY" ]; then
-	retry_command wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 	chmod +x "$LINUXDEPLOY"
 fi
 
 if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
-	retry_command wget -O "$LINUXDEPLOY_PLUGIN_QT" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY_PLUGIN_QT" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
 	chmod +x "$LINUXDEPLOY_PLUGIN_QT"
 fi
 
 if [ ! -f "$APPIMAGETOOL" ]; then
-	retry_command wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 	chmod +x "$APPIMAGETOOL"
 fi
 
@@ -100,6 +99,7 @@ cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
 echo "Running linuxdeploy to create AppDir..."
 EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
 EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
+DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" \
