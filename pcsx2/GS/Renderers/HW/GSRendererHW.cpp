@@ -2709,8 +2709,9 @@ void GSRendererHW::Draw()
 
 			// Both input and output are 16 bits and texture was initially 32 bits! Same for the target, Sonic Unleash makes a new target which really is 16bit.
 			m_texture_shuffle = ((m_same_group_texture_shuffle || (tex_psm.bpp == 16)) && (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) &&
-				(shuffle_coords || rt->m_32_bits_fmt))
-				&& draw_sprite_tex && (src->m_32_bits_fmt || m_copy_16bit_to_target_shuffle);
+				(shuffle_coords || rt->m_32_bits_fmt)) &&
+				(src->m_32_bits_fmt || m_copy_16bit_to_target_shuffle) && 
+				(draw_sprite_tex || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true)));
 		};
 
 		// Okami mustn't call this code
