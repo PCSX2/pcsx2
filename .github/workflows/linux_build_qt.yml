@@ -107,9 +107,18 @@ jobs:
           restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.detail }} ccache
 
       - name: Install Packages
-        env:
-          COMPILER: ${{ inputs.compiler }}
-        run: .github/workflows/scripts/linux/install-packages-qt.sh
+        run: |
+          tools/retry.sh wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo tools/retry.sh apt-add-repository -n 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main'
+          sudo tools/retry.sh apt-get update
+          sudo tools/retry.sh apt-get -y install \
+            build-essential ccache clang-17 cmake curl extra-cmake-modules git libasound2-dev libaio-dev libavcodec-dev libavformat-dev libavutil-dev \
+            libcurl4-openssl-dev libdbus-1-dev libdecor-0-dev libegl-dev libevdev-dev libfontconfig-dev libfreetype-dev libfuse2 libgtk-3-dev libgudev-1.0-dev \
+            libharfbuzz-dev libinput-dev libopengl-dev libpcap-dev libpipewire-0.3-dev libpulse-dev libssl-dev libswresample-dev libswscale-dev libudev-dev \
+            libwayland-dev libx11-dev libx11-xcb-dev libxcb1-dev libxcb-composite0-dev libxcb-cursor-dev libxcb-damage0-dev libxcb-glx0-dev libxcb-icccm4-dev \
+            libxcb-image0-dev libxcb-keysyms1-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-shape0-dev \
+            libxcb-shm0-dev libxcb-sync-dev libxcb-util-dev libxcb-xfixes0-dev libxcb-xinput-dev libxcb-xkb-dev libxext-dev libxkbcommon-x11-dev libxrandr-dev \
+            lld-17 llvm-17 ninja-build patchelf pkg-config zlib1g-dev
 
       - name: Cache Dependencies
         id: cache-deps
@@ -129,16 +138,31 @@ jobs:
 
       - name: Generate CMake
         env:
-          COMPILER: ${{ inputs.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
-          CLANG_PATH: /usr/bin/clang-17
-          CLANGXX_PATH: /usr/bin/clang++-17
         run: |
-          DEPS_PREFIX="$HOME/deps" .github/workflows/scripts/linux/generate-cmake-qt.sh
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+            -DCMAKE_PREFIX_PATH="$HOME/deps" \
+            -DCMAKE_C_COMPILER=clang-17 \
+            -DCMAKE_CXX_COMPILER=clang++-17 \
+            -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+            -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DENABLE_SETCAP=OFF \
+            -DDISABLE_ADVANCE_SIMD=TRUE \
+            $ADDITIONAL_CMAKE_ARGS
 
       - name: Build PCSX2
         working-directory: build
-        run: ../.github/workflows/scripts/linux/compile.sh
+        run: |
+          # Prepare the Cache
+          ccache -p
+          ccache -z
+          # Build
+          ninja
+          # Save the Cache
+          ccache -s
 
       - name: Run Tests
         working-directory: ./build
