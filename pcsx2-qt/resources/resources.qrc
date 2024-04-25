@@ -193,5 +193,6 @@
 		<file>images/GT_Force.svg</file>
 		<file>images/Guitar.svg</file>
 		<file>images/Popn.svg</file>
+		<file>qss/CatppuccinMocha.qss</file>
 	</qresource>
 </RCC>

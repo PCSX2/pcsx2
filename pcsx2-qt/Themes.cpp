@@ -465,57 +465,14 @@ void QtHost::SetStyleFromSettings()
 	{
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
+		QString sheet_content;
+		QFile sheets(QString::fromStdString(":/qss/CatppuccinMocha.qss"));
 
-		const QColor rosewater(245, 224, 220);
-		const QColor flamingo(242, 205, 205);
-		const QColor pink(245, 194, 231);
-		const QColor mauve(203, 166, 247);
-		const QColor red(243, 139, 168);
-		const QColor maroon(235, 160, 172);
-		const QColor peach(250, 179, 135);
-		const QColor yellow(249, 226, 175);
-		const QColor green(166, 227, 161);
-		const QColor teal(148, 226, 213);
-		const QColor sky(137, 220, 235);
-		const QColor sapphire(116, 199, 236);
-		const QColor blue(137, 180, 250);
-		const QColor lavender(180, 190, 254);
-		const QColor text(205, 214, 244);
-		const QColor subtext1(186, 194, 222);
-		const QColor subtext0(166, 173, 200);
-		const QColor overlay2(147, 153, 178);
-		const QColor overlay1(127, 132, 156);
-		const QColor overlay0(108, 112, 134);
-		const QColor surface2(88, 91, 112);
-		const QColor surface1(69, 71, 90);
-		const QColor surface0(49, 50, 68);
-		const QColor base(30, 30, 46);
-		const QColor mantle(24, 24, 37);
-		const QColor crust(17, 17, 27);
-
-
-
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, base);
-		darkPalette.setColor(QPalette::WindowText, text);
-		darkPalette.setColor(QPalette::Base, base);
-		darkPalette.setColor(QPalette::AlternateBase, surface0);
-		darkPalette.setColor(QPalette::ToolTipBase, base);
-		darkPalette.setColor(QPalette::ToolTipText, text);
-		darkPalette.setColor(QPalette::Text, text);
-		darkPalette.setColor(QPalette::Button, base);
-		darkPalette.setColor(QPalette::ButtonText, text);
-		darkPalette.setColor(QPalette::Link, text);
-		darkPalette.setColor(QPalette::Highlight, pink);
-		darkPalette.setColor(QPalette::HighlightedText, base);
-
-		darkPalette.setColor(QPalette::Active, QPalette::Button, base);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, text);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, text);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, text);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, surface1);
-
-		qApp->setPalette(darkPalette);
+		if (sheets.open(QFile::ReadOnly))
+		{
+			QString sheet_content = QString::fromUtf8(sheets.readAll().data());
+			qApp->setStyleSheet(sheet_content);
+		}
 	}
 	else if (theme == "Custom")
 	{
