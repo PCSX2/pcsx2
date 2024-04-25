@@ -769,8 +769,8 @@ static __fi void _rcntSetGate(int index)
 				index, counters[index].mode.GateSource ? "vblank" : "hblank", counters[index].mode.GateMode);
 
 			gates |= (1 << index);
+			// FIXME: Test required - should the counter be stopped here? I feel like it should only stop and reset on the gate signal happening.
 			counters[index].mode.IsCounting = 0;
-			rcntReset(index);
 			return;
 		}
 		else
