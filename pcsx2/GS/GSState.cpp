@@ -2816,7 +2816,7 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
-bool GSState::TrianglesAreQuads() const
+bool GSState::TrianglesAreQuads(bool shuffle_check) const
 {
 	// If this is a quad, there should only be two distinct values for both X and Y, which
 	// also happen to be the minimum/maximum bounds of the primitive.
@@ -2829,10 +2829,17 @@ bool GSState::TrianglesAreQuads() const
 		if (idx > 0)
 		{
 			const u16* const prev_tri= m_index.buff + (idx - 3);
-			const GSVertex& vert = v[i[0]];
-			const GSVertex& last_vert = v[i[2]];
-			if (vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ &&
-				last_vert.XYZ != m_vertex.buff[prev_tri[0]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[1]].XYZ && last_vert.XYZ != m_vertex.buff[prev_tri[2]].XYZ)
+			GIFRegXYZ vert = v[i[0]].XYZ;
+			GIFRegXYZ last_vert = v[i[2]].XYZ;
+
+			if (shuffle_check)
+			{
+				vert.X -= 8 << 4;
+				last_vert.X -= 8 << 4;
+			}
+
+			if (vert != m_vertex.buff[prev_tri[0]].XYZ && vert != m_vertex.buff[prev_tri[1]].XYZ && vert != m_vertex.buff[prev_tri[2]].XYZ &&
+				last_vert != m_vertex.buff[prev_tri[0]].XYZ && last_vert != m_vertex.buff[prev_tri[1]].XYZ && last_vert != m_vertex.buff[prev_tri[2]].XYZ)
 				return false;
 		}
 		// Degenerate triangles should've been culled already, so we can check indices.
