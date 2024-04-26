@@ -29,6 +29,9 @@ body:
           - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues.
         - We do **not** accept issues relating to Widescreen/no-interlace patches at this time.
           - Any issues pertaining to Widescreen/no-interlace patches please forward them to the [patches repository](https://github.com/PCSX2/pcsx2_patches). 
+        - We do **not** accept issues pertaining to Linux builds other than the official AppImage and Flatpak.
+          - Please contact your packager for support. We have no control over other builds, nor can we investigate any issues, and historically they have been known to be broken.
+          - This includes pre-configured "distributions" such as EmuDeck, the "AUR", etc.
 
   - type: textarea
     id: desc
