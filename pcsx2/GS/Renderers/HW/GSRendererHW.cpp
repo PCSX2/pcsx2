@@ -2631,12 +2631,16 @@ void GSRendererHW::Draw()
 				return;
 			}
 		}
-	}
 
-	if (rt && m_channel_shuffle)
-	{
-		m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
-		m_last_channel_shuffle_end_block = rt->m_end_block;
+		// The target might have previously been a C32 format with valid alpha. If we're switching to C24, we need to preserve it.
+		preserve_rt_alpha |= (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp == 24 && rt->HasValidAlpha());
+		preserve_rt_color = preserve_rt_rgb || preserve_rt_alpha;
+
+		if (m_channel_shuffle)
+		{
+			m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
+			m_last_channel_shuffle_end_block = rt->m_end_block;
+		}
 	}
 
 	GSTextureCache::Target* ds = nullptr;
