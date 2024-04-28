@@ -940,7 +940,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 				dst = t;
 
 				if (GSUtil::GetChannelMask(TEX0.PSM) & 0x8)
-					t->RTADecorrect();
+					t->UnscaleRTAlpha();
 
 				inside_target = false;
 				break;
@@ -1373,7 +1373,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							// The hack can fix glitches in some games.
 							if (!t->m_drawn_since_read.rempty())
 							{
-								t->RTADecorrect();
+								t->UnscaleRTAlpha();
 
 								Read(t, t->m_drawn_since_read);
 
@@ -2261,7 +2261,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					}
 					else if (dst_match->m_texture->GetState() == GSTexture::State::Dirty)
 					{
-						dst_match->RTADecorrect();
+						dst_match->UnscaleRTAlpha();
 						g_gs_device->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 						g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 					}
@@ -2689,7 +2689,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	return can_create ? CreateTarget(TEX0, size, size, scale, RenderTarget, true, 0, true) : nullptr;
 }
 
-void GSTextureCache::Target::RTACorrect()
+void GSTextureCache::Target::ScaleRTAlpha()
 {
 	if (!m_rt_alpha_scale && m_type == RenderTarget)
 	{
@@ -2697,7 +2697,7 @@ void GSTextureCache::Target::RTACorrect()
 		{
 			const GSVector2i rtsize(m_texture->GetSize());
 			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
-			GL_PUSH("RTACorrect(valid=(%dx%d %d,%d=>%d,%d))", m_valid.width(), m_valid.height(), m_valid.x, m_valid.y, m_valid.z, m_valid.w);
+			GL_PUSH("ScaleRTAlpha(valid=(%dx%d %d,%d=>%d,%d))", m_valid.width(), m_valid.height(), m_valid.x, m_valid.y, m_valid.z, m_valid.w);
 
 			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
 			{
@@ -2715,7 +2715,7 @@ void GSTextureCache::Target::RTACorrect()
 	}
 }
 
-void GSTextureCache::Target::RTADecorrect()
+void GSTextureCache::Target::UnscaleRTAlpha()
 {
 	if (m_rt_alpha_scale && m_type == RenderTarget)
 	{
@@ -2723,7 +2723,7 @@ void GSTextureCache::Target::RTADecorrect()
 		{
 			const GSVector2i rtsize(m_texture->GetSize());
 			const GSVector4i valid_rect = GSVector4i(GSVector4(m_valid) * GSVector4(m_scale));
-			GL_PUSH("RTADecorrect(valid=(%dx%d %d,%d=>%d,%d))", m_valid.width(), m_valid.height(), m_valid.x, m_valid.y, m_valid.z, m_valid.w);
+			GL_PUSH("UnscaleRTAlpha(valid=(%dx%d %d,%d=>%d,%d))", m_valid.width(), m_valid.height(), m_valid.x, m_valid.y, m_valid.z, m_valid.w);
 
 			if (GSTexture* temp_rt = g_gs_device->CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::Color, !GSVector4i::loadh(rtsize).eq(valid_rect)))
 			{
@@ -3739,8 +3739,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	const bool cover_whole_target = dst->m_type == RenderTarget && GSVector4i(dx, dy, dx + w, dy + h).rintersect(dst->m_valid).eq(dst->m_valid);
 	if (!cover_whole_target)
 	{
-		src->RTADecorrect();
-		dst->RTADecorrect();
+		src->UnscaleRTAlpha();
+		dst->UnscaleRTAlpha();
 	}
 
 	// If the copies overlap, this is a validation error, so we need to copy to a temporary texture first.
@@ -3911,7 +3911,7 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h);
 
 	if (read_ba || !write_rg)
-		tgt->RTADecorrect();
+		tgt->UnscaleRTAlpha();
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
@@ -4745,7 +4745,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				{
 					if (dst->m_rt_alpha_scale)
 					{
-						dst->RTADecorrect();
+						dst->UnscaleRTAlpha();
 						sTex = dst->m_texture;
 					}
 
@@ -5494,7 +5494,7 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 		offset = this_offset;
 		*scale = t->m_scale;
 
-		t->RTADecorrect();
+		t->UnscaleRTAlpha();
 
 		return t->m_texture;
 	}
@@ -6210,7 +6210,7 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 		if (m_type == RenderTarget && transferring_alpha && bpp >= 16)
 		{
 			if (alpha_minmax.second > 128 || (m_TEX0.PSM & 0xf) == PSMCT24)
-				RTADecorrect();
+				UnscaleRTAlpha();
 			else if (!cannot_scale && total_rect.eq(m_valid))
 				m_rt_alpha_scale = true;
 		}
