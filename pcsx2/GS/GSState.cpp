@@ -3034,7 +3034,7 @@ bool GSState::PrimitiveCoversWithoutGaps()
 	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 
 	// Horizontal Match.
-	if ((first_dpX >> 4) == m_r_no_scissor.z)
+	if (((first_dpX + 8) >> 4) == m_r_no_scissor.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
 		for (u32 i = 2; i < m_vertex.next; i += 2)
@@ -3053,7 +3053,7 @@ bool GSState::PrimitiveCoversWithoutGaps()
 	}
 
 	// Vertical Match.
-	if ((first_dpY >> 4) == m_r_no_scissor.w)
+	if (((first_dpY + 8) >> 4) == m_r_no_scissor.w)
 	{
 		// Borrowed from MergeSprite().
 		const int offset_X = m_context->XYOFFSET.OFX;
