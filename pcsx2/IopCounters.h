@@ -29,7 +29,7 @@ extern u16  psxRcntRcount16(int index);
 extern u32  psxRcntRcount32(int index);
 extern u64  psxRcntCycles(int index);
 
+extern void psxHBlankStart();
+extern void psxHBlankEnd();
 extern void psxVBlankStart();
 extern void psxVBlankEnd();
-extern void psxCheckStartGate16(int i);
-extern void psxCheckEndGate16(int i);
