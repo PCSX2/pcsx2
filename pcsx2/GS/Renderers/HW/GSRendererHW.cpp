@@ -3891,7 +3891,8 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 	return true;
 }
 
-void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER, GSTextureCache::Target* rt)
+void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DATE_PRIMID, bool& DATE_BARRIER,
+	GSTextureCache::Target* rt, bool can_scale_rt_alpha, bool& new_rt_alpha_scale)
 {
 	{
 		// AA1: Blending needs to be enabled on draw.
@@ -3963,7 +3964,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	const bool alpha_c0_less_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max <= 128);
 	const bool alpha_c1_high_min_one = (m_conf.ps.blend_c == 1 && rt_alpha_min > 128);
 	const bool alpha_c1_high_max_one = (m_conf.ps.blend_c == 1 && rt_alpha_max > 128);
-	const bool alpha_c1_high_no_rta_correct = m_conf.ps.blend_c == 1 && !(rt->m_rt_alpha_scale || m_can_correct_alpha);
+	const bool alpha_c1_high_no_rta_correct = m_conf.ps.blend_c == 1 && !(new_rt_alpha_scale || can_scale_rt_alpha);
 	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && AFIX == 0u);
 	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && AFIX == 128u);
 	const bool alpha_c2_less_one = (m_conf.ps.blend_c == 2 && AFIX <= 128u);
@@ -4419,7 +4420,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		m_conf.ps.blend_b = 0;
 		m_conf.ps.blend_d = 0;
 
-		const bool rta_correction = m_can_correct_alpha && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
+		const bool rta_correction = can_scale_rt_alpha && !blend_ad_alpha_masked && m_conf.ps.blend_c == 1 && !(blend_flag & BLEND_A_MAX);
 		if (rta_correction)
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
@@ -4431,8 +4432,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				rt->RTACorrect();
 				m_conf.rt = rt->m_texture;
 			}
-			else
-				rt->m_rt_alpha_scale = true;
+
+			new_rt_alpha_scale = true;
 			
 			m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 		}
@@ -5339,6 +5340,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	int rt_new_alpha_min = 0, rt_new_alpha_max = 255;
 	if (rt)
 	{
+		GL_INS("RT alpha was %s before draw", rt->m_rt_alpha_scale ? "scaled" : "NOT scaled");
+
 		blend_alpha_min = rt_new_alpha_min = rt->m_alpha_min;
 		blend_alpha_max = rt_new_alpha_max = rt->m_alpha_max;
 
@@ -5558,10 +5561,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// If we Correct/Decorrect and tex is rt, we will need to update the texture reference
 	const bool req_src_update = tex && rt && tex->m_target && tex->m_target_direct && tex->m_texture == rt->m_texture;
 
-	m_can_correct_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
-
+	// We defer updating the alpha scaled flag until after the texture setup if we're scaling as part of the draw,
+	// because otherwise we'll treat tex-is-fb as a scaled source, when it's not yet.
+	bool can_scale_rt_alpha = false;
+	bool new_scale_rt_alpha = false;
 	if (rt)
 	{
+		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
+
 		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);
 		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (m_conf.colormask.wa && (rt_new_alpha_max > 128 || partial_fbmask));
 
@@ -5571,7 +5578,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			{
 				if (m_conf.ps.process_ba & SHUFFLE_READ)
 				{
-					m_can_correct_alpha = false;
+					can_scale_rt_alpha = false;
 
 					rt->RTADecorrect();
 					m_conf.rt = rt->m_texture;
@@ -5583,12 +5590,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
 					{
-						m_can_correct_alpha = false;
+						can_scale_rt_alpha = false;
 						rt->m_rt_alpha_scale = false;
 					}
 					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
 					{
-						m_can_correct_alpha = false;
+						can_scale_rt_alpha = false;
 						rt->RTADecorrect();
 						m_conf.rt = rt->m_texture;
 
@@ -5601,7 +5608,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			{
 				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt_new_alpha_max > 128)
 				{
-					m_can_correct_alpha = false;
+					can_scale_rt_alpha = false;
 					rt->RTADecorrect();
 					m_conf.rt = rt->m_texture;
 
@@ -5611,12 +5618,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			}
 			else if (rt->m_last_draw == s_n)
 			{
-				m_can_correct_alpha = false;
+				can_scale_rt_alpha = false;
 				rt->m_rt_alpha_scale = false;
 			}
 			else
 			{
-				m_can_correct_alpha = false;
+				can_scale_rt_alpha = false;
 				rt->RTADecorrect();
 				m_conf.rt = rt->m_texture;
 
@@ -5624,37 +5631,27 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					tex->m_texture = rt->m_texture;
 			}
 		}
-		else if (!rt->m_rt_alpha_scale)
-			m_can_correct_alpha = m_can_correct_alpha;
 
-		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
+		new_scale_rt_alpha = rt->m_rt_alpha_scale;
 	}
 
 	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
 	{
-		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, rt);
+		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
 	}
 	else
 	{
 		m_conf.blend = {}; // No blending please
 		m_conf.ps.no_color1 = true;
 
-		// Try to avoid palette draws
-		if (rt && m_can_correct_alpha && !rt->m_rt_alpha_scale && rt->m_alpha_max == rt->m_alpha_min )
+		if (can_scale_rt_alpha && !new_scale_rt_alpha && m_conf.colormask.wa)
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
 			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && PrimitiveCoversWithoutGaps() && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
 
-			if (!full_cover)
-			{
-				rt->RTACorrect();
-				m_conf.rt = rt->m_texture;
-			}
-			else
-				rt->m_rt_alpha_scale = true;
-
-			m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
+			// Restrict this to only when we're overwriting the whole target.
+			new_scale_rt_alpha = full_cover;
 		}
 	}
 
@@ -5772,7 +5769,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else if (features.stencil_buffer)
 		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
 
-	if (m_conf.ps.rta_correction)
+	if (new_scale_rt_alpha)
 		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM + 2);
 	else
 		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM);
@@ -5893,6 +5890,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 	{
 		m_conf.ps.tfx = 4;
+	}
+
+	// Update RT scaled alpha flag, nothing's going to read it anymore.
+	if (rt)
+	{
+		GL_INS("RT alpha is now %s", rt->m_rt_alpha_scale ? "scaled" : "NOT scaled");
+		rt->m_rt_alpha_scale = new_scale_rt_alpha;
+		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
 
 	if (features.framebuffer_fetch)
