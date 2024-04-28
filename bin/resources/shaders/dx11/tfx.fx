@@ -339,7 +339,7 @@ uint4 sample_4_index(float4 uv, float uv_w)
 		
 	if (PS_RTA_SRC_CORRECTION)
 	{
-		i = uint4(c * 128.55f); // Denormalize value
+		i = uint4(round(c * 128.25f)); // Denormalize value
 	}
 	else
 	{
