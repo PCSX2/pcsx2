@@ -370,6 +370,9 @@ PAPX-90506:
 PAPX-90507:
   name: "Official Disc 2003"
   region: "NTSC-J"
+  gsHWFixes:
+    mipmap: 2 # Mipmap + trilinear, improves ground textures to match sw renderer.
+    trilinearFiltering: 1
 PAPX-90508:
   name: "Gran Turismo 4 - Lupo Cup Training Version"
   region: "NTSC-J"
@@ -382,6 +385,10 @@ PAPX-90508:
 PAPX-90511:
   name: "Siren [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 1 # Fixes gaps between menu options.
+    cpuSpriteRenderBW: 4 # Fixes sky rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
   region: "NTSC-J"
@@ -12846,6 +12853,8 @@ SLED-50488:
 SLED-50489:
   name: "Stuntman [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
@@ -12880,6 +12889,8 @@ SLED-50980:
 SLED-51012:
   name: "Stuntman [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
@@ -14425,6 +14436,8 @@ SLES-50288:
   name: "Stuntman"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
@@ -17657,9 +17670,17 @@ SLES-51650:
 SLES-51653:
   name: "Mace Griffin - Bounty Hunter"
   region: "PAL-M4"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground and wall textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51654:
   name: "Mace Griffin - Bounty Hunter"
   region: "PAL-G"
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground and wall textures to match sw renderer.
+    trilinearFiltering: 1
 SLES-51658:
   name: "Piglet's Big Game"
   region: "PAL-G"
@@ -23551,9 +23572,13 @@ SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLES-53677:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-I"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLES-53682:
   name: "James Pond - Codename - RoboCod"
   region: "PAL-E"
@@ -25993,10 +26018,14 @@ SLES-54487:
 SLES-54488:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "PAL-I"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLES-54489:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "PAL-E"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLES-54490:
   name: "God Hand"
   region: "PAL-M5"
@@ -30404,6 +30433,8 @@ SLKA-25167:
 SLKA-25168:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLKA-25169:
   name: "UEFA Euro 2004 - Portugal"
   region: "NTSC-K"
@@ -31062,6 +31093,8 @@ SLKA-25317:
 SLKA-25318:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-K"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLKA-25319:
   name: "보글보글 스폰지밥 - 레디, 액션!"
   region: "NTSC-K"
@@ -43429,6 +43462,8 @@ SLPM-66019:
   name-sort: すたんとまん
   name-en: "Stuntman"
   region: "NTSC-J"
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
@@ -45027,6 +45062,8 @@ SLPM-66268:
   name-sort: えきさいてぃんぐぷろれす7 SMACKDOWN! VS. RAW 2006
   name-en: "Smackdown! vs. Raw 2006 - Exciting Pro Wrestling 7"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLPM-66269:
   name: ブレイジング ソウルズ 限定版
   name-sort: ぶれいじんぐ そうるず [げんていばん]
@@ -47193,6 +47230,8 @@ SLPM-66627:
   name-sort: WWE 2007 SmackDown(R) vs Raw(R)
   name-en: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLPM-66628:
   name: OutRun2 SP(アウトラン2 スペシャルツアーズ) [初回限定版]
   name-sort: あうとらん2 すぺしゃるつあーず しょかいげんていばん
@@ -60261,6 +60300,8 @@ SLUS-20250:
   name: "Stuntman"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
     cpuSpriteRenderBW: 4 # Fixes textures.
     mipmap: 2 # Mipmap + trilinear, improves some textures to match sw renderer.
@@ -61591,6 +61632,10 @@ SLUS-20505:
   name: "Mace Griffin - Bounty Hunter"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    recommendedBlendingLevel: 3 # Improves lighting.
+    mipmap: 2 # Mipmap + trilinear, improves ground and wall textures to match sw renderer.
+    trilinearFiltering: 1
 SLUS-20506:
   name: "Black & Bruised"
   region: "NTSC-U"
@@ -66280,6 +66325,8 @@ SLUS-21286:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLUS-21287:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-U"
@@ -67243,6 +67290,8 @@ SLUS-21427:
   name: "WWE SmackDown! vs. RAW 2007"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes Hollywood Hulk Hogan's entrance and slow-mo finisher.
 SLUS-21428:
   name: "Bionicle Heroes"
   region: "NTSC-U"
