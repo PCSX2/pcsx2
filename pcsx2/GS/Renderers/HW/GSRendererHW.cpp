@@ -4407,7 +4407,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 
 			if (!full_cover)
 			{
-				rt->RTACorrect();
+				rt->ScaleRTAlpha();
 				m_conf.rt = rt->m_texture;
 			}
 
@@ -5558,7 +5558,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				{
 					can_scale_rt_alpha = false;
 
-					rt->RTADecorrect();
+					rt->UnscaleRTAlpha();
 					m_conf.rt = rt->m_texture;
 
 					if (req_src_update)
@@ -5574,7 +5574,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
 					{
 						can_scale_rt_alpha = false;
-						rt->RTADecorrect();
+						rt->UnscaleRTAlpha();
 						m_conf.rt = rt->m_texture;
 
 						if (req_src_update)
@@ -5587,7 +5587,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt_new_alpha_max > 128)
 				{
 					can_scale_rt_alpha = false;
-					rt->RTADecorrect();
+					rt->UnscaleRTAlpha();
 					m_conf.rt = rt->m_texture;
 
 					if (req_src_update)
@@ -5602,7 +5602,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			else
 			{
 				can_scale_rt_alpha = false;
-				rt->RTADecorrect();
+				rt->UnscaleRTAlpha();
 				m_conf.rt = rt->m_texture;
 
 				if (req_src_update)
@@ -6117,7 +6117,7 @@ GSRendererHW::CLUTDrawTestResult GSRendererHW::PossibleCLUTDraw()
 				m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, r);
 			if (tgt)
 			{
-				tgt->RTADecorrect();
+				tgt->UnscaleRTAlpha();
 				bool is_dirty = false;
 				for (const GSDirtyRect& rc : tgt->m_dirty)
 				{

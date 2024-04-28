@@ -244,8 +244,8 @@ public:
 		void ResizeValidity(const GSVector4i& rect);
 		void UpdateValidity(const GSVector4i& rect, bool can_resize = true);
 
-		void RTACorrect();
-		void RTADecorrect();
+		void ScaleRTAlpha();
+		void UnscaleRTAlpha();
 
 		void Update(bool cannot_scale = false);
 
