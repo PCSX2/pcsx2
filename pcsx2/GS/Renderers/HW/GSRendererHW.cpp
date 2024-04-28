@@ -3956,7 +3956,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	const bool alpha_c0_less_max_one = (m_conf.ps.blend_c == 0 && GetAlphaMinMax().max <= 128);
 	const bool alpha_c1_high_min_one = (m_conf.ps.blend_c == 1 && rt_alpha_min > 128);
 	const bool alpha_c1_high_max_one = (m_conf.ps.blend_c == 1 && rt_alpha_max > 128);
-	const bool alpha_c1_high_no_rta_correct = m_conf.ps.blend_c == 1 && !(new_rt_alpha_scale || can_scale_rt_alpha);
+	bool alpha_c1_high_no_rta_correct = m_conf.ps.blend_c == 1 && !(new_rt_alpha_scale || can_scale_rt_alpha);
 	const bool alpha_c2_zero = (m_conf.ps.blend_c == 2 && AFIX == 0u);
 	const bool alpha_c2_one = (m_conf.ps.blend_c == 2 && AFIX == 128u);
 	const bool alpha_c2_less_one = (m_conf.ps.blend_c == 2 && AFIX <= 128u);
@@ -4410,6 +4410,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			}
 
 			new_rt_alpha_scale = true;
+			alpha_c1_high_no_rta_correct = false;
 			
 			m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 		}
