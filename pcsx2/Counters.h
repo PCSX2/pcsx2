@@ -22,9 +22,9 @@ struct EECNT_MODE
 	u32 GateSource:1;
 
 	// 0 - count when the gate signal is low
-	// 1 - reset and start counting at the signal's rising edge (h/v blank end)
-	// 2 - reset and start counting at the signal's falling edge (h/v blank start)
-	// 3 - reset and start counting at both signal edges
+	// 1 - reset at the signal's rising edge (h/v blank start)
+	// 2 - reset at the signal's falling edge (h/v blank end)
+	// 3 - reset at both signal edges
 	u32 GateMode:2;
 
 	// Counter cleared to zero when target reached.
@@ -126,6 +126,7 @@ extern uint g_FrameCount;
 
 extern void rcntUpdate_hScanline();
 extern void rcntUpdate_vSync();
+extern bool rcntCanCount(int i);
 extern void rcntUpdate();
 
 extern void rcntInit();
