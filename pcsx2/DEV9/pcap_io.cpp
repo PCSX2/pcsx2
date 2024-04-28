@@ -287,7 +287,7 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 	const int dlt = pcap_datalink(hpcap);
 	const char* dlt_name = pcap_datalink_val_to_name(dlt);
 
-	Console.Error("DEV9: Device uses DLT %d: %s", dlt, dlt_name);
+	Console.WriteLn("DEV9: Device uses DLT %d: %s", dlt, dlt_name);
 	switch (dlt)
 	{
 		case DLT_EN10MB:
