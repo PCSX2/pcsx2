@@ -1227,9 +1227,6 @@ function(setup_main_executable target)
 	get_property(PCSX2_SOURCE_DIR GLOBAL PROPERTY PCSX2_SOURCE_DIR)
 	get_property(PCSX2_METAL_SHADERS GLOBAL PROPERTY PCSX2_METAL_SHADERS)
 
-	get_target_property(MOC_EXECUTABLE_LOCATION Qt6::moc IMPORTED_LOCATION)
-	get_filename_component(QT_BINARY_DIRECTORY "${MOC_EXECUTABLE_LOCATION}" DIRECTORY)
-
 	if(WIN32)
 		target_sources(${target} PRIVATE
 			${PCSX2_SOURCE_DIR}/windows/PCSX2.manifest
@@ -1248,7 +1245,7 @@ function(setup_main_executable target)
 			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 		endforeach()
 
-		find_program(WINDEPLOYQT_EXE windeployqt HINTS "${QT_BINARY_DIRECTORY}")
+		get_target_property(WINDEPLOYQT_EXE Qt6::windeployqt IMPORTED_LOCATION)
 		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --no-translations COMMAND_ERROR_IS_FATAL ANY)")
 		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")
 	endif()
@@ -1324,9 +1321,8 @@ function(setup_main_executable target)
 			set(postprocessBundleType ALL)
 		endif()
 
-		find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
 		add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
-			COMMAND "${MACDEPLOYQT_EXE}" "$<TARGET_FILE_DIR:${target}>/../.." -no-strip
+			COMMAND Qt6::macdeployqt "$<TARGET_FILE_DIR:${target}>/../.." -no-strip
 		)
 		add_dependencies(pcsx2-postprocess-bundle ${target})
 	endif()
