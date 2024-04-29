@@ -52,9 +52,6 @@
 
 namespace Achievements
 {
-	// Size of the EE physical memory exposed to RetroAchievements.
-	static constexpr u32 EXPOSED_EE_MEMORY_SIZE = Ps2MemSize::MainRam + Ps2MemSize::Scratch;
-
 	static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 	static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 
@@ -131,6 +128,9 @@ namespace Achievements
 	static void BeginLoadGame();
 	static void UpdateGameSummary();
 	static void DownloadImage(std::string url, std::string cache_filename);
+
+	// Size of the EE physical memory exposed to RetroAchievements.
+	static u32 GetExposedEEMemorySize();
 
 	static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 	static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
@@ -444,6 +444,11 @@ bool Achievements::Initialize()
 	return true;
 }
 
+u32 Achievements::GetExposedEEMemorySize()
+{
+	return Ps2MemSize::ExposedRam + Ps2MemSize::Scratch;
+}
+
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
 	*http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
@@ -599,7 +604,7 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
-	if ((static_cast<u64>(address) + num_bytes) > EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
+	if ((static_cast<u64>(address) + num_bytes) > GetExposedEEMemorySize()) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
 		return 0u;
@@ -608,7 +613,7 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 	// RA uses a fake memory map with the scratchpad directly above physical memory.
 	// The scratchpad is not meant to be accessible via physical addressing, only virtual.
 	// This also means that the upper 96MB of memory will never be accessible to achievements.
-	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 
 	// Fast paths for known data sizes.
 	switch (num_bytes)
@@ -3020,7 +3025,7 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 	RA_SetConsoleID(PlayStation2);
 
 	// EE physical memory and scratchpad are currently exposed (matching direct rcheevos implementation).
-	RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, EXPOSED_EE_MEMORY_SIZE);
+	RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, GetExposedEEMemorySize());
 	RA_InstallMemoryBankBlockReader(0, RACallbackReadBlock);
 
 	// Fire off a login anyway. Saves going into the menu and doing it.
@@ -3127,50 +3132,50 @@ void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
 
 unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
 {
-	if ((static_cast<u64>(address) + sizeof(unsigned char)) > EXPOSED_EE_MEMORY_SIZE)
+	if ((static_cast<u64>(address) + sizeof(unsigned char)) > GetExposedEEMemorySize())
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek at %08X.", address);
 		return 0u;
 	}
 
 	unsigned char value;
-	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(&value, ptr, sizeof(value));
 	return value;
 }
 
 unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int address, unsigned char* buffer, unsigned int bytes)
 {
-	if ((address >= EXPOSED_EE_MEMORY_SIZE)) [[unlikely]]
+	if ((address >= GetExposedEEMemorySize())) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds block memory read for %u bytes at %08X.", bytes, address);
 		return 0u;
 	}
 
-	if (address < Ps2MemSize::MainRam && (address + bytes) > Ps2MemSize::MainRam) [[unlikely]]
+	if (address < Ps2MemSize::ExposedRam && (address + bytes) > Ps2MemSize::ExposedRam) [[unlikely]]
 	{
 		// Split across RAM+Scratch.
-		const unsigned int bytes_from_ram = Ps2MemSize::MainRam - address;
+		const unsigned int bytes_from_ram = Ps2MemSize::ExposedRam - address;
 		const unsigned int bytes_from_scratch = bytes - bytes_from_ram;
 		return (RACallbackReadBlock(address, buffer, bytes_from_ram) +
 				RACallbackReadBlock(address + bytes_from_ram, buffer + bytes_from_ram, bytes_from_scratch));
 	}
 
-	const unsigned int read_byte_count = std::min<unsigned int>(EXPOSED_EE_MEMORY_SIZE - address, bytes);
-	const u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	const unsigned int read_byte_count = std::min<unsigned int>(GetExposedEEMemorySize() - address, bytes);
+	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(buffer, ptr, read_byte_count);
 	return read_byte_count;
 }
 
 void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-	if ((static_cast<u64>(address) + sizeof(value)) > EXPOSED_EE_MEMORY_SIZE) [[unlikely]]
+	if ((static_cast<u64>(address) + sizeof(value)) > GetExposedEEMemorySize()) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory poke at %08X (value %08X).", address, value);
 		return;
 	}
 
-	u8* ptr = (address < Ps2MemSize::MainRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(ptr, &value, sizeof(value));
 }
 

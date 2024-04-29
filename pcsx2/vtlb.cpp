@@ -832,7 +832,7 @@ static bool vtlb_GetMainMemoryOffsetFromPtr(uptr ptr, u32* mainmem_offset, u32* 
 	if (ptr >= (uptr)eeMem->Main && page_end <= (uptr)eeMem->ZeroRead)
 	{
 		const u32 eemem_offset = static_cast<u32>(ptr - (uptr)eeMem->Main);
-		const bool writeable = ((eemem_offset < Ps2MemSize::MainRam) ? (mmap_GetRamPageInfo(eemem_offset) != ProtMode_Write) : true);
+		const bool writeable = ((eemem_offset < Ps2MemSize::ExposedRam) ? (mmap_GetRamPageInfo(eemem_offset) != ProtMode_Write) : true);
 		*mainmem_offset = (eemem_offset + HostMemoryMap::EEmemOffset);
 		*mainmem_size = (offsetof(EEVM_MemoryAllocMess, ZeroRead) - eemem_offset);
 		*prot = PageProtectionMode().Read().Write(writeable);
@@ -1382,7 +1382,7 @@ struct vtlb_PageProtectionInfo
 	vtlb_ProtectionMode Mode;
 };
 
-alignas(16) static vtlb_PageProtectionInfo m_PageProtectInfo[Ps2MemSize::MainRam >> __pageshift];
+alignas(16) static vtlb_PageProtectionInfo m_PageProtectInfo[Ps2MemSize::TotalRam >> __pageshift];
 
 
 // returns:
@@ -1398,7 +1398,7 @@ vtlb_ProtectionMode mmap_GetRamPageInfo(u32 paddr)
 	uptr ptr = (uptr)PSM(paddr);
 	uptr rampage = ptr - (uptr)eeMem->Main;
 
-	if (!ptr || rampage >= Ps2MemSize::MainRam)
+	if (!ptr || rampage >= Ps2MemSize::ExposedRam)
 		return ProtMode_NotRequired; //not in ram, no tracking done ...
 
 	rampage >>= __pageshift;
@@ -1482,7 +1482,7 @@ bool PageFaultHandler::HandlePageFault(uptr pc, uptr addr, bool is_write)
 	{
 		// get bad virtual address
 		uptr offset = addr - (uptr)eeMem->Main;
-		if (offset >= Ps2MemSize::MainRam)
+		if (offset >= Ps2MemSize::ExposedRam)
 			return false;
 
 		mmap_ClearCpuBlock(offset);
@@ -1499,6 +1499,6 @@ void mmap_ResetBlockTracking()
 	//DbgCon.WriteLn( "vtlb/mmap: Block Tracking reset..." );
 	std::memset(m_PageProtectInfo, 0, sizeof(m_PageProtectInfo));
 	if (eeMem)
-		HostSys::MemProtect(eeMem->Main, Ps2MemSize::MainRam, PageAccess_ReadWrite());
-	vtlb_UpdateFastmemProtection(0, Ps2MemSize::MainRam, PageAccess_ReadWrite());
+		HostSys::MemProtect(eeMem->Main, Ps2MemSize::ExposedRam, PageAccess_ReadWrite());
+	vtlb_UpdateFastmemProtection(0, Ps2MemSize::ExposedRam, PageAccess_ReadWrite());
 }

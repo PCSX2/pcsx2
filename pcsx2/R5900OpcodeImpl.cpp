@@ -953,6 +953,12 @@ void SYSCALL()
 			}
 		}
 		break;
+		case Syscall::RFU060:
+			if (CHECK_EXTRAMEM && cpuRegs.GPR.n.a1.UL[0] == 0xFFFFFFFF)
+			{
+				cpuRegs.GPR.n.a1.UL[0] = Ps2MemSize::ExposedRam - cpuRegs.GPR.n.a2.SL[0];
+			}
+			break;
 		case Syscall::SetOsdConfigParam:
 			// The whole thing gets written back to BIOS memory, so it'll be in the right place, no need to continue HLEing
 			AllowParams1 = true;
@@ -1148,6 +1154,13 @@ void SYSCALL()
 			}
 			break;
 		}
+		case Syscall::GetMemorySize:
+			if (CHECK_EXTRAMEM)
+			{
+				cpuRegs.GPR.n.v0.UL[0] = Ps2MemSize::ExposedRam;
+				return;
+			}
+			break;
 
 
 		default:

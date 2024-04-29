@@ -18,6 +18,7 @@
 
 #include "common/AlignedMalloc.h"
 #include "common/FastJmp.h"
+#include "common/HeapArray.h"
 #include "common/Perf.h"
 
 // Only for MOVQ workaround.
@@ -68,9 +69,10 @@ eeProfiler EE::Profiler;
 
 #define X86
 
-static u8* recRAMCopy = nullptr;
-static u8* recLutReserve_RAM = nullptr;
-static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
+static DynamicHeapArray<u8, 4096> recRAMCopy;
+static DynamicHeapArray<u8, 4096> recLutReserve_RAM;
+static size_t recLutSize;
+static bool extraRam;
 
 static BASEBLOCK* recRAM = nullptr; // and the ptr to the blocks here
 static BASEBLOCK* recROM = nullptr; // and here
@@ -497,24 +499,19 @@ static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
-static void recReserve()
+static void recReserveRAM()
 {
-	recPtr = SysMemory::GetEERec();
-	recPtrEnd = SysMemory::GetEERecEnd() - _64kb;
+	recLutSize = (Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
 
-	if (!recRAMCopy)
-	{
-		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
-	}
+	if (recRAMCopy.size() != Ps2MemSize::ExposedRam)
+		recRAMCopy.resize(Ps2MemSize::ExposedRam);
 
-	if (!recRAM)
-	{
-		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
-	}
+	if (recLutReserve_RAM.size() != recLutSize)
+		recLutReserve_RAM.resize(recLutSize);
 
-	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM;
+	BASEBLOCK* basepos = reinterpret_cast<BASEBLOCK*>(recLutReserve_RAM.data());
 	recRAM = basepos;
-	basepos += (Ps2MemSize::MainRam / 4);
+	basepos += (Ps2MemSize::ExposedRam / 4);
 	recROM = basepos;
 	basepos += (Ps2MemSize::Rom / 4);
 	recROM1 = basepos;
@@ -525,7 +522,7 @@ static void recReserve()
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for (int i = 0x0000; i < (int)(Ps2MemSize::MainRam / 0x10000); i++)
+	for (int i = 0x0000; i < (int)(Ps2MemSize::ExposedRam / 0x10000); i++)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -557,6 +554,13 @@ static void recReserve()
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
 	}
+}
+
+static void recReserve()
+{
+	recPtr = SysMemory::GetEERec();
+	recPtrEnd = SysMemory::GetEERecEnd() - _64kb;
+	recReserveRAM();
 
 	pxAssertRel(!s_pInstCache, "InstCache not allocated");
 	s_nInstCacheSize = 128;
@@ -565,13 +569,19 @@ static void recReserve()
 		pxFailRel("Failed to allocate R5900 InstCache array");
 }
 
-alignas(16) static u16 manual_page[Ps2MemSize::MainRam >> 12];
-alignas(16) static u8 manual_counter[Ps2MemSize::MainRam >> 12];
+alignas(16) static u16 manual_page[Ps2MemSize::TotalRam >> 12];
+alignas(16) static u8 manual_counter[Ps2MemSize::TotalRam >> 12];
 
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
 	Console.WriteLn(Color_StrongBlack, "EE/iR5900 Recompiler Reset");
+
+	if (CHECK_EXTRAMEM != extraRam)
+	{
+		recReserveRAM();
+		extraRam = !extraRam;
+	}
 
 	EE::Profiler.Reset();
 
@@ -580,8 +590,8 @@ static void recResetRaw()
 	vtlb_DynGenDispatchers();
 	recPtr = xGetPtr();
 
-	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
-	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
+	ClearRecLUT(reinterpret_cast<BASEBLOCK*>(recLutReserve_RAM.data()), recLutSize);
+	recRAMCopy.fill(0);
 
 	maxrecmem = 0;
 
@@ -598,8 +608,8 @@ static void recResetRaw()
 
 void recShutdown()
 {
-	safe_aligned_free(recRAMCopy);
-	safe_aligned_free(recLutReserve_RAM);
+	recRAMCopy.deallocate();
+	recLutReserve_RAM.deallocate();
 
 	recBlocks.Reset();
 
@@ -2638,7 +2648,7 @@ StartRecomp:
 	pxAssert((pc - startpc) >> 2 <= 0xffff);
 	s_pCurBlockEx->size = (pc - startpc) >> 2;
 
-	if (HWADDR(pc) <= Ps2MemSize::MainRam)
+	if (HWADDR(pc) <= Ps2MemSize::ExposedRam)
 	{
 		BASEBLOCKEX* oldBlock;
 		int i;

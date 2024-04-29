@@ -25,7 +25,7 @@ enum class FreezeAction
 // [SAVEVERSION+]
 // This informs the auto updater that the users savestates will be invalidated.
 
-static const u32 g_SaveVersion = (0x9A4C << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A4D << 16) | 0x0000;
 
 
 // the freezing data between submodules and core
@@ -92,7 +92,7 @@ public:
 	}
 
 	bool FreezeBios();
-	bool FreezeInternals();
+	bool FreezeInternals(Error* error);
 
 	// Loads or saves an arbitrary data type.  Usable on atomic types, structs, and arrays.
 	// For dynamically allocated pointers use FreezeMem instead.
@@ -192,7 +192,7 @@ protected:
 	bool vmFreeze();
 	bool mtvuFreeze();
 	bool rcntFreeze();
-	bool memFreeze();
+	bool memFreeze(Error* error);
 	bool vuMicroFreeze();
 	bool vuJITFreeze();
 	bool vif0Freeze();

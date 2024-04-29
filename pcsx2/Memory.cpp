@@ -36,10 +36,16 @@ BIOS
 #include "ps2/BiosTools.h"
 
 #include "common/AlignedMalloc.h"
+#include "common/Error.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
+
+namespace Ps2MemSize
+{
+	u32 ExposedRam = MainRam;
+} // namespace Ps2MemSize
 
 namespace SysMemory
 {
@@ -66,6 +72,7 @@ static u16 s_dve_regs[0xff];
 static bool s_ba_command_executing = false;
 static bool s_ba_error_detected = false;
 static u16 s_ba_current_reg = 0;
+static bool s_extra_memory = false;
 
 namespace HostMemoryMap
 {
@@ -282,6 +289,19 @@ void* SysMemory::GetDataFileHandle()
 	return s_data_memory_file_handle;
 }
 
+bool memGetExtraMemMode()
+{
+	return s_extra_memory;
+}
+
+void memSetExtraMemMode(bool mode)
+{
+	s_extra_memory = mode;
+
+	// update the amount of RAM exposed to the VM
+	Ps2MemSize::ExposedRam = mode ? Ps2MemSize::TotalRam : Ps2MemSize::MainRam;
+}
+
 void memSetKernelMode() {
 	//Do something here
 	MemMode = 0;
@@ -442,9 +462,10 @@ void memMapVUmicro()
 void memMapPhy()
 {
 	// Main memory
-	vtlb_MapBlock(eeMem->Main,	0x00000000,Ps2MemSize::MainRam);//mirrored on first 256 mb ?
+	vtlb_MapBlock(eeMem->Main,	0x00000000,Ps2MemSize::ExposedRam);//mirrored on first 256 mb ?
+
 	// High memory, uninstalled on the configuration we emulate
-	vtlb_MapHandler(null_handler, Ps2MemSize::MainRam, 0x10000000 - Ps2MemSize::MainRam);
+	vtlb_MapHandler(null_handler, Ps2MemSize::ExposedRam, 0x10000000 - Ps2MemSize::ExposedRam);
 
 	// Various ROMs (all read-only)
 	vtlb_MapBlock(eeMem->ROM,	0x1fc00000, Ps2MemSize::Rom);
@@ -1145,13 +1166,23 @@ void memRelease()
 	eeMem = nullptr;
 }
 
-bool SaveStateBase::memFreeze()
+bool SaveStateBase::memFreeze(Error* error)
 {
 	Freeze(s_ba);
 	Freeze(s_dve_regs);
 	Freeze(s_ba_command_executing);
 	Freeze(s_ba_error_detected);
 	Freeze(s_ba_current_reg);
+
+	bool extra_memory = s_extra_memory;
+	Freeze(extra_memory);
+
+	if (extra_memory != s_extra_memory)
+	{
+		Error::SetStringFmt(error, "Memory size mismatch, save state requires {}, but VM currently has {}.",
+			extra_memory ? "128MB" : "32MB", s_extra_memory ? "128MB" : "32MB");
+		return false;
+	}
 
 	return IsOkay();
 }

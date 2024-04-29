@@ -203,7 +203,8 @@ extern void memSetUserMode();
 extern void memSetPageAddr(u32 vaddr, u32 paddr);
 extern void memClearPageAddr(u32 vaddr);
 extern void memBindConditionalHandlers();
-
+extern bool memGetExtraMemMode();
+extern void memSetExtraMemMode(bool mode);
 extern void memMapVUmicro();
 
 #define memRead8 vtlb_memRead<mem8_t>
