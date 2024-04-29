@@ -711,6 +711,16 @@ void eeloadHook()
 	}
 
 	VMManager::Internal::ELFLoadingOnCPUThread(std::move(elfname));
+
+	if (CHECK_EXTRAMEM)
+	{
+		// Map extra memory.
+		vtlb_VMap(Ps2MemSize::MainRam, Ps2MemSize::MainRam, Ps2MemSize::ExtraRam);
+
+		// Map RAM mirrors for extra memory.
+		vtlb_VMap(0x20000000 | Ps2MemSize::MainRam, Ps2MemSize::MainRam, Ps2MemSize::ExtraRam);
+		vtlb_VMap(0x30000000 | Ps2MemSize::MainRam, Ps2MemSize::MainRam, Ps2MemSize::ExtraRam);
+	}
 }
 
 // Called from recompilers; define is mandatory.

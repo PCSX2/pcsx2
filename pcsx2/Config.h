@@ -540,6 +540,11 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct CpuOptions
 	{
+		BITFIELD32()
+		bool
+			ExtraMemory : 1;
+		BITFIELD_END
+
 		RecompilerOptions Recompiler;
 
 		FPControlRegister FPUFPCR;
@@ -1248,6 +1253,7 @@ namespace EmuFolders
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
 #define CHECK_IOPREC (EmuConfig.Cpu.Recompiler.EnableIOP)
 #define CHECK_FASTMEM (EmuConfig.Cpu.Recompiler.EnableEE && EmuConfig.Cpu.Recompiler.EnableFastmem)
+#define CHECK_EXTRAMEM (memGetExtraMemMode())
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK (EmuConfig.Gamefixes.VuAddSubHack) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.

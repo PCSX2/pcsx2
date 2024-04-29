@@ -1376,6 +1376,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 	s_cpu_implementation_changed = false;
 	UpdateCPUImplementations();
+	memSetExtraMemMode(EmuConfig.Cpu.ExtraMemory);
 	Internal::ClearCPUExecutionCaches();
 	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
 	memBindConditionalHandlers();
@@ -1616,6 +1617,7 @@ void VMManager::Reset()
 	if (elf_was_changed)
 		HandleELFChange(false);
 
+	memSetExtraMemMode(EmuConfig.Cpu.ExtraMemory);
 	Internal::ClearCPUExecutionCaches();
 	memBindConditionalHandlers();
 	SysMemory::Reset();
@@ -3022,6 +3024,11 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		append(ICON_PF_MICROCHIP,
 			TRANSLATE_SV("VMManager", "VU Clamp Mode is not set to default, this may break some games."));
+	}
+	if (EmuConfig.Cpu.ExtraMemory)
+	{
+		append(ICON_PF_MICROCHIP,
+			TRANSLATE_SV("VMManager", "128MB RAM is enabled. Compatibility with some games may be affected."));
 	}
 	if (!EmuConfig.EnableGameFixes)
 	{

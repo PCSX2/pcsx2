@@ -91,7 +91,7 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 	// FIXME: Why??? DMA uses physical addresses
 	addr &= 0x1ffffff0;
 
-	if (addr < Ps2MemSize::MainRam)
+	if (addr < Ps2MemSize::ExposedRam)
 	{
 		return (tDMA_TAG*)&eeMem->Main[addr];
 	}
@@ -154,7 +154,7 @@ __ri tDMA_TAG *dmaGetAddr(u32 addr, bool write)
 	// FIXME: Why??? DMA uses physical addresses
 	addr &= 0x1ffffff0;
 
-	if (addr < Ps2MemSize::MainRam)
+	if (addr < Ps2MemSize::ExposedRam)
 	{
 		return (tDMA_TAG*)&eeMem->Main[addr];
 	}

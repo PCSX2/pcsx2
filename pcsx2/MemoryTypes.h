@@ -8,6 +8,7 @@ namespace Ps2MemSize
 {
 	static constexpr u32 MainRam = _32mb;      // 32 MB main memory.
 	static constexpr u32 ExtraRam = _1mb * 96; // 32+96 MB devkit memory.
+	static constexpr u32 TotalRam = _1mb * 128;// 128 MB total memory.
 	static constexpr u32 Rom = _1mb * 4;       // 4 MB main rom
 	static constexpr u32 Rom1 = _1mb * 4;      // DVD player
 	static constexpr u32 Rom2 = 0x00080000;    // Chinese rom extension
@@ -18,6 +19,8 @@ namespace Ps2MemSize
 	static constexpr u32 IopHardware = _64kb;
 
 	static constexpr u32 GSregs = 0x00002000; // 8k for the GS registers and stuff.
+
+	extern u32 ExposedRam;
 } // namespace Ps2MemSize
 
 typedef u8 mem8_t;
