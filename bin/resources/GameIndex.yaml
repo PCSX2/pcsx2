@@ -2187,6 +2187,8 @@ SCAJ-20190:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCAJ-20191:
   name: "Super Robot Taisen OG - Original Generations Gaiden [Limited Edition]"
   region: "NTSC-Unk"
@@ -2412,6 +2414,8 @@ SCAJ-30011:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCCS-40001:
   name: 捉猴啦 2
   name-sort: "Zhuo Hou La 2"
@@ -4324,6 +4328,8 @@ SCED-54680:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCED-54682:
   name: "UPS2 Speciale Platinum 2007"
   region: "PAL-M5"
@@ -6055,6 +6061,8 @@ SCES-54206:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCES-54219:
   name: "Buzz! Junior - Jungle Party"
   region: "PAL-M7"
@@ -7695,6 +7703,8 @@ SCKA-30006:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCKA-30007:
   name: "God of War 2 [Big Hit Series]"
   region: "NTSC-K"
@@ -7705,6 +7715,8 @@ SCKA-30007:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCKA-90002:
   name: "Jeolche Jeolmyeong Dosi"
   region: "NTSC-K"
@@ -11748,6 +11760,8 @@ SCUS-97481:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97482:
   name: "God of War II - The Colossus Battle [Demo]"
   region: "NTSC-U"
@@ -11758,6 +11772,8 @@ SCUS-97482:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SCUS-97483:
   name: "Gran Turismo 4 MX-5 Edition [Demo]"
   region: "NTSC-U"
@@ -33977,6 +33993,8 @@ SLPM-61161:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-61162:
   name: "Dragon Ball Z - Sparking! Meteor"
   region: "NTSC-J"
@@ -49478,6 +49496,8 @@ SLPM-67013:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-67014:
   name: "Sengoku Musou 2 - Moushouden"
   region: "NTSC-J"
@@ -49496,6 +49516,8 @@ SLPM-67017:
     halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
+    mipmap: 2 # Mipmap + trilinear, fixes miptrick textures to match sw renderer.
+    trilinearFiltering: 1
 SLPM-67502:
   name: "Devil May Cry"
   region: "NTSC-K"
