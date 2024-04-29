@@ -3423,6 +3423,20 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy)
 			{
 				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
 				m_conf.indices_per_prim = 3;
+
+				// See note above in GS_SPRITE_CLASS.
+				if (m_vt.m_accurate_stq && m_vt.m_eq.stq) [[unlikely]]
+				{
+					GSVertex* const v = m_vertex.buff;
+					const GSVector4 v_q = GSVector4(v[0].RGBAQ.Q);
+					for (u32 i = 0; i < m_vertex.next; i++)
+					{
+						// v[i].ST.ST /= v[i].RGBAQ.Q; v[i].RGBAQ.Q = 1.0f; (Q / Q = 1)
+						GSVector4 v_st = GSVector4::load<true>(&v[i].ST);
+						v_st = (v_st / v_q).insert32<2, 2>(v_st);
+						GSVector4::store<true>(&v[i].ST, v_st);
+					}
+				}
 			}
 			break;
 
