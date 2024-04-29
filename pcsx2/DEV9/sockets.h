@@ -28,6 +28,10 @@ class SocketAdapter : public NetAdapter
 	ThreadSafeMap<Sessions::ConnectionKey, Sessions::BaseSession*> connections;
 	ThreadSafeMap<u16, Sessions::BaseSession*> fixedUDPPorts;
 
+	std::thread::id sendThreadId;
+	std::vector<Sessions::BaseSession*> deleteQueueSendThread;
+	std::vector<Sessions::BaseSession*> deleteQueueRecvThread;
+
 public:
 	SocketAdapter();
 	virtual bool blocks();
