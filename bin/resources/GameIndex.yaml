@@ -17477,6 +17477,8 @@ SLES-51511:
   region: "PAL-M6"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing vertices on ramps.
 SLES-51522:
   name: "Return to Castle Wolfenstein - Operation Resurrection"
   region: "PAL-S"
@@ -40958,6 +40960,8 @@ SLPM-65580:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing vertices on ramps.
 SLPM-65581:
   name: ホーンテッドマンション
   name-sort: ほーんてっどまんしょん
@@ -43727,6 +43731,8 @@ SLPM-66067:
   region: "NTSC-J"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing vertices on ramps.
 SLPM-66068:
   name: リチャード・バーンズ ラリー
   name-sort: りちゃーど・ばーんず らりー
@@ -62440,6 +62446,8 @@ SLUS-20649:
   compat: 5
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing vertices on ramps.
 SLUS-20650:
   name: "MVP Baseball 2003"
   region: "NTSC-U"
@@ -70401,6 +70409,8 @@ SLUS-29068:
   region: "NTSC-U"
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
+  clampModes:
+    vu1ClampMode: 3 # Fixes missing vertices on ramps.
 SLUS-29069:
   name: "Prince of Persia - The Sands of Time [Demo]"
   region: "NTSC-U"
