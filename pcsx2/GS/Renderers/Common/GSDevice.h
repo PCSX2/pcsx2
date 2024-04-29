@@ -701,6 +701,7 @@ struct alignas(16) GSHWDrawConfig
 	{
 		BlendState blend;
 		u8 blend_hw;
+		u8 dither;
 		bool enable;
 	};
 	static_assert(sizeof(BlendPass) == 8, "blend pass is 8 bytes");

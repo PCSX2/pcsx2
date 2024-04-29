@@ -5844,6 +5844,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 		pipe.bs = config.blend_second_pass.blend;
 		pipe.ps.blend_hw = config.blend_second_pass.blend_hw;
+		pipe.ps.dither = config.blend_second_pass.dither;
 		if (BindDrawPipeline(pipe))
 			DrawIndexedPrimitive();
 	}
