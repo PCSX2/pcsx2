@@ -2627,6 +2627,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.blend_second_pass.enable)
 	{
 		config.ps.blend_hw = config.blend_second_pass.blend_hw;
+		config.ps.dither = config.blend_second_pass.dither;
 		SetupPS(config.ps, &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_second_pass.blend), config.blend_second_pass.blend.constant);
 		DrawIndexedPrimitive();

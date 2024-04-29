@@ -4443,14 +4443,17 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			{
 				// Alpha = As or Af.
 				// Cs + Cd*Alpha, Cs - Cd*Alpha.
+				const u8 dither = m_conf.ps.dither;
 				// Render pass 1: Calculate Cd*Alpha with an alpha range of 0-2.
 				m_conf.ps.blend_hw = 2;
+				m_conf.ps.dither = 0;
 				blend.src = GSDevice::DST_COLOR;
 				blend.dst = (m_conf.ps.blend_c == 2) ? GSDevice::CONST_COLOR : GSDevice::SRC1_COLOR;
 				blend.op = GSDevice::OP_ADD;
 				// Render pass 2: Add or subtract result of render pass 1(Cd) from Cs.
 				m_conf.blend_second_pass.enable = true;
 				m_conf.blend_second_pass.blend_hw = 0;
+				m_conf.blend_second_pass.dither = dither;
 				m_conf.blend_second_pass.blend = {true, blend_second_pass.src, GSDevice::CONST_ONE, blend_second_pass.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 			}
 			else if (alpha_c1_high_no_rta_correct && (blend_flag & BLEND_HW5))

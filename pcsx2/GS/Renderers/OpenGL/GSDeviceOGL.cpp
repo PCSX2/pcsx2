@@ -2587,6 +2587,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			OMSetBlendState();
 		}
 		psel.ps.blend_hw = config.blend_second_pass.blend_hw;
+		psel.ps.dither = config.blend_second_pass.dither;
 		SetupPipeline(psel);
 		SendHWDraw(config, psel.ps.IsFeedbackLoop());
 	}
