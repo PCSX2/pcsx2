@@ -515,92 +515,17 @@ public:
 	template <int src, int dst>
 	__forceinline GSVector4 insert32(const GSVector4& v) const
 	{
-		// TODO: use blendps when src == dst
-
-#if 0 // _M_SSE >= 0x401
-
-		// NOTE: it's faster with shuffles...
-
-		return GSVector4(_mm_insert_ps(m, v.m, _MM_MK_INSERTPS_NDX(src, dst, 0)));
-
-#else
-
-		switch (dst)
-		{
-			case 0:
-				switch (src)
-				{
-					case 0: return yyxx(v).zxzw(*this);
-					case 1: return yyyy(v).zxzw(*this);
-					case 2: return yyzz(v).zxzw(*this);
-					case 3: return yyww(v).zxzw(*this);
-					default: ASSUME(0);
-				}
-				break;
-			case 1:
-				switch (src)
-				{
-					case 0: return xxxx(v).xzzw(*this);
-					case 1: return xxyy(v).xzzw(*this);
-					case 2: return xxzz(v).xzzw(*this);
-					case 3: return xxww(v).xzzw(*this);
-					default: ASSUME(0);
-				}
-				break;
-			case 2:
-				switch (src)
-				{
-					case 0: return xyzx(wwxx(v));
-					case 1: return xyzx(wwyy(v));
-					case 2: return xyzx(wwzz(v));
-					case 3: return xyzx(wwww(v));
-					default: ASSUME(0);
-				}
-				break;
-			case 3:
-				switch (src)
-				{
-					case 0: return xyxz(zzxx(v));
-					case 1: return xyxz(zzyy(v));
-					case 2: return xyxz(zzzz(v));
-					case 3: return xyxz(zzww(v));
-					default: ASSUME(0);
-				}
-				break;
-			default:
-				ASSUME(0);
-		}
-
-#endif
+		if constexpr (src == dst)
+			return GSVector4(_mm_blend_ps(m, v.m, 1 << src));
+		else
+			return GSVector4(_mm_insert_ps(m, v.m, _MM_MK_INSERTPS_NDX(src, dst, 0)));
 	}
 
-#ifdef __linux__
-#if 0
-	// Debug build error, _mm_extract_ps is actually a macro that use an anonymous union
-	// that contains i. I decide to rename the template on linux but it makes windows unhappy
-	// Hence the nice ifdef
-	//
-	// Code extract:
-	// union { int i; float f; } __tmp;
-
-GSVector.h:2977:40: error: declaration of 'int GSVector4::extract32() const::<anonymous union>::i'
-   return _mm_extract_ps(m, i);
-GSVector.h:2973:15: error:  shadows template parm 'int i'
-  template<int i> __forceinline int extract32() const
-#endif
-
-	template <int index>
-	__forceinline int extract32() const
-	{
-		return _mm_extract_ps(m, index);
-	}
-#else
 	template <int i>
 	__forceinline int extract32() const
 	{
 		return _mm_extract_ps(m, i);
 	}
-#endif
 
 	__forceinline static GSVector4 zero()
 	{
