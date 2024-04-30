@@ -430,13 +430,10 @@ namespace Sessions
 
 						offset = headerLength;
 #ifdef __APPLE__
+						//Apple (old BSD)'s raw IP sockets implementation converts the ip_len field to host byte order
+            //and additionally subtracts the header length.
 						//https://www.unix.com/man-page/mojave/4/ip/
-						//"Note that the ip_off and ip_len fields are in host byte order."
-						//Any other bugs? FreeBSD notes the following
-						//Before FreeBSD 11.0 packets received on raw IP sockets had the ip_len and ip_off fields converted to host byte order.
-						//Before FreeBSD 10.0 packets received on raw IP sockets had the ip_hl sub-tracted from the ip_len field.
-						//TODO, test
-						length = ipHeader->ip_len - headerLength;
+						length = ipHeader->ip_len;
 #else
 						length = ntohs(ipHeader->ip_len) - headerLength;
 #endif
