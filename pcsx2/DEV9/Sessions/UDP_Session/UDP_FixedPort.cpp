@@ -106,7 +106,7 @@ namespace Sessions
 		if (ret == SOCKET_ERROR)
 		{
 			hasData = false;
-			Console.Error("DEV9: UDP: select failed. Error Code: %d",
+			Console.Error("DEV9: UDP: select failed. Error code: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
@@ -121,14 +121,14 @@ namespace Sessions
 #ifdef _WIN32
 			int len = sizeof(error);
 			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", WSAGetLastError());
+				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
 			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", errno);
+				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", errno);
 #endif
 			else
-				Console.Error("DEV9: UDP: Recv Error: %d", error);
+				Console.Error("DEV9: UDP: Recv error: %d", error);
 		}
 		else
 			hasData = FD_ISSET(client, &sReady);
@@ -161,7 +161,7 @@ namespace Sessions
 
 			if (ret == SOCKET_ERROR)
 			{
-				Console.Error("UDP Recv Error: %d",
+				Console.Error("DEV9: UDP: UDP recv error: %d",
 #ifdef _WIN32
 					WSAGetLastError());
 #elif defined(__POSIX__)
