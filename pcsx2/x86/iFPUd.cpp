@@ -396,7 +396,7 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 
 void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 {
-	u8* endMul = nullptr;
+	u32* endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{
@@ -417,7 +417,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 
 		u8* noHack = JNZ8(0);
 			xMOVAPS(xRegisterSSE(regd), ptr128[result]);
-			endMul = JMP8(0);
+			endMul = JMP32(0);
 		x86SetJ8(noHack);
 	}
 
@@ -427,7 +427,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 	xMOVSS(xRegisterSSE(regd), xRegisterSSE(sreg));
 
 	if (CHECK_FPUMULHACK)
-		x86SetJ8(endMul);
+		x86SetJ32(endMul);
 }
 
 //------------------------------------------------------------------
