@@ -70,7 +70,7 @@ namespace Sessions
 			if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 			{
 				CloseSocket();
-				Console.WriteLn("DEV9: UDP: UDPFixed Max Idle Reached");
+				Console.WriteLn("DEV9: UDP: Fixed port max idle reached");
 				RaiseEventConnectionClosed();
 			}
 			return nullptr;
@@ -91,7 +91,7 @@ namespace Sessions
 		if (ret == SOCKET_ERROR)
 		{
 			hasData = false;
-			Console.Error("DEV9: UDP: Select Failed. Error Code: %d",
+			Console.Error("DEV9: UDP: Select failed. Error code: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
@@ -106,14 +106,14 @@ namespace Sessions
 #ifdef _WIN32
 			int len = sizeof(error);
 			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", WSAGetLastError());
+				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", WSAGetLastError());
 #elif defined(__POSIX__)
 			socklen_t len = sizeof(error);
 			if (getsockopt(client, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len) < 0)
-				Console.Error("DEV9: UDP: Unkown UDP Connection Error (getsockopt Error: %d)", errno);
+				Console.Error("DEV9: UDP: Unknown UDP connection error (getsockopt error: %d)", errno);
 #endif
 			else
-				Console.Error("DEV9: UDP: Recv Error: %d", error);
+				Console.Error("DEV9: UDP: Recv error: %d", error);
 		}
 		else
 			hasData = FD_ISSET(client, &sReady);
@@ -146,7 +146,7 @@ namespace Sessions
 
 			if (ret == SOCKET_ERROR)
 			{
-				Console.Error("DEV9: UDP: Recv Error: %d",
+				Console.Error("DEV9: UDP: Recv error: %d",
 #ifdef _WIN32
 					WSAGetLastError());
 #elif defined(__POSIX__)
@@ -171,7 +171,7 @@ namespace Sessions
 		if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 		{
 			//CloseSocket();
-			Console.WriteLn("DEV9: UDP: Max Idle Reached");
+			Console.WriteLn("DEV9: UDP: Max idle reached");
 			RaiseEventConnectionClosed();
 		}
 
@@ -203,7 +203,7 @@ namespace Sessions
 			//client already created
 			if (!(udp.destinationPort == destPort && udp.sourcePort == srcPort))
 			{
-				Console.Error("DEV9: UDP: Packet invalid for current session (Duplicate key?)");
+				Console.Error("DEV9: UDP: Packet invalid for current session (duplicate key?)");
 				return false;
 			}
 		}
@@ -217,7 +217,7 @@ namespace Sessions
 			if ((destIP.bytes[0] & 0xF0) == 0xE0)
 			{
 				isMulticast = true;
-				Console.Error("DEV9: UDP: Unexpected Multicast Connection");
+				Console.Error("DEV9: UDP: Unexpected multicast connection");
 			}
 
 			int ret;
@@ -319,7 +319,7 @@ namespace Sessions
 #elif defined(__POSIX__)
 			ret = errno;
 #endif
-			Console.Error("DEV9: UDP: Send Error %d", ret);
+			Console.Error("DEV9: UDP: Send error %d", ret);
 
 			//We can recive an ICMP Port Unreacable error, which can get raised in send (and maybe sendto?)
 			//On Windows this an WSAECONNRESET error, although I've not been able to reproduce in testing
@@ -348,7 +348,7 @@ namespace Sessions
 
 				if (ret == SOCKET_ERROR)
 				{
-					Console.Error("DEV9: UDP: Send Error (Second attempt) %d",
+					Console.Error("DEV9: UDP: Send error (second attempt) %d",
 #ifdef _WIN32
 						WSAGetLastError());
 #elif defined(__POSIX__)
