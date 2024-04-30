@@ -524,7 +524,8 @@ void psxRcntWcount16(int index, u16 value)
 		const u32 change = (psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate;
 		psxCounters[index].sCycleT += change * psxCounters[index].rate;
 	}
-
+	else
+		psxCounters[index].sCycleT = psxRegs.cycle;
 	psxCounters[index].count = value & 0xffff;
 
 	psxCounters[index].target &= 0xffff;
@@ -554,7 +555,8 @@ void psxRcntWcount32(int index, u32 value)
 		const u32 change = (psxRegs.cycle - psxCounters[index].sCycleT) / psxCounters[index].rate;
 		psxCounters[index].sCycleT += change * psxCounters[index].rate;
 	}
-
+	else
+		psxCounters[index].sCycleT = psxRegs.cycle;
 	psxCounters[index].count = value;
 
 	psxCounters[index].target &= 0xffffffff;
@@ -752,6 +754,8 @@ void psxRcntWtarget16(int index, u32 value)
 		psxCounters[index].count += change;
 		psxCounters[index].sCycleT += change * psxCounters[index].rate;
 	}
+	else
+		psxCounters[index].sCycleT = psxRegs.cycle;
 
 	// protect the target from an early arrival.
 	// if the target is behind the current count, then set the target overflow
@@ -786,6 +790,8 @@ void psxRcntWtarget32(int index, u32 value)
 		psxCounters[index].count += change;
 		psxCounters[index].sCycleT += change * psxCounters[index].rate;
 	}
+	else
+		psxCounters[index].sCycleT = psxRegs.cycle;
 	// protect the target from an early arrival.
 	// if the target is behind the current count, then set the target overflow
 	// flag, so that the target won't be active until after the next overflow.

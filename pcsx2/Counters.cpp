@@ -220,11 +220,13 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 sca
 	const u64 Render = HalfFrame - Blank;
 	const u64 GSBlank = Scanline * ((ntsc_hblank ? 3.5 : 3) + extra_scanlines); // GS VBlank/CSR Swap happens roughly 3.5(NTSC) and 3(PAL) Scanlines after VBlank Start
 
-	// Important!  The hRender/hBlank timers should be 50/50 for best results.
-	//  (this appears to be what the real EE's timing crystal does anyway)
-
-	u64 hBlank = Scanline / 2;
-	u64 hRender = Scanline - hBlank;
+	// Important!  The hRender/hBlank timer ratio below is set according to PS2 tests.
+	// in EE Cycles taken from PAL system:
+	// 18876 cycles for hsync
+	// 15796 cycles for hsync are low (render)
+	// Ratio: 83.68298368298368
+	u64 hRender = Scanline * 0.8368298368298368f;
+	u64 hBlank = Scanline - hRender;
 
 	if (!IsInterlacedVideoMode())
 	{
@@ -592,10 +594,9 @@ __fi void rcntUpdate_hScanline()
 
 	//iopEventAction = 1;
 	if (hsyncCounter.Mode == MODE_HBLANK)
-	{ //HBLANK Start
-
-		rcntStartGate(false, hsyncCounter.sCycle + hsyncCounter.CycleT);
-		psxHBlankStart();
+	{ //HBLANK End / HRENDER Begin
+		rcntEndGate(false, hsyncCounter.sCycle + hsyncCounter.CycleT);
+		psxHBlankEnd();
 
 		// Setup the hRender's start and end cycle information:
 		hsyncCounter.sCycle += vSyncInfo.hBlank; // start  (absolute cycle value)
@@ -603,7 +604,7 @@ __fi void rcntUpdate_hScanline()
 		hsyncCounter.Mode = MODE_HRENDER;
 	}
 	else
-	{ //HBLANK END / HRENDER Begin
+	{ //HBLANK START / HRENDER End
 		if (!CSRreg.HSINT)
 		{
 			CSRreg.HSINT = true;
@@ -611,9 +612,8 @@ __fi void rcntUpdate_hScanline()
 				gsIrq();
 		}
 
-		rcntEndGate(false, hsyncCounter.sCycle + hsyncCounter.CycleT);
-
-		psxHBlankEnd();
+		rcntStartGate(false, hsyncCounter.sCycle + hsyncCounter.CycleT);
+		psxHBlankStart();
 
 		// set up the hblank's start and end cycle information:
 		hsyncCounter.sCycle += vSyncInfo.hRender; // start (absolute cycle value)
@@ -816,10 +816,14 @@ static __fi void rcntStartGate(bool isVblank, u32 sCycle)
 				break;
 			case 0x1: // Reset on Vsync start
 			case 0x3: // Reset on Vsync start and end
+			{
 				counters[i].count = 0;
 				counters[i].target &= 0xffff;
+				const u32 change = (sCycle - counters[i].sCycleT) / counters[i].rate;
+				counters[i].sCycleT = sCycle - ((sCycle - counters[i].sCycleT) - (change * counters[i].rate));
 				EECNT_LOG("EE Counter[%d] %s StartGate Type%d, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].mode.GateMode, counters[i].count);
+			}
 				break;
 		}
 	}
@@ -858,10 +862,14 @@ static __fi void rcntEndGate(bool isVblank, u32 sCycle)
 
 			case 0x2: // Reset on Vsync end
 			case 0x3: // Reset on Vsync start and end
+			{
 				EECNT_LOG("EE Counter[%d]  %s EndGate Type%d, count = %x", i,
 					isVblank ? "vblank" : "hblank", counters[i].mode.GateMode, counters[i].count);
 				counters[i].count = 0;
 				counters[i].target &= 0xffff;
+				const u32 change = (sCycle - counters[i].sCycleT) / counters[i].rate;
+				counters[i].sCycleT = sCycle - ((sCycle - counters[i].sCycleT) - (change * counters[i].rate));
+			}
 				break;
 		}
 	}
@@ -871,14 +879,11 @@ static __fi void rcntEndGate(bool isVblank, u32 sCycle)
 
 static __fi void rcntWmode(int index, u32 value)
 {
-	if (rcntCanCount(index))
+	if (rcntCanCount(index) && counters[index].mode.ClockSource != 0x3)
 	{
-		if (counters[index].mode.ClockSource != 0x3)
-		{
-			const u32 change = (cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate;
-			counters[index].count += change;
-			counters[index].sCycleT += change * counters[index].rate;
-		}
+		const u32 change = (cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate;
+		counters[index].count += change;
+		counters[index].sCycleT += change * counters[index].rate;
 	}
 	else
 		counters[index].sCycleT = cpuRegs.cycle;
@@ -906,13 +911,10 @@ static __fi void rcntWcount(int index, u32 value)
 	EECNT_LOG("EE Counter[%d] writeCount = %x,   oldcount=%x, target=%x", index, value, counters[index].count, counters[index].target);
 
 	// re-calculate the start cycle of the counter based on elapsed time since the last counter update:
-	if (rcntCanCount(index))
+	if (rcntCanCount(index) && counters[index].mode.ClockSource != 0x3)
 	{
-		if (counters[index].mode.ClockSource != 0x3)
-		{
-			const u32 change = (cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate;
-			counters[index].sCycleT += change * counters[index].rate;
-		}
+		const u32 change = (cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate;
+		counters[index].sCycleT += change * counters[index].rate;
 	}
 	else
 		counters[index].sCycleT = cpuRegs.cycle;
@@ -922,7 +924,7 @@ static __fi void rcntWcount(int index, u32 value)
 	// reset the target, and make sure we don't get a premature target.
 	counters[index].target &= 0xffff;
 
-	if (counters[index].count > counters[index].target)
+	if (counters[index].count >= counters[index].target)
 		counters[index].target |= EECNT_FUTURE_TARGET;
 
 	_rcntSet(index);
@@ -938,15 +940,14 @@ static __fi void rcntWtarget(int index, u32 value)
 	// If the target is behind the current count, set it up so that the counter must
 	// overflow first before the target fires:
 
-	if (rcntCanCount(index))
+	if (rcntCanCount(index) && counters[index].mode.ClockSource != 0x3)
 	{
-		if (counters[index].mode.ClockSource != 0x3)
-		{
-			const u32 change = (cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate;
-			counters[index].count += change;
-			counters[index].sCycleT += change * counters[index].rate;
-		}
+		const u32 change = (cpuRegs.cycle - counters[index].sCycleT) / counters[index].rate;
+		counters[index].count += change;
+		counters[index].sCycleT += change * counters[index].rate;
 	}
+	else
+		counters[index].sCycleT = cpuRegs.cycle;
 
 	if (counters[index].target <= counters[index].count)
 		counters[index].target |= EECNT_FUTURE_TARGET;
@@ -972,7 +973,7 @@ __fi u32 rcntRcount(int index)
 
 	// Spams the Console.
 	EECNT_LOG("EE Counter[%d] readCount32 = %x", index, ret);
-	return ret;
+	return (u16)ret;
 }
 
 template <uint page>
