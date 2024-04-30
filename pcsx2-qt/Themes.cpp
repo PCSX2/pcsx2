@@ -47,14 +47,22 @@ void QtHost::SetStyleFromSettings()
 {
 	const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", GetDefaultThemeName()));
 
+	// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
+	// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
+	qApp->setPalette(QPalette());
+
 	if (theme == "fusion")
 	{
-		// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
-		// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
-		qApp->setPalette(QPalette());
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 		qApp->setStyleSheet(QString());
 	}
+#ifdef _WIN32
+	else if (theme == "windowsvista")
+	{
+		qApp->setStyle(QStyleFactory::create("windowsvista"));
+		qApp->setStyleSheet(QString());
+	}
+#endif
 	else if (theme == "darkfusion")
 	{
 		// adapted from https://gist.github.com/QuantumCD/6245215
@@ -481,9 +489,6 @@ void QtHost::SetStyleFromSettings()
 	}
 	else
 	{
-		// setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
-		// is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
-		qApp->setPalette(QPalette());
 		qApp->setStyle(s_unthemed_style_name);
 		qApp->setStyleSheet(QString());
 	}
