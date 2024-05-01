@@ -36,6 +36,7 @@ namespace Sessions
 	UDP_Session::UDP_Session(ConnectionKey parKey, IP_Address parAdapterIP)
 		: UDP_BaseSession(parKey, parAdapterIP)
 		, isBroadcast(false)
+		, isMulticast(false)
 		, isFixedPort(false)
 		, deathClockStart(std::chrono::steady_clock::now())
 	{
@@ -180,7 +181,7 @@ namespace Sessions
 		if (!open)
 			return false;
 
-		if (isBroadcast || (parDestIP == destIP))
+		if (isBroadcast || isMulticast || (parDestIP == destIP))
 		{
 			deathClockStart.store(std::chrono::steady_clock::now());
 			return true;
@@ -209,13 +210,6 @@ namespace Sessions
 			// Create client
 			destPort = udp.destinationPort;
 			srcPort = udp.sourcePort;
-
-			// Multicast address start with 0b1110
-			if ((destIP.bytes[0] & 0xF0) == 0xE0)
-			{
-				isMulticast = true;
-				Console.Error("DEV9: UDP: Unexpected multicast connection");
-			}
 
 			int ret;
 			client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -259,8 +253,6 @@ namespace Sessions
 #endif
 			}
 
-			pxAssert(isMulticast == false);
-
 			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
 			endpoint.sin_addr = std::bit_cast<in_addr>(destIP);
@@ -297,7 +289,7 @@ namespace Sessions
 
 			ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 		}
-		else if (isMulticast | isFixedPort)
+		else if (isFixedPort)
 		{
 			sockaddr_in endpoint{};
 			endpoint.sin_family = AF_INET;
