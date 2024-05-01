@@ -61,15 +61,15 @@ namespace Sessions
 
 	IP_Payload* UDP_Session::Recv()
 	{
-		if (!open)
+		if (!open.load())
 			return nullptr;
 
 		if (isFixedPort)
 		{
 			if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 			{
-				CloseSocket();
 				Console.WriteLn("DEV9: UDP: Fixed port max idle reached");
+				open.store(false);
 				RaiseEventConnectionClosed();
 			}
 			return nullptr;
@@ -178,7 +178,7 @@ namespace Sessions
 
 	bool UDP_Session::WillRecive(IP_Address parDestIP)
 	{
-		if (!open)
+		if (!open.load())
 			return false;
 
 		if (isBroadcast || isMulticast || (parDestIP == destIP))
@@ -273,7 +273,7 @@ namespace Sessions
 			}
 
 			if (srcPort != 0)
-				open = true;
+				open.store(true);
 		}
 
 		PayloadPtr* udpPayload = static_cast<PayloadPtr*>(udp.GetPayload());
@@ -360,9 +360,14 @@ namespace Sessions
 		return true;
 	}
 
-	void UDP_Session::CloseSocket()
+	void UDP_Session::Reset()
 	{
-		open = false;
+		RaiseEventConnectionClosed();
+	}
+
+	UDP_Session::~UDP_Session()
+	{
+		open.store(false);
 		if (!isFixedPort && client != INVALID_SOCKET)
 		{
 #ifdef _WIN32
@@ -372,15 +377,5 @@ namespace Sessions
 #endif
 			client = INVALID_SOCKET;
 		}
-	}
-
-	void UDP_Session::Reset()
-	{
-		RaiseEventConnectionClosed();
-	}
-
-	UDP_Session::~UDP_Session()
-	{
-		CloseSocket();
 	}
 } // namespace Sessions
