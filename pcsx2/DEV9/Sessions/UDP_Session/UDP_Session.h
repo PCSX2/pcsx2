@@ -52,8 +52,5 @@ namespace Sessions
 		virtual void Reset();
 
 		virtual ~UDP_Session();
-
-	private:
-		void CloseSocket();
 	};
 } // namespace Sessions
