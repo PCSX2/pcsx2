@@ -28064,6 +28064,8 @@ SLES-55170:
 SLES-55172:
   name: "Code Lyoko - Quest for Infinity"
   region: "PAL-M4"
+  roundModes:
+    eeDivRoundMode: 3 # Fixes missing text.
   gsHWFixes:
     deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
     halfPixelOffset: 1 # Reduces ghosting effects.
@@ -68941,6 +68943,8 @@ SLUS-21743:
   name: "Code Lyoko - Quest for Infinity"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeDivRoundMode: 3 # Fixes missing text.
   gsHWFixes:
     deinterlace: 9 # Game requires adaptive bff de-interlacing instead of auto for the UI at native.
     halfPixelOffset: 1 # Reduces ghosting effects.
