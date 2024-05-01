@@ -28,19 +28,18 @@ namespace Sessions
 
 		u16 srcPort = 0;
 		u16 destPort = 0;
-		//Broadcast
-		const bool isBroadcast; // = false;
+		// UDP_Session flags
+		const bool isBroadcast;
 		bool isMulticast = false;
-		const bool isFixedPort; // = false;
-		//EndBroadcast
+		const bool isFixedPort;
 
 		std::atomic<std::chrono::steady_clock::time_point> deathClockStart;
 		const static std::chrono::duration<std::chrono::steady_clock::rep, std::chrono::steady_clock::period> MAX_IDLE;
 
 	public:
-		//Normal Port
+		// Normal Port
 		UDP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP);
-		//Fixed Port
+		// Fixed Port
 #ifdef _WIN32
 		UDP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, bool parIsBroadcast, bool parIsMulticast, SOCKET parClient);
 #elif defined(__POSIX__)

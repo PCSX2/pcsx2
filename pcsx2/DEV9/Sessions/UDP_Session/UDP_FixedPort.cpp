@@ -30,6 +30,19 @@ using namespace PacketReader::IP::UDP;
 
 namespace Sessions
 {
+	/*
+	 * The default UDP_Session backend don't bind to the src port the PS2 uses.
+	 * Some games, however, sends the response to a set port, rather than the message source port 
+	 * A set of heuristics are used to determine when we should bind the port, these are;
+	 * Any broadcast & multicast packet, and any packet where the src and dst ports are close to each other
+	 * UDP_FixedPort manages the lifetime of socket bound to a specific port, and shares that socket
+	 * with any UDP_Sessions created from it.
+	 * For a UDP_Session with a parent UDP_FixedPort, packets are sent from the UDP_Session, but received
+	 * by the UDP_FixedPort, with the UDP_FixedPort asking each UDP_Session associated with it whether 
+	 * it can accept the received packet, broadcast/multicast will accept eveything, while unicast sessions
+	 * only accept packets from the address it sent to
+	 */
+
 	UDP_FixedPort::UDP_FixedPort(ConnectionKey parKey, IP_Address parAdapterIP, u16 parPort)
 		: BaseSession(parKey, parAdapterIP)
 		, client{socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)}
@@ -44,11 +57,15 @@ namespace Sessions
 #elif defined(__POSIX__)
 				errno);
 #endif
-			//RaiseEventConnectionClosed(); //TODO
+			/* 
+			 * TODO: Currently error is not correctly handled here
+			 * We would need to call RaiseEventConnectionClosed()
+			 * and also deal with the follow up call to NewClientSession()
+			 */
 			return;
 		}
 
-		const int reuseAddress = true; //BOOL
+		const int reuseAddress = true; // BOOL on Windows
 		ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 		if (ret == SOCKET_ERROR)
@@ -59,7 +76,7 @@ namespace Sessions
 				errno);
 #endif
 
-		const int broadcastEnable = true; //BOOL
+		const int broadcastEnable = true; // BOOL on Windows
 		ret = setsockopt(client, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadcastEnable), sizeof(broadcastEnable));
 
 		if (ret == SOCKET_ERROR)
@@ -140,8 +157,8 @@ namespace Sessions
 			std::unique_ptr<u8[]> buffer;
 			sockaddr_in endpoint{};
 
-			//FIONREAD returns total size of all available messages
-			//but we will read one message at a time
+			// FIONREAD returns total size of all available messages
+			// however, we only read one message at a time
 #ifdef _WIN32
 			ret = ioctlsocket(client, FIONREAD, &available);
 #elif defined(__POSIX__)

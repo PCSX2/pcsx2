@@ -31,9 +31,7 @@ using namespace std::chrono_literals;
 namespace Sessions
 {
 	const std::chrono::duration<std::chrono::steady_clock::rep, std::chrono::steady_clock::period>
-		UDP_Session::MAX_IDLE = 120s; //See RFC 4787 Section 4.3
-
-	//TODO, figure out handling of multicast
+		UDP_Session::MAX_IDLE = 120s; // See RFC 4787 section 4.3
 
 	UDP_Session::UDP_Session(ConnectionKey parKey, IP_Address parAdapterIP)
 		: UDP_BaseSession(parKey, parAdapterIP)
@@ -125,8 +123,8 @@ namespace Sessions
 			std::unique_ptr<u8[]> buffer;
 			sockaddr_in endpoint{};
 
-			//FIONREAD returns total size of all available messages
-			//but we will read one message at a time
+			// FIONREAD returns total size of all available messages
+			// however, we only read one message at a time
 #ifdef _WIN32
 			ret = ioctlsocket(client, FIONREAD, &available);
 #elif defined(__POSIX__)
@@ -170,7 +168,6 @@ namespace Sessions
 
 		if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
 		{
-			//CloseSocket();
 			Console.WriteLn("DEV9: UDP: Max idle reached");
 			RaiseEventConnectionClosed();
 		}
@@ -200,7 +197,7 @@ namespace Sessions
 
 		if (destPort != 0)
 		{
-			//client already created
+			// Already created client!?
 			if (!(udp.destinationPort == destPort && udp.sourcePort == srcPort))
 			{
 				Console.Error("DEV9: UDP: Packet invalid for current session (duplicate key?)");
@@ -209,11 +206,11 @@ namespace Sessions
 		}
 		else
 		{
-			//create client
+			// Create client
 			destPort = udp.destinationPort;
 			srcPort = udp.sourcePort;
 
-			//Multicast address start with 0b1110
+			// Multicast address start with 0b1110
 			if ((destIP.bytes[0] & 0xF0) == 0xE0)
 			{
 				isMulticast = true;
@@ -234,7 +231,7 @@ namespace Sessions
 				return false;
 			}
 
-			const int reuseAddress = true; //BOOL
+			const int reuseAddress = true; // BOOL on Windows
 			ret = setsockopt(client, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
 
 			if (ret == SOCKET_ERROR)
@@ -289,7 +286,7 @@ namespace Sessions
 
 		PayloadPtr* udpPayload = static_cast<PayloadPtr*>(udp.GetPayload());
 
-		//Send
+		// Send Packet
 		int ret = SOCKET_ERROR;
 		if (isBroadcast)
 		{
@@ -321,11 +318,12 @@ namespace Sessions
 #endif
 			Console.Error("DEV9: UDP: Send error %d", ret);
 
-			//We can recive an ICMP Port Unreacable error, which can get raised in send (and maybe sendto?)
-			//On Windows this an WSAECONNRESET error, although I've not been able to reproduce in testing
-			//On Linux this is an ECONNREFUSED error (Testing needed to confirm full behaviour)
-
-			//The decision to ignore the error and retry was made to allow R&C Deadlock ressurection team to packet capture eveything
+			/*
+			 * We can receive an ICMP Port Unreacable error, which can get raised in send (and maybe sendto?)
+			 * On Windows this is an WSAECONNRESET error, although I've not been able to reproduce in testing
+			 * On Linux this is an ECONNREFUSED error (Testing needed to confirm full behaviour)
+			 * We ignore the error and resend to allow packet capture (i.e. wireshark) for server resurrection projects
+			 */
 #ifdef _WIN32
 			if (ret == WSAECONNRESET)
 #elif defined(__POSIX__)
@@ -343,7 +341,6 @@ namespace Sessions
 					ret = sendto(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 				}
 				else
-					//Do we need to clear the error somehow?
 					ret = send(client, reinterpret_cast<const char*>(udpPayload->data), udpPayload->GetLength(), 0);
 
 				if (ret == SOCKET_ERROR)
@@ -387,7 +384,6 @@ namespace Sessions
 
 	void UDP_Session::Reset()
 	{
-		//CloseSocket();
 		RaiseEventConnectionClosed();
 	}
 
