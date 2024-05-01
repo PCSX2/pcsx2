@@ -30,7 +30,7 @@ namespace Sessions
 		u16 destPort = 0;
 		// UDP_Session flags
 		const bool isBroadcast;
-		bool isMulticast = false;
+		const bool isMulticast;
 		const bool isFixedPort;
 
 		std::atomic<std::chrono::steady_clock::time_point> deathClockStart;
