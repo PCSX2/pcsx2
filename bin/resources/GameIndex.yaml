@@ -3204,10 +3204,6 @@ SCED-51657:
   name: "Official PlayStation Magazine Demo 33"
   region: "PAL-P"
   compat: 5
-  patches:
-    90C0E5F1:
-      content: |-
-        comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
 SCED-51669:
   name: "MotoGP 3"
   region: "PAL-E"
@@ -5402,6 +5398,7 @@ SCES-52424:
   patches:
     1D54FEA9:
       content: |-
+        // Fixes collision/missle hit issues.
         patch=0,EE,001A3154,word,48498800
         patch=0,EE,001A3158,word,4B00682C
         patch=0,EE,001A3164,word,484A8800
@@ -58111,6 +58108,12 @@ SLPS-25924:
 SLPS-25925:
   name: "NHL 2K9"
   region: "NTSC-J"
+  patches:
+    69C963FA:
+      content: |-
+        comment= patch by prafull , someother1ne
+        // Fixes hang at start
+        patch=1,EE,00430C70,word,00000000
 SLPS-25927:
   name: "TOMB RAIDER: UNDERWORLD"
   name-sort: "TOMB RAIDER: UNDERWORLD"
@@ -58132,6 +58135,12 @@ SLPS-25930:
   name-sort: MLB 2K9 [えいごばん]
   name-en: "Major League Baseball 2K9"
   region: "NTSC-J"
+  patches:
+    69C963FA:
+      content: |-
+        comment= patch by prafull , someother1ne
+        // Fixes hang at start
+        patch=1,EE,003AFCA0,word,00000000
 SLPS-25931:
   name: "Katekyoo Hitman Reborn! Nerae! Ring x Vongola Trainers [Best Collection]"
   region: "NTSC-J"
