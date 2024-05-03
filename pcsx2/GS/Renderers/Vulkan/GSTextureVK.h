@@ -70,11 +70,6 @@ public:
 	void TransitionSubresourcesToLayout(
 		VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout);
 
-	/// Framebuffers are lazily allocated.
-	VkFramebuffer GetFramebuffer(bool feedback_loop);
-
-	VkFramebuffer GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop);
-
 	// Call when the texture is bound to the pipeline, or read from in a copy.
 	__fi void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
 
@@ -100,10 +95,6 @@ private:
 
 	int m_map_level = std::numeric_limits<int>::max();
 	GSVector4i m_map_area = GSVector4i::zero();
-
-	// linked framebuffer is combined with depth texture
-	// list of color textures this depth texture is linked to or vice versa
-	std::vector<std::tuple<GSTextureVK*, VkFramebuffer, bool>> m_framebuffers;
 };
 
 class GSDownloadTextureVK final : public GSDownloadTexture

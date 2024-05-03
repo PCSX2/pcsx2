@@ -22,6 +22,20 @@ void Vulkan::AddPointerToChain(void* head, const void* ptr)
 	last_st->pNext = static_cast<const VkBaseInStructure*>(ptr);
 }
 
+void Vulkan::RemovePointerFromChain(void* head, const void* ptr)
+{
+	VkBaseInStructure* last_st = static_cast<VkBaseInStructure*>(head);
+	while (last_st->pNext)
+	{
+		if (last_st->pNext == ptr)
+		{
+			last_st->pNext = last_st->pNext->pNext;
+			return;
+		}
+
+		last_st = const_cast<VkBaseInStructure*>(last_st->pNext);
+	}
+}
 
 const char* Vulkan::VkResultToString(VkResult res)
 {
@@ -263,6 +277,12 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
 
 	m_line_rasterization_state = {};
 	m_line_rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
+
+	m_rendering = {};
+	m_rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+
+	m_rendering_input_attachment_locations = {};
+	m_rendering_input_attachment_locations.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO_KHR;
 
 	// set defaults
 	SetNoCullRasterizationState();
@@ -569,6 +589,56 @@ void Vulkan::GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEX
 	AddPointerToChain(&m_rasterization_state, &m_provoking_vertex);
 
 	m_provoking_vertex.provokingVertexMode = mode;
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRendering()
+{
+	AddPointerToChain(&m_ci, &m_rendering);
+}
+
+void Vulkan::GraphicsPipelineBuilder::AddDynamicRenderingColorAttachment(VkFormat format)
+{
+	SetDynamicRendering();
+
+	pxAssert(m_rendering.colorAttachmentCount < MAX_ATTACHMENTS);
+	m_rendering_color_formats[m_rendering.colorAttachmentCount++] = format;
+
+	m_rendering.pColorAttachmentFormats = m_rendering_color_formats.data();
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format)
+{
+	SetDynamicRendering();
+
+	m_rendering.depthAttachmentFormat = depth_format;
+	m_rendering.stencilAttachmentFormat = stencil_format;
+}
+
+void Vulkan::GraphicsPipelineBuilder::AddDynamicRenderingInputAttachment(u32 color_attachment_index)
+{
+	AddPointerToChain(&m_ci, &m_rendering_input_attachment_locations);
+
+	pxAssert(color_attachment_index < m_rendering.colorAttachmentCount);
+	pxAssert(m_rendering_input_attachment_locations.colorAttachmentCount < MAX_INPUT_ATTACHMENTS);
+
+	m_rendering_input_attachment_locations.pColorAttachmentLocations = m_rendering_input_attachment_indices.data();
+	m_rendering_input_attachment_indices[m_rendering_input_attachment_locations.colorAttachmentCount] =
+		color_attachment_index;
+	m_rendering_input_attachment_locations.colorAttachmentCount++;
+}
+
+void Vulkan::GraphicsPipelineBuilder::ClearDynamicRenderingAttachments()
+{
+	if (m_rendering_input_attachment_locations.colorAttachmentCount > 0)
+	{
+		RemovePointerFromChain(&m_ci, &m_rendering_input_attachment_locations);
+		m_rendering_input_attachment_locations.colorAttachmentCount = 0;
+	}
+
+	m_rendering.pColorAttachmentFormats = nullptr;
+	m_rendering.colorAttachmentCount = 0;
+	m_rendering.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+	m_rendering.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
 }
 
 Vulkan::ComputePipelineBuilder::ComputePipelineBuilder()
