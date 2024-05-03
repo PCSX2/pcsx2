@@ -20239,6 +20239,8 @@ SLES-52636:
   name: "Colin McRae Rally 2005"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - FullVU0SyncHack # Fixes in-game timer.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes missing lighting and car reflections.
     halfPixelOffset: 1 # Fixes 4 split lines in stage intros.
