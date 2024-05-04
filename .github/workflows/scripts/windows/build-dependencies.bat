@@ -47,7 +47,7 @@ set LIBPNG=1643
 set LZ4=b8fd2d15309dd4e605070bd4486e26b6ef814e29
 set QT=6.7.0
 set QTMINOR=6.7
-set SDL=SDL2-2.30.2
+set SDL=SDL2-2.30.3
 set WEBP=1.3.2
 set ZLIB=1.3.1
 set ZLIBSHORT=131
@@ -64,7 +64,7 @@ call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lp
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4 || goto error
 call :downloadfile "lz4-%LZ4%.zip" "https://github.com/lz4/lz4/archive/%LZ4%.zip" 0c33119688d6b180c7e760b0acd70059222389cfd581632623784bee27e51a31 || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 09a822abf6e97f80d09cf9c46115faebb3476b0d56c1c035aec8ec3f88382ae7 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" c5d78a9e0346c6695f03df8ba25e5e111a1e23c8aefa8372a1c5a0dd79acaf10 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 31a1e0c69bb37e6631de02f8cf0b75afdc2ce44890c32dac38d362c251c12483 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 450c0b1c3cd51e2e110fceaf60e157641c2698d18b12a3552d43fa1539bfdbbc || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" b869be09ccb72949a3311dc87ac702b6e854edfd5bff2bc2cc4d7fd549b1869a || goto error
