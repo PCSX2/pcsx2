@@ -133,7 +133,6 @@ namespace VMManager
 	static void SaveSessionTime(const std::string& prev_serial);
 	static void ReloadPINE();
 
-	static LimiterModeType GetInitialLimiterMode();
 	static float GetTargetSpeedForLimiterMode(LimiterModeType mode);
 	static void ResetFrameLimiter();
 	static double AdjustToHostRefreshRate(float frame_rate, float target_speed);
@@ -1371,7 +1370,7 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 		}
 	}
 
-	s_limiter_mode = GetInitialLimiterMode();
+	s_limiter_mode = LimiterModeType::Nominal;
 	s_target_speed = GetTargetSpeedForLimiterMode(s_limiter_mode);
 	s_use_vsync_for_timing = false;
 
@@ -1980,11 +1979,6 @@ float VMManager::GetTargetSpeed()
 	return s_target_speed;
 }
 
-LimiterModeType VMManager::GetInitialLimiterMode()
-{
-	return EmuConfig.EmulationSpeed.FrameLimitEnable ? LimiterModeType::Nominal : LimiterModeType::Unlimited;
-}
-
 double VMManager::AdjustToHostRefreshRate(float frame_rate, float target_speed)
 {
 	if (!EmuConfig.EmulationSpeed.SyncToHostRefreshRate || target_speed != 1.0f)
@@ -2015,27 +2009,26 @@ double VMManager::AdjustToHostRefreshRate(float frame_rate, float target_speed)
 
 float VMManager::GetTargetSpeedForLimiterMode(LimiterModeType mode)
 {
-	if (EmuConfig.EmulationSpeed.FrameLimitEnable && (!EmuConfig.EnableFastBootFastForward || !VMManager::Internal::IsFastBootInProgress()))
+	if (EmuConfig.EnableFastBootFastForward && VMManager::Internal::IsFastBootInProgress())
+		return 0.0f;
+
+	switch (s_limiter_mode)
 	{
-		switch (s_limiter_mode)
-		{
-			case LimiterModeType::Nominal:
-				return EmuConfig.EmulationSpeed.NominalScalar;
+		case LimiterModeType::Nominal:
+			return EmuConfig.EmulationSpeed.NominalScalar;
 
-			case LimiterModeType::Slomo:
-				return EmuConfig.EmulationSpeed.SlomoScalar;
+		case LimiterModeType::Slomo:
+			return EmuConfig.EmulationSpeed.SlomoScalar;
 
-			case LimiterModeType::Turbo:
-				return EmuConfig.EmulationSpeed.TurboScalar;
+		case LimiterModeType::Turbo:
+			return EmuConfig.EmulationSpeed.TurboScalar;
 
-			case LimiterModeType::Unlimited:
-				return 0.0f;
+		case LimiterModeType::Unlimited:
+			return 0.0f;
 
-				jNO_DEFAULT
-		}
+		default:
+			ASSUME(false);
 	}
-
-	return 0.0f;
 }
 
 void VMManager::UpdateTargetSpeed()
