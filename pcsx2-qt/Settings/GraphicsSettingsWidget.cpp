@@ -44,9 +44,13 @@ static constexpr RendererInfo s_renderer_info[] = {
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Null"), GSRendererType::Null},
 };
 
-static const char* s_anisotropic_filtering_entries[] = {QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Off (Default)"),
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "2x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "4x"),
-	QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "8x"), QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "16x"), nullptr};
+static const char* s_anisotropic_filtering_entries[] = {
+        FSUI_NSTR("Off (Default)"),
+	FSUI_NSTR("2x"), 
+        FSUI_NSTR("4x"),
+	FSUI_NSTR("8x"),
+        FSUI_NSTR("16x"),
+};
 static const char* s_anisotropic_filtering_values[] = {"0", "2", "4", "8", "16", nullptr};
 
 static constexpr int DEFAULT_INTERLACE_MODE = 0;
@@ -1114,3 +1118,13 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 	if (changed)
 		Host::CommitBaseSettingChanges();
 }
+
+#if 0
+// TRANSLATION-STRING-AREA-BEGIN
+TRANSLATE_NOOP("GraphicsSettingsWidget", "Off (Default)");
+TRANSLATE_NOOP("GraphicsSettingsWidget", "2x");
+TRANSLATE_NOOP("GraphicsSettingsWidget", "4x");
+TRANSLATE_NOOP("GraphicsSettingsWidget", "8x");
+TRANSLATE_NOOP("GraphicsSettingsWidget", "16x");
+// TRANSLATION-STRING-AREA-END
+#endif
