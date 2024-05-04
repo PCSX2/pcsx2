@@ -18,13 +18,13 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
 	SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources", "SDLControllerEnhancedMode", false);
 	connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this, &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
 	connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
 #ifdef _WIN32
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLRawInput, "InputSources", "SDLRawInput", false);
 #else
 	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLRawInput);
 	m_ui.enableSDLRawInput->deleteLater();
@@ -32,8 +32,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #endif
 
 #ifdef __APPLE__
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
 #else
 	m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
 	m_ui.enableSDLIOKitDriver->deleteLater();
@@ -50,8 +50,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort2, "Pad", "MultitapPort2", false);
 
 #ifdef _WIN32
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
 #else
 	m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
 	m_ui.xinputGroup->deleteLater();
@@ -204,7 +204,7 @@ ControllerMappingSettingsDialog::ControllerMappingSettingsDialog(ControllerSetti
 
 	m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("settings-3-line")).pixmap(32, 32));
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ignoreInversion, "InputSources", "IgnoreInversion", false);
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.ignoreInversion, "InputSources", "IgnoreInversion", false);
 
 	connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }

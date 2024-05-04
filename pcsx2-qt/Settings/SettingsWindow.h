@@ -93,6 +93,7 @@ public:
 	void setStringSettingValue(const char* section, const char* key, std::optional<const char*> value);
 	bool containsSettingValue(const char* section, const char* key) const;
 	void removeSettingValue(const char* section, const char* key);
+	void saveAndReloadGameSettings();
 
 Q_SIGNALS:
 	void settingsResetToDefaults();

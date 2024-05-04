@@ -20,6 +20,11 @@ void MemorySettingsInterface::Clear()
 	m_sections.clear();
 }
 
+bool MemorySettingsInterface::IsEmpty()
+{
+	return m_sections.empty();
+}
+
 bool MemorySettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
 {
 	const auto sit = m_sections.find(section);
@@ -311,4 +316,27 @@ void MemorySettingsInterface::ClearSection(const char* section)
 		return;
 
 	m_sections.erase(sit);
+}
+
+void MemorySettingsInterface::RemoveSection(const char* section)
+{
+	auto sit = m_sections.find(section);
+	if (sit == m_sections.end())
+		return;
+
+	m_sections.erase(sit);
+}
+
+void MemorySettingsInterface::RemoveEmptySections()
+{
+	for (auto sit = m_sections.begin(); sit != m_sections.end();)
+	{
+		if (sit->second.size() > 0)
+		{
+			++sit;
+			continue;
+		}
+
+		sit = m_sections.erase(sit);
+	}
 }

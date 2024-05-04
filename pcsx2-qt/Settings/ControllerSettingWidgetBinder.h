@@ -39,7 +39,7 @@ namespace ControllerSettingWidgetBinder
 			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key)]() {
 				const bool new_value = Accessor::getBoolValue(widget);
 				sif->SetBoolValue(section.c_str(), key.c_str(), new_value);
-				sif->Save();
+				QtHost::SaveGameSettings(sif, false);
 				g_emu_thread->reloadGameSettings();
 			});
 		}
@@ -72,7 +72,7 @@ namespace ControllerSettingWidgetBinder
 			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), option_offset]() {
 				const float new_value = Accessor::getIntValue(widget);
 				sif->SetIntValue(section.c_str(), key.c_str(), new_value + option_offset);
-				sif->Save();
+				QtHost::SaveGameSettings(sif, false);
 				g_emu_thread->reloadGameSettings();
 			});
 		}
@@ -105,7 +105,7 @@ namespace ControllerSettingWidgetBinder
 			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), multiplier]() {
 				const float new_value = Accessor::getFloatValue(widget) / multiplier;
 				sif->SetFloatValue(section.c_str(), key.c_str(), new_value);
-				sif->Save();
+				QtHost::SaveGameSettings(sif, false);
 				g_emu_thread->reloadGameSettings();
 			});
 		}
@@ -138,7 +138,7 @@ namespace ControllerSettingWidgetBinder
 			Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), range]() {
 				const int new_value = Accessor::getIntValue(widget);
 				sif->SetFloatValue(section.c_str(), key.c_str(), static_cast<float>(new_value) / range);
-				sif->Save();
+				QtHost::SaveGameSettings(sif, false);
 				g_emu_thread->reloadGameSettings();
 			});
 		}
@@ -176,7 +176,7 @@ namespace ControllerSettingWidgetBinder
 				else
 					sif->DeleteValue(section.c_str(), key.c_str());
 
-				sif->Save();
+				QtHost::SaveGameSettings(sif, false);
 				g_emu_thread->reloadGameSettings();
 			});
 		}

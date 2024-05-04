@@ -1443,6 +1443,42 @@ std::string QtHost::GetRuntimeDownloadedResourceURL(std::string_view name)
 	return fmt::format("{}/{}", RUNTIME_RESOURCES_URL, Path::URLEncode(name));
 }
 
+bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
+{
+	INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
+	Error error;
+
+	// if there's no keys, just toss the whole thing out
+	if (delete_if_empty && ini->IsEmpty())
+	{
+		INFO_LOG("Removing empty gamesettings ini {}", Path::GetFileName(ini->GetFileName()));
+		if (FileSystem::FileExists(ini->GetFileName().c_str()) &&
+			!FileSystem::DeleteFilePath(ini->GetFileName().c_str(), &error))
+		{
+			Host::ReportErrorAsync(
+				TRANSLATE_SV("QtHost", "Error"),
+				fmt::format(TRANSLATE_FS("QtHost", "An error occurred while deleting empty game settings:\n{}"),
+					error.GetDescription()));
+			return false;
+		}
+
+		return true;
+	}
+
+	// clean unused sections, stops the file being bloated
+	sif->RemoveEmptySections();
+
+	if (!sif->Save(&error))
+	{
+		Host::ReportErrorAsync(
+			TRANSLATE_SV("QtHost", "Error"),
+			fmt::format(TRANSLATE_FS("QtHost", "An error occurred while saving game settings:\n{}"), error.GetDescription()));
+		return false;
+	}
+
+	return true;
+}
+
 std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
 {
 	static constexpr u32 HTTP_POLL_INTERVAL = 10;

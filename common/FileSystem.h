@@ -87,7 +87,7 @@ namespace FileSystem
 	bool DirectoryIsEmpty(const char* path);
 
 	/// Delete file
-	bool DeleteFilePath(const char* path);
+	bool DeleteFilePath(const char* path, Error* error = nullptr);
 
 	/// Rename file
 	bool RenamePath(const char* OldPath, const char* NewPath, Error* error = nullptr);

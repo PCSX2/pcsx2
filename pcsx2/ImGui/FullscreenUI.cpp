@@ -25,6 +25,7 @@
 #include "svnrev.h"
 
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Image.h"
 #include "common/Path.h"
@@ -860,7 +861,29 @@ void FullscreenUI::Render()
 	{
 		if (s_game_settings_interface)
 		{
-			s_game_settings_interface->Save();
+			Error error;
+			s_game_settings_interface->RemoveEmptySections();
+
+			if (s_game_settings_interface->IsEmpty())
+			{
+				if (FileSystem::FileExists(s_game_settings_interface->GetFileName().c_str()) &&
+					!FileSystem::DeleteFilePath(s_game_settings_interface->GetFileName().c_str(), &error))
+				{
+					ImGuiFullscreen::OpenInfoMessageDialog(
+						FSUI_STR("Error"), fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
+											   error.GetDescription()));
+				}
+			}
+			else
+			{
+				if (!s_game_settings_interface->Save(&error))
+				{
+					ImGuiFullscreen::OpenInfoMessageDialog(
+						FSUI_STR("Error"),
+						fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
+				}
+			}
+
 			if (VMManager::HasValidVM())
 				Host::RunOnCPUThread([]() { VMManager::ReloadGameSettings(); });
 		}
@@ -6818,6 +6841,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
+TRANSLATE_NOOP("FullscreenUI", "Error");
 TRANSLATE_NOOP("FullscreenUI", "Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Your memory card is still writing data. Shutting down now will IRREVERSIBLY DESTROY YOUR MEMORY CARD. It is strongly recommended to resume your game and let it finish writing to your memory card.\n\nDo you wish to shutdown anyways and IRREVERSIBLY DESTROY YOUR MEMORY CARD?");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
@@ -6885,6 +6909,7 @@ TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you minimize the window
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you open the quick menu, and unpauses when you close it.");
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
+TRANSLATE_NOOP("FullscreenUI", "Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix");
 TRANSLATE_NOOP("FullscreenUI", "Uses a light coloured theme instead of the default dark theme.");
 TRANSLATE_NOOP("FullscreenUI", "Game Display");
 TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when a game is started.");
@@ -6919,7 +6944,6 @@ TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the fast forward hotkey.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Motion Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the slow motion hotkey.");
-TRANSLATE_NOOP("FullscreenUI", "When disabled, the game will run as fast as possible.");
 TRANSLATE_NOOP("FullscreenUI", "System Settings");
 TRANSLATE_NOOP("FullscreenUI", "EE Cycle Rate");
 TRANSLATE_NOOP("FullscreenUI", "Underclocks or overclocks the emulated Emotion Engine CPU.");
@@ -7108,18 +7132,26 @@ TRANSLATE_NOOP("FullscreenUI", "Disable Shader Cache");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the loading and saving of shaders/pipelines to disk.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Vertex Shader Expand");
 TRANSLATE_NOOP("FullscreenUI", "Falls back to the CPU for expanding sprites/lines.");
-TRANSLATE_NOOP("FullscreenUI", "Runtime Settings");
-TRANSLATE_NOOP("FullscreenUI", "Applies a global volume modifier to all sound produced by the game.");
-TRANSLATE_NOOP("FullscreenUI", "Mixing Settings");
+TRANSLATE_NOOP("FullscreenUI", "Audio Control");
+TRANSLATE_NOOP("FullscreenUI", "Output Volume");
+TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host.");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
+TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host when fast forwarding.");
+TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
+TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
+TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
+TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
+TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
+TRANSLATE_NOOP("FullscreenUI", "Expansion");
+TRANSLATE_NOOP("FullscreenUI", "Determines how audio is expanded from stereo to surround for supported games.");
+TRANSLATE_NOOP("FullscreenUI", "Synchronization");
 TRANSLATE_NOOP("FullscreenUI", "Changes when SPU samples are generated relative to system emulation.");
-TRANSLATE_NOOP("FullscreenUI", "Determines how the stereo output is transformed to greater speaker counts.");
-TRANSLATE_NOOP("FullscreenUI", "Output Settings");
-TRANSLATE_NOOP("FullscreenUI", "Determines which API is used to play back audio samples on the host.");
-TRANSLATE_NOOP("FullscreenUI", "Sets the average output latency when using the cubeb backend.");
-TRANSLATE_NOOP("FullscreenUI", "%d ms (avg)");
-TRANSLATE_NOOP("FullscreenUI", "Timestretch Settings");
-TRANSLATE_NOOP("FullscreenUI", "Affects how the timestretcher operates when not running at 100% speed.");
-TRANSLATE_NOOP("FullscreenUI", "%d ms");
+TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
+TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
+TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
+TRANSLATE_NOOP("FullscreenUI", "Output Latency");
+TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
 TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
 TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates a larger memory card by filtering saves only to the current game.");
@@ -7278,6 +7310,8 @@ TRANSLATE_NOOP("FullscreenUI", "Account");
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
+TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
+TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
 TRANSLATE_NOOP("FullscreenUI", "{:%H:%M}");
 TRANSLATE_NOOP("FullscreenUI", "{0}/{1}/{2}/{3}");
@@ -7484,16 +7518,6 @@ TRANSLATE_NOOP("FullscreenUI", "NxAGSS");
 TRANSLATE_NOOP("FullscreenUI", "Uncompressed");
 TRANSLATE_NOOP("FullscreenUI", "LZMA (xz)");
 TRANSLATE_NOOP("FullscreenUI", "Zstandard (zst)");
-TRANSLATE_NOOP("FullscreenUI", "TimeStretch (Recommended)");
-TRANSLATE_NOOP("FullscreenUI", "Async Mix (Breaks some games!)");
-TRANSLATE_NOOP("FullscreenUI", "None (Audio can skip.)");
-TRANSLATE_NOOP("FullscreenUI", "Stereo (None, Default)");
-TRANSLATE_NOOP("FullscreenUI", "Quadraphonic");
-TRANSLATE_NOOP("FullscreenUI", "Surround 5.1");
-TRANSLATE_NOOP("FullscreenUI", "Surround 7.1");
-TRANSLATE_NOOP("FullscreenUI", "No Sound (Emulate SPU2 only)");
-TRANSLATE_NOOP("FullscreenUI", "Cubeb (Cross-platform)");
-TRANSLATE_NOOP("FullscreenUI", "XAudio2");
 TRANSLATE_NOOP("FullscreenUI", "PS2 (8MB)");
 TRANSLATE_NOOP("FullscreenUI", "PS2 (16MB)");
 TRANSLATE_NOOP("FullscreenUI", "PS2 (32MB)");
@@ -7569,14 +7593,6 @@ TRANSLATE_NOOP("FullscreenUI", "Warn About Unsafe Settings");
 TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
 TRANSLATE_NOOP("FullscreenUI", "Change Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
-TRANSLATE_NOOP("FullscreenUI", "Output Volume");
-TRANSLATE_NOOP("FullscreenUI", "Synchronization Mode");
-TRANSLATE_NOOP("FullscreenUI", "Expansion Mode");
-TRANSLATE_NOOP("FullscreenUI", "Output Module");
-TRANSLATE_NOOP("FullscreenUI", "Latency");
-TRANSLATE_NOOP("FullscreenUI", "Sequence Length");
-TRANSLATE_NOOP("FullscreenUI", "Seekwindow Size");
-TRANSLATE_NOOP("FullscreenUI", "Overlap");
 TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Folder Memory Card Filter");
