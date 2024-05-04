@@ -63,6 +63,7 @@ public:
 	void setIntValue(const char* section, const char* key, s32 value);
 	void setStringValue(const char* section, const char* key, const char* value);
 	void clearSettingValue(const char* section, const char* key);
+	void saveAndReloadGameSettings();
 
 Q_SIGNALS:
 	void inputProfileSwitched();

@@ -19,6 +19,7 @@ public:
 
 	virtual bool Save(Error* error = nullptr) = 0;
 	virtual void Clear() = 0;
+	virtual bool IsEmpty() = 0;
 
 	virtual bool GetIntValue(const char* section, const char* key, int* value) const = 0;
 	virtual bool GetUIntValue(const char* section, const char* key, uint* value) const = 0;
@@ -46,6 +47,8 @@ public:
 	virtual bool ContainsValue(const char* section, const char* key) const = 0;
 	virtual void DeleteValue(const char* section, const char* key) = 0;
 	virtual void ClearSection(const char* section) = 0;
+	virtual void RemoveSection(const char* section) = 0;
+	virtual void RemoveEmptySections() = 0;
 
 	__fi int GetIntValue(const char* section, const char* key, int default_value = 0) const
 	{

@@ -223,7 +223,7 @@ void ControllerBindingWidget::onClearBindingsClicked()
 	else
 	{
 		Pad::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
-		m_dialog->getProfileSettingsInterface()->Save();
+		QtHost::SaveGameSettings(m_dialog->getProfileSettingsInterface(), false);
 	}
 
 	// force a refresh after clearing

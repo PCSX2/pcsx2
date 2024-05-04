@@ -752,6 +752,11 @@ public:
     /** @}
         @{ @name Accessing INI Data */
 
+    /** Retrieve the number keys across all sections.
+        @return number of keys currently present.
+     */
+    size_t GetKeyCount() const;
+
     /** Retrieve all section names. The list is returned as an STL vector of
         names and can be iterated or searched as necessary. Note that the
         sort order of the returned strings is NOT DEFINED. You can sort
@@ -2272,6 +2277,17 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::GetSectionSize(
         }
     }
     return nCount;
+}
+
+template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
+size_t
+CSimpleIniTempl<SI_CHAR, SI_STRLESS, SI_CONVERTER>::GetKeyCount() const
+{
+  size_t count = 0;
+  typename TSection::const_iterator i = m_data.begin();
+  for (; i != m_data.end(); ++i)
+    count += i->second.size();
+  return count;
 }
 
 template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>

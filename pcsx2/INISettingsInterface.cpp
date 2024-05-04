@@ -134,6 +134,11 @@ void INISettingsInterface::Clear()
 	m_ini.Reset();
 }
 
+bool INISettingsInterface::IsEmpty()
+{
+	return (m_ini.GetKeyCount() == 0);
+}
+
 bool INISettingsInterface::GetIntValue(const char* section, const char* key, int* value) const
 {
 	const char* str_value = m_ini.GetValue(section, key);
@@ -276,6 +281,29 @@ void INISettingsInterface::ClearSection(const char* section)
 	m_dirty = true;
 	m_ini.Delete(section, nullptr);
 	m_ini.SetValue(section, nullptr, nullptr);
+}
+
+void INISettingsInterface::RemoveSection(const char* section)
+{
+	if (!m_ini.GetSection(section))
+		return;
+
+	m_dirty = true;
+	m_ini.Delete(section, nullptr);
+}
+
+void INISettingsInterface::RemoveEmptySections()
+{
+	std::list<CSimpleIniA::Entry> entries;
+	m_ini.GetAllSections(entries);
+	for (const CSimpleIniA::Entry& entry : entries)
+	{
+		if (m_ini.GetSectionSize(entry.pItem) > 0)
+			continue;
+
+		m_dirty = true;
+		m_ini.Delete(entry.pItem, nullptr);
+	}
 }
 
 std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key) const

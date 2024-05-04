@@ -300,8 +300,8 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 		auto lock = Host::GetSettingsLock();
 		Pcsx2Config::CopyConfiguration(m_sif.get(), *Host::Internal::GetBaseSettingsLayer());
 	}
-	m_sif->Save();
-	g_emu_thread->reloadGameSettings();
+	saveAndReloadGameSettings();
+
 
 	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration copied from global settings."));
 }
@@ -322,8 +322,7 @@ void SettingsWindow::onClearSettingsClicked()
 	m_game_patch_settings_widget->disableAllPatches();
 
 	Pcsx2Config::ClearConfiguration(m_sif.get());
-	m_sif->Save();
-	g_emu_thread->reloadGameSettings();
+	saveAndReloadGameSettings();
 
 	QMessageBox::information(reopen(), tr("PCSX2 Settings"), tr("Per-game configuration cleared."));
 }
@@ -560,8 +559,7 @@ void SettingsWindow::setBoolSettingValue(const char* section, const char* key, s
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -576,8 +574,7 @@ void SettingsWindow::setIntSettingValue(const char* section, const char* key, st
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -592,8 +589,7 @@ void SettingsWindow::setFloatSettingValue(const char* section, const char* key, 
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -608,8 +604,7 @@ void SettingsWindow::setStringSettingValue(const char* section, const char* key,
 	if (m_sif)
 	{
 		value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -632,8 +627,7 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
 	if (m_sif)
 	{
 		m_sif->DeleteValue(section, key);
-		m_sif->Save();
-		g_emu_thread->reloadGameSettings();
+		saveAndReloadGameSettings();
 	}
 	else
 	{
@@ -641,6 +635,13 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
 		Host::CommitBaseSettingChanges();
 		g_emu_thread->applySettings();
 	}
+}
+
+void SettingsWindow::saveAndReloadGameSettings()
+{
+	pxAssert(m_sif);
+	QtHost::SaveGameSettings(m_sif.get(), true);
+	g_emu_thread->reloadGameSettings();
 }
 
 void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
