@@ -531,12 +531,20 @@ bool SocketAdapter::SendUDP(ConnectionKey Key, IP_Packet* ipPkt)
 
 				connections.Add(fKey, fPort);
 				fixedUDPPorts.Add(udp.sourcePort, fPort);
+
+				fPort->Init();
 			}
 
 			Console.WriteLn("DEV9: Socket: Creating New UDP Connection from FixedPort %d to %d", udp.sourcePort, udp.destinationPort);
 			s = fPort->NewClientSession(Key,
 				ipPkt->destinationIP == dhcpServer.broadcastIP || ipPkt->destinationIP == IP_Address{{{255, 255, 255, 255}}},
 				(ipPkt->destinationIP.bytes[0] & 0xF0) == 0xE0);
+
+			if (s == nullptr)
+			{
+				Console.Error("DEV9: Socket: Failed to Create New UDP Connection from FixedPort");
+				return false;
+			}
 		}
 		else
 		{

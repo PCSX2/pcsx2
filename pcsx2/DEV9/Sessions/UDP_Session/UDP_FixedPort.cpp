@@ -45,10 +45,14 @@ namespace Sessions
 
 	UDP_FixedPort::UDP_FixedPort(ConnectionKey parKey, IP_Address parAdapterIP, u16 parPort)
 		: BaseSession(parKey, parAdapterIP)
-		, client{socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)}
-		, port(parPort)
+		, port{parPort}
+	{
+	}
+
+	void UDP_FixedPort::Init()
 	{
 		int ret;
+		client = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if (client == INVALID_SOCKET)
 		{
 			Console.Error("DEV9: UDP: Failed to open socket. Error: %d",
@@ -57,11 +61,7 @@ namespace Sessions
 #elif defined(__POSIX__)
 				errno);
 #endif
-			/* 
-			 * TODO: Currently error is not correctly handled here
-			 * We would need to call RaiseEventConnectionClosed()
-			 * and also deal with the follow up call to NewClientSession()
-			 */
+			RaiseEventConnectionClosed();
 			return;
 		}
 
@@ -90,17 +90,23 @@ namespace Sessions
 		sockaddr_in endpoint{};
 		endpoint.sin_family = AF_INET;
 		endpoint.sin_addr = std::bit_cast<in_addr>(adapterIP);
-		endpoint.sin_port = htons(parPort);
+		endpoint.sin_port = htons(port);
 
 		ret = bind(client, reinterpret_cast<const sockaddr*>(&endpoint), sizeof(endpoint));
 
 		if (ret == SOCKET_ERROR)
+		{
 			Console.Error("DEV9: UDP: Failed to bind socket. Error: %d",
 #ifdef _WIN32
 				WSAGetLastError());
 #elif defined(__POSIX__)
 				errno);
 #endif
+			RaiseEventConnectionClosed();
+			return;
+		}
+
+		open.store(true);
 	}
 
 	IP_Payload* UDP_FixedPort::Recv()
@@ -228,6 +234,9 @@ namespace Sessions
 
 	UDP_Session* UDP_FixedPort::NewClientSession(ConnectionKey parNewKey, bool parIsBrodcast, bool parIsMulticast)
 	{
+		if (!open.load())
+			return nullptr;
+
 		UDP_Session* s = new UDP_Session(parNewKey, adapterIP, parIsBrodcast, parIsMulticast, client);
 
 		s->AddConnectionClosedHandler([&](BaseSession* session) { HandleChildConnectionClosed(session); });
@@ -247,7 +256,10 @@ namespace Sessions
 		{
 			connections.erase(index);
 			if (connections.size() == 0)
+			{
+				open.store(false);
 				RaiseEventConnectionClosed();
+			}
 		}
 	}
 

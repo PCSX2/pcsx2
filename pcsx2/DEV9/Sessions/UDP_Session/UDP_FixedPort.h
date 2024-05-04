@@ -20,7 +20,7 @@ namespace Sessions
 	class UDP_FixedPort : public BaseSession
 	{
 	private:
-		std::atomic<bool> open{true};
+		std::atomic<bool> open{false};
 
 #ifdef _WIN32
 		SOCKET client = INVALID_SOCKET;
@@ -37,6 +37,8 @@ namespace Sessions
 
 	public:
 		UDP_FixedPort(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, u16 parPort);
+
+		void Init();
 
 		virtual PacketReader::IP::IP_Payload* Recv();
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
