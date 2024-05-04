@@ -251,7 +251,11 @@ public:
 
 	void fill(const_reference value) { std::fill(begin(), end(), value); }
 
-	void swap(this_type& move) { std::swap(m_data, move.m_data); }
+	void swap(this_type& move)
+	{
+		std::swap(m_data, move.m_data);
+		std::swap(m_size, move.m_size);
+	}
 
 	void resize(size_t new_size) { internal_resize(new_size, m_data, m_size); }
 
