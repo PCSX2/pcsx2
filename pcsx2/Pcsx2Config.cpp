@@ -1486,7 +1486,6 @@ Pcsx2Config::EmulationSpeedOptions::EmulationSpeedOptions()
 {
 	bitset = 0;
 
-	FrameLimitEnable = true;
 	SyncToHostRefreshRate = false;
 }
 

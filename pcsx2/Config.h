@@ -985,7 +985,6 @@ struct Pcsx2Config
 	struct EmulationSpeedOptions
 	{
 		BITFIELD32()
-		bool FrameLimitEnable : 1;
 		bool SyncToHostRefreshRate : 1;
 		BITFIELD_END
 
