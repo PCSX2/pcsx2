@@ -486,9 +486,9 @@ void AudioSettingsWidget::resetVolume(bool fast_forward)
 
 	if (m_dialog->isPerGameSettings())
 	{
-		m_dialog->removeSettingValue("Audio", key);
+		m_dialog->removeSettingValue("SPU2/Output", key);
 
-		const int value = m_dialog->getEffectiveIntValue("Audio", key, 100);
+		const int value = m_dialog->getEffectiveIntValue("SPU2/Output", key, 100);
 		QSignalBlocker sb(slider);
 		slider->setValue(value);
 		label->setText(QStringLiteral("%1%2").arg(value).arg(tr("%")));
