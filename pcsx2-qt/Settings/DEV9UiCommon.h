@@ -4,7 +4,7 @@
 #pragma once
 
 #include <QtGui/QValidator>
-#include <QtWidgets/QItemDelegate>
+#include <QtWidgets/QStyledItemDelegate>
 
 struct HostEntryUi
 {
@@ -29,7 +29,7 @@ private:
 	bool m_allowEmpty;
 };
 
-class IPItemDelegate : public QItemDelegate
+class IPItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 
