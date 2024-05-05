@@ -39,7 +39,7 @@ QValidator::State IPValidator::validate(QString& input, int& pos) const
 }
 
 IPItemDelegate::IPItemDelegate(QObject* parent)
-	: QItemDelegate(parent)
+	: QStyledItemDelegate(parent)
 {
 }
 
