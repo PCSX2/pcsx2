@@ -398,7 +398,7 @@ __fi void _cpuEventTest_Shared()
 
 	iopEventTest();
 
-	if (cpuTestCycle(nextsCounter, nextCounter))
+	if (cpuTestCycle(nextStartCounter, nextDeltaCounter))
 	{
 		rcntUpdate();
 		_cpuTestPERF();
@@ -450,7 +450,7 @@ __fi void _cpuEventTest_Shared()
 	}
 
 	// Apply vsync and other counter nextCycles
-	cpuSetNextEvent(nextsCounter, nextCounter);
+	cpuSetNextEvent(nextStartCounter, nextDeltaCounter);
 
 	eeEventTestIsActive = false;
 }

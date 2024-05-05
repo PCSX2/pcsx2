@@ -6,6 +6,7 @@
 #include "Common.h"
 #include "Gif.h"
 #include "GS/GS.h"
+#include "GS/GSRegs.h"
 
 #include "common/SingleRegisterTypes.h"
 
@@ -194,42 +195,6 @@ union tGS_IMR
 };
 
 // --------------------------------------------------------------------------------------
-//  GSRegSMODE1
-// --------------------------------------------------------------------------------------
-// Previously, the union was used to get the CMOD bit of the SMODE1 register
-// Commenting it out as it's unused right now. (Might potentially be useful in the future)
-//union GSRegSMODE1
-//{
-//	struct
-//	{
-//		u32 RC : 3;
-//		u32 LC : 7;
-//		u32 T1248 : 2;
-//		u32 SLCK : 1;
-//		u32 CMOD : 2;
-//		u32 EX : 1;
-//		u32 PRST : 1;
-//		u32 SINT : 1;
-//		u32 XPCK : 1;
-//		u32 PCK2 : 2;
-//		u32 SPML : 4;
-//		u32 GCONT : 1;
-//		u32 PHS : 1;
-//		u32 PVS : 1;
-//		u32 PEHS : 1;
-//		u32 PEVS : 1;
-//		u32 CLKSEL : 2;
-//		u32 NVCK : 1;
-//		u32 SLCK2 : 1;
-//		u32 VCKSEL : 2;
-//		u32 VHP : 1;
-//		u32 _PAD1 : 27;
-//	};
-//
-//	u64 SMODE1;
-//};
-
-// --------------------------------------------------------------------------------------
 //  GSRegSIGBLID
 // --------------------------------------------------------------------------------------
 struct GSRegSIGBLID
@@ -242,7 +207,7 @@ struct GSRegSIGBLID
 #define PS2GS_BASE(mem) (PS2MEM_GS + (mem & 0x13ff))
 
 #define CSRreg ((tGS_CSR&)*(PS2MEM_GS + 0x1000))
-
+#define GSSMODE1reg ((GSRegSMODE1&)*(PS2MEM_GS + 0x0010))
 #define GSCSRr ((u32&)*(PS2MEM_GS + 0x1000))
 #define GSIMR ((tGS_IMR&)*(PS2MEM_GS + 0x1010))
 #define GSSIGLBLID ((GSRegSIGBLID&)*(PS2MEM_GS + 0x1080))
@@ -264,6 +229,7 @@ enum class GS_VideoMode : int
 };
 
 extern GS_VideoMode gsVideoMode;
+extern u32 lastCSRFlag;
 extern bool gsIsInterlaced;
 
 /////////////////////////////////////////////////////////////////////////////

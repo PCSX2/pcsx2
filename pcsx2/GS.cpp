@@ -52,6 +52,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 
 	if(csr.SIGNAL)
 	{
+		const bool resume = CSRreg.SIGNAL;
 		// SIGNAL : What's not known here is whether or not the SIGID register should be updated
 		//  here or when the IMR is cleared (below).
 		GUNIT_LOG("csr.SIGNAL");
@@ -65,7 +66,9 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		}
 		else CSRreg.SIGNAL = false;
 		gifUnit.gsSIGNAL.queued = false;
-		gifUnit.Execute(false, true); // Resume paused transfers
+
+		if (resume)
+			gifUnit.Execute(false, true); // Resume paused transfers
 	}
 
 	if (csr.FINISH)	{
@@ -179,14 +182,17 @@ void gsWrite64_generic( u32 mem, u64 value )
 void gsWrite64_page_00( u32 mem, u64 value )
 {
 	s_GSRegistersWritten |= (mem == GS_DISPFB1 || mem == GS_DISPFB2 || mem == GS_PMODE);
-
+	bool reqUpdate = false;
 	if (mem == GS_SMODE1 || mem == GS_SMODE2)
 	{
 		if (value != *(u64*)PS2GS_BASE(mem))
-			UpdateVSyncRate(false);
+			reqUpdate = true;
 	}
 
 	gsWrite64_generic( mem, value );
+
+	if (reqUpdate)
+		UpdateVSyncRate(false);
 }
 
 void gsWrite64_page_01( u32 mem, u64 value )
