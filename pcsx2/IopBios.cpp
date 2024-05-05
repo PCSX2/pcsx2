@@ -149,51 +149,6 @@ namespace R3000A
 		0x1000,
 	};
 
-	static std::string host_path(const std::string& path, bool allow_open_host_root)
-	{
-		// We are NOT allowing to use the root of the host unit.
-		// For now it just supports relative folders from the location of the elf
-		std::string native_path(Path::Canonicalize(path));
-		std::string new_path;
-		if (!hostRoot.empty() && native_path.starts_with(hostRoot))
-			new_path = std::move(native_path);
-		else if (!hostRoot.empty()) // relative paths
-			new_path = Path::Combine(hostRoot, native_path);
-
-		// Allow opening the ELF override.
-		if (new_path == VMManager::Internal::GetELFOverride())
-			return new_path;
-
-		// Allow nothing if hostfs isn't enabled.
-		if (!EmuConfig.HostFs)
-		{
-			new_path.clear();
-			return new_path;
-		}
-
-		// Double-check that it falls within the directory of the elf.
-		// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
-		std::string canonicalized_path(Path::Canonicalize(new_path));
-
-		// Are we opening the root of host? (i.e. `host:.` or `host:`)
-		// We want to allow this as a directory open, but not as a file open.
-		if (!allow_open_host_root || canonicalized_path != hostRoot)
-		{
-			// Only allow descendants of the hostfs directory.
-			if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
-				!canonicalized_path.starts_with(hostRoot) || // and start with the host root,
-				canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
-			{
-				Console.Error(fmt::format(
-					"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
-					path, new_path, hostRoot));
-				new_path.clear();
-			}
-		}
-
-		return new_path;
-	}
-
 	// This is a workaround for GHS on *NIX platforms
 	// Whenever a program splits directories with a backslash (ulaunchelf)
 	// the directory is considered non-existant
@@ -207,7 +162,7 @@ namespace R3000A
 	static int host_stat(const std::string path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
 	{
 		struct stat file_stats;
-		const std::string file_path(host_path(path, true));
+		const std::string file_path(ioman::host_path(path, true));
 
 		if (!FileSystem::StatFile(file_path.c_str(), &file_stats))
 			return -IOP_ENOENT;
@@ -303,7 +258,7 @@ namespace R3000A
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
 			const std::string path(full_path.substr(full_path.find(':') + 1));
-			const std::string file_path(host_path(path, false));
+			const std::string file_path(ioman::host_path(path, false));
 			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
@@ -401,7 +356,7 @@ namespace R3000A
 		static int open(IOManDir** dir, const std::string& full_path)
 		{
 			std::string relativePath = full_path.substr(full_path.find(':') + 1);
-			std::string path = host_path(relativePath, true);
+			std::string path = ioman::host_path(relativePath, true);
 
 			if (!FileSystem::DirectoryExists(path.c_str()))
 				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
@@ -425,13 +380,13 @@ namespace R3000A
 			{
 				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
 				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 			else
 			{
 				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
 				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 
 			dir = std::next(dir);
@@ -559,13 +514,58 @@ namespace R3000A
 			}
 		}
 
-		bool is_host(const std::string path)
+		bool is_host(const std::string_view path)
 		{
 			auto not_number_pos = path.find_first_not_of("0123456789", 4);
 			if (not_number_pos == std::string::npos)
 				return false;
 
 			return (path.compare(0, 4, "host") == 0 && path[not_number_pos] == ':');
+		}
+
+		std::string host_path(const std::string_view path, bool allow_open_host_root)
+		{
+			// We are NOT allowing to use the root of the host unit.
+			// For now it just supports relative folders from the location of the elf
+			std::string native_path(Path::Canonicalize(path));
+			std::string new_path;
+			if (!hostRoot.empty() && native_path.starts_with(hostRoot))
+				new_path = std::move(native_path);
+			else if (!hostRoot.empty()) // relative paths
+				new_path = Path::Combine(hostRoot, native_path);
+
+			// Allow opening the ELF override.
+			if (new_path == VMManager::Internal::GetELFOverride())
+				return new_path;
+
+			// Allow nothing if hostfs isn't enabled.
+			if (!EmuConfig.HostFs)
+			{
+				new_path.clear();
+				return new_path;
+			}
+
+			// Double-check that it falls within the directory of the elf.
+			// Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
+			std::string canonicalized_path(Path::Canonicalize(new_path));
+
+			// Are we opening the root of host? (i.e. `host:.` or `host:`)
+			// We want to allow this as a directory open, but not as a file open.
+			if (!allow_open_host_root || canonicalized_path != hostRoot)
+			{
+				// Only allow descendants of the hostfs directory.
+				if (canonicalized_path.length() <= hostRoot.length() || // Length has to be equal or longer,
+					!canonicalized_path.starts_with(hostRoot) || // and start with the host root,
+					canonicalized_path[hostRoot.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
+				{
+					Console.Error(fmt::format(
+						"IopHLE: Denying access to path outside of ELF directory. Requested path: '{}', Resolved path: '{}', ELF directory: '{}'",
+						path, new_path, hostRoot));
+					new_path.clear();
+				}
+			}
+
+			return new_path;
 		}
 
 		int open_HLE()

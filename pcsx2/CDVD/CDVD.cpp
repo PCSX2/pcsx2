@@ -13,6 +13,7 @@
 #include "Host.h"
 #include "R3000A.h"
 #include "Common.h"
+#include "IopBios.h"
 #include "IopHw.h"
 #include "IopDma.h"
 #include "VMManager.h"
@@ -416,10 +417,11 @@ static bool cdvdUncheckedLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std
 
 bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf, Error* error)
 {
-	if (elfpath.starts_with("host:"))
+	if (R3000A::ioman::is_host(elfpath))
 	{
-		std::string host_filename(elfpath.substr(5));
-		return elfo->OpenFile(host_filename, isPSXElf, error);
+		const std::string_view path(elfpath.substr(elfpath.find(':') + 1));
+		const std::string file_path(R3000A::ioman::host_path(path, false));
+		return elfo->OpenFile(file_path, isPSXElf, error);
 	}
 	else if (elfpath.starts_with("cdrom:") || elfpath.starts_with("cdrom0:"))
 	{
