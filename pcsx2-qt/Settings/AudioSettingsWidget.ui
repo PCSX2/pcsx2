@@ -252,10 +252,10 @@
         <item>
          <widget class="QToolButton" name="resetVolume">
           <property name="toolTip">
-           <string>Stretch Settings</string>
+           <string>Reset Volume</string>
           </property>
           <property name="icon">
-           <iconset theme="refresh-line"/>
+           <iconset theme="restart-line"/>
           </property>
          </widget>
         </item>
@@ -301,10 +301,10 @@
         <item>
          <widget class="QToolButton" name="resetFastForwardVolume">
           <property name="toolTip">
-           <string>Stretch Settings</string>
+           <string>Reset Fast Forward Volume</string>
           </property>
           <property name="icon">
-           <iconset theme="refresh-line"/>
+           <iconset theme="restart-line"/>
           </property>
          </widget>
         </item>
