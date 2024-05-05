@@ -60,14 +60,14 @@ struct Counter
 	};
 	u32 target, hold;
 	u32 rate, interrupt;
-	u32 sCycleT;		// delta values should be signed.
+	u32 startCycle;		// delta values should be signed.
 };
 
 struct SyncCounter
 {
 	u32 Mode;
-	u32 sCycle;					// start cycle of timer
-	s32 CycleT;
+	u32 startCycle;					// start cycle of timer
+	s32 deltaCycles;
 };
 
 //------------------------------------------------------------------
@@ -107,9 +107,6 @@ struct SyncCounter
 #define MODE_VRENDER	0x0		//Set during the Render/Frame Scanlines
 #define MODE_VBLANK		0x1		//Set during the Blanking Scanlines
 #define MODE_GSBLANK	0x2		//Set during the Syncing Scanlines (Delayed GS CSR Swap)
-#define MODE_VSYNC		0x3		//Set during the Syncing Scanlines
-#define MODE_VBLANK1	0x0		//Set during the Blanking Scanlines (half-frame 1)
-#define MODE_VBLANK2	0x1		//Set during the Blanking Scanlines (half-frame 2)
 
 #define MODE_HRENDER	0x0		//Set for ~5/6 of 1 Scanline
 #define MODE_HBLANK		0x1		//Set for the remaining ~1/6 of 1 Scanline
@@ -120,13 +117,14 @@ extern Counter counters[4];
 extern SyncCounter hsyncCounter;
 extern SyncCounter vsyncCounter;
 
-extern s32 nextCounter;		// delta until the next counter event (must be signed)
-extern u32 nextsCounter;
+extern s32 nextDeltaCounter;		// delta until the next counter event (must be signed)
+extern u32 nextStartCounter;
 extern uint g_FrameCount;
 
 extern void rcntUpdate_hScanline();
 extern void rcntUpdate_vSync();
 extern bool rcntCanCount(int i);
+extern void rcntSyncCounter(int i);
 extern void rcntUpdate();
 
 extern void rcntInit();

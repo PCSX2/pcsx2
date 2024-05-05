@@ -123,7 +123,7 @@ struct cdvdStruct
 
 	// Calculates the number of Vsyncs and once it reaches a total number of Vsyncs worth a second with respect to
 	// the videomode's vertical frequency, it updates the real time clock.
-	int RTCcount;
+	double RTCcount;
 	cdvdRTC RTC;
 
 	u32 CurrentSector;
