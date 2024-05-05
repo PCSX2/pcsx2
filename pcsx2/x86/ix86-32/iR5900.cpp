@@ -1325,9 +1325,10 @@ u32 scaleblockcycles_clear()
 	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
 		unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
 #endif
-	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	const s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	const bool lowcycles = (s_nBlockCycles <= 40);
 
-	if (cyclerate > 1)
+	if (!lowcycles && cyclerate > 1)
 	{
 		s_nBlockCycles &= (0x1 << (cyclerate + 2)) - 1;
 	}

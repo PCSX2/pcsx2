@@ -140,9 +140,6 @@ void recMFC0()
 		xMOV(ptr32[&cpuRegs.cycle], ecx); // update cycles
 		xMOV(eax, ecx);
 		xSUB(eax, ptr[&cpuRegs.lastCOP0Cycle]);
-		u8* skipInc = JNZ8(0);
-		xINC(eax);
-		x86SetJ8(skipInc);
 		xADD(ptr[&cpuRegs.CP0.n.Count], eax);
 		xMOV(ptr[&cpuRegs.lastCOP0Cycle], ecx);
 
