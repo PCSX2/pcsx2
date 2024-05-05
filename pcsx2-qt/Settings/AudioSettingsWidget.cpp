@@ -120,11 +120,11 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 	dialog->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"), tr("N/A"),
 		tr("These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed."));
 	dialog->registerWidgetHelp(m_ui.resetVolume, tr("Reset Volume"), tr("N/A"),
-		m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
-										tr("Resets volume back to the default, i.e. full."));
+		m_dialog->isPerGameSettings() ? tr("Resets output volume back to the global/inherited setting.") :
+										tr("Resets output volume back to the default."));
 	dialog->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
-		m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
-										tr("Resets volume back to the default, i.e. full."));
+		m_dialog->isPerGameSettings() ? tr("Resets fast forward volume back to the global/inherited setting.") :
+										tr("Resets fast forward volume back to the default."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
