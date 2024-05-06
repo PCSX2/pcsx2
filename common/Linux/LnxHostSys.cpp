@@ -40,7 +40,7 @@
 
 static std::recursive_mutex s_exception_handler_mutex;
 static bool s_in_exception_handler = false;
-static bool s_exception_handler_installed = true;
+static bool s_exception_handler_installed = false;
 
 #ifdef __APPLE__
 #include <mach/task.h>
