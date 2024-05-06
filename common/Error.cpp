@@ -141,12 +141,13 @@ void Error::SetHResult(std::string_view prefix, long err)
 		static_cast<DWORD>(std::size(buf)), nullptr);
 	if (r > 0)
 	{
-		m_description =
-			fmt::format("{}HRESULT {:08X}: {}", prefix, err, StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
+		m_description = fmt::format("{}HRESULT {:08X}: {}", prefix, static_cast<unsigned>(err),
+			StringUtil::WideStringToUTF8String(std::wstring_view(buf, r)));
 	}
 	else
 	{
-		m_description = fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix, err);
+		m_description = fmt::format("{}HRESULT {:08X}: <Could not resolve system error ID>", prefix,
+			static_cast<unsigned>(err));
 	}
 }
 
