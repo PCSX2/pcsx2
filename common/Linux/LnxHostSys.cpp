@@ -17,9 +17,10 @@
 
 #include "fmt/core.h"
 
-#include "common/BitUtils.h"
 #include "common/Assertions.h"
+#include "common/BitUtils.h"
 #include "common/Console.h"
+#include "common/Error.h"
 #include "common/HostSys.h"
 
 // Apple uses the MAP_ANON define instead of MAP_ANONYMOUS, but they mean
@@ -38,8 +39,8 @@
 #endif
 
 static std::recursive_mutex s_exception_handler_mutex;
-static PageFaultHandler s_exception_handler_callback;
-static bool s_in_exception_handler;
+static bool s_in_exception_handler = false;
+static bool s_exception_handler_installed = true;
 
 #ifdef __APPLE__
 #include <mach/task.h>
@@ -52,6 +53,43 @@ static struct sigaction s_old_sigbus_action;
 #endif
 #if !defined(__APPLE__) || defined(__aarch64__)
 static struct sigaction s_old_sigsegv_action;
+#endif
+
+#ifdef __aarch64__
+[[maybe_unused]] static bool IsStoreInstruction(uptr ptr)
+{
+	u32 bits;
+	std::memcpy(&bits, reinterpret_cast<const void*>(pc), sizeof(bits));
+
+	// Based on vixl's disassembler Instruction::IsStore().
+	// if (Mask(LoadStoreAnyFMask) != LoadStoreAnyFixed)
+	if ((bits & 0x0a000000) != 0x08000000)
+		return false;
+
+	// if (Mask(LoadStorePairAnyFMask) == LoadStorePairAnyFixed)
+	if ((bits & 0x3a000000) == 0x28000000)
+	{
+		// return Mask(LoadStorePairLBit) == 0
+		return (bits & (1 << 22)) == 0;
+	}
+
+	switch (bits & 0xC4C00000)
+	{
+		case 0x00000000: // STRB_w
+		case 0x40000000: // STRH_w
+		case 0x80000000: // STR_w
+		case 0xC0000000: // STR_x
+		case 0x04000000: // STR_b
+		case 0x44000000: // STR_h
+		case 0x84000000: // STR_s
+		case 0xC4000000: // STR_d
+		case 0x04800000: // STR_q
+			return true;
+
+		default:
+			return false;
+	}
+}
 #endif
 
 static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
@@ -81,7 +119,7 @@ static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
 }
 
 // Linux implementation of SIGSEGV handler.  Bind it using sigaction().
-static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
+static void SysPageFaultSignalFilter(int signal, siginfo_t* info, void* ctx)
 {
 	// Executing the handler concurrently from multiple threads wouldn't go down well.
 	std::unique_lock lock(s_exception_handler_mutex);
@@ -90,37 +128,44 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 	if (s_in_exception_handler)
 	{
 		lock.unlock();
-		CallExistingSignalHandler(signal, siginfo, ctx);
+		CallExistingSignalHandler(signal, info, ctx);
 		return;
 	}
 
-	// Note: Use of stdio functions isn't safe here.  Avoid console logs, assertions, file logs,
-	// or just about anything else useful. However, that's really only a concern if the signal
-	// occurred within those functions. The logging which we do only happens when the exception
-	// occurred within JIT code.
-
-#if defined(__APPLE__) && defined(__x86_64__)
-	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
-#elif defined(__FreeBSD__) && defined(__x86_64__)
-	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
-#elif defined(__x86_64__)
-	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
-#elif defined(__aarch64__)
-	#ifndef __APPLE__
-		void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
-	#else
-		void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+#if defined(__linux__)
+	const uptr exception_address = reinterpret_cast<uptr>(info->si_addr);
+	#if defined(__x86_64__)
+		const uptr exception_pc = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_RIP]);
+		const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.gregs[REG_ERR] & 2) != 0;
+	#elif defined(__aarch64__)
+		const uptr exception_pc = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext.pc);
+		const bool is_write = IsStoreInstruction(exception_pc);
 	#endif
-#else
-	void* const exception_pc = nullptr;
+#elif defined(__APPLE__)
+	#if defined(__x86_64__)
+		const uptr exception_pc = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
+		const uptr exception_address = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
+		const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
+	#elif defined(__aarch64__)
+		const uptr exception_address = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
+		const uptr exception_pc = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+		const bool is_write = IsStoreInstruction(exception_pc);
+	#endif
+#elif defined(__FreeBSD__)
+	#if defined(__x86_64__)
+		const uptr exception_address = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_addr);
+		const uptr exception_pc = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_rip);
+		const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext.mc_err & 2) != 0;
+	#elif defined(__aarch64__)
+		const uptr exception_address = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
+		const uptr exception_pc = static_cast<uptr>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+		const bool is_write = IsStoreInstruction(exception_pc);
+	#endif
 #endif
-
-	const PageFaultInfo pfi{
-		reinterpret_cast<uptr>(exception_pc), reinterpret_cast<uptr>(siginfo->si_addr) & ~static_cast<uptr>(__pagemask)};
 
 	s_in_exception_handler = true;
 
-	const bool handled = s_exception_handler_callback(pfi);
+	const bool handled = PageFaultHandler::HandlePageFault(exception_pc, exception_address, is_write);
 
 	s_in_exception_handler = false;
 
@@ -130,60 +175,45 @@ static void SysPageFaultSignalFilter(int signal, siginfo_t* siginfo, void* ctx)
 
 	// Call old signal handler, which will likely dump core.
 	lock.unlock();
-	CallExistingSignalHandler(signal, siginfo, ctx);
+	CallExistingSignalHandler(signal, info, ctx);
 }
 
-bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
+bool PageFaultHandler::Install(Error* error)
 {
 	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback, "A page fault handler is already registered.");
-	if (!s_exception_handler_callback)
-	{
-		struct sigaction sa;
-
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = SA_SIGINFO;
-		sa.sa_sigaction = SysPageFaultSignalFilter;
-#ifdef __linux__
-		// Don't block the signal from executing recursively, we want to fire the original handler.
-		sa.sa_flags |= SA_NODEFER;
-#endif
-#if defined(__APPLE__) || defined(__aarch64__)
-		// MacOS uses SIGBUS for memory permission violations, as well as SIGSEGV on ARM64.
-		if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
-			return false;
-#endif
-#if !defined(__APPLE__) || defined(__aarch64__)
-		if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
-			return false;
-#endif
-#if defined(__APPLE__) && defined(__aarch64__)
-		// Stops LLDB getting in a EXC_BAD_ACCESS loop when passing page faults to PCSX2.
-		task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
-#endif
-	}
-
-	s_exception_handler_callback = handler;
-	return true;
-}
-
-void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
-{
-	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback || s_exception_handler_callback == handler,
-		"Not removing the same handler previously registered.");
-	if (!s_exception_handler_callback)
-		return;
-
-	s_exception_handler_callback = nullptr;
+	pxAssertRel(!s_exception_handler_installed, "Page fault handler has already been installed.");
 
 	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = SysPageFaultSignalFilter;
+#ifdef __linux__
+	// Don't block the signal from executing recursively, we want to fire the original handler.
+	sa.sa_flags |= SA_NODEFER;
+#endif
 #if defined(__APPLE__) || defined(__aarch64__)
-	sigaction(SIGBUS, &s_old_sigbus_action, &sa);
+	// MacOS uses SIGBUS for memory permission violations, as well as SIGSEGV on ARM64.
+	if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
+	{
+		Error::SetErrno(error, "sigaction() for SIGSEGV failed: ", errno);
+		return false;
+	}
 #endif
 #if !defined(__APPLE__) || defined(__aarch64__)
-	sigaction(SIGSEGV, &s_old_sigsegv_action, &sa);
+	if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
+	{
+		Error::SetErrno(error, "sigaction() for SIGBUS failed: ", errno);
+		return false;
+	}
 #endif
+#if defined(__APPLE__) && defined(__aarch64__)
+	// Stops LLDB getting in a EXC_BAD_ACCESS loop when passing page faults to PCSX2.
+	task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
+#endif
+
+	s_exception_handler_installed = true;
+	return true;
 }
 
 static __ri uint LinuxProt(const PageProtectionMode& mode)

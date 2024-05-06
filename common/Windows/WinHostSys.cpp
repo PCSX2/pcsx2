@@ -1,15 +1,16 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #if defined(_WIN32)
 
-#include "common/BitUtils.h"
-#include "common/RedtapeWindows.h"
-#include "common/Console.h"
 #include "common/HostSys.h"
-#include "common/StringUtil.h"
 #include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
+#include "common/BitUtils.h"
+#include "common/Console.h"
+#include "common/Error.h"
+#include "common/RedtapeWindows.h"
+#include "common/StringUtil.h"
 
 #include "fmt/core.h"
 #include "fmt/format.h"
@@ -17,9 +18,8 @@
 #include <mutex>
 
 static std::recursive_mutex s_exception_handler_mutex;
-static PageFaultHandler s_exception_handler_callback;
-static void* s_exception_handler_handle;
-static bool s_in_exception_handler;
+static bool s_in_exception_handler = false;
+static bool s_exception_handler_installed = true;
 
 long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
@@ -35,51 +35,37 @@ long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 		return EXCEPTION_CONTINUE_SEARCH;
 
 #if defined(_M_AMD64)
-	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Rip);
+	const uptr exception_pc = static_cast<uptr>(eps->ContextRecord->Rip);
 #elif defined(_M_ARM64)
-	void* const exception_pc = reinterpret_cast<void*>(eps->ContextRecord->Pc);
-#else
-	void* const exception_pc = nullptr;
+	const uptr exception_pc = static_cast<uptr>(eps->ContextRecord->Pc);
 #endif
 
-	const PageFaultInfo pfi{(uptr)exception_pc, (uptr)eps->ExceptionRecord->ExceptionInformation[1]};
+	const uptr exception_addr = static_cast<uptr>(eps->ExceptionRecord->ExceptionInformation[1]);
+	const bool is_write = (eps->ExceptionRecord->ExceptionInformation[0] == 1);
 
 	s_in_exception_handler = true;
 
-	const bool handled = s_exception_handler_callback(pfi);
+	const bool handled = PageFaultHandler::HandlePageFault(exception_pc, exception_addr, is_write);
 
 	s_in_exception_handler = false;
 	
 	return handled ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }
 
-bool HostSys::InstallPageFaultHandler(PageFaultHandler handler)
+bool PageFaultHandler::Install(Error* error)
 {
 	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback, "A page fault handler is already registered.");
-	if (!s_exception_handler_handle)
+	pxAssertRel(!s_exception_handler_installed, "Page fault handler has already been installed.");
+
+	PVOID handle = AddVectoredExceptionHandler(1, SysPageFaultExceptionFilter);
+	if (!handle)
 	{
-		s_exception_handler_handle = AddVectoredExceptionHandler(TRUE, SysPageFaultExceptionFilter);
-		if (!s_exception_handler_handle)
-			return false;
+		Error::SetWin32(error, "AddVectoredExceptionHandler() failed: ", GetLastError());
+		return false;
 	}
 
-	s_exception_handler_callback = handler;
+	s_exception_handler_installed = true;
 	return true;
-}
-
-void HostSys::RemovePageFaultHandler(PageFaultHandler handler)
-{
-	std::unique_lock lock(s_exception_handler_mutex);
-	pxAssertRel(!s_exception_handler_callback || s_exception_handler_callback == handler,
-		"Not removing the same handler previously registered.");
-	s_exception_handler_callback = nullptr;
-
-	if (s_exception_handler_handle)
-	{
-		RemoveVectoredExceptionHandler(s_exception_handler_handle);
-		s_exception_handler_handle = {};
-	}
 }
 
 static DWORD ConvertToWinApi(const PageProtectionMode& mode)

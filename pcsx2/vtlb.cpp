@@ -25,6 +25,7 @@
 #include "VMManager.h"
 
 #include "common/BitUtils.h"
+#include "common/Error.h"
 
 #include "fmt/core.h"
 
@@ -43,8 +44,6 @@ using namespace vtlb_private;
 namespace vtlb_private
 {
 	alignas(64) MapData vtlbdata;
-
-	static bool PageFaultHandler(const PageFaultInfo& info);
 } // namespace vtlb_private
 
 static vtlbHandler vtlbHandlerCount = 0;
@@ -1304,9 +1303,10 @@ bool vtlb_Core_Alloc()
 	DevCon.WriteLn(Color_StrongGreen, "Fastmem area: %p - %p",
 		vtlbdata.fastmem_base, vtlbdata.fastmem_base + (FASTMEM_AREA_SIZE - 1));
 
-	if (!HostSys::InstallPageFaultHandler(&vtlb_private::PageFaultHandler))
+	Error error;
+	if (!PageFaultHandler::Install(&error))
 	{
-		Host::ReportErrorAsync("Error", "Failed to install page fault handler.");
+		Host::ReportErrorAsync("Failed to install page fault handler.", error.GetDescription());
 		return false;
 	}
 
@@ -1332,8 +1332,6 @@ void vtlb_Alloc_Ppmap()
 
 void vtlb_Core_Free()
 {
-	HostSys::RemovePageFaultHandler(&vtlb_private::PageFaultHandler);
-
 	vtlbdata.vmap = nullptr;
 	vtlbdata.ppmap = nullptr;
 
@@ -1456,12 +1454,12 @@ static __fi void mmap_ClearCpuBlock(uint offset)
 	Cpu->Clear(m_PageProtectInfo[rampage].ReverseRamMap, __pagesize);
 }
 
-bool vtlb_private::PageFaultHandler(const PageFaultInfo& info)
+bool PageFaultHandler::HandlePageFault(uptr pc, uptr addr, bool is_write)
 {
 	pxAssert(eeMem);
 
 	u32 vaddr;
-	if (CHECK_FASTMEM && vtlb_GetGuestAddress(info.addr, &vaddr))
+	if (CHECK_FASTMEM && vtlb_GetGuestAddress(addr, &vaddr))
 	{
 		// this was inside the fastmem area. check if it's a code page
 		// fprintf(stderr, "Fault on fastmem %p vaddr %08X\n", info.addr, vaddr);
@@ -1477,13 +1475,13 @@ bool vtlb_private::PageFaultHandler(const PageFaultInfo& info)
 		else
 		{
 			// fprintf(stderr, "Trying backpatching vaddr %08X\n", vaddr);
-			return vtlb_BackpatchLoadStore(info.pc, info.addr);
+			return vtlb_BackpatchLoadStore(pc, addr);
 		}
 	}
 	else
 	{
 		// get bad virtual address
-		uptr offset = info.addr - (uptr)eeMem->Main;
+		uptr offset = addr - (uptr)eeMem->Main;
 		if (offset >= Ps2MemSize::MainRam)
 			return false;
 
