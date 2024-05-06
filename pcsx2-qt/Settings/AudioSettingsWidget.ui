@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>523</width>
-    <height>478</height>
+    <height>504</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -57,32 +57,43 @@
        </layout>
       </item>
       <item row="5" column="1">
-       <widget class="QSlider" name="bufferMS">
-        <property name="minimum">
-         <number>15</number>
-        </property>
-        <property name="maximum">
-         <number>500</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBothSides</enum>
-        </property>
-        <property name="tickInterval">
-         <number>20</number>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+        <item>
+         <widget class="QSlider" name="bufferMS">
+          <property name="minimum">
+           <number>15</number>
+          </property>
+          <property name="maximum">
+           <number>500</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="pageStep">
+           <number>5</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TickPosition::TicksBothSides</enum>
+          </property>
+          <property name="tickInterval">
+           <number>20</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="bufferMSLabel">
+          <property name="text">
+           <string>0 ms</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="4" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0">
