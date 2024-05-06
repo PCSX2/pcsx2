@@ -33,6 +33,7 @@ private Q_SLOTS:
 	void biosListItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
 
 	void onDirectoryListContextMenuRequested(const QPoint& point);
+	void onDirectoryListSelectionChanged();
 	void onAddSearchDirectoryButtonClicked();
 	void onRemoveSearchDirectoryButtonClicked();
 	void refreshDirectoryList();

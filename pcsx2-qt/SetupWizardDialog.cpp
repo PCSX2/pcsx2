@@ -237,12 +237,10 @@ void SetupWizardDialog::setupGameListPage()
 	m_ui.searchDirectoryList->setCurrentIndex({});
 	m_ui.searchDirectoryList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
 
-	connect(m_ui.searchDirectoryList, &QTableWidget::customContextMenuRequested, this,
-		&SetupWizardDialog::onDirectoryListContextMenuRequested);
-	connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this,
-		&SetupWizardDialog::onAddSearchDirectoryButtonClicked);
-	connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
-		&SetupWizardDialog::onRemoveSearchDirectoryButtonClicked);
+	connect(m_ui.searchDirectoryList, &QTableWidget::customContextMenuRequested, this, &SetupWizardDialog::onDirectoryListContextMenuRequested);
+	connect(m_ui.searchDirectoryList, &QTableWidget::itemSelectionChanged, this, &SetupWizardDialog::onDirectoryListSelectionChanged);
+	connect(m_ui.addSearchDirectoryButton, &QPushButton::clicked, this, &SetupWizardDialog::onAddSearchDirectoryButtonClicked);
+	connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this, &SetupWizardDialog::onRemoveSearchDirectoryButtonClicked);
 
 	refreshDirectoryList();
 }
@@ -261,6 +259,11 @@ void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
 	menu.addAction(tr("Open Directory..."),
 		[this, row]() { QtUtils::OpenURL(this, QUrl::fromLocalFile(m_ui.searchDirectoryList->item(row, 0)->text())); });
 	menu.exec(m_ui.searchDirectoryList->mapToGlobal(point));
+}
+
+void SetupWizardDialog::onDirectoryListSelectionChanged()
+{
+	m_ui.removeSearchDirectoryButton->setEnabled(!m_ui.searchDirectoryList->selectedItems().isEmpty());
 }
 
 void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
@@ -349,6 +352,7 @@ void SetupWizardDialog::refreshDirectoryList()
 		addPathToTable(entry, true);
 
 	m_ui.searchDirectoryList->sortByColumn(0, Qt::AscendingOrder);
+	m_ui.removeSearchDirectoryButton->setEnabled(false);
 }
 
 void SetupWizardDialog::resizeDirectoryListColumns()
