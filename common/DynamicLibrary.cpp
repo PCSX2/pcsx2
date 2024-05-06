@@ -100,6 +100,15 @@ bool DynamicLibrary::Open(const char* filename, Error* error)
 #endif
 }
 
+void DynamicLibrary::Adopt(void* handle)
+{
+	pxAssertRel(handle, "Handle is valid");
+
+	Close();
+
+	m_handle = handle;
+}
+
 void DynamicLibrary::Close()
 {
 	if (!IsOpen())
