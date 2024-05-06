@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
@@ -9,6 +9,8 @@
 #include <map>
 #include <memory>
 #include <string>
+
+class Error;
 
 // --------------------------------------------------------------------------------------
 //  PageProtectionMode
@@ -83,14 +85,6 @@ static __fi PageProtectionMode PageAccess_Any()
 	return PageProtectionMode().All();
 }
 
-struct PageFaultInfo
-{
-	uptr pc;
-	uptr addr;
-};
-
-using PageFaultHandler = bool(*)(const PageFaultInfo& info);
-
 // --------------------------------------------------------------------------------------
 //  HostSys
 // --------------------------------------------------------------------------------------
@@ -111,12 +105,6 @@ namespace HostSys
 	extern void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode);
 	extern void UnmapSharedMemory(void* baseaddr, size_t size);
 
-	/// Installs the specified page fault handler. Only one handler can be active at once.
-	bool InstallPageFaultHandler(PageFaultHandler handler);
-
-	/// Removes the page fault handler. handler is only specified to check against the active callback.
-	void RemovePageFaultHandler(PageFaultHandler handler);
-
 	/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
 #if !defined(__APPLE__) || !defined(_M_ARM64)
 	// clang-format -off
@@ -136,6 +124,12 @@ namespace HostSys
 	void FlushInstructionCache(void* address, u32 size);
 #endif
 }
+
+namespace PageFaultHandler
+{
+	bool HandlePageFault(uptr pc, uptr addr, bool is_write);
+	bool Install(Error* error);
+} // namespace PageFaultHandler
 
 class SharedMemoryMappingArea
 {
