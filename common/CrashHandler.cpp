@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "Pcsx2Defs.h"
 #include "CrashHandler.h"
+#include "DynamicLibrary.h"
 #include "FileSystem.h"
 #include "StringUtil.h"
 #include <cinttypes>
@@ -75,8 +76,7 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
 }
 
 static std::wstring s_write_directory;
-static HMODULE s_dbghelp_module = nullptr;
-static PVOID s_veh_handle = nullptr;
+static DynamicLibrary s_dbghelp_module;
 static bool s_in_crash_handler = false;
 
 static void GenerateCrashFilename(wchar_t* buf, size_t len, const wchar_t* prefix, const wchar_t* extension)
@@ -114,7 +114,7 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 								   MiniDumpWithThreadInfo | MiniDumpWithIndirectlyReferencedMemory);
 	const HANDLE hMinidumpFile = CreateFileW(filename, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
 	if (hMinidumpFile == INVALID_HANDLE_VALUE ||
-		!WriteMinidump(s_dbghelp_module, hMinidumpFile, GetCurrentProcess(), GetCurrentProcessId(),
+		!WriteMinidump(static_cast<HMODULE>(s_dbghelp_module.GetHandle()), hMinidumpFile, GetCurrentProcess(), GetCurrentProcessId(),
 			GetCurrentThreadId(), exi, minidump_type))
 	{
 		static const char error_message[] = "Failed to write minidump file.\n";
@@ -136,32 +136,13 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 
 static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
-	if (s_in_crash_handler)
-		return EXCEPTION_CONTINUE_SEARCH;
+	// if the debugger is attached, or we're recursively crashing, let it take care of it.
+	if (!s_in_crash_handler)
+		WriteMinidumpAndCallstack(exi);
 
-	switch (exi->ExceptionRecord->ExceptionCode)
-	{
-		case EXCEPTION_ACCESS_VIOLATION:
-		case EXCEPTION_BREAKPOINT:
-		case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-		case EXCEPTION_INT_DIVIDE_BY_ZERO:
-		case EXCEPTION_INT_OVERFLOW:
-		case EXCEPTION_PRIV_INSTRUCTION:
-		case EXCEPTION_ILLEGAL_INSTRUCTION:
-		case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-		case EXCEPTION_STACK_OVERFLOW:
-		case EXCEPTION_GUARD_PAGE:
-			break;
-
-		default:
-			return EXCEPTION_CONTINUE_SEARCH;
-	}
-
-	// if the debugger is attached, let it take care of it.
-	if (IsDebuggerPresent())
-		return EXCEPTION_CONTINUE_SEARCH;
-
-	WriteMinidumpAndCallstack(exi);
+	// returning EXCEPTION_CONTINUE_SEARCH makes sense, except for the fact that it seems to leave zombie processes
+	// around. instead, force ourselves to terminate.
+	TerminateProcess(GetCurrentProcess(), 0xFEFEFEFEu);
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -169,38 +150,22 @@ bool CrashHandler::Install()
 {
 	// load dbghelp at install/startup, that way we're not LoadLibrary()'ing after a crash
 	// .. because that probably wouldn't go down well.
-	s_dbghelp_module = StackWalker::LoadDbgHelpLibrary();
+	HMODULE mod = StackWalker::LoadDbgHelpLibrary();
+	if (mod)
+		s_dbghelp_module.Adopt(mod);
 
-	s_veh_handle = AddVectoredExceptionHandler(0, ExceptionHandler);
-	return (s_veh_handle != nullptr);
+	SetUnhandledExceptionFilter(ExceptionHandler);
+	return true;
 }
 
-void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
-	if (!s_veh_handle)
-		return;
-
 	s_write_directory = FileSystem::GetWin32Path(dump_directory);
 }
 
 void CrashHandler::WriteDumpForCaller()
 {
 	WriteMinidumpAndCallstack(nullptr);
-}
-
-void CrashHandler::Uninstall()
-{
-	if (s_veh_handle)
-	{
-		RemoveVectoredExceptionHandler(s_veh_handle);
-		s_veh_handle = nullptr;
-	}
-
-	if (s_dbghelp_module)
-	{
-		FreeLibrary(s_dbghelp_module);
-		s_dbghelp_module = nullptr;
-	}
 }
 
 #elif defined(HAS_LIBBACKTRACE)
@@ -382,19 +347,13 @@ bool CrashHandler::Install()
 	return true;
 }
 
-void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
 }
 
 void CrashHandler::WriteDumpForCaller()
 {
 }
-
-void CrashHandler::Uninstall()
-{
-	// We can't really unchain the signal handlers... so, YOLO.
-}
-
 
 #else
 
@@ -403,15 +362,11 @@ bool CrashHandler::Install()
 	return false;
 }
 
-void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
 }
 
 void CrashHandler::WriteDumpForCaller()
-{
-}
-
-void CrashHandler::Uninstall()
 {
 }
 
