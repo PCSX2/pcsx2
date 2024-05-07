@@ -26,6 +26,8 @@ bool SaveStateBase::InputRecordingFreeze()
 #include "Counters.h"
 #include "SaveState.h"
 #include "VMManager.h"
+#include "Host.h"
+#include "ImGui/ImGuiOverlays.h"
 #include "DebugTools/Debug.h"
 #include "GameDatabase.h"
 #include "fmt/format.h"
@@ -228,16 +230,18 @@ void InputRecording::incFrameCounter()
 
 	if (m_frame_counter == std::numeric_limits<u32>::max())
 	{
-		// TODO - log the incredible achievment of playing for longer than 4 billion years, and end the recording
+		// TODO - log the incredible achievment of playing for longer than 4 billion frames, and end the recording
 		stop();
 		return;
 	}
 	m_frame_counter++;
+	m_frame_counter_stateless++;
 
 	if (m_controls.isReplaying())
 	{
+		InformGSThread();
 		// If we've reached the end of the recording while replaying, pause
-		if (m_frame_counter == m_file.getTotalFrames() - 1)
+		if (m_frame_counter == m_file.getTotalFrames())
 		{
 			VMManager::SetPaused(true);
 			// Can also stop watching for re-records, they've watched to the end of the recording
@@ -254,12 +258,18 @@ void InputRecording::incFrameCounter()
 			m_file.incrementUndoCount();
 			m_watching_for_rerecords = false;
 		}
+		InformGSThread();
 	}
 }
 
-u64 InputRecording::getFrameCounter() const
+u32 InputRecording::getFrameCounter() const
 {
 	return m_frame_counter;
+}
+
+u32 InputRecording::getFrameCounterStateless() const
+{
+	return m_frame_counter_stateless;
 }
 
 bool InputRecording::isActive() const
@@ -319,6 +329,12 @@ void InputRecording::setStartingFrame(u32 startingFrame)
 	}
 	InputRec::consoleLog(fmt::format("Internal Starting Frame: {}", startingFrame));
 	m_starting_frame = startingFrame;
+	InformGSThread();
+}
+
+u32 InputRecording::getStartingFrame()
+{
+	return m_starting_frame;
 }
 
 void InputRecording::adjustFrameCounterOnReRecord(u32 newFrameCounter)
@@ -350,6 +366,9 @@ void InputRecording::adjustFrameCounterOnReRecord(u32 newFrameCounter)
 		getControls().setReplayMode();
 	}
 	m_frame_counter = newFrameCounter - m_starting_frame;
+	m_frame_counter_stateless--;
+	m_file.setTotalFrames(m_frame_counter);
+	InformGSThread();
 }
 
 InputRecordingControls& InputRecording::getControls()
@@ -366,4 +385,20 @@ void InputRecording::initializeState()
 {
 	m_frame_counter = 0;
 	m_watching_for_rerecords = false;
+	InformGSThread();
+}
+
+void InputRecording::InformGSThread()
+{
+	TinyString recording_active_message = TinyString::from_format(TRANSLATE_FS("InputRecording", "Input Recording Active: {}"), g_InputRecording.getData().getFilename());
+	TinyString frame_data_message = TinyString::from_format(TRANSLATE_FS("InputRecording", "Frame: {}/{} ({})"), g_InputRecording.getFrameCounter(), g_InputRecording.getData().getTotalFrames(), g_InputRecording.getFrameCounterStateless());
+	TinyString undo_count_message = TinyString::from_format(TRANSLATE_FS("InputRecording", "Undo Count: {}"), g_InputRecording.getData().getUndoCount());
+
+	MTGS::RunOnGSThread([recording_active_message, frame_data_message, undo_count_message](bool is_recording = g_InputRecording.getControls().isRecording())
+	{
+		g_InputRecordingData.is_recording = is_recording;
+		g_InputRecordingData.recording_active_message = recording_active_message;
+		g_InputRecordingData.frame_data_message = frame_data_message;
+		g_InputRecordingData.undo_count_message = undo_count_message;
+	});
 }

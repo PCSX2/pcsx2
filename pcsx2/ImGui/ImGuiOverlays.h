@@ -27,3 +27,16 @@ namespace SaveStateSelectorUI
 	void LoadCurrentSlot();
 	void SaveCurrentSlot();
 } // namespace SaveStateSelectorUI
+
+namespace InputRecordingUI
+{
+	struct InputRecordingData
+	{
+		bool is_recording = false;
+		TinyString recording_active_message = "";
+		TinyString frame_data_message = "";
+		TinyString undo_count_message = "";
+	};
+}
+
+extern InputRecordingUI::InputRecordingData g_InputRecordingData;
