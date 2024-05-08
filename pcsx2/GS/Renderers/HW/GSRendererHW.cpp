@@ -4039,6 +4039,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	// HW blend can handle Cd output.
 	bool color_dest_blend = !!(blend_flag & BLEND_CD);
 
+	// HW blend can handle it, no need for sw blend or hdr, Cd*Alpha or Cd*(1 - Alpha) where Alpha <= 128, Alpha is As or Af.
+	bool color_dest_blend2 = alpha_less_one && ((blend_flag & BLEND_HW2) || (m_conf.ps.blend_b == m_conf.ps.blend_d == 1 && m_conf.ps.blend_a == 2));
+
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 	// If alpha == 1.0, almost everything is an accumulation blend!
@@ -4111,6 +4114,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			case AccBlendLevel::Basic:
 				// Prefer sw blend if possible.
 				color_dest_blend &= !prefer_sw_blend;
+				color_dest_blend2 &= !prefer_sw_blend;
 				accumulation_blend &= !prefer_sw_blend;
 				// Enable sw blending for barriers.
 				sw_blending |= blend_requires_barrier;
@@ -4150,6 +4154,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			case AccBlendLevel::Basic:
 				// Prefer sw blend if possible.
 				color_dest_blend &= !prefer_sw_blend;
+				color_dest_blend2 &= !prefer_sw_blend;
 				accumulation_blend &= !prefer_sw_blend;
 				// Enable sw blending for reading fb.
 				sw_blending |= prefer_sw_blend;
@@ -4189,10 +4194,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			free_colclip = blend_non_recursive;
 
 		GL_DBG("COLCLIP Info (Blending: %u/%u/%u/%u, OVERLAP: %d)", m_conf.ps.blend_a, m_conf.ps.blend_b, m_conf.ps.blend_c, m_conf.ps.blend_d, m_prim_overlap);
-		if (color_dest_blend)
+		if (color_dest_blend || color_dest_blend2)
 		{
 			// No overflow, disable colclip.
 			GL_INS("COLCLIP mode DISABLED");
+			sw_blending = false;
 		}
 		else if (free_colclip)
 		{
