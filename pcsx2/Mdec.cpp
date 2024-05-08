@@ -35,11 +35,8 @@ int iq_y[DCTSIZE2], iq_uv[DCTSIZE2];
 
 static void idct1(int* block)
 {
-	int i, val;
-
-	val = RANGE(DESCALE(block[0], PASS1_BITS + 3));
-
-	for (i = 0; i < DCTSIZE2; i++)
+	const int val = RANGE(DESCALE(block[0], PASS1_BITS + 3));
+	for (int i = 0; i < DCTSIZE2; i++)
 		block[i] = val;
 }
 
@@ -48,7 +45,6 @@ void idct(int* block, int k)
 	int tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 	int z5, z10, z11, z12, z13;
 	int* ptr;
-	int i;
 
 	if (!k)
 	{
@@ -57,7 +53,7 @@ void idct(int* block, int k)
 	}
 
 	ptr = block;
-	for (i = 0; i < DCTSIZE; i++, ptr++)
+	for (int i = 0; i < DCTSIZE; i++, ptr++)
 	{
 
 		if ((ptr[DCTSIZE * 1] | ptr[DCTSIZE * 2] | ptr[DCTSIZE * 3] |
@@ -109,7 +105,7 @@ void idct(int* block, int k)
 	}
 
 	ptr = block;
-	for (i = 0; i < DCTSIZE; i++, ptr += DCTSIZE)
+	for (int i = 0; i < DCTSIZE; i++, ptr += DCTSIZE)
 	{
 
 		if ((ptr[1] | ptr[2] | ptr[3] | ptr[4] | ptr[5] | ptr[6] |
@@ -221,7 +217,7 @@ u32 mdecRead1(void)
 
 void psxDma0(u32 adr, u32 bcr, u32 chcr)
 {
-	int cmd = mdec.command;
+	const int cmd = mdec.command;
 
 	MDEC_LOG("DMA0 %lx %lx %lx", adr, bcr, chcr);
 
@@ -230,7 +226,7 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr)
 
 	// bcr LSBs are the blocksize in words
 	// bcr MSBs are the number of block
-	int size = (bcr >> 16) * (bcr & 0xffff);
+	const int size = (bcr >> 16) * (bcr & 0xffff);
 	if (size < 0)
 	{
 		// Need to investigate what happen if the transfer is huge
@@ -273,7 +269,7 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr)
 	// bcr LSBs are the blocksize in words
 	// bcr MSBs are the number of block
 	int size = (bcr >> 16) * (bcr & 0xffff);
-	int size2 = (bcr >> 16) * (bcr & 0xffff);
+	const int size2 = (bcr >> 16) * (bcr & 0xffff);
 	if (size < 0)
 	{
 		// Need to investigate what happen if the transfer is huge
@@ -389,18 +385,17 @@ void round_init(void)
 
 void yuv2rgb15(int* blk, unsigned short* image)
 {
-	int x, y;
 	int* Yblk = blk + DCTSIZE2 * 2;
 	int Cb, Cr, R, G, B;
 	int* Cbblk = blk;
 	int* Crblk = blk + DCTSIZE2;
 
 	if (!(Config.Mdec & 0x1))
-		for (y = 0; y < 16; y += 2, Crblk += 4, Cbblk += 4, Yblk += 8, image += 24)
+		for (int y = 0; y < 16; y += 2, Crblk += 4, Cbblk += 4, Yblk += 8, image += 24)
 		{
 			if (y == 8)
 				Yblk += DCTSIZE2;
-			for (x = 0; x < 4; x++, image += 2, Crblk++, Cbblk++, Yblk += 2)
+			for (int x = 0; x < 4; x++, image += 2, Crblk++, Cbblk++, Yblk += 2)
 			{
 				Cr = *Crblk;
 				Cb = *Cbblk;
@@ -426,11 +421,11 @@ void yuv2rgb15(int* blk, unsigned short* image)
 			}
 		}
 	else
-		for (y = 0; y < 16; y += 2, Yblk += 8, image += 24)
+		for (int y = 0; y < 16; y += 2, Yblk += 8, image += 24)
 		{
 			if (y == 8)
 				Yblk += DCTSIZE2;
-			for (x = 0; x < 4; x++, image += 2, Yblk += 2)
+			for (int x = 0; x < 4; x++, image += 2, Yblk += 2)
 			{
 				RGB15BW(0, Yblk[0]);
 				RGB15BW(1, Yblk[1]);
@@ -447,18 +442,17 @@ void yuv2rgb15(int* blk, unsigned short* image)
 
 void yuv2rgb24(int* blk, unsigned char* image)
 {
-	int x, y;
 	int* Yblk = blk + DCTSIZE2 * 2;
 	int Cb, Cr, R, G, B;
 	int* Cbblk = blk;
 	int* Crblk = blk + DCTSIZE2;
 
 	if (!(Config.Mdec & 0x1))
-		for (y = 0; y < 16; y += 2, Crblk += 4, Cbblk += 4, Yblk += 8, image += 24 * 3)
+		for (int y = 0; y < 16; y += 2, Crblk += 4, Cbblk += 4, Yblk += 8, image += 24 * 3)
 		{
 			if (y == 8)
 				Yblk += DCTSIZE2;
-			for (x = 0; x < 4; x++, image += 6, Crblk++, Cbblk++, Yblk += 2)
+			for (int x = 0; x < 4; x++, image += 6, Crblk++, Cbblk++, Yblk += 2)
 			{
 				Cr = *Crblk;
 				Cb = *Cbblk;
@@ -484,11 +478,11 @@ void yuv2rgb24(int* blk, unsigned char* image)
 			}
 		}
 	else
-		for (y = 0; y < 16; y += 2, Yblk += 8, image += 24 * 3)
+		for (int y = 0; y < 16; y += 2, Yblk += 8, image += 24 * 3)
 		{
 			if (y == 8)
 				Yblk += DCTSIZE2;
-			for (x = 0; x < 4; x++, image += 6, Yblk += 2)
+			for (int x = 0; x < 4; x++, image += 6, Yblk += 2)
 			{
 				RGB24BW(0, Yblk[0]);
 				RGB24BW(1 * 3, Yblk[1]);
