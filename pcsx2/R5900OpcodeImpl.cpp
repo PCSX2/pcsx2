@@ -1068,7 +1068,6 @@ void SYSCALL()
 			// The only thing this code is used for is the one log message, so don't execute it if we aren't logging bios messages.
 			if (SysTraceActive(EE.Bios))
 			{
-				t_sif_dma_transfer *dmat;
 				//struct t_sif_cmd_header	*hdr;
 				//struct t_sif_rpc_bind *bind;
 				//struct t_rpc_server_data *server;
@@ -1080,7 +1079,7 @@ void SYSCALL()
 				if (n_transfer >= 0)
 				{
 					addr = cpuRegs.GPR.n.a0.UL[0] + n_transfer * sizeof(t_sif_dma_transfer);
-					dmat = (t_sif_dma_transfer*)PSM(addr);
+					t_sif_dma_transfer* dmat = (t_sif_dma_transfer*)PSM(addr);
 
 					BIOS_LOG("bios_%s: n_transfer=%d, size=%x, attr=%x, dest=%x, src=%x",
 							R5900::bios[cpuRegs.GPR.n.v1.UC[0]], n_transfer,
