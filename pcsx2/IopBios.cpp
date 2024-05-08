@@ -152,14 +152,14 @@ namespace R3000A
 	// This is a workaround for GHS on *NIX platforms
 	// Whenever a program splits directories with a backslash (ulaunchelf)
 	// the directory is considered non-existant
-	static __fi std::string clean_path(const std::string path)
+	static __fi std::string clean_path(const std::string& path)
 	{
 		std::string ret = path;
 		std::replace(ret.begin(), ret.end(), '\\', '/');
 		return ret;
 	}
 
-	static int host_stat(const std::string path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
+	static int host_stat(const std::string& path, fio_stat_t* host_stats, fio_stat_flags& stat = ioman_stat)
 	{
 		struct stat file_stats;
 		const std::string file_path(ioman::host_path(path, true));
@@ -218,7 +218,7 @@ namespace R3000A
 		return 0;
 	}
 
-	static int host_stat(const std::string path, fxio_stat_t* host_stats)
+	static int host_stat(const std::string& path, fxio_stat_t* host_stats)
 	{
 		return host_stat(path, &host_stats->_fioStat, iomanx_stat);
 	}
