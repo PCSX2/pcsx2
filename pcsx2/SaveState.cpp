@@ -1151,6 +1151,8 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 	{
 		if (!error->IsValid())
 			Error::SetString(error, "Save state corruption in internal structures.");
+
+		VMManager::Reset();
 		return false;
 	}
 
@@ -1166,6 +1168,7 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 		if (!zff || !SavestateEntries[i]->FreezeIn(zff.get()))
 		{
 			Error::SetString(error, fmt::format("Save state corruption in {}.", SavestateEntries[i]->GetFilename()));
+			VMManager::Reset();
 			return false;
 		}
 	}
