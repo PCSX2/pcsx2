@@ -324,7 +324,7 @@ std::string Achievements::GetGameHash(const std::string& elf_path)
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-	auto callback = [cache_filename](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
+	auto callback = [cache_filename = std::move(cache_filename)](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
 		if (status_code != HTTPDownloader::HTTP_STATUS_OK)
 			return;
 
