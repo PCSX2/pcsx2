@@ -119,10 +119,7 @@ int GIF_Fifo::read_fifo()
 		return 0;
 	}
 
-	int readpos = 0;
-	int sizeRead = 0;
-
-	sizeRead = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)&data, fifoSize * 16) / 16; //returns the size actually read
+	const int sizeRead = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, (u8*)&data, fifoSize * 16) / 16; //returns the size actually read
 
 	GIF_LOG("GIF FIFO Read %d QW from FIFO Current Size %d", sizeRead, fifoSize);
 
@@ -131,7 +128,7 @@ int GIF_Fifo::read_fifo()
 		if (sizeRead > 0)
 		{
 			const int copyAmount = fifoSize - sizeRead;
-			readpos = sizeRead * 4;
+			const int readpos = sizeRead * 4;
 
 			for (int i = 0; i < copyAmount; i++)
 				CopyQWC(&data[i * 4], &data[readpos + (i * 4)]);
