@@ -599,7 +599,6 @@ static void recResetRaw()
 		memset(s_pInstCache, 0, sizeof(EEINST) * s_nInstCacheSize);
 
 	recBlocks.Reset();
-	mmap_ResetBlockTracking();
 	vtlb_ClearLoadStoreInfo();
 
 	g_branch = 0;
