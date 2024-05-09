@@ -45,6 +45,8 @@
 #include <tuple>
 #include <unordered_map>
 
+extern "C" bool GetIsThrottlerTempDisabled();
+
 namespace ImGuiManager
 {
 	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
@@ -251,6 +253,9 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				else // Unlimited
 					DRAW_LINE(standard_font, ICON_FA_FORWARD, IM_COL32(255, 255, 255, 255));
 			}
+
+			if (GetIsThrottlerTempDisabled())
+				DRAW_LINE(standard_font, ICON_FA_FORWARD, IM_COL32(255, 0, 0, 255));
 		}
 
 		if (GSConfig.OsdShowFrameTimes)

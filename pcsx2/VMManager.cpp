@@ -200,6 +200,112 @@ static time_t s_discord_presence_time_epoch;
 // Making GSDumpReplayer.h dependent on R5900.h is a no-no, since the GS uses it.
 extern R5900cpu GSDumpReplayerCpu;
 
+class VMEvent
+{
+public:
+	template <typename... Args>
+	class Event : public std::function<void(Args...)>
+	{
+	public:
+		using std::function<void(Args...)>::function;
+
+	private:
+		std::vector<std::function<void(Args...)>> handlers;
+
+	public:
+		void operator+=(std::function<void(Args...)>&& handler)
+		{
+			handlers.push_back(handler);
+		}
+
+		void executeAll(Args... args) const
+		{
+			if (!handlers.empty())
+			{
+				for (auto& handler : handlers)
+				{
+					handler(args...);
+				}
+			}
+		}
+	};
+
+public:
+	static auto& onGameElfInit()
+	{
+		static Event<const char*, const char*, const char*, const char*, const char*,
+			const uint32_t, const uint32_t, const uint32_t, uint8_t*, size_t, const void*,
+			const uint32_t, const uint32_t, const bool, const AspectRatioType> eventEntryPointCompilingOnCPUThread;
+		return eventEntryPointCompilingOnCPUThread;
+	}
+	static auto& onGameShutdown()
+	{
+		static Event<> eventShutdown;
+		return eventShutdown;
+	}
+};
+
+extern "C"
+{
+#ifdef _WIN32
+#define DLLEXPORT _declspec(dllexport)
+#else
+#define DLLEXPORT __attribute__((visibility("default"), used))
+#endif
+
+	static volatile bool s_is_throttler_temp_disabled = false;
+
+	using InitCB = void (*)(
+	const char* s_disc_serial,
+	const char* s_disc_elf,
+	const char* s_disc_version,
+	const char* s_title,
+	const char* s_elf_path,
+	const uint32_t s_disc_crc,
+	const uint32_t s_current_crc,
+	const uint32_t s_elf_entry_point,
+	uint8_t* EEMainMemoryStart,
+	size_t EEMainMemorySize,
+	const void* WindowHandle,
+	const uint32_t WindowSizeX,
+	const uint32_t WindowSizeY,
+	const bool IsFullscreen,
+	const AspectRatioType AspectRatioSetting);
+	using ShutdownCB = void (*)();
+
+	DLLEXPORT bool GetIsThrottlerTempDisabled();
+	DLLEXPORT void SetIsThrottlerTempDisabled(bool disable);
+	DLLEXPORT VMState GetVMState();
+	DLLEXPORT void AddOnGameElfInitCallback(InitCB callback);
+	DLLEXPORT void AddOnGameShutdownCallback(ShutdownCB callback);
+
+	bool GetIsThrottlerTempDisabled()
+	{
+		return s_is_throttler_temp_disabled;
+	}
+
+	void SetIsThrottlerTempDisabled(bool disable)
+	{
+		s_is_throttler_temp_disabled = disable;
+	}
+
+	VMState GetVMState()
+	{
+		return VMManager::GetState();
+	}
+
+	void AddOnGameElfInitCallback(InitCB callback)
+	{
+		VMEvent::onGameElfInit() += callback;
+	}
+
+	void AddOnGameShutdownCallback(ShutdownCB callback)
+	{
+		VMEvent::onGameShutdown() += callback;
+	}
+#undef DLLEXPORT
+}
+
 bool VMManager::PerformEarlyHardwareChecks(const char** error)
 {
 #define COMMON_DOWNLOAD_MESSAGE "PCSX2 builds can be downloaded from https://pcsx2.net/downloads/"
@@ -1505,6 +1611,8 @@ void VMManager::Shutdown(bool save_resume_state)
 	// but just in case, so any of the stuff we call here knows we don't have a valid VM.
 	s_state.store(VMState::Stopping, std::memory_order_release);
 
+	VMEvent::onGameShutdown().executeAll();
+
 	SetTimerResolutionIncreased(false);
 
 	// sync everything
@@ -2072,7 +2180,7 @@ void VMManager::ResetFrameLimiter()
 
 void VMManager::Internal::Throttle()
 {
-	if (s_target_speed == 0.0f || s_use_vsync_for_timing)
+	if (s_target_speed == 0.0f || s_use_vsync_for_timing || GetIsThrottlerTempDisabled())
 		return;
 
 	const u64 uExpectedEnd =
@@ -2628,6 +2736,14 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	}
 
 	HandleELFChange(true);
+
+	VMEvent::onGameElfInit().executeAll(
+		s_disc_serial.data(), s_disc_elf.data(), s_disc_version.data(), s_title.data(),
+		s_elf_path.data(), s_disc_crc, s_current_crc, s_elf_entry_point,
+		&eeMem->Main[0], Ps2MemSize::ExposedRam, &g_gs_device->GetWindowInfo().window_handle,
+		g_gs_device->GetWindowInfo().surface_width, g_gs_device->GetWindowInfo().surface_height,
+		Host::IsFullscreen(), EmuConfig.GS.AspectRatio
+	);
 
 	Patch::ApplyLoadedPatches(Patch::PPT_ONCE_ON_LOAD);
 	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
