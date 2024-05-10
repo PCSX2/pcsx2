@@ -4294,7 +4294,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			if (m_conf.ps.blend_a == 2)
 			{
 				// Accumulation blend is only available in (Cs - 0)*Something + Cd, or with alpha == 1
-				pxAssert(m_conf.ps.blend_d == 2 || alpha_one);
+				pxAssert(m_conf.ps.blend_d == 2 || alpha_eq_one);
 				// A bit of normalization
 				m_conf.ps.blend_a = m_conf.ps.blend_d;
 				m_conf.ps.blend_d = 2;
