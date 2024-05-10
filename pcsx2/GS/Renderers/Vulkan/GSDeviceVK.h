@@ -588,7 +588,8 @@ public:
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
 	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier);
+	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
+		bool one_barrier, bool full_barrier, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vulkan State

@@ -5839,7 +5839,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-		SendHWDraw(config, draw_rt, skip_first_barrier);
+		SendHWDraw(config, draw_rt, config.require_one_barrier, config.require_full_barrier, skip_first_barrier);
 
 	// blend second pass
 	if (config.blend_second_pass.enable)
@@ -5851,7 +5851,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.ps.blend_hw = config.blend_second_pass.blend_hw;
 		pipe.ps.dither = config.blend_second_pass.dither;
 		if (BindDrawPipeline(pipe))
+		{
+			// TODO: This probably should have barriers, in case we want to use it conditionally.
 			DrawIndexedPrimitive();
+		}
 	}
 
 	// and the alpha pass
@@ -5869,7 +5872,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.dss = config.alpha_second_pass.depth;
 		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
-			SendHWDraw(config, draw_rt, false);
+		{
+			SendHWDraw(config, draw_rt, config.alpha_second_pass.require_one_barrier,
+				config.alpha_second_pass.require_full_barrier, false);
+		}
 	}
 
 	if (draw_rt_clone)
@@ -5972,49 +5978,57 @@ VkImageMemoryBarrier GSDeviceVK::GetColorBufferBarrier(GSTextureVK* rt) const
 		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
 }
 
-void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier)
+void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt,
+	bool one_barrier, bool full_barrier, bool skip_first_barrier)
 {
-	if (config.drawlist)
+	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		GL_PUSH("Split the draw (SPRITE)");
-		g_perfmon.Put(
-			GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
-
-		const u32 indices_per_prim = config.indices_per_prim;
-		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
-		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
-		u32 p = 0;
-		u32 n = 0;
-
-		if (skip_first_barrier)
-		{
-			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			DrawIndexedPrimitive(p, count);
-			p += count;
-			++n;
-		}
-
-		for (; n < draw_list_size; n++)
-		{
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
-
-			const u32 count = (*config.drawlist)[n] * indices_per_prim;
-			DrawIndexedPrimitive(p, count);
-			p += count;
-		}
-
+		DrawIndexedPrimitive();
 		return;
 	}
 
-	if (m_features.texture_barrier && m_pipeline_selector.ps.IsFeedbackLoop())
+#ifdef PCSX2_DEVBUILD
+	if ((one_barrier || full_barrier) && !m_pipeline_selector.ps.IsFeedbackLoop()) [[unlikely]]
+		Console.Warning("GS: Possible unnecessary barrier detected.");
+#endif
+
+	if (full_barrier)
 	{
 		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
+		const u32 indices_per_prim = config.indices_per_prim;
 
-		if (config.require_full_barrier)
+		if (config.drawlist)
 		{
-			const u32 indices_per_prim = config.indices_per_prim;
+			GL_PUSH("Split the draw (SPRITE)");
+			g_perfmon.Put(
+				GSPerfMon::Barriers, static_cast<u32>(config.drawlist->size()) - static_cast<u32>(skip_first_barrier));
 
+			const u32 indices_per_prim = config.indices_per_prim;
+			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+			const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
+			u32 p = 0;
+			u32 n = 0;
+
+			if (skip_first_barrier)
+			{
+				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+				DrawIndexedPrimitive(p, count);
+				p += count;
+				++n;
+			}
+
+			for (; n < draw_list_size; n++)
+			{
+				vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
+
+				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+				DrawIndexedPrimitive(p, count);
+				p += count;
+			}
+		}
+		else
+		{
 			GL_PUSH("Split single draw in %d draw", config.nindices / indices_per_prim);
 			g_perfmon.Put(
 				GSPerfMon::Barriers, (config.nindices / indices_per_prim) - static_cast<u32>(skip_first_barrier));
@@ -6033,16 +6047,18 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 				DrawIndexedPrimitive(p, indices_per_prim);
 			}
-
-			return;
 		}
 
-		if (config.require_one_barrier && !skip_first_barrier)
-		{
-			g_perfmon.Put(GSPerfMon::Barriers, 1);
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
-		}
+		return;
+	}
+
+	if (one_barrier && !skip_first_barrier)
+	{
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
+
+		const VkImageMemoryBarrier barrier = GetColorBufferBarrier(draw_rt);
+		vkCmdPipelineBarrier(GetCurrentCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
 	}
 
 	DrawIndexedPrimitive();
