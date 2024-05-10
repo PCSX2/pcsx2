@@ -8,6 +8,7 @@
 #include "PINE.h"
 #include "VMManager.h"
 #include "svnrev.h"
+#include "GS/Renderers/Common/GSDevice.h"
 
 #include <atomic>
 #include <cstdio>
@@ -142,6 +143,13 @@ namespace PINEServer
 		MsgUUID = 0xD, /**< Returns the game UUID. */
 		MsgGameVersion = 0xE, /**< Returns the game verion. */
 		MsgStatus = 0xF, /**< Returns the emulator status. */
+		MsgElfPath = 0x10, /**< Returns the ELF path. */
+		MsgDiscElf = 0x11, /**< Returns the disc ELF. */
+		MsgCurrentCRC = 0x12, /**< Returns the current CRC. */
+		MsgElfEntryPoint = 0x13, /**< Returns the ELF entry point. */
+		MsgWindowSizeX = 0x14, /**< Returns the window size X. */
+		MsgWindowSizeY = 0x15, /**< Returns the window size Y. */
+		MsgAspectRatioSetting = 0x16, /**< Returns the aspect ratio setting. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
@@ -715,6 +723,90 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				}
 
 				ToResultVector(ret_buffer, status, ret_cnt);
+				ret_cnt += 4;
+				break;
+			}
+			case MsgElfPath:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				const std::string currentELF = VMManager::GetCurrentELF();
+				const u32 size = currentELF.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], currentELF.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgDiscElf:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				const std::string discELF = VMManager::GetDiscELF();
+				const u32 size = discELF.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], discELF.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgCurrentCRC:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				const std::string current_crc = fmt::format("{:08x}", VMManager::GetCurrentCRC());
+				const u32 size = current_crc.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], current_crc.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgElfEntryPoint:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
+					goto error;
+				const u32 entry_point = VMManager::Internal::GetCurrentELFEntryPoint();
+				ToResultVector(ret_buffer, entry_point, ret_cnt);
+				ret_cnt += 4;
+				break;
+			}
+			case MsgWindowSizeX:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
+					goto error;
+				const u32 width = g_gs_device->GetWindowWidth();
+				ToResultVector(ret_buffer, width, ret_cnt);
+				ret_cnt += 4;
+				break;
+			}
+			case MsgWindowSizeY:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
+					goto error;
+				const u32 height = g_gs_device->GetWindowHeight();
+				ToResultVector(ret_buffer, height, ret_cnt);
+				ret_cnt += 4;
+				break;
+			}
+			case MsgAspectRatioSetting:
+			{
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
+					goto error;
+				const u32 type = static_cast<u32>(EmuConfig.GS.AspectRatio);
+				ToResultVector(ret_buffer, type, ret_cnt);
 				ret_cnt += 4;
 				break;
 			}
