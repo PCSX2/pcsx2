@@ -68,6 +68,9 @@ public:
 	/// Returns true if running on an NVIDIA GPU.
 	__fi bool IsDeviceNVIDIA() const { return (m_device_properties.vendorID == 0x10DE); }
 
+	/// Returns true if running on an AMD GPU.
+	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
+
 	// Creates a simple render pass.
 	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
