@@ -302,14 +302,14 @@ namespace
 
 		MyFileInStream fis = {
 			{.Read = [](const ISeekInStream* p, void* buf, size_t* size) -> SRes {
-				 MyFileInStream* fis = CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
+				 MyFileInStream* fis = Z7_CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
 				 const size_t size_to_read = *size;
 				 const auto bytes_read = std::fread(buf, 1, size_to_read, fis->fp);
 				 *size = (bytes_read >= 0) ? bytes_read : 0;
 				 return (bytes_read == size_to_read) ? SZ_OK : SZ_ERROR_READ;
 			 },
 				.Seek = [](const ISeekInStream* p, Int64* pos, ESzSeek origin) -> SRes {
-					MyFileInStream* fis = CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
+					MyFileInStream* fis = Z7_CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
 					static_assert(SZ_SEEK_CUR == SEEK_CUR && SZ_SEEK_SET == SEEK_SET && SZ_SEEK_END == SEEK_END);
 					if (FileSystem::FSeek64(fis->fp, *pos, static_cast<int>(origin)) != 0)
 						return SZ_ERROR_READ;
@@ -324,7 +324,7 @@ namespace
 			m_fp.get()};
 
 		CLookToRead2 look_stream = {};
-		LookToRead2_Init(&look_stream);
+		LookToRead2_INIT(&look_stream);
 		LookToRead2_CreateVTable(&look_stream, False);
 		look_stream.realStream = &fis.vt;
 		look_stream.bufSize = kInputBufSize;
