@@ -5910,11 +5910,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	SetupIA(rtscale, sx, sy);
 
-	m_conf.alpha_second_pass.enable = ate_second_pass;
-
 	if (ate_second_pass)
 	{
 		pxAssert(!env.PABE.PABE);
+
 		std::memcpy(&m_conf.alpha_second_pass.ps, &m_conf.ps, sizeof(m_conf.ps));
 		std::memcpy(&m_conf.alpha_second_pass.colormask, &m_conf.colormask, sizeof(m_conf.colormask));
 		std::memcpy(&m_conf.alpha_second_pass.depth, &m_conf.depth, sizeof(m_conf.depth));
@@ -5958,6 +5957,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			r = g = b = a = false;
 		}
 
+		m_conf.alpha_second_pass.enable = true;
+
 		if (z || r || g || b || a)
 		{
 			m_conf.alpha_second_pass.depth.zwe = z;
@@ -5966,7 +5967,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 			m_conf.alpha_second_pass.colormask.wb = b;
 			m_conf.alpha_second_pass.colormask.wa = a;
 			if (m_conf.alpha_second_pass.colormask.wrgba == 0)
+			{
 				m_conf.alpha_second_pass.ps.DisableColorOutput();
+			}
+			if (m_conf.alpha_second_pass.ps.IsFeedbackLoop())
+			{
+				m_conf.alpha_second_pass.require_one_barrier = m_conf.require_one_barrier;
+				m_conf.alpha_second_pass.require_full_barrier = m_conf.require_full_barrier;
+			}
 		}
 		else
 		{

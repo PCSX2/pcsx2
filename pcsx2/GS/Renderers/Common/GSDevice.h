@@ -387,7 +387,7 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool IsFeedbackLoop() const
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
-			const bool sw_blend_needs_rt = sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u);
+			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
 			return tex_is_fb || fbmask || (date > 0 && date != 3) || sw_blend_needs_rt;
 		}
 
@@ -688,7 +688,9 @@ struct alignas(16) GSHWDrawConfig
 	struct AlphaPass
 	{
 		alignas(8) PSSelector ps;
-		bool enable;
+		bool enable : 1;
+		bool require_one_barrier : 1;
+		bool require_full_barrier : 1;
 		ColorMaskSelector colormask;
 		DepthStencilSelector depth;
 		float ps_aref;
