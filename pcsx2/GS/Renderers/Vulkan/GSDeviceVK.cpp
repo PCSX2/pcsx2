@@ -5750,8 +5750,13 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// We don't need the very first barrier if this is the first draw after switching to feedback loop,
 	// because the layout change in itself enforces the execution dependency. HDR needs a barrier between
 	// setup and the first draw to read it. TODO: Make HDR use subpasses instead.
+
+	// However, it turns out *not* doing this causes GPU resets on RDNA3, specifically Windows drivers.
+	// Despite the layout changing enforcing the execution dependency between previous draws and the first
+	// input attachment read, it still wants the region/fragment-local barrier...
+
 	const bool skip_first_barrier =
-		(draw_rt && draw_rt->GetLayout() != GSTextureVK::Layout::FeedbackLoop && !pipe.ps.hdr);
+		(draw_rt && draw_rt->GetLayout() != GSTextureVK::Layout::FeedbackLoop && !pipe.ps.hdr && !IsDeviceAMD());
 
 	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 	if (pipe.IsRTFeedbackLoop())
