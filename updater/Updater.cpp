@@ -81,7 +81,7 @@ bool Updater::OpenUpdateZip(const char* path)
 
 	m_look_stream.bufSize = kInputBufSize;
 	m_look_stream.realStream = &m_archive_stream.vt;
-	LookToRead2_Init(&m_look_stream);
+	LookToRead2_INIT(&m_look_stream);
 
 #ifdef _WIN32
 	WRes wres = InFile_OpenW(&m_archive_stream.file, FileSystem::GetWin32Path(path).c_str());

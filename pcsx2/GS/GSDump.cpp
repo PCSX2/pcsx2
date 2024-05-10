@@ -254,7 +254,7 @@ namespace
 		};
 		MemoryInStream mis = {
 			{.Read = [](const ISeqInStream* p, void* buf, size_t* size) -> SRes {
-				MemoryInStream* mis = CONTAINER_FROM_VTBL(p, MemoryInStream, vt);
+				MemoryInStream* mis = Z7_CONTAINER_FROM_VTBL(p, MemoryInStream, vt);
 				const size_t avail = mis->buffer_size - mis->read_pos;
 				const size_t copy = std::min(avail, *size);
 
@@ -274,7 +274,7 @@ namespace
 		};
 		DumpOutStream dos = {
 			{.Write = [](const ISeqOutStream* p, const void* buf, size_t size) -> size_t {
-				DumpOutStream* dos = CONTAINER_FROM_VTBL(p, DumpOutStream, vt);
+				DumpOutStream* dos = Z7_CONTAINER_FROM_VTBL(p, DumpOutStream, vt);
 				dos->real->Write(buf, size);
 				return size;
 			}},
