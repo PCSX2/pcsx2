@@ -763,6 +763,12 @@ public:
 		GSHWDrawConfig::ColorMaskSelector wmask; // 0xf for all channels by default
 	};
 
+	struct TextureRecycleDeleter
+	{
+		void operator()(GSTexture* const tex);
+	};
+	using RecycledTexture = std::unique_ptr<GSTexture, TextureRecycleDeleter>;
+
 	enum BlendFactor : u8
 	{
 		// HW blend factors
