@@ -75,11 +75,6 @@ void GSRenderer::Destroy()
 	GSCapture::EndCapture();
 }
 
-void GSRenderer::PurgePool()
-{
-	g_gs_device->PurgePool();
-}
-
 void GSRenderer::UpdateRenderFixes()
 {
 }
@@ -518,7 +513,7 @@ bool GSRenderer::BeginPresentFrame(bool frame_skip)
 
 	// Device lost, something went really bad.
 	// Let's just toss out everything, and try to hobble on.
-	if (!GSreopen(true, GSGetCurrentRenderer(), std::nullopt))
+	if (!GSreopen(true, false, GSGetCurrentRenderer(), std::nullopt))
 	{
 		pxFailRel("Failed to recreate GS device after loss.");
 		return false;

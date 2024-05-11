@@ -210,14 +210,24 @@ static void CloseGSRenderer()
 	}
 }
 
-bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<const Pcsx2Config::GSOptions*> old_config)
+bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_renderer,
+	std::optional<const Pcsx2Config::GSOptions*> old_config)
 {
 	Console.WriteLn("Reopening GS with %s device", recreate_device ? "new" : "existing");
 
 	g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
 
-	if (GSConfig.UserHacks_ReadTCOnClose)
+	if (recreate_device && !recreate_renderer)
+	{
+		// Keeping the renderer around, this probably means we lost the device, so toss everything.
+		g_gs_renderer->PurgeTextureCache(true, true, true);
+		g_gs_device->ClearCurrent();
+		g_gs_device->PurgePool();
+	}
+	else if (GSConfig.UserHacks_ReadTCOnClose)
+	{
 		g_gs_renderer->ReadbackTextureCache();
+	}
 
 	std::string capture_filename;
 	GSVector2i capture_size;
@@ -232,21 +242,25 @@ bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<c
 	u8* basemem = g_gs_renderer->GetRegsMem();
 
 	freezeData fd = {};
-	if (g_gs_renderer->Freeze(&fd, true) != 0)
+	std::unique_ptr<u8[]> fd_data;
+	if (recreate_renderer)
 	{
-		Console.Error("(GSreopen) Failed to get GS freeze size");
-		return false;
-	}
+		if (g_gs_renderer->Freeze(&fd, true) != 0)
+		{
+			Console.Error("(GSreopen) Failed to get GS freeze size");
+			return false;
+		}
 
-	std::unique_ptr<u8[]> fd_data = std::make_unique<u8[]>(fd.size);
-	fd.data = fd_data.get();
-	if (g_gs_renderer->Freeze(&fd, false) != 0)
-	{
-		Console.Error("(GSreopen) Failed to freeze GS");
-		return false;
-	}
+		fd_data = std::make_unique<u8[]>(fd.size);
+		fd.data = fd_data.get();
+		if (g_gs_renderer->Freeze(&fd, false) != 0)
+		{
+			Console.Error("(GSreopen) Failed to freeze GS");
+			return false;
+		}
 
-	CloseGSRenderer();
+		CloseGSRenderer();
+	}
 
 	if (recreate_device)
 	{
@@ -274,16 +288,19 @@ bool GSreopen(bool recreate_device, GSRendererType new_renderer, std::optional<c
 		}
 	}
 
-	if (!OpenGSRenderer(new_renderer, basemem))
+	if (recreate_renderer)
 	{
-		Console.Error("(GSreopen) Failed to create new renderer");
-		return false;
-	}
+		if (!OpenGSRenderer(new_renderer, basemem))
+		{
+			Console.Error("(GSreopen) Failed to create new renderer");
+			return false;
+		}
 
-	if (g_gs_renderer->Defrost(&fd) != 0)
-	{
-		Console.Error("(GSreopen) Failed to defrost");
-		return false;
+		if (g_gs_renderer->Defrost(&fd) != 0)
+		{
+			Console.Error("(GSreopen) Failed to defrost");
+			return false;
+		}
 	}
 
 	if (!capture_filename.empty())
@@ -693,7 +710,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// Options which need a full teardown/recreate.
 	if (!GSConfig.RestartOptionsAreEqual(old_config))
 	{
-		if (!GSreopen(true, GSConfig.Renderer, &old_config))
+		if (!GSreopen(true, true, GSConfig.Renderer, &old_config))
 			pxFailRel("Failed to do full GS reopen");
 		return;
 	}
@@ -702,7 +719,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (GSConfig.SWExtraThreads != old_config.SWExtraThreads ||
 		GSConfig.SWExtraThreadsHeight != old_config.SWExtraThreadsHeight)
 	{
-		if (!GSreopen(false, GSConfig.Renderer, &old_config))
+		if (!GSreopen(false, true, GSConfig.Renderer, &old_config))
 			pxFailRel("Failed to do quick GS reopen");
 
 		return;
@@ -738,7 +755,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		if (GSConfig.UserHacks_ReadTCOnClose)
 			g_gs_renderer->ReadbackTextureCache();
 		g_gs_renderer->PurgeTextureCache(true, true, true);
-		g_gs_renderer->PurgePool();
+		g_gs_device->ClearCurrent();
+		g_gs_device->PurgePool();
 	}
 
 	// clear out the sampler cache when AF options change, since the anisotropy gets baked into them
@@ -776,7 +794,7 @@ void GSSetSoftwareRendering(bool software_renderer, GSInterlaceMode new_interlac
 		// Config might be SW, and we're switching to HW -> use Auto.
 		const GSRendererType renderer = (software_renderer ? GSRendererType::SW :
 			(GSConfig.Renderer == GSRendererType::SW ? GSRendererType::Auto : GSConfig.Renderer));
-		if (!GSreopen(false, renderer, std::nullopt))
+		if (!GSreopen(false, true, renderer, std::nullopt))
 			pxFailRel("Failed to reopen GS for renderer switch.");
 	}
 }
@@ -1115,7 +1133,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 			MTGS::RunOnGSThread([new_level]() {
 				GSConfig.HWMipmap = new_level;
 				g_gs_renderer->PurgeTextureCache(true, false, true);
-				g_gs_renderer->PurgePool();
+				g_gs_device->PurgePool();
 			});
 		}},
 	{"CycleInterlaceMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Deinterlace Mode"),
