@@ -41,7 +41,7 @@ public:
 		bool vk_ext_rasterization_order_attachment_access : 1;
 		bool vk_ext_full_screen_exclusive : 1;
 		bool vk_ext_line_rasterization : 1;
-		bool vk_khr_driver_properties : 1;
+		bool vk_khr_dynamic_rendering_local_read : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
 	};
 
@@ -67,19 +67,6 @@ public:
 
 	/// Returns true if running on an NVIDIA GPU.
 	__fi bool IsDeviceNVIDIA() const { return (m_device_properties.vendorID == 0x10DE); }
-
-	// Creates a simple render pass.
-	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
-		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
-		VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
-		VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
-		VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
-		VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE, bool color_feedback_loop = false,
-		bool depth_sampling = false);
-
-	// Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
-	VkRenderPass GetRenderPassForRestarting(VkRenderPass pass);
 
 	// These command buffers are allocated per-frame. They are valid until the command buffer
 	// is submitted, after that you should call these functions again.
@@ -184,8 +171,6 @@ private:
 	bool CreateAllocator();
 	bool CreateCommandBuffers();
 	bool CreateGlobalDescriptorPool();
-
-	VkRenderPass CreateCachedRenderPass(RenderPassCacheKey key);
 
 	void CommandBufferCompleted(u32 index);
 	void ActivateCommandBuffer(u32 index);
@@ -297,8 +282,6 @@ private:
 	};
 
 	QueuedPresent m_queued_present = {nullptr, 0xFFFFFFFFu, 0};
-
-	std::map<u32, VkRenderPass> m_render_pass_cache;
 
 	VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
@@ -414,7 +397,6 @@ private:
 	std::array<VkPipeline, NUM_INTERLACE_SHADERS> m_interlace{};
 	VkPipeline m_hdr_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkPipeline m_hdr_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
-	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_date_image_setup_pipelines[2][4] = {}; // [depth][datm]
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
@@ -423,17 +405,6 @@ private:
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
 		m_tfx_fragment_shaders;
 	std::unordered_map<PipelineSelector, VkPipeline, PipelineSelectorHash> m_tfx_pipelines;
-
-	VkRenderPass m_utility_color_render_pass_load = VK_NULL_HANDLE;
-	VkRenderPass m_utility_color_render_pass_clear = VK_NULL_HANDLE;
-	VkRenderPass m_utility_color_render_pass_discard = VK_NULL_HANDLE;
-	VkRenderPass m_utility_depth_render_pass_load = VK_NULL_HANDLE;
-	VkRenderPass m_utility_depth_render_pass_clear = VK_NULL_HANDLE;
-	VkRenderPass m_utility_depth_render_pass_discard = VK_NULL_HANDLE;
-	VkRenderPass m_date_setup_render_pass = VK_NULL_HANDLE;
-	VkRenderPass m_swap_chain_render_pass = VK_NULL_HANDLE;
-
-	VkRenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {}; // [rt][ds][hdr][date][fbl][dsp][rt_op][ds_op]
 
 	VkDescriptorSetLayout m_cas_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_cas_pipeline_layout = VK_NULL_HANDLE;
@@ -474,7 +445,6 @@ private:
 	bool CreateNullTexture();
 	bool CreateBuffers();
 	bool CreatePipelineLayouts();
-	bool CreateRenderPasses();
 
 	bool CompileConvertPipelines();
 	bool CompilePresentPipelines();
@@ -501,11 +471,6 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool hdr, bool stencil, bool fbl, bool dsp,
-		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
-	{
-		return m_tfx_render_pass[rt][ds][hdr][stencil][fbl][dsp][rt_op][ds_op];
-	}
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
 
@@ -584,7 +549,7 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(const GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferBarrier(GSTextureVK* rt) const;
+	void GetColorBufferBarrier(GSTextureVK* rt, VkImageMemoryBarrier2KHR* barrier, VkDependencyInfoKHR* depinfo) const;
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, bool skip_first_barrier);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -621,10 +586,11 @@ public:
 	// When Bind() is next called, the pass will be restarted.
 	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
-	void BeginRenderPass(VkRenderPass rp, const GSVector4i& rect);
-	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
-	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
-	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
+	void BeginRenderPass(VkAttachmentLoadOp color_load, VkAttachmentStoreOp color_store,
+		VkAttachmentLoadOp depth_load, VkAttachmentStoreOp depth_store,
+		VkAttachmentLoadOp stencil_load, VkAttachmentStoreOp stencil_store,
+		GSVector4i rect, GSVector4 clear_color = GSVector4::zero(), float clear_depth = 0.0f, u8 clear_stencil = 0);
+	void BeginSwapChainRenderPass();
 	void EndRenderPass();
 
 	void SetViewport(const VkViewport& viewport);
@@ -692,6 +658,10 @@ private:
 	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 	float m_current_line_width = 1.0f;
 	u8 m_blend_constant_color = 0;
+
+	u8 m_color_attachment_store_op = 0;
+	u8 m_depth_attachment_store_op = 0;
+	u8 m_stencil_attachment_store_op = 0;
 
 	std::array<const GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;

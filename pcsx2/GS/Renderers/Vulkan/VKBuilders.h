@@ -21,6 +21,7 @@ namespace Vulkan
 {
 	// Adds a structure to a chain.
 	void AddPointerToChain(void* head, const void* ptr);
+	void RemovePointerFromChain(void* head, const void* ptr);
 
 	const char* VkResultToString(VkResult res);
 	void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...);
@@ -81,6 +82,7 @@ namespace Vulkan
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
 			MAX_ATTACHMENTS = 2,
+			MAX_INPUT_ATTACHMENTS = 1,
 			MAX_DYNAMIC_STATE = 8
 		};
 
@@ -141,6 +143,12 @@ namespace Vulkan
 
 		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
+		void SetDynamicRendering();
+		void AddDynamicRenderingColorAttachment(VkFormat format);
+		void SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format);
+		void AddDynamicRenderingInputAttachment(u32 color_attachment_index);
+		void ClearDynamicRenderingAttachments();
+
 	private:
 		VkGraphicsPipelineCreateInfo m_ci;
 		std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
@@ -168,6 +176,11 @@ namespace Vulkan
 
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
 		VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
+
+		VkPipelineRenderingCreateInfoKHR m_rendering;
+		VkRenderingAttachmentLocationInfoKHR m_rendering_input_attachment_locations;
+		std::array<VkFormat, MAX_ATTACHMENTS> m_rendering_color_formats;
+		std::array<u32, MAX_INPUT_ATTACHMENTS> m_rendering_input_attachment_indices;
 	};
 
 	class ComputePipelineBuilder
