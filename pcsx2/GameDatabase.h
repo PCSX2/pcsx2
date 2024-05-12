@@ -53,6 +53,7 @@ namespace GameDatabaseSchema
 		TextureInsideRT,
 		AlignSprite,
 		MergeSprite,
+		Mipmap,
 		WildArmsHack,
 		BilinearUpscale,
 		NativePaletteDraw,
@@ -61,7 +62,6 @@ namespace GameDatabaseSchema
 		PCRTCOverscan,
 
 		// integer settings
-		Mipmap,
 		TrilinearFiltering,
 		SkipDrawStart,
 		SkipDrawEnd,
