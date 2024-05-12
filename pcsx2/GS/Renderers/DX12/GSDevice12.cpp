@@ -2019,9 +2019,14 @@ void GSDevice12::RenderImGui()
 
 			SetScissor(GSVector4i(clip));
 
-			// Since we don't have the GSTexture...
 			GSTexture12* tex = static_cast<GSTexture12*>(pcmd->GetTexID());
-			D3D12DescriptorHandle handle = tex ? tex->GetSRVDescriptor() : m_null_texture->GetSRVDescriptor();
+			D3D12DescriptorHandle handle = m_null_texture->GetSRVDescriptor();
+			if (tex)
+			{
+				tex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				handle = tex->GetSRVDescriptor();
+			}
+
 			if (m_utility_texture_cpu != handle)
 			{
 				m_utility_texture_cpu = handle;
