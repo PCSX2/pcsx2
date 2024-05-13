@@ -1052,9 +1052,10 @@ static bool CheckVersion(const std::string& filename, zip_t* zf, Error* error)
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
 	if (savever > g_SaveVersion || (savever >> 16) != (g_SaveVersion >> 16))
 	{
-		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This savestate is an unsupported version and cannot be used.\n\n"
-											"You can download PCSX2 {} from pcsx2.net and make a normal memory card save.\n"
-											"Otherwise delete the savestate and do a fresh boot."),
+		Error::SetString(error, fmt::format(TRANSLATE_FS("SaveState","This save state is outdated and is no longer compatible "
+											"with the current version of PCSX2.\n\n"
+											"If you have any unsaved progress on this save state, you can download the compatible version (PCSX2 {}) "
+											"from pcsx2.net, load the save state, and save your progress to the memory card."),
 											version_string));
 		return false;
 	}
