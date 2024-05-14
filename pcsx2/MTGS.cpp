@@ -551,7 +551,7 @@ void MTGS::MainLoop()
 
 			uint newringpos = (s_ReadPos.load(std::memory_order_relaxed) + ringposinc) & RingBufferMask;
 
-			if (EmuConfig.GS.SynchronousMTGS)
+			if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 			{
 				pxAssert(s_WritePos == newringpos);
 			}
@@ -675,7 +675,7 @@ void MTGS::SendDataPacket()
 
 	s_WritePos.store(s_packet_writepos, std::memory_order_release);
 
-	if (EmuConfig.GS.SynchronousMTGS)
+	if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 	{
 		WaitGS();
 	}
@@ -815,7 +815,7 @@ __fi void MTGS::_FinishSimplePacket()
 	pxAssert(future_writepos != s_ReadPos.load(std::memory_order_acquire));
 	s_WritePos.store(future_writepos, std::memory_order_release);
 
-	if (EmuConfig.GS.SynchronousMTGS)
+	if (IsDevBuild && EmuConfig.GS.SynchronousMTGS) [[unlikely]]
 		WaitGS();
 	else
 		++s_CopyDataTally;
@@ -840,7 +840,7 @@ void MTGS::SendSimpleGSPacket(Command type, u32 offset, u32 size, GIF_PATH path)
 {
 	SendSimplePacket(type, (int)offset, (int)size, (int)path);
 
-	if (!EmuConfig.GS.SynchronousMTGS)
+	if (!IsDevBuild || !EmuConfig.GS.SynchronousMTGS) [[likely]]
 	{
 		s_CopyDataTally += size / 16;
 		if (s_CopyDataTally > 0x2000)
