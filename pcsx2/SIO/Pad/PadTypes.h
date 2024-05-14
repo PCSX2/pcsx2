@@ -90,7 +90,7 @@ namespace Pad
 		const char* GetLocalizedName() const;
 
 		/// Returns the index of the specified binding point, by name.
-		std::optional<u32> GetBindIndex(const std::string_view& name) const;
+		std::optional<u32> GetBindIndex(const std::string_view name) const;
 	};
 
 	// Total number of pad ports, across both multitaps.

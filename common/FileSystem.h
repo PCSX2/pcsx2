@@ -130,7 +130,7 @@ namespace FileSystem
 	std::optional<std::string> ReadFileToString(const char* filename);
 	std::optional<std::string> ReadFileToString(std::FILE* fp);
 	bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
-	bool WriteStringToFile(const char* filename, const std::string_view& sv);
+	bool WriteStringToFile(const char* filename, const std::string_view sv);
 
 	/// creates a directory in the local filesystem
 	/// if the directory already exists, the return value will be true.

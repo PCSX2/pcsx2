@@ -242,7 +242,7 @@ const char* Pcsx2Config::SpeedhackOptions::GetSpeedHackName(SpeedHack id)
 	return s_speed_hack_names[static_cast<u32>(id)];
 }
 
-std::optional<SpeedHack> Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(const std::string_view& name)
+std::optional<SpeedHack> Pcsx2Config::SpeedhackOptions::ParseSpeedHackName(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(s_speed_hack_names); i++)
 	{

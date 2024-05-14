@@ -43,7 +43,7 @@ namespace Pad
 
 	// Returns general information for the specified controller type.
 	const ControllerInfo* GetControllerInfo(Pad::ControllerType type);
-	const ControllerInfo* GetControllerInfoByName(const std::string_view& name);
+	const ControllerInfo* GetControllerInfoByName(const std::string_view name);
 
 	// Returns controller info based on the type in the config.
 	// Needed because we can't just read EmuConfig when altering input profiles.

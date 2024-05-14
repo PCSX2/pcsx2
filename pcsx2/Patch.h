@@ -81,10 +81,10 @@ namespace Patch
 	extern const char* CHEATS_CONFIG_SECTION;
 	extern const char* PATCH_ENABLE_CONFIG_KEY;
 
-	extern PatchInfoList GetPatchInfo(const std::string_view& serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
+	extern PatchInfoList GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches);
 
 	/// Returns the path to a new cheat/patch pnach for the specified serial and CRC.
-	extern std::string GetPnachFilename(const std::string_view& serial, u32 crc, bool cheats);
+	extern std::string GetPnachFilename(const std::string_view serial, u32 crc, bool cheats);
 
 	/// Reloads cheats/patches. If verbose is set, the number of patches loaded will be shown in the OSD.
 	extern void ReloadPatches(const std::string& serial, u32 crc, bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);

@@ -13,7 +13,7 @@ namespace usb_pad
 	public:
 		~SDLFFDevice() override;
 
-		static std::unique_ptr<SDLFFDevice> Create(const std::string_view& device);
+		static std::unique_ptr<SDLFFDevice> Create(const std::string_view device);
 
 		void SetConstantForce(int level) override;
 		void SetSpringForce(const parsed_ff_data& ff) override;
@@ -25,7 +25,7 @@ namespace usb_pad
 	private:
 		SDLFFDevice(SDL_Haptic* haptic);
 
-		void CreateEffects(const std::string_view& device);
+		void CreateEffects(const std::string_view device);
 		void DestroyEffects();
 
 		SDL_Haptic* m_haptic = nullptr;

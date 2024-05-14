@@ -697,7 +697,7 @@ bool VMManager::ReloadGameSettings()
 	return true;
 }
 
-std::string VMManager::GetGameSettingsPath(const std::string_view& game_serial, u32 game_crc)
+std::string VMManager::GetGameSettingsPath(const std::string_view game_serial, u32 game_crc)
 {
 	std::string sanitized_serial(Path::SanitizeFileName(game_serial));
 
@@ -728,12 +728,12 @@ std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_pa
 	return iso_path;
 }
 
-std::string VMManager::GetInputProfilePath(const std::string_view& name)
+std::string VMManager::GetInputProfilePath(const std::string_view name)
 {
 	return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
 }
 
-std::string VMManager::GetDebuggerSettingsFilePath(const std::string_view& game_serial, u32 game_crc)
+std::string VMManager::GetDebuggerSettingsFilePath(const std::string_view game_serial, u32 game_crc)
 {
 	std::string path;
 	if (!game_serial.empty() && game_crc != 0)
@@ -2219,28 +2219,28 @@ bool VMManager::ChangeGSDump(const std::string& path)
 	return true;
 }
 
-bool VMManager::IsElfFileName(const std::string_view& path)
+bool VMManager::IsElfFileName(const std::string_view path)
 {
 	return StringUtil::EndsWithNoCase(path, ".elf");
 }
 
-bool VMManager::IsBlockDumpFileName(const std::string_view& path)
+bool VMManager::IsBlockDumpFileName(const std::string_view path)
 {
 	return StringUtil::EndsWithNoCase(path, ".dump");
 }
 
-bool VMManager::IsGSDumpFileName(const std::string_view& path)
+bool VMManager::IsGSDumpFileName(const std::string_view path)
 {
 	return (StringUtil::EndsWithNoCase(path, ".gs") || StringUtil::EndsWithNoCase(path, ".gs.xz") ||
 			StringUtil::EndsWithNoCase(path, ".gs.zst"));
 }
 
-bool VMManager::IsSaveStateFileName(const std::string_view& path)
+bool VMManager::IsSaveStateFileName(const std::string_view path)
 {
 	return StringUtil::EndsWithNoCase(path, ".p2s");
 }
 
-bool VMManager::IsDiscFileName(const std::string_view& path)
+bool VMManager::IsDiscFileName(const std::string_view path)
 {
 	static const char* extensions[] = {".iso", ".bin", ".img", ".mdf", ".gz", ".cso", ".zso", ".chd"};
 
@@ -2253,7 +2253,7 @@ bool VMManager::IsDiscFileName(const std::string_view& path)
 	return false;
 }
 
-bool VMManager::IsLoadableFileName(const std::string_view& path)
+bool VMManager::IsLoadableFileName(const std::string_view path)
 {
 	return IsDiscFileName(path) || IsElfFileName(path) || IsGSDumpFileName(path) || IsBlockDumpFileName(path);
 }
@@ -2956,7 +2956,7 @@ void VMManager::WarnAboutUnsafeSettings()
 		return;
 
 	std::string messages;
-	auto append = [&messages](const char* icon, const std::string_view& msg) {
+	auto append = [&messages](const char* icon, const std::string_view msg) {
 		messages += icon;
 		messages += ' ';
 		messages += msg;

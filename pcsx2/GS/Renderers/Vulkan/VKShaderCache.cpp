@@ -476,7 +476,7 @@ std::string VKShaderCache::GetPipelineCacheBaseFileName(bool debug)
 	return Path::Combine(EmuFolders::Cache, base_filename);
 }
 
-VKShaderCache::CacheIndexKey VKShaderCache::GetCacheKey(u32 type, const std::string_view& shader_code)
+VKShaderCache::CacheIndexKey VKShaderCache::GetCacheKey(u32 type, const std::string_view shader_code)
 {
 	union HashParts
 	{

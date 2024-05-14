@@ -949,7 +949,7 @@ struct Pcsx2Config
 		bool operator!=(const SpeedhackOptions& right) const;
 
 		static const char* GetSpeedHackName(SpeedHack id);
-		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view& name);
+		static std::optional<SpeedHack> ParseSpeedHackName(const std::string_view name);
 	};
 
 	struct DebugOptions

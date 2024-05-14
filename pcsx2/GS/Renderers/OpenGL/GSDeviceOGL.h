@@ -353,9 +353,9 @@ public:
 	void SetScissor(const GSVector4i& scissor);
 
 	bool CreateTextureFX();
-	std::string GetShaderSource(const std::string_view& entry, GLenum type, const std::string_view& glsl_h_code,
-		const std::string_view& macro_sel = std::string_view());
-	std::string GenGlslHeader(const std::string_view& entry, GLenum type, const std::string_view& macro);
+	std::string GetShaderSource(const std::string_view entry, GLenum type, const std::string_view glsl_h_code,
+		const std::string_view macro_sel = std::string_view());
+	std::string GenGlslHeader(const std::string_view entry, GLenum type, const std::string_view macro);
 	std::string GetVSSource(VSSelector sel);
 	std::string GetPSSource(const PSSelector& sel);
 	GLuint CreateSampler(PSSamplerSelector sel);

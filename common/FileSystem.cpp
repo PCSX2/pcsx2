@@ -137,7 +137,7 @@ static inline void PathAppendString(std::string& dst, const T& src)
 	}
 }
 
-std::string Path::SanitizeFileName(const std::string_view& str, bool strip_slashes /* = true */)
+std::string Path::SanitizeFileName(const std::string_view str, bool strip_slashes /* = true */)
 {
 	std::string ret;
 	ret.reserve(str.length());
@@ -191,7 +191,7 @@ void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 #endif
 }
 
-bool Path::IsValidFileName(const std::string_view& str, bool allow_slashes)
+bool Path::IsValidFileName(const std::string_view str, bool allow_slashes)
 {
 	const size_t len = str.length();
 	size_t pos = 0;
@@ -272,7 +272,7 @@ std::wstring FileSystem::GetWin32Path(std::string_view str)
 
 #endif
 
-bool Path::IsAbsolute(const std::string_view& path)
+bool Path::IsAbsolute(const std::string_view path)
 {
 #ifdef _WIN32
 	return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
@@ -283,7 +283,7 @@ bool Path::IsAbsolute(const std::string_view& path)
 #endif
 }
 
-std::string Path::RealPath(const std::string_view& path)
+std::string Path::RealPath(const std::string_view path)
 {
 	// Resolve non-absolute paths first.
 	std::vector<std::string_view> components;
@@ -457,7 +457,7 @@ std::string Path::RealPath(const std::string_view& path)
 	return realpath;
 }
 
-std::string Path::ToNativePath(const std::string_view& path)
+std::string Path::ToNativePath(const std::string_view path)
 {
 	std::string ret;
 	PathAppendString(ret, path);
@@ -477,7 +477,7 @@ void Path::ToNativePath(std::string* path)
 	*path = Path::ToNativePath(*path);
 }
 
-std::string Path::Canonicalize(const std::string_view& path)
+std::string Path::Canonicalize(const std::string_view path)
 {
 	std::vector<std::string_view> components = Path::SplitNativePath(path);
 	std::vector<std::string_view> new_components;
@@ -513,7 +513,7 @@ void Path::Canonicalize(std::string* path)
 	*path = Canonicalize(*path);
 }
 
-std::string Path::MakeRelative(const std::string_view& path, const std::string_view& relative_to)
+std::string Path::MakeRelative(const std::string_view path, const std::string_view relative_to)
 {
 	// simple algorithm, we just work on the components. could probably be better, but it'll do for now.
 	std::vector<std::string_view> path_components(SplitNativePath(path));
@@ -560,7 +560,7 @@ std::string Path::MakeRelative(const std::string_view& path, const std::string_v
 	return JoinNativePath(new_components);
 }
 
-std::string_view Path::GetExtension(const std::string_view& path)
+std::string_view Path::GetExtension(const std::string_view path)
 {
 	const std::string_view::size_type pos = path.rfind('.');
 	if (pos == std::string_view::npos)
@@ -569,7 +569,7 @@ std::string_view Path::GetExtension(const std::string_view& path)
 		return path.substr(pos + 1);
 }
 
-std::string_view Path::StripExtension(const std::string_view& path)
+std::string_view Path::StripExtension(const std::string_view path)
 {
 	const std::string_view::size_type pos = path.rfind('.');
 	if (pos == std::string_view::npos)
@@ -578,7 +578,7 @@ std::string_view Path::StripExtension(const std::string_view& path)
 	return path.substr(0, pos);
 }
 
-std::string Path::ReplaceExtension(const std::string_view& path, const std::string_view& new_extension)
+std::string Path::ReplaceExtension(const std::string_view path, const std::string_view new_extension)
 {
 	const std::string_view::size_type pos = path.rfind('.');
 	if (pos == std::string_view::npos)
@@ -589,7 +589,7 @@ std::string Path::ReplaceExtension(const std::string_view& path, const std::stri
 	return ret;
 }
 
-static std::string_view::size_type GetLastSeperatorPosition(const std::string_view& filename, bool include_separator)
+static std::string_view::size_type GetLastSeperatorPosition(const std::string_view filename, bool include_separator)
 {
 	std::string_view::size_type last_separator = filename.rfind('/');
 	if (include_separator && last_separator != std::string_view::npos)
@@ -609,7 +609,7 @@ static std::string_view::size_type GetLastSeperatorPosition(const std::string_vi
 	return last_separator;
 }
 
-std::string_view Path::GetDirectory(const std::string_view& path)
+std::string_view Path::GetDirectory(const std::string_view path)
 {
 	const std::string::size_type pos = GetLastSeperatorPosition(path, false);
 	if (pos == std::string_view::npos)
@@ -618,7 +618,7 @@ std::string_view Path::GetDirectory(const std::string_view& path)
 	return path.substr(0, pos);
 }
 
-std::string_view Path::GetFileName(const std::string_view& path)
+std::string_view Path::GetFileName(const std::string_view path)
 {
 	const std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
 	if (pos == std::string_view::npos)
@@ -627,7 +627,7 @@ std::string_view Path::GetFileName(const std::string_view& path)
 	return path.substr(pos);
 }
 
-std::string_view Path::GetFileTitle(const std::string_view& path)
+std::string_view Path::GetFileTitle(const std::string_view path)
 {
 	const std::string_view filename(GetFileName(path));
 	const std::string::size_type pos = filename.rfind('.');
@@ -637,7 +637,7 @@ std::string_view Path::GetFileTitle(const std::string_view& path)
 	return filename.substr(0, pos);
 }
 
-std::string Path::ChangeFileName(const std::string_view& path, const std::string_view& new_filename)
+std::string Path::ChangeFileName(const std::string_view path, const std::string_view new_filename)
 {
 	std::string ret;
 	PathAppendString(ret, path);
@@ -664,12 +664,12 @@ std::string Path::ChangeFileName(const std::string_view& path, const std::string
 	return ret;
 }
 
-void Path::ChangeFileName(std::string* path, const std::string_view& new_filename)
+void Path::ChangeFileName(std::string* path, const std::string_view new_filename)
 {
 	*path = ChangeFileName(*path, new_filename);
 }
 
-std::string Path::AppendDirectory(const std::string_view& path, const std::string_view& new_dir)
+std::string Path::AppendDirectory(const std::string_view path, const std::string_view new_dir)
 {
 	std::string ret;
 	if (!new_dir.empty())
@@ -711,12 +711,12 @@ std::string Path::AppendDirectory(const std::string_view& path, const std::strin
 	return ret;
 }
 
-void Path::AppendDirectory(std::string* path, const std::string_view& new_dir)
+void Path::AppendDirectory(std::string* path, const std::string_view new_dir)
 {
 	*path = AppendDirectory(*path, new_dir);
 }
 
-std::vector<std::string_view> Path::SplitWindowsPath(const std::string_view& path)
+std::vector<std::string_view> Path::SplitWindowsPath(const std::string_view path)
 {
 	std::vector<std::string_view> parts;
 
@@ -754,7 +754,7 @@ std::string Path::JoinWindowsPath(const std::vector<std::string_view>& component
 	return StringUtil::JoinString(components.begin(), components.end(), '\\');
 }
 
-std::vector<std::string_view> Path::SplitNativePath(const std::string_view& path)
+std::vector<std::string_view> Path::SplitNativePath(const std::string_view path)
 {
 #ifdef _WIN32
 	return SplitWindowsPath(path);
@@ -821,7 +821,7 @@ std::vector<std::string> FileSystem::GetRootDirectoryList()
 	return results;
 }
 
-std::string Path::BuildRelativePath(const std::string_view& filename, const std::string_view& new_filename)
+std::string Path::BuildRelativePath(const std::string_view filename, const std::string_view new_filename)
 {
 	std::string new_string;
 
@@ -832,7 +832,7 @@ std::string Path::BuildRelativePath(const std::string_view& filename, const std:
 	return new_string;
 }
 
-std::string Path::Combine(const std::string_view& base, const std::string_view& next)
+std::string Path::Combine(const std::string_view base, const std::string_view next)
 {
 	std::string ret;
 	ret.reserve(base.length() + next.length() + 1);
@@ -1171,7 +1171,7 @@ bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t 
 	return true;
 }
 
-bool FileSystem::WriteStringToFile(const char* filename, const std::string_view& sv)
+bool FileSystem::WriteStringToFile(const char* filename, const std::string_view sv)
 {
 	ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
 	if (!fp)

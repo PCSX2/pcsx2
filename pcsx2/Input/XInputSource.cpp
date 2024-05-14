@@ -250,7 +250,7 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
 	return ret;
 }
 
-std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view device, const std::string_view binding)
 {
 	if (!device.starts_with("XInput-") || binding.empty())
 		return std::nullopt;
@@ -383,7 +383,7 @@ std::vector<InputBindingKey> XInputSource::EnumerateMotors()
 	return ret;
 }
 
-bool XInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
+bool XInputSource::GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (!device.starts_with("XInput-"))
 		return false;
@@ -402,22 +402,22 @@ bool XInputSource::GetGenericBindingMapping(const std::string_view& device, Inpu
 		const GenericInputBinding negative = s_xinput_generic_binding_axis_mapping[i][0];
 		const GenericInputBinding positive = s_xinput_generic_binding_axis_mapping[i][1];
 		if (negative != GenericInputBinding::Unknown)
-			mapping->emplace_back(negative, StringUtil::StdStringFromFormat("XInput-%d/-%s", pid, s_axis_names[i]));
+			mapping->emplace_back(negative, fmt::format("XInput-{}/-{}", pid, s_axis_names[i]));
 
 		if (positive != GenericInputBinding::Unknown)
-			mapping->emplace_back(positive, StringUtil::StdStringFromFormat("XInput-%d/+%s", pid, s_axis_names[i]));
+			mapping->emplace_back(positive, fmt::format("XInput-{}/+{}", pid, s_axis_names[i]));
 	}
 	for (u32 i = 0; i < std::size(s_xinput_generic_binding_button_mapping); i++)
 	{
 		const GenericInputBinding binding = s_xinput_generic_binding_button_mapping[i];
 		if (binding != GenericInputBinding::Unknown)
-			mapping->emplace_back(binding, StringUtil::StdStringFromFormat("XInput-%d/%s", pid, s_button_names[i]));
+			mapping->emplace_back(binding, fmt::format("XInput-{}/{}", pid, s_button_names[i]));
 	}
 
 	if (m_controllers[pid].has_small_motor)
-		mapping->emplace_back(GenericInputBinding::SmallMotor, StringUtil::StdStringFromFormat("XInput-%d/SmallMotor", pid));
+		mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("XInput-{}/SmallMotor", pid));
 	if (m_controllers[pid].has_large_motor)
-		mapping->emplace_back(GenericInputBinding::LargeMotor, StringUtil::StdStringFromFormat("XInput-%d/LargeMotor", pid));
+		mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("XInput-{}/LargeMotor", pid));
 
 	return true;
 }

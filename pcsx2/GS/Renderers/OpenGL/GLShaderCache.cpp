@@ -224,7 +224,7 @@ bool GLShaderCache::Recreate()
 }
 
 GLShaderCache::CacheIndexKey GLShaderCache::GetCacheKey(
-	const std::string_view& vertex_shader, const std::string_view& fragment_shader)
+	const std::string_view vertex_shader, const std::string_view fragment_shader)
 {
 	union ShaderHash
 	{
@@ -363,8 +363,8 @@ bool GLShaderCache::WriteToBlobFile(const CacheIndexKey& key, const std::vector<
 	return true;
 }
 
-std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view& vertex_shader,
-	const std::string_view& fragment_shader, const PreLinkCallback& callback, bool set_retrievable)
+std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view vertex_shader,
+	const std::string_view fragment_shader, const PreLinkCallback& callback, bool set_retrievable)
 {
 	GLProgram prog;
 	if (!prog.Compile(vertex_shader, fragment_shader))
@@ -383,7 +383,7 @@ std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view& v
 }
 
 std::optional<GLProgram> GLShaderCache::CompileComputeProgram(
-	const std::string_view& glsl, const PreLinkCallback& callback, bool set_retrievable)
+	const std::string_view glsl, const PreLinkCallback& callback, bool set_retrievable)
 {
 	GLProgram prog;
 	if (!prog.CompileCompute(glsl))
@@ -402,7 +402,7 @@ std::optional<GLProgram> GLShaderCache::CompileComputeProgram(
 }
 
 std::optional<GLProgram> GLShaderCache::CompileAndAddProgram(const CacheIndexKey& key,
-	const std::string_view& vertex_shader, const std::string_view& fragment_shader, const PreLinkCallback& callback)
+	const std::string_view vertex_shader, const std::string_view fragment_shader, const PreLinkCallback& callback)
 {
 #ifdef PCSX2_DEVBUILD
 	Common::Timer timer;
@@ -501,7 +501,7 @@ bool GLShaderCache::GetComputeProgram(
 }
 
 std::optional<GLProgram> GLShaderCache::CompileAndAddComputeProgram(
-	const CacheIndexKey& key, const std::string_view& glsl, const PreLinkCallback& callback)
+	const CacheIndexKey& key, const std::string_view glsl, const PreLinkCallback& callback)
 {
 #ifdef PCSX2_DEVBUILD
 	Common::Timer timer;

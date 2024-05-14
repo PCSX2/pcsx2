@@ -67,7 +67,7 @@ private:
 
 	using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-	static CacheIndexKey GetCacheKey(const std::string_view& vertex_shader, const std::string_view& fragment_shader);
+	static CacheIndexKey GetCacheKey(const std::string_view vertex_shader, const std::string_view fragment_shader);
 
 	std::string GetIndexFileName() const;
 	std::string GetBlobFileName() const;
@@ -78,15 +78,15 @@ private:
 
 	bool WriteToBlobFile(const CacheIndexKey& key, const std::vector<u8>& prog_data, u32 prog_format);
 
-	std::optional<GLProgram> CompileProgram(const std::string_view& vertex_shader,
-		const std::string_view& fragment_shader, const PreLinkCallback& callback, bool set_retrievable);
-	std::optional<GLProgram> CompileAndAddProgram(const CacheIndexKey& key, const std::string_view& vertex_shader,
-		const std::string_view& fragment_shader, const PreLinkCallback& callback);
+	std::optional<GLProgram> CompileProgram(const std::string_view vertex_shader,
+		const std::string_view fragment_shader, const PreLinkCallback& callback, bool set_retrievable);
+	std::optional<GLProgram> CompileAndAddProgram(const CacheIndexKey& key, const std::string_view vertex_shader,
+		const std::string_view fragment_shader, const PreLinkCallback& callback);
 
 	std::optional<GLProgram> CompileComputeProgram(
-		const std::string_view& glsl, const PreLinkCallback& callback, bool set_retrievable);
+		const std::string_view glsl, const PreLinkCallback& callback, bool set_retrievable);
 	std::optional<GLProgram> CompileAndAddComputeProgram(
-		const CacheIndexKey& key, const std::string_view& glsl, const PreLinkCallback& callback);
+		const CacheIndexKey& key, const std::string_view glsl, const PreLinkCallback& callback);
 
 	std::FILE* m_index_file = nullptr;
 	std::FILE* m_blob_file = nullptr;

@@ -27,13 +27,13 @@
 namespace GameDatabaseSchema
 {
 	static const char* getHWFixName(GSHWFixId id);
-	static std::optional<GSHWFixId> parseHWFixName(const std::string_view& name);
+	static std::optional<GSHWFixId> parseHWFixName(const std::string_view name);
 	static bool isUserHackHWFix(GSHWFixId id);
 } // namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
-	static void parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node);
+	static void parseAndInsert(const std::string_view serial, const c4::yml::NodeRef& node);
 	static void initDatabase();
 } // namespace GameDatabase
 
@@ -84,7 +84,7 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void GameDatabase::parseAndInsert(const std::string_view& serial, const c4::yml::NodeRef& node)
+void GameDatabase::parseAndInsert(const std::string_view serial, const c4::yml::NodeRef& node)
 {
 	GameDatabaseSchema::GameEntry gameEntry;
 	if (node.has_child("name"))
@@ -404,7 +404,7 @@ const char* GameDatabaseSchema::getHWFixName(GSHWFixId id)
 	return s_gs_hw_fix_names[static_cast<u32>(id)];
 }
 
-static std::optional<GameDatabaseSchema::GSHWFixId> GameDatabaseSchema::parseHWFixName(const std::string_view& name)
+static std::optional<GameDatabaseSchema::GSHWFixId> GameDatabaseSchema::parseHWFixName(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(s_gs_hw_fix_names); i++)
 	{
@@ -993,7 +993,7 @@ void GameDatabase::ensureLoaded()
 	});
 }
 
-const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_view& serial)
+const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_view serial)
 {
 	GameDatabase::ensureLoaded();
 
@@ -1001,7 +1001,7 @@ const GameDatabaseSchema::GameEntry* GameDatabase::findGame(const std::string_vi
 	return (iter != s_game_db.end()) ? &iter->second : nullptr;
 }
 
-bool GameDatabase::TrackHash::parseHash(const std::string_view& str)
+bool GameDatabase::TrackHash::parseHash(const std::string_view str)
 {
 	constexpr u32 expected_length = SIZE * 2;
 	if (str.length() != expected_length)

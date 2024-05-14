@@ -61,8 +61,8 @@ public:
 	virtual bool Freeze(USBDevice* dev, StateWrapper& sw) const;
 	virtual void UpdateSettings(USBDevice* dev, SettingsInterface& si) const;
 
-	virtual void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const;
-	virtual void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const;
+	virtual void InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const;
+	virtual void InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const;
 };
 
 class RegisterDevice
@@ -90,7 +90,7 @@ public:
 		registerDeviceMap[key] = std::unique_ptr<DeviceProxy>(creator);
 	}
 
-	DeviceProxy* Device(const std::string_view& name)
+	DeviceProxy* Device(const std::string_view name)
 	{
 		auto proxy = std::find_if(registerDeviceMap.begin(),
 								  registerDeviceMap.end(),
@@ -108,7 +108,7 @@ public:
 		return (it != registerDeviceMap.end()) ? it->second.get() : nullptr;
 	}
 
-	DeviceType Index(const std::string_view& name)
+	DeviceType Index(const std::string_view name)
 	{
 		auto proxy = std::find_if(registerDeviceMap.begin(),
 								  registerDeviceMap.end(),

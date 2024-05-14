@@ -56,9 +56,9 @@ namespace QtHost
 		const char16_t* used_glyphs;
 	};
 
-	static void UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::string_view& language);
+	static void UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::string_view language);
 	static bool DownloadMissingFont(QWidget* dialog_parent, const char* font_name, const std::string& path);
-	static const GlyphInfo* GetGlyphInfo(const std::string_view& language);
+	static const GlyphInfo* GetGlyphInfo(const std::string_view language);
 
 	static constexpr const char* DEFAULT_IMGUI_FONT_NAME = "Roboto-Regular.ttf";
 
@@ -197,7 +197,7 @@ const char* QtHost::GetDefaultLanguage()
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(
-	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+	const std::string_view context, const std::string_view msg, char* tbuf, size_t tbuf_space)
 {
 	// This is really awful. Thankfully we're caching the results...
 	const std::string temp_context(context);
@@ -269,7 +269,7 @@ static constexpr const ImWchar s_central_european_ranges[] = {
 	0x0100, 0x017F, // Central European diacritics
 };
 
-void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::string_view& language)
+void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, const std::string_view language)
 {
 	const GlyphInfo* gi = GetGlyphInfo(language);
 
@@ -418,7 +418,7 @@ static constexpr const QtHost::GlyphInfo s_glyph_info[] = {
 };
 // clang-format on
 
-const QtHost::GlyphInfo* QtHost::GetGlyphInfo(const std::string_view& language)
+const QtHost::GlyphInfo* QtHost::GetGlyphInfo(const std::string_view language)
 {
 	for (const GlyphInfo& it : s_glyph_info)
 	{

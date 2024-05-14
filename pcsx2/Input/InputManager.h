@@ -172,16 +172,16 @@ namespace InputManager
 	bool GetInputSourceDefaultEnabled(InputSourceType type);
 
 	/// Parses an input class string.
-	std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);
+	std::optional<InputSourceType> ParseInputSourceString(const std::string_view str);
 
 	/// Parses a pointer device string, i.e. tells you which pointer is specified.
-	std::optional<u32> GetIndexFromPointerBinding(const std::string_view& str);
+	std::optional<u32> GetIndexFromPointerBinding(const std::string_view str);
 
 	/// Returns the device name for a pointer index (e.g. Pointer-0).
 	std::string GetPointerDeviceName(u32 pointer_index);
 
 	/// Converts a key code from a human-readable string to an identifier.
-	std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str);
+	std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view str);
 
 	/// Converts a key code from an identifier to a human-readable string.
 	std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
@@ -200,7 +200,7 @@ namespace InputManager
 	InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 
 	/// Parses an input binding key string.
-	std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
+	std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view binding);
 
 	/// Converts a input key to a string.
 	std::string ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
@@ -222,7 +222,7 @@ namespace InputManager
 
 	/// Retrieves bindings that match the generic bindings for the specified device.
 	using GenericInputBindingMapping = std::vector<std::pair<GenericInputBinding, std::string>>;
-	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
+	GenericInputBindingMapping GetGenericBindingMapping(const std::string_view device);
 
 	/// Returns whether a given input source is enabled.
 	bool IsInputSourceEnabled(SettingsInterface& si, InputSourceType type);

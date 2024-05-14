@@ -23,7 +23,7 @@
 namespace Host
 {
 	static std::pair<const char*, u32> LookupTranslationString(
-		const std::string_view& context, const std::string_view& msg);
+		const std::string_view context, const std::string_view msg);
 
 	static std::mutex s_settings_mutex;
 	static LayeredSettingsInterface s_layered_settings_interface;
@@ -37,7 +37,7 @@ namespace Host
 	static u32 s_translation_string_cache_pos;
 } // namespace Host
 
-std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view& context, const std::string_view& msg)
+std::pair<const char*, u32> Host::LookupTranslationString(const std::string_view context, const std::string_view msg)
 {
 	// TODO: TranslatableString, compile-time hashing.
 
@@ -114,18 +114,18 @@ add_string:
 	return ret;
 }
 
-const char* Host::TranslateToCString(const std::string_view& context, const std::string_view& msg)
+const char* Host::TranslateToCString(const std::string_view context, const std::string_view msg)
 {
 	return LookupTranslationString(context, msg).first;
 }
 
-std::string_view Host::TranslateToStringView(const std::string_view& context, const std::string_view& msg)
+std::string_view Host::TranslateToStringView(const std::string_view context, const std::string_view msg)
 {
 	const auto mp = LookupTranslationString(context, msg);
 	return std::string_view(mp.first, mp.second);
 }
 
-std::string Host::TranslateToString(const std::string_view& context, const std::string_view& msg)
+std::string Host::TranslateToString(const std::string_view context, const std::string_view msg)
 {
 	return std::string(TranslateToStringView(context, msg));
 }
@@ -138,7 +138,7 @@ void Host::ClearTranslationCache()
 	s_translation_string_mutex.unlock();
 }
 
-void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...)
+void Host::ReportFormattedErrorAsync(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);
@@ -147,7 +147,7 @@ void Host::ReportFormattedErrorAsync(const std::string_view& title, const char* 
 	ReportErrorAsync(title, message);
 }
 
-bool Host::ConfirmFormattedMessage(const std::string_view& title, const char* format, ...)
+bool Host::ConfirmFormattedMessage(const std::string_view title, const char* format, ...)
 {
 	std::va_list ap;
 	va_start(ap, format);

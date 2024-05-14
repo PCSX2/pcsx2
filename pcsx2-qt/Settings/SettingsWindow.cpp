@@ -644,7 +644,7 @@ void SettingsWindow::saveAndReloadGameSettings()
 	g_emu_thread->reloadGameSettings();
 }
 
-void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view& title, std::string serial, u32 disc_crc)
+void SettingsWindow::openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc)
 {
 	std::string filename = VMManager::GetGameSettingsPath(serial, disc_crc);
 

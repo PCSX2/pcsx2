@@ -89,15 +89,15 @@ struct PadVibrationBinding
 // ------------------------------------------------------------------------
 namespace InputManager
 {
-	static std::optional<InputBindingKey> ParseHostKeyboardKey(const std::string_view& source, const std::string_view& sub_binding);
-	static std::optional<InputBindingKey> ParsePointerKey(const std::string_view& source, const std::string_view& sub_binding);
+	static std::optional<InputBindingKey> ParseHostKeyboardKey(const std::string_view source, const std::string_view sub_binding);
+	static std::optional<InputBindingKey> ParsePointerKey(const std::string_view source, const std::string_view sub_binding);
 
-	static std::vector<std::string_view> SplitChord(const std::string_view& binding);
-	static bool SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding);
+	static std::vector<std::string_view> SplitChord(const std::string_view binding);
+	static bool SplitBinding(const std::string_view binding, std::string_view* source, std::string_view* sub_binding);
 	static void PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed);
-	static void AddBinding(const std::string_view& binding, const InputEventHandler& handler);
+	static void AddBinding(const std::string_view binding, const InputEventHandler& handler);
 	static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
-	static bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
+	static bool ParseBindingAndGetSource(const std::string_view binding, InputBindingKey* key, InputSource** source);
 
 	static bool IsAxisHandler(const InputEventHandler& handler);
 	static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
@@ -170,7 +170,7 @@ static std::vector<std::pair<u32, PointerMoveCallback>> s_pointer_move_callbacks
 // Binding Parsing
 // ------------------------------------------------------------------------
 
-std::vector<std::string_view> InputManager::SplitChord(const std::string_view& binding)
+std::vector<std::string_view> InputManager::SplitChord(const std::string_view binding)
 {
 	std::vector<std::string_view> parts;
 
@@ -200,7 +200,7 @@ std::vector<std::string_view> InputManager::SplitChord(const std::string_view& b
 	return parts;
 }
 
-bool InputManager::SplitBinding(const std::string_view& binding, std::string_view* source, std::string_view* sub_binding)
+bool InputManager::SplitBinding(const std::string_view binding, std::string_view* source, std::string_view* sub_binding)
 {
 	const std::string_view::size_type slash_pos = binding.find('/');
 	if (slash_pos == std::string_view::npos)
@@ -214,7 +214,7 @@ bool InputManager::SplitBinding(const std::string_view& binding, std::string_vie
 	return true;
 }
 
-std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::string_view& binding)
+std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::string_view binding)
 {
 	std::string_view source, sub_binding;
 	if (!SplitBinding(binding, &source, &sub_binding))
@@ -245,7 +245,7 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::str
 	return std::nullopt;
 }
 
-bool InputManager::ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source)
+bool InputManager::ParseBindingAndGetSource(const std::string_view binding, InputBindingKey* key, InputSource** source)
 {
 	std::string_view source_string, sub_binding;
 	if (!SplitBinding(binding, &source_string, &sub_binding))
@@ -460,7 +460,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 }
 
 
-void InputManager::AddBinding(const std::string_view& binding, const InputEventHandler& handler)
+void InputManager::AddBinding(const std::string_view binding, const InputEventHandler& handler)
 {
 	std::shared_ptr<InputBinding> ibinding;
 	const std::vector<std::string_view> chord_bindings(SplitChord(binding));
@@ -585,7 +585,7 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
 	}
 }
 
-std::optional<InputSourceType> InputManager::ParseInputSourceString(const std::string_view& str)
+std::optional<InputSourceType> InputManager::ParseInputSourceString(const std::string_view str)
 {
 	for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
 	{
@@ -596,7 +596,7 @@ std::optional<InputSourceType> InputManager::ParseInputSourceString(const std::s
 	return std::nullopt;
 }
 
-std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(const std::string_view& source, const std::string_view& sub_binding)
+std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(const std::string_view source, const std::string_view sub_binding)
 {
 	if (source != "Keyboard")
 		return std::nullopt;
@@ -611,7 +611,7 @@ std::optional<InputBindingKey> InputManager::ParseHostKeyboardKey(const std::str
 	return key;
 }
 
-std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_view& source, const std::string_view& sub_binding)
+std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_view source, const std::string_view sub_binding)
 {
 	const std::optional<s32> pointer_index = StringUtil::FromChars<s32>(source.substr(8));
 	if (!pointer_index.has_value() || pointer_index.value() < 0)
@@ -664,7 +664,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 	return std::nullopt;
 }
 
-std::optional<u32> InputManager::GetIndexFromPointerBinding(const std::string_view& source)
+std::optional<u32> InputManager::GetIndexFromPointerBinding(const std::string_view source)
 {
 	if (!source.starts_with("Pointer-"))
 		return std::nullopt;
@@ -1548,7 +1548,7 @@ static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputB
 	mapping->emplace_back(GenericInputBinding::R3, "Keyboard/4");
 }
 
-static bool GetInternalGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
+static bool GetInternalGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (device == "Keyboard")
 	{
@@ -1559,7 +1559,7 @@ static bool GetInternalGenericBindingMapping(const std::string_view& device, Inp
 	return false;
 }
 
-InputManager::GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::string_view& device)
+InputManager::GenericInputBindingMapping InputManager::GetGenericBindingMapping(const std::string_view device)
 {
 	GenericInputBindingMapping mapping;
 

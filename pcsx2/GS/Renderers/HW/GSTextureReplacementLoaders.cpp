@@ -28,7 +28,7 @@ static constexpr LoaderDefinition s_loaders[] = {
 };
 
 
-GSTextureReplacements::ReplacementTextureLoader GSTextureReplacements::GetLoader(const std::string_view& filename)
+GSTextureReplacements::ReplacementTextureLoader GSTextureReplacements::GetLoader(const std::string_view filename)
 {
 	const std::string_view extension(Path::GetExtension(filename));
 	if (extension.empty())

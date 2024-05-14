@@ -428,7 +428,7 @@ MemoryCardFileEntry* FolderMemoryCard::AppendFileEntryToDir(const MemoryCardFile
 	return newFileEntry;
 }
 
-static bool FilterMatches(const std::string_view& fileName, const std::string_view& filter)
+static bool FilterMatches(const std::string_view fileName, const std::string_view filter)
 {
 	std::string_view::size_type start = 0;
 	std::string_view::size_type len = filter.length();
@@ -452,7 +452,7 @@ static bool FilterMatches(const std::string_view& fileName, const std::string_vi
 	return false;
 }
 
-bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent /* = nullptr */, const bool enableFiltering /* = false */, const std::string_view& filter /* = "" */)
+bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, MemoryCardFileMetadataReference* parent /* = nullptr */, const bool enableFiltering /* = false */, const std::string_view filter /* = "" */)
 {
 	if (FileSystem::DirectoryExists(dirPath.c_str()))
 	{
@@ -1895,7 +1895,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 	return result;
 }
 
-void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::string_view& entry) const
+void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::string_view entry) const
 {
 	const std::string indexName(Path::Combine(filePath, "_pcsx2_index"));
 
@@ -1988,7 +1988,7 @@ FileAccessHelper::~FileAccessHelper()
 	this->CloseAll();
 }
 
-std::FILE* FileAccessHelper::Open(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
+std::FILE* FileAccessHelper::Open(const std::string_view folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
 {
 	std::string filename(folderName);
 	fileRef->GetPath(&filename);
@@ -2020,7 +2020,7 @@ std::FILE* FileAccessHelper::Open(const std::string_view& folderName, MemoryCard
 	return file;
 }
 
-void FileAccessHelper::WriteMetadata(const std::string_view& folderName, const MemoryCardFileMetadataReference* fileRef)
+void FileAccessHelper::WriteMetadata(const std::string_view folderName, const MemoryCardFileMetadataReference* fileRef)
 {
 	std::string fileName(folderName);
 	const bool cleanedFilename = fileRef->GetPath(&fileName);
@@ -2112,7 +2112,7 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 	}
 }
 
-std::FILE* FileAccessHelper::ReOpen(const std::string_view& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
+std::FILE* FileAccessHelper::ReOpen(const std::string_view folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata /* = false */)
 {
 	std::string internalPath;
 	fileRef->GetInternalPath(&internalPath);
@@ -2158,7 +2158,7 @@ void FileAccessHelper::CloseFileHandle(std::FILE*& file, const MemoryCardFileEnt
 	}
 }
 
-void FileAccessHelper::CloseMatching(const std::string_view& path)
+void FileAccessHelper::CloseMatching(const std::string_view path)
 {
 	for (auto it = m_files.begin(); it != m_files.end();)
 	{

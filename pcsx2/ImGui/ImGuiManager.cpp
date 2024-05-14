@@ -631,7 +631,7 @@ void Host::AddKeyedOSDMessage(std::string key, std::string message, float durati
 	s_osd_posted_messages.push_back(std::move(msg));
 }
 
-void Host::AddIconOSDMessage(std::string key, const char* icon, const std::string_view& message, float duration /* = 2.0f */)
+void Host::AddIconOSDMessage(std::string key, const char* icon, const std::string_view message, float duration /* = 2.0f */)
 {
 	if (!key.empty())
 		Console.WriteLn(Color_StrongGreen, fmt::format("OSD [{}]: {}", key, message));

@@ -69,7 +69,7 @@ namespace QtHost
 {
 	static void InitializeEarlyConsole();
 	static void PrintCommandLineVersion();
-	static void PrintCommandLineHelp(const std::string_view& progname);
+	static void PrintCommandLineHelp(const std::string_view progname);
 	static std::shared_ptr<VMBootParameters>& AutoBoot(std::shared_ptr<VMBootParameters>& autoboot);
 	static bool ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VMBootParameters>& autoboot);
 	static bool InitializeConfig();
@@ -1085,17 +1085,17 @@ void Host::OnPerformanceMetricsUpdated()
 	g_emu_thread->updatePerformanceMetrics(false);
 }
 
-void Host::OnSaveStateLoading(const std::string_view& filename)
+void Host::OnSaveStateLoading(const std::string_view filename)
 {
 	emit g_emu_thread->onSaveStateLoading(QtUtils::StringViewToQString(filename));
 }
 
-void Host::OnSaveStateLoaded(const std::string_view& filename, bool was_successful)
+void Host::OnSaveStateLoaded(const std::string_view filename, bool was_successful)
 {
 	emit g_emu_thread->onSaveStateLoaded(QtUtils::StringViewToQString(filename), was_successful);
 }
 
-void Host::OnSaveStateSaved(const std::string_view& filename)
+void Host::OnSaveStateSaved(const std::string_view filename)
 {
 	emit g_emu_thread->onSaveStateSaved(QtUtils::StringViewToQString(filename));
 }
@@ -1618,36 +1618,31 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
 	return true;
 }
 
-void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)
 {
 	if (!title.empty() && !message.empty())
-	{
-		Console.Error(
-			"ReportErrorAsync: %.*s: %.*s", static_cast<int>(title.size()), title.data(), static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ReportErrorAsync: {}: {}", title, message);
 	else if (!message.empty())
-	{
-		Console.Error("ReportErrorAsync: %.*s", static_cast<int>(message.size()), message.data());
-	}
+		ERROR_LOG("ReportErrorAsync: {}", message);
 
 	QMetaObject::invokeMethod(g_main_window, "reportError", Qt::QueuedConnection,
 		Q_ARG(const QString&, title.empty() ? QString() : QString::fromUtf8(title.data(), title.size())),
 		Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
 }
 
-bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
 {
 	const QString qtitle(QString::fromUtf8(title.data(), title.size()));
 	const QString qmessage(QString::fromUtf8(message.data(), message.size()));
 	return g_emu_thread->confirmMessage(qtitle, qmessage);
 }
 
-void Host::OpenURL(const std::string_view& url)
+void Host::OpenURL(const std::string_view url)
 {
 	QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
 }
 
-bool Host::CopyTextToClipboard(const std::string_view& text)
+bool Host::CopyTextToClipboard(const std::string_view text)
 {
 	QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
 		QClipboard* clipboard = QGuiApplication::clipboard();
@@ -1801,7 +1796,7 @@ void QtHost::PrintCommandLineVersion()
 	std::fprintf(stderr, "\n");
 }
 
-void QtHost::PrintCommandLineHelp(const std::string_view& progname)
+void QtHost::PrintCommandLineHelp(const std::string_view progname)
 {
 	PrintCommandLineVersion();
 	fmt::print(stderr, "Usage: {} [parameters] [--] [boot filename]\n", progname);

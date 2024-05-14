@@ -229,8 +229,8 @@ namespace FullscreenUI
 	static void DrawStartGameWindow();
 	static void DrawExitWindow();
 	static void DrawPauseMenu(MainWindowType type);
-	static void ExitFullscreenAndOpenURL(const std::string_view& url);
-	static void CopyTextToClipboard(std::string title, const std::string_view& text);
+	static void ExitFullscreenAndOpenURL(const std::string_view url);
+	static void CopyTextToClipboard(std::string title, const std::string_view text);
 	static void DrawAboutWindow();
 	static void OpenAboutWindow();
 	static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
@@ -299,7 +299,7 @@ namespace FullscreenUI
 	static void SwitchToGameSettings();
 	static void SwitchToGameSettings(const std::string& path);
 	static void SwitchToGameSettings(const GameList::Entry* entry);
-	static void SwitchToGameSettings(const std::string_view& serial, u32 crc);
+	static void SwitchToGameSettings(const std::string_view serial, u32 crc);
 	static void DrawSettingsWindow();
 	static void DrawSummarySettingsPage();
 	static void DrawInterfaceSettingsPage();
@@ -389,9 +389,9 @@ namespace FullscreenUI
 	static void DrawClampingModeSetting(SettingsInterface* bsi, const char* title, const char* summary, int vunum);
 	static void PopulateGraphicsAdapterList();
 	static void PopulateGameListDirectoryCache(SettingsInterface* si);
-	static void PopulatePatchesAndCheatsList(const std::string_view& serial, u32 crc);
-	static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
-		const std::string_view& key, const std::string_view& display_name);
+	static void PopulatePatchesAndCheatsList(const std::string_view serial, u32 crc);
+	static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view section,
+		const std::string_view key, const std::string_view display_name);
 	static void DrawInputBindingWindow();
 	static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, const char* icon_name, bool show_type = true);
 	static void ClearInputBindingVariables();
@@ -1589,8 +1589,8 @@ void FullscreenUI::ClearInputBindingVariables()
 	s_input_binding_value_ranges = {};
 }
 
-void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
-	const std::string_view& key, const std::string_view& display_name)
+void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view section,
+	const std::string_view key, const std::string_view display_name)
 {
 	if (s_input_binding_type != InputBindingInfo::Type::Unknown)
 	{
@@ -2708,7 +2708,7 @@ void FullscreenUI::SwitchToSettings()
 	s_settings_page = SettingsPage::Interface;
 }
 
-void FullscreenUI::SwitchToGameSettings(const std::string_view& serial, u32 crc)
+void FullscreenUI::SwitchToGameSettings(const std::string_view serial, u32 crc)
 {
 	s_game_settings_entry.reset();
 	s_game_settings_interface = std::make_unique<INISettingsInterface>(VMManager::GetGameSettingsPath(serial, crc));
@@ -2761,7 +2761,7 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
 		s_game_list_directories_cache.emplace_back(std::move(dir), true);
 }
 
-void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view& serial, u32 crc)
+void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view serial, u32 crc)
 {
 	constexpr auto sort_patches = [](Patch::PatchInfoList& list) {
 		std::sort(list.begin(), list.end(), [](const Patch::PatchInfo& lhs, const Patch::PatchInfo& rhs) { return lhs.name < rhs.name; });
@@ -6519,7 +6519,7 @@ GSTexture* FullscreenUI::GetCoverForCurrentGame()
 // Overlays
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::ExitFullscreenAndOpenURL(const std::string_view& url)
+void FullscreenUI::ExitFullscreenAndOpenURL(const std::string_view url)
 {
 	Host::RunOnCPUThread([url = std::string(url)]() {
 		if (Host::IsFullscreen())
@@ -6529,7 +6529,7 @@ void FullscreenUI::ExitFullscreenAndOpenURL(const std::string_view& url)
 	});
 }
 
-void FullscreenUI::CopyTextToClipboard(std::string title, const std::string_view& text)
+void FullscreenUI::CopyTextToClipboard(std::string title, const std::string_view text)
 {
 	if (Host::CopyTextToClipboard(text))
 		ShowToast(std::string(), std::move(title));
