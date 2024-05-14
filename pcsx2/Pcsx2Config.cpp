@@ -813,158 +813,138 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntryEx(Crop[2], "CropRight");
 	SettingsWrapEntryEx(Crop[3], "CropBottom");
 
-#define GSSettingInt(var) SettingsWrapBitfield(var)
-#define GSSettingIntEx(var, name) SettingsWrapBitfieldEx(var, name)
-#define GSSettingBool(var) SettingsWrapBitBool(var)
-#define GSSettingBoolEx(var, name) SettingsWrapBitBoolEx(var, name)
-#define GSSettingFloat(var) SettingsWrapEntry(var)
-#define GSSettingFloatEx(var, name) SettingsWrapEntryEx(var, name)
-#define GSSettingIntEnumEx(var, name) SettingsWrapIntEnumEx(var, name)
-#define GSSettingString(var) SettingsWrapEntry(var)
-#define GSSettingStringEx(var, name) SettingsWrapEntryEx(var, name)
-
 	// Unfortunately, because code in the GS still reads the setting by key instead of
 	// using these variables, we need to use the old names. Maybe post 2.0 we can change this.
-	GSSettingBoolEx(PCRTCAntiBlur, "pcrtc_antiblur");
-	GSSettingBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
-	GSSettingBoolEx(PCRTCOffsets, "pcrtc_offsets");
-	GSSettingBoolEx(PCRTCOverscan, "pcrtc_overscan");
-	GSSettingBool(IntegerScaling);
-	GSSettingBool(UseDebugDevice);
-	GSSettingBool(UseBlitSwapChain);
-	GSSettingBool(DisableShaderCache);
-	GSSettingBool(DisableFramebufferFetch);
-	GSSettingBool(DisableVertexShaderExpand);
-	GSSettingBool(DisableThreadedPresentation);
-	GSSettingBool(SkipDuplicateFrames);
-	GSSettingBool(OsdShowMessages);
-	GSSettingBool(OsdShowSpeed);
-	GSSettingBool(OsdShowFPS);
-	GSSettingBool(OsdShowCPU);
-	GSSettingBool(OsdShowGPU);
-	GSSettingBool(OsdShowResolution);
-	GSSettingBool(OsdShowGSStats);
-	GSSettingBool(OsdShowIndicators);
-	GSSettingBool(OsdShowSettings);
-	GSSettingBool(OsdShowInputs);
-	GSSettingBool(OsdShowFrameTimes);
+	SettingsWrapBitBoolEx(PCRTCAntiBlur, "pcrtc_antiblur");
+	SettingsWrapBitBoolEx(DisableInterlaceOffset, "disable_interlace_offset");
+	SettingsWrapBitBoolEx(PCRTCOffsets, "pcrtc_offsets");
+	SettingsWrapBitBoolEx(PCRTCOverscan, "pcrtc_overscan");
+	SettingsWrapBitBool(IntegerScaling);
+	SettingsWrapBitBool(UseDebugDevice);
+	SettingsWrapBitBool(UseBlitSwapChain);
+	SettingsWrapBitBool(DisableShaderCache);
+	SettingsWrapBitBool(DisableFramebufferFetch);
+	SettingsWrapBitBool(DisableVertexShaderExpand);
+	SettingsWrapBitBool(DisableThreadedPresentation);
+	SettingsWrapBitBool(SkipDuplicateFrames);
+	SettingsWrapBitBool(OsdShowMessages);
+	SettingsWrapBitBool(OsdShowSpeed);
+	SettingsWrapBitBool(OsdShowFPS);
+	SettingsWrapBitBool(OsdShowCPU);
+	SettingsWrapBitBool(OsdShowGPU);
+	SettingsWrapBitBool(OsdShowResolution);
+	SettingsWrapBitBool(OsdShowGSStats);
+	SettingsWrapBitBool(OsdShowIndicators);
+	SettingsWrapBitBool(OsdShowSettings);
+	SettingsWrapBitBool(OsdShowInputs);
+	SettingsWrapBitBool(OsdShowFrameTimes);
 
-	GSSettingBool(HWSpinGPUForReadbacks);
-	GSSettingBool(HWSpinCPUForReadbacks);
-	GSSettingBoolEx(GPUPaletteConversion, "paltex");
-	GSSettingBoolEx(AutoFlushSW, "autoflush_sw");
-	GSSettingBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
-	GSSettingBoolEx(Mipmap, "mipmap");
-	GSSettingBoolEx(ManualUserHacks, "UserHacks");
-	GSSettingBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
-	GSSettingIntEnumEx(UserHacks_AutoFlush, "UserHacks_AutoFlushLevel");
-	GSSettingBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
-	GSSettingBoolEx(UserHacks_ReadTCOnClose, "UserHacks_ReadTCOnClose");
-	GSSettingBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
-	GSSettingBoolEx(UserHacks_DisablePartialInvalidation, "UserHacks_DisablePartialInvalidation");
-	GSSettingBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
-	GSSettingBoolEx(UserHacks_DisableRenderFixes, "UserHacks_DisableRenderFixes");
-	GSSettingBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
-	GSSettingBoolEx(UserHacks_WildHack, "UserHacks_WildHack");
-	GSSettingIntEnumEx(UserHacks_BilinearHack, "UserHacks_BilinearHack");
-	GSSettingBoolEx(UserHacks_NativePaletteDraw, "UserHacks_NativePaletteDraw");
-	GSSettingIntEnumEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
-	GSSettingBoolEx(UserHacks_EstimateTextureRegion, "UserHacks_EstimateTextureRegion");
-	GSSettingBoolEx(FXAA, "fxaa");
-	GSSettingBool(ShadeBoost);
-	GSSettingBoolEx(DumpGSData, "dump");
-	GSSettingBoolEx(SaveRT, "save");
-	GSSettingBoolEx(SaveFrame, "savef");
-	GSSettingBoolEx(SaveTexture, "savet");
-	GSSettingBoolEx(SaveDepth, "savez");
-	GSSettingBool(DumpReplaceableTextures);
-	GSSettingBool(DumpReplaceableMipmaps);
-	GSSettingBool(DumpTexturesWithFMVActive);
-	GSSettingBool(DumpDirectTextures);
-	GSSettingBool(DumpPaletteTextures);
-	GSSettingBool(LoadTextureReplacements);
-	GSSettingBool(LoadTextureReplacementsAsync);
-	GSSettingBool(PrecacheTextureReplacements);
-	GSSettingBool(EnableVideoCapture);
-	GSSettingBool(EnableVideoCaptureParameters);
-	GSSettingBool(VideoCaptureAutoResolution);
-	GSSettingBool(EnableAudioCapture);
-	GSSettingBool(EnableAudioCaptureParameters);
+	SettingsWrapBitBool(HWSpinGPUForReadbacks);
+	SettingsWrapBitBool(HWSpinCPUForReadbacks);
+	SettingsWrapBitBoolEx(GPUPaletteConversion, "paltex");
+	SettingsWrapBitBoolEx(AutoFlushSW, "autoflush_sw");
+	SettingsWrapBitBoolEx(PreloadFrameWithGSData, "preload_frame_with_gs_data");
+	SettingsWrapBitBoolEx(Mipmap, "mipmap");
+	SettingsWrapBitBoolEx(ManualUserHacks, "UserHacks");
+	SettingsWrapBitBoolEx(UserHacks_AlignSpriteX, "UserHacks_align_sprite_X");
+	SettingsWrapIntEnumEx(UserHacks_AutoFlush, "UserHacks_AutoFlushLevel");
+	SettingsWrapBitBoolEx(UserHacks_CPUFBConversion, "UserHacks_CPU_FB_Conversion");
+	SettingsWrapBitBoolEx(UserHacks_ReadTCOnClose, "UserHacks_ReadTCOnClose");
+	SettingsWrapBitBoolEx(UserHacks_DisableDepthSupport, "UserHacks_DisableDepthSupport");
+	SettingsWrapBitBoolEx(UserHacks_DisablePartialInvalidation, "UserHacks_DisablePartialInvalidation");
+	SettingsWrapBitBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
+	SettingsWrapBitBoolEx(UserHacks_DisableRenderFixes, "UserHacks_DisableRenderFixes");
+	SettingsWrapBitBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
+	SettingsWrapBitBoolEx(UserHacks_WildHack, "UserHacks_WildHack");
+	SettingsWrapIntEnumEx(UserHacks_BilinearHack, "UserHacks_BilinearHack");
+	SettingsWrapBitBoolEx(UserHacks_NativePaletteDraw, "UserHacks_NativePaletteDraw");
+	SettingsWrapIntEnumEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
+	SettingsWrapBitBoolEx(UserHacks_EstimateTextureRegion, "UserHacks_EstimateTextureRegion");
+	SettingsWrapBitBoolEx(FXAA, "fxaa");
+	SettingsWrapBitBool(ShadeBoost);
+	SettingsWrapBitBoolEx(DumpGSData, "dump");
+	SettingsWrapBitBoolEx(SaveRT, "save");
+	SettingsWrapBitBoolEx(SaveFrame, "savef");
+	SettingsWrapBitBoolEx(SaveTexture, "savet");
+	SettingsWrapBitBoolEx(SaveDepth, "savez");
+	SettingsWrapBitBool(DumpReplaceableTextures);
+	SettingsWrapBitBool(DumpReplaceableMipmaps);
+	SettingsWrapBitBool(DumpTexturesWithFMVActive);
+	SettingsWrapBitBool(DumpDirectTextures);
+	SettingsWrapBitBool(DumpPaletteTextures);
+	SettingsWrapBitBool(LoadTextureReplacements);
+	SettingsWrapBitBool(LoadTextureReplacementsAsync);
+	SettingsWrapBitBool(PrecacheTextureReplacements);
+	SettingsWrapBitBool(EnableVideoCapture);
+	SettingsWrapBitBool(EnableVideoCaptureParameters);
+	SettingsWrapBitBool(VideoCaptureAutoResolution);
+	SettingsWrapBitBool(EnableAudioCapture);
+	SettingsWrapBitBool(EnableAudioCaptureParameters);
 
-	GSSettingIntEnumEx(LinearPresent, "linear_present_mode");
-	GSSettingIntEnumEx(InterlaceMode, "deinterlace_mode");
+	SettingsWrapIntEnumEx(LinearPresent, "linear_present_mode");
+	SettingsWrapIntEnumEx(InterlaceMode, "deinterlace_mode");
 
-	GSSettingFloat(OsdScale);
+	SettingsWrapEntry(OsdScale);
 
-	GSSettingIntEnumEx(Renderer, "Renderer");
-	GSSettingFloatEx(UpscaleMultiplier, "upscale_multiplier");
+	SettingsWrapIntEnumEx(Renderer, "Renderer");
+	SettingsWrapEntryEx(UpscaleMultiplier, "upscale_multiplier");
 
 	// ~51x would the upper bound here for 32768x32768 textures, but you'll run out VRAM long before then.
 	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 0.5f, 50.0f);
 
-	GSSettingIntEnumEx(HWMipmap, "mipmap_hw");
-	GSSettingIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
-	GSSettingIntEnumEx(TextureFiltering, "filter");
-	GSSettingIntEnumEx(TexturePreloading, "texture_preloading");
-	GSSettingIntEnumEx(GSDumpCompression, "GSDumpCompression");
-	GSSettingIntEnumEx(HWDownloadMode, "HWDownloadMode");
-	GSSettingIntEnumEx(CASMode, "CASMode");
-	GSSettingIntEx(CAS_Sharpness, "CASSharpness");
-	GSSettingIntEx(Dithering, "dithering_ps2");
-	GSSettingIntEx(MaxAnisotropy, "MaxAnisotropy");
-	GSSettingIntEx(SWExtraThreads, "extrathreads");
-	GSSettingIntEx(SWExtraThreadsHeight, "extrathreads_height");
-	GSSettingIntEx(TVShader, "TVShader");
-	GSSettingIntEx(SkipDrawStart, "UserHacks_SkipDraw_Start");
-	GSSettingIntEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
+	SettingsWrapIntEnumEx(HWMipmap, "mipmap_hw");
+	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
+	SettingsWrapIntEnumEx(TextureFiltering, "filter");
+	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
+	SettingsWrapIntEnumEx(GSDumpCompression, "GSDumpCompression");
+	SettingsWrapIntEnumEx(HWDownloadMode, "HWDownloadMode");
+	SettingsWrapIntEnumEx(CASMode, "CASMode");
+	SettingsWrapBitfieldEx(CAS_Sharpness, "CASSharpness");
+	SettingsWrapBitfieldEx(Dithering, "dithering_ps2");
+	SettingsWrapBitfieldEx(MaxAnisotropy, "MaxAnisotropy");
+	SettingsWrapBitfieldEx(SWExtraThreads, "extrathreads");
+	SettingsWrapBitfieldEx(SWExtraThreadsHeight, "extrathreads_height");
+	SettingsWrapBitfieldEx(TVShader, "TVShader");
+	SettingsWrapBitfieldEx(SkipDrawStart, "UserHacks_SkipDraw_Start");
+	SettingsWrapBitfieldEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
-	GSSettingIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
-	GSSettingIntEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
-	GSSettingIntEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
-	GSSettingIntEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
-	GSSettingIntEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
-	GSSettingIntEx(UserHacks_CPUSpriteRenderLevel, "UserHacks_CPUSpriteRenderLevel");
-	GSSettingIntEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
-	GSSettingIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
-	GSSettingIntEnumEx(TriFilter, "TriFilter");
-	GSSettingIntEx(OverrideTextureBarriers, "OverrideTextureBarriers");
+	SettingsWrapIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
+	SettingsWrapBitfieldEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
+	SettingsWrapBitfieldEx(UserHacks_TCOffsetX, "UserHacks_TCOffsetX");
+	SettingsWrapBitfieldEx(UserHacks_TCOffsetY, "UserHacks_TCOffsetY");
+	SettingsWrapBitfieldEx(UserHacks_CPUSpriteRenderBW, "UserHacks_CPUSpriteRenderBW");
+	SettingsWrapBitfieldEx(UserHacks_CPUSpriteRenderLevel, "UserHacks_CPUSpriteRenderLevel");
+	SettingsWrapBitfieldEx(UserHacks_CPUCLUTRender, "UserHacks_CPUCLUTRender");
+	SettingsWrapIntEnumEx(UserHacks_GPUTargetCLUTMode, "UserHacks_GPUTargetCLUTMode");
+	SettingsWrapIntEnumEx(TriFilter, "TriFilter");
+	SettingsWrapBitfieldEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 
-	GSSettingInt(ShadeBoost_Brightness);
-	GSSettingInt(ShadeBoost_Contrast);
-	GSSettingInt(ShadeBoost_Saturation);
-	GSSettingInt(ExclusiveFullscreenControl);
-	GSSettingIntEx(PNGCompressionLevel, "png_compression_level");
-	GSSettingIntEx(SaveN, "saven");
-	GSSettingIntEx(SaveL, "savel");
+	SettingsWrapBitfield(ShadeBoost_Brightness);
+	SettingsWrapBitfield(ShadeBoost_Contrast);
+	SettingsWrapBitfield(ShadeBoost_Saturation);
+	SettingsWrapBitfield(ExclusiveFullscreenControl);
+	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
+	SettingsWrapBitfieldEx(SaveN, "saven");
+	SettingsWrapBitfieldEx(SaveL, "savel");
 
-	GSSettingStringEx(CaptureContainer, "CaptureContainer");
-	GSSettingStringEx(VideoCaptureCodec, "VideoCaptureCodec");
-	GSSettingStringEx(VideoCaptureParameters, "VideoCaptureParameters");
-	GSSettingStringEx(AudioCaptureCodec, "AudioCaptureCodec");
-	GSSettingStringEx(AudioCaptureParameters, "AudioCaptureParameters");
-	GSSettingIntEx(VideoCaptureBitrate, "VideoCaptureBitrate");
-	GSSettingIntEx(VideoCaptureWidth, "VideoCaptureWidth");
-	GSSettingIntEx(VideoCaptureHeight, "VideoCaptureHeight");
-	GSSettingIntEx(AudioCaptureBitrate, "AudioCaptureBitrate");
+	SettingsWrapEntryEx(CaptureContainer, "CaptureContainer");
+	SettingsWrapEntryEx(VideoCaptureCodec, "VideoCaptureCodec");
+	SettingsWrapEntryEx(VideoCaptureParameters, "VideoCaptureParameters");
+	SettingsWrapEntryEx(AudioCaptureCodec, "AudioCaptureCodec");
+	SettingsWrapEntryEx(AudioCaptureParameters, "AudioCaptureParameters");
+	SettingsWrapBitfieldEx(VideoCaptureBitrate, "VideoCaptureBitrate");
+	SettingsWrapBitfieldEx(VideoCaptureWidth, "VideoCaptureWidth");
+	SettingsWrapBitfieldEx(VideoCaptureHeight, "VideoCaptureHeight");
+	SettingsWrapBitfieldEx(AudioCaptureBitrate, "AudioCaptureBitrate");
 
-	GSSettingString(Adapter);
-	GSSettingString(HWDumpDirectory);
+	SettingsWrapEntry(Adapter);
+	SettingsWrapEntry(HWDumpDirectory);
 	if (!HWDumpDirectory.empty() && !Path::IsAbsolute(HWDumpDirectory))
 		HWDumpDirectory = Path::Combine(EmuFolders::DataRoot, HWDumpDirectory);
-	GSSettingString(SWDumpDirectory);
+	SettingsWrapEntry(SWDumpDirectory);
 	if (!SWDumpDirectory.empty() && !Path::IsAbsolute(SWDumpDirectory))
 		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
-
-#undef GSSettingInt
-#undef GSSettingIntEx
-#undef GSSettingBool
-#undef GSSettingBoolEx
-#undef GSSettingFloat
-#undef GSSettingEnumEx
-#undef GSSettingIntEnumEx
-#undef GSSettingString
-#undef GSSettingStringEx
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))
