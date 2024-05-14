@@ -618,7 +618,7 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 	// Fast paths for known data sizes.
 	switch (num_bytes)
 	{
-		// clang-format off
+			// clang-format off
 		case 1: std::memcpy(buffer, ptr, 1); break;
 		case 2: std::memcpy(buffer, ptr, 2); break;
 		case 4: std::memcpy(buffer, ptr, 4); break;
@@ -2163,7 +2163,7 @@ void Achievements::DrawAchievementsWindow()
 	const float heading_height = ImGuiFullscreen::LayoutScale(heading_height_unscaled);
 
 	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "achievements_heading",
-			heading_background, 0.0f, 0.0f, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+			heading_background, 0.0f, ImVec2(), ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
 	{
 		ImRect bb;
 		bool visible, hovered;
@@ -2267,7 +2267,7 @@ void Achievements::DrawAchievementsWindow()
 	if (ImGuiFullscreen::BeginFullscreenWindow(
 			ImVec2(0.0f, heading_height),
 			ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-			"achievements", background, 0.0f, 0.0f, 0))
+			"achievements", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 	{
 		static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
 		static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
@@ -2339,7 +2339,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 									  LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + 30.0f) - points_template_size.x);
 	const ImVec2 summary_text_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, summary_wrap_width, cheevo->description,
 		cheevo->description + summary_length));
-	
+
 	// Messy, but need to undo LayoutScale in MenuButtonFrame()...
 	const float extra_summary_height = LayoutUnscale(std::max(summary_text_size.y - g_medium_font->FontSize, 0.0f));
 
@@ -2522,8 +2522,9 @@ void Achievements::DrawLeaderboardsWindow()
 		g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, "WWWWWWWWWWW").x;
 	const float column_spacing = spacing * 2.0f;
 
-	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "leaderboards_heading",
-			heading_background, 0.0f, 0.0f, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
+			heading_background, 0.0f, ImVec2(),
+			ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
 	{
 		bool visible, hovered;
 		ImGuiFullscreen::MenuButtonFrame(
@@ -2697,7 +2698,7 @@ void Achievements::DrawLeaderboardsWindow()
 		if (ImGuiFullscreen::BeginFullscreenWindow(
 				ImVec2(0.0f, heading_height),
 				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-				"leaderboards", background, 0.0f, 0.0f, 0))
+				"leaderboards", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 		{
 			ImGuiFullscreen::BeginMenuButtons();
 
@@ -2717,7 +2718,7 @@ void Achievements::DrawLeaderboardsWindow()
 		if (ImGuiFullscreen::BeginFullscreenWindow(
 				ImVec2(0.0f, heading_height),
 				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-				"leaderboard", background, 0.0f, 0.0f, 0))
+				"leaderboard", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
 		{
 			ImGuiFullscreen::BeginMenuButtons();
 
