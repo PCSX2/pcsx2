@@ -190,13 +190,6 @@ enum class SpeedHack
 	MaxCount,
 };
 
-enum class VsyncMode
-{
-	Off,
-	On,
-	Adaptive,
-};
-
 enum class AspectRatioType : u8
 {
 	Stretch,
@@ -596,6 +589,8 @@ struct Pcsx2Config
 			struct
 			{
 				bool
+					SynchronousMTGS : 1,
+					VsyncEnable : 1,
 					PCRTCAntiBlur : 1,
 					DisableInterlaceOffset : 1,
 					PCRTCOffsets : 1,
@@ -618,9 +613,7 @@ struct Pcsx2Config
 					OsdShowIndicators : 1,
 					OsdShowSettings : 1,
 					OsdShowInputs : 1,
-					OsdShowFrameTimes : 1;
-
-				bool
+					OsdShowFrameTimes : 1,
 					HWSpinGPUForReadbacks : 1,
 					HWSpinCPUForReadbacks : 1,
 					GPUPaletteConversion : 1,
@@ -663,12 +656,6 @@ struct Pcsx2Config
 		};
 
 		int VsyncQueueSize = 2;
-
-		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
-		// style. Useful for debugging potential bugs in the MTGS pipeline.
-		bool SynchronousMTGS = false;
-
-		VsyncMode VsyncEnable = VsyncMode::Off;
 
 		float FramerateNTSC = DEFAULT_FRAME_RATE_NTSC;
 		float FrameratePAL = DEFAULT_FRAME_RATE_PAL;

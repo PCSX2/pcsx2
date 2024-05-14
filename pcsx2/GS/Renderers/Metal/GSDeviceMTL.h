@@ -392,7 +392,7 @@ public:
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
-	void SetVSync(VsyncMode mode) override;
+	void SetVSyncEnabled(bool enabled) override;
 
 	bool GetHostRefreshRate(float* refresh_rate) override;
 

@@ -803,7 +803,6 @@ protected:
 	static constexpr u32 EXPAND_BUFFER_SIZE = sizeof(u16) * 16383 * 6;
 
 	WindowInfo m_window_info;
-	VsyncMode m_vsync_mode = VsyncMode::Off;
 
 	GSTexture* m_imgui_font = nullptr;
 
@@ -824,6 +823,7 @@ protected:
 		u32 start, count;
 	} m_index = {};
 	unsigned int m_frame = 0; // for ageing the pool
+	bool m_vsync_enabled = false;
 	bool m_rbswapped = false;
 	FeatureSupport m_features;
 
@@ -874,7 +874,7 @@ public:
 	__fi s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
 	__fi GSVector2i GetWindowSize() const { return GSVector2i(static_cast<s32>(m_window_info.surface_width), static_cast<s32>(m_window_info.surface_height)); }
 	__fi float GetWindowScale() const { return m_window_info.surface_scale; }
-	__fi VsyncMode GetVsyncMode() const { return m_vsync_mode; }
+	__fi bool IsVSyncEnabled() const { return m_vsync_enabled; }
 
 	__fi GSTexture* GetCurrent() const { return m_current; }
 
@@ -915,7 +915,7 @@ public:
 	virtual void EndPresent() = 0;
 
 	/// Changes vsync mode for this display.
-	virtual void SetVSync(VsyncMode mode) = 0;
+	virtual void SetVSyncEnabled(bool enabled) = 0;
 
 	/// Returns the effective refresh rate of this display.
 	virtual bool GetHostRefreshRate(float* refresh_rate);

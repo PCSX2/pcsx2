@@ -70,8 +70,8 @@ namespace MTGS
 	void ApplySettings();
 	void ResizeDisplayWindow(int width, int height, float scale);
 	void UpdateDisplayWindow();
-	void SetVSyncMode(VsyncMode mode);
-	void UpdateVSyncMode();
+	void SetVSyncEnabled(bool enabled);
+	void UpdateVSyncEnabled();
 	void SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool display_message = true);
 	void ToggleSoftwareRendering();
 	bool SaveMemorySnapshot(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,

@@ -146,21 +146,13 @@ bool GSDeviceOGL::HasSurface() const
 	return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-void GSDeviceOGL::SetVSync(VsyncMode mode)
+void GSDeviceOGL::SetVSyncEnabled(bool enabled)
 {
-	if (m_vsync_mode == mode || m_gl_context->GetWindowInfo().type == WindowInfo::Type::Surfaceless)
+	if (m_vsync_enabled == enabled)
 		return;
 
-	// Window framebuffer has to be bound to call SetSwapInterval.
-	GLint current_fbo = 0;
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	if (mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
-		m_gl_context->SetSwapInterval(static_cast<s32>(mode != VsyncMode::Off));
-
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
-	m_vsync_mode = mode;
+	m_vsync_enabled = enabled;
+	SetSwapInterval();
 }
 
 bool GSDeviceOGL::Create()
@@ -777,8 +769,19 @@ bool GSDeviceOGL::CheckFeatures(bool& buggy_pbo)
 
 void GSDeviceOGL::SetSwapInterval()
 {
-	const int interval = ((m_vsync_mode == VsyncMode::Adaptive) ? -1 : ((m_vsync_mode == VsyncMode::On) ? 1 : 0));
-	m_gl_context->SetSwapInterval(interval);
+	if (m_window_info.type == WindowInfo::Type::Surfaceless)
+		return;
+
+	// Window framebuffer has to be bound to call SetSwapInterval.
+	const s32 interval = m_vsync_enabled ? (m_gl_context->SupportsNegativeSwapInterval() ? -1 : 1) : 0;
+	GLint current_fbo = 0;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	if (!m_gl_context->SetSwapInterval(interval))
+		WARNING_LOG("Failed to set swap interval to {}", interval);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 void GSDeviceOGL::DestroyResources()
@@ -868,9 +871,7 @@ bool GSDeviceOGL::UpdateWindow()
 	if (m_window_info.type != WindowInfo::Type::Surfaceless)
 	{
 		// reset vsync rate, since it (usually) gets lost
-		if (m_vsync_mode != VsyncMode::Adaptive || !m_gl_context->SetSwapInterval(-1))
-			m_gl_context->SetSwapInterval(static_cast<s32>(m_vsync_mode != VsyncMode::Off));
-
+		SetSwapInterval();
 		RenderBlankFrame();
 	}
 

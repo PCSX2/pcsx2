@@ -877,7 +877,7 @@ bool GSDeviceMTL::Create()
 		{
 			AttachSurfaceOnMainThread();
 		});
-		[m_layer setDisplaySyncEnabled:m_vsync_mode != VsyncMode::Off];
+		[m_layer setDisplaySyncEnabled:m_vsync_enabled];
 	}
 	else
 	{
@@ -1305,7 +1305,7 @@ void GSDeviceMTL::EndPresent()
 	if (m_current_drawable)
 	{
 		const bool use_present_drawable = m_use_present_drawable == UsePresentDrawable::Always ||
-			(m_use_present_drawable == UsePresentDrawable::IfVsync && m_vsync_mode != VsyncMode::Off);
+			(m_use_present_drawable == UsePresentDrawable::IfVsync && m_vsync_enabled);
 
 		if (use_present_drawable)
 			[m_current_render_cmdbuf presentDrawable:m_current_drawable];
@@ -1367,13 +1367,13 @@ void GSDeviceMTL::EndPresent()
 	}
 }}
 
-void GSDeviceMTL::SetVSync(VsyncMode mode)
+void GSDeviceMTL::SetVSyncEnabled(bool enabled)
 {
-	if (m_vsync_mode == mode)
+	if (m_vsync_enabled == enabled)
 		return;
 
-	[m_layer setDisplaySyncEnabled:mode != VsyncMode::Off];
-	m_vsync_mode = mode;
+	[m_layer setDisplaySyncEnabled:enabled];
+	m_vsync_enabled = enabled;
 }
 
 bool GSDeviceMTL::GetHostRefreshRate(float* refresh_rate)

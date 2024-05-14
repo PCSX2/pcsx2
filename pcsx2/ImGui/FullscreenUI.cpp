@@ -3482,11 +3482,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"13", //GSRendererType::SW,
 		"11", //GSRendererType::Null
 	};
-	static constexpr const char* s_vsync_values[] = {
-		FSUI_NSTR("Off"),
-		FSUI_NSTR("On"),
-		FSUI_NSTR("Adaptive"),
-	};
 	static constexpr const char* s_bilinear_present_options[] = {
 		FSUI_NSTR("Off"),
 		FSUI_NSTR("Bilinear (Smooth)"),
@@ -3621,8 +3616,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	MenuHeading(FSUI_CSTR("Renderer"));
 	DrawStringListSetting(bsi, FSUI_CSTR("Renderer"), FSUI_CSTR("Selects the API used to render the emulated GS."), "EmuCore/GS",
 		"Renderer", "-1", s_renderer_names, s_renderer_values, std::size(s_renderer_names), true);
-	DrawIntListSetting(bsi, FSUI_CSTR("Sync To Host Refresh (VSync)"), FSUI_CSTR("Synchronizes frame presentation with host refresh."),
-		"EmuCore/GS", "VsyncEnable", static_cast<int>(VsyncMode::Off), s_vsync_values, std::size(s_vsync_values), true);
+	DrawToggleSetting(bsi, FSUI_CSTR("Sync To Host Refresh (VSync)"), FSUI_CSTR("Synchronizes frame presentation with host refresh."),
+		"EmuCore/GS", "VsyncEnable", false);
 
 	MenuHeading(FSUI_CSTR("Display"));
 	DrawStringListSetting(bsi, FSUI_CSTR("Aspect Ratio"), FSUI_CSTR("Selects the aspect ratio to display the game content at."),
@@ -7410,8 +7405,6 @@ TRANSLATE_NOOP("FullscreenUI", "Metal");
 TRANSLATE_NOOP("FullscreenUI", "Software");
 TRANSLATE_NOOP("FullscreenUI", "Null");
 TRANSLATE_NOOP("FullscreenUI", "Off");
-TRANSLATE_NOOP("FullscreenUI", "On");
-TRANSLATE_NOOP("FullscreenUI", "Adaptive");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (Smooth)");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (Sharp)");
 TRANSLATE_NOOP("FullscreenUI", "No Deinterlacing");
