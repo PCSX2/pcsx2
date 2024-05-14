@@ -3638,7 +3638,7 @@ wasapi_enumerate_devices(cubeb * context, cubeb_device_type type,
 {
   return wasapi_enumerate_devices_internal(
       context, type, out,
-      DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED);
+      DEVICE_STATE_ACTIVE /*| DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED*/);
 }
 
 static int
