@@ -34,6 +34,7 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
+	static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 	static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 	static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
@@ -131,9 +132,11 @@ namespace ImGuiFullscreen
 	void EndFullscreenColumnWindow();
 
 	bool BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
-		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, float padding = 0.0f, ImGuiWindowFlags flags = 0);
+		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, const ImVec2& padding = ImVec2(),
+		ImGuiWindowFlags flags = 0);
 	bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
-		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, float padding = 0.0f, ImGuiWindowFlags flags = 0);
+		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, const ImVec2& padding = ImVec2(),
+		ImGuiWindowFlags flags = 0);
 	void EndFullscreenWindow();
 
 	bool IsGamepadInputSource();

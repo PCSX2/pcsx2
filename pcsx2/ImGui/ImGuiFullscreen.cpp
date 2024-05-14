@@ -688,8 +688,8 @@ void ImGuiFullscreen::EndFullscreenColumnWindow()
 }
 
 bool ImGuiFullscreen::BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
-	const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */, float rounding /*= 0.0f*/, float padding /*= 0.0f*/,
-	ImGuiWindowFlags flags /*= 0*/)
+	const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */, float rounding /*= 0.0f*/,
+	const ImVec2& padding /*= 0.0f*/, ImGuiWindowFlags flags /*= 0*/)
 {
 	if (left < 0.0f)
 		left = (LAYOUT_SCREEN_WIDTH - width) * -left;
@@ -702,14 +702,14 @@ bool ImGuiFullscreen::BeginFullscreenWindow(float left, float top, float width, 
 }
 
 bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
-	const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */, float rounding /*= 0.0f*/, float padding /*= 0.0f*/,
-	ImGuiWindowFlags flags /*= 0*/)
+	const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */, float rounding /*= 0.0f*/,
+	const ImVec2& padding /*= 0.0f*/, ImGuiWindowFlags flags /*= 0*/)
 {
 	ImGui::SetNextWindowPos(position);
 	ImGui::SetNextWindowSize(size);
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, background);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding, padding));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(rounding));
 
@@ -1740,7 +1740,7 @@ bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& positi
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, 0.0f));
 
-	if (!BeginFullscreenWindow(position, size, name, UIBackgroundColor, 0.0f, 0.0f))
+	if (!BeginFullscreenWindow(position, size, name, UIBackgroundColor, 0.0f, ImVec2()))
 		return false;
 
 	ImGui::SetCursorPos(ImVec2((size.x - menu_width) * 0.5f, (size.y - menu_height) * 0.5f));
