@@ -931,7 +931,7 @@ void MTGS::ApplySettings()
 
 	RunOnGSThread([opts = EmuConfig.GS]() {
 		GSUpdateConfig(opts);
-		GSSetVSyncMode(Host::GetEffectiveVSyncMode());
+		GSSetVSyncEnabled(Host::IsVsyncEffectivelyEnabled());
 	});
 
 	// We need to synchronize the thread when changing any settings when the download mode
@@ -970,19 +970,19 @@ void MTGS::UpdateDisplayWindow()
 	});
 }
 
-void MTGS::SetVSyncMode(VsyncMode mode)
+void MTGS::SetVSyncEnabled(bool enabled)
 {
 	pxAssertRel(IsOpen(), "MTGS is running");
 
-	RunOnGSThread([mode]() {
-		Console.WriteLn("Vsync is %s", mode == VsyncMode::Off ? "OFF" : (mode == VsyncMode::Adaptive ? "ADAPTIVE" : "ON"));
-		GSSetVSyncMode(mode);
+	RunOnGSThread([enabled]() {
+		INFO_LOG("Vsync is {}", enabled ? "ON" : "OFF");
+		GSSetVSyncEnabled(enabled);
 	});
 }
 
-void MTGS::UpdateVSyncMode()
+void MTGS::UpdateVSyncEnabled()
 {
-	SetVSyncMode(Host::GetEffectiveVSyncMode());
+	SetVSyncEnabled(Host::IsVsyncEffectivelyEnabled());
 }
 
 void MTGS::SetSoftwareRendering(bool software, GSInterlaceMode interlace, bool display_message /* = true */)

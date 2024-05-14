@@ -18,11 +18,11 @@
 #endif
 
 VKSwapChain::VKSwapChain(
-	const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control)
+	const WindowInfo& wi, VkSurfaceKHR surface, bool vsync, std::optional<bool> exclusive_fullscreen_control)
 	: m_window_info(wi)
 	, m_surface(surface)
-	, m_vsync_mode(vsync)
 	, m_exclusive_fullscreen_control(exclusive_fullscreen_control)
+	, m_vsync_enabled(vsync)
 {
 }
 
@@ -135,7 +135,7 @@ void VKSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSu
 }
 
 std::unique_ptr<VKSwapChain> VKSwapChain::Create(
-	const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control)
+	const WindowInfo& wi, VkSurfaceKHR surface, bool vsync, std::optional<bool> exclusive_fullscreen_control)
 {
 	std::unique_ptr<VKSwapChain> swap_chain =
 		std::unique_ptr<VKSwapChain>(new VKSwapChain(wi, surface, vsync, exclusive_fullscreen_control));
@@ -226,17 +226,7 @@ static const char* PresentModeToString(VkPresentModeKHR mode)
 	}
 }
 
-static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(VsyncMode mode)
-{
-	if (mode == VsyncMode::On)
-		return VK_PRESENT_MODE_FIFO_KHR;
-	else if (mode == VsyncMode::Adaptive)
-		return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-	else
-		return VK_PRESENT_MODE_IMMEDIATE_KHR;
-}
-
-std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, VsyncMode vsync)
+std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, VkPresentModeKHR requested_mode)
 {
 	VkResult res;
 	u32 mode_count;
@@ -260,31 +250,30 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 		return it != present_modes.end();
 	};
 
-	// Use preferred mode if available.
-	const VkPresentModeKHR preferred_mode = GetPreferredPresentModeForVsyncMode(vsync);
-	VkPresentModeKHR selected_mode;
-	if (CheckForMode(preferred_mode))
-	{
-		selected_mode = preferred_mode;
-	}
-	else if (vsync != VsyncMode::On && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
-	{
-		// Prefer mailbox over fifo for adaptive vsync/no-vsync.
-		selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-	}
-	else if (vsync != VsyncMode::Off && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
-	{
-		// Fallback to FIFO if we're using any kind of vsync.
-		// This should never fail, FIFO is mandated.
-		selected_mode = VK_PRESENT_MODE_FIFO_KHR;
-	}
-	else
-	{
-		// Fall back to whatever is available.
-		selected_mode = present_modes[0];
-	}
+  // Use preferred mode if available.
+  VkPresentModeKHR selected_mode;
+  if (CheckForMode(requested_mode))
+  {
+    selected_mode = requested_mode;
+  }
+  else if (requested_mode != VK_PRESENT_MODE_FIFO_KHR && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+  {
+    // Prefer mailbox over fifo for adaptive vsync/no-vsync. This way it'll only delay one frame.
+    selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+  }
+  else if (requested_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
+  {
+    // Fallback to FIFO if we're using any kind of vsync.
+    // This should never fail, FIFO is mandated.
+    selected_mode = VK_PRESENT_MODE_FIFO_KHR;
+  }
+  else
+  {
+    // Fall back to whatever is available.
+    selected_mode = present_modes[0];
+  }
 
-	DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(preferred_mode),
+	DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(requested_mode),
 		PresentModeToString(selected_mode));
 
 	return selected_mode;
@@ -294,7 +283,11 @@ bool VKSwapChain::CreateSwapChain()
 {
 	// Select swap chain format and present mode
 	std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
-	std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_vsync_mode);
+
+	// Prefer relaxed vsync if available, stalling is bad.
+	const VkPresentModeKHR requested_mode =
+		m_vsync_enabled ? VK_PRESENT_MODE_FIFO_RELAXED_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
+	std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, requested_mode);
 	if (!surface_format.has_value() || !present_mode.has_value())
 		return false;
 
@@ -414,6 +407,7 @@ bool VKSwapChain::CreateSwapChain()
 
 	m_window_info.surface_width = std::max(1u, size.width);
 	m_window_info.surface_height = std::max(1u, size.height);
+	m_actual_present_mode = present_mode.value();
 
 	// Get and create images.
 	pxAssert(m_images.empty());
@@ -558,12 +552,12 @@ bool VKSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale
 	return true;
 }
 
-bool VKSwapChain::SetVSync(VsyncMode mode)
+bool VKSwapChain::SetVSyncEnabled(bool enabled)
 {
-	if (m_vsync_mode == mode)
+	if (m_vsync_enabled == enabled)
 		return true;
 
-	m_vsync_mode = mode;
+	m_vsync_enabled = enabled;
 
 	// Recreate the swap chain with the new present mode.
 	DevCon.WriteLn("Recreating swap chain to change present mode.");

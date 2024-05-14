@@ -307,7 +307,7 @@ int GSDevice::GetMipmapLevelsForSize(int width, int height)
 
 bool GSDevice::Create()
 {
-	m_vsync_mode = Host::GetEffectiveVSyncMode();
+	m_vsync_enabled = Host::IsVsyncEffectivelyEnabled();
 	return true;
 }
 

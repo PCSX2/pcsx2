@@ -628,9 +628,9 @@ bool GSDevice11::GetHostRefreshRate(float* refresh_rate)
 	return GSDevice::GetHostRefreshRate(refresh_rate);
 }
 
-void GSDevice11::SetVSync(VsyncMode mode)
+void GSDevice11::SetVSyncEnabled(bool enabled)
 {
-	m_vsync_mode = mode;
+	m_vsync_enabled = enabled;
 }
 
 bool GSDevice11::CreateSwapChain()
@@ -928,7 +928,7 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
 	// in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
 	// the time, when it's more like a couple of percent.
-	if (m_vsync_mode != VsyncMode::Off && m_gpu_timing_enabled)
+	if (m_vsync_enabled && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
 	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
@@ -957,14 +957,13 @@ void GSDevice11::EndPresent()
 	RenderImGui();
 
 	// See note in BeginPresent() for why it's conditional on vsync-off.
-	const bool vsync_on = m_vsync_mode != VsyncMode::Off;
-	if (!vsync_on && m_gpu_timing_enabled)
+	if (!m_vsync_enabled && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
-	if (!vsync_on && m_using_allow_tearing)
+	if (!m_vsync_enabled && m_using_allow_tearing)
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
-		m_swap_chain->Present(static_cast<UINT>(vsync_on), 0);
+		m_swap_chain->Present(static_cast<UINT>(m_vsync_enabled), 0);
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();

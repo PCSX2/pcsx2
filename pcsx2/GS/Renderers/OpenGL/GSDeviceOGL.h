@@ -292,7 +292,7 @@ public:
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
-	void SetVSync(VsyncMode mode) override;
+	void SetVSyncEnabled(bool enabled) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;

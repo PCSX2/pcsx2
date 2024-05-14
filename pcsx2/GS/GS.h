@@ -84,7 +84,7 @@ void GSSetDisplayAlignment(GSDisplayAlignment alignment);
 bool GSHasDisplayWindow();
 void GSResizeDisplayWindow(int width, int height, float scale);
 void GSUpdateDisplayWindow();
-void GSSetVSyncMode(VsyncMode mode);
+void GSSetVSyncEnabled(bool enabled);
 
 GSRendererType GSGetCurrentRenderer();
 bool GSIsHardwareRenderer();
@@ -127,7 +127,7 @@ namespace Host
 	void SetFullscreen(bool enabled);
 
 	/// Returns the desired vsync mode, depending on the runtime environment.
-	VsyncMode GetEffectiveVSyncMode();
+	bool IsVsyncEffectivelyEnabled();
 
 	/// Called when video capture starts or stops. Called on the MTGS thread.
 	void OnCaptureStarted(const std::string& filename);

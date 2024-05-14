@@ -25,7 +25,7 @@ public:
 
 	// Create a new swap chain from a pre-existing surface.
 	static std::unique_ptr<VKSwapChain> Create(
-		const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control);
+		const WindowInfo& wi, VkSurfaceKHR surface, bool vsync, std::optional<bool> exclusive_fullscreen_control);
 
 	__fi VkSurfaceKHR GetSurface() const { return m_surface; }
 	__fi VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
@@ -57,7 +57,11 @@ public:
 	}
 
 	// Returns true if the current present mode is synchronizing (adaptive or hard).
-	__fi bool IsPresentModeSynchronizing() const { return (m_vsync_mode != VsyncMode::Off); }
+	__fi bool IsPresentModeSynchronizing() const
+	{
+		return (m_actual_present_mode == VK_PRESENT_MODE_FIFO_KHR ||
+				m_actual_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+	}
 
 	VkFormat GetTextureFormat() const;
 	VkResult AcquireNextImage();
@@ -67,14 +71,14 @@ public:
 	bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 
 	// Change vsync enabled state. This may fail as it causes a swapchain recreation.
-	bool SetVSync(VsyncMode mode);
+	bool SetVSyncEnabled(bool enabled);
 
 private:
 	VKSwapChain(
-		const WindowInfo& wi, VkSurfaceKHR surface, VsyncMode vsync, std::optional<bool> exclusive_fullscreen_control);
+		const WindowInfo& wi, VkSurfaceKHR surface, bool vsync, std::optional<bool> exclusive_fullscreen_control);
 
 	static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
-	static std::optional<VkPresentModeKHR> SelectPresentMode(VkSurfaceKHR surface, VsyncMode vsync);
+	static std::optional<VkPresentModeKHR> SelectPresentMode(VkSurfaceKHR surface, VkPresentModeKHR requested_mode);
 
 	bool CreateSwapChain();
 	void DestroySwapChain();
@@ -98,10 +102,11 @@ private:
 	std::vector<std::unique_ptr<GSTextureVK>> m_images;
 	std::vector<ImageSemaphores> m_semaphores;
 
-	VsyncMode m_vsync_mode = VsyncMode::Off;
+	VkPresentModeKHR m_actual_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 	u32 m_current_image = 0;
 	u32 m_current_semaphore = 0;
 
 	std::optional<VkResult> m_image_acquire_result;
 	std::optional<bool> m_exclusive_fullscreen_control;
+	bool m_vsync_enabled = false;
 };

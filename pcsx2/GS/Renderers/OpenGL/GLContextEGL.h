@@ -24,6 +24,7 @@ public:
 	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
+	bool SupportsNegativeSwapInterval() const override;
 	bool SetSwapInterval(s32 interval) override;
 	virtual std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
@@ -52,4 +53,5 @@ protected:
 	EGLConfig m_config = {};
 
 	bool m_use_ext_platform_base = false;
+	bool m_supports_negative_swap_interval = false;
 };

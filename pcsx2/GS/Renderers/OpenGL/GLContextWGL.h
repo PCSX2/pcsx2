@@ -27,6 +27,7 @@ public:
 	bool IsCurrent() override;
 	bool MakeCurrent() override;
 	bool DoneCurrent() override;
+	bool SupportsNegativeSwapInterval() const override;
 	bool SetSwapInterval(s32 interval) override;
 	std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 

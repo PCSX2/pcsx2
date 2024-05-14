@@ -35,6 +35,7 @@ public:
 	virtual bool IsCurrent() = 0;
 	virtual bool MakeCurrent() = 0;
 	virtual bool DoneCurrent() = 0;
+	virtual bool SupportsNegativeSwapInterval() const = 0;
 	virtual bool SetSwapInterval(s32 interval) = 0;
 	virtual std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) = 0;
 

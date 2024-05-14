@@ -2222,7 +2222,7 @@ bool GSDeviceVK::UpdateWindow()
 		return false;
 	}
 
-	m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_mode,
+	m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_enabled,
 		Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 	if (!m_swap_chain)
 	{
@@ -2297,24 +2297,27 @@ std::string GSDeviceVK::GetDriverInfo() const
 	return ret;
 }
 
-void GSDeviceVK::SetVSync(VsyncMode mode)
+void GSDeviceVK::SetVSyncEnabled(bool enabled)
 {
-	if (!m_swap_chain || m_vsync_mode == mode)
+	if (!m_swap_chain || m_vsync_enabled == enabled)
+	{
+		m_vsync_enabled = enabled;
 		return;
+	}
 
 	// This swap chain should not be used by the current buffer, thus safe to destroy.
 	WaitForGPUIdle();
-	if (!m_swap_chain->SetVSync(mode))
+	if (!m_swap_chain->SetVSyncEnabled(enabled))
 	{
 		// Try switching back to the old mode..
-		if (!m_swap_chain->SetVSync(m_vsync_mode))
+		if (!m_swap_chain->SetVSyncEnabled(m_vsync_enabled))
 		{
 			pxFailRel("Failed to reset old vsync mode after failure");
 			m_swap_chain.reset();
 		}
 	}
 
-	m_vsync_mode = mode;
+	m_vsync_enabled = enabled;
 }
 
 GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
@@ -2613,7 +2616,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 	if (surface != VK_NULL_HANDLE)
 	{
-		m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_mode,
+		m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_enabled,
 			Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
 		if (!m_swap_chain)
 		{

@@ -774,9 +774,9 @@ bool GSDevice12::GetHostRefreshRate(float* refresh_rate)
 	return GSDevice::GetHostRefreshRate(refresh_rate);
 }
 
-void GSDevice12::SetVSync(VsyncMode mode)
+void GSDevice12::SetVSyncEnabled(bool enabled)
 {
-	m_vsync_mode = mode;
+	m_vsync_enabled = enabled;
 }
 
 bool GSDevice12::CreateSwapChain()
@@ -1109,11 +1109,10 @@ void GSDevice12::EndPresent()
 		return;
 	}
 
-	const bool vsync = static_cast<UINT>(m_vsync_mode != VsyncMode::Off);
-	if (!vsync && m_using_allow_tearing)
+	if (!m_vsync_enabled && m_using_allow_tearing)
 		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 	else
-		m_swap_chain->Present(static_cast<UINT>(vsync), 0);
+		m_swap_chain->Present(static_cast<UINT>(m_vsync_enabled), 0);
 
 	InvalidateCachedState();
 }

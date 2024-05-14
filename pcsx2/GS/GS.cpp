@@ -471,7 +471,7 @@ void GSPresentCurrentFrame()
 
 void GSThrottlePresentation()
 {
-	if (g_gs_device->GetVsyncMode() != VsyncMode::Off)
+	if (g_gs_device->IsVSyncEnabled())
 	{
 		// Let vsync take care of throttling.
 		return;
@@ -528,9 +528,9 @@ void GSUpdateDisplayWindow()
 	ImGuiManager::WindowResized();
 }
 
-void GSSetVSyncMode(VsyncMode mode)
+void GSSetVSyncEnabled(bool enabled)
 {
-	g_gs_device->SetVSync(mode);
+	g_gs_device->SetVSyncEnabled(enabled);
 }
 
 bool GSWantsExclusiveFullscreen()

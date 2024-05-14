@@ -793,11 +793,12 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapSection("EmuCore/GS");
 
 #ifdef PCSX2_DEVBUILD
-	SettingsWrapEntry(SynchronousMTGS);
+	SettingsWrapBitBool(SynchronousMTGS);
 #endif
-	SettingsWrapEntry(VsyncQueueSize);
 
-	wrap.EnumEntry(CURRENT_SETTINGS_SECTION, "VsyncEnable", VsyncEnable, NULL, VsyncEnable);
+	SettingsWrapBitBool(VsyncEnable);
+
+	SettingsWrapEntry(VsyncQueueSize);
 
 	SettingsWrapEntry(FramerateNTSC);
 	SettingsWrapEntry(FrameratePAL);

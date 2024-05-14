@@ -107,7 +107,7 @@ bool GSRunner::InitializeConfig()
 
 	// complete as quickly as possible
 	si.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
-	si.SetIntValue("EmuCore/GS", "VsyncEnable", static_cast<int>(VsyncMode::Off));
+	si.SetIntValue("EmuCore/GS", "VsyncEnable", false);
 
 	// ensure all input sources are disabled, we're not using them
 	si.SetBoolValue("InputSources", "SDL", false);

@@ -16,8 +16,6 @@
 #include <string_view>
 #include <vector>
 
-enum class VsyncMode;
-
 class SettingsInterface;
 
 namespace Host
