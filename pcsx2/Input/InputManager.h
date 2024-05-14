@@ -289,10 +289,10 @@ namespace InputManager
 	void UpdateHostMouseMode();
 
 	/// Called when a new input device is connected.
-	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+	void OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name);
 
 	/// Called when an input device is disconnected.
-	void OnInputDeviceDisconnected(const std::string_view& identifier);
+	void OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier);
 } // namespace InputManager
 
 namespace Host
@@ -301,10 +301,10 @@ namespace Host
 	std::optional<WindowInfo> GetTopLevelWindowInfo();
 
 	/// Called when a new input device is connected.
-	void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+	void OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name);
 
 	/// Called when an input device is disconnected.
-	void OnInputDeviceDisconnected(const std::string_view& identifier);
+	void OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier);
 
 	/// Enables relative mouse mode in the host, and/or hides the cursor.
 	void SetMouseMode(bool relative_mode, bool hide_cursor);

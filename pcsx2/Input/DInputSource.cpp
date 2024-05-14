@@ -145,7 +145,9 @@ void DInputSource::Shutdown()
 {
 	while (!m_controllers.empty())
 	{
-		InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
+		const u32 index = static_cast<u32>(m_controllers.size() - 1);
+		InputManager::OnInputDeviceDisconnected({{.source_type = InputSourceType::DInput, .source_index = index}},
+			GetDeviceIdentifier(index));
 		m_controllers.pop_back();
 	}
 }
@@ -245,7 +247,9 @@ void DInputSource::PollEvents()
 
 			if (hr != DI_OK)
 			{
-				InputManager::OnInputDeviceDisconnected(GetDeviceIdentifier(static_cast<u32>(i)));
+				InputManager::OnInputDeviceDisconnected(
+					{{.source_type = InputSourceType::DInput, .source_index = static_cast<u32>(i)}},
+					GetDeviceIdentifier(static_cast<u32>(i)));
 				m_controllers.erase(m_controllers.begin() + i);
 				continue;
 			}

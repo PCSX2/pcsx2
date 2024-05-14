@@ -3101,6 +3101,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "Pause On Focus Loss"),
 		FSUI_CSTR("Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back."),
 		"UI", "PauseOnFocusLoss", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
+		FSUI_CSTR("Pauses the emulator when a controller with bindings is disconnected."), "UI", "PauseOnControllerDisconnection", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST_ALT, "Pause On Menu"),
 		FSUI_CSTR("Pauses the emulator when you open the quick menu, and unpauses when you close it."), "UI", "PauseOnMenu", true);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Shutdown"),
@@ -6898,6 +6900,7 @@ TRANSLATE_NOOP("FullscreenUI", "Prevents the screen saver from activating and th
 TRANSLATE_NOOP("FullscreenUI", "Shows the game you are currently playing as part of your profile on Discord.");
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when a game is started.");
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.");
+TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when a controller with bindings is disconnected.");
 TRANSLATE_NOOP("FullscreenUI", "Pauses the emulator when you open the quick menu, and unpauses when you close it.");
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
@@ -7140,10 +7143,11 @@ TRANSLATE_NOOP("FullscreenUI", "Synchronization");
 TRANSLATE_NOOP("FullscreenUI", "Changes when SPU samples are generated relative to system emulation.");
 TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
-TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
-TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
+TRANSLATE_NOOP("FullscreenUI", "%d ms");
 TRANSLATE_NOOP("FullscreenUI", "Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
+TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
 TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates a larger memory card by filtering saves only to the current game.");
@@ -7561,6 +7565,7 @@ TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
 TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Start");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Focus Loss");
+TRANSLATE_NOOP("FullscreenUI", "Pause On Controller Disconnection");
 TRANSLATE_NOOP("FullscreenUI", "Pause On Menu");
 TRANSLATE_NOOP("FullscreenUI", "Confirm Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
@@ -7683,6 +7688,5 @@ TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements availabl
 TRANSLATE_NOOP("FullscreenUI", "Card Enabled");
 TRANSLATE_NOOP("FullscreenUI", "Card Name");
 TRANSLATE_NOOP("FullscreenUI", "Eject Card");
-TRANSLATE_NOOP("FullscreenUI", "%d ms");
 // TRANSLATION-STRING-AREA-END
 #endif

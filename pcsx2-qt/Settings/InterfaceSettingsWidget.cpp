@@ -10,7 +10,7 @@
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
-	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
+//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 #ifdef _WIN32
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Classic Windows"),
 #endif
@@ -75,6 +75,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmShutdown, "UI", "ConfirmShutdown", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnShutdown, "EmuCore", "SaveStateOnShutdown", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "UI", "PauseOnFocusLoss", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "UI", "PauseOnControllerDisconnection", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.backupSaveStates, "EmuCore", "BackupSavestate", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.discordPresence, "EmuCore", "EnableDiscordPresence", false);
 
@@ -147,6 +148,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
 		tr("Pauses the emulator when you minimize the window or switch to another application, "
 		   "and unpauses when you switch back."));
+	dialog->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
+		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
 	dialog->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
 		//: Do not translate the ".backup" extension.
 		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
@@ -164,10 +167,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
 	dialog->registerWidgetHelp(
-		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"), 
+		m_ui.doubleClickTogglesFullscreen, tr("Double-Click Toggles Fullscreen"), tr("Checked"),
 		tr("Allows switching in and out of fullscreen mode by double-clicking the game window."));
 	dialog->registerWidgetHelp(
-		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"), 
+		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
 		tr("Prevents the main window from being resized."));
 
 	onRenderToSeparateWindowChanged();

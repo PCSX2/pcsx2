@@ -117,6 +117,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
+	void statusMessage(const QString& message);
 
 	std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main, bool surfaceless);
 	void onResizeRenderWindowRequested(qint32 width, qint32 height);
@@ -160,9 +161,6 @@ Q_SIGNALS:
 
 	/// Called when achievements login is requested.
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
-
-	/// Called when achievements login succeeds. Also happens on startup.
-	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
 
 	/// Called when achievements are reloaded/refreshed (e.g. game change, login, option change).
 	void onAchievementsRefreshed(quint32 id, const QString& game_info_string);

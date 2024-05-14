@@ -64,11 +64,11 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 	return std::nullopt;
 }
 
-void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+void Host::OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name)
 {
 }
 
-void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
+void Host::OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier)
 {
 }
 

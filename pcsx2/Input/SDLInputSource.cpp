@@ -657,7 +657,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
 	if (!gcontroller && !joystick)
 	{
-		Console.Error("(SDLInputSource) Failed to open controller %d", index);
+		ERROR_LOG("(SDLInputSource) Failed to open controller {}", index);
 		return false;
 	}
 
@@ -667,7 +667,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	{
 		if (it->joystick_id == joystick_id)
 		{
-			Console.Error("(SDLInputSource) Controller %d, instance %d, player %d already connected, ignoring.", index, joystick_id, player_id);
+			ERROR_LOG("(SDLInputSource) Controller {}, instance {}, player {} already connected, ignoring.", index, joystick_id, player_id);
 			if (gcontroller)
 				SDL_GameControllerClose(gcontroller);
 			else
@@ -680,8 +680,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
 	{
 		const int free_player_id = GetFreePlayerId();
-		Console.Warning("(SDLInputSource) Controller %d (joystick %d) returned player ID %d, which is invalid or in "
-						"use. Using ID %d instead.",
+		WARNING_LOG("(SDLInputSource) Controller {} (joystick {}) returned player ID {}, which is invalid or in "
+					"use. Using ID {} instead.",
 			index, joystick_id, player_id, free_player_id);
 		player_id = free_player_id;
 	}
@@ -690,7 +690,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 	if (!name)
 		name = "Unknown Device";
 
-	Console.WriteLn("(SDLInputSource) Opened %s %d (instance id %d, player id %d): %s", is_gamecontroller ? "game controller" : "joystick",
+	INFO_LOG("(SDLInputSource) Opened {} {} (instance id {}, player id {}): {}", is_gamecontroller ? "game controller" : "joystick",
 		index, joystick_id, player_id, name);
 
 	ControllerData cd = {};
@@ -717,7 +717,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
 			mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
 
-		Console.WriteLn("(SDLInputSource) Controller %d has %d axes and %d buttons", player_id, num_axes, num_buttons);
+		INFO_LOG("(SDLInputSource) Controller {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
 	}
 	else
 	{
@@ -726,14 +726,14 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 		if (num_hats > 0)
 			cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
 
-		Console.WriteLn("(SDLInputSource) Joystick %d has %d axes, %d buttons and %d hats", player_id,
+		INFO_LOG("(SDLInputSource) Joystick {} has {} axes, {} buttons and {} hats", player_id,
 			SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick), num_hats);
 	}
 
 	cd.use_game_controller_rumble = (gcontroller && SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
 	if (cd.use_game_controller_rumble)
 	{
-		Console.WriteLn("(SDLInputSource) Rumble is supported on '%s' via gamecontroller", name);
+		INFO_LOG("(SDLInputSource) Rumble is supported on '{}' via gamecontroller", name);
 	}
 	else
 	{
@@ -752,25 +752,25 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 			}
 			else
 			{
-				Console.Error("(SDLInputSource) Failed to create haptic left/right effect: %s", SDL_GetError());
+				ERROR_LOG("(SDLInputSource) Failed to create haptic left/right effect: {}", SDL_GetError());
 				if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
 				{
 					cd.haptic = haptic;
 				}
 				else
 				{
-					Console.Error("(SDLInputSource) No haptic rumble supported: %s", SDL_GetError());
+					ERROR_LOG("(SDLInputSource) No haptic rumble supported: {}", SDL_GetError());
 					SDL_HapticClose(haptic);
 				}
 			}
 		}
 
 		if (cd.haptic)
-			Console.WriteLn("(SDLInputSource) Rumble is supported on '%s' via haptic", name);
+			INFO_LOG("(SDLInputSource) Rumble is supported on '{}' via haptic", name);
 	}
 
 	if (!cd.haptic && !cd.use_game_controller_rumble)
-		Console.Warning("(SDLInputSource) Rumble is not supported on '%s'", name);
+		WARNING_LOG("(SDLInputSource) Rumble is not supported on '{}'", name);
 
 	if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && gcontroller && SDL_GameControllerHasLED(gcontroller))
 	{
@@ -779,7 +779,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
 	m_controllers.push_back(std::move(cd));
 
-	InputManager::OnInputDeviceConnected(StringUtil::StdStringFromFormat("SDL-%d", player_id), name);
+	InputManager::OnInputDeviceConnected(fmt::format("SDL-{}", player_id), name);
 	return true;
 }
 
@@ -789,7 +789,9 @@ bool SDLInputSource::CloseDevice(int joystick_index)
 	if (it == m_controllers.end())
 		return false;
 
-	InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("SDL-%d", it->player_id));
+	InputManager::OnInputDeviceDisconnected(
+		{{.source_type = InputSourceType::SDL, .source_index = static_cast<u32>(it->player_id)}},
+		fmt::format("SDL-{}", it->player_id));
 
 	if (it->haptic)
 		SDL_HapticClose(it->haptic);
