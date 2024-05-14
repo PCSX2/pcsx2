@@ -307,7 +307,7 @@ namespace FullscreenUI
 	static void DrawInterfaceSettingsPage();
 	static void DrawBIOSSettingsPage();
 	static void DrawEmulationSettingsPage();
-	static void DrawGraphicsSettingsPage();
+	static void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
 	static void DrawAudioSettingsPage();
 	static void DrawMemoryCardSettingsPage();
 	static void DrawControllerSettingsPage();
@@ -2811,6 +2811,9 @@ void FullscreenUI::DrawSettingsWindow()
 		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
 
 	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
 
 	if (BeginFullscreenWindow(
 			ImVec2(0.0f, 0.0f), heading_size, "settings_category", ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, bg_alpha)))
@@ -2833,11 +2836,7 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("Folder Settings"), FSUI_NSTR("Advanced Settings"), FSUI_NSTR("Patches"), FSUI_NSTR("Cheats"),
 			FSUI_NSTR("Game Fixes")};
 
-		SettingsInterface* bsi = GetEditingSettingsInterface();
-		const bool game_settings = IsEditingGameSettings(bsi);
-
-		const u32 count = game_settings ? (ShouldShowAdvancedSettings(bsi) ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) :
-										  std::size(global_pages);
+		const u32 count = game_settings ? (show_advanced_settings ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) : std::size(global_pages);
 		const char* const* icons = game_settings ? per_game_icons : global_icons;
 		const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
 		u32 index = 0;
@@ -2935,7 +2934,7 @@ void FullscreenUI::DrawSettingsWindow()
 				break;
 
 			case SettingsPage::Graphics:
-				DrawGraphicsSettingsPage();
+				DrawGraphicsSettingsPage(bsi, show_advanced_settings);
 				break;
 
 			case SettingsPage::Audio:
@@ -3442,7 +3441,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 	}
 }
 
-void FullscreenUI::DrawGraphicsSettingsPage()
+void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings)
 {
 	static constexpr const char* s_renderer_names[] = {
 		FSUI_NSTR("Automatic (Default)"),
@@ -3601,8 +3600,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		FSUI_NSTR("JPEG"),
 		FSUI_NSTR("WebP"),
 	};
-
-	SettingsInterface* bsi = GetEditingSettingsInterface();
 
 	const GSRendererType renderer =
 		static_cast<GSRendererType>(GetEffectiveIntSetting(bsi, "EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
@@ -3911,8 +3908,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 	}
 
 	static constexpr const char* s_gsdump_compression[] = {FSUI_NSTR("Uncompressed"), FSUI_NSTR("LZMA (xz)"), FSUI_NSTR("Zstandard (zst)")};
-
-	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
 
 	if (show_advanced_settings)
 	{
