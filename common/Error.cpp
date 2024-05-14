@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cwctype>
 #include <type_traits>
 
 // Platform-specific includes
@@ -108,8 +109,11 @@ void Error::SetWin32(std::string_view prefix, unsigned long err)
 	m_type = Type::Win32;
 
 	WCHAR buf[128];
-	const DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+	DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
 		static_cast<DWORD>(std::size(buf)), nullptr);
+	while (r > 0 && std::iswspace(buf[r - 1]))
+		r--;
+
 	if (r > 0)
 	{
 		m_description =
@@ -143,8 +147,11 @@ void Error::SetHResult(std::string_view prefix, long err)
 	m_type = Type::HResult;
 
 	WCHAR buf[128];
-	const DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
+	DWORD r = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, err, LANG_USER_DEFAULT, buf,
 		static_cast<DWORD>(std::size(buf)), nullptr);
+	while (r > 0 && std::iswspace(buf[r - 1]))
+		r--;
+
 	if (r > 0)
 	{
 		m_description = fmt::format("{}HRESULT {:08X}: {}", prefix, static_cast<unsigned>(err),
