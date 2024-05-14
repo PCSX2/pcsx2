@@ -30,6 +30,12 @@ void Error::Clear()
 	m_description = {};
 }
 
+void Error::Clear(Error* errptr)
+{
+	if (errptr)
+		errptr->Clear();
+}
+
 void Error::SetErrno(int err)
 {
 	SetErrno(std::string_view(), err);

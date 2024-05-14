@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #pragma once
+
+class Error;
 
 #define VK_NO_PROTOTYPES
 
@@ -86,7 +88,7 @@
 namespace Vulkan
 {
 	bool IsVulkanLibraryLoaded();
-	bool LoadVulkanLibrary();
+	bool LoadVulkanLibrary(Error* error);
 	bool LoadVulkanInstanceFunctions(VkInstance instance);
 	bool LoadVulkanDeviceFunctions(VkDevice device);
 	void UnloadVulkanLibrary();
