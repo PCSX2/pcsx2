@@ -126,7 +126,9 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	// This delays getting packets we need, so instead loop untill a valid packet, or no packet, is returned from pcap_next_ex.
 	while (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
 	{
-		if (header->len > sizeof(pkt->buffer))
+		// 1514 is the largest etherframe we can get with an MTU of 1500 (assuming no VLAN tagging).
+		// We don't (typically?) get the FCS, and we might need to strip it if we do.
+		if (header->len > 1514)
 		{
 			Console.Error("DEV9: Dropped jumbo frame of size: %u", header->len);
 			continue;
