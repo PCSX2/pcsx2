@@ -256,6 +256,7 @@ public:
 	AFORWARD(2, cvtss2sd,  ARGS_XO)
 	SFORWARD(2, cvttps2dq, ARGS_XO)
 	SFORWARD(2, cvttsd2si, const AddressReg&, const Operand&);
+	AFORWARD(2, divps,	   ARGS_XO)
 	SFORWARD(3, extractps, const Operand&, const Xmm&, u8)
 	AFORWARD(2, maxps,     ARGS_XO)
 	AFORWARD(2, minps,     ARGS_XO)
