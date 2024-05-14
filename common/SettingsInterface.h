@@ -96,7 +96,7 @@ public:
 		return value;
 	}
 
-	__fi SmallString GetTinyStringValue(const char* section, const char* key, const char* default_value = "") const
+	__fi TinyString GetTinyStringValue(const char* section, const char* key, const char* default_value = "") const
 	{
 		TinyString value;
 		if (!GetStringValue(section, key, &value))
