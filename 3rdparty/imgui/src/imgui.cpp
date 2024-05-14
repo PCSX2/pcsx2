@@ -1240,30 +1240,30 @@ ImGuiStyle::ImGuiStyle()
 // Important: This operation is lossy because we round all sizes to integer. If you need to change your scale multiples, call this over a freshly initialized ImGuiStyle structure rather than scaling multiple times.
 void ImGuiStyle::ScaleAllSizes(float scale_factor)
 {
-    WindowPadding = ImTrunc(WindowPadding * scale_factor + ImVec2(0.5f, 0.5f));
-    WindowRounding = ImTrunc(WindowRounding * scale_factor + 0.5f);
-    WindowMinSize = ImTrunc(WindowMinSize * scale_factor + ImVec2(0.5f, 0.5f));
-    ChildRounding = ImTrunc(ChildRounding * scale_factor + 0.5f);
-    PopupRounding = ImTrunc(PopupRounding * scale_factor + 0.5f);
-    FramePadding = ImTrunc(FramePadding * scale_factor + ImVec2(0.5f, 0.5f));
-    FrameRounding = ImTrunc(FrameRounding * scale_factor + 0.5f);
-    ItemSpacing = ImTrunc(ItemSpacing * scale_factor + ImVec2(0.5f, 0.5f));
-    ItemInnerSpacing = ImTrunc(ItemInnerSpacing * scale_factor + ImVec2(0.5f, 0.5f));
-    CellPadding = ImTrunc(CellPadding * scale_factor + ImVec2(0.5f, 0.5f));
-    TouchExtraPadding = ImTrunc(TouchExtraPadding * scale_factor + ImVec2(0.5f, 0.5f));
-    IndentSpacing = ImTrunc(IndentSpacing * scale_factor + 0.5f);
-    ColumnsMinSpacing = ImTrunc(ColumnsMinSpacing * scale_factor + 0.5f);
-    ScrollbarSize = ImTrunc(ScrollbarSize * scale_factor + 0.5f);
-    ScrollbarRounding = ImTrunc(ScrollbarRounding * scale_factor + 0.5f);
-    GrabMinSize = ImTrunc(GrabMinSize * scale_factor + 0.5f);
-    GrabRounding = ImTrunc(GrabRounding * scale_factor + 0.5f);
-    LogSliderDeadzone = ImTrunc(LogSliderDeadzone * scale_factor + 0.5f);
-    TabRounding = ImTrunc(TabRounding * scale_factor + 0.5f);
-    TabMinWidthForCloseButton = (TabMinWidthForCloseButton != FLT_MAX) ? ImTrunc(TabMinWidthForCloseButton * scale_factor + 0.5f) : FLT_MAX;
-    SeparatorTextPadding = ImTrunc(SeparatorTextPadding * scale_factor + ImVec2(0.5f, 0.5f));
-    DisplayWindowPadding = ImTrunc(DisplayWindowPadding * scale_factor + ImVec2(0.5f, 0.5f));
-    DisplaySafeAreaPadding = ImTrunc(DisplaySafeAreaPadding * scale_factor + ImVec2(0.5f, 0.5f));
-    MouseCursorScale = ImTrunc(MouseCursorScale * scale_factor + 0.5f);
+    WindowPadding = ImVec2(ImCeil(WindowPadding.x * scale_factor), ImCeil(WindowPadding.x * scale_factor));
+    WindowRounding = ImCeil(WindowRounding * scale_factor);
+    WindowMinSize = ImVec2(ImCeil(WindowMinSize.x * scale_factor), ImCeil(WindowMinSize.y * scale_factor));
+    ChildRounding = ImCeil(ChildRounding * scale_factor);
+    PopupRounding = ImCeil(PopupRounding * scale_factor);
+    FramePadding = ImVec2(ImCeil(FramePadding.x * scale_factor), ImCeil(FramePadding.y * scale_factor));
+    FrameRounding = ImCeil(FrameRounding * scale_factor);
+    ItemSpacing = ImVec2(ImCeil(ItemSpacing.x * scale_factor), ImCeil(ItemSpacing.y * scale_factor));
+    ItemInnerSpacing = ImVec2(ImCeil(ItemInnerSpacing.x * scale_factor), ImCeil(ItemInnerSpacing.y * scale_factor));
+    CellPadding = ImVec2(ImCeil(CellPadding.x * scale_factor), ImCeil(CellPadding.y * scale_factor));
+    TouchExtraPadding = ImVec2(ImCeil(TouchExtraPadding.x * scale_factor), ImCeil(TouchExtraPadding.y * scale_factor));
+    IndentSpacing = ImCeil(IndentSpacing * scale_factor);
+    ColumnsMinSpacing = ImCeil(ColumnsMinSpacing * scale_factor);
+    ScrollbarSize = ImCeil(ScrollbarSize * scale_factor);
+    ScrollbarRounding = ImCeil(ScrollbarRounding * scale_factor);
+    GrabMinSize = ImCeil(GrabMinSize * scale_factor);
+    GrabRounding = ImCeil(GrabRounding * scale_factor);
+    LogSliderDeadzone = ImCeil(LogSliderDeadzone * scale_factor);
+    TabRounding = ImCeil(TabRounding * scale_factor);
+    TabMinWidthForCloseButton = (TabMinWidthForCloseButton != FLT_MAX) ? ImCeil(TabMinWidthForCloseButton * scale_factor) : FLT_MAX;
+    SeparatorTextPadding = ImVec2(ImCeil(SeparatorTextPadding.x * scale_factor), ImCeil(SeparatorTextPadding.y * scale_factor));
+    DisplayWindowPadding = ImVec2(ImCeil(DisplayWindowPadding.x * scale_factor), ImCeil(DisplayWindowPadding.y * scale_factor));
+    DisplaySafeAreaPadding = ImVec2(ImCeil(DisplaySafeAreaPadding.x * scale_factor), ImCeil(DisplaySafeAreaPadding.y * scale_factor));
+    MouseCursorScale = ImCeil(MouseCursorScale * scale_factor);
 }
 
 ImGuiIO::ImGuiIO()
@@ -12577,7 +12577,7 @@ static void ImGui::NavUpdateWindowing()
     bool apply_toggle_layer = false;
 
     ImGuiWindow* modal_window = GetTopMostPopupModal();
-    bool allow_windowing = false; // (modal_window == NULL); // FIXME: This prevent CTRL+TAB from being usable with windows that are inside the Begin-stack of that modal.
+    bool allow_windowing = false;// (modal_window == NULL); // FIXME: This prevent CTRL+TAB from being usable with windows that are inside the Begin-stack of that modal.
     if (!allow_windowing)
         g.NavWindowingTarget = NULL;
 
