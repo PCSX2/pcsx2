@@ -1016,9 +1016,14 @@ void Achievements::DisplayAchievementSummary()
 		std::string summary;
 		if (s_game_summary.num_core_achievements > 0)
 		{
-			summary = fmt::format(TRANSLATE_FS("Achievements", "You have unlocked {0} of {1} achievements, and earned {2} of {3} points."),
-				s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements, s_game_summary.points_unlocked,
-				s_game_summary.points_core);
+			summary = fmt::format(
+				TRANSLATE_FS("Achievements", "{0}, {1}."),
+				SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "You have unlocked {} of %n achievements",
+											 "Achievement popup", s_game_summary.num_core_achievements),
+					s_game_summary.num_unlocked_achievements),
+				SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "and earned {} of %n points", "Achievement popup",
+											 s_game_summary.points_core),
+					s_game_summary.points_unlocked));
 		}
 		else
 		{
@@ -1099,8 +1104,11 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 	if (EmuConfig.Achievements.Notifications)
 	{
 		std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_game_title);
-		std::string message = fmt::format(TRANSLATE_FS("Achievements", "{0} achievements, {1} points"),
-			s_game_summary.num_unlocked_achievements, s_game_summary.points_unlocked);
+		std::string message = fmt::format(
+			TRANSLATE_FS("Achievements", "{0}, {1}"),
+			TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
+				s_game_summary.num_unlocked_achievements),
+			TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.num_unlocked_achievements));
 
 		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
 			if (ImGuiManager::InitializeFullscreenUI())

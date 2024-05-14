@@ -95,7 +95,7 @@ static QString getSystemLanguage()
 	}
 	// No matches :(
 	Console.Warning("Couldn't find translation for system language %s, using en instead", locale.toStdString().c_str());
-	return QStringLiteral("en");
+	return QStringLiteral("en-US");
 }
 
 void QtHost::InstallTranslator(QWidget* dialog_parent)
@@ -213,6 +213,11 @@ s32 Host::Internal::GetTranslatedStringImpl(
 	return static_cast<s32>(translated_size);
 }
 
+std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
+{
+	return qApp->translate(context, msg, disambiguation, count).toStdString();
+}
+
 std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 {
 	return {
@@ -224,7 +229,7 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 		{QStringLiteral("Dansk (da-DK)"), QStringLiteral("da-DK")},
 		{QStringLiteral("Deutsch (de-DE)"), QStringLiteral("de-DE")},
 		{QStringLiteral("Ελληνικά (el-GR)"), QStringLiteral("el-GR")},
-		{QStringLiteral("English (en)"), QStringLiteral("en")},
+		{QStringLiteral("English (en)"), QStringLiteral("en-US")},
 		{QStringLiteral("Español (Hispanoamérica) (es-419)"), QStringLiteral("es-419")},
 		{QStringLiteral("Español (España) (es-ES)"), QStringLiteral("es-ES")},
 		{QStringLiteral("فارسی (fa-IR)"), QStringLiteral("fa-IR")},

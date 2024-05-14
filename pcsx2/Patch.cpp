@@ -689,27 +689,27 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	s_override_aspect_ratio.reset();
 	s_override_interlace_mode.reset();
 
-	std::string message;
+	SmallString message;
 	u32 gp_count = 0;
 	if (EmuConfig.EnablePatches)
 	{
 		gp_count = EnablePatches(s_gamedb_patches, EnablePatchList());
 		if (gp_count > 0)
-			fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{} GameDB patches"), gp_count);
+			message.append(TRANSLATE_PLURAL_STR("Patch", "%n GameDB patches are active.", "OSD Message", gp_count));
 	}
 
 	const u32 p_count = EnablePatches(s_game_patches, s_enabled_patches);
 	if (p_count > 0)
 	{
-		fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{}{} game patches"),
-			message.empty() ? "" : ", ", p_count);
+		message.append_format("{}{}", message.empty() ? "" : "\n",
+			TRANSLATE_PLURAL_STR("Patch", "%n game patches are active.", "OSD Message", p_count));
 	}
 
 	const u32 c_count = EmuConfig.EnableCheats ? EnablePatches(s_cheat_patches, s_enabled_cheats) : 0;
 	if (c_count > 0)
 	{
-		fmt::format_to(std::back_inserter(message), TRANSLATE_FS("Patch", "{}{} cheat patches"),
-			message.empty() ? "" : ", ", c_count);
+		message.append_format("{}{}", message.empty() ? "" : "\n",
+			TRANSLATE_PLURAL_STR("Patch", "%n cheat patches are active.", "OSD Message", c_count));
 	}
 
 	// Display message on first boot when we load patches.
@@ -719,8 +719,7 @@ void Patch::UpdateActivePatches(bool reload_enabled_list, bool verbose, bool ver
 	{
 		if (!message.empty())
 		{
-			Host::AddIconOSDMessage("LoadPatches", ICON_FA_BAND_AID,
-				fmt::format(TRANSLATE_FS("Patch", "{} are active."), message), Host::OSD_INFO_DURATION);
+			Host::AddIconOSDMessage("LoadPatches", ICON_FA_BAND_AID, message, Host::OSD_INFO_DURATION);
 		}
 		else
 		{
