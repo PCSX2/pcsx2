@@ -54,10 +54,10 @@ namespace GameList
 	using CacheMap = UnorderedStringMap<Entry>;
 	using PlayedTimeMap = UnorderedStringMap<PlayedTimeEntry>;
 
-	static bool IsScannableFilename(const std::string_view& path);
+	static bool IsScannableFilename(const std::string_view path);
 
 	static bool GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::string* serial, u32* crc);
-	static Region ParseDatabaseRegion(const std::string_view& db_region);
+	static Region ParseDatabaseRegion(const std::string_view db_region);
 	static bool GetElfListEntry(const std::string& path, GameList::Entry* entry);
 	static bool GetIsoListEntry(const std::string& path, GameList::Entry* entry);
 
@@ -129,7 +129,7 @@ const char* GameList::EntryCompatibilityRatingToString(CompatibilityRating ratin
 	// clang-format on
 }
 
-bool GameList::IsScannableFilename(const std::string_view& path)
+bool GameList::IsScannableFilename(const std::string_view path)
 {
 	return VMManager::IsDiscFileName(path) || VMManager::IsElfFileName(path);
 }
@@ -212,7 +212,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	return true;
 }
 
-GameList::Region GameList::ParseDatabaseRegion(const std::string_view& db_region)
+GameList::Region GameList::ParseDatabaseRegion(const std::string_view db_region)
 {
 	// clang-format off
 						////// NTSC //////
@@ -747,7 +747,7 @@ const GameList::Entry* GameList::GetEntryByCRC(u32 crc)
 	return nullptr;
 }
 
-const GameList::Entry* GameList::GetEntryBySerialAndCRC(const std::string_view& serial, u32 crc)
+const GameList::Entry* GameList::GetEntryBySerialAndCRC(const std::string_view serial, u32 crc)
 {
 	for (const Entry& entry : s_entries)
 	{

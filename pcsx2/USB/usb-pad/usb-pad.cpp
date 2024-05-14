@@ -875,14 +875,14 @@ namespace usb_pad
 		return GetWheelSettings(static_cast<PS2WheelTypes>(subtype));
 	}
 
-	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const
+	void PadDevice::InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		if (s->mFFdevName == identifier && s->HasFF())
 			s->OpenFFDevice();
 	}
 
-	void PadDevice::InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const
+	void PadDevice::InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const
 	{
 		PadState* s = USB_CONTAINER_OF(dev, PadState, dev);
 		if (s->mFFdevName == identifier)

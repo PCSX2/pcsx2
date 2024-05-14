@@ -95,9 +95,9 @@ private:
 
 	using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-	static std::string GetCacheBaseFileName(const std::string_view& type, D3D_FEATURE_LEVEL feature_level, bool debug);
+	static std::string GetCacheBaseFileName(const std::string_view type, D3D_FEATURE_LEVEL feature_level, bool debug);
 	static CacheIndexKey GetShaderCacheKey(
-		EntryType type, const std::string_view& shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point);
+		EntryType type, const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point);
 	static CacheIndexKey GetPipelineCacheKey(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc);
 	static CacheIndexKey GetPipelineCacheKey(const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc);
 

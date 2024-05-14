@@ -189,7 +189,7 @@ namespace QtUtils
 		return OpenURL(parent, QUrl(url));
 	}
 
-	QString StringViewToQString(const std::string_view& str)
+	QString StringViewToQString(const std::string_view str)
 	{
 		return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 	}

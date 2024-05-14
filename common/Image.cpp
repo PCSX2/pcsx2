@@ -47,7 +47,7 @@ static constexpr FormatHandler s_format_handlers[] = {
 	{"webp", WebPBufferLoader, WebPBufferSaver, WebPFileLoader, WebPFileSaver},
 };
 
-static const FormatHandler* GetFormatHandler(const std::string_view& extension)
+static const FormatHandler* GetFormatHandler(const std::string_view extension)
 {
 	for (const FormatHandler& handler : s_format_handlers)
 	{

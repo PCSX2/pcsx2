@@ -22,34 +22,34 @@ namespace USB
 		NUM_PORTS = 2,
 	};
 
-	s32 DeviceTypeNameToIndex(const std::string_view& device);
+	s32 DeviceTypeNameToIndex(const std::string_view device);
 	const char* DeviceTypeIndexToName(s32 device);
 
 	std::vector<std::pair<const char*, const char*>> GetDeviceTypes();
-	const char* GetDeviceName(const std::string_view& device);
-	const char* GetDeviceSubtypeName(const std::string_view& device, u32 subtype);
-	std::span<const char*> GetDeviceSubtypes(const std::string_view& device);
-	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view& device, u32 subtype);
-	std::span<const SettingInfo> GetDeviceSettings(const std::string_view& device, u32 subtype);
+	const char* GetDeviceName(const std::string_view device);
+	const char* GetDeviceSubtypeName(const std::string_view device, u32 subtype);
+	std::span<const char*> GetDeviceSubtypes(const std::string_view device);
+	std::span<const InputBindingInfo> GetDeviceBindings(const std::string_view device, u32 subtype);
+	std::span<const SettingInfo> GetDeviceSettings(const std::string_view device, u32 subtype);
 
 	std::span<const InputBindingInfo> GetDeviceBindings(u32 port);
 	float GetDeviceBindValue(u32 port, u32 bind_index);
 	void SetDeviceBindValue(u32 port, u32 bind_index, float value);
 
 	/// Called when a new input device is connected.
-	void InputDeviceConnected(const std::string_view& identifier);
+	void InputDeviceConnected(const std::string_view identifier);
 
 	/// Called when an input device is disconnected.
-	void InputDeviceDisconnected(const std::string_view& identifier);
+	void InputDeviceDisconnected(const std::string_view identifier);
 
 	std::string GetConfigSection(int port);
 	std::string GetConfigDevice(const SettingsInterface& si, u32 port);
 	void SetConfigDevice(SettingsInterface& si, u32 port, const char* devname);
-	u32 GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view& devname);
-	void SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view& devname, u32 subtype);
+	u32 GetConfigSubType(const SettingsInterface& si, u32 port, const std::string_view devname);
+	void SetConfigSubType(SettingsInterface& si, u32 port, const std::string_view devname, u32 subtype);
 
 	/// Returns the configuration key for the specified bind and device type.
-	std::string GetConfigSubKey(const std::string_view& device, const std::string_view& bind_name);
+	std::string GetConfigSubKey(const std::string_view device, const std::string_view bind_name);
 
 	/// Performs automatic controller mapping with the provided list of generic mappings.
 	bool MapDevice(SettingsInterface& si, u32 port, const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);

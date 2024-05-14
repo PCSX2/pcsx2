@@ -890,7 +890,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 	return mcds;
 }
 
-std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name)
+std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view name)
 {
 	std::optional<AvailableMcdInfo> ret;
 
@@ -923,7 +923,7 @@ std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view& name
 	return ret;
 }
 
-bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, MemoryCardFileType file_type)
+bool FileMcd_CreateNewCard(const std::string_view name, MemoryCardType type, MemoryCardFileType file_type)
 {
 	const std::string full_path(Path::Combine(EmuFolders::MemoryCards, name));
 
@@ -1018,7 +1018,7 @@ bool FileMcd_CreateNewCard(const std::string_view& name, MemoryCardType type, Me
 	return false;
 }
 
-bool FileMcd_RenameCard(const std::string_view& name, const std::string_view& new_name)
+bool FileMcd_RenameCard(const std::string_view name, const std::string_view new_name)
 {
 	const std::string name_path(Path::Combine(EmuFolders::MemoryCards, name));
 	const std::string new_name_path(Path::Combine(EmuFolders::MemoryCards, new_name));
@@ -1043,7 +1043,7 @@ bool FileMcd_RenameCard(const std::string_view& name, const std::string_view& ne
 	return true;
 }
 
-bool FileMcd_DeleteCard(const std::string_view& name)
+bool FileMcd_DeleteCard(const std::string_view name)
 {
 	const std::string name_path(Path::Combine(EmuFolders::MemoryCards, name));
 

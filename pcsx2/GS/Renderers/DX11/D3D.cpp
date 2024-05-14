@@ -84,7 +84,7 @@ std::vector<std::string> D3D::GetAdapterNames(IDXGIFactory5* factory)
 	return adapter_names;
 }
 
-std::vector<std::string> D3D::GetFullscreenModes(IDXGIFactory5* factory, const std::string_view& adapter_name)
+std::vector<std::string> D3D::GetFullscreenModes(IDXGIFactory5* factory, const std::string_view adapter_name)
 {
 	std::vector<std::string> modes;
 	HRESULT hr;
@@ -196,7 +196,7 @@ bool D3D::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const 
 	return true;
 }
 
-wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory, const std::string_view& name)
+wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetAdapterByName(IDXGIFactory5* factory, const std::string_view name)
 {
 	if (name.empty())
 		return {};
@@ -242,7 +242,7 @@ wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetFirstAdapter(IDXGIFactory5* factory)
 	return adapter;
 }
 
-wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetChosenOrFirstAdapter(IDXGIFactory5* factory, const std::string_view& name)
+wil::com_ptr_nothrow<IDXGIAdapter1> D3D::GetChosenOrFirstAdapter(IDXGIFactory5* factory, const std::string_view name)
 {
 	wil::com_ptr_nothrow<IDXGIAdapter1> adapter = GetAdapterByName(factory, name);
 	if (!adapter)
@@ -479,7 +479,7 @@ GSRendererType D3D::GetPreferredRenderer()
 #endif // _M_X86
 
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
-	const std::string_view& code, const D3D_SHADER_MACRO* macros /* = nullptr */,
+	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
 	const char* entry_point /* = "main" */)
 {
 	const char* target;

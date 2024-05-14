@@ -192,7 +192,7 @@ void GameCheatSettingsWidget::reloadList()
 	}
 }
 
-QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_view& parent)
+QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_view parent)
 {
 	if (parent.empty())
 		return nullptr;

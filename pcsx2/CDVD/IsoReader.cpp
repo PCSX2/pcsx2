@@ -17,7 +17,7 @@ IsoReader::IsoReader() = default;
 
 IsoReader::~IsoReader() = default;
 
-std::string_view IsoReader::RemoveVersionIdentifierFromPath(const std::string_view& path)
+std::string_view IsoReader::RemoveVersionIdentifierFromPath(const std::string_view path)
 {
 	const std::string_view::size_type pos = path.find(';');
 	return (pos != std::string_view::npos) ? path.substr(0, pos) : path;
@@ -71,7 +71,7 @@ bool IsoReader::ReadPVD(Error* error)
 	return false;
 }
 
-std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(const std::string_view& path, Error* error)
+std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(const std::string_view path, Error* error)
 {
 	const ISODirectoryEntry* root_de = reinterpret_cast<const ISODirectoryEntry*>(m_pvd.root_directory_entry);
 	if (path.empty() || path == "/" || path == "\\")
@@ -115,7 +115,7 @@ std::string_view IsoReader::GetDirectoryEntryFileName(const u8* sector, u32 de_s
 }
 
 std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(
-	const std::string_view& path, u8* sector_buffer, u32 directory_record_lba, u32 directory_record_size, Error* error)
+	const std::string_view path, u8* sector_buffer, u32 directory_record_lba, u32 directory_record_size, Error* error)
 {
 	if (directory_record_size == 0)
 	{
@@ -191,7 +191,7 @@ std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(
 	return std::nullopt;
 }
 
-std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view& path, Error* error)
+std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view path, Error* error)
 {
 	std::string base_path(path);
 	u32 directory_record_lsn;
@@ -252,7 +252,7 @@ std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view& 
 	return files;
 }
 
-bool IsoReader::FileExists(const std::string_view& path, Error* error)
+bool IsoReader::FileExists(const std::string_view path, Error* error)
 {
 	auto de = LocateFile(path, error);
 	if (!de)
@@ -261,7 +261,7 @@ bool IsoReader::FileExists(const std::string_view& path, Error* error)
 	return (de->flags & ISODirectoryEntryFlag_Directory) == 0;
 }
 
-bool IsoReader::DirectoryExists(const std::string_view& path, Error* error)
+bool IsoReader::DirectoryExists(const std::string_view path, Error* error)
 {
 	auto de = LocateFile(path, error);
 	if (!de)
@@ -270,7 +270,7 @@ bool IsoReader::DirectoryExists(const std::string_view& path, Error* error)
 	return (de->flags & ISODirectoryEntryFlag_Directory) == ISODirectoryEntryFlag_Directory;
 }
 
-bool IsoReader::ReadFile(const std::string_view& path, std::vector<u8>* data, Error* error)
+bool IsoReader::ReadFile(const std::string_view path, std::vector<u8>* data, Error* error)
 {
 	auto de = LocateFile(path, error);
 	if (!de)

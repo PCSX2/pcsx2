@@ -68,7 +68,7 @@ namespace QtUtils
 	void OpenURL(QWidget* parent, const QString& url);
 
 	/// Converts a std::string_view to a QString safely.
-	QString StringViewToQString(const std::string_view& str);
+	QString StringViewToQString(const std::string_view str);
 
 	/// Sets a widget to italics if the setting value is inherited.
 	void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);

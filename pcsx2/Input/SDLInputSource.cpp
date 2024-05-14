@@ -236,7 +236,7 @@ u32 SDLInputSource::GetRGBForPlayerId(SettingsInterface& si, u32 player_id)
 		player_id);
 }
 
-u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_id)
+u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view str, u32 player_id)
 {
 	if (player_id >= MAX_LED_COLORS)
 		return 0;
@@ -349,7 +349,7 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
 	return ret;
 }
 
-std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_view& device, const std::string_view& binding)
+std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_view device, const std::string_view binding)
 {
 	if (!device.starts_with("SDL-") || binding.empty())
 		return std::nullopt;
@@ -596,7 +596,7 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
 	}
 }
 
-SDL_Joystick* SDLInputSource::GetJoystickForDevice(const std::string_view& device)
+SDL_Joystick* SDLInputSource::GetJoystickForDevice(const std::string_view device)
 {
 	if (!device.starts_with("SDL-"))
 		return nullptr;
@@ -917,7 +917,7 @@ std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
 	return ret;
 }
 
-bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, InputManager::GenericInputBindingMapping* mapping)
+bool SDLInputSource::GetGenericBindingMapping(const std::string_view device, InputManager::GenericInputBindingMapping* mapping)
 {
 	if (!device.starts_with("SDL-"))
 		return false;
@@ -939,27 +939,27 @@ bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, In
 			const GenericInputBinding negative = s_sdl_generic_binding_axis_mapping[i][0];
 			const GenericInputBinding positive = s_sdl_generic_binding_axis_mapping[i][1];
 			if (negative != GenericInputBinding::Unknown)
-				mapping->emplace_back(negative, StringUtil::StdStringFromFormat("SDL-%d/-%s", pid, s_sdl_axis_names[i]));
+				mapping->emplace_back(negative, fmt::format("SDL-{}/-{}", pid, s_sdl_axis_names[i]));
 
 			if (positive != GenericInputBinding::Unknown)
-				mapping->emplace_back(positive, StringUtil::StdStringFromFormat("SDL-%d/+%s", pid, s_sdl_axis_names[i]));
+				mapping->emplace_back(positive, fmt::format("SDL-{}/+{}", pid, s_sdl_axis_names[i]));
 		}
 		for (u32 i = 0; i < std::size(s_sdl_generic_binding_button_mapping); i++)
 		{
 			const GenericInputBinding binding = s_sdl_generic_binding_button_mapping[i];
 			if (binding != GenericInputBinding::Unknown)
-				mapping->emplace_back(binding, StringUtil::StdStringFromFormat("SDL-%d/%s", pid, s_sdl_button_names[i]));
+				mapping->emplace_back(binding, fmt::format("SDL-{}/{}", pid, s_sdl_button_names[i]));
 		}
 
 		if (it->use_game_controller_rumble || it->haptic_left_right_effect)
 		{
-			mapping->emplace_back(GenericInputBinding::SmallMotor, StringUtil::StdStringFromFormat("SDL-%d/SmallMotor", pid));
-			mapping->emplace_back(GenericInputBinding::LargeMotor, StringUtil::StdStringFromFormat("SDL-%d/LargeMotor", pid));
+			mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("SDL-{}/SmallMotor", pid));
+			mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("SDL-{}/LargeMotor", pid));
 		}
 		else
 		{
-			mapping->emplace_back(GenericInputBinding::SmallMotor, StringUtil::StdStringFromFormat("SDL-%d/Haptic", pid));
-			mapping->emplace_back(GenericInputBinding::LargeMotor, StringUtil::StdStringFromFormat("SDL-%d/Haptic", pid));
+			mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("SDL-{}/Haptic", pid));
+			mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("SDL-{}/Haptic", pid));
 		}
 
 		return true;

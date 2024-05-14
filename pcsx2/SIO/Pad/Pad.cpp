@@ -67,7 +67,7 @@ const char* Pad::ControllerInfo::GetLocalizedName() const
 	return Host::TranslateToCString("Pad", display_name);
 }
 
-std::optional<u32> Pad::ControllerInfo::GetBindIndex(const std::string_view& name) const
+std::optional<u32> Pad::ControllerInfo::GetBindIndex(const std::string_view name) const
 {
 	for (u32 i = 0; i < static_cast<u32>(bindings.size()); i++)
 	{
@@ -268,7 +268,7 @@ const Pad::ControllerInfo* Pad::GetControllerInfo(Pad::ControllerType type)
 	return nullptr;
 }
 
-const Pad::ControllerInfo* Pad::GetControllerInfoByName(const std::string_view& name)
+const Pad::ControllerInfo* Pad::GetControllerInfoByName(const std::string_view name)
 {
 	for (const ControllerInfo* info : s_controller_info)
 	{

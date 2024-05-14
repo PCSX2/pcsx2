@@ -491,7 +491,7 @@ void GLProgram::BindUniformBlock(const char* name, u32 index)
 		glUniformBlockBinding(m_program_id, location, index);
 }
 
-void GLProgram::SetName(const std::string_view& name)
+void GLProgram::SetName(const std::string_view name)
 {
 	if (name.empty())
 		return;

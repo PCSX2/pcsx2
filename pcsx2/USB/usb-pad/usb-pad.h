@@ -77,8 +77,8 @@ namespace usb_pad
 		void UpdateSettings(USBDevice* dev, SettingsInterface& si) const override;
 		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
 		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
-		void InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const override;
-		void InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const override;
+		void InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const override;
+		void InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const override;
 		std::span<const char*> SubTypes() const override;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;

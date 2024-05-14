@@ -52,9 +52,9 @@ enum class GSDisplayAlignment
 class SmallStringBase;
 
 // Returns the ID for the specified function, otherwise -1.
-s16 GSLookupGetSkipCountFunctionId(const std::string_view& name);
-s16 GSLookupBeforeDrawFunctionId(const std::string_view& name);
-s16 GSLookupMoveHandlerFunctionId(const std::string_view& name);
+s16 GSLookupGetSkipCountFunctionId(const std::string_view name);
+s16 GSLookupBeforeDrawFunctionId(const std::string_view name);
+s16 GSLookupMoveHandlerFunctionId(const std::string_view name);
 
 bool GSopen(const Pcsx2Config::GSOptions& config, GSRendererType renderer, u8* basemem);
 bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_renderer,

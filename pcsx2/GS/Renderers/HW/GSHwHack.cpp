@@ -1505,7 +1505,7 @@ const GSHwHack::Entry<GSRendererHW::MV_Ptr> GSHwHack::s_move_handler_functions[]
 
 #undef CRC_F
 
-s16 GSLookupGetSkipCountFunctionId(const std::string_view& name)
+s16 GSLookupGetSkipCountFunctionId(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(GSHwHack::s_get_skip_count_functions); i++)
 	{
@@ -1516,7 +1516,7 @@ s16 GSLookupGetSkipCountFunctionId(const std::string_view& name)
 	return -1;
 }
 
-s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
+s16 GSLookupBeforeDrawFunctionId(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(GSHwHack::s_before_draw_functions); i++)
 	{
@@ -1527,7 +1527,7 @@ s16 GSLookupBeforeDrawFunctionId(const std::string_view& name)
 	return -1;
 }
 
-s16 GSLookupMoveHandlerFunctionId(const std::string_view& name)
+s16 GSLookupMoveHandlerFunctionId(const std::string_view name)
 {
 	for (u32 i = 0; i < std::size(GSHwHack::s_move_handler_functions); i++)
 	{

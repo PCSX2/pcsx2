@@ -78,7 +78,7 @@ namespace ImGuiFullscreen
 	static __fi ImVec4 ModAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, a); }
 	static __fi ImVec4 MulAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, v.w * a); }
 
-	static __fi std::string_view RemoveHash(const std::string_view& s)
+	static __fi std::string_view RemoveHash(const std::string_view s)
 	{
 		const std::string_view::size_type pos = s.find('#');
 		return (pos != std::string_view::npos) ? s.substr(0, pos) : s;

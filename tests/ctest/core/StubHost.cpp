@@ -33,20 +33,20 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 {
 }
 
-void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)
 {
 }
 
-bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+bool Host::ConfirmMessage(const std::string_view title, const std::string_view message)
 {
 	return true;
 }
 
-void Host::OpenURL(const std::string_view& url)
+void Host::OpenURL(const std::string_view url)
 {
 }
 
-bool Host::CopyTextToClipboard(const std::string_view& text)
+bool Host::CopyTextToClipboard(const std::string_view text)
 {
 	return false;
 }
@@ -122,15 +122,15 @@ void Host::OnPerformanceMetricsUpdated()
 {
 }
 
-void Host::OnSaveStateLoading(const std::string_view& filename)
+void Host::OnSaveStateLoading(const std::string_view filename)
 {
 }
 
-void Host::OnSaveStateLoaded(const std::string_view& filename, bool was_successful)
+void Host::OnSaveStateLoaded(const std::string_view filename, bool was_successful)
 {
 }
 
-void Host::OnSaveStateSaved(const std::string_view& filename)
+void Host::OnSaveStateSaved(const std::string_view filename)
 {
 }
 
@@ -180,7 +180,7 @@ void Host::PumpMessagesOnCPUThread()
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(
-	const std::string_view& context, const std::string_view& msg, char* tbuf, size_t tbuf_space)
+	const std::string_view context, const std::string_view msg, char* tbuf, size_t tbuf_space)
 {
 	if (msg.size() > tbuf_space)
 		return -1;
@@ -243,7 +243,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
 	callback(std::string());
 }
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view str)
 {
 	return std::nullopt;
 }

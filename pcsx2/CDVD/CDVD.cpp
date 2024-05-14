@@ -378,7 +378,7 @@ s32 cdvdWriteConfig(const u8* config)
 	return 0;
 }
 
-static bool cdvdUncheckedLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std::string_view& elfpath, bool isPSXElf, Error* error)
+static bool cdvdUncheckedLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std::string_view elfpath, bool isPSXElf, Error* error)
 {
 	// Strip out cdrom: prefix, and any leading slashes.
 	size_t start_pos = (elfpath[5] == '0') ? 7 : 6;
@@ -416,7 +416,7 @@ static bool cdvdUncheckedLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std
 	return elfo->OpenIsoFile(std::move(iso_filename), isor, isPSXElf, error);
 }
 
-bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf, Error* error)
+bool cdvdLoadElf(ElfObject* elfo, const std::string_view elfpath, bool isPSXElf, Error* error)
 {
 	if (R3000A::ioman::is_host(elfpath))
 	{
@@ -439,7 +439,7 @@ bool cdvdLoadElf(ElfObject* elfo, const std::string_view& elfpath, bool isPSXElf
 	}
 }
 
-bool cdvdLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std::string_view& elfpath, bool isPSXElf, Error* error)
+bool cdvdLoadDiscElf(ElfObject* elfo, IsoReader& isor, const std::string_view elfpath, bool isPSXElf, Error* error)
 {
 	if (!elfpath.starts_with("cdrom:") && !elfpath.starts_with("cdrom0:"))
 		return false;

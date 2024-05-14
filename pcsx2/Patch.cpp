@@ -56,7 +56,7 @@ namespace Patch
 		{"byte", "short", "word", "double", "extended", "beshort", "beword", "bedouble", "bytes"}};
 
 	template <typename EnumType, class ArrayType>
-	static inline std::optional<EnumType> LookupEnumName(const std::string_view& val, const ArrayType& arr)
+	static inline std::optional<EnumType> LookupEnumName(const std::string_view val, const ArrayType& arr)
 	{
 		for (size_t i = 0; i < arr.size(); i++)
 		{
@@ -120,7 +120,7 @@ namespace Patch
 	{
 		int code;
 		const char* text;
-		void (*func)(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
+		void (*func)(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 	};
 
 	using PatchList = std::vector<PatchGroup>;
@@ -129,27 +129,27 @@ namespace Patch
 
 	namespace PatchFunc
 	{
-		static void patch(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
-		static void gsaspectratio(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
-		static void gsinterlacemode(PatchGroup* group, const std::string_view& cmd, const std::string_view& param);
+		static void patch(PatchGroup* group, const std::string_view cmd, const std::string_view param);
+		static void gsaspectratio(PatchGroup* group, const std::string_view cmd, const std::string_view param);
+		static void gsinterlacemode(PatchGroup* group, const std::string_view cmd, const std::string_view param);
 	} // namespace PatchFunc
 
 	static void TrimPatchLine(std::string& buffer);
-	static int PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
+	static int PatchTableExecute(PatchGroup* group, const std::string_view lhs, const std::string_view rhs,
 		const std::span<const PatchTextTable>& Table);
-	static void LoadPatchLine(PatchGroup* group, const std::string_view& line);
+	static void LoadPatchLine(PatchGroup* group, const std::string_view line);
 	static u32 LoadPatchesFromString(PatchList* patch_list, const std::string& patch_file);
 	static bool OpenPatchesZip();
 	static std::string GetPnachTemplate(
-		const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs);
+		const std::string_view serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs);
 	static std::vector<std::string> FindPatchFilesOnDisk(
-		const std::string_view& serial, u32 crc, bool cheats, bool all_crcs);
+		const std::string_view serial, u32 crc, bool cheats, bool all_crcs);
 
 	static bool ContainsPatchName(const PatchInfoList& patches, const std::string_view patchName);
 	static bool ContainsPatchName(const PatchList& patches, const std::string_view patchName);
 
 	template <typename F>
-	static void EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f);
+	static void EnumeratePnachFiles(const std::string_view serial, u32 crc, bool cheats, bool for_ui, const F& f);
 
 	static bool PatchStringHasUnlabelledPatch(const std::string& pnach_data);
 	static void ExtractPatchInfo(PatchInfoList* dst, const std::string& pnach_data, u32* num_unlabelled_patches);
@@ -213,7 +213,7 @@ bool Patch::ContainsPatchName(const PatchList& patch_list, const std::string_vie
 	}) != patch_list.end();
 }
 
-int Patch::PatchTableExecute(PatchGroup* group, const std::string_view& lhs, const std::string_view& rhs,
+int Patch::PatchTableExecute(PatchGroup* group, const std::string_view lhs, const std::string_view rhs,
 	const std::span<const PatchTextTable>& Table)
 {
 	int i = 0;
@@ -233,7 +233,7 @@ int Patch::PatchTableExecute(PatchGroup* group, const std::string_view& lhs, con
 }
 
 // This routine is for executing the commands of the ini file.
-void Patch::LoadPatchLine(PatchGroup* group, const std::string_view& line)
+void Patch::LoadPatchLine(PatchGroup* group, const std::string_view line)
 {
 	std::string_view key, value;
 	StringUtil::ParseAssignmentString(line, &key, &value);
@@ -355,7 +355,7 @@ bool Patch::OpenPatchesZip()
 	return true;
 }
 
-std::string Patch::GetPnachTemplate(const std::string_view& serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs)
+std::string Patch::GetPnachTemplate(const std::string_view serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs)
 {
 	pxAssert(!all_crcs || (include_serial && add_wildcard));
 	if (all_crcs)
@@ -366,7 +366,7 @@ std::string Patch::GetPnachTemplate(const std::string_view& serial, u32 crc, boo
 		return fmt::format("{:08X}{}.pnach", crc, add_wildcard ? "*" : "");
 }
 
-std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view& serial, u32 crc, bool cheats, bool all_crcs)
+std::vector<std::string> Patch::FindPatchFilesOnDisk(const std::string_view serial, u32 crc, bool cheats, bool all_crcs)
 {
 	FileSystem::FindResultsArray files;
 	FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
@@ -398,7 +398,7 @@ bool Patch::ContainsPatchName(const PatchInfoList& patches, const std::string_vi
 }
 
 template <typename F>
-void Patch::EnumeratePnachFiles(const std::string_view& serial, u32 crc, bool cheats, bool for_ui, const F& f)
+void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool cheats, bool for_ui, const F& f)
 {
 	// Prefer files on disk over the zip.
 	std::vector<std::string> disk_patch_files;
@@ -553,7 +553,7 @@ std::string_view Patch::PatchInfo::GetNameParentPart() const
 	return ret;
 }
 
-Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches)
+Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view serial, u32 crc, bool cheats, bool showAllCRCS, u32* num_unlabelled_patches)
 {
 	PatchInfoList ret;
 
@@ -568,7 +568,7 @@ Patch::PatchInfoList Patch::GetPatchInfo(const std::string_view& serial, u32 crc
 	return ret;
 }
 
-std::string Patch::GetPnachFilename(const std::string_view& serial, u32 crc, bool cheats)
+std::string Patch::GetPnachFilename(const std::string_view serial, u32 crc, bool cheats)
 {
 	return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetPnachTemplate(serial, crc, true, false, false));
 }
@@ -798,7 +798,7 @@ void Patch::UnloadPatches()
 }
 
 // PatchFunc Functions.
-void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, const std::string_view& param)
+void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, const std::string_view param)
 {
 #define PATCH_ERROR(fstring, ...) \
 	Console.Error(fmt::format("(Patch) Error Parsing: {}={}: " fstring, cmd, param, __VA_ARGS__))
@@ -874,7 +874,7 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view& cmd, con
 #undef PATCH_ERROR
 }
 
-void Patch::PatchFunc::gsaspectratio(PatchGroup* group, const std::string_view& cmd, const std::string_view& param)
+void Patch::PatchFunc::gsaspectratio(PatchGroup* group, const std::string_view cmd, const std::string_view param)
 {
 	for (u32 i = 0; i < static_cast<u32>(AspectRatioType::MaxCount); i++)
 	{
@@ -888,7 +888,7 @@ void Patch::PatchFunc::gsaspectratio(PatchGroup* group, const std::string_view& 
 	Console.Error(fmt::format("Patch error: {} is an unknown aspect ratio.", param));
 }
 
-void Patch::PatchFunc::gsinterlacemode(PatchGroup* group, const std::string_view& cmd, const std::string_view& param)
+void Patch::PatchFunc::gsinterlacemode(PatchGroup* group, const std::string_view cmd, const std::string_view param)
 {
 	const std::optional<int> interlace_mode = StringUtil::FromChars<int>(param);
 	if (!interlace_mode.has_value() || interlace_mode.value() < 0 ||

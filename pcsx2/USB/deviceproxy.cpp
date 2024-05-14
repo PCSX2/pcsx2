@@ -49,11 +49,11 @@ void DeviceProxy::UpdateSettings(USBDevice* dev, SettingsInterface& si) const
 {
 }
 
-void DeviceProxy::InputDeviceConnected(USBDevice* dev, const std::string_view& identifier) const
+void DeviceProxy::InputDeviceConnected(USBDevice* dev, const std::string_view identifier) const
 {
 }
 
-void DeviceProxy::InputDeviceDisconnected(USBDevice* dev, const std::string_view& identifier) const
+void DeviceProxy::InputDeviceDisconnected(USBDevice* dev, const std::string_view identifier) const
 {
 }
 

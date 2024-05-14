@@ -108,7 +108,7 @@ namespace Achievements
 		};
 	} // namespace
 
-	static void ReportError(const std::string_view& sv);
+	static void ReportError(const std::string_view sv);
 	template <typename... T>
 	static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
 	template <typename... T>
@@ -168,7 +168,7 @@ namespace Achievements
 	static void UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock);
 
 	static std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state);
-	static std::string GetUserBadgePath(const std::string_view& username);
+	static std::string GetUserBadgePath(const std::string_view username);
 	static std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
 
 	static void DrawAchievement(const rc_client_achievement_t* cheevo);
@@ -242,7 +242,7 @@ void Achievements::EndLoadingScreen(bool was_running_idle)
 	ImGuiFullscreen::CloseBackgroundProgressDialog("achievements_loading");
 }
 
-void Achievements::ReportError(const std::string_view& sv)
+void Achievements::ReportError(const std::string_view sv)
 {
 	std::string error = fmt::format("Achievements error: {}", sv);
 	Console.Error(error);
@@ -1591,7 +1591,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
 	return path;
 }
 
-std::string Achievements::GetUserBadgePath(const std::string_view& username)
+std::string Achievements::GetUserBadgePath(const std::string_view username)
 {
 	// definitely want to sanitize usernames... :)
 	std::string path;

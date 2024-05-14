@@ -43,7 +43,7 @@ private Q_SLOTS:
 	void reloadList();
 
 private:
-	QTreeWidgetItem* getTreeWidgetParent(const std::string_view& parent);
+	QTreeWidgetItem* getTreeWidgetParent(const std::string_view parent);
 	void populateTreeWidgetItem(QTreeWidgetItem* item, const Patch::PatchInfo& pi, bool enabled);
 	void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
 	void setStateForAll(bool enabled);
