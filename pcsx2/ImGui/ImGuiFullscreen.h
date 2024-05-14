@@ -264,3 +264,17 @@ namespace ImGuiFullscreen
 	void GetFileSelectorHelpText(SmallStringBase& dest);
 	void GetInputDialogHelpText(SmallStringBase& dest);
 } // namespace ImGuiFullscreen
+
+// Host UI triggers from Big Picture mode.
+namespace Host
+{
+	/// Returns true if native file dialogs should be preferred over Big Picture.
+	bool ShouldPreferHostFileSelector();
+
+	/// Opens a file selector dialog.
+	using FileSelectorCallback = std::function<void(const std::string& path)>;
+	using FileSelectorFilters = std::vector<std::string>;
+	void OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+		FileSelectorFilters filters = FileSelectorFilters(),
+		std::string_view initial_directory = std::string_view());
+} // namespace Host

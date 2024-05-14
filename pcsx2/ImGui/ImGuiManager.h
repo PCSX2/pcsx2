@@ -103,6 +103,9 @@ namespace ImGuiManager
 
 	/// Sets the position of a software cursor, used when we have relative coordinates such as controllers.
 	void SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y);
+
+	/// Strips icon characters from a string.
+	std::string StripIconCharacters(std::string_view str);
 } // namespace ImGuiManager
 
 namespace Host

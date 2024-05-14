@@ -34,6 +34,7 @@
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
+#include "pcsx2/ImGui/ImGuiFullscreen.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/MTGS.h"
@@ -272,7 +273,7 @@ void Host::BeginPresentFrame()
 
 		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
 
-		if(!idle_frame)
+		if (!idle_frame)
 			s_total_drawn_frames++;
 
 		s_total_frames++;
@@ -397,6 +398,17 @@ void Host::OnCoverDownloaderOpenRequested()
 void Host::OnCreateMemoryCardOpenRequested()
 {
 	// noop
+}
+
+bool Host::ShouldPreferHostFileSelector()
+{
+	return false;
+}
+
+void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+	FileSelectorFilters filters, std::string_view initial_directory)
+{
+	callback(std::string());
 }
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
@@ -538,7 +550,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 
 				s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks", true);
 
-				if(str.find("af") != std::string::npos)
+				if (str.find("af") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_AutoFlush", true);
 				if (str.find("cpufb") != std::string::npos)
 					s_settings_interface.SetBoolValue("EmuCore/GS", "UserHacks_CPU_FB_Conversion", true);
@@ -834,7 +846,7 @@ int wmain(int argc, wchar_t** argv)
 	u8_args.reserve(static_cast<size_t>(argc));
 	for (int i = 0; i < argc; i++)
 		u8_args.push_back(StringUtil::WideStringToUTF8String(argv[i]));
-	
+
 	std::vector<char*> u8_argptrs;
 	u8_argptrs.reserve(u8_args.size());
 	for (int i = 0; i < argc; i++)
