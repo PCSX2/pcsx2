@@ -66,30 +66,13 @@ namespace ImGuiFullscreen
 	extern ImVec4 UISecondaryWeakColor;
 	extern ImVec4 UISecondaryTextColor;
 
-	static __fi float DPIScale(float v) { return ImGui::GetIO().DisplayFramebufferScale.x * v; }
-	static __fi float DPIScale(int v) { return ImGui::GetIO().DisplayFramebufferScale.x * static_cast<float>(v); }
+	static __fi float LayoutScale(float v) { return ImCeil(g_layout_scale * v); }
+	static __fi ImVec2 LayoutScale(const ImVec2& v) { return ImVec2(ImCeil(v.x * g_layout_scale), ImCeil(v.y * g_layout_scale)); }
+	static __fi ImVec2 LayoutScale(float x, float y) { return ImVec2(ImCeil(x * g_layout_scale), ImCeil(y * g_layout_scale)); }
 
-	static __fi ImVec2 DPIScale(const ImVec2& v)
-	{
-		const ImVec2& fbs = ImGui::GetIO().DisplayFramebufferScale;
-		return ImVec2(v.x * fbs.x, v.y * fbs.y);
-	}
-
-	static __fi float WindowWidthScale(float v) { return ImGui::GetWindowWidth() * v; }
-	static __fi float WindowHeightScale(float v) { return ImGui::GetWindowHeight() * v; }
-
-	static __fi float LayoutScale(float v) { return g_layout_scale * v; }
-	static __fi ImVec2 LayoutScale(const ImVec2& v) { return ImVec2(v.x * g_layout_scale, v.y * g_layout_scale); }
-	static __fi ImVec2 LayoutScale(float x, float y) { return ImVec2(x * g_layout_scale, y * g_layout_scale); }
-
-	static __fi ImVec2 LayoutScaleAndOffset(float x, float y)
-	{
-		return ImVec2(g_layout_padding_left + x * g_layout_scale, g_layout_padding_top + y * g_layout_scale);
-	}
-
-	static __fi float LayoutUnscale(float v) { return g_rcp_layout_scale * v; }
-	static __fi ImVec2 LayoutUnscale(const ImVec2& v) { return ImVec2(v.x * g_rcp_layout_scale, v.y * g_rcp_layout_scale); }
-	static __fi ImVec2 LayoutUnscale(float x, float y) { return ImVec2(x * g_rcp_layout_scale, y * g_rcp_layout_scale); }
+	static __fi float LayoutUnscale(float v) { return ImCeil(g_rcp_layout_scale * v); }
+	static __fi ImVec2 LayoutUnscale(const ImVec2& v) { return ImVec2(ImCeil(v.x * g_rcp_layout_scale), ImCeil(v.y * g_rcp_layout_scale)); }
+	static __fi ImVec2 LayoutUnscale(float x, float y) { return ImVec2(ImCeil(x * g_rcp_layout_scale), ImCeil(y * g_rcp_layout_scale)); }
 
 	static __fi ImVec4 ModAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, a); }
 	static __fi ImVec4 MulAlpha(const ImVec4& v, float a) { return ImVec4(v.x, v.y, v.z, v.w * a); }
@@ -188,10 +171,6 @@ namespace ImGuiFullscreen
 		ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<bool>* v, bool enabled = true,
 		float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
-	bool RangeButton(const char* title, const char* summary, s32* value, s32 min, s32 max, s32 increment, const char* format = "%d",
-		bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
-	bool RangeButton(const char* title, const char* summary, float* value, float min, float max, float increment, const char* format = "%f",
-		bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 	bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
 		const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count, bool enabled, float height, ImFont* font,
 		ImFont* summary_font);

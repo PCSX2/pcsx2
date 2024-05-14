@@ -543,12 +543,12 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 
 	if (fullscreen_fonts)
 	{
-		const float medium_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
+		const float medium_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE);
 		s_medium_font = AddTextFont(medium_font_size);
 		if (!s_medium_font || !AddIconFonts(medium_font_size))
 			return false;
 
-		const float large_font_size = std::ceil(ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE));
+		const float large_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE);
 		s_large_font = AddTextFont(large_font_size);
 		if (!s_large_font || !AddIconFonts(large_font_size))
 			return false;
