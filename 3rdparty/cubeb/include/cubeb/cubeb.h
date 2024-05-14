@@ -258,11 +258,23 @@ typedef enum {
                                                    the jack backend. */
 } cubeb_stream_prefs;
 
+/**
+ * Input stream audio processing parameters. Only applicable with
+ * CUBEB_STREAM_PREF_VOICE.
+ */
+typedef enum {
+  CUBEB_INPUT_PROCESSING_PARAM_NONE = 0x00,
+  CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION = 0x01,
+  CUBEB_INPUT_PROCESSING_PARAM_NOISE_SUPPRESSION = 0x02,
+  CUBEB_INPUT_PROCESSING_PARAM_AUTOMATIC_GAIN_CONTROL = 0x04,
+  CUBEB_INPUT_PROCESSING_PARAM_VOICE_ISOLATION = 0x08,
+} cubeb_input_processing_params;
+
 /** Stream format initialization parameters. */
 typedef struct {
   cubeb_sample_format format; /**< Requested sample format.  One of
                                    #cubeb_sample_format. */
-  uint32_t rate; /**< Requested sample rate.  Valid range is [1000, 192000]. */
+  uint32_t rate; /**< Requested sample rate.  Valid range is [1000, 384000]. */
   uint32_t channels; /**< Requested channel count.  Valid range is [1, 8]. */
   cubeb_channel_layout
       layout; /**< Requested channel layout. This must be consistent with the
@@ -519,6 +531,18 @@ cubeb_get_min_latency(cubeb * context, cubeb_stream_params * params,
 CUBEB_EXPORT int
 cubeb_get_preferred_sample_rate(cubeb * context, uint32_t * rate);
 
+/** Get the supported input processing features for this backend. See
+    cubeb_stream_set_input_processing for how to set them for a particular input
+    stream.
+    @param context A pointer to the cubeb context.
+    @param params Out parameter for the input processing params supported by
+                  this backend.
+    @retval CUBEB_OK
+    @retval CUBEB_ERROR_NOT_SUPPORTED */
+CUBEB_EXPORT int
+cubeb_get_supported_input_processing_params(
+    cubeb * context, cubeb_input_processing_params * params);
+
 /** Destroy an application context. This must be called after all stream have
  *  been destroyed.
     @param context A pointer to the cubeb context.*/
@@ -645,6 +669,30 @@ cubeb_stream_set_name(cubeb_stream * stream, char const * stream_name);
 CUBEB_EXPORT int
 cubeb_stream_get_current_device(cubeb_stream * stm,
                                 cubeb_device ** const device);
+
+/** Set input mute state for this stream. Some platforms notify the user when an
+    application is accessing audio input. When all inputs are muted they can
+    prove to the user that the application is not actively capturing any input.
+    @param stream the stream for which to set input mute state
+    @param muted whether the input should mute or not
+    @retval CUBEB_OK
+    @retval CUBEB_ERROR_INVALID_PARAMETER if this stream does not have an input
+            device
+    @retval CUBEB_ERROR_NOT_SUPPORTED */
+CUBEB_EXPORT int
+cubeb_stream_set_input_mute(cubeb_stream * stream, int mute);
+
+/** Set what input processing features to enable for this stream.
+    @param stream the stream for which to set input processing features.
+    @param params what input processing features to use
+    @retval CUBEB_OK
+    @retval CUBEB_ERROR if params could not be applied
+    @retval CUBEB_ERROR_INVALID_PARAMETER if a given param is not supported by
+            this backend, or if this stream does not have an input device
+    @retval CUBEB_ERROR_NOT_SUPPORTED */
+CUBEB_EXPORT int
+cubeb_stream_set_input_processing_params(cubeb_stream * stream,
+                                         cubeb_input_processing_params params);
 
 /** Destroy a cubeb_device structure.
     @param stream the stream passed in cubeb_stream_get_current_device
