@@ -66,6 +66,7 @@ public:
 #endif
 
 	// helpers for setting
+	static void Clear(Error* errptr);
 	static void SetErrno(Error* errptr, int err);
 	static void SetErrno(Error* errptr, std::string_view prefix, int err);
 	static void SetSocket(Error* errptr, int err);

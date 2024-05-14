@@ -17,6 +17,8 @@ namespace CocoaTools
 	void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
 	/// Remove a handler previously added using AddThemeChangeHandler with the given context
 	void RemoveThemeChangeHandler(void* ctx);
+	/// Returns the bundle path.
+	std::optional<std::string> GetBundlePath();
 	/// Get the bundle path to the actual application without any translocation fun
 	std::optional<std::string> GetNonTranslocatedBundlePath();
 	/// Move the given file to the trash, and return the path to its new location
