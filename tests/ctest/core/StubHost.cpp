@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "pcsx2/Achievements.h"
@@ -6,6 +6,8 @@
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
+#include "pcsx2/ImGui/ImGuiAnimated.h"
+#include "pcsx2/ImGui/ImGuiFullscreen.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/VMManager.h"
@@ -211,6 +213,17 @@ void Host::OnCoverDownloaderOpenRequested()
 
 void Host::OnCreateMemoryCardOpenRequested()
 {
+}
+
+bool Host::ShouldPreferHostFileSelector()
+{
+	return false;
+}
+
+void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+	FileSelectorFilters filters, std::string_view initial_directory)
+{
+	callback(std::string());
 }
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)

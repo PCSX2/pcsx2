@@ -24,6 +24,7 @@
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 #include "pcsx2/ImGui/FullscreenUI.h"
+#include "pcsx2/ImGui/ImGuiFullscreen.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/ImGui/ImGuiOverlays.h"
 #include "pcsx2/Input/InputManager.h"
@@ -46,6 +47,7 @@
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QFileDialog>
 #include <QtGui/QClipboard>
 #include <QtGui/QInputMethod>
 
@@ -1152,6 +1154,59 @@ void Host::OnCreateMemoryCardOpenRequested()
 	emit g_emu_thread->onCreateMemoryCardOpenRequested();
 }
 
+bool Host::ShouldPreferHostFileSelector()
+{
+#ifdef __linux__
+	// If running inside a flatpak, we want to use native selectors/portals.
+	return (std::getenv("container") != nullptr);
+#else
+	return false;
+#endif
+}
+
+void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+	FileSelectorFilters filters, std::string_view initial_directory)
+{
+	const bool from_cpu_thread = g_emu_thread->isOnEmuThread();
+
+	QString filters_str;
+	if (!filters.empty())
+	{
+		filters_str.append(QStringLiteral("All File Types (%1)")
+							   .arg(QString::fromStdString(StringUtil::JoinString(filters.begin(), filters.end(), " "))));
+		for (const std::string& filter : filters)
+		{
+			filters_str.append(
+				QStringLiteral(";;%1 Files (%2)")
+					.arg(
+						QtUtils::StringViewToQString(std::string_view(filter).substr(filter.starts_with("*.") ? 2 : 0)).toUpper())
+					.arg(QString::fromStdString(filter)));
+		}
+	}
+
+	QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), select_directory, callback = std::move(callback),
+							  filters_str = std::move(filters_str),
+							  initial_directory = QtUtils::StringViewToQString(initial_directory),
+							  from_cpu_thread]() mutable {
+		auto lock = g_main_window->pauseAndLockVM();
+
+		QString path;
+
+		if (select_directory)
+			path = QFileDialog::getExistingDirectory(lock.getDialogParent(), title, initial_directory);
+		else
+			path = QFileDialog::getOpenFileName(lock.getDialogParent(), title, initial_directory, filters_str);
+
+		if (!path.isEmpty())
+			path = QDir::toNativeSeparators(path);
+
+		if (from_cpu_thread)
+			Host::RunOnCPUThread([callback = std::move(callback), path = path.toStdString()]() { callback(path); });
+		else
+			callback(path.toStdString());
+	});
+}
+
 void Host::PumpMessagesOnCPUThread()
 {
 	g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
@@ -1255,9 +1310,9 @@ bool QtHost::InitializeConfig()
 		QMessageBox::critical(
 			nullptr, QStringLiteral("PCSX2"),
 			QStringLiteral("Failed to create data directory at path\n\n%1\n\n"
-				"The error was: %2\n"
-				"Please ensure this directory is writable. You can also try portable mode "
-				"by creating portable.txt in the same directory you installed PCSX2 into.")
+						   "The error was: %2\n"
+						   "Please ensure this directory is writable. You can also try portable mode "
+						   "by creating portable.txt in the same directory you installed PCSX2 into.")
 				.arg(QString::fromStdString(EmuFolders::DataRoot))
 				.arg(QString::fromStdString(error.GetDescription())));
 		return false;

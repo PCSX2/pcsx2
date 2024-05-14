@@ -1061,3 +1061,25 @@ void ImGuiManager::SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y
 	sc.pos.first = pos_x;
 	sc.pos.second = pos_y;
 }
+
+std::string ImGuiManager::StripIconCharacters(std::string_view str)
+{
+	std::string result;
+	result.reserve(str.length());
+
+	for (size_t offset = 0; offset < str.length();)
+	{
+		char32_t utf;
+		offset += StringUtil::DecodeUTF8(str, offset, &utf);
+
+		// icon if outside BMP/SMP/TIP, or inside private use area
+		if (utf > 0x32FFF || (utf >= 0xE000 && utf <= 0xF8FF))
+			continue;
+
+		StringUtil::EncodeAndAppendUTF8(result, utf);
+	}
+
+	StringUtil::StripWhitespace(&result);
+
+	return result;
+}

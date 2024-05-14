@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -9,6 +9,7 @@
 #include "GS/Renderers/Common/GSTexture.h"
 #include "ImGui/ImGuiAnimated.h"
 #include "ImGui/ImGuiFullscreen.h"
+#include "ImGui/ImGuiManager.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -1871,7 +1872,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 			{
 				if (s_file_selector_filters.empty() ||
 					std::none_of(s_file_selector_filters.begin(), s_file_selector_filters.end(),
-						[&fd](const std::string& filter) { return StringUtil::WildcardMatch(fd.FileName.c_str(), filter.c_str()); }))
+						[&fd](const std::string& filter) { return StringUtil::WildcardMatch(fd.FileName.c_str(), filter.c_str(), false); }))
 				{
 					continue;
 				}
@@ -1900,6 +1901,16 @@ bool ImGuiFullscreen::IsFileSelectorOpen()
 void ImGuiFullscreen::OpenFileSelector(std::string_view title, bool select_directory, FileSelectorCallback callback,
 	FileSelectorFilters filters, std::string initial_directory)
 {
+	if (initial_directory.empty() || !FileSystem::DirectoryExists(initial_directory.c_str()))
+		initial_directory = FileSystem::GetWorkingDirectory();
+
+	if (Host::ShouldPreferHostFileSelector())
+	{
+		Host::OpenHostFileSelectorAsync(ImGuiManager::StripIconCharacters(title), select_directory, std::move(callback),
+			std::move(filters), initial_directory);
+		return;
+	}
+
 	if (s_file_selector_open)
 		CloseFileSelector();
 
@@ -1909,8 +1920,6 @@ void ImGuiFullscreen::OpenFileSelector(std::string_view title, bool select_direc
 	s_file_selector_callback = std::move(callback);
 	s_file_selector_filters = std::move(filters);
 
-	if (initial_directory.empty() || !FileSystem::DirectoryExists(initial_directory.c_str()))
-		initial_directory = FileSystem::GetWorkingDirectory();
 	SetFileSelectorDirectory(std::move(initial_directory));
 	QueueResetFocus();
 }
