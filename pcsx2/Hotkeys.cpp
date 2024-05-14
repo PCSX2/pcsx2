@@ -93,10 +93,9 @@ static bool CanPause()
 	const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
 	if (delta < PAUSE_INTERVAL)
 	{
-		Host::AddIconOSDMessage(
-			"PauseCooldown", ICON_FA_CLOCK,
-			fmt::format(TRANSLATE_FS("Hotkeys", "You cannot pause until another {:.1f} seconds have passed."),
-				PAUSE_INTERVAL - delta),
+		Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+			TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+				"", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
 			Host::OSD_QUICK_DURATION);
 		return false;
 	}

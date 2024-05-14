@@ -1139,9 +1139,9 @@ std::string GameList::FormatTimespan(std::time_t timespan, bool long_format)
 	else
 	{
 		if (hours > 0)
-			ret = fmt::format(TRANSLATE_FS("GameList", "{} hours"), hours);
+			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n hours", "", hours));
 		else
-			ret = fmt::format(TRANSLATE_FS("GameList", "{} minutes"), minutes);
+			ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n minutes", "", minutes));
 	}
 
 	return ret;

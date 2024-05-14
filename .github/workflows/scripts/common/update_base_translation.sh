@@ -8,4 +8,4 @@ set -e
 # for just updating translations. Saves building it for this action alone.
 "$SCRIPTDIR/../../../../tools/retry.sh" sudo apt-get -y install qt6-l10n-tools
 
-PATH=/usr/lib/qt6/bin:$PATH "$SCRIPTDIR/../../../../pcsx2-qt/Translations/update_en_translation.sh"
+PATH=/usr/lib/qt6/bin:$PATH "$SCRIPTDIR/../../../../pcsx2-qt/Translations/update_base_translation.sh"
