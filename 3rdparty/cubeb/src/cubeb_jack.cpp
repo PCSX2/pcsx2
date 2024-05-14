@@ -160,6 +160,7 @@ static struct cubeb_ops const cbjack_ops = {
     .get_max_channel_count = cbjack_get_max_channel_count,
     .get_min_latency = cbjack_get_min_latency,
     .get_preferred_sample_rate = cbjack_get_preferred_sample_rate,
+    .get_supported_input_processing_params = NULL,
     .enumerate_devices = cbjack_enumerate_devices,
     .device_collection_destroy = cbjack_device_collection_destroy,
     .destroy = cbjack_destroy,
@@ -173,6 +174,8 @@ static struct cubeb_ops const cbjack_ops = {
     .stream_set_volume = cbjack_stream_set_volume,
     .stream_set_name = NULL,
     .stream_get_current_device = cbjack_stream_get_current_device,
+    .stream_set_input_mute = NULL,
+    .stream_set_input_processing_params = NULL,
     .stream_device_destroy = cbjack_stream_device_destroy,
     .stream_register_device_changed_callback = NULL,
     .register_device_collection_changed = NULL};
@@ -431,8 +434,10 @@ cbjack_process(jack_nframes_t nframes, void * arg)
       if (stm->devs & OUT_ONLY) {
         for (unsigned int c = 0; c < stm->out_params.channels; c++) {
           float * buffer_out = bufs_out[c];
-          for (long f = 0; f < nframes; f++) {
-            buffer_out[f] = 0.f;
+          if (buffer_out) {
+            for (long f = 0; f < nframes; f++) {
+              buffer_out[f] = 0.f;
+            }
           }
         }
       }
@@ -440,8 +445,10 @@ cbjack_process(jack_nframes_t nframes, void * arg)
         // paused, capture silence
         for (unsigned int c = 0; c < stm->in_params.channels; c++) {
           float * buffer_in = bufs_in[c];
-          for (long f = 0; f < nframes; f++) {
-            buffer_in[f] = 0.f;
+          if (buffer_in) {
+            for (long f = 0; f < nframes; f++) {
+              buffer_in[f] = 0.f;
+            }
           }
         }
       }
@@ -493,8 +500,10 @@ cbjack_process(jack_nframes_t nframes, void * arg)
         if (stm->devs & OUT_ONLY) {
           for (unsigned int c = 0; c < stm->out_params.channels; c++) {
             float * buffer_out = bufs_out[c];
-            for (long f = 0; f < nframes; f++) {
-              buffer_out[f] = 0.f;
+            if (buffer_out) {
+              for (long f = 0; f < nframes; f++) {
+                buffer_out[f] = 0.f;
+              }
             }
           }
         }
@@ -502,8 +511,10 @@ cbjack_process(jack_nframes_t nframes, void * arg)
           // capture silence
           for (unsigned int c = 0; c < stm->in_params.channels; c++) {
             float * buffer_in = bufs_in[c];
-            for (long f = 0; f < nframes; f++) {
-              buffer_in[f] = 0.f;
+            if (buffer_in) {
+              for (long f = 0; f < nframes; f++) {
+                buffer_in[f] = 0.f;
+              }
             }
           }
         }
@@ -542,20 +553,26 @@ cbjack_deinterleave_playback_refill_float(cubeb_stream * stream, float ** in,
     for (unsigned int c = 0; c < stream->out_params.channels; c++) {
       float * buffer = bufs_out[c];
       for (long f = 0; f < done_frames; f++) {
-        buffer[f] =
-            out_interleaved_buffer[(f * stream->out_params.channels) + c] *
-            stream->volume;
+        if (buffer) {
+          buffer[f] =
+              out_interleaved_buffer[(f * stream->out_params.channels) + c] *
+              stream->volume;
+        }
       }
       if (done_frames < needed_frames) {
         // draining
         for (long f = done_frames; f < needed_frames; f++) {
-          buffer[f] = 0.f;
+          if (buffer) {
+            buffer[f] = 0.f;
+          }
         }
       }
       if (done_frames == 0) {
         // stop, but first zero out the existing buffer
         for (long f = 0; f < needed_frames; f++) {
-          buffer[f] = 0.f;
+          if (buffer) {
+            buffer[f] = 0.f;
+          }
         }
       }
     }
