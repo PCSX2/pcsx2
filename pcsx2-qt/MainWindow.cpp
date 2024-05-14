@@ -424,6 +424,7 @@ void MainWindow::connectSignals()
 void MainWindow::connectVMThreadSignals(EmuThread* thread)
 {
 	connect(thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
+	connect(thread, &EmuThread::statusMessage, this, &MainWindow::onStatusMessage);
 	connect(thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow, Qt::BlockingQueuedConnection);
 	connect(thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested);
@@ -438,7 +439,6 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onCaptureStarted, this, &MainWindow::onCaptureStarted);
 	connect(thread, &EmuThread::onCaptureStopped, this, &MainWindow::onCaptureStopped);
 	connect(thread, &EmuThread::onAchievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
-	connect(thread, &EmuThread::onAchievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
 	connect(thread, &EmuThread::onAchievementsHardcoreModeChanged, this, &MainWindow::onAchievementsHardcoreModeChanged);
 	connect(thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
 	connect(thread, &EmuThread::onCreateMemoryCardOpenRequested, this, &MainWindow::onCreateMemoryCardOpenRequested);
@@ -761,13 +761,6 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 
 	AchievementLoginDialog dlg(lock.getDialogParent(), reason);
 	dlg.exec();
-}
-
-void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages)
-{
-	const QString message =
-		tr("RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.").arg(display_name).arg(points).arg(sc_points).arg(unread_messages);
-	m_ui.statusBar->showMessage(message);
 }
 
 void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
@@ -1141,6 +1134,11 @@ bool MainWindow::confirmMessage(const QString& title, const QString& message)
 {
 	VMLock lock(pauseAndLockVM());
 	return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
+}
+
+void MainWindow::onStatusMessage(const QString& message)
+{
+	m_ui.statusBar->showMessage(message);
 }
 
 void MainWindow::runOnUIThread(const std::function<void()>& func)

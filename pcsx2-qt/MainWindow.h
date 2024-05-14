@@ -110,6 +110,8 @@ public Q_SLOTS:
 	void cancelGameListRefresh();
 	void reportError(const QString& title, const QString& message);
 	bool confirmMessage(const QString& title, const QString& message);
+	void onStatusMessage(const QString& message);
+
 	void runOnUIThread(const std::function<void()>& func);
 	void requestReset();
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true);
@@ -190,7 +192,6 @@ private Q_SLOTS:
 	void onCaptureStopped();
 
 	void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
-	void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points, quint32 unread_messages);
 	void onAchievementsHardcoreModeChanged(bool enabled);
 
 protected:

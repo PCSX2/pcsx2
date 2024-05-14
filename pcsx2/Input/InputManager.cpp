@@ -1199,7 +1199,7 @@ void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, 
 		ImGuiManager::UpdateMousePosition(s_host_pointer_positions[0][0], s_host_pointer_positions[0][1]);
 }
 
-void InputManager::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+void InputManager::OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name)
 {
 	if (VMManager::HasValidVM())
 		USB::InputDeviceConnected(identifier);
@@ -1207,12 +1207,12 @@ void InputManager::OnInputDeviceConnected(const std::string_view& identifier, co
 	Host::OnInputDeviceConnected(identifier, device_name);
 }
 
-void InputManager::OnInputDeviceDisconnected(const std::string_view& identifier)
+void InputManager::OnInputDeviceDisconnected(const InputBindingKey key, const std::string_view identifier)
 {
 	if (VMManager::HasValidVM())
 		USB::InputDeviceDisconnected(identifier);
 
-	Host::OnInputDeviceDisconnected(identifier);
+	Host::OnInputDeviceDisconnected(key, identifier);
 }
 
 // ------------------------------------------------------------------------

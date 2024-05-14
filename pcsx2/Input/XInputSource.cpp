@@ -226,7 +226,7 @@ void XInputSource::PollEvents()
 			else
 			{
 				if (result != ERROR_DEVICE_NOT_CONNECTED)
-					Console.Warning("XInputGetState(%u) failed: 0x%08X / 0x%08X", i, result, GetLastError());
+					WARNING_LOG("XInputGetState({}) failed: 0x{:08X} / 0x{:08X}", i, result, GetLastError());
 
 				if (was_connected)
 					HandleControllerDisconnection(i);
@@ -424,11 +424,11 @@ bool XInputSource::GetGenericBindingMapping(const std::string_view& device, Inpu
 
 void XInputSource::HandleControllerConnection(u32 index)
 {
-	Console.WriteLn("XInput controller %u connected.", index);
+	INFO_LOG("XInput controller {} connected.", index);
 
 	XINPUT_CAPABILITIES caps = {};
 	if (m_xinput_get_capabilities(index, 0, &caps) != ERROR_SUCCESS)
-		Console.Warning("Failed to get XInput capabilities for controller %u", index);
+		WARNING_LOG("Failed to get XInput capabilities for controller {}", index);
 
 	ControllerData& cd = m_controllers[index];
 	cd.connected = true;
@@ -438,13 +438,17 @@ void XInputSource::HandleControllerConnection(u32 index)
 	cd.last_state_scp = {};
 
 	InputManager::OnInputDeviceConnected(
-		StringUtil::StdStringFromFormat("XInput-%u", index), StringUtil::StdStringFromFormat("XInput Controller %u", index));
+		fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
-	Console.WriteLn("XInput controller %u disconnected.", index);
-	InputManager::OnInputDeviceDisconnected(StringUtil::StdStringFromFormat("XInput-%u", index));
+	INFO_LOG("XInput controller {} disconnected.", index);
+	InputManager::OnInputDeviceDisconnected({{
+												.source_type = InputSourceType::XInput,
+												.source_index = index,
+											}},
+		fmt::format("XInput-{}", index));
 	m_controllers[index] = {};
 }
 
@@ -485,7 +489,7 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
 			{
 				const GenericInputBinding generic_key = (button < std::size(s_xinput_generic_binding_button_mapping)) ?
 															s_xinput_generic_binding_button_mapping[button] :
-                                                            GenericInputBinding::Unknown;
+															GenericInputBinding::Unknown;
 				const float value = ((new_button_bits & button_mask) != 0) ? 1.0f : 0.0f;
 				InputManager::InvokeEvents(MakeGenericControllerButtonKey(InputSourceType::XInput, index, button), value, generic_key);
 			}
