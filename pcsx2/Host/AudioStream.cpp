@@ -329,7 +329,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 		u32 num_samples = num_frames * m_output_channels;
 		while (num_samples > 0)
 		{
-			*samples = static_cast<s16>((static_cast<s32>(*samples) * volume_mult) >> 15);
+			*samples = static_cast<s16>(std::clamp((static_cast<s32>(*samples) * volume_mult) >> 15, -0x7fff, 0x7fff));
 			samples++;
 			num_samples--;
 		}
