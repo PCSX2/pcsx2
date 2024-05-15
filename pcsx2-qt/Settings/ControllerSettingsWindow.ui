@@ -102,9 +102,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="loadProfile">
+        <widget class="QPushButton" name="applyProfile">
          <property name="text">
-          <string>Load Profile</string>
+          <string>Apply Profile</string>
          </property>
          <property name="icon">
           <iconset theme="folder-open-line">
