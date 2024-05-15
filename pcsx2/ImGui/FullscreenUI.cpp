@@ -4378,8 +4378,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 			if (!expanded)
 				continue;
 
+			ImGui::PushID(&expanded);
+
 			DrawInputBindingButton(
-				bsi, InputBindingInfo::Type::Macro, section, TinyString::from_format("Macro{}", macro_index + 1), "Trigger", nullptr);
+				bsi, InputBindingInfo::Type::Macro, section, TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"), nullptr);
 
 			SmallString binds_string = bsi->GetSmallStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str());
 			TinyString pretty_binds_string;
@@ -4462,6 +4464,10 @@ void FullscreenUI::DrawControllerSettingsPage()
 					});
 			}
 
+			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Press To Toggle"),
+				FSUI_CSTR("Toggles the macro when the button is pressed, instead of held."), section,
+				TinyString::from_format("Macro{}Toggle", macro_index + 1), false, true, false);
+
 			const TinyString freq_key = TinyString::from_format("Macro{}Frequency", macro_index + 1);
 			const TinyString freq_label = TinyString::from_format(ICON_FA_CLOCK " {}##macro_{}_frequency", FSUI_VSTR("Frequency"), macro_index + 1);
 			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
@@ -4515,6 +4521,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 
 			ImGui::PopStyleVar(4);
 			ImGui::PopFont();
+
+			ImGui::PopID();
 		}
 
 		if (!ci->settings.empty())
@@ -7164,6 +7172,8 @@ TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/
 TRANSLATE_NOOP("FullscreenUI", "Multitap");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
+TRANSLATE_NOOP("FullscreenUI", "Trigger");
+TRANSLATE_NOOP("FullscreenUI", "Toggles the macro when the button is pressed, instead of held.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much pressure is simulated when macro is active.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the pressure required to activate the macro.");
@@ -7606,6 +7616,7 @@ TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Buttons");
+TRANSLATE_NOOP("FullscreenUI", "Press To Toggle");
 TRANSLATE_NOOP("FullscreenUI", "Pressure");
 TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Settings");

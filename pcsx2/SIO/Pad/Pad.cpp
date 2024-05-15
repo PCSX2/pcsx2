@@ -30,10 +30,11 @@ namespace Pad
 	{
 		std::vector<u32> buttons; ///< Buttons to activate.
 		float pressure; ///< Pressure to apply when macro is active.
-		u32 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
-		u32 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
+		u16 toggle_frequency; ///< Interval at which the buttons will be toggled, if not 0.
+		u16 toggle_counter; ///< When this counter reaches zero, buttons will be toggled.
 		bool toggle_state; ///< Current state for turbo.
 		bool trigger_state; ///< Whether the macro button is active.
+		bool trigger_toggle; ///< Whether the macro is trigged by holding or press.
 	};
 
 	static const char* GetControllerTypeName(Pad::ControllerType type);
@@ -49,7 +50,7 @@ namespace Pad
 
 	bool mtapPort0LastState;
 	bool mtapPort1LastState;
-}
+} // namespace Pad
 
 bool Pad::Initialize()
 {
@@ -108,7 +109,7 @@ void Pad::LoadConfig(const SettingsInterface& si)
 				// there was some kind of pad ejection event and properly detect the new one, and properly initiate its config sequence.
 				pad = Pad::CreatePad(i, ci->type, (VMManager::GetState() != VMState::Shutdown ? Pad::DEFAULT_EJECT_TICKS : 0));
 			}
-			
+
 			pxAssert(pad);
 		}
 
@@ -142,7 +143,7 @@ void Pad::LoadConfig(const SettingsInterface& si)
 
 Pad::ControllerType Pad::GetDefaultPadType(u32 pad)
 {
-	return (pad == 0) ? ControllerType::DualShock2 :  ControllerType::NotConnected;
+	return (pad == 0) ? ControllerType::DualShock2 : ControllerType::NotConnected;
 }
 
 void Pad::SetDefaultControllerConfig(SettingsInterface& si)
@@ -350,11 +351,12 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 
 			for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 			{
-				dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
-				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str());
-				dest_si->CopyFloatValue(src_si, section.c_str(), fmt::format("Macro{}Deadzone", i + 1).c_str());
-				dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
-				dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
+				dest_si->CopyStringListValue(src_si, section.c_str(), TinyString::from_format("Macro{}", i + 1));
+				dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1));
+				dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Deadzone", i + 1));
+				dest_si->CopyStringValue(src_si, section.c_str(), TinyString::from_format("Macro{}Binds", i + 1));
+				dest_si->CopyUIntValue(src_si, section.c_str(), TinyString::from_format("Macro{}Frequency", i + 1));
+				dest_si->CopyBoolValue(src_si, section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1));
 			}
 		}
 
@@ -543,12 +545,12 @@ bool Pad::Freeze(StateWrapper& sw)
 		{
 			PadBase* currentPad = GetPad(unifiedSlot);
 			ControllerType statePadType;
-			
+
 			sw.Do(&statePadType);
-			
+
 			if (sw.HasError())
 				return false;
-			
+
 			if (!currentPad)
 			{
 				pxAssertMsg(false, fmt::format("Pad::Freeze (on read) Existing Pad {0} was nullptr", unifiedSlot).c_str());
@@ -566,7 +568,7 @@ bool Pad::Freeze(StateWrapper& sw)
 						port, slot,
 						GetControllerTypeName(currentPad ? currentPad->GetType() : Pad::ControllerType::NotConnected),
 						GetControllerTypeName(statePadType)));
-				
+
 				// Run the freeze, using a new pad instance of the old type just so we make sure all those attributes
 				// from the state are read out and we aren't going to run into some sort of consistency problem.
 				currentPad = CreatePad(unifiedSlot, statePadType);
@@ -618,11 +620,14 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const Cont
 	for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
 	{
 		std::string binds_string;
-		if (!si.GetStringValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uBinds", i + 1).c_str(), &binds_string))
+		if (!si.GetStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", i + 1), &binds_string))
 			continue;
 
-		const u32 frequency = si.GetUIntValue(section.c_str(), StringUtil::StdStringFromFormat("Macro%uFrequency", i + 1).c_str(), 0u);
-		const float pressure = si.GetFloatValue(section.c_str(), fmt::format("Macro{}Pressure", i + 1).c_str(), 1.0f);
+		const u32 frequency = std::min<u32>(si.GetUIntValue(section.c_str(),
+												TinyString::from_format("Macro{}Frequency", i + 1), 0u),
+			std::numeric_limits<u16>::max());
+		const float pressure = si.GetFloatValue(section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1), 1.0f);
+		const bool toggle = si.GetBoolValue(section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1), false);
 
 		// convert binds
 		std::vector<u32> bind_indices;
@@ -645,8 +650,9 @@ void Pad::LoadMacroButtonConfig(const SettingsInterface& si, u32 pad, const Cont
 
 		MacroButton& macro = s_macro_buttons[pad][i];
 		macro.buttons = std::move(bind_indices);
-		macro.toggle_frequency = frequency;
+		macro.toggle_frequency = static_cast<u16>(frequency);
 		macro.pressure = pressure;
+		macro.trigger_toggle = toggle;
 	}
 }
 
@@ -656,14 +662,18 @@ void Pad::SetMacroButtonState(u32 pad, u32 index, bool state)
 		return;
 
 	MacroButton& mb = s_macro_buttons[pad][index];
-	if (mb.buttons.empty() || mb.trigger_state == state)
+	if (mb.buttons.empty())
+		return;
+
+	const bool trigger_state = (mb.trigger_toggle ? (state ? !mb.trigger_state : mb.trigger_state) : state);
+	if (mb.trigger_state == trigger_state)
 		return;
 
 	mb.toggle_counter = mb.toggle_frequency;
-	mb.trigger_state = state;
-	if (mb.toggle_state != state)
+	mb.trigger_state = trigger_state;
+	if (mb.toggle_state != trigger_state)
 	{
-		mb.toggle_state = state;
+		mb.toggle_state = trigger_state;
 		ApplyMacroButton(pad, mb);
 	}
 }
