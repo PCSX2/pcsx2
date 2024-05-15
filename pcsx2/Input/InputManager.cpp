@@ -1374,7 +1374,7 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 // Binding Updater
 // ------------------------------------------------------------------------
 
-void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si)
+void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si, SettingsInterface& hotkey_binding_si)
 {
 	PauseVibration();
 
@@ -1386,8 +1386,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	s_pointer_move_callbacks.clear();
 
 	// Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
-	const bool use_profile_hotkeys = si.GetBoolValue("Pad", "UseProfileHotkeyBindings", false);
-	AddHotkeyBindings(use_profile_hotkeys ? binding_si : si);
+	AddHotkeyBindings(hotkey_binding_si);
 
 	// If there's an input profile, we load pad bindings from it alone, rather than
 	// falling back to the base configuration.

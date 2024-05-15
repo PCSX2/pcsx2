@@ -528,7 +528,7 @@ void MainWindow::recreate()
 	new_main_window->activateWindow();
 
 	// Reload the sources we just closed.
-	g_emu_thread->reloadInputSources();
+	g_emu_thread->applySettings();
 
 	if (was_display_created)
 	{

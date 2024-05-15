@@ -125,8 +125,9 @@ namespace VMManager
 		s32 slot_for_message);
 
 	static void LoadSettings();
-	static void LoadCoreSettings(SettingsInterface* si);
+	static void LoadCoreSettings(SettingsInterface& si);
 	static void ApplyCoreSettings();
+	static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 	static void UpdateInhibitScreensaver(bool allow);
 	static void AccumulateSessionPlaytime();
 	static void ResetResumeTimestamp();
@@ -578,11 +579,11 @@ void VMManager::LoadSettings()
 
 	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
 	SettingsInterface* si = Host::GetSettingsInterface();
-	LoadCoreSettings(si);
+	LoadCoreSettings(*si);
 	Pad::LoadConfig(*si);
 	Host::LoadSettings(*si, lock);
 	InputManager::ReloadSources(*si, lock);
-	InputManager::ReloadBindings(*si, *Host::GetSettingsInterfaceForBindings());
+	LoadInputBindings(*si, lock);
 	UpdateLoggingSettings(*si);
 
 	if (HasValidOrInitializingVM())
@@ -592,9 +593,33 @@ void VMManager::LoadSettings()
 	}
 }
 
-void VMManager::LoadCoreSettings(SettingsInterface* si)
+void VMManager::ReloadInputSources()
 {
-	SettingsLoadWrapper slw(*si);
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+	SettingsInterface* si = Host::GetSettingsInterface();
+	InputManager::ReloadSources(*si, lock);
+
+	// skip loading bindings if we're not running, since it'll get done on startup anyway
+	if (HasValidVM())
+		LoadInputBindings(*si, lock);
+}
+
+void VMManager::ReloadInputBindings()
+{
+	// skip loading bindings if we're not running, since it'll get done on startup anyway
+	if (!HasValidVM())
+		return;
+
+	FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
+	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+	SettingsInterface* si = Host::GetSettingsInterface();
+	LoadInputBindings(*si, lock);
+}
+
+void VMManager::LoadCoreSettings(SettingsInterface& si)
+{
+	SettingsLoadWrapper slw(si);
 	EmuConfig.LoadSave(slw);
 	Patch::ApplyPatchSettingOverrides();
 
@@ -608,6 +633,35 @@ void VMManager::LoadCoreSettings(SettingsInterface* si)
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())
 		EmuConfig.Speedhacks.vuThread = false;
+}
+
+void VMManager::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+{
+	// Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
+	if (SettingsInterface* isi = Host::Internal::GetInputSettingsLayer())
+	{
+		const bool use_profile_hotkeys = isi->GetBoolValue("Pad", "UseProfileHotkeyBindings", false);
+		if (use_profile_hotkeys)
+		{
+			InputManager::ReloadBindings(si, *isi, *isi);
+		}
+		else
+		{
+			// Temporarily disable the input profile layer, so it doesn't take precedence.
+			Host::Internal::SetInputSettingsLayer(nullptr, lock);
+			InputManager::ReloadBindings(si, *isi, si);
+			Host::Internal::SetInputSettingsLayer(s_input_settings_interface.get(), lock);
+		}
+	}
+	else if (SettingsInterface* gsi = Host::Internal::GetGameSettingsLayer();
+			 gsi && gsi->GetBoolValue("Pad", "UseGameSettingsForController", false))
+	{
+		InputManager::ReloadBindings(si, *gsi, si);
+	}
+	else
+	{
+		InputManager::ReloadBindings(si, si, si);
+	}
 }
 
 void VMManager::ApplyGameFixes()
@@ -678,7 +732,7 @@ void VMManager::ApplyCoreSettings()
 	{
 		FPControlRegisterBackup fpcr_backup(FPControlRegister::GetDefault());
 		std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
-		LoadCoreSettings(Host::GetSettingsInterface());
+		LoadCoreSettings(*Host::GetSettingsInterface());
 		WarnAboutUnsafeSettings();
 		ApplyGameFixes();
 	}
@@ -879,53 +933,42 @@ bool VMManager::UpdateGameSettingsLayer()
 	}
 
 	std::string input_profile_name;
-	bool use_game_settings_for_controller = false;
 	if (new_interface)
 	{
-		new_interface->GetBoolValue("Pad", "UseGameSettingsForController", &use_game_settings_for_controller);
-		if (!use_game_settings_for_controller)
+		if (!new_interface->GetBoolValue("Pad", "UseGameSettingsForController", false))
 			new_interface->GetStringValue("EmuCore", "InputProfileName", &input_profile_name);
 	}
 
 	if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
 		return false;
 
-	Host::Internal::SetGameSettingsLayer(new_interface.get());
+	auto lock = Host::GetSettingsLock();
+	Host::Internal::SetGameSettingsLayer(new_interface.get(), lock);
 	s_game_settings_interface = std::move(new_interface);
 
 	std::unique_ptr<INISettingsInterface> input_interface;
-	if (!use_game_settings_for_controller)
+	if (!input_profile_name.empty())
 	{
-		if (!input_profile_name.empty())
+		const std::string filename(GetInputProfilePath(input_profile_name));
+		if (FileSystem::FileExists(filename.c_str()))
 		{
-			const std::string filename(GetInputProfilePath(input_profile_name));
-			if (FileSystem::FileExists(filename.c_str()))
+			Console.WriteLn("Loading input profile from '%s'...", filename.c_str());
+			input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
+			if (!input_interface->Load())
 			{
-				Console.WriteLn("Loading input profile from '%s'...", filename.c_str());
-				input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-				if (!input_interface->Load())
-				{
-					Console.Error("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
-					input_interface.reset();
-					input_profile_name = {};
-				}
-			}
-			else
-			{
-				DevCon.WriteLn("No game settings found (tried '%s')", filename.c_str());
+				Console.Error("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
+				input_interface.reset();
 				input_profile_name = {};
 			}
 		}
-
-		Host::Internal::SetInputSettingsLayer(
-			input_interface ? input_interface.get() : Host::Internal::GetBaseSettingsLayer());
-	}
-	else
-	{
-		// using game settings for bindings too
-		Host::Internal::SetInputSettingsLayer(s_game_settings_interface.get());
+		else
+		{
+			DevCon.WriteLn("No game settings found (tried '%s')", filename.c_str());
+			input_profile_name = {};
+		}
 	}
 
+	Host::Internal::SetInputSettingsLayer(input_interface.get(), lock);
 	s_input_settings_interface = std::move(input_interface);
 	s_input_profile_name = std::move(input_profile_name);
 	return true;
@@ -1725,7 +1768,7 @@ bool VMManager::DoLoadState(const char* filename)
 	Error error;
 	if (!SaveState_UnzipFromDisk(filename, &error))
 	{
-		Host::ReportErrorAsync(TRANSLATE_SV("VMManager","Failed to load save state"), error.GetDescription());
+		Host::ReportErrorAsync(TRANSLATE_SV("VMManager", "Failed to load save state"), error.GetDescription());
 		return false;
 	}
 
@@ -2285,7 +2328,8 @@ inline void LogUserPowerPlan()
 		"  Power Profile    = '{}'\n"
 		"  Power States (min/max)\n"
 		"    AC             = {}% / {}%\n"
-		"    Battery        = {}% / {}%\n", friendlyName.c_str(), acMin, acMax, dcMin, dcMax);
+		"    Battery        = {}% / {}%\n",
+		friendlyName.c_str(), acMin, acMax, dcMin, dcMax);
 }
 #endif
 
