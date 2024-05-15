@@ -37,7 +37,7 @@ ControllerSettingsWindow::ControllerSettingsWindow()
 	connect(m_ui.currentProfile, &QComboBox::currentIndexChanged, this, &ControllerSettingsWindow::onCurrentProfileChanged);
 	connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsWindow::close);
 	connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
-	connect(m_ui.loadProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onLoadProfileClicked);
+	connect(m_ui.applyProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onApplyProfileClicked);
 	connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
 	connect(m_ui.mappingSettings, &QPushButton::clicked, this, &ControllerSettingsWindow::onMappingSettingsClicked);
 	connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
@@ -115,9 +115,19 @@ void ControllerSettingsWindow::onNewProfileClicked()
 		// copy from global or the current profile
 		if (!m_profile_interface)
 		{
+			const int hkres = QMessageBox::question(this, tr("Create Input Profile"),
+				tr("Do you want to copy the current hotkey bindings from global settings to the new input profile?"),
+				QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			if (hkres == QMessageBox::Cancel)
+				return;
+
+			const bool copy_hotkey_bindings = (hkres == QMessageBox::Yes);
+			if (copy_hotkey_bindings)
+				temp_si.SetBoolValue("Pad", "UseProfileHotkeyBindings", true);
+
 			// from global
 			auto lock = Host::GetSettingsLock();
-			Pad::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, false);
+			Pad::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, copy_hotkey_bindings);
 			USB::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true);
 		}
 		else
@@ -141,7 +151,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
 	switchProfile(profile_name);
 }
 
-void ControllerSettingsWindow::onLoadProfileClicked()
+void ControllerSettingsWindow::onApplyProfileClicked()
 {
 	if (QMessageBox::question(this, tr("Load Input Profile"),
 			tr("Are you sure you want to load the input profile named '%1'?\n\n"
@@ -153,8 +163,9 @@ void ControllerSettingsWindow::onLoadProfileClicked()
 	}
 
 	{
+		const bool copy_hotkey_bindings = m_profile_interface->GetBoolValue("Pad", "UseProfileHotkeyBindings", false);
 		auto lock = Host::GetSettingsLock();
-		Pad::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
+		Pad::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, copy_hotkey_bindings);
 		USB::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true);
 	}
 	Host::CommitBaseSettingChanges();
@@ -439,7 +450,7 @@ void ControllerSettingsWindow::createWidgets()
 		m_ui.settingsContainer->addWidget(m_hotkey_settings);
 	}
 
-	m_ui.loadProfile->setEnabled(isEditingProfile());
+	m_ui.applyProfile->setEnabled(isEditingProfile());
 	m_ui.deleteProfile->setEnabled(isEditingProfile());
 	m_ui.restoreDefaults->setEnabled(isEditingGlobalSettings());
 }
