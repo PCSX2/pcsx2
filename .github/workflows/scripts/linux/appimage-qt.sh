@@ -41,6 +41,11 @@ BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
 STRIP=strip
 
+declare -a EXCLUDE_LIBS=(
+	'libcrypto.so*'
+	'libssl.so*'
+)
+
 declare -a MANUAL_QT_LIBS=(
 	"libQt6WaylandEglClientHwIntegration.so.6"
 )
@@ -76,6 +81,11 @@ fi
 OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
 
+declare -a EXCLUDE_LIBS_ARGS=()
+for lib in "${EXCLUDE_LIBS[@]}"; do
+	EXCLUDE_LIBS_ARGS+=("--exclude-library=$lib")
+done
+
 # Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
 # It also doesn't strip the Qt libs. We can't strip them after running linuxdeploy, because
 # patchelf corrupts the libraries (but they still work), but patchelf+strip makes them crash
@@ -103,6 +113,7 @@ DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
 $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" \
+"${EXCLUDE_LIBS_ARGS[@]}" \
 --desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."
