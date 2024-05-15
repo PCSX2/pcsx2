@@ -326,7 +326,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 	}
 
 	// load binds (single string joined by &)
-	const std::string binds_string(dialog->getStringValue(section.c_str(), fmt::format("Macro{}Binds", index + 1u).c_str(), ""));
+	const std::string binds_string(dialog->getStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", index + 1u), ""));
 	const std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
 
 	for (const std::string_view& button : buttons_split)
@@ -367,6 +367,8 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
 	m_ui.trigger->initialize(
 		dialog->getProfileSettingsInterface(), InputBindingInfo::Type::Macro, section, fmt::format("Macro{}", index + 1u));
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(dialog->getProfileSettingsInterface(), m_ui.triggerToggle,
+		section.c_str(), fmt::format("Macro{}Toggle", index + 1u), false);
 
 	connect(m_ui.increaseFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(1); });
 	connect(m_ui.decreateFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(-1); });

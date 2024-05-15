@@ -1328,7 +1328,7 @@ bool ImGuiFullscreen::ToggleButton(
 	const float toggle_width = LayoutScale(50.0f);
 	const float toggle_height = LayoutScale(25.0f);
 	const float toggle_x = LayoutScale(8.0f);
-	const float toggle_y = (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT) - toggle_height) * 0.5f;
+	const float toggle_y = (LayoutScale(height) - toggle_height) * 0.5f;
 	const float toggle_radius = toggle_height * 0.5f;
 	const ImVec2 toggle_pos(bb.Max.x - toggle_width - toggle_x, bb.Min.y + toggle_y);
 
