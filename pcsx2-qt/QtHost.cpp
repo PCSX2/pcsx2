@@ -679,14 +679,7 @@ void EmuThread::reloadInputSources()
 		return;
 	}
 
-	std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
-	SettingsInterface* si = Host::GetSettingsInterface();
-	SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
-	InputManager::ReloadSources(*si, lock);
-
-	// skip loading bindings if we're not running, since it'll get done on startup anyway
-	if (VMManager::HasValidVM())
-		InputManager::ReloadBindings(*si, *bindings_si);
+	VMManager::ReloadInputSources();
 }
 
 void EmuThread::reloadInputBindings()
@@ -697,14 +690,7 @@ void EmuThread::reloadInputBindings()
 		return;
 	}
 
-	// skip loading bindings if we're not running, since it'll get done on startup anyway
-	if (!VMManager::HasValidVM())
-		return;
-
-	auto lock = Host::GetSettingsLock();
-	SettingsInterface* si = Host::GetSettingsInterface();
-	SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
-	InputManager::ReloadBindings(*si, *bindings_si);
+	VMManager::ReloadInputBindings();
 }
 
 void EmuThread::reloadInputDevices()

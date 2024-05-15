@@ -110,6 +110,12 @@ namespace VMManager
 	/// Reloads game patches.
 	void ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
+	/// Reloads input sources.
+	void ReloadInputSources();
+
+	/// Reloads input bindings.
+	void ReloadInputBindings();
+
 	/// Returns the save state filename for the given game serial/crc.
 	std::string GetSaveStateFileName(const char* game_serial, u32 game_crc, s32 slot);
 
