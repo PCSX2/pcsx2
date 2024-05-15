@@ -219,15 +219,6 @@ static __fi void execI()
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;
 
-	if ((psxHu32(HW_ICFG) & (1 << 3)))
-	{
-		//One of the Iop to EE delta clocks to be set in PS1 mode.
-		psxRegs.iopCycleEE -= 9;
-	}
-	else
-	{   //default ps2 mode value
-		psxRegs.iopCycleEE -= 8;
-	}
 	psxBSC[psxRegs.code >> 26]();
 }
 
@@ -268,15 +259,36 @@ static s32 intExecuteBlock( s32 eeCycles )
 {
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = eeCycles;
+	u32 lastIOPCycle = 0;
 
 	while (psxRegs.iopCycleEE > 0)
 	{
+		lastIOPCycle = psxRegs.cycle;
 		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
 			psxBiosCall();
 
 		branch2 = 0;
 		while (!branch2)
 			execI();
+
+		
+		if ((psxHu32(HW_ICFG) & (1 << 3)))
+		{
+			// F = gcd(PS2CLK, PSXCLK) = 230400
+			const u32 cnum = 1280; // PS2CLK / F
+			const u32 cdenom = 147; // PSXCLK / F
+
+			//One of the Iop to EE delta clocks to be set in PS1 mode.
+			static u32 carry;
+			const u32 t = ((cnum * (psxRegs.cycle - lastIOPCycle)) + carry);
+			psxRegs.iopCycleEE -= t / cdenom;
+			carry = t % cdenom;
+		}
+		else
+		{ 
+			//default ps2 mode value
+			psxRegs.iopCycleEE -= (psxRegs.cycle - lastIOPCycle) * 8;
+		}
 	}
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
