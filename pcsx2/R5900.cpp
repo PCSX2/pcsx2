@@ -432,8 +432,8 @@ __fi void _cpuEventTest_Shared()
 	CpuVU1->ExecuteBlock();
 
 	// ---- Schedule Next Event Test --------------
-
-	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8);
+	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
+	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier);
 	// 8 or more cycles behind and there's an event scheduled
 	if (EEsCycle >= nextIopEventDeta)
 	{
@@ -446,7 +446,7 @@ __fi void _cpuEventTest_Shared()
 	else
 	{
 		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
-		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * 8) - EEsCycle);
+		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier) - EEsCycle);
 	}
 
 	// Apply vsync and other counter nextCycles
