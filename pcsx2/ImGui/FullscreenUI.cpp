@@ -323,7 +323,6 @@ namespace FullscreenUI
 	static void SetSettingsChanged(SettingsInterface* bsi);
 	static bool GetEffectiveBoolSetting(SettingsInterface* bsi, const char* section, const char* key, bool default_value);
 	static s32 GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, const char* key, s32 default_value);
-	static u32 GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, const char* key, u32 default_value);
 	static void DoCopyGameSettings();
 	static void DoClearGameSettings();
 	static void CopyGlobalControllerSettingsToGame();
@@ -1471,18 +1470,6 @@ s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* sec
 	}
 
 	return Host::Internal::GetBaseSettingsLayer()->GetIntValue(section, key, default_value);
-}
-
-u32 FullscreenUI::GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, const char* key, u32 default_value)
-{
-	if (IsEditingGameSettings(bsi))
-	{
-		std::optional<u32> value = bsi->GetOptionalUIntValue(section, key, std::nullopt);
-		if (value.has_value())
-			return value.value();
-	}
-
-	return Host::Internal::GetBaseSettingsLayer()->GetUIntValue(section, key, default_value);
 }
 
 void FullscreenUI::DrawInputBindingButton(
