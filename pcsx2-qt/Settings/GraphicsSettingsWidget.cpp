@@ -226,6 +226,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "EmuCore/GS", "DisableThreadedPresentation", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.exclusiveFullscreenControl, "EmuCore/GS", "ExclusiveFullscreenControl", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.overrideRasterizerOrderViews, "EmuCore/GS", "OverrideRasterizerOrderViews", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_ui.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);

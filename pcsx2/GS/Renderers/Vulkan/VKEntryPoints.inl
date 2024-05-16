@@ -238,4 +238,14 @@ VULKAN_DEVICE_ENTRY_POINT(vkGetCalibratedTimestampsEXT, false)
 // VK_KHR_push_descriptor
 VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
 
+// VK_KHR_create_renderpass2
+VULKAN_DEVICE_ENTRY_POINT(vkCmdBeginRenderPass2KHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdEndRenderPass2KHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdNextSubpass2KHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCreateRenderPass2KHR, false)
+
+// VK_KHR_dynamic_rendering
+VULKAN_DEVICE_ENTRY_POINT(vkCmdBeginRenderingKHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdEndRenderingKHR, false)
+
 #endif // VULKAN_DEVICE_ENTRY_POINT

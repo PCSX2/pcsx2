@@ -2179,6 +2179,32 @@
             </item>
            </layout>
           </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_49">
+            <property name="text">
+             <string>Override Rasterizer Order Views:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="overrideRasterizerOrderViews">
+            <item>
+             <property name="text">
+              <string>Automatic (Default)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Force Disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Force Enabled</string>
+             </property>
+            </item>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

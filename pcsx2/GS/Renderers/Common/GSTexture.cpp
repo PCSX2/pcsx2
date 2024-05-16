@@ -94,7 +94,8 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		1, // Invalid
 		4, // Color/RGBA8
 		8, // HDRColor/RGBA16
-		4, // DepthStencil
+		4, // ColorDepth/RGBA32F
+		4, // DepthStencil/D32FS8
 		1, // UNorm8/R8
 		2, // UInt16/R16UI
 		4, // UInt32/R32UI

@@ -79,6 +79,14 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			m_int_shift = 3;
 			break;
 
+		// 1 channel float
+		case Format::ColorDepth:
+			gl_fmt          = GL_R32F;
+			m_int_format    = GL_RED;
+			m_int_type      = GL_FLOAT;
+			m_int_shift     = 2;
+			break;
+
 		// Depth buffer
 		case Format::DepthStencil:
 		{

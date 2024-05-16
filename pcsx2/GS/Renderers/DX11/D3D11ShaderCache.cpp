@@ -55,12 +55,13 @@ bool D3D11ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 
 bool D3D11ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 {
-	m_feature_level = feature_level;
+	// DX11 doesn't support SM5.1, but can still use ROVs...
+	m_feature_level = std::min(feature_level, D3D_FEATURE_LEVEL_11_0);
 	m_debug = debug;
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		const std::string base_filename = GetCacheBaseFileName(feature_level, debug);
+		const std::string base_filename = GetCacheBaseFileName(m_feature_level, debug);
 		const std::string index_filename = base_filename + ".idx";
 		const std::string blob_filename = base_filename + ".bin";
 
@@ -205,6 +206,9 @@ std::string D3D11ShaderCache::GetCacheBaseFileName(D3D_FEATURE_LEVEL feature_lev
 	{
 		case D3D_FEATURE_LEVEL_11_0:
 			base_filename += "sm50";
+			break;
+		case D3D_FEATURE_LEVEL_11_1:
+			base_filename += "sm51";
 			break;
 		default:
 			base_filename += "unk";

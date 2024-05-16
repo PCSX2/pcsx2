@@ -77,11 +77,16 @@
 #define PS_NO_COLOR 0
 #define PS_NO_COLOR1 0
 #define PS_DATE 0
+#define PS_ROV 0
+#define PS_ZTST 0
+#define PS_ZWE 0
+#define PS_AFAIL 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 #define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))
 #define SW_AD_TO_HW (PS_BLEND_C == 1 && PS_A_MASKED)
+#define ROV_DEPTH (PS_ZTST != 0 || PS_ZWE != 0)
 
 struct VS_INPUT
 {
@@ -136,16 +141,25 @@ struct PS_OUTPUT
 #endif
 #endif
 #endif
-#if PS_ZCLAMP
+#if PS_ZCLAMP && !ROV_DEPTH
 	float depth : SV_Depth;
 #endif
 };
 
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
+#if !PS_ROV
 Texture2D<float4> RtTexture : register(t2);
+#endif
 Texture2D<float> PrimMinTexture : register(t3);
 SamplerState TextureSampler : register(s0);
+
+#if PS_ROV
+RasterizerOrderedTexture2D<unorm float4> rovRT : register(u0);
+#if ROV_DEPTH
+RasterizerOrderedTexture2D<float> rovDS : register(u1);
+#endif
+#endif
 
 #ifdef DX12
 cbuffer cb1 : register(b1)
@@ -171,10 +185,73 @@ cbuffer cb1
 	float RcpScaleFactor;
 };
 
+
+#if PS_ROV
+
+static float4 rovRTValue;
+static uint4 rovFbMask;
+static bool rovPixelTestResult;
+static bool rovDepthWrite;
+
+#define DISCARD return output
+
+float4 sample_from_rt(int2 uv)
+{
+	return rovRTValue;
+}
+
+void rov_read_rt(int2 uv)
+{
+	rovRTValue = rovRT[uv];
+	rovPixelTestResult = true;
+	rovFbMask = FbMask;
+	rovDepthWrite = PS_ZWE != 0;
+}
+
+void rov_write_rt(int2 uv, float4 color)
+{
+	if (rovPixelTestResult)
+		rovRT[uv] = color;
+}
+
+#if ROV_DEPTH
+
+bool rov_depth_test(int2 uv, float z)
+{
+	bool zpass = true;
+
+#if PS_ZTST > 1
+	float ds_z = rovDS[uv];
+	#if PS_ZTST == 2
+		zpass = (z >= ds_z);
+	#elif PS_ZTST == 3
+		zpass = (z > ds_z);
+	#endif
+#endif
+
+	if (zpass && rovDepthWrite)
+		rovDS[uv] = z;
+
+	return zpass;
+}
+
+#endif
+
+#else
+
+#define DISCARD discard
+
+float4 sample_from_rt(int2 uv)
+{
+	return RtTexture.Load(int3(uv, 0));
+}
+
+#endif
+
 float4 sample_c(float2 uv, float uv_w)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(int2(uv * WH.zw), 0));
+	return sample_from_rt(int2(uv * WH.zw));
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -378,7 +455,7 @@ float4x4 sample_4p(uint4 u)
 int fetch_raw_depth(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	float4 col = RtTexture.Load(int3(xy, 0));
+	float4 col = sample_from_rt(xy);
 #else
 	float4 col = Texture.Load(int3(xy, 0));
 #endif
@@ -388,7 +465,7 @@ int fetch_raw_depth(int2 xy)
 float4 fetch_raw_color(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
-	return RtTexture.Load(int3(xy, 0));
+	return sample_from_rt(xy);
 #else
 	return Texture.Load(int3(xy, 0));
 #endif
@@ -792,12 +869,16 @@ float4 ps_color(PS_INPUT input)
 	return C;
 }
 
-void ps_fbmask(inout float4 C, float2 pos_xy)
+void ps_fbmask(inout float4 C, int2 pos_xy)
 {
 	if (PS_FBMASK)
 	{
-		float4 RT = trunc(RtTexture.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
-		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
+		float4 RT = trunc(sample_from_rt(pos_xy) * 255.0f + 0.1f);
+		#if PS_ROV
+			C = (float4)(((uint4)C & ~rovFbMask) | ((uint4)RT & rovFbMask));
+		#else
+			C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
+		#endif
 	}
 }
 
@@ -850,7 +931,7 @@ void ps_color_clamp_wrap(inout float3 C)
 	}
 }
 
-void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
+void ps_blend(inout float4 Color, inout float4 As_rgba, int2 pos_xy)
 {
 	float As = As_rgba.a;
 
@@ -864,7 +945,7 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 				return;
 		}
 
-		float4 RT = SW_BLEND_NEEDS_RT ? RtTexture.Load(int3(pos_xy, 0)) : (float4)0.0f;
+		float4 RT = SW_BLEND_NEEDS_RT ? sample_from_rt(pos_xy) : (float4)0.0f;
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
@@ -980,23 +1061,57 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 	}
 }
 
+#if PS_ROV && !ROV_DEPTH
+[earlydepthstencil]
+#endif
+
 PS_OUTPUT ps_main(PS_INPUT input)
 {
-	float4 C = ps_color(input);
-	bool atst_pass = atst(C);
+	int2 input_xy = int2(input.p.xy);
+	float input_z = PS_ZCLAMP ? min(input.p.z, MaxDepthPS) : input.p.z;
 
-#if PS_AFAIL == 0 // KEEP or ATST off
-	if (!atst_pass)
-		discard;
+#if PS_ROV
+	rov_read_rt(input_xy);
 #endif
 
 	PS_OUTPUT output;
+#if PS_ZCLAMP && !ROV_DEPTH
+	output.depth = input_z;
+#endif
+
+	float4 C = ps_color(input);
+	bool atst_pass = atst(C);
+
+	if (!atst_pass)
+	{
+#if PS_ROV
+		if (PS_AFAIL == 0)
+		{
+			DISCARD;
+		}
+		else if (PS_AFAIL == 1) // FB_ONLY
+		{
+			rovDepthWrite = false;
+		}
+		else if (PS_AFAIL == 2) // ZB_ONLY
+		{
+			rovFbMask = 0xFF;
+		}
+		else if (PS_AFAIL == 3) // RGB_ONLY
+		{
+			rovFbMask.a = 0xFF;
+			rovDepthWrite = false;
+		}
+#elif PS_AFAIL == 0
+		DISCARD;
+#endif
+	}
 
 	if (PS_SCANMSK & 2)
 	{
 		// fail depth test on prohibited lines
-		if ((int(input.p.y) & 1) == (PS_SCANMSK & 1))
-			discard;
+		if ((input_xy.y & 1) == (PS_SCANMSK & 1))
+			DISCARD;
 	}
 
 	// Must be done before alpha correction
@@ -1010,7 +1125,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	float4 alpha_blend = (float4)0.0f;
 	if (SW_AD_TO_HW)
 	{
-		float4 RT = PS_RTA_CORRECTION ? trunc(RtTexture.Load(int3(input.p.xy, 0)) * 128.0f + 0.1f) : trunc(RtTexture.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
+		float4 RT = PS_RTA_CORRECTION ? trunc(sample_from_rt(input_xy) * 128.0f + 0.1f) : trunc(sample_from_rt(input_xy) * 255.0f + 0.1f);
 		alpha_blend = (float4)(RT.a / 128.0f);
 	}
 	else
@@ -1030,12 +1145,40 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
+#if PS_DATE < 10 && (((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2))
+
+#if PS_WRITE_RG == 1
+	// Pseudo 16 bits access.
+	float rt_a = sample_from_rt(input_xy).g;
+#else
+	float rt_a = sample_from_rt(input_xy).a;
+#endif
+
+#if (PS_DATE & 3) == 1
+	// DATM == 0: Pixel with alpha equal to 1 will failed
+	bool bad = (127.5f / 255.0f) < rt_a;
+#elif (PS_DATE & 3) == 2
+	// DATM == 1: Pixel with alpha equal to 0 will failed
+	bool bad = rt_a < (127.5f / 255.0f);
+#endif
+
+	if (bad) {
+#if PS_ROV || PS_DATE >= 5
+		DISCARD;
+#else
+		return;
+#endif
+	}
+
+#endif
+
+
 #if PS_DATE == 3
 	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
 	// the bad alpha value so we must keep it.
-	int stencil_ceil = int(PrimMinTexture.Load(int3(input.p.xy, 0)));
+	int stencil_ceil = int(PrimMinTexture.Load(int3(input_xy, 0)));
 	if (int(input.primid) > stencil_ceil)
-		discard;
+		DISCARD;
 #endif
 
 	// Get first primitive that will write a failling alpha value
@@ -1053,7 +1196,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #else
 	// Not primid DATE setup
 
-	ps_blend(C, alpha_blend, input.p.xy);
+	ps_blend(C, alpha_blend, input_xy);
 
 	if (PS_SHUFFLE)
 	{
@@ -1142,7 +1285,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	// Color clamp/wrap needs to be done after sw blending and dithering
 	ps_color_clamp_wrap(C.rgb);
 
-	ps_fbmask(C, input.p.xy);
+	ps_fbmask(C, input_xy);
 
 #if PS_AFAIL == 3 // RGB_ONLY
 	// Use alpha blend factor to determine whether to update A.
@@ -1157,11 +1300,14 @@ PS_OUTPUT ps_main(PS_INPUT input)
 #endif
 #endif // !PS_NO_COLOR
 
-#endif // PS_DATE != 1/2
-
-#if PS_ZCLAMP
-	output.depth = min(input.p.z, MaxDepthPS);
+#if PS_ROV && ROV_DEPTH
+	if (rov_depth_test(input_xy, input_z))
+		rov_write_rt(input_xy, C / float4(255.0f, 255.0f, 255.0f, PS_RTA_CORRECTION ? 128.0f : 255.0f));
+#elif PS_ROV
+	rov_write_rt(input_xy, C / float4(255.0f, 255.0f, 255.0f, PS_RTA_CORRECTION ? 128.0f : 255.0f));
 #endif
+
+#endif // PS_DATE != 1/2
 
 	return output;
 }
