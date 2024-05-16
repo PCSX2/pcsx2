@@ -12,7 +12,7 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.
 #ifdef _WIN32
-	QT_TRANSLATE_NOOP("MainWindow", "Classic Windows"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Classic Windows"),
 #endif
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Fusion [Light/Dark]"),
 	//: Ignore what Crowdin says in this string about "[Light]/[Dark]" being untouchable here, these are not variables in this case and must be translated.

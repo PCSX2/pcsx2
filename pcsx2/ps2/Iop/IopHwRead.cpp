@@ -161,13 +161,9 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			case 0x4:
-				ret = psxCounters[cntidx].mode;
+				ret = psxCounters[cntidx].mode.modeval;
 
-				// hmm!  The old code only did this bitwise math for 16 bit reads.
-				// Logic indicates it should do the math consistently.  Question is,
-				// should it do the logic for both 16 and 32, or not do logic at all?
-
-				psxCounters[cntidx].mode &= ~0x1800;
+				psxRcntSetNewIntrMode(cntidx);
 			break;
 
 			case 0x8:
@@ -197,13 +193,10 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			case 0x4:
-				ret = psxCounters[cntidx].mode;
+				ret = psxCounters[cntidx].mode.modeval;
 				PSXCNT_LOG("IOP Counter[%d] modeRead%d = %lx", cntidx, sizeof(T) * 8, ret);
-				// hmm!  The old code only did the following bitwise math for 16 bit reads.
-				// Logic indicates it should do the math consistently.  Question is,
-				// should it do the logic for both 16 and 32, or not do logic at all?
 
-				psxCounters[cntidx].mode &= ~0x1800;
+				psxRcntSetNewIntrMode(cntidx);
 			break;
 
 			case 0x8:

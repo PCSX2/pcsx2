@@ -307,7 +307,7 @@ namespace FullscreenUI
 	static void DrawInterfaceSettingsPage();
 	static void DrawBIOSSettingsPage();
 	static void DrawEmulationSettingsPage();
-	static void DrawGraphicsSettingsPage();
+	static void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
 	static void DrawAudioSettingsPage();
 	static void DrawMemoryCardSettingsPage();
 	static void DrawControllerSettingsPage();
@@ -2811,6 +2811,9 @@ void FullscreenUI::DrawSettingsWindow()
 		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
 
 	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
 
 	if (BeginFullscreenWindow(
 			ImVec2(0.0f, 0.0f), heading_size, "settings_category", ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, bg_alpha)))
@@ -2833,11 +2836,7 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("Folder Settings"), FSUI_NSTR("Advanced Settings"), FSUI_NSTR("Patches"), FSUI_NSTR("Cheats"),
 			FSUI_NSTR("Game Fixes")};
 
-		SettingsInterface* bsi = GetEditingSettingsInterface();
-		const bool game_settings = IsEditingGameSettings(bsi);
-
-		const u32 count = game_settings ? (ShouldShowAdvancedSettings(bsi) ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) :
-										  std::size(global_pages);
+		const u32 count = game_settings ? (show_advanced_settings ? std::size(per_game_pages) : (std::size(per_game_pages) - 1)) : std::size(global_pages);
 		const char* const* icons = game_settings ? per_game_icons : global_icons;
 		const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
 		u32 index = 0;
@@ -2935,7 +2934,7 @@ void FullscreenUI::DrawSettingsWindow()
 				break;
 
 			case SettingsPage::Graphics:
-				DrawGraphicsSettingsPage();
+				DrawGraphicsSettingsPage(bsi, show_advanced_settings);
 				break;
 
 			case SettingsPage::Audio:
@@ -3442,7 +3441,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 	}
 }
 
-void FullscreenUI::DrawGraphicsSettingsPage()
+void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings)
 {
 	static constexpr const char* s_renderer_names[] = {
 		FSUI_NSTR("Automatic (Default)"),
@@ -3601,8 +3600,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 		FSUI_NSTR("JPEG"),
 		FSUI_NSTR("WebP"),
 	};
-
-	SettingsInterface* bsi = GetEditingSettingsInterface();
 
 	const GSRendererType renderer =
 		static_cast<GSRendererType>(GetEffectiveIntSetting(bsi, "EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
@@ -3912,35 +3909,35 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
 	static constexpr const char* s_gsdump_compression[] = {FSUI_NSTR("Uncompressed"), FSUI_NSTR("LZMA (xz)"), FSUI_NSTR("Zstandard (zst)")};
 
-	MenuHeading(FSUI_CSTR("Advanced"));
-	DrawToggleSetting(bsi, FSUI_CSTR("Skip Presenting Duplicate Frames"),
-		FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
-				  "worse."),
-		"EmuCore/GS", "SkipDuplicateFrames", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Disable Threaded Presentation"),
-		FSUI_CSTR("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues."),
-		"EmuCore/GS", "DisableThreadedPresentation", false);
-	if (hw_fixes_visible)
+	if (show_advanced_settings)
 	{
+		MenuHeading(FSUI_CSTR("Advanced"));
+		DrawToggleSetting(bsi, FSUI_CSTR("Skip Presenting Duplicate Frames"),
+			FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
+					  "worse."),
+			"EmuCore/GS", "SkipDuplicateFrames", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Disable Threaded Presentation"),
+			FSUI_CSTR("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues."),
+			"EmuCore/GS", "DisableThreadedPresentation", false);
 		DrawIntListSetting(bsi, FSUI_CSTR("Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
 			"EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download),
 			true);
+		DrawIntListSetting(bsi, FSUI_CSTR("Allow Exclusive Fullscreen"),
+			FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
+			"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
+			(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
+		DrawIntListSetting(bsi, FSUI_CSTR("Override Texture Barriers"),
+			FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
+			s_generic_options, std::size(s_generic_options), true, -1);
+		DrawIntListSetting(bsi, FSUI_CSTR("GS Dump Compression"), FSUI_CSTR("Sets the compression algorithm for GS dumps."), "EmuCore/GS",
+			"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
+		DrawToggleSetting(bsi, FSUI_CSTR("Disable Framebuffer Fetch"),
+			FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Disable Shader Cache"), FSUI_CSTR("Prevents the loading and saving of shaders/pipelines to disk."),
+			"EmuCore/GS", "DisableShaderCache", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
+			"EmuCore/GS", "DisableVertexShaderExpand", false);
 	}
-	DrawIntListSetting(bsi, FSUI_CSTR("Allow Exclusive Fullscreen"),
-		FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
-		"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
-		(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
-	DrawIntListSetting(bsi, FSUI_CSTR("Override Texture Barriers"),
-		FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
-		s_generic_options, std::size(s_generic_options), true, -1);
-	DrawIntListSetting(bsi, FSUI_CSTR("GS Dump Compression"), FSUI_CSTR("Sets the compression algorithm for GS dumps."), "EmuCore/GS",
-		"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
-	DrawToggleSetting(bsi, FSUI_CSTR("Disable Framebuffer Fetch"),
-		FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Disable Shader Cache"), FSUI_CSTR("Prevents the loading and saving of shaders/pipelines to disk."),
-		"EmuCore/GS", "DisableShaderCache", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
-		"EmuCore/GS", "DisableVertexShaderExpand", false);
 
 	EndMenuButtons();
 }

@@ -32,20 +32,20 @@ static void psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 	// Update the spu2 to the current cycle before initiating the DMA
 
 	SPU2async();
-	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
+	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].startCycle);
 
-	psxCounters[6].sCycleT = psxRegs.cycle;
-	psxCounters[6].CycleT = size * 4;
+	psxCounters[6].startCycle = psxRegs.cycle;
+	psxCounters[6].deltaCycles = size * 4;
 
-	psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-	psxNextsCounter = psxRegs.cycle;
-	if (psxCounters[6].CycleT < psxNextCounter)
-		psxNextCounter = psxCounters[6].CycleT;
+	psxNextDeltaCounter -= (psxRegs.cycle - psxNextStartCounter);
+	psxNextStartCounter = psxRegs.cycle;
+	if (psxCounters[6].deltaCycles < psxNextDeltaCounter)
+		psxNextDeltaCounter = psxCounters[6].deltaCycles;
 
-	if ((psxRegs.iopNextEventCycle - psxNextsCounter) > (u32)psxNextCounter)
+	if ((psxRegs.iopNextEventCycle - psxNextStartCounter) > (u32)psxNextDeltaCounter)
 	{
-		//DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextsCounter + psxNextCounter, g_iopNextEventCycle, psxNextsCounter, (g_iopNextEventCycle - psxNextsCounter), psxNextCounter);
-		psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
+		//DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextStartCounter + psxNextCounter, g_iopNextEventCycle, psxNextStartCounter, (g_iopNextEventCycle - psxNextStartCounter), psxNextCounter);
+		psxRegs.iopNextEventCycle = psxNextStartCounter + psxNextDeltaCounter;
 	}
 
 	switch (chcr)

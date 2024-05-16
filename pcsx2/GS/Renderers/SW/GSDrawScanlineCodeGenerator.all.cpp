@@ -1173,10 +1173,8 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 
 	if (!m_sel.fst)
 	{
-		rcpps(xym0, _q);
-
-		MOVE_IF_64(mulps, xym2, _s, xym0);
-		MOVE_IF_64(mulps, xym3, _t, xym0);
+		MOVE_IF_64(divps, xym2, _s, _q);
+		MOVE_IF_64(divps, xym3, _t, _q);
 
 		cvttps2dq(xym2, xym2);
 		cvttps2dq(xym3, xym3);
@@ -1576,10 +1574,8 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD()
 
 	if (!m_sel.fst)
 	{
-		rcpps(xym0, xym4);
-
-		MOVE_IF_64(mulps, xym2, _s, xym0);
-		MOVE_IF_64(mulps, xym3, _t, xym0);
+		MOVE_IF_64(divps, xym2, _s, xym4);
+		MOVE_IF_64(divps, xym3, _t, xym4);
 
 		cvttps2dq(xym2, xym2);
 		cvttps2dq(xym3, xym3);

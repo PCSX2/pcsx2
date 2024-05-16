@@ -135,8 +135,8 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 	psxRegs.eCycle[n] = ecycle;
 
 	psxSetNextBranchDelta(ecycle);
-
-	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * 8;
+	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
+	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier;
 
 	if (psxRegs.iopCycleEE < iopDelta)
 	{
@@ -207,7 +207,7 @@ __ri void iopEventTest()
 {
 	psxRegs.iopNextEventCycle = psxRegs.cycle + iopWaitCycles;
 
-	if (psxTestCycle(psxNextsCounter, psxNextCounter))
+	if (psxTestCycle(psxNextStartCounter, psxNextDeltaCounter))
 	{
 		psxRcntUpdate();
 		iopEventAction = true;
@@ -216,8 +216,8 @@ __ri void iopEventTest()
 	{
 		// start the next branch at the next counter event by default
 		// the interrupt code below will assign nearer branches if needed.
-		if (psxNextCounter < static_cast<s32>(psxRegs.iopNextEventCycle - psxNextsCounter))
-			psxRegs.iopNextEventCycle = psxNextsCounter + psxNextCounter;
+		if (psxNextDeltaCounter < static_cast<s32>(psxRegs.iopNextEventCycle - psxNextStartCounter))
+			psxRegs.iopNextEventCycle = psxNextStartCounter + psxNextDeltaCounter;
 	}
 
 	if (psxRegs.interrupt)

@@ -7,6 +7,7 @@
 #include "CDVD/IsoReader.h"
 #include "CDVD/IsoFileFormats.h"
 #include "GS.h"
+#include "SIO/Sio.h"
 #include "Elfheader.h"
 #include "ps2/BiosTools.h"
 #include "Recording/InputRecording.h"
@@ -1553,12 +1554,19 @@ void cdvdUpdateTrayState()
 
 void cdvdVsync()
 {
+	// We're counting in frames, but one second isn't exactly 50 or 60 frames in most cases, so we'll keep the fractions.
 	cdvd.RTCcount++;
-	if (cdvd.RTCcount < GetVerticalFrequency())
+	const double verticalFrequency = GetVerticalFrequency();
+	if (cdvd.RTCcount < verticalFrequency)
 		return;
-	cdvd.RTCcount = 0;
+
+	cdvd.RTCcount -= verticalFrequency;
 
 	cdvdUpdateTrayState();
+
+	// FolderMemoryCard needs information on how much time has passed since the last write
+	// Call it every second.
+	sioNextFrame();
 
 	cdvd.RTC.second++;
 	if (cdvd.RTC.second < 60)
