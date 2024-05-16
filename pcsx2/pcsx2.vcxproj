@@ -465,6 +465,7 @@
   <ItemGroup>
     <ClInclude Include="Achievements.h" />
     <ClInclude Include="AsyncFileReader.h" />
+    <ClInclude Include="CDVD\BlockdumpFileReader.h" />
     <ClInclude Include="CDVD\CDVDdiscReader.h" />
     <ClInclude Include="CDVD\ChunksCache.h" />
     <ClInclude Include="CDVD\CompressedFileReader.h" />
