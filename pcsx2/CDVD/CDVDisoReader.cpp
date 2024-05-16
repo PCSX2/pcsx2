@@ -33,7 +33,7 @@ static bool ISOopen(std::string filename, Error* error)
 		return false;
 	}
 
-	if (!iso.Open(std::move(filename), error, false))
+	if (!iso.Open(std::move(filename), error))
 		return false;
 
 	switch (iso.GetType())

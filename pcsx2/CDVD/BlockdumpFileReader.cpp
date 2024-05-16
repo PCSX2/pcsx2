@@ -20,21 +20,6 @@ enum isoFlags
 
 static constexpr u32 BlockDumpHeaderSize = 16;
 
-bool BlockdumpFileReader::DetectBlockdump(ThreadedFileReader* reader)
-{
-	u32 oldbs = reader->GetBlockSize();
-
-	reader->SetBlockSize(1);
-
-	char buf[4] = {0};
-	bool isbd = (reader->ReadSync(buf, 0, sizeof(buf)) == 4 && std::memcmp(buf, "BDV2", sizeof(buf)) == 0);
-
-	if (!isbd)
-		reader->SetBlockSize(oldbs);
-
-	return isbd;
-}
-
 BlockdumpFileReader::BlockdumpFileReader() = default;
 
 BlockdumpFileReader::~BlockdumpFileReader()
