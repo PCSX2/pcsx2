@@ -472,37 +472,6 @@
        <item row="0" column="1">
         <widget class="QComboBox" name="upscaleMultiplier"/>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Mipmapping:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="mipmapping">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Off</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Basic (Generated Mipmaps)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Full (PS2 Mipmaps)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
@@ -678,9 +647,9 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QCheckBox" name="enableHWFixes">
-           <property name="text">
-            <string>Manual Hardware Renderer Fixes</string>
+          <widget class="QCheckBox" name="mipmapping">
+            <property name="text">
+             <string>Mipmapping</string>
            </property>
           </widget>
          </item>
@@ -688,6 +657,13 @@
           <widget class="QCheckBox" name="spinCPUDuringReadbacks">
            <property name="text">
             <string>Spin CPU During Readbacks</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="enableHWFixes">
+           <property name="text">
+            <string>Manual Hardware Renderer Fixes</string>
            </property>
           </widget>
          </item>
