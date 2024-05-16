@@ -39,7 +39,7 @@ BlockdumpFileReader::BlockdumpFileReader() = default;
 
 BlockdumpFileReader::~BlockdumpFileReader()
 {
-	Close();
+	pxAssert(!m_file);
 }
 
 bool BlockdumpFileReader::Open2(std::string filename, Error* error)

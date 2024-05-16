@@ -18,15 +18,11 @@ static constexpr u32 MAX_PARENTS = 32; // Surely someone wouldn't be insane enou
 static std::vector<std::pair<std::string, chd_header>> s_chd_hash_cache; // <filename, header>
 static std::recursive_mutex s_chd_hash_cache_mutex;
 
-ChdFileReader::ChdFileReader()
-{
-	m_blocksize = 2048;
-	ChdFile = nullptr;
-}
+ChdFileReader::ChdFileReader() = default;
 
 ChdFileReader::~ChdFileReader()
 {
-	Close();
+	pxAssert(!ChdFile);
 }
 
 static chd_file* OpenCHD(const std::string& filename, FileSystem::ManagedCFilePtr fp, Error* error, u32 recursion_level)

@@ -53,7 +53,6 @@ else()
 
 	if(UNIX AND NOT APPLE)
 		if(LINUX)
-			check_lib(AIO aio libaio.h)
 			check_lib(LIBUDEV libudev libudev.h)
 		endif()
 

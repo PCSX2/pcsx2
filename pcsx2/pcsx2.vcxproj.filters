@@ -713,12 +713,6 @@
     <ClCompile Include="Gif_Logger.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="windows\FlatFileReaderWindows.cpp">
-      <Filter>System\ISO</Filter>
-    </ClCompile>
-    <ClCompile Include="Darwin\DarwinFlatFileReader.cpp">
-      <Filter>System\ISO</Filter>
-    </ClCompile>
     <ClCompile Include="CDVD\InputIsoFile.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
@@ -1403,6 +1397,9 @@
     </ClCompile>
     <ClCompile Include="Host\CubebAudioStream.cpp">
       <Filter>Misc\Host</Filter>
+    </ClCompile>
+    <ClCompile Include="CDVD\FlatFileReader.cpp">
+      <Filter>System\ISO</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2319,6 +2316,9 @@
       <Filter>Misc\Host</Filter>
     </ClInclude>
     <ClInclude Include="CDVD\BlockdumpFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\FlatFileReader.h">
       <Filter>System\ISO</Filter>
     </ClInclude>
   </ItemGroup>

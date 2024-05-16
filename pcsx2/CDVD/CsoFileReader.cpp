@@ -4,6 +4,7 @@
 #include "AsyncFileReader.h"
 #include "CsoFileReader.h"
 
+#include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
 #include "common/Error.h"
@@ -29,14 +30,11 @@ struct CsoHeader
 
 static const u32 CSO_READ_BUFFER_SIZE = 256 * 1024;
 
-CsoFileReader::CsoFileReader()
-{
-	m_blocksize = 2048;
-}
+CsoFileReader::CsoFileReader() = default;
 
 CsoFileReader::~CsoFileReader()
 {
-	Close();
+	pxAssert(m_src);
 }
 
 bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)

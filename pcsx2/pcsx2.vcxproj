@@ -115,6 +115,7 @@
     <ClCompile Include="CDVD\ChunksCache.cpp" />
     <ClCompile Include="CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="CDVD\FlatFileReader.cpp" />
     <ClCompile Include="CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="CDVD\IsoReader.cpp" />
     <ClCompile Include="CDVD\IsoHasher.cpp" />
@@ -345,10 +346,6 @@
     <ClCompile Include="VMManager.cpp" />
     <ClCompile Include="windows\Optimus.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
-    <ClCompile Include="windows\FlatFileReaderWindows.cpp" />
-    <ClCompile Include="Darwin\DarwinFlatFileReader.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceLog.cpp" />
     <ClCompile Include="Elfheader.cpp" />
@@ -472,6 +469,7 @@
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="CDVD\CsoFileReader.h" />
     <ClInclude Include="CDVD\ChdFileReader.h" />
+    <ClInclude Include="CDVD\FlatFileReader.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
     <ClInclude Include="CDVD\IsoReader.h" />
     <ClInclude Include="CDVD\IsoHasher.h" />
