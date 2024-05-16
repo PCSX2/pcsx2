@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "AsyncFileReader.h"
-#include "CsoFileReader.h"
+#include "CDVD/CsoFileReader.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"

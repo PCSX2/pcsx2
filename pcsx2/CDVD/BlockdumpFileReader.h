@@ -33,7 +33,7 @@ public:
 
 	u32 GetBlockCount() const override;
 
-	static bool DetectBlockdump(AsyncFileReader* reader);
+	static bool DetectBlockdump(ThreadedFileReader* reader);
 
 	s32 GetBlockOffset() { return m_blockofs; }
 };

@@ -20,7 +20,7 @@ enum isoFlags
 
 static constexpr u32 BlockDumpHeaderSize = 16;
 
-bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
+bool BlockdumpFileReader::DetectBlockdump(ThreadedFileReader* reader)
 {
 	u32 oldbs = reader->GetBlockSize();
 

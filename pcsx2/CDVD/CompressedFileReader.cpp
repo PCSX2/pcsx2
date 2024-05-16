@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#include "AsyncFileReader.h"
 #include "CompressedFileReader.h"
 #include "ChdFileReader.h"
 #include "CsoFileReader.h"
@@ -14,7 +13,7 @@
 #include <algorithm>
 #include <cctype>
 
-AsyncFileReader* CompressedFileReader::GetNewReader(const std::string& fileName)
+ThreadedFileReader* CompressedFileReader::GetNewReader(const std::string& fileName)
 {
 	if (!FileSystem::FileExists(fileName.c_str()))
 		return nullptr;

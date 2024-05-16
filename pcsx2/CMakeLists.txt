@@ -140,7 +140,6 @@ set(pcsx2Sources
 # Main pcsx2 header
 set(pcsx2Headers
 	Achievements.h
-	AsyncFileReader.h
 	Cache.h
 	Common.h
 	Config.h

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/BlockdumpFileReader.h"
+#include "CDVD/CompressedFileReader.h"
 #include "CDVD/FlatFileReader.h"
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
@@ -316,13 +317,11 @@ bool InputIsoFile::Detect(bool readType)
 {
 	m_type = ISOTYPE_ILLEGAL;
 
-	AsyncFileReader* headpart = m_reader;
-
 	// First sanity check: no sane CD image has less than 16 sectors, since that's what
 	// we need simply to contain a TOC.  So if the file size is not large enough to
 	// accommodate that, it is NOT a CD image --->
 
-	int sectors = headpart->GetBlockCount();
+	int sectors = m_reader->GetBlockCount();
 
 	if (sectors < 17)
 		return false;
