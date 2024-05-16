@@ -1628,9 +1628,6 @@
     <ClInclude Include="x86\microVU_Profiler.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClInclude>
-    <ClInclude Include="AsyncFileReader.h">
-      <Filter>System\ISO</Filter>
-    </ClInclude>
     <ClInclude Include="DebugTools\SymbolMap.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>

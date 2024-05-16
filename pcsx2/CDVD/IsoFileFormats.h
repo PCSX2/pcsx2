@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "CDVD.h"
-#include "AsyncFileReader.h"
-#include "CompressedFileReader.h"
+#include "CDVD/CDVD.h"
+#include "CDVD/ThreadedFileReader.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,7 +36,7 @@ protected:
 
 protected:
 	std::string m_filename;
-	AsyncFileReader* m_reader;
+	ThreadedFileReader* m_reader;
 
 	u32 m_current_lsn;
 

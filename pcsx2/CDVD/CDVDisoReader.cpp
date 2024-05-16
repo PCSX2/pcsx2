@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "IsoFileFormats.h"
-#include "AsyncFileReader.h"
 #include "CDVD/CDVD.h"
 
 #include "common/Assertions.h"
