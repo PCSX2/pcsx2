@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/BlockdumpFileReader.h"
-#include "CDVD/CompressedFileReader.h"
+#include "CDVD/ChdFileReader.h"
+#include "CDVD/CsoFileReader.h"
 #include "CDVD/FlatFileReader.h"
+#include "CDVD/GzippedFileReader.h"
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
 #include "Host.h"
@@ -11,6 +13,8 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/Error.h"
+#include "common/Path.h"
+#include "common/StringUtil.h"
 
 #include "fmt/format.h"
 
@@ -33,13 +37,30 @@ static const char* nameFromType(int type)
 	}
 }
 
+static std::unique_ptr<ThreadedFileReader> GetFileReader(const std::string& path)
+{
+	const std::string_view extension = Path::GetExtension(path);
+
+	if (StringUtil::compareNoCase(extension, "chd"))
+		return std::make_unique<ChdFileReader>();
+
+	if (StringUtil::compareNoCase(extension, "cso") || StringUtil::compareNoCase(extension, "zso"))
+		return std::make_unique<CsoFileReader>();
+
+	if (StringUtil::compareNoCase(extension, "gz"))
+		return std::make_unique<GzippedFileReader>();
+
+	if (StringUtil::compareNoCase(extension, "dump"))
+		return std::make_unique<BlockdumpFileReader>();
+
+	return std::make_unique<FlatFileReader>();
+}
+
 int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
 	if (lsn >= m_blocks)
 	{
-		std::string msg(fmt::format("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks));
-		pxAssertMsg(false, msg.c_str());
-		Console.Error(msg.c_str());
+		ERROR_LOG("isoFile error: Block index is past the end of file! ({} >= {}).", lsn, m_blocks);
 		return -1;
 	}
 
@@ -54,27 +75,17 @@ void InputIsoFile::BeginRead2(uint lsn)
 	{
 		// While this usually indicates that the ISO is corrupted, some games do attempt
 		// to read past the end of the disc, so don't error here.
-		Console.WriteLn("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
+		ERROR_LOG("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 		return;
 	}
 
-	if (lsn >= m_read_lsn && lsn < (m_read_lsn + m_read_count))
-	{
-		// Already buffered
+	// same sector?
+	if (lsn == m_read_lsn)
 		return;
-	}
 
 	m_read_lsn = lsn;
-	m_read_count = 1;
 
-	if (ReadUnit > 1)
-	{
-		//m_read_lsn   = lsn - (lsn % ReadUnit);
-
-		m_read_count = std::min(ReadUnit, m_blocks - m_read_lsn);
-	}
-
-	m_reader->BeginRead(m_readbuffer, m_read_lsn, m_read_count);
+	m_reader->BeginRead(m_readbuffer, m_read_lsn, 1);
 	m_read_inprogress = true;
 }
 
@@ -95,7 +106,6 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 		if (ret <= 0)
 		{
 			m_read_lsn = -1;
-			m_read_count = 0;
 			return -1;
 		}
 	}
@@ -131,7 +141,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 	int ndiff = 0;
 	if (diff > 0)
 	{
-		memset(dst, 0, diff);
+		std::memset(dst, 0, diff);
 		_offset = m_blockofs;
 	}
 	else
@@ -142,8 +152,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 
 	length = end - _offset;
 
-	uint read_offset = (m_current_lsn - m_read_lsn) * m_blocksize;
-	memcpy(dst + diff, m_readbuffer + ndiff + read_offset, length);
+	std::memcpy(dst + diff, m_readbuffer + ndiff, length);
 
 	if (m_type == ISOTYPE_CD && diff >= 12)
 	{
@@ -175,84 +184,27 @@ void InputIsoFile::_init()
 	m_blocks = 0;
 
 	m_read_inprogress = false;
-	m_read_count = 0;
-	ReadUnit = 0;
 	m_current_lsn = -1;
 	m_read_lsn = -1;
-	m_reader = NULL;
+	m_reader.reset();
 }
 
-// Tests the specified filename to see if it is a supported ISO type.  This function typically
-// executes faster than IsoFile::Open since it does not do the following:
-//  * check for multi-part ISOs.  I tests for header info in the main/root ISO only.
-//  * load blockdump indexes.
-//
-// Note that this is a member method, and that it will clobber any existing ISO state.
-// (assertions are generated in debug mode if the object state is not already closed).
-bool InputIsoFile::Test(std::string srcfile)
-{
-	Close();
-	return Open(std::move(srcfile), nullptr, true);
-}
-
-bool InputIsoFile::Open(std::string srcfile, Error* error, bool testOnly)
+bool InputIsoFile::Open(std::string srcfile, Error* error)
 {
 	Close();
 	m_filename = std::move(srcfile);
-
-	bool isBlockdump = false;
-	bool isCompressed = false;
-
-	// First try using a compressed reader.  If it works, go with it.
-	m_reader = CompressedFileReader::GetNewReader(m_filename);
-	isCompressed = m_reader != nullptr;
-
-	// If it wasn't compressed, let's open it has a FlatFileReader.
-	if (!isCompressed)
-		m_reader = new FlatFileReader();
-
+	m_reader = GetFileReader(m_filename);
 	if (!m_reader->Open(m_filename, error))
-		return false;
-
-	// It might actually be a blockdump file.
-	// Check that before continuing with the FlatFileReader.
-	isBlockdump = BlockdumpFileReader::DetectBlockdump(m_reader);
-	if (isBlockdump)
 	{
-		delete m_reader;
-
-		BlockdumpFileReader* bdr = new BlockdumpFileReader();
-		bdr->Open(m_filename, error);
-
-		m_blockofs = bdr->GetBlockOffset();
-		m_blocksize = bdr->GetBlockSize();
-
-		m_reader = bdr;
-
-		ReadUnit = 1;
-	}
-
-	bool detected = Detect();
-
-	if (testOnly)
-	{
-		Close();
-		return detected;
-	}
-
-	if (!detected)
-	{
-		Error::SetString(error, fmt::format("Unable to identify the ISO image type for '{}'", m_filename));
-		Close();
+		m_reader.reset();
 		return false;
 	}
 
-	if (!isBlockdump && !isCompressed)
+	if (!Detect())
 	{
-		ReadUnit = MaxReadUnit;
-
-		m_reader->SetDataOffset(m_offset);
-		m_reader->SetBlockSize(m_blocksize);
+		Error::SetStringFmt(error, "Unable to identify the ISO image type for '{}'", Path::GetFileName(m_filename));
+		Close();
+		return false;
 	}
 
 	m_blocks = m_reader->GetBlockCount();
@@ -274,8 +226,7 @@ void InputIsoFile::Close()
 	if (m_reader)
 	{
 		m_reader->Close();
-		delete m_reader;
-		m_reader = nullptr;
+		m_reader.reset();
 	}
 
 	_init();
