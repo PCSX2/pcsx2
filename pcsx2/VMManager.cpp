@@ -3016,10 +3016,10 @@ void VMManager::WarnAboutUnsafeSettings()
 	}
 	if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
 		append(ICON_FA_TV, TRANSLATE_SV("VMManager", "Upscale multiplier is below native, this will break rendering."));
-	if (EmuConfig.GS.HWMipmap != HWMipmapLevel::Automatic)
+	if (!EmuConfig.GS.HWMipmap)
 	{
 		append(ICON_FA_IMAGES,
-			TRANSLATE_SV("VMManager", "Mipmapping is not set to automatic. This may break rendering in some games."));
+			TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 	{
