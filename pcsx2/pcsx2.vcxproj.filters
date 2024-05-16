@@ -2318,6 +2318,9 @@
     <ClInclude Include="Host\AudioStreamTypes.h">
       <Filter>Misc\Host</Filter>
     </ClInclude>
+    <ClInclude Include="CDVD\BlockdumpFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="rdebug\deci2.h">
