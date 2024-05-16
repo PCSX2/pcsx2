@@ -6224,6 +6224,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 	// Master enable.
 	const int bw = GSConfig.UserHacks_CPUSpriteRenderBW;
 	const int level = GSConfig.UserHacks_CPUSpriteRenderLevel;
+
 	if (bw == 0)
 		return false;
 
@@ -6249,23 +6250,46 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 			if (!src_target->m_dirty.empty())
 			{
 				const GSVector4i tr(GetTextureMinMax(m_cached_ctx.TEX0, m_cached_ctx.CLAMP, m_vt.IsLinear(), false, m_vt.m_primclass == GS_SPRITE_CLASS && PrimitiveCoversWithoutGaps()).coverage);
+
+				const u32 start_bp = GSLocalMemory::GetStartBlockAddress(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, tr);
+				const u32 end_bp = GSLocalMemory::GetEndBlockAddress(m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.TBW, m_cached_ctx.TEX0.PSM, tr);
+
 				for (GSDirtyRect& rc : src_target->m_dirty)
 				{
-					if (!rc.GetDirtyRect(m_cached_ctx.TEX0, false).rintersect(tr).rempty())
-						return true;
-				}
+					const GSVector4i dirty_rect = rc.GetDirtyRect(src_target->m_TEX0, false);
+					const u32 dirty_start_bp = GSLocalMemory::GetStartBlockAddress(src_target->m_TEX0.TBP0, src_target->m_TEX0.TBW, src_target->m_TEX0.PSM, dirty_rect);
+					const u32 dirty_end_bp = GSLocalMemory::GetEndBlockAddress(src_target->m_TEX0.TBP0, src_target->m_TEX0.TBW, src_target->m_TEX0.PSM, dirty_rect);
 
-				// Make sure it actually makes sense to use this target as a source, given the formats, and it wouldn't just sample as garbage.
-				// We can't rely exclusively on the dirty rect check above, because sometimes the targets are from older frames and too large.
-				if (!GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) &&
-					(!src_target->m_32_bits_fmt || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp != 16))
-				{
-					return true;
+					if (start_bp < dirty_end_bp && end_bp > dirty_start_bp)
+					{
+						if (dirty_start_bp > start_bp || dirty_end_bp < end_bp)
+						{
+							return true;
+						}
+						else if (GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) || PrimitiveCoversWithoutGaps())
+							return false;
+					}
 				}
 			}
+			// Make sure it actually makes sense to use this target as a source, given the formats, and it wouldn't just sample as garbage.
+			// We can't rely exclusively on the dirty rect check above, because sometimes the targets are from older frames and too large.
+			if (!GSUtil::HasSameSwizzleBits(m_cached_ctx.TEX0.PSM, src_target->m_TEX0.PSM) &&
+				(!src_target->m_32_bits_fmt || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp != 16))
+					return true;
 
 			return false;
 		}
+	}
+
+	if (PRIM->ABE && m_vt.m_eq.rgba == 0xffff)
+	{
+		GSTextureCache::Target* rt = g_texture_cache->GetTargetWithSharedBits(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.PSM);
+
+		if (!rt)
+			return true;
+
+		rt = nullptr;
+		return false;
 	}
 
 	// We can use the sw prim render path!

@@ -26695,6 +26695,7 @@ SLES-54723:
     eeRoundMode: 0 # Fixes idle camera behaviour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    cpuSpriteRenderLevel: 2 # Fixes the sun when using the above.
     halfPixelOffset: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom intensity.
 SLES-54724:
@@ -26704,6 +26705,7 @@ SLES-54724:
     eeRoundMode: 0 # Fixes idle camera behaviour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    cpuSpriteRenderLevel: 2 # Fixes the sun when using the above.
     halfPixelOffset: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom intensity.
 SLES-54725:
@@ -31478,6 +31480,7 @@ SLKA-25385:
     eeRoundMode: 0 # Fixes idle camera behaviour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    cpuSpriteRenderLevel: 2 # Fixes the sun when using the above.
     halfPixelOffset: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom intensity.
 SLKA-25388:
@@ -57607,6 +57610,7 @@ SLPS-25823:
     eeRoundMode: 0 # Fixes idle camera behaviour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    cpuSpriteRenderLevel: 2 # Fixes the sun when using the above.
     halfPixelOffset: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom intensity.
 SLPS-25825:
@@ -67884,6 +67888,7 @@ SLUS-21552:
     eeRoundMode: 0 # Fixes idle camera behaviour.
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    cpuSpriteRenderLevel: 2 # Fixes the sun when using the above.
     halfPixelOffset: 2 # Fixes bloom alignment.
     autoFlush: 1 # Fixes bloom intensity.
 SLUS-21553:
