@@ -23,6 +23,11 @@
 
 #include "fmt/core.h"
 
+// TODO: FIXME! Should be platform specific.
+#ifdef _WIN32
+#include "common/RedtapeWindows.h"
+#endif
+
 #define ENABLE_TIMESTAMPS
 
 const CDVD_API* CDVD = nullptr;

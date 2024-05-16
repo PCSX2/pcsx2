@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/BlockdumpFileReader.h"
+#include "CDVD/FlatFileReader.h"
 #include "CDVD/IsoFileFormats.h"
 #include "Config.h"
 #include "Host.h"
@@ -203,16 +204,11 @@ bool InputIsoFile::Open(std::string srcfile, Error* error, bool testOnly)
 
 	// First try using a compressed reader.  If it works, go with it.
 	m_reader = CompressedFileReader::GetNewReader(m_filename);
-	isCompressed = m_reader != NULL;
+	isCompressed = m_reader != nullptr;
 
 	// If it wasn't compressed, let's open it has a FlatFileReader.
 	if (!isCompressed)
-	{
-		// Allow write sharing of the iso based on the ini settings.
-		// Mostly useful for romhacking, where the disc is frequently
-		// changed and the emulator would block modifications
-		m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
-	}
+		m_reader = new FlatFileReader();
 
 	if (!m_reader->Open(m_filename, error))
 		return false;
@@ -274,15 +270,19 @@ bool InputIsoFile::Open(std::string srcfile, Error* error, bool testOnly)
 
 void InputIsoFile::Close()
 {
-	delete m_reader;
-	m_reader = NULL;
+	if (m_reader)
+	{
+		m_reader->Close();
+		delete m_reader;
+		m_reader = nullptr;
+	}
 
 	_init();
 }
 
 bool InputIsoFile::IsOpened() const
 {
-	return m_reader != NULL;
+	return m_reader != nullptr;
 }
 
 bool InputIsoFile::tryIsoType(u32 size, u32 offset, u32 blockofs)

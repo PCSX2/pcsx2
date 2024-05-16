@@ -26,7 +26,7 @@ public:
 private:
 	bool ParseTOC(u64* out_frame_count);
 
-	chd_file* ChdFile;
-	u64 file_size;
-	u32 hunk_size;
+	chd_file* ChdFile = nullptr;
+	u64 file_size = 0;
+	u32 hunk_size = 0;
 };

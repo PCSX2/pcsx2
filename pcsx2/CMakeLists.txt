@@ -211,6 +211,7 @@ set(pcsx2CDVDSources
 	CDVD/CDVDdiscReader.cpp
 	CDVD/CDVDisoReader.cpp
 	CDVD/CDVDdiscThread.cpp
+	CDVD/FlatFileReader.cpp
 	CDVD/InputIsoFile.cpp
 	CDVD/IsoHasher.cpp
 	CDVD/IsoReader.cpp
@@ -235,6 +236,7 @@ set(pcsx2CDVDHeaders
 	CDVD/CompressedFileReader.h
 	CDVD/ChdFileReader.h
 	CDVD/CsoFileReader.h
+	CDVD/FlatFileReader.h
 	CDVD/GzippedFileReader.h
 	CDVD/ThreadedFileReader.h
 	CDVD/IsoFileFormats.h
@@ -852,19 +854,16 @@ endif()
 set(pcsx2LinuxSources
 	CDVD/Linux/DriveUtility.cpp
 	CDVD/Linux/IOCtlSrc.cpp
-	Linux/LnxFlatFileReader.cpp
 	)
 
 set(pcsx2OSXSources
 	CDVD/Darwin/DriveUtility.cpp
 	CDVD/Darwin/IOCtlSrc.cpp
-	Darwin/DarwinFlatFileReader.cpp
 	)
 
 set(pcsx2FreeBSDSources
 	CDVD/Darwin/DriveUtility.cpp
 	CDVD/Darwin/IOCtlSrc.cpp
-	Darwin/DarwinFlatFileReader.cpp
 	)
 
 # Linux headers
@@ -931,7 +930,6 @@ set(pcsx2RecordingHeaders
 set(pcsx2WindowsSources
 	CDVD/Windows/DriveUtility.cpp
 	CDVD/Windows/IOCtlSrc.cpp
-	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 )
 
@@ -1065,7 +1063,6 @@ if(LINUX)
 		)
 
 	target_link_libraries(PCSX2_FLAGS INTERFACE
-		PkgConfig::AIO
 		PkgConfig::LIBUDEV
 	)
 endif()
