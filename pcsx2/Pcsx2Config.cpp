@@ -642,6 +642,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	AutoFlushSW = true;
 	PreloadFrameWithGSData = false;
 	Mipmap = true;
+	HWMipmap = true;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -708,7 +709,6 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(Renderer) &&
 		OpEqu(UpscaleMultiplier) &&
 
-		OpEqu(HWMipmap) &&
 		OpEqu(AccurateBlendingUnit) &&
 		OpEqu(TextureFiltering) &&
 		OpEqu(TexturePreloading) &&
@@ -893,7 +893,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	// ~51x would the upper bound here for 32768x32768 textures, but you'll run out VRAM long before then.
 	UpscaleMultiplier = std::clamp(UpscaleMultiplier, 0.5f, 50.0f);
 
-	SettingsWrapIntEnumEx(HWMipmap, "mipmap_hw");
+	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
