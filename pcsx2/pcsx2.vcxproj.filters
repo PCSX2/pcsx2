@@ -722,9 +722,6 @@
     <ClCompile Include="CDVD\InputIsoFile.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="MultipartFileReader.cpp">
-      <Filter>System\ISO</Filter>
-    </ClCompile>
     <ClCompile Include="CDVD\OutputIsoFile.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>

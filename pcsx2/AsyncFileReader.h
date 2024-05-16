@@ -96,45 +96,6 @@ public:
 	void SetDataOffset(u32 bytes) override { m_dataoffset = bytes; }
 };
 
-class MultipartFileReader final : public AsyncFileReader
-{
-	DeclareNoncopyableObject(MultipartFileReader);
-
-	static const int MaxParts = 8;
-
-	struct Part
-	{
-		u32 start;
-		u32 end; // exclusive
-		bool isReading;
-		AsyncFileReader* reader;
-	} m_parts[MaxParts];
-	u32 m_numparts;
-
-	u32 GetFirstPart(u32 lsn);
-	void FindParts();
-
-public:
-	MultipartFileReader(AsyncFileReader* firstPart);
-	~MultipartFileReader() override;
-
-	bool Open(std::string filename, Error* error) override;
-
-	int ReadSync(void* pBuffer, u32 sector, u32 count) override;
-
-	void BeginRead(void* pBuffer, u32 sector, u32 count) override;
-	int FinishRead() override;
-	void CancelRead() override;
-
-	void Close() override;
-
-	u32 GetBlockCount() const override;
-
-	void SetBlockSize(u32 bytes) override;
-
-	static AsyncFileReader* DetectMultipart(AsyncFileReader* reader);
-};
-
 class BlockdumpFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject(BlockdumpFileReader);
