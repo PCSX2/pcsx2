@@ -1141,15 +1141,13 @@ static void iPsxAddEECycles(u32 blockCycles)
 	const u32 cnum = 1280; // PS2CLK / F
 	const u32 cdenom = 147; // PSXCLK / F
 
-	static u32 ticks_carry = 0;
-
 	if (blockCycles != 0xFFFFFFFF)
 		xMOV(eax, blockCycles * cnum);
-	xADD(eax, ptr32[&ticks_carry]);
+	xADD(eax, ptr32[&psxRegs.iopCycleEECarry]);
 	xMOV(ecx, cdenom);
 	xXOR(edx, edx);
 	xUDIV(ecx);
-	xMOV(ptr32[&ticks_carry], edx);
+	xMOV(ptr32[&psxRegs.iopCycleEECarry], edx);
 	xSUB(ptr32[&psxRegs.iopCycleEE], eax);
 }
 
