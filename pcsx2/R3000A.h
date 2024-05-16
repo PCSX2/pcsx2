@@ -110,6 +110,7 @@ struct psxRegisters {
 	// Tracks current number of cycles IOP can run in EE cycles. When it dips below zero,
 	// control is returned to the EE.
 	s32 iopCycleEE;
+	u32 iopCycleEECarry;
 
 	u32 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)

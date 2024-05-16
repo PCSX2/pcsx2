@@ -279,10 +279,9 @@ static s32 intExecuteBlock( s32 eeCycles )
 			const u32 cdenom = 147; // PSXCLK / F
 
 			//One of the Iop to EE delta clocks to be set in PS1 mode.
-			static u32 carry;
-			const u32 t = ((cnum * (psxRegs.cycle - lastIOPCycle)) + carry);
+			const u32 t = ((cnum * (psxRegs.cycle - lastIOPCycle)) + psxRegs.iopCycleEECarry);
 			psxRegs.iopCycleEE -= t / cdenom;
-			carry = t % cdenom;
+			psxRegs.iopCycleEECarry = t % cdenom;
 		}
 		else
 		{ 

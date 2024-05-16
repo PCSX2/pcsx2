@@ -44,6 +44,7 @@ void psxReset()
 
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = -1;
+	psxRegs.iopCycleEECarry = 0;
 	psxRegs.iopNextEventCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
