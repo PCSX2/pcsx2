@@ -251,9 +251,6 @@ bool InputIsoFile::Open(std::string srcfile, Error* error, bool testOnly)
 
 		m_reader->SetDataOffset(m_offset);
 		m_reader->SetBlockSize(m_blocksize);
-
-		// Returns the original reader if single-part or a Multipart reader otherwise
-		m_reader = MultipartFileReader::DetectMultipart(m_reader);
 	}
 
 	m_blocks = m_reader->GetBlockCount();
