@@ -3,17 +3,7 @@
 
 #pragma once
 
-// Based on testing, the overhead of using this cache is high.
-//
-// The test was done with CSO files using a block size of 16KB.
-// Cache hit rates were observed in the range of 25%.
-// Cache overhead added 35% to the overall read time.
-//
-// For this reason, it's currently disabled.
-#define CSO_USE_CHUNKSCACHE 0
-
 #include "ThreadedFileReader.h"
-#include "ChunksCache.h"
 #include <zlib.h>
 
 struct CsoHeader;
