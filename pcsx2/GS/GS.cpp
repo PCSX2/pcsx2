@@ -1113,28 +1113,18 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 					Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(EmuConfig.CurrentAspectRatio)]),
 				Host::OSD_QUICK_DURATION);
 		}},
-	{"CycleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Hardware Mipmapping"),
+	{"ToggleMipmapMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Hardware Mipmapping"),
 		[](s32 pressed) {
-			if (pressed)
-				return;
-
-			static constexpr s32 CYCLE_COUNT = 4;
-			static constexpr std::array<const char*, CYCLE_COUNT> option_names = {
-				{"Automatic", "Off", "Basic (Generated)", "Full (PS2)"}};
-
-			const HWMipmapLevel new_level =
-				static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
-			Host::AddKeyedOSDMessage("CycleMipmapMode",
-				fmt::format(TRANSLATE_FS("Hotkeys", "Hardware mipmapping set to '{}'."),
-					option_names[static_cast<s32>(new_level) + 1]),
-				Host::OSD_QUICK_DURATION);
-			EmuConfig.GS.HWMipmap = new_level;
-
-			MTGS::RunOnGSThread([new_level]() {
-				GSConfig.HWMipmap = new_level;
-				g_gs_renderer->PurgeTextureCache(true, false, true);
-				g_gs_device->PurgePool();
-			});
+			if (!pressed)
+			{
+				EmuConfig.GS.HWMipmap = !EmuConfig.GS.HWMipmap;
+				Host::AddKeyedOSDMessage("ToggleMipmapMode",
+					EmuConfig.GS.HWMipmap ?
+						TRANSLATE_STR("Hotkeys", "Hardware mipmapping is now enabled.") :
+						TRANSLATE_STR("Hotkeys", "Hardware mipmapping is now disabled."),
+					Host::OSD_INFO_DURATION);
+				MTGS::ApplySettings();
+			}
 		}},
 	{"CycleInterlaceMode", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Cycle Deinterlace Mode"),
 		[](s32 pressed) {
