@@ -1271,12 +1271,12 @@ __fi void cdvdReadInterrupt()
 
 			if (cdvd.CurrentRetryCnt <= cdvd.RetryCntMax)
 			{
-				CDVD_LOG("CDVD read err, retrying... (attempt %d of %d)", cdvd.CurrentRetryCnt, cdvd.RetryCntMax);
+				ERROR_LOG("CDVD read err, retrying... (attempt {} of {})", cdvd.CurrentRetryCnt, cdvd.RetryCntMax);
 				cdvd.ReadErr = DoCDVDreadTrack(cdvd.CurrentSector, cdvd.ReadMode);
 				CDVDREAD_INT(cdvd.ReadTime);
 			}
 			else
-				Console.Error("CDVD READ ERROR, sector = 0x%08x", cdvd.CurrentSector);
+				ERROR_LOG("CDVD READ ERROR, sector = {}", cdvd.CurrentSector);
 
 			return;
 		}

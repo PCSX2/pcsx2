@@ -89,8 +89,12 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 		const int ret = m_reader->FinishRead();
 		m_read_inprogress = false;
 
-		if (ret < 0)
-			return ret;
+		if (ret <= 0)
+		{
+			m_read_lsn = -1;
+			m_read_count = 0;
+			return -1;
+		}
 	}
 
 	int _offset = 0;
