@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>463</height>
+    <height>552</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -55,7 +55,7 @@
    <item>
     <widget class="QTabWidget" name="tabs">
      <property name="currentIndex">
-      <number>0</number>
+      <number>8</number>
      </property>
      <property name="documentMode">
       <bool>true</bool>
@@ -719,7 +719,7 @@
           </sizepolicy>
          </property>
          <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
+          <enum>Qt::LayoutDirection::LeftToRight</enum>
          </property>
          <item>
           <property name="text">
@@ -1247,6 +1247,57 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Options</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="precacheTextureReplacements">
+            <property name="text">
+             <string>Precache Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="loadTextureReplacementsAsync">
+            <property name="text">
+             <string>Asynchronous Texture Loading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="loadTextureReplacements">
+            <property name="text">
+             <string>Load Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="dumpReplaceableTextures">
+            <property name="text">
+             <string>Dump Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="dumpReplaceableMipmaps">
+            <property name="text">
+             <string>Dump Mipmaps</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="dumpTexturesWithFMVActive">
+            <property name="text">
+             <string>Dump FMV Textures</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
           <string>Search Directory</string>
@@ -1287,60 +1338,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Options</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_8">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="dumpReplaceableTextures">
-            <property name="text">
-             <string>Dump Textures</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="dumpReplaceableMipmaps">
-            <property name="text">
-             <string>Dump Mipmaps</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="dumpTexturesWithFMVActive">
-            <property name="text">
-             <string>Dump FMV Textures</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QCheckBox" name="loadTextureReplacementsAsync">
-            <property name="text">
-             <string>Asynchronous Texture Loading</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="loadTextureReplacements">
-            <property name="text">
-             <string>Load Textures</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="precacheTextureReplacements">
-            <property name="text">
-             <string>Precache Textures</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer_4">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1496,7 +1496,7 @@
             <item>
              <spacer name="horizontalSpacer">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -1565,7 +1565,7 @@
        <item>
         <spacer name="verticalSpacer_5">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1702,7 +1702,7 @@
        <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1719,43 +1719,6 @@
        <string>Recording</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QGroupBox" name="videoDumpDirectory">
-         <property name="title">
-          <string>Video Dumping Directory</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
-            <item>
-             <widget class="QLineEdit" name="videoDumpingDirectory"/>
-            </item>
-            <item>
-             <widget class="QPushButton" name="videoDumpingDirectoryBrowse">
-              <property name="text">
-               <string>Browse...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="videoDumpingDirectoryOpen">
-              <property name="text">
-               <string>Open...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="videoDumpingDirectoryReset">
-              <property name="text">
-               <string>Reset</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -1979,9 +1942,46 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="videoDumpDirectory">
+         <property name="title">
+          <string>Video Dumping Directory</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLineEdit" name="videoDumpingDirectory"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="videoDumpingDirectoryBrowse">
+              <property name="text">
+               <string>Browse...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="videoDumpingDirectoryOpen">
+              <property name="text">
+               <string>Open...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="videoDumpingDirectoryReset">
+              <property name="text">
+               <string>Reset</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_6">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -2185,7 +2185,7 @@
        <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -2202,7 +2202,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

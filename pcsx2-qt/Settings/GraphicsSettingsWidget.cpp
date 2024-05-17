@@ -204,6 +204,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.nativePaletteDraw, "EmuCore/GS", "UserHacks_NativePaletteDraw", false);
+
 	//////////////////////////////////////////////////////////////////////////
 	// Texture Replacements
 	//////////////////////////////////////////////////////////////////////////
@@ -216,6 +217,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.texturesDirectory, m_ui.texturesBrowse, m_ui.texturesOpen, m_ui.texturesReset,
 		"Folders", "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
+	connect(m_ui.dumpReplaceableTextures, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTextureDumpChanged);
+	connect(m_ui.loadTextureReplacements, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTextureReplacementChanged);
+	onTextureDumpChanged();
+	onTextureReplacementChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
@@ -852,6 +857,21 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 	m_ui.shadeBoostContrast->setEnabled(enabled);
 	m_ui.shadeBoostSaturation->setEnabled(enabled);
 }
+
+void GraphicsSettingsWidget::onTextureDumpChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "DumpReplaceableTextures", false);
+	m_ui.dumpReplaceableMipmaps->setEnabled(enabled);
+	m_ui.dumpTexturesWithFMVActive->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onTextureReplacementChanged()
+{
+	const bool enabled = m_dialog->getEffectiveBoolValue("EmuCore/GS", "LoadTextureReplacements", false);
+	m_ui.loadTextureReplacementsAsync->setEnabled(enabled);
+	m_ui.precacheTextureReplacements->setEnabled(enabled);
+}
+
 
 void GraphicsSettingsWidget::onCaptureContainerChanged()
 {
