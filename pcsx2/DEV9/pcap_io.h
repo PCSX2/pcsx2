@@ -42,4 +42,7 @@ private:
 
 	void SetMACBridgedRecv(NetPacket* pkt);
 	void SetMACBridgedSend(NetPacket* pkt);
+
+	void HandleFrameCheckSequence(NetPacket* pkt);
+	bool ValidateEtherFrame(NetPacket* pkt);
 };
