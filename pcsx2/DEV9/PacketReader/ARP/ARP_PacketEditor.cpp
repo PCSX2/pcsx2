@@ -62,4 +62,9 @@ namespace PacketReader::ARP
 		int offset = 8 + 2 * GetHardwareAddressLength() + GetProtocolAddressLength();
 		return &basePkt->data[offset];
 	}
+
+	int ARP_PacketEditor::GetLength()
+	{
+		return 8 + 2 * GetHardwareAddressLength() + 2 * GetProtocolAddressLength();
+	}
 } // namespace PacketReader::ARP

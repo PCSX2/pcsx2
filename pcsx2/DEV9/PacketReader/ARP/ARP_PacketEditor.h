@@ -13,7 +13,6 @@ namespace PacketReader::ARP
 		PayloadPtr* basePkt;
 
 	public:
-
 		ARP_PacketEditor(PayloadPtr* pkt);
 
 		u16 GetHardwareType();
@@ -26,5 +25,7 @@ namespace PacketReader::ARP
 		u8* SenderProtocolAddress();
 		u8* TargetHardwareAddress();
 		u8* TargetProtocolAddress();
+
+		int GetLength();
 	};
 } // namespace PacketReader::ARP
