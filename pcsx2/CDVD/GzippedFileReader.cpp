@@ -232,7 +232,7 @@ ThreadedFileReader::Chunk GzippedFileReader::ChunkForOffset(u64 offset)
 
 int GzippedFileReader::ReadChunk(void* dst, s64 chunkID)
 {
-	if (chunkID < 0 || chunkID >= m_index->size)
+	if (chunkID < 0)
 		return -1;
 
 	const s64 file_offset = chunkID * m_index->span;
