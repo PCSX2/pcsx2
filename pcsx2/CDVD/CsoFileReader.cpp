@@ -33,7 +33,7 @@ CsoFileReader::CsoFileReader() = default;
 
 CsoFileReader::~CsoFileReader()
 {
-	pxAssert(m_src);
+	pxAssert(!m_src);
 }
 
 bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
