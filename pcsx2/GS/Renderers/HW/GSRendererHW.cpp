@@ -507,18 +507,39 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 						break;
 				}
 
-				const int tex_width = tex->m_target ? std::min(tex->m_from_target->m_valid.z, size_is_wrong ? tex->m_from_target->m_valid.z : static_cast<int>(tex->m_from_target_TEX0.TBW * 64)) : max_tex_draw_width;
-				const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
-
-				if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= (tex_width * 2) && tex_tbw != m_cached_ctx.TEX0.TBW)
+				const int width_diff = static_cast<int>(m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBW) - static_cast<int>((m_cached_ctx.FRAME.FBW + 1) >> 1);
+				// We can check the future for a clue as this can be more accurate, be careful of different draws like channel shuffles or single page draws.
+				if (m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBP0 == m_cached_ctx.FRAME.Block() && GSLocalMemory::m_psm[m_env.CTXT[m_env.PRIM.CTXT].TEX0.PSM].bpp == 32 && width_diff >= 0)
 				{
-					half_bottom_uv = false;
-					half_bottom_vert = false;
+					// width_diff will be zero is both are BW == 1, so be careful of that.
+					const bool same_width = width_diff > 0 || (m_cached_ctx.FRAME.FBW == 1 && width_diff == 0);
+					// Draw is double width and the draw is twice the width of the next draws texture.
+					if (!same_width && max_tex_draw_width >= (m_cached_ctx.FRAME.FBW * 64))
+					{
+						half_bottom_uv = false;
+						half_bottom_vert = false;
+					}
+					else
+					{
+						half_right_uv = false;
+						half_right_vert = false;
+					}
 				}
 				else
 				{
-					half_right_uv = false;
-					half_right_vert = false;
+					const int tex_width = tex->m_target ? std::min(tex->m_from_target->m_valid.z, size_is_wrong ? tex->m_from_target->m_valid.z : static_cast<int>(tex->m_from_target_TEX0.TBW * 64)) : max_tex_draw_width;
+					const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
+
+					if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= (tex_width * 2) && tex_tbw != m_cached_ctx.TEX0.TBW)
+					{
+						half_bottom_uv = false;
+						half_bottom_vert = false;
+					}
+					else
+					{
+						half_right_uv = false;
+						half_right_vert = false;
+					}
 				}
 			}
 			else
