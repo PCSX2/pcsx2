@@ -75,8 +75,6 @@ PCAPAdapter::PCAPAdapter()
 
 		SetMACAddress(&newMAC);
 	}
-	else if (switched)
-		Console.Error("DEV9: Failed to get MAC address for adapter, proceeding with hardcoded MAC address");
 	else
 	{
 		Console.Error("DEV9: Failed to get MAC address for adapter");
