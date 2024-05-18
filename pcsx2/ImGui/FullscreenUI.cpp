@@ -3904,9 +3904,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawToggleSetting(bsi, FSUI_CSTR("Disable Threaded Presentation"),
 			FSUI_CSTR("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues."),
 			"EmuCore/GS", "DisableThreadedPresentation", false);
-		DrawIntListSetting(bsi, FSUI_CSTR("Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
-			"EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download),
-			true);
+		if (IsEditingGameSettings(bsi))
+		{
+			DrawIntListSetting(bsi, FSUI_CSTR("Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
+				"EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download),
+				true);
+		}
 		DrawIntListSetting(bsi, FSUI_CSTR("Allow Exclusive Fullscreen"),
 			FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
 			"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
