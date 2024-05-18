@@ -2042,8 +2042,9 @@ SCAJ-20164:
   name: "Kingdom Hearts II"
   region: "NTSC-Unk"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SCAJ-20165:
   name: "Bleach - Hanatareshi Yabou"
   region: "NTSC-Unk"
@@ -24876,8 +24877,9 @@ SLES-54114:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLES-54115:
   name: "Delta Force - Black Hawk Down - Team Sabre"
   region: "PAL-M5"
@@ -25311,26 +25313,30 @@ SLES-54232:
   name: "Kingdom Hearts II"
   region: "PAL-F"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLES-54233:
   name: "Kingdom Hearts II"
   region: "PAL-G"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLES-54234:
   name: "Kingdom Hearts II"
   region: "PAL-I"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLES-54235:
   name: "Kingdom Hearts II"
   region: "PAL-S"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLES-54237:
   name: "Pirates of the Caribbean - The Legend of Jack Sparrow"
   region: "PAL-M5"
@@ -31930,8 +31936,9 @@ SLPM-55019:
   name: "Kingdom Hearts II"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLPM-55020:
   name: "Kingdom Hearts II - Final Mix"
   region: "NTSC-J"
@@ -44892,8 +44899,9 @@ SLPM-66233:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLPM-66234:
   name: ウィザードリィ エクス 〜前線の学府〜 ワンダープライス
   name-sort: うぃざーどりぃ えくす ぜんせんのがくふ [わんだーぷらいす]
@@ -47567,8 +47575,9 @@ SLPM-66675:
   name-en: "Kingdom Hearts II - Final Mix +"
   region: "NTSC-J"
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
   compat: 5
   memcardFilters: # Reads Re:Chain data and vice-versa.
     - "SLPM-66675"
@@ -64516,8 +64525,9 @@ SLUS-21005:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    autoFlush: 2 # Fixes effects.
-    roundSprite: 2 # Fixes upscaling artifacts.
+    autoFlush: 1 # Fixes effects.
+    roundSprite: 1 # Fixes upscaling artifacts.
+    halfPixelOffset: 4 # Fixes upscaling artifacts.
 SLUS-21006:
   name: "Ghost in the Shell - Stand Alone Complex"
   region: "NTSC-U"
