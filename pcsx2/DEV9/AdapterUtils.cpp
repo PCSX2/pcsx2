@@ -33,6 +33,27 @@
 using namespace PacketReader;
 using namespace PacketReader::IP;
 
+/*
+ * The socket api and its sockaddr_* types are somewhat tricky to work with while trying to avoid UB.
+ * The various sockaddr_* types may be larger or smaller than the base sockaddr type, preventing the use of std::bit_cast().
+ * std::memcpy casting can also be non-trivial if we are casting a large sockaddr_* type to a smaller sockaddr.
+ * Using a reinterpret_cast would violate strict aliasing/object lifetime rules.
+ * However, what if we consider that any sockaddr pointer is pre-aliased to an object already in the required type,
+ * we can then just reinterpret_cast to the assumed original type (and hope the C++ object model agrees with us).
+ * 
+ * This, still violates strict aliasing rules when passing a sockaddr ptr to be read from/written to,
+ * as these will be library functions, we will consider that not my problem(TM).
+ * One could even argue that an implementation would need to reinterpret_cast back the pointer anyway.
+ * 
+ * Another problem this assumption raises, is when we have to determine which sockaddr_* type an object is based on sa_family.
+ * Doing this via the provided sockaddr pointer would violate strict aliasing rules with our assumption.
+ * We have to std::memcpy to the base sockaddr to read this safely.
+ * 
+ * https://man7.org/linux/man-pages/man3/sockaddr.3type.html has a note stating the following;
+ * "POSIX Issue 8 will fix this by requiring that implementations make sure that these structures can be safely used as they were designed."
+ * Where they plan to sweep the issue under the rug.
+ */
+
 #ifdef _WIN32
 bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer)
 {
