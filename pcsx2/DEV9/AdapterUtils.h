@@ -23,7 +23,7 @@ namespace AdapterUtils
 {
 #ifdef _WIN32
 	typedef IP_ADAPTER_ADDRESSES Adapter;
-	typedef std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterBuffer;
+	typedef std::unique_ptr<std::byte[]> AdapterBuffer;
 #elif defined(__POSIX__)
 	typedef ifaddrs Adapter;
 	struct IfAdaptersDeleter
