@@ -32,6 +32,15 @@ namespace AdapterUtils
 	};
 	typedef std::unique_ptr<ifaddrs, IfAdaptersDeleter> AdapterBuffer;
 #endif
+	// Adapter is a structure that contains ptrs to data stored within AdapterBuffer.
+	// We need to return this buffer the caller can free it after it's finished with Adapter.
+	// AdapterBuffer is a unique_ptr, so will be freed when it leaves scope.
+#ifdef _WIN32
+	// includeHidden sets GAA_FLAG_INCLUDE_ALL_INTERFACES, used by TAPAdapter
+	Adapter* GetAllAdapters(AdapterBuffer* buffer, bool includeHidden = false);
+#elif defined(__POSIX__)
+	Adapter* GetAllAdapters(AdapterBuffer* buffer);
+#endif
 	bool GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer);
 	bool GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer);
 

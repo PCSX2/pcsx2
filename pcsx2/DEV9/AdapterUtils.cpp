@@ -55,17 +55,15 @@ using namespace PacketReader::IP;
  */
 
 #ifdef _WIN32
-bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer)
+AdapterUtils::Adapter* AdapterUtils::GetAllAdapters(AdapterBuffer* buffer, bool includeHidden)
 {
-	int neededSize = 128;
+	int neededSize = includeHidden ? 256 : 128;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
 	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
 
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
 	DWORD dwStatus = GetAdaptersAddresses(
 		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
+		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | (includeHidden ? GAA_FLAG_INCLUDE_ALL_INTERFACES : 0),
 		NULL,
 		adapterInfo.get(),
 		&dwBufLen);
@@ -80,66 +78,45 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 
 		dwStatus = GetAdaptersAddresses(
 			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
+			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | (includeHidden ? GAA_FLAG_INCLUDE_ALL_INTERFACES : 0),
 			NULL,
 			adapterInfo.get(),
 			&dwBufLen);
 	}
 	if (dwStatus != ERROR_SUCCESS)
-		return false;
+		return nullptr;
 
-	pAdapterInfo = adapterInfo.get();
+	buffer->swap(adapterInfo);
+
+	return buffer->get();
+}
+bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer)
+{
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo;
+	PIP_ADAPTER_ADDRESSES pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
+		return false;
 
 	do
 	{
-		if (strcmp(pAdapterInfo->AdapterName, name.c_str()) == 0)
+		if (strcmp(pAdapter->AdapterName, name.c_str()) == 0)
 		{
-			*adapter = *pAdapterInfo;
+			*adapter = *pAdapter;
 			buffer->swap(adapterInfo);
 			return true;
 		}
 
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
+		pAdapter = pAdapter->Next;
+	} while (pAdapter);
 
 	return false;
 }
 bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 {
-	int neededSize = 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapter;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		adapterInfo.get(),
-		&dwBufLen);
-
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: PCAPGetWin32Adapter() buffer too small, resizing");
-		//
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-			NULL,
-			adapterInfo.get(),
-			&dwBufLen);
-	}
-
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
-
-	pAdapter = adapterInfo.get();
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo;
+	PIP_ADAPTER_ADDRESSES pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
+		return false;
 
 	do
 	{
@@ -181,18 +158,24 @@ bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 	return false;
 }
 #elif defined(__POSIX__)
-bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer)
+AdapterUtils::Adapter* AdapterUtils::GetAllAdapters(AdapterBuffer* buffer)
 {
 	ifaddrs* ifa;
-	ifaddrs* pAdapter;
 
 	int error = getifaddrs(&ifa);
 	if (error)
+		return nullptr;
+
+	buffer->reset(ifa);
+
+	return buffer->get();
+}
+bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer)
+{
+	std::unique_ptr<ifaddrs, IfAdaptersDeleter> adapterInfo;
+	ifaddrs* pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return false;
-
-	std::unique_ptr<ifaddrs, IfAdaptersDeleter> adapterInfo(ifa, IfAdaptersDeleter());
-
-	pAdapter = adapterInfo.get();
 
 	do
 	{
@@ -215,16 +198,10 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 }
 bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 {
-	ifaddrs* ifa;
-	ifaddrs* pAdapter;
-
-	int error = getifaddrs(&ifa);
-	if (error)
+	std::unique_ptr<ifaddrs, IfAdaptersDeleter> adapterInfo;
+	ifaddrs* pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return false;
-
-	std::unique_ptr<ifaddrs, IfAdaptersDeleter> adapterInfo(ifa, IfAdaptersDeleter());
-
-	pAdapter = adapterInfo.get();
 
 	do
 	{

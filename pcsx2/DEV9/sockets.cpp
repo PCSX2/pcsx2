@@ -50,66 +50,32 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 	nic.push_back(autoEntry);
 
 #ifdef _WIN32
-	int neededSize = 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-
-	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-		NULL,
-		AdapterInfo.get(),
-		&dwBufLen);
-
-	if (dwStatus == ERROR_BUFFER_OVERFLOW)
-	{
-		DevCon.WriteLn("DEV9: PCAPGetWin32Adapter() buffer too small, resizing");
-		//
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("DEV9: New size %i", neededSize);
-
-		dwStatus = GetAdaptersAddresses(
-			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
-			NULL,
-			AdapterInfo.get(),
-			&dwBufLen);
-	}
-
-	if (dwStatus != ERROR_SUCCESS)
+	AdapterUtils::AdapterBuffer adapterInfo;
+	PIP_ADAPTER_ADDRESSES pAdapter = AdapterUtils::GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return nic;
-
-	pAdapterInfo = AdapterInfo.get();
 
 	do
 	{
-		if (pAdapterInfo->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
-			pAdapterInfo->OperStatus == IfOperStatusUp)
+		if (pAdapter->IfType != IF_TYPE_SOFTWARE_LOOPBACK &&
+			pAdapter->OperStatus == IfOperStatusUp)
 		{
 			AdapterEntry entry;
 			entry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
-			entry.name = StringUtil::WideStringToUTF8String(pAdapterInfo->FriendlyName);
-			entry.guid = pAdapterInfo->AdapterName;
+			entry.name = StringUtil::WideStringToUTF8String(pAdapter->FriendlyName);
+			entry.guid = pAdapter->AdapterName;
 
 			nic.push_back(entry);
 		}
 
-		pAdapterInfo = pAdapterInfo->Next;
-	} while (pAdapterInfo);
+		pAdapter = pAdapter->Next;
+	} while (pAdapter);
 
 #elif defined(__POSIX__)
-	ifaddrs* adapterInfo;
-	ifaddrs* pAdapter;
-
-	int error = getifaddrs(&adapterInfo);
-	if (error)
+	AdapterUtils::AdapterBuffer adapterInfo;
+	ifaddrs* pAdapter = GetAllAdapters(&adapterInfo);
+	if (pAdapter == nullptr)
 		return nic;
-
-	pAdapter = adapterInfo;
 
 	do
 	{
@@ -128,8 +94,6 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 
 		pAdapter = pAdapter->ifa_next;
 	} while (pAdapter);
-
-	freeifaddrs(adapterInfo);
 #endif
 
 	return nic;
