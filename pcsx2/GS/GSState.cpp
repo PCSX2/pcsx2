@@ -907,6 +907,9 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	if (i == m_prev_env.PRIM.CTXT)
 	{
+		if (m_prev_env.CTXT[i].TEX0.TBP0 != m_env.CTXT[i].TEX0.TBP0)
+			m_texflush_flag = false;
+
 		if ((m_prev_env.CTXT[i].TEX0.U64 ^ m_env.CTXT[i].TEX0.U64) & mask)
 			m_dirty_gs_regs |= (1 << DIRTY_REG_TEX0);
 		else
@@ -1181,7 +1184,10 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXFLUSH = 0x%x_%x PRIM TME %x", r->U32[1], r->U32[0], PRIM->TME);
-	m_texflush_flag = true;
+
+	// No need to do a flush if TEX0 has changed
+	if (!(m_dirty_gs_regs & (1 << DIRTY_REG_TEX0)))
+		m_texflush_flag = true;
 }
 
 template <int i>
@@ -3244,8 +3250,8 @@ __forceinline void GSState::HandleAutoFlush()
 			const float s = std::min((m_v.ST.S / m_v.RGBAQ.Q), 1.0f);
 			const float t = std::min((m_v.ST.T / m_v.RGBAQ.Q), 1.0f);
 
-			tex_coord.x = (int)((1 << m_context->TEX0.TW) * s);
-			tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
+			tex_coord.x = static_cast<int>((1 << m_context->TEX0.TW) * s);
+			tex_coord.y = static_cast<int>((1 << m_context->TEX0.TH) * t);
 		}
 
 		GSVector4i tex_rect = tex_coord.xyxy();
@@ -3267,8 +3273,8 @@ __forceinline void GSState::HandleAutoFlush()
 				const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
 				const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
 
-				tex_coord.x = (int)((1 << m_context->TEX0.TW) * s);
-				tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
+				tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
+				tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
 			}
 
 			tex_rect.x = std::min(tex_rect.x, tex_coord.x);
@@ -3297,8 +3303,8 @@ __forceinline void GSState::HandleAutoFlush()
 			const float s = std::min((v->ST.S / v->RGBAQ.Q), 1.0f);
 			const float t = std::min((v->ST.T / v->RGBAQ.Q), 1.0f);
 
-			tex_coord.x = (int)((1 << m_context->TEX0.TW) * s);
-			tex_coord.y = (int)((1 << m_context->TEX0.TH) * t);
+			tex_coord.x = static_cast<int>(std::round((1 << m_context->TEX0.TW) * s));
+			tex_coord.y = static_cast<int>(std::round((1 << m_context->TEX0.TH) * t));
 		}
 
 		const int clamp_minu = m_context->CLAMP.MINU;
@@ -3354,6 +3360,11 @@ __forceinline void GSState::HandleAutoFlush()
 		// Nothing being drawn intersect with the new texture, so no point in checking further.
 		if (tex_psm.depth == frame_psm.depth && tex_rect.rintersect(temp_draw_rect).rempty())
 			return;
+		else if (m_texflush_flag)
+		{
+			Flush(GSFlushReason::AUTOFLUSH);
+			return;
+		}
 
 		const int tex_page_mask_x = ~(tex_psm.pgs.x - 1);
 		const int tex_page_mask_y = ~(tex_psm.pgs.y - 1);
@@ -3362,7 +3373,7 @@ __forceinline void GSState::HandleAutoFlush()
 		const GSVector4i tex_page = tex_rect.xyxy() & tex_page_mask;
 
 		// Crossed page since last draw end
-		if (!tex_page.eq(last_tex_page) || m_texflush_flag)
+		if (!tex_page.eq(last_tex_page))
 		{
 			// Make sure the format matches, otherwise the coordinates aren't gonna match, so the draws won't intersect.
 			if (tex_psm.bpp == frame_psm.bpp && (m_context->FRAME.FBW == m_context->TEX0.TBW))
