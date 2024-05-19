@@ -3,6 +3,8 @@
 
 #include "AdapterUtils.h"
 
+#include <bit>
+
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/ScopedGuard.h"
@@ -246,14 +248,18 @@ bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 {
 	if (adapter != nullptr && adapter->PhysicalAddressLength == 6)
-		return *(MAC_Address*)adapter->PhysicalAddress;
+	{
+		MAC_Address macAddr{};
+		std::memcpy(&macAddr, adapter->PhysicalAddress, sizeof(macAddr));
+		return macAddr;
+	}
 
 	return std::nullopt;
 }
 #else
 std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 {
-	MAC_Address macAddr = {};
+	MAC_Address macAddr{};
 #if defined(AF_LINK)
 	ifaddrs* adapterInfo;
 	const int error = getifaddrs(&adapterInfo);
@@ -290,7 +296,7 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 	const ScopedGuard sd_guard = [&sd]() {
 		close(sd);
 	};
-	struct ifreq ifr = {};
+	struct ifreq ifr{};
 	StringUtil::Strlcpy(ifr.ifr_name, adapter->ifa_name, std::size(ifr.ifr_name));
 #if defined(SIOCGIFHWADDR)
 	if (ioctl(sd, SIOCGIFHWADDR, &ifr) < 0)
@@ -329,26 +335,24 @@ std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
 
 	if (address != nullptr)
 	{
-		sockaddr_in* sockaddr = (sockaddr_in*)address->Address.lpSockaddr;
-		return *(IP_Address*)&sockaddr->sin_addr;
+		sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+		return std::bit_cast<IP_Address>(sockaddr->sin_addr);
 	}
 	return std::nullopt;
 }
 #elif defined(__POSIX__)
 std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
 {
-	sockaddr* address = nullptr;
+	sockaddr_in* address = nullptr;
 	if (adapter != nullptr)
 	{
 		if (adapter->ifa_addr != nullptr && adapter->ifa_addr->sa_family == AF_INET)
-			address = adapter->ifa_addr;
+			address = reinterpret_cast<sockaddr_in*>(adapter->ifa_addr);
 	}
 
 	if (address != nullptr)
-	{
-		sockaddr_in* sockaddr = (sockaddr_in*)address;
-		return *(IP_Address*)&sockaddr->sin_addr;
-	}
+		return std::bit_cast<IP_Address>(address->sin_addr);
+
 	return std::nullopt;
 }
 #endif
@@ -367,8 +371,8 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	{
 		if (address->Address.lpSockaddr->sa_family == AF_INET)
 		{
-			sockaddr_in* sockaddr = (sockaddr_in*)address->Address.lpSockaddr;
-			collection.push_back(*(IP_Address*)&sockaddr->sin_addr);
+			sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
 		}
 		address = address->Next;
 	}
@@ -414,10 +418,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 			u32 addressValue = static_cast<u32>(std::stoul(gatewayIPHex, 0, 16));
 			// Skip device routes without valid NextHop IP address.
 			if (addressValue != 0)
-			{
-				IP_Address gwIP = *(IP_Address*)&addressValue;
-				collection.push_back(gwIP);
-			}
+				collection.push_back(std::bit_cast<IP_Address>(addressValue));
 		}
 	}
 	return collection;
@@ -461,6 +462,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	}
 
 	// Find the gateway by looking though the routing information.
+	// Ask only for AF_NET, so we can assume any given sockaddr is a sockaddr_in
 	int name[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
 	size_t bufferLen = 0;
 
@@ -472,7 +474,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 
 	// bufferLen is an estimate, double it to be safe.
 	bufferLen *= 2;
-	std::unique_ptr<u8[]> buffer = std::make_unique<u8[]>(bufferLen);
+	std::unique_ptr<std::byte[]> buffer = std::make_unique<std::byte[]>(bufferLen);
 
 	if (sysctl(name, 6, buffer.get(), &bufferLen, NULL, 0) != 0)
 	{
@@ -483,21 +485,21 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	rt_msghdr* hdr;
 	for (size_t i = 0; i < bufferLen; i += hdr->rtm_msglen)
 	{
-		hdr = (rt_msghdr*)&buffer[i];
+		// Relying on implicit object creation for following code
+		hdr = reinterpret_cast<rt_msghdr*>(&buffer[i]);
 
 		if (hdr->rtm_flags & RTF_GATEWAY && hdr->rtm_addrs & RTA_GATEWAY && (hdr->rtm_index == ifIndex))
 		{
-			sockaddr* sockaddrs = (sockaddr*)(hdr + 1);
-			pxAssert(sockaddrs[RTAX_DST].sa_family == AF_INET);
+			sockaddr_in* sockaddrs = reinterpret_cast<sockaddr_in*>(hdr + 1);
+			pxAssert(sockaddrs[RTAX_DST].sin_family == AF_INET);
 
 			// Default gateway has no destination address.
-			sockaddr_in* sockaddr = (sockaddr_in*)&sockaddrs[RTAX_DST];
+			sockaddr_in* sockaddr = &sockaddrs[RTAX_DST];
 			if (sockaddr->sin_addr.s_addr != 0)
 				continue;
 
-			sockaddr = (sockaddr_in*)&sockaddrs[RTAX_GATEWAY];
-			IP_Address gwIP = *(IP_Address*)&sockaddr->sin_addr;
-			collection.push_back(gwIP);
+			sockaddr = &sockaddrs[RTAX_GATEWAY];
+			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
 		}
 	}
 	return collection;
@@ -525,8 +527,8 @@ std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
 	{
 		if (address->Address.lpSockaddr->sa_family == AF_INET)
 		{
-			sockaddr_in* sockaddr = (sockaddr_in*)address->Address.lpSockaddr;
-			collection.push_back(*(IP_Address*)&sockaddr->sin_addr);
+			sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
 		}
 		address = address->Next;
 	}
@@ -562,7 +564,7 @@ std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
 		serversLines.push_back(line);
 	servers.close();
 
-	const IP_Address systemdDNS{127, 0, 0, 53};
+	const IP_Address systemdDNS{{{127, 0, 0, 53}}};
 	for (size_t i = 1; i < serversLines.size(); i++)
 	{
 		std::string line = serversLines[i];
