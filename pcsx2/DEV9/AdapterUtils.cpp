@@ -57,30 +57,34 @@ using namespace PacketReader::IP;
 #ifdef _WIN32
 AdapterUtils::Adapter* AdapterUtils::GetAllAdapters(AdapterBuffer* buffer, bool includeHidden)
 {
-	int neededSize = includeHidden ? 256 : 128;
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
+	// It is recommend to pre-allocate enough space to be able to call GetAdaptersAddresses just once.
+	// Also provide extra space if we are including hidden adapters.
+	int neededSize = includeHidden ? 100000 : 50000;
+	// Each IP_ADAPTER_ADDRESSES will have pointers other structures which are also copied into this buffer.
+	// Subsequent IP_ADAPTER_ADDRESSES (accessed via .Next) are also not aligned to sizeof(IP_ADAPTER_ADDRESSES) boundaries.
+	std::unique_ptr<std::byte[]> adapterInfo = std::make_unique_for_overwrite<std::byte[]>(neededSize);
+	ULONG dwBufLen = neededSize;
 
 	DWORD dwStatus = GetAdaptersAddresses(
 		AF_UNSPEC,
 		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | (includeHidden ? GAA_FLAG_INCLUDE_ALL_INTERFACES : 0),
 		NULL,
-		adapterInfo.get(),
+		reinterpret_cast<PIP_ADAPTER_ADDRESSES>(adapterInfo.get()),
 		&dwBufLen);
 
 	if (dwStatus == ERROR_BUFFER_OVERFLOW)
 	{
 		DevCon.WriteLn("DEV9: GetWin32Adapter() buffer too small, resizing");
-		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		adapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
-		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
+		neededSize = dwBufLen + 500;
+		adapterInfo = std::make_unique_for_overwrite<std::byte[]>(neededSize);
+		dwBufLen = neededSize;
 		DevCon.WriteLn("DEV9: New size %i", neededSize);
 
 		dwStatus = GetAdaptersAddresses(
 			AF_UNSPEC,
 			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | (includeHidden ? GAA_FLAG_INCLUDE_ALL_INTERFACES : 0),
 			NULL,
-			adapterInfo.get(),
+			reinterpret_cast<PIP_ADAPTER_ADDRESSES>(adapterInfo.get()),
 			&dwBufLen);
 	}
 	if (dwStatus != ERROR_SUCCESS)
@@ -88,11 +92,12 @@ AdapterUtils::Adapter* AdapterUtils::GetAllAdapters(AdapterBuffer* buffer, bool 
 
 	buffer->swap(adapterInfo);
 
-	return buffer->get();
+	// Trigger implicit object creation.
+	return std::launder(reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buffer->get()));
 }
 bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer)
 {
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo;
+	std::unique_ptr<std::byte[]> adapterInfo;
 	PIP_ADAPTER_ADDRESSES pAdapter = GetAllAdapters(&adapterInfo);
 	if (pAdapter == nullptr)
 		return false;
@@ -113,7 +118,7 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 }
 bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 {
-	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> adapterInfo;
+	std::unique_ptr<std::byte[]> adapterInfo;
 	PIP_ADAPTER_ADDRESSES pAdapter = GetAllAdapters(&adapterInfo);
 	if (pAdapter == nullptr)
 		return false;

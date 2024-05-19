@@ -221,7 +221,7 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.guid = std::string(&d->name[strlen(PCAPPREFIX)]);
 
 		IP_ADAPTER_ADDRESSES adapterInfo;
-		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+		AdapterUtils::AdapterBuffer buffer;
 
 		if (AdapterUtils::GetAdapter(entry.guid, &adapterInfo, &buffer))
 			entry.name = StringUtil::WideStringToUTF8String(std::wstring(adapterInfo.FriendlyName));
