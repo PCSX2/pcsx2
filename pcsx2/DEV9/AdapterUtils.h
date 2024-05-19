@@ -32,6 +32,9 @@ namespace AdapterUtils
 	};
 	typedef std::unique_ptr<ifaddrs, IfAdaptersDeleter> AdapterBuffer;
 #endif
+
+	u16 ReadAddressFamily(const sockaddr* unknownAddr);
+
 	// Adapter is a structure that contains ptrs to data stored within AdapterBuffer.
 	// We need to return this buffer the caller can free it after it's finished with Adapter.
 	// AdapterBuffer is a unique_ptr, so will be freed when it leaves scope.

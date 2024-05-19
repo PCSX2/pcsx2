@@ -56,6 +56,21 @@ using namespace PacketReader::IP;
  * Where they plan to sweep the issue under the rug.
  */
 
+/*
+ * We assume that a sockaddr_* object is given to us pre-aliased via a sockaddr pointer, we need to read sa_family for the actual type.
+ * Use std::memcpy to cast, but only copy enough to read the common initial layout, in case we somehow have a sockaddr_* smaller than sockaddr.
+ * In practice, any smaller stucts are probably padded up, but that padding is not noted in current spec afaik.
+ */
+u16 AdapterUtils::ReadAddressFamily(const sockaddr* unknownAddr)
+{
+	sockaddr addr;
+	// Structures are pointer-interconvertible with the first non-static field.
+	// However, On FreeBSD & Mac, sa_family is not the first member, sa_len is.
+	static_assert(std::is_standard_layout_v<sockaddr>);
+	std::memcpy(&addr, unknownAddr, offsetof(sockaddr, sa_family) + sizeof(addr.sa_family));
+	return addr.sa_family;
+}
+
 #ifdef _WIN32
 AdapterUtils::Adapter* AdapterUtils::GetAllAdapters(AdapterBuffer* buffer, bool includeHidden)
 {
@@ -187,7 +202,7 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 	do
 	{
 		if (pAdapter->ifa_addr != nullptr &&
-			pAdapter->ifa_addr->sa_family == AF_INET &&
+			ReadAddressFamily(pAdapter->ifa_addr) == AF_INET &&
 			strcmp(pAdapter->ifa_name, name.c_str()) == 0)
 			break;
 
@@ -278,7 +293,7 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 		if (strcmp(po->ifa_name, adapter->ifa_name))
 			continue;
 
-		if (po->ifa_addr->sa_family != AF_LINK)
+		if (ReadAddressFamily(po->ifa_addr) != AF_LINK)
 			continue;
 
 		// We have a valid MAC address.
@@ -329,7 +344,7 @@ std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
 	if (adapter != nullptr)
 	{
 		address = adapter->FirstUnicastAddress;
-		while (address != nullptr && address->Address.lpSockaddr->sa_family != AF_INET)
+		while (address != nullptr && ReadAddressFamily(address->Address.lpSockaddr) != AF_INET)
 			address = address->Next;
 	}
 
@@ -346,7 +361,7 @@ std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
 	sockaddr_in* address = nullptr;
 	if (adapter != nullptr)
 	{
-		if (adapter->ifa_addr != nullptr && adapter->ifa_addr->sa_family == AF_INET)
+		if (adapter->ifa_addr != nullptr && ReadAddressFamily(adapter->ifa_addr) == AF_INET)
 			address = reinterpret_cast<sockaddr_in*>(adapter->ifa_addr);
 	}
 
@@ -369,7 +384,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	PIP_ADAPTER_GATEWAY_ADDRESS address = adapter->FirstGatewayAddress;
 	while (address != nullptr)
 	{
-		if (address->Address.lpSockaddr->sa_family == AF_INET)
+		if (ReadAddressFamily(address->Address.lpSockaddr) == AF_INET)
 		{
 			sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
 			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
@@ -525,7 +540,7 @@ std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
 	PIP_ADAPTER_DNS_SERVER_ADDRESS address = adapter->FirstDnsServerAddress;
 	while (address != nullptr)
 	{
-		if (address->Address.lpSockaddr->sa_family == AF_INET)
+		if (ReadAddressFamily(address->Address.lpSockaddr) == AF_INET)
 		{
 			sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
 			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));

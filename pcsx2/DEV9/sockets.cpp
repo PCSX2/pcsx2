@@ -82,7 +82,7 @@ std::vector<AdapterEntry> SocketAdapter::GetAdapters()
 		if ((pAdapter->ifa_flags & IFF_LOOPBACK) == 0 &&
 			(pAdapter->ifa_flags & IFF_UP) != 0 &&
 			pAdapter->ifa_addr != nullptr &&
-			pAdapter->ifa_addr->sa_family == AF_INET)
+			AdapterUtils::ReadAddressFamily(pAdapter->ifa_addr) == AF_INET)
 		{
 			AdapterEntry entry;
 			entry.type = Pcsx2Config::DEV9Options::NetApi::Sockets;
