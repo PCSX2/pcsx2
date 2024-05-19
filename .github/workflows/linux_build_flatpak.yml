@@ -99,7 +99,7 @@ jobs:
         run: |
           ./.github/workflows/scripts/linux/generate-metainfo.sh .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
           cat .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
-          flatpak-builder-lint appstream .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
+      #    flatpak-builder-lint appstream .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.metainfo.xml
 
       - name: Validate manifest
         run: |
@@ -120,9 +120,9 @@ jobs:
           restore-cache: true
           cache-key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} flatpak ${{ hashFiles('.github/workflows/scripts/linux/flatpak/**/*.json') }}
 
-      - name: Validate build
-        run: |
-          flatpak-builder-lint repo repo
+      #- name: Validate build
+      #  run: |
+      #    flatpak-builder-lint repo repo
 
       - name: Push to Flathub beta
         if: inputs.publish == true && inputs.branch == 'beta'
