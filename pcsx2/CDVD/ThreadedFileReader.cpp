@@ -4,6 +4,7 @@
 #include "ThreadedFileReader.h"
 
 #include "common/Threading.h"
+#include <cstring>
 
 // Make sure buffer size is bigger than the cutoff where PCSX2 emulates a seek
 // If buffers are smaller than that, we can't keep up with linear reads
