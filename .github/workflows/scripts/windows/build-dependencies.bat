@@ -51,7 +51,7 @@ set SDL=SDL2-2.30.3
 set WEBP=1.3.2
 set ZLIB=1.3.1
 set ZLIBSHORT=131
-set ZSTD=1.5.5
+set ZSTD=1.5.6
 
 set SHADERC=2024.0
 set SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
@@ -71,7 +71,7 @@ call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/offic
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 93a31892ca8a4f38464e923328788ce3da881d82016fe18fa1ed12dd43ce486c || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 102ca62fa682c0d3e700ba89069fd3b6663b9f0c2890b058e97998b6e8971fb3 || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
-call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" c5c8daa1d40dabc51790c62a5b86af2b36dfc4e1a738ff10dc4a46ea4e68ee51 || goto error
+call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 3b1c3b46e416d36931efd34663122d7f51b550c87f74de2d38249516fe7d8be5 || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 5397160432fb5b780e9372327060b1be47acafcd0689fea44fd939e7305668ba || goto error
 call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 58a0d4b670986f8618c371b088f2ee11006596e8c71fe499ec044d5ea469d39b || goto error
