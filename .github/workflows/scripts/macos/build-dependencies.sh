@@ -218,13 +218,28 @@ echo "Installing Qt Base..."
 rm -fr "qtbase-everywhere-src-$QT"
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
+
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
 # We could run macdeployqt twice, but that's even more janky than patching it.
+
+# https://github.com/qt/qtbase/commit/7b018629c3c3ab23665bf1da00c43c1546042035
+# The QProcess default wait time of 30s may be too short in e.g. CI environments where processes may be blocked
+# for a longer time waiting for CPU or IO.
+
 patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
 --- shared.cpp
 +++ shared.cpp
-@@ -1119,14 +1119,8 @@
+@@ -152,7 +152,7 @@
+     LogDebug() << " inspecting" << binaryPath;
+     QProcess otool;
+     otool.start("otool", QStringList() << "-L" << binaryPath);
+-    otool.waitForFinished();
++    otool.waitForFinished(-1);
+ 
+     if (otool.exitStatus() != QProcess::NormalExit || otool.exitCode() != 0) {
+         LogError() << otool.readAllStandardError();
+@@ -1122,14 +1122,8 @@
          addPlugins(QStringLiteral("networkinformation"));
      }
  
