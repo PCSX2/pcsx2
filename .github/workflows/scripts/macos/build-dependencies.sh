@@ -76,7 +76,7 @@ c0d01e758a543b3a358cb97af02c6817ebd3f5ff13a2edf9fb220646a3d67999  shaderc-spirv-
 EOF
 
 curl -L \
-	-O "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE.tar.xz" \
+	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
 	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \

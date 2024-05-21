@@ -58,7 +58,7 @@ set SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
 set SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
 set SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
 
-call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
+call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
