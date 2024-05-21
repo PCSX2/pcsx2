@@ -249,7 +249,7 @@ void* HostSys::Mmap(void* base, size_t size, const PageProtectionMode& mode)
 
 	u32 flags = MAP_PRIVATE | MAP_ANONYMOUS;
 	if (base)
-		flags |= MAP_FIXED;
+		flags |= MAP_FIXED_NOREPLACE;
 
 #if defined(__APPLE__) && defined(_M_ARM64)
 	if (mode.CanExecute())
