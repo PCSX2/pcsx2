@@ -276,9 +276,9 @@ void GSRendererHW::Lines2Sprites()
 			v0.XYZ.X = v1.XYZ.X;
 			v1.XYZ.X = x;
 
-			const float s = v0.ST.S;
+			const float v0_st_s = v0.ST.S;
 			v0.ST.S = v1.ST.S;
-			v1.ST.S = s;
+			v1.ST.S = v0_st_s;
 
 			const u16 u = v0.U;
 			v0.U = v1.U;
@@ -301,7 +301,7 @@ void GSRendererHW::Lines2Sprites()
 void GSRendererHW::ExpandLineIndices()
 {
 	const u32 process_count = (m_index.tail + 7) / 8 * 8;
-	const u32 expansion_factor = 3;
+	constexpr u32 expansion_factor = 3;
 	m_index.tail *= expansion_factor;
 	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index.buff);
 	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index.buff + process_count);
@@ -2037,7 +2037,7 @@ void GSRendererHW::Draw()
 
 	// Note required to compute TryAlphaTest below. So do it now.
 	const GSDrawingEnvironment& env = *m_draw_env;
-	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[context->TEX0.PSM];
+	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	if (PRIM->TME && tex_psm.pal > 0)
 		m_mem.m_clut.Read32(m_cached_ctx.TEX0, env.TEXA);
 
@@ -2255,7 +2255,6 @@ void GSRendererHW::Draw()
 			if (m_context->FRAME.FBW != m_split_texture_shuffle_fbw && m_cached_ctx.TEX0.TBW == 1)
 			{
 				const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-				const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 				// This is the final draw of the shuffle, so let's fudge the numbers
 				// Need to update the final rect as it could be wrong.
 				if (m_context->FRAME.FBW == 1 && m_split_texture_shuffle_fbw != m_context->FRAME.FBW)
@@ -3628,11 +3627,8 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 		}
 
 		// Set dirty alpha on target, but only if we're actually writing to it.
-		if (rt)
-		{
-			rt->m_valid_alpha_low |= m_conf.colormask.wa;
-			rt->m_valid_alpha_high |= m_conf.colormask.wa;
-		}
+		rt->m_valid_alpha_low |= m_conf.colormask.wa;
+		rt->m_valid_alpha_high |= m_conf.colormask.wa;
 
 		// Once we draw the shuffle, no more buffering.
 		m_split_texture_shuffle_pages = 0;
@@ -3762,7 +3758,7 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		if (test_only)
 			return true;
 
-		ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex.buff[m_index.buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
+		const ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex.buff[m_index.buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
 
 		GL_INS("%s channel", (channel_select == ChannelFetch_BLUE) ? "blue" : "alpha");
 
@@ -5338,9 +5334,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	const int fail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
-	const int aref = static_cast<int>(m_cached_ctx.TEST.AREF);
 	if (m_cached_ctx.TEST.ATE && ((fail_type != AFAIL_FB_ONLY && fail_type != AFAIL_RGB_ONLY) || !PRIM->ABE || !IsUsingAsInBlend()))
+	{
+		const int aref = static_cast<int>(m_cached_ctx.TEST.AREF);
 		CorrectATEAlphaMinMax(m_cached_ctx.TEST.ATST, aref);
+	}
+
 	const bool needs_ad = rt && m_context->ALPHA.C == 1 && rt->m_alpha_min != rt->m_alpha_max && rt->m_alpha_max > 128;
 
 	// Blend
@@ -5798,15 +5797,15 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
 	const GSTextureCache::Target* rt_or_ds = rt ? rt : ds;
-	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
-	const float rtscale = rt_or_ds->GetScale();
-	float sx, sy, ox, oy, ox2, oy2;
+	const float rtscale = rt_or_ds ? rt_or_ds->GetScale() : 0.0f;
+	const GSVector2i rtsize = rt_or_ds ? rt_or_ds->GetTexture()->GetSize() : GSVector2i(0, 0);
+	float sx, sy, ox2, oy2;
+	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
 	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native)
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
-		ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
-		oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
 		ox2 = -1.0f / rtsize.x;
 		oy2 = -1.0f / rtsize.y;
 		float mod_xy = 0.0f;
@@ -5828,12 +5827,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 	{
 		// Align coordinates to native resolution framebuffer, hope for the best.
-		sx = 2.0f / (rt_or_ds->GetUnscaledWidth() << 4);
-		sy = 2.0f / (rt_or_ds->GetUnscaledHeight() << 4);
-		ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
-		oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-		ox2 = -1.0f / rt_or_ds->GetUnscaledWidth();
-		oy2 = -1.0f / rt_or_ds->GetUnscaledHeight();
+		const int scaled_x = rt_or_ds ? rt_or_ds->GetUnscaledWidth() : 0;
+		const int scaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
+		sx = 2.0f / (scaled_x << 4);
+		sy = 2.0f / (scaled_y << 4);
+		ox2 = -1.0f / scaled_x;
+		oy2 = -1.0f / scaled_y;
 	}
 
 	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
