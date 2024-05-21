@@ -4,15 +4,14 @@
 #  SHADERC_INCLUDE_DIRS - The SHADERC include directories
 #  SHADERC_LIBRARIES - The libraries needed to use SHADERC
 
-FIND_PATH(
+find_path(
     SHADERC_INCLUDE_DIR shaderc/shaderc.h
-    HINTS /usr/include /usr/local/include
     ${SHADERC_PATH_INCLUDES}
 )
 
-FIND_LIBRARY(
+find_library(
     SHADERC_LIBRARY
-    NAMES shaderc_shared
+    NAMES shaderc_shared.1 shaderc_shared
     PATHS ${ADDITIONAL_LIBRARY_PATHS} ${SHADERC_PATH_LIB}
 )
 
