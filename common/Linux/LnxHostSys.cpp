@@ -29,6 +29,14 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
+// MacOS does not have MAP_FIXED_NOREPLACE, which means our mappings are
+// vulnerable to races with the main/Qt threads. TODO: Investigate using
+// mach_vm_allocate()/mach_vm_map() instead of mmap(), but Apple's
+// documentation for these routines is non-existant...
+#if defined(__APPLE__) && !defined(MAP_FIXED_NOREPLACE)
+#define MAP_FIXED_NOREPLACE MAP_FIXED
+#endif
+
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -59,7 +67,7 @@ static struct sigaction s_old_sigsegv_action;
 [[maybe_unused]] static bool IsStoreInstruction(uptr ptr)
 {
 	u32 bits;
-	std::memcpy(&bits, reinterpret_cast<const void*>(pc), sizeof(bits));
+	std::memcpy(&bits, reinterpret_cast<const void*>(ptr), sizeof(bits));
 
 	// Based on vixl's disassembler Instruction::IsStore().
 	// if (Mask(LoadStoreAnyFMask) != LoadStoreAnyFixed)
