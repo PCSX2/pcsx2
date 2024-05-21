@@ -55,6 +55,13 @@ declare -a MANUAL_QT_PLUGINS=(
 	"wayland-shell-integration"
 )
 
+declare -a EXCLUDE_LIBS=(
+	'libwayland*.so*'
+	'libX*.so*'
+	'libxcb*.so*'
+	'libxkbcommon*.so*'
+)
+
 set -e
 
 LINUXDEPLOY=./linuxdeploy-x86_64.AppImage
@@ -155,6 +162,20 @@ for GROUP in "${MANUAL_QT_PLUGINS[@]}"; do
 		echo "    $srcsopath -> $dstsopath"
 		cp "$srcsopath" "$dstsopath"
 		$PATCHELF --set-rpath '$ORIGIN/../../lib:$ORIGIN' "$dstsopath"
+	done
+done
+
+# linuxdeploy has an internal list of excluded libraries, which includes libxcb,
+# but not any of the dependent sub-libraries. That's just asking for trouble, if
+# internal structures change size. We can't even exclude them ourselves without
+# recompiling linuxdeploy, because linuxdeployqt is the one that's deploying these
+# libraries, and it doesn't inherit the parent linuxdeploy's exclude list, and when
+# manually invoking the plugin, it doesn't support the exclude argument.
+# So, just purge them all manually, and hope the host is compatible.
+for lib in "${EXCLUDE_LIBS[@]}"; do
+	for dstsopath in $(find "$OUTDIR/usr/lib" -name "$lib"); do
+		echo "Removing potentially-conflicting library $dstsopath."
+		rm -f "$dstsopath"
 	done
 done
 
