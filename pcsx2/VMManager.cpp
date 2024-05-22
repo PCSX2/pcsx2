@@ -2105,6 +2105,11 @@ bool VMManager::IsTargetSpeedAdjustedToHost()
 	return s_target_speed_synced_to_host;
 }
 
+bool VMManager::IsUsingVSyncForTiming()
+{
+	return s_use_vsync_for_timing;
+}
+
 float VMManager::GetFrameRate()
 {
 	return GetVerticalFrequency();
