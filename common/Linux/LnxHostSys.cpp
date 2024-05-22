@@ -37,6 +37,12 @@
 #define MAP_FIXED_NOREPLACE MAP_FIXED
 #endif
 
+// FreeBSD does not have MAP_FIXED_NOREPLACE, but does have MAP_EXCL.
+// MAP_FIXED combined with MAP_EXCL behaves like MAP_FIXED_NOREPLACE.
+#if defined(__FreeBSD__) && !defined(MAP_FIXED_NOREPLACE)
+#define MAP_FIXED_NOREPLACE MAP_FIXED | MAP_EXCL
+#endif
+
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/mman.h>
