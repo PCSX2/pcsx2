@@ -897,7 +897,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 #else
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data, QProgressDialog& progress)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDialog& progress)
 {
 	return false;
 }
