@@ -2344,6 +2344,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	VkResult res = m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
 	{
+		LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
 		m_swap_chain->ReleaseCurrentImage();
 
 		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
@@ -2369,7 +2370,6 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
 		{
 			// Still submit the command buffer, otherwise we'll end up with several frames waiting.
-			LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
 			ExecuteCommandBuffer(false);
 			return PresentResult::FrameSkipped;
 		}
