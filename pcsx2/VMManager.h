@@ -159,6 +159,9 @@ namespace VMManager
 	/// Returns true if the target speed is being synchronized with the host's refresh rate.
 	bool IsTargetSpeedAdjustedToHost();
 
+	/// Returns true if host vsync is being used for frame timing/pacing, and not its internal throttler.
+	bool IsUsingVSyncForTiming();
+
 	/// Returns the current frame rate of the virtual machine.
 	float GetFrameRate();
 

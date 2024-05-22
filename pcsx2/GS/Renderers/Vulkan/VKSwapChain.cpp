@@ -4,6 +4,7 @@
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "VMManager.h"
 
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
@@ -250,28 +251,22 @@ std::optional<VkPresentModeKHR> VKSwapChain::SelectPresentMode(VkSurfaceKHR surf
 		return it != present_modes.end();
 	};
 
-  // Use preferred mode if available.
-  VkPresentModeKHR selected_mode;
-  if (CheckForMode(requested_mode))
-  {
-    selected_mode = requested_mode;
-  }
-  else if (requested_mode != VK_PRESENT_MODE_FIFO_KHR && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
-  {
-    // Prefer mailbox over fifo for adaptive vsync/no-vsync. This way it'll only delay one frame.
-    selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-  }
-  else if (requested_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
-  {
-    // Fallback to FIFO if we're using any kind of vsync.
-    // This should never fail, FIFO is mandated.
-    selected_mode = VK_PRESENT_MODE_FIFO_KHR;
-  }
-  else
-  {
-    // Fall back to whatever is available.
-    selected_mode = present_modes[0];
-  }
+	// Use preferred mode if available.
+	VkPresentModeKHR selected_mode;
+	if (CheckForMode(requested_mode))
+	{
+		selected_mode = requested_mode;
+	}
+	else if (requested_mode == VK_PRESENT_MODE_IMMEDIATE_KHR && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+	{
+		// Prefer mailbox over FIFO for vsync-off, since we don't want to block.
+		selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+	}
+	else
+	{
+		// Fallback to FIFO if we we can't use mailbox. This should never fail, FIFO is mandated.
+		selected_mode = VK_PRESENT_MODE_FIFO_KHR;
+	}
 
 	DevCon.WriteLn("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(requested_mode),
 		PresentModeToString(selected_mode));
@@ -284,9 +279,12 @@ bool VKSwapChain::CreateSwapChain()
 	// Select swap chain format and present mode
 	std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
 
-	// Prefer relaxed vsync if available, stalling is bad.
+	// Prefer mailbox if not syncing to host refresh, because that requires "real" vsync.
 	const VkPresentModeKHR requested_mode =
-		m_vsync_enabled ? VK_PRESENT_MODE_FIFO_RELAXED_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
+		m_vsync_enabled ? (VMManager::IsUsingVSyncForTiming() ?
+								  VK_PRESENT_MODE_FIFO_KHR :
+								  VK_PRESENT_MODE_MAILBOX_KHR) :
+						  VK_PRESENT_MODE_IMMEDIATE_KHR;
 	std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, requested_mode);
 	if (!surface_format.has_value() || !present_mode.has_value())
 		return false;
