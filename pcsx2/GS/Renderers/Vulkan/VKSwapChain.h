@@ -24,8 +24,11 @@ public:
 	static void DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface);
 
 	// Create a new swap chain from a pre-existing surface.
-	static std::unique_ptr<VKSwapChain> Create(
-		const WindowInfo& wi, VkSurfaceKHR surface, bool vsync, std::optional<bool> exclusive_fullscreen_control);
+	static std::unique_ptr<VKSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
+		std::optional<bool> exclusive_fullscreen_control);
+
+	/// Returns the Vulkan present mode for a given vsync mode that is compatible with this device.
+	static bool SelectPresentMode(VkSurfaceKHR surface, GSVSyncMode* vsync_mode, VkPresentModeKHR* present_mode);
 
 	__fi VkSurfaceKHR GetSurface() const { return m_surface; }
 	__fi VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
@@ -56,12 +59,9 @@ public:
 		return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
 	}
 
-	// Returns true if the current present mode is synchronizing (adaptive or hard).
-	__fi bool IsPresentModeSynchronizing() const
-	{
-		return (m_actual_present_mode == VK_PRESENT_MODE_FIFO_KHR ||
-				m_actual_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-	}
+	// Returns true if the current present mode is synchronizing.
+	__fi bool IsPresentModeSynchronizing() const { return (m_present_mode == VK_PRESENT_MODE_FIFO_KHR); }
+	__fi VkPresentModeKHR GetPresentMode() const { return m_present_mode; }
 
 	VkFormat GetTextureFormat() const;
 	VkResult AcquireNextImage();
@@ -71,14 +71,13 @@ public:
 	bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 
 	// Change vsync enabled state. This may fail as it causes a swapchain recreation.
-	bool SetVSyncEnabled(bool enabled);
+	bool SetPresentMode(VkPresentModeKHR present_mode);
 
 private:
-	VKSwapChain(
-		const WindowInfo& wi, VkSurfaceKHR surface, bool vsync, std::optional<bool> exclusive_fullscreen_control);
+	VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
+		std::optional<bool> exclusive_fullscreen_control);
 
 	static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
-	static std::optional<VkPresentModeKHR> SelectPresentMode(VkSurfaceKHR surface, VkPresentModeKHR requested_mode);
 
 	bool CreateSwapChain();
 	void DestroySwapChain();
@@ -102,11 +101,11 @@ private:
 	std::vector<std::unique_ptr<GSTextureVK>> m_images;
 	std::vector<ImageSemaphores> m_semaphores;
 
-	VkPresentModeKHR m_actual_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 	u32 m_current_image = 0;
 	u32 m_current_semaphore = 0;
 
+	VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+
 	std::optional<VkResult> m_image_acquire_result;
 	std::optional<bool> m_exclusive_fullscreen_control;
-	bool m_vsync_enabled = false;
 };

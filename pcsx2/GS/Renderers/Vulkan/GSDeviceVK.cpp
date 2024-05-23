@@ -2088,9 +2088,9 @@ bool GSDeviceVK::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDeviceVK::Create()
+bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	if (!CreateDeviceAndSwapChain())
@@ -2222,9 +2222,10 @@ bool GSDeviceVK::UpdateWindow()
 		return false;
 	}
 
-	m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_enabled,
-		Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
-	if (!m_swap_chain)
+	VkPresentModeKHR present_mode;
+	if (!VKSwapChain::SelectPresentMode(surface, &m_vsync_mode, &present_mode) ||
+		!(m_swap_chain = VKSwapChain::Create(m_window_info, surface, present_mode,
+			  Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl))))
 	{
 		Console.Error("Failed to create swap chain");
 		VKSwapChain::DestroyVulkanSurface(m_instance, &m_window_info, surface);
@@ -2297,27 +2298,36 @@ std::string GSDeviceVK::GetDriverInfo() const
 	return ret;
 }
 
-void GSDeviceVK::SetVSyncEnabled(bool enabled)
+void GSDeviceVK::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (!m_swap_chain || m_vsync_enabled == enabled)
+	m_allow_present_throttle = allow_present_throttle;
+	if (!m_swap_chain)
 	{
-		m_vsync_enabled = enabled;
+		// For when it is re-created.
+		m_vsync_mode = mode;
 		return;
 	}
 
-	// This swap chain should not be used by the current buffer, thus safe to destroy.
-	WaitForGPUIdle();
-	if (!m_swap_chain->SetVSyncEnabled(enabled))
+	VkPresentModeKHR present_mode;
+	if (!VKSwapChain::SelectPresentMode(m_swap_chain->GetSurface(), &mode, &present_mode))
 	{
-		// Try switching back to the old mode..
-		if (!m_swap_chain->SetVSyncEnabled(m_vsync_enabled))
-		{
-			pxFailRel("Failed to reset old vsync mode after failure");
-			m_swap_chain.reset();
-		}
+		ERROR_LOG("Ignoring vsync mode change.");
+		return;
 	}
 
-	m_vsync_enabled = enabled;
+	// Actually changed? If using a fallback, it might not have.
+	if (m_vsync_mode == mode)
+		return;
+
+	m_vsync_mode = mode;
+
+	// This swap chain should not be used by the current buffer, thus safe to destroy.
+	WaitForGPUIdle();
+	if (!m_swap_chain->SetPresentMode(present_mode))
+	{
+		pxFailRel("Failed to update swap chain present mode.");
+		m_swap_chain.reset();
+	}
 }
 
 GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
@@ -2616,11 +2626,12 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 	if (surface != VK_NULL_HANDLE)
 	{
-		m_swap_chain = VKSwapChain::Create(m_window_info, surface, m_vsync_enabled,
-			Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl));
-		if (!m_swap_chain)
+		VkPresentModeKHR present_mode;
+		if (!VKSwapChain::SelectPresentMode(surface, &m_vsync_mode, &present_mode) ||
+			!(m_swap_chain = VKSwapChain::Create(m_window_info, surface, present_mode,
+				  Pcsx2Config::GSOptions::TriStateToOptionalBoolean(GSConfig.ExclusiveFullscreenControl))))
 		{
-			Console.Error("Failed to create swap chain");
+			ERROR_LOG("Failed to create swap chain");
 			return false;
 		}
 

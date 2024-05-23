@@ -180,6 +180,9 @@ extern std::string GetOSVersionString();
 
 namespace Common
 {
+	/// Enables or disables the screen saver from starting.
+	bool InhibitScreensaver(bool inhibit);
+
 	/// Abstracts platform-specific code for asynchronously playing a sound.
 	/// On Windows, this will use PlaySound(). On Linux, it will shell out to aplay. On MacOS, it uses NSSound.
 	bool PlaySoundAsync(const char* path);

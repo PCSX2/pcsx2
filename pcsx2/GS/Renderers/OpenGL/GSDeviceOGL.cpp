@@ -146,18 +146,20 @@ bool GSDeviceOGL::HasSurface() const
 	return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-void GSDeviceOGL::SetVSyncEnabled(bool enabled)
+void GSDeviceOGL::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (m_vsync_enabled == enabled)
+	m_allow_present_throttle = allow_present_throttle;
+
+	if (m_vsync_mode == mode)
 		return;
 
-	m_vsync_enabled = enabled;
+	m_vsync_mode = mode;
 	SetSwapInterval();
 }
 
-bool GSDeviceOGL::Create()
+bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	// GL is a pain and needs the window super early to create the context.
@@ -772,8 +774,12 @@ void GSDeviceOGL::SetSwapInterval()
 	if (m_window_info.type == WindowInfo::Type::Surfaceless)
 		return;
 
+	// OpenGL does not support mailbox, only effectively FIFO.
+	// Fall back to manual throttling in this case.
+	m_vsync_mode = (m_vsync_mode == GSVSyncMode::Mailbox) ? GSVSyncMode::FIFO : m_vsync_mode;
+
 	// Window framebuffer has to be bound to call SetSwapInterval.
-	const s32 interval = m_vsync_enabled ? (m_gl_context->SupportsNegativeSwapInterval() ? -1 : 1) : 0;
+	const s32 interval = static_cast<s32>(m_vsync_mode == GSVSyncMode::FIFO);
 	GLint current_fbo = 0;
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

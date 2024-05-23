@@ -971,7 +971,7 @@ void GSCapture::StopEncoderThread(std::unique_lock<std::mutex>& lock)
 
 bool GSCapture::SendFrame(const PendingFrame& pf)
 {
-	const AVPixelFormat source_format = g_gs_device->IsRBSwapped() ? AV_PIX_FMT_BGRA : AV_PIX_FMT_RGBA;
+	const AVPixelFormat source_format = AV_PIX_FMT_RGBA;
 	const u8* source_ptr = pf.tex->GetMapPointer();
 	const int source_width = static_cast<int>(pf.tex->GetWidth());
 	const int source_height = static_cast<int>(pf.tex->GetHeight());

@@ -31,8 +31,12 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	initializeSpeedCombo(m_ui.slowMotionSpeed, "Framerate", "SlomoScalar", 0.5f);
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxFrameLatency, "EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, "EmuCore/GS", "VsyncEnable", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "EmuCore/GS", "SyncToHostRefreshRate", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useVSyncForTiming, "EmuCore/GS", "UseVSyncForTiming", false);
 	connect(m_ui.optimalFramePacing, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onOptimalFramePacingChanged);
+	connect(m_ui.vsync, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateUseVSyncForTimingEnabled);
+	connect(m_ui.syncToHostRefreshRate, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateUseVSyncForTimingEnabled);
 	m_ui.optimalFramePacing->setTristate(dialog->isPerGameSettings());
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeCycleSkipping, "EmuCore/Speedhacks", "EECycleSkip", DEFAULT_EE_CYCLE_SKIP);
@@ -131,13 +135,20 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	dialog->registerWidgetHelp(m_ui.maxFrameLatency, tr("Maximum Frame Latency"), tr("2 Frames"),
 		tr("Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. "
 		   "Higher values can assist with smoothing out irregular frame times, but add additional input lag."));
-	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Scale To Host Refresh Rate"), tr("Unchecked"),
+	dialog->registerWidgetHelp(m_ui.syncToHostRefreshRate, tr("Sync to Host Refresh Rate"), tr("Unchecked"),
 		tr("Speeds up emulation so that the guest refresh rate matches the host. This results in the smoothest animations possible, at the cost of "
-		   "potentially increasing the emulation speed by less than 1%. Scale To Host Refresh Rate will not take effect if "
+		   "potentially increasing the emulation speed by less than 1%. Sync to Host Refresh Rate will not take effect if "
 		   "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
 		   "should disable this option."));
+	dialog->registerWidgetHelp(m_ui.vsync, tr("Vertical Sync (VSync)"), tr("Unchecked"),
+		tr("Enable this option to match PCSX2's refresh rate with your current monitor or screen. VSync is automatically disabled when "
+		   "it is not possible (eg. running at non-100% speed)."));
+	dialog->registerWidgetHelp(m_ui.useVSyncForTiming, tr("Use Host VSync Timing"), tr("Unchecked"),
+		tr("When synchronizing with the host refresh rate, this option disable's PCSX2's internal frame timing, and uses the host instead. "
+		   "Can result in smoother frame pacing, <strong>but at the cost of increased input latency</strong>."));
 
 	updateOptimalFramePacing();
+	updateUseVSyncForTimingEnabled();
 }
 
 EmulationSettingsWidget::~EmulationSettingsWidget() = default;
@@ -273,4 +284,11 @@ void EmulationSettingsWidget::updateOptimalFramePacing()
 
 	m_ui.maxFrameLatency->setMinimum(optimal ? 0 : 1);
 	m_ui.maxFrameLatency->setValue(optimal ? 0 : value);
+}
+
+void EmulationSettingsWidget::updateUseVSyncForTimingEnabled()
+{
+	const bool vsync = m_dialog->getEffectiveBoolValue("EmuCore/GS", "VsyncEnable", false);
+	const bool sync_to_host_refresh = m_dialog->getEffectiveBoolValue("EmuCore/GS", "SyncToHostRefreshRate", false);
+	m_ui.useVSyncForTiming->setEnabled(vsync && sync_to_host_refresh);
 }

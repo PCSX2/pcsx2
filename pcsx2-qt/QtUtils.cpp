@@ -302,6 +302,21 @@ namespace QtUtils
 		wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
 		wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
 		wi.surface_scale = static_cast<float>(dpr);
+
+		// Query refresh rate, we need it for sync.
+		std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi);
+		if (!surface_refresh_rate.has_value())
+		{
+			// Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
+			const QScreen* widget_screen = widget->screen();
+			if (!widget_screen)
+				widget_screen = QGuiApplication::primaryScreen();
+			surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
+		}
+
+		wi.surface_refresh_rate = surface_refresh_rate.value();
+		INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
+
 		return wi;
 	}
 

@@ -24,6 +24,7 @@ private:
 	void initializeSpeedCombo(QComboBox* cb, const char* section, const char* key, float default_value);
 	void handleSpeedComboChange(QComboBox* cb, const char* section, const char* key);
 	void updateOptimalFramePacing();
+	void updateUseVSyncForTimingEnabled();
 
 	SettingsWindow* m_dialog;
 

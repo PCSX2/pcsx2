@@ -61,7 +61,7 @@ bool GSTexture::Save(const std::string& fn)
 	}
 
 	const int compression = GSConfig.PNGCompressionLevel;
-	return GSPng::Save(format, fn, dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), compression, g_gs_device->IsRBSwapped());
+	return GSPng::Save(format, fn, dl->GetMapPointer(), m_size.x, m_size.y, dl->GetMapPitch(), compression, false);
 }
 
 const char* GSTexture::GetFormatName(Format format)

@@ -261,6 +261,20 @@
       </item>
       <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="basicCheckboxGridLayout">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="useVSyncForTiming">
+          <property name="text">
+           <string>Use Host VSync Timing</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="syncToHostRefreshRate">
+          <property name="text">
+           <string>Sync to Host Refresh Rate</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QCheckBox" name="optimalFramePacing">
           <property name="text">
@@ -268,10 +282,10 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="syncToHostRefreshRate">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="vsync">
           <property name="text">
-           <string>Scale To Host Refresh Rate</string>
+           <string>Vertical Sync (VSync)</string>
           </property>
          </widget>
         </item>
@@ -283,7 +297,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

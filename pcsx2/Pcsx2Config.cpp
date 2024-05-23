@@ -1494,6 +1494,7 @@ void Pcsx2Config::EmulationSpeedOptions::LoadSave(SettingsWrapper& wrap)
 	// This was in the wrong place... but we can't change it without breaking existing configs.
 	//SettingsWrapBitBool(SyncToHostRefreshRate);
 	SyncToHostRefreshRate = wrap.EntryBitBool("EmuCore/GS", "SyncToHostRefreshRate", SyncToHostRefreshRate, SyncToHostRefreshRate);
+	UseVSyncForTiming = wrap.EntryBitBool("EmuCore/GS", "UseVSyncForTiming", UseVSyncForTiming, UseVSyncForTiming);
 }
 
 bool Pcsx2Config::EmulationSpeedOptions::operator==(const EmulationSpeedOptions& right) const

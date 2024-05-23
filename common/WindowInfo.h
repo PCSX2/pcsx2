@@ -4,6 +4,8 @@
 #pragma once
 #include "Pcsx2Defs.h"
 
+#include <optional>
+
 /// Contains the information required to create a graphics context in a window.
 struct WindowInfo
 {
@@ -41,8 +43,5 @@ struct WindowInfo
 	float surface_refresh_rate = 0.0f;
 
 	/// Returns the host's refresh rate for the given window, if available.
-	static bool QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_rate);
-
-	/// Enables or disables the screen saver from starting.
-	static bool InhibitScreensaver(const WindowInfo& wi, bool inhibit);
+	static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi);
 };

@@ -341,6 +341,7 @@ private:
 	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
 		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
 
+	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
 	bool CreateSwapChainRTV();
 	void DestroySwapChainRTVs();
@@ -398,7 +399,7 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 
-	bool Create() override;
+	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 
 	bool UpdateWindow() override;
@@ -407,9 +408,7 @@ public:
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
-	bool GetHostRefreshRate(float* refresh_rate) override;
-
-	void SetVSyncEnabled(bool enabled) override;
+	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
