@@ -283,7 +283,7 @@ public:
 	RenderAPI GetRenderAPI() const override;
 	bool HasSurface() const override;
 
-	bool Create() override;
+	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 
 	bool UpdateWindow() override;
@@ -292,7 +292,7 @@ public:
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
-	void SetVSyncEnabled(bool enabled) override;
+	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;

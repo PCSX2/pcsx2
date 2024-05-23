@@ -161,7 +161,7 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
 	return true;
 }
 
-bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
+bool Common::InhibitScreensaver(bool inhibit)
 {
 	return SetScreensaverInhibitDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
 }

@@ -136,7 +136,6 @@ namespace VMManager
 
 	static float GetTargetSpeedForLimiterMode(LimiterModeType mode);
 	static void ResetFrameLimiter();
-	static double AdjustToHostRefreshRate(float frame_rate, float target_speed);
 
 	static void SetTimerResolutionIncreased(bool enabled);
 	static void SetHardwareDependentDefaultSettings(SettingsInterface& si);
@@ -186,6 +185,7 @@ static LimiterModeType s_limiter_mode = LimiterModeType::Nominal;
 static s64 s_limiter_ticks_per_frame = 0;
 static u64 s_limiter_frame_start = 0;
 static float s_target_speed = 0.0f;
+static bool s_target_speed_can_sync_to_host = false;
 static bool s_target_speed_synced_to_host = false;
 static bool s_use_vsync_for_timing = false;
 
@@ -2026,34 +2026,6 @@ float VMManager::GetTargetSpeed()
 	return s_target_speed;
 }
 
-double VMManager::AdjustToHostRefreshRate(float frame_rate, float target_speed)
-{
-	if (!EmuConfig.EmulationSpeed.SyncToHostRefreshRate || target_speed != 1.0f)
-	{
-		s_target_speed_synced_to_host = false;
-		s_use_vsync_for_timing = false;
-		return target_speed;
-	}
-
-	float host_refresh_rate;
-	if (!GSGetHostRefreshRate(&host_refresh_rate))
-	{
-		Console.Warning("Cannot sync to host refresh since the query failed.");
-		s_target_speed_synced_to_host = false;
-		s_use_vsync_for_timing = false;
-		return target_speed;
-	}
-
-	const float ratio = host_refresh_rate / frame_rate;
-	const bool syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-	s_target_speed_synced_to_host = syncing_to_host;
-	s_use_vsync_for_timing = (syncing_to_host && !EmuConfig.GS.SkipDuplicateFrames && EmuConfig.GS.VsyncEnable);
-	Console.WriteLn("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s %s", host_refresh_rate, frame_rate, ratio,
-		syncing_to_host ? "can sync" : "can't sync", s_use_vsync_for_timing ? "and using vsync for pacing" : "and using sleep for pacing");
-
-	return syncing_to_host ? ratio : target_speed;
-}
-
 float VMManager::GetTargetSpeedForLimiterMode(LimiterModeType mode)
 {
 	if (EmuConfig.EnableFastBootFastForward && VMManager::Internal::IsFastBootInProgress())
@@ -2081,7 +2053,37 @@ float VMManager::GetTargetSpeedForLimiterMode(LimiterModeType mode)
 void VMManager::UpdateTargetSpeed()
 {
 	const float frame_rate = GetFrameRate();
-	const float target_speed = AdjustToHostRefreshRate(frame_rate, GetTargetSpeedForLimiterMode(s_limiter_mode));
+	float target_speed = GetTargetSpeedForLimiterMode(s_limiter_mode);
+
+	s_target_speed_can_sync_to_host = false;
+	s_target_speed_synced_to_host = false;
+	s_use_vsync_for_timing = false;
+
+	if (EmuConfig.EmulationSpeed.SyncToHostRefreshRate)
+	{
+		// TODO: This is accessing GS thread state.. I _think_ it should be okay, but I still hate it.
+		// We can at least avoid the query in the first place if we're not using sync to host.
+		if (const std::optional<float> host_refresh_rate = GSGetHostRefreshRate(); host_refresh_rate.has_value())
+		{
+			const float host_to_guest_ratio = host_refresh_rate.value() / frame_rate;
+
+			s_target_speed_can_sync_to_host = (host_to_guest_ratio >= 0.95f && host_to_guest_ratio <= 1.05f);
+			s_target_speed_synced_to_host = (s_target_speed_can_sync_to_host && target_speed == 1.0f);
+			target_speed = s_target_speed_synced_to_host ? host_to_guest_ratio : target_speed;
+			s_use_vsync_for_timing = (s_target_speed_synced_to_host && !EmuConfig.GS.SkipDuplicateFrames && EmuConfig.GS.VsyncEnable &&
+									  EmuConfig.EmulationSpeed.UseVSyncForTiming);
+
+			Console.WriteLn("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s %s",
+				host_refresh_rate.value(), frame_rate, host_to_guest_ratio,
+				s_target_speed_can_sync_to_host ? "can sync" : "can't sync",
+				s_use_vsync_for_timing ? "and using vsync for pacing" : "and using sleep for pacing");
+		}
+		else
+		{
+			ERROR_LOG("Failed to query host refresh rate.");
+		}
+	}
+
 	const float target_frame_rate = frame_rate * target_speed;
 
 	s_limiter_ticks_per_frame =
@@ -2094,7 +2096,7 @@ void VMManager::UpdateTargetSpeed()
 	{
 		s_target_speed = target_speed;
 
-		MTGS::UpdateVSyncEnabled();
+		MTGS::UpdateVSyncMode();
 		SPU2::OnTargetSpeedChanged();
 		ResetFrameLimiter();
 	}
@@ -2103,11 +2105,6 @@ void VMManager::UpdateTargetSpeed()
 bool VMManager::IsTargetSpeedAdjustedToHost()
 {
 	return s_target_speed_synced_to_host;
-}
-
-bool VMManager::IsUsingVSyncForTiming()
-{
-	return s_use_vsync_for_timing;
 }
 
 float VMManager::GetFrameRate()
@@ -2595,16 +2592,30 @@ void VMManager::SetPaused(bool paused)
 	SetState(paused ? VMState::Paused : VMState::Running);
 }
 
-bool Host::IsVsyncEffectivelyEnabled()
+GSVSyncMode VMManager::GetEffectiveVSyncMode()
 {
-	const bool has_vm = VMManager::GetState() != VMState::Shutdown;
+	// Vsync off => always disabled.
+	if (!EmuConfig.GS.VsyncEnable)
+		return GSVSyncMode::Disabled;
 
-	// Force vsync off when not running at 100% speed.
-	if (has_vm && (s_target_speed != 1.0f && !s_use_vsync_for_timing))
-		return false;
+	// If there's no VM, or we're using vsync for timing, then we always use double-buffered (blocking).
+	// Try to keep the same present mode whether we're running or not, since it'll avoid flicker.
+	const VMState state = GetState();
+	const bool valid_vm = (state != VMState::Shutdown && state != VMState::Stopping);
+	if (s_target_speed_can_sync_to_host || (!valid_vm && EmuConfig.EmulationSpeed.SyncToHostRefreshRate))
+		return GSVSyncMode::FIFO;
 
-	// Otherwise use the config setting.
-	return EmuConfig.GS.VsyncEnable;
+	// For PAL games, we always want to triple buffer, because otherwise we'll be tearing.
+	// Or for when we aren't using sync-to-host-refresh, to avoid dropping frames.
+	// Allow present skipping when running outside of normal speed, if mailbox isn't supported.
+	return GSVSyncMode::Mailbox;
+}
+
+bool VMManager::ShouldAllowPresentThrottle()
+{
+	const VMState state = GetState();
+	const bool valid_vm = (state != VMState::Shutdown && state != VMState::Stopping);
+	return (!valid_vm || (!s_target_speed_synced_to_host && s_target_speed != 1.0f));
 }
 
 bool VMManager::Internal::IsFastBootInProgress()
@@ -2788,7 +2799,7 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 	{
 		// Still need to update target speed, because of sync-to-host-refresh.
 		UpdateTargetSpeed();
-		MTGS::UpdateVSyncEnabled();
+		MTGS::UpdateVSyncMode();
 	}
 
 	MTGS::ApplySettings();
@@ -3197,13 +3208,9 @@ void VMManager::UpdateInhibitScreensaver(bool inhibit)
 	if (s_screensaver_inhibited == inhibit)
 		return;
 
-	WindowInfo wi;
-	auto top_level_wi = Host::GetTopLevelWindowInfo();
-	if (top_level_wi.has_value())
-		wi = top_level_wi.value();
-
-	s_screensaver_inhibited = inhibit;
-	if (!WindowInfo::InhibitScreensaver(wi, inhibit) && inhibit)
+	if (Common::InhibitScreensaver(inhibit))
+		s_screensaver_inhibited = inhibit;
+	else if (inhibit)
 		Console.Warning("Failed to inhibit screen saver.");
 }
 

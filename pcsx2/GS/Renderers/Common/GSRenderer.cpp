@@ -580,12 +580,13 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 	m_last_draw_n = s_n;
 	m_last_transfer_n = s_transfer_n;
 
-	if (skip_frame)
+	// Skip presentation when running uncapped while vsync is on.
+	if (skip_frame || g_gs_device->ShouldSkipPresentingFrame())
 	{
 		if (BeginPresentFrame(true))
 			EndPresentFrame();
 
-		PerformanceMetrics::Update(registers_written, fb_sprite_frame, true);
+		PerformanceMetrics::Update(registers_written, fb_sprite_frame, skip_frame);
 		return;
 	}
 

@@ -247,6 +247,14 @@ enum class GSRendererType : s8
 	DX12 = 15,
 };
 
+enum class GSVSyncMode : u8
+{
+	Disabled,
+	FIFO,
+	Mailbox,
+	Count
+};
+
 enum class GSInterlaceMode : u8
 {
 	Automatic,
@@ -971,6 +979,7 @@ struct Pcsx2Config
 	{
 		BITFIELD32()
 		bool SyncToHostRefreshRate : 1;
+		bool UseVSyncForTiming : 1;
 		BITFIELD_END
 
 		float NominalScalar{1.0f};

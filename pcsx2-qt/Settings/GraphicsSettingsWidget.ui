@@ -224,6 +224,75 @@
          </item>
         </widget>
        </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Screenshot Size:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
+         <item>
+          <widget class="QComboBox" name="screenshotSize">
+           <item>
+            <property name="text">
+             <string>Window Resolution (Aspect Corrected)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Internal Resolution (Aspect Corrected)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Internal Resolution (No Aspect Correction)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="screenshotFormat">
+           <item>
+            <property name="text">
+             <string>PNG</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>JPEG</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>WebP</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_44">
+           <property name="text">
+            <string>Quality:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="screenshotQuality">
+           <property name="suffix">
+            <string>%</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="6" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
@@ -325,31 +394,10 @@
        </item>
        <item row="8" column="0" colspan="2">
         <layout class="QGridLayout" name="displayGridLayout">
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="PCRTCOffsets">
-           <property name="text">
-            <string>Screen Offsets</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="1">
           <widget class="QCheckBox" name="integerScaling">
            <property name="text">
             <string>Integer Scaling</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="vsync">
-           <property name="text">
-            <string>VSync</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="PCRTCOverscan">
-           <property name="text">
-            <string>Show Overscan</string>
            </property>
           </widget>
          </item>
@@ -384,72 +432,17 @@
            </property>
           </widget>
          </item>
-        </layout>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_21">
-         <property name="text">
-          <string>Screenshot Size:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
-         <item>
-          <widget class="QComboBox" name="screenshotSize">
-           <item>
-            <property name="text">
-             <string>Window Resolution (Aspect Corrected)</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Internal Resolution (Aspect Corrected)</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Internal Resolution (No Aspect Correction)</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="screenshotFormat">
-           <item>
-            <property name="text">
-             <string>PNG</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>JPEG</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>WebP</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_44">
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="PCRTCOffsets">
            <property name="text">
-            <string>Quality:</string>
+            <string>Screen Offsets</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QSpinBox" name="screenshotQuality">
-           <property name="suffix">
-            <string>%</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="PCRTCOverscan">
+           <property name="text">
+            <string>Show Overscan</string>
            </property>
           </widget>
          </item>
@@ -653,8 +646,8 @@
          </item>
          <item row="1" column="0">
           <widget class="QCheckBox" name="mipmapping">
-            <property name="text">
-             <string>Mipmapping</string>
+           <property name="text">
+            <string>Mipmapping</string>
            </property>
           </widget>
          </item>

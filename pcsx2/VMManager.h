@@ -159,11 +159,14 @@ namespace VMManager
 	/// Returns true if the target speed is being synchronized with the host's refresh rate.
 	bool IsTargetSpeedAdjustedToHost();
 
-	/// Returns true if host vsync is being used for frame timing/pacing, and not its internal throttler.
-	bool IsUsingVSyncForTiming();
-
 	/// Returns the current frame rate of the virtual machine.
 	float GetFrameRate();
+
+	/// Returns the desired vsync mode, depending on the runtime environment.
+	GSVSyncMode GetEffectiveVSyncMode();
+
+	/// Returns true if presents can be skipped, when running outside of normal speed.
+	bool ShouldAllowPresentThrottle();
 
 	/// Runs the virtual machine for the specified number of video frames, and then automatically pauses.
 	void FrameAdvance(u32 num_frames = 1);

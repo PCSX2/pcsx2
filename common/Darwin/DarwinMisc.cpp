@@ -4,6 +4,7 @@
 #if defined(__APPLE__)
 
 #include "common/Darwin/DarwinMisc.h"
+#include "common/HostSys.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -102,7 +103,7 @@ std::string GetOSVersionString()
 
 static IOPMAssertionID s_pm_assertion;
 
-bool WindowInfo::InhibitScreensaver(const WindowInfo& wi, bool inhibit)
+bool Common::InhibitScreensaver(bool inhibit)
 {
 	if (s_pm_assertion)
 	{

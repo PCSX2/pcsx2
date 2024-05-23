@@ -64,6 +64,27 @@ void CocoaTools::DestroyMetalLayer(WindowInfo* wi)
 	[view setWantsLayer:NO];
 }
 
+std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
+{
+	if (![NSThread isMainThread])
+	{
+		std::optional<float> ret;
+		dispatch_sync(dispatch_get_main_queue(), [&ret, wi]{ ret = GetViewRefreshRate(wi); });
+		return ret;
+	}
+
+	std::optional<float> ret;
+	NSView* const view = (__bridge NSView*)wi.window_handle;
+	const u32 did = [[[[[view window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
+	if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
+	{
+		ret = CGDisplayModeGetRefreshRate(mode);
+		CGDisplayModeRelease(mode);
+	}
+	
+	return ret;
+}
+
 // MARK: - Theme Change Handlers
 
 @interface PCSX2KVOHelper : NSObject

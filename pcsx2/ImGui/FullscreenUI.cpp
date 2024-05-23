@@ -3345,8 +3345,15 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		SetSettingsChanged(bsi);
 	}
 
-	DrawToggleSetting(bsi, FSUI_CSTR("Scale To Host Refresh Rate"),
+	DrawToggleSetting(bsi, FSUI_CSTR("Vertical Sync (VSync)"), FSUI_CSTR("Synchronizes frame presentation with host refresh."),
+		"EmuCore/GS", "VsyncEnable", false);
+
+	DrawToggleSetting(bsi, FSUI_CSTR("Sync to Host Refresh Rate"),
 		FSUI_CSTR("Speeds up emulation so that the guest refresh rate matches the host."), "EmuCore/GS", "SyncToHostRefreshRate", false);
+
+	DrawToggleSetting(bsi, FSUI_CSTR("Use Host VSync Timing"),
+		FSUI_CSTR("Disables PCSX2's internal frame timing, and uses host vsync instead."), "EmuCore/GS", "UseVSyncForTiming", false,
+		GetEffectiveBoolSetting(bsi, "EmuCore/GS", "VsyncEnable", false) && GetEffectiveBoolSetting(bsi, "EmuCore/GS", "SyncToHostRefreshRate", false));
 
 	EndMenuButtons();
 }
@@ -3598,8 +3605,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	MenuHeading(FSUI_CSTR("Renderer"));
 	DrawStringListSetting(bsi, FSUI_CSTR("Renderer"), FSUI_CSTR("Selects the API used to render the emulated GS."), "EmuCore/GS",
 		"Renderer", "-1", s_renderer_names, s_renderer_values, std::size(s_renderer_names), true);
-	DrawToggleSetting(bsi, FSUI_CSTR("Sync To Host Refresh (VSync)"), FSUI_CSTR("Synchronizes frame presentation with host refresh."),
-		"EmuCore/GS", "VsyncEnable", false);
 
 	MenuHeading(FSUI_CSTR("Display"));
 	DrawStringListSetting(bsi, FSUI_CSTR("Aspect Ratio"), FSUI_CSTR("Selects the aspect ratio to display the game content at."),

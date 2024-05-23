@@ -80,9 +80,9 @@ RenderAPI GSDevice11::GetRenderAPI() const
 	return RenderAPI::D3D11;
 }
 
-bool GSDevice11::Create()
+bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	UINT create_flags = 0;
@@ -609,28 +609,38 @@ bool GSDevice11::HasSurface() const
 	return static_cast<bool>(m_swap_chain);
 }
 
-bool GSDevice11::GetHostRefreshRate(float* refresh_rate)
+void GSDevice11::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (m_swap_chain && m_is_exclusive_fullscreen)
+	m_allow_present_throttle = allow_present_throttle;
+
+	// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+	if (mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
 	{
-		DXGI_SWAP_CHAIN_DESC desc;
-		if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
-			desc.BufferDesc.RefreshRate.Denominator > 0)
-		{
-			DevCon.WriteLn(
-				"using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
-			*refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-							static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-			return true;
-		}
+		WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+		mode = GSVSyncMode::FIFO;
 	}
 
-	return GSDevice::GetHostRefreshRate(refresh_rate);
+	if (m_vsync_mode == mode)
+		return;
+
+	const u32 old_buffer_count = GetSwapChainBufferCount();
+	m_vsync_mode = mode;
+	if (!m_swap_chain)
+		return;
+
+	if (GetSwapChainBufferCount() != old_buffer_count)
+	{
+		DestroySwapChain();
+		if (!CreateSwapChain())
+			pxFailRel("Failed to recreate swap chain after vsync change.");
+	}
 }
 
-void GSDevice11::SetVSyncEnabled(bool enabled)
+u32 GSDevice11::GetSwapChainBufferCount() const
 {
-	m_vsync_enabled = enabled;
+	// With vsync off, we only need two buffers. Same for blocking vsync.
+	// With triple buffering, we need three.
+	return (m_vsync_mode == GSVSyncMode::Mailbox) ? 3 : 2;
 }
 
 bool GSDevice11::CreateSwapChain()
@@ -655,6 +665,13 @@ bool GSDevice11::CreateSwapChain()
 			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), client_rc, fullscreen_width,
 				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
 				fullscreen_output.put());
+
+		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+		if (m_vsync_mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+		{
+			WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+			m_vsync_mode = GSVSyncMode::FIFO;
+		}
 	}
 	else
 	{
@@ -668,7 +685,7 @@ bool GSDevice11::CreateSwapChain()
 	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
 	swap_chain_desc.Format = swap_chain_format;
 	swap_chain_desc.SampleDesc.Count = 1;
-	swap_chain_desc.BufferCount = 3;
+	swap_chain_desc.BufferCount = GetSwapChainBufferCount();
 	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swap_chain_desc.SwapEffect =
 		m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
@@ -790,10 +807,6 @@ bool GSDevice11::CreateSwapChainRTV()
 		{
 			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
 												 static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-		}
-		else
-		{
-			m_window_info.surface_refresh_rate = 0.0f;
 		}
 	}
 
@@ -928,7 +941,7 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	// This blows our our GPU usage number considerably, so read the timestamp before the final blit
 	// in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
 	// the time, when it's more like a couple of percent.
-	if (m_vsync_enabled && m_gpu_timing_enabled)
+	if (m_vsync_mode == GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
 	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
@@ -957,13 +970,12 @@ void GSDevice11::EndPresent()
 	RenderImGui();
 
 	// See note in BeginPresent() for why it's conditional on vsync-off.
-	if (!m_vsync_enabled && m_gpu_timing_enabled)
+	if (m_vsync_mode != GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
-	if (!m_vsync_enabled && m_using_allow_tearing)
-		m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-	else
-		m_swap_chain->Present(static_cast<UINT>(m_vsync_enabled), 0);
+	const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GSVSyncMode::FIFO);
+	const UINT flags = (m_vsync_mode == GSVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+	m_swap_chain->Present(sync_interval, flags);
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();

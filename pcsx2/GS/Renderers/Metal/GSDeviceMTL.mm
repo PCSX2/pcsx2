@@ -822,9 +822,9 @@ static MRCOwned<id<MTLSamplerState>> CreateSampler(id<MTLDevice> dev, GSHWDrawCo
 	return ret;
 }
 
-bool GSDeviceMTL::Create()
+bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 { @autoreleasepool {
-	if (!GSDevice::Create())
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
 		return false;
 
 	NSString* ns_adapter_name = [NSString stringWithUTF8String:GSConfig.Adapter.c_str()];
@@ -877,7 +877,10 @@ bool GSDeviceMTL::Create()
 		{
 			AttachSurfaceOnMainThread();
 		});
-		[m_layer setDisplaySyncEnabled:m_vsync_enabled];
+
+		// Metal does not support mailbox.
+		m_vsync_mode = (m_vsync_mode == GSVSyncMode::Mailbox) ? GSVSyncMode::FIFO : m_vsync_mode;
+		[m_layer setDisplaySyncEnabled:m_vsync_mode == GSVSyncMode::FIFO];
 	}
 	else
 	{
@@ -1305,7 +1308,7 @@ void GSDeviceMTL::EndPresent()
 	if (m_current_drawable)
 	{
 		const bool use_present_drawable = m_use_present_drawable == UsePresentDrawable::Always ||
-			(m_use_present_drawable == UsePresentDrawable::IfVsync && m_vsync_enabled);
+			(m_use_present_drawable == UsePresentDrawable::IfVsync && m_vsync_mode == GSVSyncMode::FIFO);
 
 		if (use_present_drawable)
 			[m_current_render_cmdbuf presentDrawable:m_current_drawable];
@@ -1367,31 +1370,15 @@ void GSDeviceMTL::EndPresent()
 	}
 }}
 
-void GSDeviceMTL::SetVSyncEnabled(bool enabled)
+void GSDeviceMTL::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
 {
-	if (m_vsync_enabled == enabled)
+	m_allow_present_throttle = allow_present_throttle;
+
+	if (m_vsync_mode == mode)
 		return;
 
-	[m_layer setDisplaySyncEnabled:enabled];
-	m_vsync_enabled = enabled;
-}
-
-bool GSDeviceMTL::GetHostRefreshRate(float* refresh_rate)
-{
-	OnMainThread([this, refresh_rate]
-	{
-		u32 did = [[[[[m_view window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
-		if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
-		{
-			*refresh_rate = CGDisplayModeGetRefreshRate(mode);
-			CGDisplayModeRelease(mode);
-		}
-		else
-		{
-			*refresh_rate = 0;
-		}
-	});
-	return *refresh_rate != 0;
+	m_vsync_mode = (mode == GSVSyncMode::Mailbox) ? GSVSyncMode::FIFO : mode;
+	[m_layer setDisplaySyncEnabled:m_vsync_mode == GSVSyncMode::FIFO];
 }
 
 bool GSDeviceMTL::SetGPUTimingEnabled(bool enabled)

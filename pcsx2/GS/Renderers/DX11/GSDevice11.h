@@ -93,6 +93,7 @@ private:
 	void SetFeatures(IDXGIAdapter1* adapter);
 	int GetMaxTextureSize() const;
 
+	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
 	bool CreateSwapChainRTV();
 	void DestroySwapChain();
@@ -259,7 +260,7 @@ public:
 	__fi ID3D11Device1* GetD3DDevice() const { return m_dev.get(); }
 	__fi ID3D11DeviceContext1* GetD3DContext() const { return m_ctx.get(); }
 
-	bool Create() override;
+	bool Create(GSVSyncMode vsync_mode, bool allow_present_throttle) override;
 	void Destroy() override;
 
 	RenderAPI GetRenderAPI() const override;
@@ -271,9 +272,7 @@ public:
 	void DestroySurface() override;
 	std::string GetDriverInfo() const override;
 
-	bool GetHostRefreshRate(float* refresh_rate) override;
-
-	void SetVSyncEnabled(bool enabled) override;
+	void SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle) override;
 
 	PresentResult BeginPresent(bool frame_skip) override;
 	void EndPresent() override;

@@ -9,9 +9,11 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/FileSystem.h"
+#include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
+#include "common/Threading.h"
 
 #include "imgui.h"
 
@@ -305,9 +307,10 @@ int GSDevice::GetMipmapLevelsForSize(int width, int height)
 	return std::min(static_cast<int>(std::log2(std::max(width, height))) + 1, MAXIMUM_TEXTURE_MIPMAP_LEVELS);
 }
 
-bool GSDevice::Create()
+bool GSDevice::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 {
-	m_vsync_enabled = Host::IsVsyncEffectivelyEnabled();
+	m_vsync_mode = vsync_mode;
+	m_allow_present_throttle = allow_present_throttle;
 	return true;
 }
 
@@ -337,15 +340,42 @@ bool GSDevice::AcquireWindow(bool recreate_window)
 	return true;
 }
 
-bool GSDevice::GetHostRefreshRate(float* refresh_rate)
+bool GSDevice::ShouldSkipPresentingFrame()
 {
-	if (m_window_info.surface_refresh_rate > 0.0f)
-	{
-		*refresh_rate = m_window_info.surface_refresh_rate;
-		return true;
-	}
+	// Only needed with FIFO.
+	if (!m_allow_present_throttle || m_vsync_mode != GSVSyncMode::FIFO)
+		return false;
 
-	return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
+	const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+	const u64 throttle_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
+
+	const u64 now = GetCPUTicks();
+	const double diff = now - m_last_frame_displayed_time;
+	if (diff < throttle_period)
+		return true;
+
+	m_last_frame_displayed_time = now;
+	return false;
+}
+
+void GSDevice::ThrottlePresentation()
+{
+	// Manually throttle presentation when vsync isn't enabled, so we don't try to render the
+	// fullscreen UI at thousands of FPS and make the gpu go brrrrrrrr.
+	const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+
+	const u64 sleep_period = static_cast<u64>(static_cast<double>(GetTickFrequency()) / static_cast<double>(throttle_rate));
+	const u64 current_ts = GetCPUTicks();
+
+	// Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+	// allow time for the actual rendering.
+	const u64 max_variance = sleep_period * 2;
+	if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_last_frame_displayed_time))) > max_variance)
+		m_last_frame_displayed_time = current_ts + sleep_period;
+	else
+		m_last_frame_displayed_time += sleep_period;
+
+	Threading::SleepUntil(m_last_frame_displayed_time);
 }
 
 void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
