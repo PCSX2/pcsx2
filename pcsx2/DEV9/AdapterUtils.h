@@ -47,9 +47,9 @@ namespace AdapterUtils
 	bool GetAdapter(const std::string& name, Adapter* adapter, AdapterBuffer* buffer);
 	bool GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer);
 
-	std::optional<PacketReader::MAC_Address> GetAdapterMAC(Adapter* adapter);
-	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(Adapter* adapter);
+	std::optional<PacketReader::MAC_Address> GetAdapterMAC(const Adapter* adapter);
+	std::optional<PacketReader::IP::IP_Address> GetAdapterIP(const Adapter* adapter);
 	// Mask.
-	std::vector<PacketReader::IP::IP_Address> GetGateways(Adapter* adapter);
-	std::vector<PacketReader::IP::IP_Address> GetDNS(Adapter* adapter);
+	std::vector<PacketReader::IP::IP_Address> GetGateways(const Adapter* adapter);
+	std::vector<PacketReader::IP::IP_Address> GetDNS(const Adapter* adapter);
 }; // namespace AdapterUtils

@@ -257,7 +257,7 @@ bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 
 // AdapterMAC.
 #ifdef _WIN32
-std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
+std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(const Adapter* adapter)
 {
 	if (adapter != nullptr && adapter->PhysicalAddressLength == 6)
 	{
@@ -269,7 +269,7 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 	return std::nullopt;
 }
 #else
-std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
+std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(const Adapter* adapter)
 {
 	MAC_Address macAddr{};
 #if defined(AF_LINK)
@@ -335,7 +335,7 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(Adapter* adapter)
 
 // AdapterIP.
 #ifdef _WIN32
-std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
+std::optional<IP_Address> AdapterUtils::GetAdapterIP(const Adapter* adapter)
 {
 	PIP_ADAPTER_UNICAST_ADDRESS address = nullptr;
 	if (adapter != nullptr)
@@ -347,13 +347,13 @@ std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
 
 	if (address != nullptr)
 	{
-		sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+		const sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
 		return std::bit_cast<IP_Address>(sockaddr->sin_addr);
 	}
 	return std::nullopt;
 }
 #elif defined(__POSIX__)
-std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
+std::optional<IP_Address> AdapterUtils::GetAdapterIP(const Adapter* adapter)
 {
 	sockaddr_in* address = nullptr;
 	if (adapter != nullptr)
@@ -371,7 +371,7 @@ std::optional<IP_Address> AdapterUtils::GetAdapterIP(Adapter* adapter)
 
 // Gateways.
 #ifdef _WIN32
-std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
+std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 {
 	if (adapter == nullptr)
 		return {};
@@ -383,7 +383,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	{
 		if (ReadAddressFamily(address->Address.lpSockaddr) == AF_INET)
 		{
-			sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+			const sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
 			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
 		}
 		address = address->Next;
@@ -393,7 +393,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 }
 #elif defined(__POSIX__)
 #ifdef __linux__
-std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
+std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 {
 	// /proc/net/route contains some information about gateway addresses,
 	// and separates the information about by each interface.
@@ -419,15 +419,15 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	// Iface  Destination  Gateway  Flags  RefCnt  Use  Metric  Mask  MTU  Window  IRTT.
 	for (size_t i = 1; i < routeLines.size(); i++)
 	{
-		std::string line = routeLines[i];
+		const std::string line = routeLines[i];
 		if (line.rfind(adapter->ifa_name, 0) == 0)
 		{
-			std::vector<std::string_view> split = StringUtil::SplitString(line, '\t', true);
-			std::string gatewayIPHex{split[2]};
+			const std::vector<std::string_view> split = StringUtil::SplitString(line, '\t', true);
+			const std::string gatewayIPHex{split[2]};
 			// stoi assumes hex values are unsigned, but tries to store it in a signed int,
 			// this results in a std::out_of_range exception for addresses ending in a number > 128.
 			// We don't have a stoui for (unsigned int), so instead use stoul for (unsigned long).
-			u32 addressValue = static_cast<u32>(std::stoul(gatewayIPHex, 0, 16));
+			const u32 addressValue = static_cast<u32>(std::stoul(gatewayIPHex, 0, 16));
 			// Skip device routes without valid NextHop IP address.
 			if (addressValue != 0)
 				collection.push_back(std::bit_cast<IP_Address>(addressValue));
@@ -436,7 +436,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 	return collection;
 }
 #elif defined(__FreeBSD__) || defined(__APPLE__)
-std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
+std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 {
 	if (adapter == nullptr)
 		return {};
@@ -527,7 +527,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
 
 // DNS.
 #ifdef _WIN32
-std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
+std::vector<IP_Address> AdapterUtils::GetDNS(const Adapter* adapter)
 {
 	if (adapter == nullptr)
 		return {};
@@ -539,7 +539,7 @@ std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
 	{
 		if (ReadAddressFamily(address->Address.lpSockaddr) == AF_INET)
 		{
-			sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
+			const sockaddr_in* sockaddr = reinterpret_cast<sockaddr_in*>(address->Address.lpSockaddr);
 			collection.push_back(std::bit_cast<IP_Address>(sockaddr->sin_addr));
 		}
 		address = address->Next;
@@ -548,7 +548,7 @@ std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
 	return collection;
 }
 #elif defined(__POSIX__)
-std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
+std::vector<IP_Address> AdapterUtils::GetDNS(const Adapter* adapter)
 {
 	// On Linux and OSX, DNS is system wide, not adapter specific, so we can ignore the adapter parameter.
 
@@ -579,13 +579,13 @@ std::vector<IP_Address> AdapterUtils::GetDNS(Adapter* adapter)
 	const IP_Address systemdDNS{{{127, 0, 0, 53}}};
 	for (size_t i = 1; i < serversLines.size(); i++)
 	{
-		std::string line = serversLines[i];
+		const std::string line = serversLines[i];
 		if (line.rfind("nameserver", 0) == 0)
 		{
 			std::vector<std::string_view> split = StringUtil::SplitString(line, '\t', true);
 			if (split.size() == 1)
 				split = StringUtil::SplitString(line, ' ', true);
-			std::string dns{split[1]};
+			const std::string dns{split[1]};
 
 			IP_Address address;
 			if (inet_pton(AF_INET, dns.c_str(), &address) != 1)
