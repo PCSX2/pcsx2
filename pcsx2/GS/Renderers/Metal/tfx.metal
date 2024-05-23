@@ -865,7 +865,7 @@ struct PSMain
 
 	void ps_dither(thread float4& C, float As)
 	{
-		if (PS_DITHER == 0)
+		if (PS_DITHER == 0 || PS_DITHER == 3)
 			return;
 		ushort2 fpos;
 		if (PS_DITHER == 2)
@@ -891,7 +891,7 @@ struct PSMain
 	void ps_color_clamp_wrap(thread float4& C)
 	{
 		// When dithering the bottom 3 bits become meaningless and cause lines in the picture so we need to limit the color depth on dithered items
-		if (!SW_BLEND && !PS_DITHER && !PS_FBMASK)
+		if (!SW_BLEND && !(PS_DITHER > 0 && PS_DITHER < 3) && !PS_FBMASK)
 			return;
 
 		if (PS_DST_FMT == FMT_16 && PS_BLEND_MIX == 0 && PS_ROUND_INV)
@@ -907,7 +907,7 @@ struct PSMain
 		// Warning: normally blending equation is mult(A, B) = A * B >> 7. GPU have the full accuracy
 		// GS: Color = 1, Alpha = 255 => output 1
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
-		if (PS_DST_FMT == FMT_16 && (PS_BLEND_MIX == 0 || PS_DITHER))
+		if (PS_DST_FMT == FMT_16 && PS_DITHER < 3 && (PS_BLEND_MIX == 0 || PS_DITHER))
 			// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 			C.rgb = float3(short3(C.rgb) & 0xF8);
 		else if (PS_COLCLIP || PS_HDR)

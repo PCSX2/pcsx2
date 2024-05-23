@@ -3536,6 +3536,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Off"),
 		FSUI_NSTR("Scaled"),
 		FSUI_NSTR("Unscaled (Default)"),
+		FSUI_NSTR("Force 32bit"),
 	};
 	static constexpr const char* s_blending_options[] = {
 		FSUI_NSTR("Minimum"),
