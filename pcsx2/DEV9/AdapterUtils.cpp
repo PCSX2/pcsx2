@@ -204,17 +204,14 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 		if (pAdapter->ifa_addr != nullptr &&
 			ReadAddressFamily(pAdapter->ifa_addr) == AF_INET &&
 			strcmp(pAdapter->ifa_name, name.c_str()) == 0)
-			break;
+		{
+			*adapter = *pAdapter;
+			buffer->swap(adapterInfo);
+			return true;
+		}
 
 		pAdapter = pAdapter->ifa_next;
 	} while (pAdapter);
-
-	if (pAdapter != nullptr)
-	{
-		*adapter = *pAdapter;
-		buffer->swap(adapterInfo);
-		return true;
-	}
 
 	return false;
 }
