@@ -568,6 +568,11 @@
            <string>Unscaled (Default)</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>Force 32bit</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="6" column="0">

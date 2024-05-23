@@ -4476,7 +4476,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 				// Render pass 2: Add or subtract result of render pass 1(Cd) from Cs.
 				m_conf.blend_second_pass.enable = true;
 				m_conf.blend_second_pass.blend_hw = 0;
-				m_conf.blend_second_pass.dither = dither;
+				m_conf.blend_second_pass.dither = dither * GSConfig.Dithering;
 				m_conf.blend_second_pass.blend = {true, blend_second_pass.src, GSDevice::CONST_ONE, blend_second_pass.op, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0};
 			}
 			else if (alpha_c1_high_no_rta_correct && (blend_flag & BLEND_HW5))
@@ -5868,16 +5868,23 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.ps.fba = m_context->FBA.FBA;
 
-	if (m_conf.ps.dither)
+	if (m_conf.ps.dither || m_conf.blend_second_pass.dither)
 	{
 		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
-		GL_DBG("DITHERING mode ENABLED (%d)", GSConfig.Dithering);
+		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
 
-		m_conf.ps.dither = GSConfig.Dithering;
+		if (m_conf.ps.dither || GSConfig.Dithering == 3)
+			m_conf.ps.dither = GSConfig.Dithering;
+
 		m_conf.cb_ps.DitherMatrix[0] = GSVector4(DIMX.DM00, DIMX.DM01, DIMX.DM02, DIMX.DM03);
 		m_conf.cb_ps.DitherMatrix[1] = GSVector4(DIMX.DM10, DIMX.DM11, DIMX.DM12, DIMX.DM13);
 		m_conf.cb_ps.DitherMatrix[2] = GSVector4(DIMX.DM20, DIMX.DM21, DIMX.DM22, DIMX.DM23);
 		m_conf.cb_ps.DitherMatrix[3] = GSVector4(DIMX.DM30, DIMX.DM31, DIMX.DM32, DIMX.DM33);
+	}
+	else if (GSConfig.Dithering > 2)
+	{
+		m_conf.ps.dither = GSConfig.Dithering;
+		m_conf.blend_second_pass.dither = GSConfig.Dithering;
 	}
 
 	if (PRIM->FGE)
