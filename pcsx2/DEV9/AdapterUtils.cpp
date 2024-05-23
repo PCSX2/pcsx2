@@ -121,7 +121,7 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 
 	do
 	{
-		if (strcmp(pAdapter->AdapterName, name.c_str()) == 0)
+		if (name == pAdapter->AdapterName)
 		{
 			*adapter = *pAdapter;
 			buffer->swap(adapterInfo);
@@ -203,7 +203,7 @@ bool AdapterUtils::GetAdapter(const std::string& name, Adapter* adapter, Adapter
 	{
 		if (pAdapter->ifa_addr != nullptr &&
 			ReadAddressFamily(pAdapter->ifa_addr) == AF_INET &&
-			strcmp(pAdapter->ifa_name, name.c_str()) == 0)
+			name == pAdapter->ifa_name)
 		{
 			*adapter = *pAdapter;
 			buffer->swap(adapterInfo);
