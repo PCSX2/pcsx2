@@ -213,6 +213,11 @@ void MTGS::ResetGS(bool hardware_reset)
 		SetEvent();
 }
 
+int MTGS::GetCurrentVsyncQueueSize()
+{
+	return s_QueuedFrameCount.load(std::memory_order_acquire);
+}
+
 struct RingCmdPacket_Vsync
 {
 	u8 regset1[0x0f0];
