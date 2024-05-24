@@ -18,6 +18,8 @@
 #include <X11/Xlib.h>
 #endif
 
+static_assert(VKSwapChain::NUM_SEMAPHORES == (GSDeviceVK::NUM_COMMAND_BUFFERS + 1));
+
 VKSwapChain::VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
 	std::optional<bool> exclusive_fullscreen_control)
 	: m_window_info(wi)
@@ -455,15 +457,10 @@ bool VKSwapChain::CreateSwapChain()
 		m_images.push_back(std::move(texture));
 	}
 
-	// We don't actually need +1 semaphores, or, more than one really.
-	// But, the validation layer gets cranky if we don't fence wait before the next image acquire.
-	// So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
-	const u32 semaphore_count = (image_count + 1);
-	m_semaphores.reserve(semaphore_count);
 	m_current_semaphore = 0;
-	for (u32 i = 0; i < semaphore_count; i++)
+	for (u32 i = 0; i < NUM_SEMAPHORES; i++)
 	{
-		ImageSemaphores sema;
+		ImageSemaphores& sema = m_semaphores[i];
 
 		const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
 		res = vkCreateSemaphore(
@@ -480,10 +477,9 @@ bool VKSwapChain::CreateSwapChain()
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
 			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), sema.available_semaphore, nullptr);
+			sema.available_semaphore = VK_NULL_HANDLE;
 			return false;
 		}
-
-		m_semaphores.push_back(sema);
 	}
 
 	return true;
@@ -499,10 +495,12 @@ void VKSwapChain::DestroySwapChainImages()
 	m_images.clear();
 	for (auto& it : m_semaphores)
 	{
-		vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.rendering_finished_semaphore, nullptr);
-		vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.available_semaphore, nullptr);
+		if (it.rendering_finished_semaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.rendering_finished_semaphore, nullptr);
+		if (it.available_semaphore != VK_NULL_HANDLE)
+			vkDestroySemaphore(GSDeviceVK::GetInstance()->GetDevice(), it.available_semaphore, nullptr);
 	}
-	m_semaphores.clear();
+	m_semaphores = {};
 
 	m_image_acquire_result.reset();
 }

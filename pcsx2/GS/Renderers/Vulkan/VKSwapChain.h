@@ -8,6 +8,7 @@
 
 #include "common/WindowInfo.h"
 
+#include <array>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -15,6 +16,11 @@
 class VKSwapChain
 {
 public:
+	// We don't actually need +1 semaphores, or, more than one really.
+	// But, the validation layer gets cranky if we don't fence wait before the next image acquire.
+	// So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
+	static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
+
 	~VKSwapChain();
 
 	// Creates a vulkan-renderable surface for the specified window handle.
@@ -81,8 +87,6 @@ private:
 
 	bool CreateSwapChain();
 	void DestroySwapChain();
-
-	bool SetupSwapChainImages(VkFormat image_format);
 	void DestroySwapChainImages();
 
 	void DestroySurface();
@@ -99,7 +103,7 @@ private:
 	VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
 	std::vector<std::unique_ptr<GSTextureVK>> m_images;
-	std::vector<ImageSemaphores> m_semaphores;
+	std::array<ImageSemaphores, NUM_SEMAPHORES> m_semaphores = {};
 
 	u32 m_current_image = 0;
 	u32 m_current_semaphore = 0;
