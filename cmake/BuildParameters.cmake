@@ -112,6 +112,7 @@ if(MSVC AND NOT USE_CLANG_CL)
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
+		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>"
 		"/Zo"
 		"/utf-8"
 	)
