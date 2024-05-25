@@ -485,8 +485,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		dialog->registerWidgetHelp(m_ui.dithering, tr("Dithering"), tr("Unscaled (Default)"),
 			tr("Reduces banding between colors and improves the perceived color depth.<br> "
 			   "Off: Disables any dithering.<br> "
+			   "Scaled: Upscaling-aware / Highest dithering effect.<br> "
 			   "Unscaled: Native Dithering / Lowest dithering effect does not increase size of squares when upscaling.<br> "
-			   "Scaled: Upscaling-aware / Highest dithering effect."));
+			   "Force 32bit: Treat all draws as if they were 32bit to avoid banding and dithering."));
 
 		dialog->registerWidgetHelp(m_ui.blending, tr("Blending Accuracy"), tr("Basic (Recommended)"),
 			tr("Control the accuracy level of the GS blending unit emulation.<br> "
