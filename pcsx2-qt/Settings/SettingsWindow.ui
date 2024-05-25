@@ -2,11 +2,6 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QWidget" name="SettingsWindow">
-  <property name="windowIcon">
-   <iconset>
-    <normalon>:/icons/AppIcon64.png</normalon>
-   </iconset>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,6 +18,11 @@
   </property>
   <property name="windowTitle">
    <string>PCSX2 Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/AppIcon64.png</normalon>
+   </iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
    <item row="0" column="0">
@@ -68,13 +68,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>120</height>
+       <height>122</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>120</height>
+       <height>122</height>
       </size>
      </property>
      <property name="readOnly">
