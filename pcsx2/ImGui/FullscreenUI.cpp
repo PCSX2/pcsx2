@@ -3903,6 +3903,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawToggleSetting(bsi, FSUI_CSTR("Disable Threaded Presentation"),
 			FSUI_CSTR("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues."),
 			"EmuCore/GS", "DisableThreadedPresentation", false);
+		DrawToggleSetting(bsi, FSUI_CSTR("Disable Mailbox Presentation"),
+			FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
+					  "Usually results in worse frame pacing."),
+			"EmuCore/GS", "DisableMailboxPresentation", false);
 		if (IsEditingGameSettings(bsi))
 		{
 			DrawIntListSetting(bsi, FSUI_CSTR("Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
@@ -6953,12 +6957,14 @@ TRANSLATE_NOOP("FullscreenUI", "Maximum Frame Latency");
 TRANSLATE_NOOP("FullscreenUI", "Sets the number of frames which can be queued.");
 TRANSLATE_NOOP("FullscreenUI", "Optimal Frame Pacing");
 TRANSLATE_NOOP("FullscreenUI", "Synchronize EE and GS threads after each frame. Lowest input latency, but increases system requirements.");
-TRANSLATE_NOOP("FullscreenUI", "Scale To Host Refresh Rate");
+TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
+TRANSLATE_NOOP("FullscreenUI", "Synchronizes frame presentation with host refresh.");
+TRANSLATE_NOOP("FullscreenUI", "Sync to Host Refresh Rate");
 TRANSLATE_NOOP("FullscreenUI", "Speeds up emulation so that the guest refresh rate matches the host.");
+TRANSLATE_NOOP("FullscreenUI", "Use Host VSync Timing");
+TRANSLATE_NOOP("FullscreenUI", "Disables PCSX2's internal frame timing, and uses host vsync instead.");
 TRANSLATE_NOOP("FullscreenUI", "Renderer");
 TRANSLATE_NOOP("FullscreenUI", "Selects the API used to render the emulated GS.");
-TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh (VSync)");
-TRANSLATE_NOOP("FullscreenUI", "Synchronizes frame presentation with host refresh.");
 TRANSLATE_NOOP("FullscreenUI", "Display");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
 TRANSLATE_NOOP("FullscreenUI", "Selects the aspect ratio to display the game content at.");
@@ -6994,8 +7000,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enables internal Anti-Blur hacks. Less accurate 
 TRANSLATE_NOOP("FullscreenUI", "Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Multiplies the render resolution by the specified factor (upscaling).");
-TRANSLATE_NOOP("FullscreenUI", "Mipmapping");
-TRANSLATE_NOOP("FullscreenUI", "Determines how mipmaps are used when rendering textures.");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Selects where bilinear filtering is utilized when rendering textures.");
 TRANSLATE_NOOP("FullscreenUI", "Trilinear Filtering");
@@ -7008,13 +7012,14 @@ TRANSLATE_NOOP("FullscreenUI", "Blending Accuracy");
 TRANSLATE_NOOP("FullscreenUI", "Determines the level of accuracy when emulating blend modes not supported by the host graphics API.");
 TRANSLATE_NOOP("FullscreenUI", "Texture Preloading");
 TRANSLATE_NOOP("FullscreenUI", "Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Mipmapping");
+TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's texture mipmapping.");
 TRANSLATE_NOOP("FullscreenUI", "Software Rendering Threads");
 TRANSLATE_NOOP("FullscreenUI", "Number of threads to use in addition to the main GS thread for rasterization.");
 TRANSLATE_NOOP("FullscreenUI", "Auto Flush (Software)");
 TRANSLATE_NOOP("FullscreenUI", "Force a primitive flush when a framebuffer is also an input texture.");
 TRANSLATE_NOOP("FullscreenUI", "Edge AA (AA1)");
 TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's edge anti-aliasing (AA1).");
-TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's texture mipmapping.");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Manual Hardware Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Disables automatic hardware fixes, allowing you to set fixes manually.");
@@ -7105,6 +7110,8 @@ TRANSLATE_NOOP("FullscreenUI", "Skip Presenting Duplicate Frames");
 TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Threaded Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues.");
+TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
+TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Download Mode");
 TRANSLATE_NOOP("FullscreenUI", "Changes synchronization behavior for GS downloads.");
 TRANSLATE_NOOP("FullscreenUI", "Allow Exclusive Fullscreen");
@@ -7430,8 +7437,6 @@ TRANSLATE_NOOP("FullscreenUI", "5x Native (~1620p)");
 TRANSLATE_NOOP("FullscreenUI", "6x Native (~2160p/4K)");
 TRANSLATE_NOOP("FullscreenUI", "7x Native (~2520p)");
 TRANSLATE_NOOP("FullscreenUI", "8x Native (~2880p)");
-TRANSLATE_NOOP("FullscreenUI", "Basic (Generated Mipmaps)");
-TRANSLATE_NOOP("FullscreenUI", "Full (PS2 Mipmaps)");
 TRANSLATE_NOOP("FullscreenUI", "Nearest");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (Forced)");
 TRANSLATE_NOOP("FullscreenUI", "Bilinear (PS2)");
@@ -7441,6 +7446,7 @@ TRANSLATE_NOOP("FullscreenUI", "Trilinear (PS2)");
 TRANSLATE_NOOP("FullscreenUI", "Trilinear (Forced)");
 TRANSLATE_NOOP("FullscreenUI", "Scaled");
 TRANSLATE_NOOP("FullscreenUI", "Unscaled (Default)");
+TRANSLATE_NOOP("FullscreenUI", "Force 32bit");
 TRANSLATE_NOOP("FullscreenUI", "Minimum");
 TRANSLATE_NOOP("FullscreenUI", "Basic (Recommended)");
 TRANSLATE_NOOP("FullscreenUI", "Medium");
