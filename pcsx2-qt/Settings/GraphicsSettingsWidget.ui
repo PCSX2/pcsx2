@@ -2058,6 +2058,13 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="disableMailboxPresentation">
+              <property name="text">
+               <string>Disable Mailbox Presentation</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item row="2" column="0">

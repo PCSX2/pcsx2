@@ -693,8 +693,6 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 	return (
 		OpEqu(bitset) &&
 
-		OpEqu(VsyncEnable) &&
-
 		OpEqu(InterlaceMode) &&
 		OpEqu(LinearPresent) &&
 
@@ -797,6 +795,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 #endif
 
 	SettingsWrapBitBool(VsyncEnable);
+	SettingsWrapBitBool(DisableMailboxPresentation);
 
 	SettingsWrapEntry(VsyncQueueSize);
 

@@ -2602,8 +2602,11 @@ GSVSyncMode VMManager::GetEffectiveVSyncMode()
 	// Try to keep the same present mode whether we're running or not, since it'll avoid flicker.
 	const VMState state = GetState();
 	const bool valid_vm = (state != VMState::Shutdown && state != VMState::Stopping);
-	if (s_target_speed_can_sync_to_host || (!valid_vm && EmuConfig.EmulationSpeed.SyncToHostRefreshRate))
+	if (s_target_speed_can_sync_to_host || (!valid_vm && EmuConfig.EmulationSpeed.SyncToHostRefreshRate) ||
+		EmuConfig.GS.DisableMailboxPresentation)
+	{
 		return GSVSyncMode::FIFO;
+	}
 
 	// For PAL games, we always want to triple buffer, because otherwise we'll be tearing.
 	// Or for when we aren't using sync-to-host-refresh, to avoid dropping frames.
@@ -2795,7 +2798,8 @@ void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
 		UpdateVSyncRate(false);
 		UpdateTargetSpeed();
 	}
-	else if (EmuConfig.GS.VsyncEnable != old_config.GS.VsyncEnable)
+	else if (EmuConfig.GS.VsyncEnable != old_config.GS.VsyncEnable ||
+			 EmuConfig.GS.DisableMailboxPresentation != old_config.GS.DisableMailboxPresentation)
 	{
 		// Still need to update target speed, because of sync-to-host-refresh.
 		UpdateTargetSpeed();
