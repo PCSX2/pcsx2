@@ -136,7 +136,7 @@ private:
 	bool EnableDebugUtils();
 	void DisableDebugUtils();
 
-	void SubmitCommandBuffer(VKSwapChain* present_swap_chain = nullptr, bool submit_on_thread = false);
+	void SubmitCommandBuffer(VKSwapChain* present_swap_chain);
 	void MoveToNextCommandBuffer();
 
 	enum class WaitType
@@ -148,11 +148,6 @@ private:
 
 	static WaitType GetWaitType(bool wait, bool spin);
 	void ExecuteCommandBuffer(WaitType wait_for_completion);
-	void WaitForPresentComplete();
-
-	// Was the last present submitted to the queue a failure? If so, we must recreate our swapchain.
-	bool CheckLastPresentFail();
-	bool CheckLastSubmitFail();
 
 	// Allocates a temporary CPU staging buffer, fires the callback with it to populate, then copies to a GPU buffer.
 	bool AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer, VmaAllocation* gpu_allocation,
@@ -194,13 +189,6 @@ private:
 	void ActivateCommandBuffer(u32 index);
 	void ScanForCommandBufferCompletion();
 	void WaitForCommandBufferCompletion(u32 index);
-
-	void DoSubmitCommandBuffer(u32 index, VKSwapChain* present_swap_chain, u32 spin_cycles);
-	void DoPresent(VKSwapChain* present_swap_chain);
-	void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
-	void PresentThread();
-	void StartPresentThread();
-	void StopPresentThread();
 
 	bool InitSpinResources();
 	void DestroySpinResources();
@@ -283,23 +271,8 @@ private:
 	u64 m_completed_fence_counter = 0;
 	u32 m_current_frame = 0;
 
-	std::atomic_bool m_last_submit_failed{false};
-	std::atomic_bool m_last_present_failed{false};
-	std::atomic_bool m_present_done{true};
-	std::mutex m_present_mutex;
-	std::condition_variable m_present_queued_cv;
-	std::condition_variable m_present_done_cv;
-	std::thread m_present_thread;
-	std::atomic_bool m_present_thread_done{false};
-
-	struct QueuedPresent
-	{
-		VKSwapChain* swap_chain;
-		u32 command_buffer_index;
-		u32 spin_cycles;
-	};
-
-	QueuedPresent m_queued_present = {nullptr, 0xFFFFFFFFu, 0};
+	bool m_last_submit_failed = false;
+	bool m_last_present_failed = false;
 
 	std::map<u32, VkRenderPass> m_render_pass_cache;
 

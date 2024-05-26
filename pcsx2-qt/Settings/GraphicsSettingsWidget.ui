@@ -2052,13 +2052,6 @@
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QCheckBox" name="threadedPresentation">
-              <property name="text">
-               <string>Disable Threaded Presentation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
              <widget class="QCheckBox" name="disableMailboxPresentation">
               <property name="text">
                <string>Disable Mailbox Presentation</string>

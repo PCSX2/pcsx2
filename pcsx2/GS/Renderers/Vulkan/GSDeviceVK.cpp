@@ -1008,7 +1008,6 @@ void GSDeviceVK::WaitForFenceCounter(u64 fence_counter)
 
 void GSDeviceVK::WaitForGPUIdle()
 {
-	WaitForPresentComplete();
 	vkDeviceWaitIdle(m_device);
 }
 
@@ -1050,19 +1049,12 @@ void GSDeviceVK::ScanForCommandBufferCompletion()
 
 void GSDeviceVK::WaitForCommandBufferCompletion(u32 index)
 {
-	// We might be waiting for the buffer we just submitted to the worker thread.
-	if (m_queued_present.command_buffer_index == index && !m_present_done.load(std::memory_order_acquire))
-	{
-		Console.WarningFmt("Waiting for threaded submission of cmdbuffer {}", index);
-		WaitForPresentComplete();
-	}
-
 	// Wait for this command buffer to be completed.
 	const VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
-		m_last_submit_failed.store(true, std::memory_order_release);
+		m_last_submit_failed = true;
 		return;
 	}
 
@@ -1085,8 +1077,7 @@ void GSDeviceVK::WaitForCommandBufferCompletion(u32 index)
 	m_completed_fence_counter = now_completed_counter;
 }
 
-void GSDeviceVK::SubmitCommandBuffer(
-	VKSwapChain* present_swap_chain /* = nullptr */, bool submit_on_thread /* = false */)
+void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 {
 	FrameResources& resources = m_frame_resources[m_current_frame];
 
@@ -1154,32 +1145,8 @@ void GSDeviceVK::SubmitCommandBuffer(
 	if (spin_cycles != 0)
 		WaitForSpinCompletion(m_current_frame);
 
-	std::unique_lock<std::mutex> lock(m_present_mutex);
-	WaitForPresentComplete(lock);
-
 	if (spin_enabled && m_optional_extensions.vk_ext_calibrated_timestamps)
 		resources.submit_timestamp = GetCPUTimestamp();
-
-	// Don't use threaded presentation when spinning is enabled. ScanForCommandBufferCompletion()
-	// calls vkGetFenceStatus(), which reads a fence that has been passed off to the thread.
-	if (!submit_on_thread || GSConfig.HWSpinGPUForReadbacks || !m_present_thread.joinable())
-	{
-		DoSubmitCommandBuffer(m_current_frame, present_swap_chain, spin_cycles);
-		if (present_swap_chain)
-			DoPresent(present_swap_chain);
-		return;
-	}
-
-	m_queued_present.command_buffer_index = m_current_frame;
-	m_queued_present.swap_chain = present_swap_chain;
-	m_queued_present.spin_cycles = spin_cycles;
-	m_present_done.store(false, std::memory_order_release);
-	m_present_queued_cv.notify_one();
-}
-
-void GSDeviceVK::DoSubmitCommandBuffer(u32 index, VKSwapChain* present_swap_chain, u32 spin_cycles)
-{
-	FrameResources& resources = m_frame_resources[index];
 
 	uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	VkSemaphore semas[2];
@@ -1197,7 +1164,7 @@ void GSDeviceVK::DoSubmitCommandBuffer(u32 index, VKSwapChain* present_swap_chai
 		if (spin_cycles != 0)
 		{
 			semas[0] = present_swap_chain->GetRenderingFinishedSemaphore();
-			semas[1] = m_spin_resources[index].semaphore;
+			semas[1] = m_spin_resources[m_current_frame].semaphore;
 			submit_info.signalSemaphoreCount = 2;
 			submit_info.pSignalSemaphores = semas;
 		}
@@ -1210,105 +1177,44 @@ void GSDeviceVK::DoSubmitCommandBuffer(u32 index, VKSwapChain* present_swap_chai
 	else if (spin_cycles != 0)
 	{
 		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores = &m_spin_resources[index].semaphore;
+		submit_info.pSignalSemaphores = &m_spin_resources[m_current_frame].semaphore;
 	}
 
-	const VkResult res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
+	res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
-		m_last_submit_failed.store(true, std::memory_order_release);
+		m_last_submit_failed = true;
 		return;
 	}
 
 	if (spin_cycles != 0)
-		SubmitSpinCommand(index, spin_cycles);
-}
+		SubmitSpinCommand(m_current_frame, spin_cycles);
 
-void GSDeviceVK::DoPresent(VKSwapChain* present_swap_chain)
-{
-	const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1,
-		present_swap_chain->GetRenderingFinishedSemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
-		present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
-
-	present_swap_chain->ReleaseCurrentImage();
-
-	const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
-	if (res != VK_SUCCESS)
+	if (present_swap_chain)
 	{
-		// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
-		if (res != VK_ERROR_OUT_OF_DATE_KHR && res != VK_SUBOPTIMAL_KHR)
-			LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
+		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1,
+			present_swap_chain->GetRenderingFinishedSemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
+			present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
 
-		m_last_present_failed.store(true, std::memory_order_release);
-		return;
+		present_swap_chain->ReleaseCurrentImage();
+
+		const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
+		if (res != VK_SUCCESS)
+		{
+			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
+			if (res != VK_ERROR_OUT_OF_DATE_KHR && res != VK_SUBOPTIMAL_KHR)
+				LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
+
+			m_last_present_failed = true;
+			return;
+		}
+
+		// Grab the next image as soon as possible, that way we spend less time blocked on the next
+		// submission. Don't care if it fails, we'll deal with that at the presentation call site.
+		// Credit to dxvk for the idea.
+		present_swap_chain->AcquireNextImage();
 	}
-
-	// Grab the next image as soon as possible, that way we spend less time blocked on the next
-	// submission. Don't care if it fails, we'll deal with that at the presentation call site.
-	// Credit to dxvk for the idea.
-	present_swap_chain->AcquireNextImage();
-}
-
-void GSDeviceVK::WaitForPresentComplete()
-{
-	if (m_present_done.load(std::memory_order_acquire))
-		return;
-
-	std::unique_lock<std::mutex> lock(m_present_mutex);
-	WaitForPresentComplete(lock);
-}
-
-void GSDeviceVK::WaitForPresentComplete(std::unique_lock<std::mutex>& lock)
-{
-	if (m_present_done.load(std::memory_order_acquire))
-		return;
-
-	m_present_done_cv.wait(lock, [this]() { return m_present_done.load(std::memory_order_acquire); });
-}
-
-void GSDeviceVK::PresentThread()
-{
-	std::unique_lock<std::mutex> lock(m_present_mutex);
-	while (!m_present_thread_done.load(std::memory_order_acquire))
-	{
-		m_present_queued_cv.wait(lock, [this]() {
-			return !m_present_done.load(std::memory_order_acquire) ||
-				   m_present_thread_done.load(std::memory_order_acquire);
-		});
-
-		if (m_present_done.load(std::memory_order_acquire))
-			continue;
-
-		DoSubmitCommandBuffer(
-			m_queued_present.command_buffer_index, m_queued_present.swap_chain, m_queued_present.spin_cycles);
-		if (m_queued_present.swap_chain)
-			DoPresent(m_queued_present.swap_chain);
-		m_present_done.store(true, std::memory_order_release);
-		m_present_done_cv.notify_one();
-	}
-}
-
-void GSDeviceVK::StartPresentThread()
-{
-	pxAssert(!m_present_thread.joinable());
-	m_present_thread_done.store(false, std::memory_order_release);
-	m_present_thread = std::thread(&GSDeviceVK::PresentThread, this);
-}
-
-void GSDeviceVK::StopPresentThread()
-{
-	if (!m_present_thread.joinable())
-		return;
-
-	{
-		std::unique_lock<std::mutex> lock(m_present_mutex);
-		WaitForPresentComplete(lock);
-		m_present_thread_done.store(true, std::memory_order_release);
-		m_present_queued_cv.notify_one();
-	}
-
-	m_present_thread.join();
 }
 
 void GSDeviceVK::CommandBufferCompleted(u32 index)
@@ -1411,12 +1317,11 @@ void GSDeviceVK::ActivateCommandBuffer(u32 index)
 
 void GSDeviceVK::ExecuteCommandBuffer(WaitType wait_for_completion)
 {
-	if (m_last_submit_failed.load(std::memory_order_acquire))
+	if (m_last_submit_failed)
 		return;
 
-	// If we're waiting for completion, don't bother waking the worker thread.
 	const u32 current_frame = m_current_frame;
-	SubmitCommandBuffer();
+	SubmitCommandBuffer(nullptr);
 	MoveToNextCommandBuffer();
 
 	if (wait_for_completion != WaitType::None)
@@ -1431,16 +1336,6 @@ void GSDeviceVK::ExecuteCommandBuffer(WaitType wait_for_completion)
 		}
 		WaitForCommandBufferCompletion(current_frame);
 	}
-}
-
-bool GSDeviceVK::CheckLastPresentFail()
-{
-	return m_last_present_failed.exchange(false, std::memory_order_acq_rel);
-}
-
-bool GSDeviceVK::CheckLastSubmitFail()
-{
-	return m_last_submit_failed.load(std::memory_order_acquire);
 }
 
 void GSDeviceVK::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
@@ -1809,7 +1704,7 @@ void GSDeviceVK::WaitForSpinCompletion(u32 index)
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
-		m_last_submit_failed.store(true, std::memory_order_release);
+		m_last_submit_failed = true;
 		return;
 	}
 	SpinCommandCompleted(index);
@@ -2169,7 +2064,6 @@ void GSDeviceVK::Destroy()
 		WaitForGPUIdle();
 	}
 
-	StopPresentThread();
 	m_swap_chain.reset();
 
 	DestroySpinResources();
@@ -2334,6 +2228,10 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 {
 	EndRenderPass();
 
+	// Check if the device was lost.
+	if (m_last_submit_failed)
+		return PresentResult::DeviceLost;
+
 	if (frame_skip)
 		return PresentResult::FrameSkipped;
 
@@ -2343,13 +2241,6 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		ExecuteCommandBuffer(false);
 		return PresentResult::FrameSkipped;
 	}
-
-	// Previous frame needs to be presented before we can acquire the swap chain.
-	WaitForPresentComplete();
-
-	// Check if the device was lost.
-	if (CheckLastSubmitFail())
-		return PresentResult::DeviceLost;
 
 	VkResult res = m_swap_chain->AcquireNextImage();
 	if (res != VK_SUCCESS)
@@ -2422,7 +2313,7 @@ void GSDeviceVK::EndPresent()
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+	SubmitCommandBuffer(m_swap_chain.get());
 	MoveToNextCommandBuffer();
 
 	InvalidateCachedState();
@@ -2620,9 +2511,6 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		return false;
 
 	VKShaderCache::Create();
-
-	if (!GSConfig.DisableThreadedPresentation)
-		StartPresentThread();
 
 	if (surface != VK_NULL_HANDLE)
 	{
@@ -4554,7 +4442,7 @@ void GSDeviceVK::RenderBlankFrame()
 		cmdbuffer, sctex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &s_present_clear_color.color, 1, &srr);
 
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
-	SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+	SubmitCommandBuffer(m_swap_chain.get());
 	ActivateCommandBuffer((m_current_frame + 1) % NUM_COMMAND_BUFFERS);
 }
 
