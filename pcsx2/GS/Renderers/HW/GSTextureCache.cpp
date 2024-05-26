@@ -2924,8 +2924,9 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 	{
 		if (dst->m_valid_alpha_low || dst->m_valid_alpha_high)
 		{
-			g_gs_device->StretchRect(dst->m_texture, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), tex,
-				GSVector4(GSVector4i::loadh(dst->m_unscaled_size)), false, false, false, true);
+			const GSVector4 copy_rect = GSVector4(tex->GetRect().rintersect(dst->m_texture->GetRect()));
+			g_gs_device->StretchRect(dst->m_texture, copy_rect / GSVector4(GSVector4i(dst->m_texture->GetSize()).xyxy()), tex,
+				copy_rect, false, false, false, true);
 			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 		}
 
