@@ -287,3 +287,58 @@ int main() {
 		set(HOST_CACHE_LINE_SIZE ${detect_cache_line_size_output} CACHE STRING "Reported host cache line size")
 	endif()
 endfunction()
+
+function(get_recursive_include_directories output target inc_prop link_prop)
+	get_target_property(dirs ${target} ${inc_prop})
+	if(NOT dirs)
+		set(dirs)
+	endif()
+	get_target_property(deps ${target} ${link_prop})
+	if(deps)
+		foreach(dep IN LISTS deps)
+			if(TARGET ${dep})
+				get_recursive_include_directories(depdirs ${dep} INTERFACE_INCLUDE_DIRECTORIES INTERFACE_LINK_LIBRARIES)
+				foreach(depdir IN LISTS depdirs)
+					# Only match absolute paths
+					# We'll hope any non-absolute paths will not get set as system directories
+					if(depdir MATCHES "^/")
+						list(APPEND dirs ${depdir})
+					endif()
+				endforeach()
+			endif()
+		endforeach()
+		list(REMOVE_DUPLICATES dirs)
+	endif()
+	set(${output} "${dirs}" PARENT_SCOPE)
+endfunction()
+
+function(force_include_last_impl target include inc_prop link_prop)
+	get_recursive_include_directories(dirs ${target} ${inc_prop} ${link_prop})
+	set(remove)
+	foreach(dir IN LISTS dirs)
+		if("${dir}" MATCHES "${include}")
+			list(APPEND remove ${dir})
+		endif()
+	endforeach()
+	if(NOT "${remove}" STREQUAL "")
+		get_target_property(sysdirs ${target} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+		if(NOT sysdirs)
+			set(sysdirs)
+		endif()
+		# Move matching items to the end
+		list(REMOVE_ITEM dirs ${remove})
+		list(APPEND dirs ${remove})
+		# Set them as system include directories
+		list(APPEND sysdirs ${remove})
+		list(REMOVE_DUPLICATES sysdirs)
+		set_target_properties(${target} PROPERTIES
+			${inc_prop} "${dirs}"
+			INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sysdirs}"
+		)
+	endif()
+endfunction()
+
+function(force_include_last target include)
+	force_include_last_impl(${target} "${include}" INTERFACE_INCLUDE_DIRECTORIES INTERFACE_LINK_LIBRARIES)
+	force_include_last_impl(${target} "${include}" INCLUDE_DIRECTORIES LINK_LIBRARIES)
+endfunction()
