@@ -1227,6 +1227,10 @@ if (NOT APPLE)
 endif()
 
 fixup_file_properties(PCSX2)
+# Directories like /usr/local/include, /opt/local/include, etc tend to include lots of headers from lots of libraries.
+# Possibly including libraries that we compiled versions of with the dependency build script.
+# To ensure the dependency build script's headers are preferred, push any directories that look like */local/include to the end.
+force_include_last(PCSX2_FLAGS "/(usr|local)/include/?$")
 
 if (APPLE)
 	find_library(METAL_LIBRARY Metal)
