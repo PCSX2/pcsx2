@@ -1051,6 +1051,10 @@ void GSDevice11::PopTimestampQuery()
 				m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
 				m_waiting_timestamp_queries--;
 			}
+			else
+			{
+				break;
+			}
 		}
 	}
 
