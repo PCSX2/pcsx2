@@ -3900,9 +3900,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
 					  "worse."),
 			"EmuCore/GS", "SkipDuplicateFrames", false);
-		DrawToggleSetting(bsi, FSUI_CSTR("Disable Threaded Presentation"),
-			FSUI_CSTR("Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues."),
-			"EmuCore/GS", "DisableThreadedPresentation", false);
 		DrawToggleSetting(bsi, FSUI_CSTR("Disable Mailbox Presentation"),
 			FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 					  "Usually results in worse frame pacing."),
@@ -7108,8 +7105,6 @@ TRANSLATE_NOOP("FullscreenUI", "Applies a shader which replicates the visual eff
 TRANSLATE_NOOP("FullscreenUI", "Advanced");
 TRANSLATE_NOOP("FullscreenUI", "Skip Presenting Duplicate Frames");
 TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.");
-TRANSLATE_NOOP("FullscreenUI", "Disable Threaded Presentation");
-TRANSLATE_NOOP("FullscreenUI", "Presents frames on the main GS thread instead of a worker thread. Used for debugging frametime issues.");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Download Mode");

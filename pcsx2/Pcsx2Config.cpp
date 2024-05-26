@@ -621,7 +621,6 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;
-	DisableThreadedPresentation = false;
 	SkipDuplicateFrames = false;
 	OsdShowMessages = true;
 	OsdShowSpeed = false;
@@ -781,7 +780,6 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableVertexShaderExpand) &&
-		   OpEqu(DisableThreadedPresentation) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(ExclusiveFullscreenControl);
 }
@@ -825,7 +823,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
 	SettingsWrapBitBool(DisableVertexShaderExpand);
-	SettingsWrapBitBool(DisableThreadedPresentation);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowMessages);
 	SettingsWrapBitBool(OsdShowSpeed);
