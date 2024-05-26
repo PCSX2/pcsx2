@@ -1105,7 +1105,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				const bool overlaps = t->Overlaps(bp, bw, psm, block_boundary_rect);
 
 				// Try to make sure the target has available what we need, be careful of self referencing frames with font in the alpha.
-				if (!overlaps)
+				// Also is we have already found a target which we had to offset in to by using a region or exact address,
+				// it's probable that's more correct than being inside (Tomb Raider Legends + Project Snowblind)
+				if (!overlaps || (found_t && dst->m_TEX0.TBP0 >= bp && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)))
 					continue;
 
 				const bool width_match = (std::max(64U, bw * 64U) >> GSLocalMemory::m_psm[psm].info.pageShiftX()) ==
@@ -1822,7 +1824,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// targets at BW=1 because it breaks other games, we can when the *new* buffer area is completely dirty.
 				if (!preserve_rgb && !preserve_alpha && TEX0.TBW != t->m_TEX0.TBW)
 				{
-					if (TEX0.TBW > 1 && t->m_age >= 1)
+					// Old targets or shrunk targets where Y draw height goes outside the page.
+					if (TEX0.TBW > 1 && (t->m_age >= 1 || (type == RenderTarget && draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && TEX0.TBW < t->m_TEX0.TBW)))
 					{
 						can_use = false;
 					}
@@ -1845,7 +1848,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// 2. Preserved data will be in the correct place (in most cases)
 				// 3. Less deleting sources/targets
 				// 4. We can basically do clears in hardware, if they aren't insane ones
-				if (can_use && !is_shuffle && ((preserve_alpha && preserve_rgb) || (size.y > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW && t->m_dirty.size() >= 1)
+				if (can_use && !is_shuffle && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW && t->m_dirty.size() >= 1)
 				{
 					can_use = false;
 				}
@@ -2510,10 +2513,12 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 				if (!eerect.rempty())
 				{
+					const GSVector4i save_rect = preserve_target ? newrect : eerect;
+
 					if(!hw_clear)
-						dst->UpdateValidity(newrect);
+						dst->UpdateValidity(save_rect);
 					GL_INS("Preloading the RT DATA from updated GS Memory");
-					AddDirtyRectTarget(dst, newrect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
+					AddDirtyRectTarget(dst, save_rect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
 			}
 		}
