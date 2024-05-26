@@ -963,7 +963,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 			// and 0 on release (when the full state changes).
 			if (IsAxisHandler(binding->handler))
 			{
-				if (value_to_pass >= 0.0f)
+				if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
 					std::get<InputAxisEventHandler>(binding->handler)(value_to_pass);
 			}
 			else if (binding->num_keys >= min_num_keys)
