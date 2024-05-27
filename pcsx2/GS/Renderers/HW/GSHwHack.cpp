@@ -137,9 +137,17 @@ bool GSHwHack::GSC_SFEX3(GSRendererHW& r, int& skip)
 	{
 		if (RTME && RFBP == 0x00500 && RFPSM == PSMCT16 && RTBP0 == 0x00f00 && RTPSM == PSMCT16)
 		{
-			// Not an upscaling issue.
-			// Elements on the screen show double/distorted.
-			skip = 2;
+			// This draw copies/downscales the RT, but does so in a weird way, by copying it in two halves,
+			// downscaling from 640x224 to 320x112, but splitting it in to 320x64 and 320x48 next to each other.
+			// It then halves the page width on the next draw so they appear one above the other, which is what our TC doesn't support.
+			// This modified that weird halving draw to just draw it as one 320x112 chunk, it then works correctly.
+			// Skipping is no good as the copy is used again later, and it causes a weird shimmer/echo effect every other frame.
+
+			// Add on the height from the second part of the draw to the first, to make it one big rect.
+			r.m_vertex.buff[1].XYZ.Y += r.m_vertex.buff[r.m_vertex.tail - 1].XYZ.Y - r.m_context->XYOFFSET.OFY;
+			r.m_vertex.buff[1].V = r.m_vertex.buff[r.m_vertex.tail - 1].V;
+			r.m_vertex.tail = 2;
+			r.m_index.tail = 2;
 		}
 	}
 
