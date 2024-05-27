@@ -4859,8 +4859,12 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// but having it off-by-one masks some draw issues in VP2 and Xenosaga. TODO: Fix the underlying draw issues.
 		const GSVector4i clamp(m_cached_ctx.CLAMP.MINU, m_cached_ctx.CLAMP.MINV, m_cached_ctx.CLAMP.MAXU, m_cached_ctx.CLAMP.MAXV);
 		const GSVector4 region_repeat = GSVector4::cast(clamp);
-		const GSVector4 region_clamp_offset =
-			(tex->GetScale() != 1.0f) ? GSVector4::cxpr(0.0f, 0.0f, 0.0f, 0.0f) : GSVector4::cxpr(0.0f, 0.0f, 0.5f, 0.5f);
+
+		// Apply a small offset (based on upscale amount) for edges of textures to avoid reading garbage during a clamp+stscale down
+		// Bigger problem when WH is 1024x1024 and the target is only small.
+		// This "fixes" a lot of the rainbow garbage in games when upscaling (and xenosaga shadows + VP2 forest seem quite happy).
+		const GSVector4 region_clamp_offset = GSVector4::cxpr(0.5f, 0.5f, 0.1f, 0.1f) + (GSVector4::cxpr(0.1f, 0.1f, 0.0f, 0.0f) * tex->GetScale());
+		
 		const GSVector4 region_clamp = (GSVector4(clamp) + region_clamp_offset) / WH.xyxy();
 		if (wms >= CLAMP_REGION_CLAMP)
 		{
