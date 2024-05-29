@@ -29,14 +29,6 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-// MacOS does not have MAP_FIXED_NOREPLACE, which means our mappings are
-// vulnerable to races with the main/Qt threads. TODO: Investigate using
-// mach_vm_allocate()/mach_vm_map() instead of mmap(), but Apple's
-// documentation for these routines is non-existant...
-#if defined(__APPLE__) && !defined(MAP_FIXED_NOREPLACE)
-#define MAP_FIXED_NOREPLACE MAP_FIXED
-#endif
-
 // FreeBSD does not have MAP_FIXED_NOREPLACE, but does have MAP_EXCL.
 // MAP_FIXED combined with MAP_EXCL behaves like MAP_FIXED_NOREPLACE.
 #if defined(__FreeBSD__) && !defined(MAP_FIXED_NOREPLACE)
@@ -230,6 +222,8 @@ bool PageFaultHandler::Install(Error* error)
 	return true;
 }
 
+#ifndef __APPLE__
+
 static __ri uint LinuxProt(const PageProtectionMode& mode)
 {
 	u32 lnxmode = 0;
@@ -406,23 +400,6 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 	return true;
 }
 
-#endif
-
-#if defined(_M_ARM64) && defined(__APPLE__)
-
-static thread_local int s_code_write_depth = 0;
-
-void HostSys::BeginCodeWrite()
-{
-	if ((s_code_write_depth++) == 0)
-		pthread_jit_write_protect_np(0);
-}
-
-void HostSys::EndCodeWrite()
-{
-	pxAssert(s_code_write_depth > 0);
-	if ((--s_code_write_depth) == 0)
-		pthread_jit_write_protect_np(1);
-}
+#endif // __APPLE__
 
 #endif
