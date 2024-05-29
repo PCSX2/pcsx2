@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#if defined(_WIN32)
-
 #include "common/Threading.h"
 #include "common/Assertions.h"
 #include "common/RedtapeWindows.h"
@@ -265,5 +263,3 @@ void Threading::SetNameOfCurrentThread(const char* name)
 	}
 #endif
 }
-
-#endif

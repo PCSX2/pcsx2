@@ -1,7 +1,5 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
-
-#if defined(_WIN32)
 
 #include "common/FileSystem.h"
 #include "common/HostSys.h"
@@ -126,4 +124,3 @@ void Threading::SleepUntil(u64 ticks)
 	}
 }
 
-#endif

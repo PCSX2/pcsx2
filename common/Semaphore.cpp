@@ -137,7 +137,7 @@ void Threading::WorkSema::Reset()
 	m_state = STATE_RUNNING_0;
 }
 
-#if !defined(__APPLE__) // macOS implementations are in DarwinSemaphore
+#if !defined(__APPLE__) // macOS implementations are in DarwinThreads
 
 Threading::KernelSemaphore::KernelSemaphore()
 {

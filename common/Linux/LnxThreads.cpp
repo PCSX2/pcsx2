@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#if !defined(_WIN32) && !defined(__APPLE__)
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
+#include "common/Threading.h"
+#include "common/Assertions.h"
 
 #include <memory>
 
@@ -20,19 +22,9 @@
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
-
-#elif defined(__unix__)
+#else
 #include <pthread_np.h>
 #endif
-
-#include "common/Threading.h"
-#include "common/Assertions.h"
-
-#if !defined(__unix__)
-
-#pragma message("LnxThreads.cpp should only be compiled by projects or makefiles targeted at Linux/BSD distros.")
-
-#else
 
 // Note: assuming multicore is safer because it forces the interlocked routines to use
 // the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not
@@ -354,6 +346,3 @@ void Threading::SetNameOfCurrentThread(const char* name)
 	pthread_set_name_np(pthread_self(), name);
 #endif
 }
-
-#endif
-#endif

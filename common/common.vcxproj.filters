@@ -28,15 +28,6 @@
     <ClCompile Include="emitter\avx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Linux\LnxHostSys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Linux\LnxMisc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Linux\LnxThreads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emitter\movs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

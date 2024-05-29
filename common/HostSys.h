@@ -123,12 +123,18 @@ namespace HostSys
 #else
 	void FlushInstructionCache(void* address, u32 size);
 #endif
-}
+} // namespace HostSys
 
 namespace PageFaultHandler
 {
-	bool HandlePageFault(uptr pc, uptr addr, bool is_write);
-	bool Install(Error* error);
+	enum class HandlerResult
+	{
+		ContinueExecution,
+		ExecuteNextHandler,
+	};
+
+	HandlerResult HandlePageFault(void* exception_pc, void* fault_address, bool is_write);
+	bool Install(Error* error = nullptr);
 } // namespace PageFaultHandler
 
 class SharedMemoryMappingArea
