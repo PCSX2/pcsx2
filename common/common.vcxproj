@@ -74,9 +74,6 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Linux\LnxHostSys.cpp" />
-    <ClCompile Include="Linux\LnxMisc.cpp" />
-    <ClCompile Include="Linux\LnxThreads.cpp" />
     <ClCompile Include="Windows\WinHostSys.cpp" />
     <ClCompile Include="Windows\WinMisc.cpp" />
     <ClCompile Include="Windows\WinThreads.cpp" />

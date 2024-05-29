@@ -44,15 +44,6 @@ target_sources(common PRIVATE
 	emitter/movs.cpp
 	emitter/simd.cpp
 	emitter/x86emitter.cpp
-	Darwin/DarwinThreads.cpp
-	Darwin/DarwinMisc.cpp
-	Darwin/DarwinSemaphore.cpp
-	Linux/LnxHostSys.cpp
-	Linux/LnxThreads.cpp
-	Linux/LnxMisc.cpp
-	Windows/WinThreads.cpp
-	Windows/WinHostSys.cpp
-	Windows/WinMisc.cpp
 )
 
 # x86emitter headers
@@ -124,34 +115,32 @@ target_sources(common PRIVATE
 	emitter/legacy_types.h
 	emitter/x86emitter.h
 	emitter/x86types.h
-	Darwin/DarwinMisc.h
 )
-
-set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
-
-if(USE_VTUNE)
-	target_link_libraries(common PUBLIC Vtune::Vtune)
-endif()
 
 if(WIN32)
 	enable_language(ASM_MASM)
-	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC WIL::WIL winmm pathcch)
 	target_sources(common PRIVATE
-		CrashHandler.cpp
-		CrashHandler.h
 		FastJmp.asm
 		HTTPDownloaderWinHTTP.cpp
 		HTTPDownloaderWinHTTP.h
 		StackWalker.cpp
 		StackWalker.h
+		Windows/WinThreads.cpp
+		Windows/WinHostSys.cpp
+		Windows/WinMisc.cpp
 	)
-endif()
-
-if(APPLE)
+	target_link_libraries(common PUBLIC
+		WIL::WIL
+		winmm
+		pathcch
+	)
+elseif(APPLE)
 	target_sources(common PRIVATE
 		CocoaTools.mm
 		CocoaTools.h
+		Darwin/DarwinThreads.cpp
+		Darwin/DarwinMisc.cpp
+		Darwin/DarwinMisc.h
 	)
 	target_compile_options(common PRIVATE -fobjc-arc)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
@@ -159,15 +148,27 @@ if(APPLE)
 		"-framework Foundation"
 		"-framework IOKit"
 	)
+else()
+	target_sources(common PRIVATE
+		Linux/LnxHostSys.cpp
+		Linux/LnxThreads.cpp
+		Linux/LnxMisc.cpp
+	)
+	target_include_directories(common PRIVATE
+		${DBUS_INCLUDE_DIRS}
+	)
+	target_link_libraries(common PRIVATE
+		${DBUS_LINK_LIBRARIES}
+		libbacktrace::libbacktrace
+		X11::X11
+		X11::Xrandr
+	)
 endif()
 
-if(UNIX AND NOT APPLE)
-	target_include_directories(common PRIVATE ${DBUS_INCLUDE_DIRS})
-	target_link_libraries(common PRIVATE ${DBUS_LINK_LIBRARIES} X11::X11 X11::Xrandr)
-  if(TARGET libbacktrace::libbacktrace)
-		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
-		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
-  endif()
+set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+
+if(USE_VTUNE)
+	target_link_libraries(common PUBLIC Vtune::Vtune)
 endif()
 
 if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
@@ -181,7 +182,9 @@ if(NOT WIN32)
 		HTTPDownloaderCurl.cpp
 		HTTPDownloaderCurl.h
 	)
-	target_link_libraries(common PRIVATE CURL::libcurl)
+	target_link_libraries(common PRIVATE
+		CURL::libcurl
+	)
 endif()
 
 target_link_libraries(common PRIVATE

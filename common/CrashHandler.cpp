@@ -56,23 +56,31 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
 			PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam, PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
 			PMINIDUMP_CALLBACK_INFORMATION CallbackParam);
 
-	PFNMINIDUMPWRITEDUMP minidump_write_dump = hDbgHelp ?
-												   reinterpret_cast<PFNMINIDUMPWRITEDUMP>(GetProcAddress(hDbgHelp, "MiniDumpWriteDump")) :
-                                                   nullptr;
+	PFNMINIDUMPWRITEDUMP minidump_write_dump =
+		hDbgHelp ? reinterpret_cast<PFNMINIDUMPWRITEDUMP>(GetProcAddress(hDbgHelp, "MiniDumpWriteDump")) : nullptr;
 	if (!minidump_write_dump)
 		return false;
 
-	MINIDUMP_EXCEPTION_INFORMATION mei;
-	PMINIDUMP_EXCEPTION_INFORMATION mei_ptr = nullptr;
+	MINIDUMP_EXCEPTION_INFORMATION mei = {};
 	if (exception)
 	{
 		mei.ThreadId = thread_id;
 		mei.ExceptionPointers = exception;
 		mei.ClientPointers = FALSE;
-		mei_ptr = &mei;
+		return minidump_write_dump(hProcess, process_id, hFile, type, &mei, nullptr, nullptr);
 	}
 
-	return minidump_write_dump(hProcess, process_id, hFile, type, mei_ptr, nullptr, nullptr);
+	__try
+	{
+		RaiseException(EXCEPTION_INVALID_HANDLE, 0, 0, nullptr);
+	}
+	__except (WriteMinidump(hDbgHelp, hFile, GetCurrentProcess(), GetCurrentProcessId(), GetCurrentThreadId(),
+				  GetExceptionInformation(), type),
+		EXCEPTION_EXECUTE_HANDLER)
+	{
+	}
+
+	return true;
 }
 
 static std::wstring s_write_directory;
@@ -168,7 +176,7 @@ void CrashHandler::WriteDumpForCaller()
 	WriteMinidumpAndCallstack(nullptr);
 }
 
-#elif defined(HAS_LIBBACKTRACE)
+#elif !defined(__APPLE__)
 
 #include "FileSystem.h"
 
@@ -194,16 +202,13 @@ namespace CrashHandler
 	static void FreeBuffer(BacktraceBuffer* buf);
 	static void AppendToBuffer(BacktraceBuffer* buf, const char* format, ...);
 	static int BacktraceFullCallback(void* data, uintptr_t pc, const char* filename, int lineno, const char* function);
-	static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx);
-	static void CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx);
+	static void LogCallstack(int signal, const void* exception_pc);
 
 	static std::recursive_mutex s_crash_mutex;
 	static bool s_in_signal_handler = false;
 
 	static backtrace_state* s_backtrace_state = nullptr;
-	static struct sigaction s_old_sigbus_action;
-	static struct sigaction s_old_sigsegv_action;
-}
+} // namespace CrashHandler
 
 const char* CrashHandler::GetSignalName(int signal_no)
 {
@@ -214,7 +219,7 @@ const char* CrashHandler::GetSignalName(int signal_no)
 		case SIGSEGV: return "SIGSEGV";
 		case SIGBUS: return "SIGBUS";
 		default: return "UNKNOWN";
-		// clang-format on
+			// clang-format on
 	}
 }
 
@@ -253,7 +258,8 @@ void CrashHandler::AppendToBuffer(BacktraceBuffer* buf, const char* format, ...)
 	va_end(ap);
 }
 
-int CrashHandler::BacktraceFullCallback(void* data, uintptr_t pc, const char* filename, int lineno, const char* function)
+int CrashHandler::BacktraceFullCallback(void* data, uintptr_t pc, const char* filename, int lineno,
+	const char* function)
 {
 	BacktraceBuffer* buf = static_cast<BacktraceBuffer*>(data);
 	AppendToBuffer(buf, "  %016p", pc);
@@ -261,34 +267,36 @@ int CrashHandler::BacktraceFullCallback(void* data, uintptr_t pc, const char* fi
 		AppendToBuffer(buf, " %s", function);
 	if (filename)
 		AppendToBuffer(buf, " [%s:%d]", filename, lineno);
-	
+
 	AppendToBuffer(buf, "\n");
 	return 0;
 }
 
-void CrashHandler::CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
+void CrashHandler::LogCallstack(int signal, const void* exception_pc)
 {
-	const struct sigaction& sa = (signal == SIGBUS) ? s_old_sigbus_action : s_old_sigsegv_action;
-	if (sa.sa_flags & SA_SIGINFO)
-	{
-		sa.sa_sigaction(signal, siginfo, ctx);
-	}
-	else if (sa.sa_handler == SIG_DFL)
-	{
-		// Re-raising the signal would just queue it, and since we'd restore the handler back to us,
-		// we'd end up right back here again. So just abort, because that's probably what it'd do anyway.
-		abort();
-	}
-	else if (sa.sa_handler != SIG_IGN)
-	{
-		sa.sa_handler(signal);
-	}
+	BacktraceBuffer buf;
+	AllocateBuffer(&buf);
+	if (signal != 0 || exception_pc)
+		AppendToBuffer(&buf, "*************** Unhandled %s at %p ***************\n", GetSignalName(signal), exception_pc);
+	else
+		AppendToBuffer(&buf, "*******************************************************************\n");
+
+	const int rc = backtrace_full(s_backtrace_state, 0, BacktraceFullCallback, nullptr, &buf);
+	if (rc != 0)
+		AppendToBuffer(&buf, "  backtrace_full() failed: %d\n");
+
+	AppendToBuffer(&buf, "*******************************************************************\n");
+
+	if (buf.used > 0)
+		write(STDERR_FILENO, buf.buffer, buf.used);
+
+	FreeBuffer(&buf);
 }
 
 void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
 {
 	std::unique_lock lock(s_crash_mutex);
-	
+
 	// If we crash somewhere in libbacktrace, don't bother trying again.
 	if (!s_in_signal_handler)
 	{
@@ -304,27 +312,17 @@ void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
 		void* const exception_pc = nullptr;
 #endif
 
-		BacktraceBuffer buf;
-		AllocateBuffer(&buf);
-		AppendToBuffer(&buf, "*************** Unhandled %s at %p ***************\n", GetSignalName(signal), exception_pc);
-
-		const int rc = backtrace_full(s_backtrace_state, 0, BacktraceFullCallback, nullptr, &buf);
-		if (rc != 0)
-			AppendToBuffer(&buf, "  backtrace_full() failed: %d\n");
-
-		AppendToBuffer(&buf, "*******************************************************************\n");
-
-		if (buf.used > 0)
-			write(STDERR_FILENO, buf.buffer, buf.used);
-
-		FreeBuffer(&buf);
+		LogCallstack(signal, exception_pc);
 
 		s_in_signal_handler = false;
 	}
 
-	// Chances are we're not going to have anything else to call, but just in case.
 	lock.unlock();
-	CallExistingSignalHandler(signal, siginfo, ctx);
+
+	// We can't continue from here. Just bail out and dump core.
+	std::fputs("Aborting application.\n", stderr);
+	std::fflush(stderr);
+	std::abort();
 }
 
 bool CrashHandler::Install()
@@ -333,15 +331,15 @@ bool CrashHandler::Install()
 	s_backtrace_state = backtrace_create_state(progpath.empty() ? nullptr : progpath.c_str(), 0, nullptr, nullptr);
 	if (!s_backtrace_state)
 		return false;
-	
+
 	struct sigaction sa;
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_SIGINFO | SA_NODEFER;
 	sa.sa_sigaction = CrashSignalHandler;
-	if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
+	if (sigaction(SIGBUS, &sa, nullptr) != 0)
 		return false;
-	if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
+	if (sigaction(SIGSEGV, &sa, nullptr) != 0)
 		return false;
 
 	return true;
@@ -353,6 +351,7 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 
 void CrashHandler::WriteDumpForCaller()
 {
+	LogCallstack(0, nullptr);
 }
 
 #else
@@ -368,6 +367,14 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 
 void CrashHandler::WriteDumpForCaller()
 {
+}
+
+void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
+{
+	// We can't continue from here. Just bail out and dump core.
+	std::fputs("Aborting application.\n", stderr);
+	std::fflush(stderr);
+	std::abort();
 }
 
 #endif

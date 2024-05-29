@@ -1,11 +1,18 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
-#if defined(__APPLE__)
-
+#include "common/Assertions.h"
+#include "common/BitUtils.h"
+#include "common/Console.h"
+#include "common/CrashHandler.h"
 #include "common/Darwin/DarwinMisc.h"
+#include "common/Error.h"
+#include "common/Pcsx2Types.h"
+#include "common/Threading.h"
+#include "common/WindowInfo.h"
 #include "common/HostSys.h"
 
+#include <csignal>
 #include <cstring>
 #include <cstdlib>
 #include <optional>
@@ -17,16 +24,10 @@
 #include <mach/mach_port.h>
 #include <mach/mach_time.h>
 #include <mach/mach_vm.h>
+#include <mach/task.h>
 #include <mach/vm_map.h>
+#include <mutex>
 #include <IOKit/pwr_mgt/IOPMLib.h>
-
-#include "common/Assertions.h"
-#include "common/BitUtils.h"
-#include "common/Console.h"
-#include "common/Pcsx2Types.h"
-#include "common/HostSys.h"
-#include "common/Threading.h"
-#include "common/WindowInfo.h"
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
 // the OS because of its BSD/Mach heritage. Helpfully, most of this code
@@ -399,6 +400,116 @@ void HostSys::EndCodeWrite()
 		pthread_jit_write_protect_np(1);
 }
 
+[[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
+{
+	u32 bits;
+	std::memcpy(&bits, ptr, sizeof(bits));
+
+	// Based on vixl's disassembler Instruction::IsStore().
+	// if (Mask(LoadStoreAnyFMask) != LoadStoreAnyFixed)
+	if ((bits & 0x0a000000) != 0x08000000)
+		return false;
+
+	// if (Mask(LoadStorePairAnyFMask) == LoadStorePairAnyFixed)
+	if ((bits & 0x3a000000) == 0x28000000)
+	{
+		// return Mask(LoadStorePairLBit) == 0
+		return (bits & (1 << 22)) == 0;
+	}
+
+	switch (bits & 0xC4C00000)
+	{
+		case 0x00000000: // STRB_w
+		case 0x40000000: // STRH_w
+		case 0x80000000: // STR_w
+		case 0xC0000000: // STR_x
+		case 0x04000000: // STR_b
+		case 0x44000000: // STR_h
+		case 0x84000000: // STR_s
+		case 0xC4000000: // STR_d
+		case 0x04800000: // STR_q
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+#endif // _M_ARM64
+
+namespace PageFaultHandler
+{
+	static void SignalHandler(int sig, siginfo_t* info, void* ctx);
+
+	static std::recursive_mutex s_exception_handler_mutex;
+	static bool s_in_exception_handler = false;
+	static bool s_installed = false;
+} // namespace PageFaultHandler
+
+void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
+{
+#if defined(_M_X86)
+	void* const exception_address =
+		reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__faultvaddr);
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
+	const bool is_write = (static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__err & 2) != 0;
+#elif defined(_M_ARM64)
+	void* const exception_address = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__es.__far);
+	void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__pc);
+	const bool is_write = IsStoreInstruction(exception_pc);
 #endif
 
+	// Executing the handler concurrently from multiple threads wouldn't go down well.
+	s_exception_handler_mutex.lock();
+
+	// Prevent recursive exception filtering.
+	HandlerResult result = HandlerResult::ExecuteNextHandler;
+	if (!s_in_exception_handler)
+	{
+		s_in_exception_handler = true;
+		result = HandlePageFault(exception_pc, exception_address, is_write);
+		s_in_exception_handler = false;
+	}
+
+	s_exception_handler_mutex.unlock();
+
+	// Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
+	if (result == HandlerResult::ContinueExecution)
+		return;
+
+	// We couldn't handle it. Pass it off to the crash dumper.
+	CrashHandler::CrashSignalHandler(sig, info, ctx);
+}
+
+bool PageFaultHandler::Install(Error* error)
+{
+	std::unique_lock lock(s_exception_handler_mutex);
+	pxAssertRel(!s_installed, "Page fault handler has already been installed.");
+
+	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = SignalHandler;
+
+	// MacOS uses SIGBUS for memory permission violations, as well as SIGSEGV on ARM64.
+	if (sigaction(SIGBUS, &sa, nullptr) != 0)
+	{
+		Error::SetErrno(error, "sigaction() for SIGBUS failed: ", errno);
+		return false;
+	}
+
+#ifdef _M_ARM64
+	if (sigaction(SIGSEGV, &sa, nullptr) != 0)
+	{
+		Error::SetErrno(error, "sigaction() for SIGSEGV failed: ", errno);
+		return false;
+	}
 #endif
+
+	// Allow us to ignore faults when running under lldb.
+	task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
+
+	s_installed = true;
+	return true;
+}

@@ -1454,12 +1454,12 @@ static __fi void mmap_ClearCpuBlock(uint offset)
 	Cpu->Clear(m_PageProtectInfo[rampage].ReverseRamMap, __pagesize);
 }
 
-bool PageFaultHandler::HandlePageFault(uptr pc, uptr addr, bool is_write)
+PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exception_pc, void* fault_address, bool is_write)
 {
 	pxAssert(eeMem);
 
 	u32 vaddr;
-	if (CHECK_FASTMEM && vtlb_GetGuestAddress(addr, &vaddr))
+	if (CHECK_FASTMEM && vtlb_GetGuestAddress(reinterpret_cast<uptr>(fault_address), &vaddr))
 	{
 		// this was inside the fastmem area. check if it's a code page
 		// fprintf(stderr, "Fault on fastmem %p vaddr %08X\n", info.addr, vaddr);
@@ -1470,23 +1470,26 @@ bool PageFaultHandler::HandlePageFault(uptr pc, uptr addr, bool is_write)
 		{
 			// fprintf(stderr, "Not backpatching code write at %08X\n", vaddr);
 			mmap_ClearCpuBlock(offset);
-			return true;
+			return HandlerResult::ContinueExecution;
 		}
 		else
 		{
 			// fprintf(stderr, "Trying backpatching vaddr %08X\n", vaddr);
-			return vtlb_BackpatchLoadStore(pc, addr);
+			return vtlb_BackpatchLoadStore(reinterpret_cast<uptr>(exception_pc),
+					   reinterpret_cast<uptr>(fault_address)) ?
+					   HandlerResult::ContinueExecution :
+					   HandlerResult::ExecuteNextHandler;
 		}
 	}
 	else
 	{
 		// get bad virtual address
-		uptr offset = addr - (uptr)eeMem->Main;
+		uptr offset = reinterpret_cast<uptr>(fault_address) - reinterpret_cast<uptr>(eeMem->Main);
 		if (offset >= Ps2MemSize::ExposedRam)
-			return false;
+			return HandlerResult::ExecuteNextHandler;
 
 		mmap_ClearCpuBlock(offset);
-		return true;
+		return HandlerResult::ContinueExecution;
 	}
 }
 
