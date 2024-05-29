@@ -902,8 +902,18 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex)
 		pxAssert(tex);
 
 		// Round up the page as channel shuffles are generally done in pages at a time
-		width = (std::max(tex->GetUnscaledWidth(), width) + page_x) & ~page_x;
-		height = (std::max(tex->GetUnscaledHeight(), height) + page_y) & ~page_y;
+		// Keep in mind the source might be an 8bit texture
+		int src_width = tex->GetUnscaledWidth();
+		int src_height = tex->GetUnscaledHeight();
+
+		if (!tex->m_from_target && GSLocalMemory::m_psm[tex->m_TEX0.PSM].bpp == 8)
+		{
+			src_width >>= 1;
+			src_height >>= 1;
+		}
+
+		width = (std::max(src_width, width) + page_x) & ~page_x;
+		height = (std::max(src_height, height) + page_y) & ~page_y;
 	}
 
 	// Align to page size. Since FRAME/Z has to always start on a page boundary, in theory no two should overlap.
@@ -1404,8 +1414,15 @@ bool GSRendererHW::IsUsingAsInBlend()
 {
 	return (PRIM->ABE && m_context->ALPHA.IsUsingAs() && GetAlphaMinMax().max != 0);
 }
+bool GSRendererHW::ChannelsSharedTEX0FRAME()
+{
+	if (!IsRTWritten() && !m_cached_ctx.TEST.DATE)
+		return false;
 
-bool GSRendererHW::IsTBPFrameOrZ(u32 tbp)
+	return GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM, m_cached_ctx.FRAME.FBMSK) & GSUtil::GetChannelMask(m_cached_ctx.TEX0.PSM);
+}
+
+bool GSRendererHW::IsTBPFrameOrZ(u32 tbp, bool frame_only)
 {
 	const bool is_frame = (m_cached_ctx.FRAME.Block() == tbp) && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & GSUtil::GetChannelMask(m_cached_ctx.TEX0.PSM));
 	const bool is_z = (m_cached_ctx.ZBUF.Block() == tbp) && (GSUtil::GetChannelMask(m_cached_ctx.ZBUF.PSM) & GSUtil::GetChannelMask(m_cached_ctx.TEX0.PSM));
@@ -1429,7 +1446,7 @@ bool GSRendererHW::IsTBPFrameOrZ(u32 tbp)
 					   (no_rt && zm != 0);
 
 	// Relying a lot on the optimizer here... I don't like it.
-	return (is_frame && !no_rt) || (is_z && !no_ds);
+	return (is_frame && !no_rt) || (is_z && !no_ds && !frame_only);
 }
 
 void GSRendererHW::HandleManualDeswizzle()
@@ -2623,7 +2640,7 @@ void GSRendererHW::Draw()
 		// FBW is going to be wrong for channel shuffling into a new target, so take it from the source.
 		FRAME_TEX0.U64 = 0;
 		FRAME_TEX0.TBP0 = m_cached_ctx.FRAME.Block();
-		FRAME_TEX0.TBW = m_channel_shuffle ? src->m_from_target_TEX0.TBW : m_cached_ctx.FRAME.FBW;
+		FRAME_TEX0.TBW = (m_channel_shuffle && src->m_target) ? src->m_from_target_TEX0.TBW : m_cached_ctx.FRAME.FBW;
 		FRAME_TEX0.PSM = m_cached_ctx.FRAME.PSM;
 
 		// Normally we would use 1024 here to match the clear above, but The Godfather does a 1023x1023 draw instead
@@ -2674,7 +2691,9 @@ void GSRendererHW::Draw()
 		if (m_channel_shuffle)
 		{
 			m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
-			m_last_channel_shuffle_end_block = rt->m_end_block;
+
+			// If it's a new target, we don't know where the end is as it's starting on a shuffle, so just do every shuffle following.
+			m_last_channel_shuffle_end_block = (rt->m_last_draw == s_n) ? (MAX_BLOCKS - 1) : (rt->m_end_block < rt->m_TEX0.TBP0 ? (rt->m_end_block + MAX_BLOCKS) : rt->m_end_block);
 		}
 	}
 
@@ -2745,8 +2764,20 @@ void GSRendererHW::Draw()
 			return;
 		}
 
-		if (src->m_target && IsPossibleChannelShuffle())
+		if ((src->m_target || (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0)) && IsPossibleChannelShuffle())
 		{
+			if (!src->m_target)
+			{
+				g_texture_cache->ReplaceSourceTexture(src, rt->GetTexture(), rt->GetScale(), rt->GetUnscaledSize(), nullptr, true);
+				src->m_from_target = rt;
+				src->m_from_target_TEX0 = rt->m_TEX0;
+				src->m_target = true;
+				src->m_target_direct = true;
+				src->m_valid_rect = rt->m_valid;
+				src->m_alpha_minmax.first = rt->m_alpha_min;
+				src->m_alpha_minmax.second = rt->m_alpha_max;
+			}
+
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
 			m_last_channel_shuffle_fbmsk = m_context->FRAME.FBMSK;
@@ -2754,10 +2785,13 @@ void GSRendererHW::Draw()
 			{
 				m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
 				// Urban Chaos goes from Z16 to C32, so let's just use the rt's original end block.
-				if (GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].bpp != GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
+				if (!src->m_from_target || GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].bpp != GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
 					m_last_channel_shuffle_end_block = rt->m_end_block;
 				else
 					m_last_channel_shuffle_end_block = (rt->m_TEX0.TBP0 + (src->m_from_target->m_end_block - src->m_from_target_TEX0.TBP0));
+
+				if (m_last_channel_shuffle_end_block < rt->m_TEX0.TBP0)
+					m_last_channel_shuffle_end_block += MAX_BLOCKS;
 			}
 		}
 		else
@@ -2930,7 +2964,8 @@ void GSRendererHW::Draw()
 		// The FBW should also be okay, since it's coming from the source.
 		if (rt)
 		{
-			rt->m_TEX0.TBW = (m_channel_shuffle && (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack())) ? FRAME_TEX0.TBW : std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
+			const bool update_fbw = (m_channel_shuffle && src->m_target) && (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack());
+			rt->m_TEX0.TBW = update_fbw ? FRAME_TEX0.TBW : std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
 			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
 		}
 		if (ds)
