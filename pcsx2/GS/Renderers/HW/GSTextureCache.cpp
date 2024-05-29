@@ -845,7 +845,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 
 		if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
-			pxAssert(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
+			GL_INS("Found target in Depth list BP: %x but is RenderTarget", t->m_TEX0.TBP0);
 			if (t->m_age == 0)
 			{
 				// Perfect Match
