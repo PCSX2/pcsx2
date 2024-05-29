@@ -2753,7 +2753,11 @@ void GSRendererHW::Draw()
 			if (rt)
 			{
 				m_last_channel_shuffle_fbp = rt->m_TEX0.TBP0;
-				m_last_channel_shuffle_end_block = rt->m_end_block;
+				// Urban Chaos goes from Z16 to C32, so let's just use the rt's original end block.
+				if (GSLocalMemory::m_psm[src->m_from_target_TEX0.PSM].bpp != GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp)
+					m_last_channel_shuffle_end_block = rt->m_end_block;
+				else
+					m_last_channel_shuffle_end_block = (rt->m_TEX0.TBP0 + (src->m_from_target->m_end_block - src->m_from_target_TEX0.TBP0));
 			}
 		}
 		else
@@ -2926,7 +2930,7 @@ void GSRendererHW::Draw()
 		// The FBW should also be okay, since it's coming from the source.
 		if (rt)
 		{
-			rt->m_TEX0.TBW = std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
+			rt->m_TEX0.TBW = (m_channel_shuffle && (!PRIM->ABE || IsOpaque() || m_context->ALPHA.IsBlack())) ? FRAME_TEX0.TBW : std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
 			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
 		}
 		if (ds)
