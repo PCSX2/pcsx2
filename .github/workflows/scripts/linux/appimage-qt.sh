@@ -119,7 +119,7 @@ cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2
 cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
-EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
+EXTRA_QT_PLUGINS="core;gui;svg;waylandclient;widgets;xcbqpa" \
 EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
