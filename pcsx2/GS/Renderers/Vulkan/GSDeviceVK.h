@@ -283,6 +283,10 @@ private:
 	OptionalExtensions m_optional_extensions = {};
 
 public:
+	using DepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
+	using BlendSelector = GSHWDrawConfig::BlendState;
+	using ColorMaskSelector = GSHWDrawConfig::ColorMaskSelector;
+
 	enum FeedbackLoopFlag : u8
 	{
 		FeedbackLoopFlag_None = 0,
@@ -293,26 +297,22 @@ public:
 	struct alignas(8) PipelineSelector
 	{
 		GSHWDrawConfig::PSSelector ps;
+		GSHWDrawConfig::VSSelector vs;
 
 		union
 		{
 			struct
 			{
-				u32 topology : 2;
-				u32 rt : 1;
-				u32 ds : 1;
-				u32 line_width : 1;
-				u32 feedback_loop_flags : 2;
+				u8 topology : 2; // TODO: MAKE DYNAMIC
+				u8 rt : 1;
+				u8 ds : 1;
+				u8 feedback_loop_flags : 2;
 			};
 
-			u32 key;
+			u8 key;
 		};
 
-		GSHWDrawConfig::BlendState bs;
-		GSHWDrawConfig::VSSelector vs;
-		GSHWDrawConfig::DepthStencilSelector dss;
-		GSHWDrawConfig::ColorMaskSelector cms;
-		u8 pad;
+		u16 pad;
 
 		__fi bool operator==(const PipelineSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const PipelineSelector& p) const { return !BitEqual(*this, p); }
@@ -322,14 +322,14 @@ public:
 		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
 		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadDS) != 0); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 16, "Pipeline selector is 16 bytes");
 
 	struct PipelineSelectorHash
 	{
 		std::size_t operator()(const PipelineSelector& e) const noexcept
 		{
 			std::size_t hash = 0;
-			HashCombine(hash, e.vs.key, e.ps.key_hi, e.ps.key_lo, e.dss.key, e.cms.key, e.bs.key, e.key);
+			HashCombine(hash, e.vs.key, e.ps.key_hi, e.ps.key_lo, e.key);
 			return hash;
 		}
 	};
@@ -384,7 +384,7 @@ private:
 
 	std::array<VkPipeline, static_cast<int>(ShaderConvert::Count)> m_convert{};
 	std::array<VkPipeline, static_cast<int>(PresentShader::Count)> m_present{};
-	std::array<VkPipeline, 32> m_color_copy{};
+	std::array<VkPipeline, 32> m_color_copy{}; // TODO: Use dynamic state
 	std::array<VkPipeline, 2> m_merge{};
 	std::array<VkPipeline, NUM_INTERLACE_SHADERS> m_interlace{};
 	VkPipeline m_hdr_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
@@ -586,7 +586,8 @@ public:
 	bool ApplyTFXState(bool already_execed = false);
 
 	void SetIndexBuffer(VkBuffer buffer);
-	void SetBlendConstants(u8 color);
+	void SetDepthStencilSelector(DepthStencilSelector sel = DepthStencilSelector());
+	void SetBlendAndColorSelectors(BlendSelector bsel = BlendSelector(), ColorMaskSelector cmsel = ColorMaskSelector());
 	void SetLineWidth(float width);
 
 	void SetUtilityTexture(GSTexture* tex, VkSampler sampler);
@@ -613,14 +614,21 @@ private:
 		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3
 		DIRTY_FLAG_TFX_UBO = (1 << 4),
 		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 5),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 6),
-		DIRTY_FLAG_LINE_WIDTH = (1 << 7),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 8),
-		DIRTY_FLAG_VIEWPORT = (1 << 9),
-		DIRTY_FLAG_SCISSOR = (1 << 10),
-		DIRTY_FLAG_PIPELINE = (1 << 11),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 12),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 13),
+		DIRTY_FLAG_DEPTH_TEST_ENABLE = (1 << 6),
+		DIRTY_FLAG_DEPTH_COMPARE_OP = (1 << 7),
+		DIRTY_FLAG_DEPTH_WRITE_ENABLE = (1 << 8),
+		DIRTY_FLAG_DEPTH_STENCIL_STATE = (1 << 9),
+		DIRTY_FLAG_BLEND_ENABLE = (1 << 10),
+		DIRTY_FLAG_BLEND_EQUATION = (1 << 11),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 12),
+		DIRTY_FLAG_COLOR_WRITE_MASK = (1 << 13),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 14),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 15),
+		DIRTY_FLAG_VIEWPORT = (1 << 16),
+		DIRTY_FLAG_SCISSOR = (1 << 17),
+		DIRTY_FLAG_PIPELINE = (1 << 18),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 19),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 20),
 
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
@@ -630,12 +638,17 @@ private:
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
 								  DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID,
 
-		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
-						   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
+		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR,
+		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
+		DIRTY_DEPTH_STATE = DIRTY_FLAG_DEPTH_TEST_ENABLE | DIRTY_FLAG_DEPTH_COMPARE_OP |
+							DIRTY_FLAG_DEPTH_WRITE_ENABLE | DIRTY_FLAG_DEPTH_STENCIL_STATE,
+		DIRTY_BLEND_STATE = DIRTY_FLAG_BLEND_ENABLE | DIRTY_FLAG_BLEND_EQUATION | DIRTY_FLAG_BLEND_CONSTANTS,
+		DIRTY_DYNAMIC_STATE = DIRTY_FLAG_LINE_WIDTH | DIRTY_DEPTH_STATE | DIRTY_BLEND_STATE |
+							  DIRTY_FLAG_COLOR_WRITE_MASK,
 		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
-		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER,
-		ALL_DIRTY_STATE = DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE,
+		ALL_DIRTY_STATE = DIRTY_BASE_STATE | DIRTY_DEPTH_STATE | DIRTY_BLEND_STATE | DIRTY_FLAG_COLOR_WRITE_MASK |
+						  DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE,
 	};
 
 	enum class PipelineLayout
@@ -650,6 +663,7 @@ private:
 
 	void SetInitialState(VkCommandBuffer cmdbuf);
 	void ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf);
+	void ApplyDynamicState(VkCommandBuffer cmdbuf);
 
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
@@ -667,7 +681,9 @@ private:
 	GSVector4i m_scissor = GSVector4i::zero();
 	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 	float m_current_line_width = 1.0f;
-	u8 m_blend_constant_color = 0;
+	DepthStencilSelector m_current_depth_selector = {};
+	BlendSelector m_current_blend_selector = {};
+	ColorMaskSelector m_current_colormask_selector = {};
 
 	std::array<const GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;

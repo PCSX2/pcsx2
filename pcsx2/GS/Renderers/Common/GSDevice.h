@@ -502,6 +502,8 @@ struct alignas(16) GSHWDrawConfig
 			out.ztst = ZTST_ALWAYS;
 			return out;
 		}
+
+		__fi bool IsDepthTestEnabled() const { return (ztst != ZTST_ALWAYS || zwe); }
 	};
 	struct ColorMaskSelector
 	{

@@ -224,6 +224,12 @@ VULKAN_DEVICE_ENTRY_POINT(vkBindBufferMemory2, true)
 VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, true)
 
 // Vulkan 1.3 functions.
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetDepthCompareOp, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetPrimitiveTopology, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetDepthTestEnable, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetDepthWriteEnable, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetStencilTestEnable, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetStencilOp, true)
 VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceBufferMemoryRequirements, false)
 VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceImageMemoryRequirements, false)
 
@@ -236,6 +242,11 @@ VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 VULKAN_DEVICE_ENTRY_POINT(vkGetCalibratedTimestampsEXT, false)
 
 // VK_KHR_push_descriptor
-VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, true)
+
+// VK_EXT_extended_dynamic_state3
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetColorBlendEnableEXT, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetColorBlendEquationEXT, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetColorWriteMaskEXT, true)
 
 #endif // VULKAN_DEVICE_ENTRY_POINT

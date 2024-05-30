@@ -494,6 +494,7 @@ void Vulkan::GraphicsPipelineBuilder::ClearBlendAttachments()
 {
 	m_blend_attachments = {};
 	m_blend_state.attachmentCount = 0;
+	m_ci.pColorBlendState = nullptr;
 }
 
 void Vulkan::GraphicsPipelineBuilder::SetNoBlendingState()
