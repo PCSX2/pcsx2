@@ -81,6 +81,8 @@ static std::mutex s_instance_mutex;
 
 // Device extensions that are required for PCSX2.
 static constexpr const char* s_required_device_extensions[] = {
+	VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
+	VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME,
 	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
 	VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
 };
@@ -361,22 +363,11 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 			return false;
 	}
 
-	// MoltenVK does not support VK_EXT_line_rasterization. We want it for other platforms,
-	// but on Mac, the implicit line rasterization apparently matches Bresenham anyway.
-#ifdef __APPLE__
-	static constexpr bool require_line_rasterization = false;
-#else
-	static constexpr bool require_line_rasterization = true;
-#endif
-
-	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_calibrated_timestamps =
 		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
-		require_line_rasterization);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_maintenance5 = SupportsExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME, false);
 
@@ -567,41 +558,27 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		device_info.ppEnabledLayerNames = layer_names;
 	}
 
-	// provoking vertex
 	VkPhysicalDeviceMaintenance4Features maintenance_4_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, .maintenance4 = VK_TRUE};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
-	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT, .provokingVertexLast = VK_TRUE};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT, .bresenhamLines = VK_TRUE};
+	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
+		.rasterizationOrderColorAttachmentAccess = VK_TRUE};
 	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_5_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
+		.maintenance5 = VK_TRUE};
 
-	maintenance_4_feature.maintenance4 = VK_TRUE;
 	Vulkan::AddPointerToChain(&device_info, &maintenance_4_feature);
+	Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
+	Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
 
-	if (m_optional_extensions.vk_ext_provoking_vertex)
-	{
-		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
-		Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
-	}
-	if (m_optional_extensions.vk_ext_line_rasterization)
-	{
-		line_rasterization_feature.bresenhamLines = VK_TRUE;
-		Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
-	}
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
-	{
-		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
-	}
 	if (m_optional_extensions.vk_khr_maintenance5)
-	{
-		maintenance_5_feature.maintenance5 = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &maintenance_5_feature);
-	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
 	if (res != VK_SUCCESS)
@@ -660,24 +637,23 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 bool GSDeviceVK::ProcessDeviceExtensions()
 {
 	// advanced feature checks
-	VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_4_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES};
+	VkPhysicalDeviceFeatures2 features2 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	VkPhysicalDeviceMaintenance4Features maintenance_4_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_5_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR};
 
 	// add in optional feature structs
 	Vulkan::AddPointerToChain(&features2, &maintenance_4_feature);
-	if (m_optional_extensions.vk_ext_provoking_vertex)
-		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
-	if (m_optional_extensions.vk_ext_line_rasterization)
-		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
+	Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
+	Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
+
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
 	if (m_optional_extensions.vk_khr_maintenance5)
@@ -687,12 +663,22 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
 
 	// confirm we actually support it
-	m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
+#define CHECK_MANDATORY_FEATURE(var, field, expected_value) \
+	if (var.field != expected_value) \
+	{ \
+		ERROR_LOG("Required Vulkan feature {} is not supported.", #field); \
+		return false; \
+	}
+	CHECK_MANDATORY_FEATURE(maintenance_4_feature, maintenance4, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(provoking_vertex_features, provokingVertexLast, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(line_rasterization_feature, bresenhamLines, VK_TRUE);
+#undef CHECK_MANDATORY_FEATURE
+
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 	m_optional_extensions.vk_khr_maintenance5 &= (maintenance_5_feature.maintenance5 == VK_TRUE);
 
-	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+	VkPhysicalDeviceProperties2 properties2 = { .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
 
 	if (m_optional_extensions.vk_khr_driver_properties)
 	{
@@ -701,29 +687,17 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	}
 
 	VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR};
+	.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR };
 	Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
 
-	// query
+	// confirm we actually support it
 	vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
-	// confirm we actually support it
 	if (push_descriptor_properties.maxPushDescriptors < NUM_TFX_TEXTURES)
 	{
-		Console.Error("maxPushDescriptors (%u) is below required (%u)", push_descriptor_properties.maxPushDescriptors,
-			NUM_TFX_TEXTURES);
+		ERROR_LOG("maxPushDescriptors ({}) is below required ({})",
+			push_descriptor_properties.maxPushDescriptors, static_cast<u32>(NUM_TFX_TEXTURES));
 		return false;
-	}
-
-	if (!line_rasterization_feature.bresenhamLines)
-	{
-		// See note in SelectDeviceExtensions().
-		Console.Error("bresenhamLines is not supported.");
-#ifndef __APPLE__
-		return false;
-#else
-		m_optional_extensions.vk_ext_line_rasterization = false;
-#endif
 	}
 
 	// VK_EXT_calibrated_timestamps checking
@@ -761,7 +735,6 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	}
 
 	// clang-format off
-	INFO_LOG("VK_EXT_provoking_vertex is {}", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
 	INFO_LOG("VK_EXT_calibrated_timestamps is {}", m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
 	INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}", m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
@@ -2569,7 +2542,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.primitive_id = m_device_features.geometryShader;
 
 	m_features.prefer_new_textures = true;
-	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
+	m_features.provoking_vertex_last = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
 	if (!m_features.texture_barrier)
@@ -4774,11 +4747,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-	if (m_optional_extensions.vk_ext_line_rasterization &&
-		p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
-	{
+	if (p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
 		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT);
-	}
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
