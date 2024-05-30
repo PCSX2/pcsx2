@@ -3838,7 +3838,7 @@ struct VmaBufferImageUsage
 
 const VmaBufferImageUsage VmaBufferImageUsage::UNKNOWN = VmaBufferImageUsage(0);
 
-static void swap(VmaBufferImageUsage& lhs, VmaBufferImageUsage& rhs) noexcept
+[[maybe_unused]] static void swap(VmaBufferImageUsage& lhs, VmaBufferImageUsage& rhs) noexcept
 {
     using std::swap;
     swap(lhs.Value, rhs.Value);

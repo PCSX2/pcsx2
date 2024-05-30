@@ -43,6 +43,7 @@ public:
 		bool vk_ext_line_rasterization : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
+		bool vk_khr_maintenance5 : 1;
 	};
 
 	// Global state accessors

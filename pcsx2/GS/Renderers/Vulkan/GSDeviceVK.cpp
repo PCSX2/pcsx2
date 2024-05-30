@@ -112,7 +112,7 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, bool enable_de
 	app_info.applicationVersion = VK_MAKE_VERSION(1, 7, 0);
 	app_info.pEngineName = "PCSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(1, 7, 0);
-	app_info.apiVersion = VK_API_VERSION_1_1;
+	app_info.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo instance_create_info = {};
 	instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -245,9 +245,9 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		VkPhysicalDeviceProperties props = {};
 		vkGetPhysicalDeviceProperties(device, &props);
 
-		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
+		// Skip GPUs which don't support Vulkan 1.3, since we won't be able to create a device with them anyway.
 		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-			VK_API_VERSION_MINOR(props.apiVersion) < 1)
+			VK_API_VERSION_MINOR(props.apiVersion) < 3)
 		{
 			Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
@@ -378,6 +378,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
 		require_line_rasterization);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_maintenance5 = SupportsExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME, false);
 
 	// glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug info
 	// is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging until
@@ -567,12 +568,19 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	}
 
 	// provoking vertex
+	VkPhysicalDeviceMaintenance4Features maintenance_4_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_5_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR};
+
+	maintenance_4_feature.maintenance4 = VK_TRUE;
+	Vulkan::AddPointerToChain(&device_info, &maintenance_4_feature);
 
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
@@ -588,6 +596,11 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	{
 		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
+	}
+	if (m_optional_extensions.vk_khr_maintenance5)
+	{
+		maintenance_5_feature.maintenance5 = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &maintenance_5_feature);
 	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -648,20 +661,27 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 {
 	// advanced feature checks
 	VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_4_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_5_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR};
 
 	// add in optional feature structs
+	Vulkan::AddPointerToChain(&features2, &maintenance_4_feature);
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
 	if (m_optional_extensions.vk_ext_line_rasterization)
 		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
+	if (m_optional_extensions.vk_khr_maintenance5)
+		Vulkan::AddPointerToChain(&features2, &maintenance_5_feature);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -670,6 +690,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+	m_optional_extensions.vk_khr_maintenance5 &= (maintenance_5_feature.maintenance5 == VK_TRUE);
 
 	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 
@@ -739,18 +760,15 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 			m_optional_extensions.vk_ext_calibrated_timestamps = false;
 	}
 
-	Console.WriteLn(
-		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
-	Console.WriteLn(
-		"VK_EXT_memory_budget is %s", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
-		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
-		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_full_screen_exclusive is %s",
-		m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
-	Console.WriteLn("VK_KHR_driver_properties is %s",
-		m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
+	// clang-format off
+	INFO_LOG("VK_EXT_provoking_vertex is {}", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_calibrated_timestamps is {}", m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}", m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_full_screen_exclusive is {}", m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
+	INFO_LOG("VK_KHR_driver_properties is {}", m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
+	INFO_LOG("VK_KHR_maintenance5 is {}", m_optional_extensions.vk_khr_maintenance5 ? "supported" : "NOT supported");
+	// clang-format on
 
 	return true;
 }
@@ -758,14 +776,13 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 bool GSDeviceVK::CreateAllocator()
 {
 	VmaAllocatorCreateInfo ci = {};
-	ci.vulkanApiVersion = VK_API_VERSION_1_1;
-	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+	ci.vulkanApiVersion = VK_API_VERSION_1_3;
+	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT | VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT;
+	ci.flags |= (m_optional_extensions.vk_ext_memory_budget) ? VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT : 0;
+	ci.flags |= (m_optional_extensions.vk_khr_maintenance5) ? VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT : 0;
 	ci.physicalDevice = m_physical_device;
 	ci.device = m_device;
 	ci.instance = m_instance;
-
-	if (m_optional_extensions.vk_ext_memory_budget)
-		ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
 	// Limit usage of the DEVICE_LOCAL upload heap when we're using a debug device.
 	// On NVIDIA drivers, it results in frequently running out of device memory when trying to
