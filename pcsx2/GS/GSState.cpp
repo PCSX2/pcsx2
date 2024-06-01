@@ -3860,23 +3860,11 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			if (!clamp_to_tsize && ((m_vt.m_min.t.floor() == GSVector4::zero()).mask() & 0x3) == 0x3)
 				st = st.max(GSVector4::zero());
 		}
-		else
-		{
-			// When drawing a sprite with point sampling, the UV range sampled is exclusive of the ending
-			// coordinate. Except, when the position is also offset backwards. We only do this for the
-			// hardware renderers currently, it does create some issues in software. Hardware needs the
-			// UVs to be within the target size, otherwise it can't translate sub-targets (see 10 Pin -
-			// Champions Alley and Miami Vice).
-			if (!clamp_to_tsize && m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1)
-			{
-				const int mask = (m_vt.m_min.p.floor() != m_vt.m_min.p).mask();
-				if (!(mask & 0x1))
-					st.z = std::max(st.x, st.z - 0.5f);
-				if (!(mask & 0x2))
-					st.w = std::max(st.y, st.w - 0.5f);
-			}
-		}
 
+		// draw will get scissored, adjust UVs to suit
+		const GSVector2 pos_range(std::max(m_vt.m_max.p.x - m_vt.m_min.p.x, 1.0f), std::max(m_vt.m_max.p.y - m_vt.m_min.p.y, 1.0f));
+		const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
+		const GSVector2 grad(uv_range / pos_range);
 		// Adjust texture range when sprites get scissor clipped. Since we linearly interpolate, this
 		// optimization doesn't work when perspective correction is enabled.
 		if (m_vt.m_primclass == GS_SPRITE_CLASS && PRIM->FST == 1 && no_gaps)
@@ -3887,10 +3875,6 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 			const GSVector4i scissored_rc(int_rc.rintersect(m_context->scissor.in));
 			if (!int_rc.eq(scissored_rc))
 			{
-				// draw will get scissored, adjust UVs to suit
-				const GSVector2 pos_range(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
-				const GSVector2 uv_range(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
-				const GSVector2 grad(uv_range / pos_range);
 
 				const GSVertex* vert_first = &m_vertex.buff[m_index.buff[0]];
 				const GSVertex* vert_second = &m_vertex.buff[m_index.buff[1]];
@@ -3951,15 +3935,19 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		const GSVector4i uv = GSVector4i(st.floor());
 		uses_border = GSVector4::cast((uv < vr).blend32<0xc>(uv >= vr)).mask();
 
+		// Need to make sure we don't oversample, this can cause trouble in grabbing textures.
+		// This may be inaccurate depending on the draw, but adding 1 all the time is wrong too.
+		const int inclusive_x_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.x < 1.0f || (grad.x == 1.0f && m_vt.m_max.p.x != floor(m_vt.m_max.p.x)))) ? 1 : 0;
+		const int inclusive_y_req = ((m_vt.m_primclass < GS_TRIANGLE_CLASS) || (grad.y < 1.0f || (grad.y == 1.0f && m_vt.m_max.p.y != floor(m_vt.m_max.p.y)))) ? 1 : 0;
+	
 		// Roughly cut out the min/max of the read (Clamp)
-
 		switch (wms)
 		{
 			case CLAMP_REPEAT:
 				if ((uv.x & ~tw_mask) == (uv.z & ~tw_mask))
 				{
 					vr.x = std::max(vr.x, uv.x & tw_mask);
-					vr.z = std::min(vr.z, (uv.z & tw_mask) + 1);
+					vr.z = std::min(vr.z, (uv.z & tw_mask) + inclusive_x_req);
 				}
 				break;
 			case CLAMP_CLAMP:
@@ -3967,7 +3955,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				if (vr.x < uv.x)
 					vr.x = std::min(uv.x, vr.z - 1);
 				if (vr.z > (uv.z + 1))
-					vr.z = std::max(uv.z, vr.x) + 1;
+					vr.z = std::max(uv.z, vr.x) + inclusive_x_req;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxu, minu, uv.x, uv.z, &vr.x, &vr.z) || maxu >= tw)
@@ -3981,7 +3969,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				if ((uv.y & ~th_mask) == (uv.w & ~th_mask))
 				{
 					vr.y = std::max(vr.y, uv.y & th_mask);
-					vr.w = std::min(vr.w, (uv.w & th_mask) + 1);
+					vr.w = std::min(vr.w, (uv.w & th_mask) + inclusive_y_req);
 				}
 				break;
 			case CLAMP_CLAMP:
@@ -3989,7 +3977,7 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 				if (vr.y < uv.y)
 					vr.y = std::min(uv.y, vr.w - 1);
 				if (vr.w > (uv.w + 1))
-					vr.w = std::max(uv.w, vr.y) + 1;
+					vr.w = std::max(uv.w, vr.y) + inclusive_y_req;
 				break;
 			case CLAMP_REGION_REPEAT:
 				if (UsesRegionRepeat(maxv, minv, uv.y, uv.w, &vr.y, &vr.w) || maxv >= th)
@@ -4011,7 +3999,9 @@ GSState::TextureMinMaxResult GSState::GetTextureMinMax(GIFRegTEX0 TEX0, GIFRegCL
 		// - NFSMW (strange rectangles on screen, might be unrelated)
 		// - Lupin 3rd (huge problems, textures sizes seem to be randomly specified)
 
-		vr = (vr + GSVector4i(-1, +1).xxyy()).rintersect(tr);
+		const bool inc_x = vr.x < tr.z;
+		const bool inc_y = vr.y < tr.w;
+		vr = (vr + GSVector4i(inc_x ? 0 : -1, inc_y ? 0 : -1, inc_x ? 1 : 0, inc_y ? 1 : 0).xxyy()).rintersect(tr);
 	}
 
 	return { vr, uses_border };
