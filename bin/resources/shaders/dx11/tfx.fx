@@ -976,8 +976,10 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 		}
 		else if (PS_BLEND_HW == 4)
 		{
-			// Needed for Cd * (1 - Ad)
-			Color.rgb = (float3)128.0f;
+			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha)
+			float Alpha = PS_BLEND_C == 2 ? Af : As;
+			As_rgba.rgb = (float3)Alpha * (float3)(128.0f / 255.0f);
+			Color.rgb = (float3)127.5f;
 		}
 	}
 }
