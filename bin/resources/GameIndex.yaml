@@ -20326,6 +20326,7 @@ SLES-53191:
   name: "Kaido Racer"
   region: "PAL-M5"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLES-53192:
@@ -22386,6 +22387,7 @@ SLES-53900:
   name: "Kaido Racer 2"
   region: "PAL-M3"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Storm.
     alignSprite: 1 # Fixes black lines when upscaling.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLES-53901:
@@ -27736,6 +27738,7 @@ SLKA-25063:
   name: "Kaido Battle"
   region: "NTSC-K"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLKA-25064:
@@ -28043,6 +28046,7 @@ SLKA-25146:
   name: "Kaido Battle 2 - Chain Reaction"
   region: "NTSC-K"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLKA-25148:
@@ -30670,6 +30674,7 @@ SLPM-60195:
   name: "Kaido Battle - Nikko, Haruna, Rokko, Hakone [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-60197:
@@ -30766,6 +30771,7 @@ SLPM-60228:
   name: "Kaido Battle 2 - Chain Reaction [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-60237:
@@ -31339,6 +31345,7 @@ SLPM-61121:
   name: "Kaido - Touge no Densetsu [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-61122:
@@ -36599,6 +36606,7 @@ SLPM-65246:
   name-en: "Kaido Battle - Nikko, Haruna, Rokko, Hakone"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-65247:
@@ -38049,6 +38057,7 @@ SLPM-65514:
   name-en: "Kaido Battle 2 - Chain Reaction"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-65515:
@@ -40838,6 +40847,7 @@ SLPM-66022:
   name-en: "Kaido Touge no Densetsu"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLPM-66023:
@@ -62395,6 +62405,7 @@ SLUS-21236:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # Fixes double image.
 SLUS-21237:
@@ -63460,6 +63471,7 @@ SLUS-21394:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
     wildArmsHack: 1 # De-blurs the 3D image.
 SLUS-21395:
