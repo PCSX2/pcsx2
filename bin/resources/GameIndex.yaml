@@ -52580,6 +52580,8 @@ SLPS-25478:
   name-sort: きどうせんしがんだむ いちねんせんそう
   name-en: "Mobile Suit Gundam - One Year War"
   region: "NTSC-J"
+  gsHWFixes:
+    textureInsideRT: 1 # Fixes cut off screens.
 SLPS-25479:
   name: 金色のガッシュベル!!友情タッグバトル2
   name-sort: こんじきのがっしゅべる!!ゆうじょうたっぐばとる2
