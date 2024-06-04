@@ -831,7 +831,7 @@ struct PSMain
 		else
 			T = sample_color(st);
 
-		if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+		if (PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC)
 		{
 			uint4 denorm_c_before = uint4(T);
 			if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -848,6 +848,8 @@ struct PSMain
 				T.b = float((denorm_c_before.g << 1) & 0xF8);
 				T.a = float(denorm_c_before.g & 0x80);
 			}
+			
+			T.a = (T.a >= 127.5 ? cb.ta.y : !PS_AEM || any((int3(T.rgb) & 0xF8) != 0) ? cb.ta.x : 0.f) * 255.f;
 		}
 	
 		float4 C = tfx(T, IIP ? in.c : in.fc);
@@ -1125,7 +1127,7 @@ struct PSMain
 
 		if (PS_SHUFFLE)
 		{
-			if ((SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE))
+			if (!PS_SHUFFLE_SAME && !PS_READ16_SRC)
 			{
 				uint4 denorm_c_after = uint4(C);
 				if (PS_PROCESS_BA & SHUFFLE_READ)
@@ -1140,12 +1142,11 @@ struct PSMain
 				}
 			}
 
-			uint4 denorm_c = uint4(C);
-			uint2 denorm_TA = uint2(cb.ta * 255.5f);
-
 			// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 			if (PS_SHUFFLE_SAME)
 			{
+				uint4 denorm_c = uint4(C);
+				
 				if (PS_PROCESS_BA & SHUFFLE_READ)
 					C = (denorm_c.b & 0x7F) | (denorm_c.a & 0x80);
 				else
@@ -1154,6 +1155,9 @@ struct PSMain
 			// Copy of a 16bit source in to this target
 			else if (PS_READ16_SRC)
 			{
+				uint4 denorm_c = uint4(C);
+				uint2 denorm_TA = uint2(cb.ta * 255.5f);
+				
 				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7) << 5);
 				if (denorm_c.a & 0x80)
 					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
@@ -1165,43 +1169,21 @@ struct PSMain
 				if (PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 				{
 					C.rb = C.br;
-					if ((denorm_c.a & 0x80) != 0)
-						C.g = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.g = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
-						
-					if ((denorm_c.g & 0x80) != 0)
-						C.a = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.a = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+					float g_temp = C.g;
+					
+					C.g = C.a;
+					C.a = g_temp;
 				}
 				else if(PS_PROCESS_BA & SHUFFLE_READ)
 				{
 					C.rb = C.bb;
-					if ((denorm_c.a & 0x80) != 0)
-						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.ga =  (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
+					C.ga = C.aa;
 				}
 				else
 				{
 					C.rb = C.rr;
-					if ((denorm_c.g & 0x80) != 0)
-						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
-					else
-						C.ga = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
+					C.ga = C.gg;
 				}
-			}
-			else // Basically a direct copy but a shuffle of both pairs of channels, so green and alpha get modified by TEXA
-			{
-				if ((denorm_c.g & 0x80) != 0)
-					C.g = (denorm_c.g & 0x7F) | (denorm_TA.y & 0x80);
-				else
-					C.g = (denorm_c.g & 0x7F) | (denorm_TA.x & 0x80);
-				if ((denorm_c.a & 0x80) != 0)
-					C.a = (denorm_c.a & 0x7F) | (denorm_TA.y & 0x80);
-				else
-					C.a = (denorm_c.a & 0x7F) | (denorm_TA.x & 0x80);
 			}
 		}
 		
