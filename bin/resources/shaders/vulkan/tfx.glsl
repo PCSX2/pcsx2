@@ -953,7 +953,7 @@ vec4 ps_color()
 	vec4 T = sample_color(st);
 #endif
 
-	#if (SW_BLEND || PS_TFX != 1) && PS_SHUFFLE && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
+	#if PS_SHUFFLE && !PS_READ16_SRC && !PS_SHUFFLE_SAME
 		uvec4 denorm_c_before = uvec4(T);
 		#if (PS_PROCESS_BA & SHUFFLE_READ)
 			T.r = float((denorm_c_before.b << 3) & 0xF8);
@@ -966,6 +966,8 @@ vec4 ps_color()
 			T.b = float((denorm_c_before.g << 1) & 0xF8);
 			T.a = float(denorm_c_before.g & 0x80);
 		#endif
+		
+		T.a = ((T.a >= 127.5f) ? TA.y : ((PS_AEM == 0 || any(bvec3(ivec3(T.rgb) & ivec3(0xF8)))) ? TA.x : 0.0f)) * 255.0f;
 	#endif
 	
 	vec4 C = tfx(T, vsIn.c);
@@ -1307,7 +1309,7 @@ void main()
 	ps_blend(C, alpha_blend);
 
 #if PS_SHUFFLE
-		#if (SW_BLEND || PS_TFX != 1) && !PS_SHUFFLE_SAME && !PS_READ16_SRC && (PS_SHUFFLE_ACROSS || PS_PROCESS_BA == SHUFFLE_READWRITE || PS_PROCESS_RG == SHUFFLE_READWRITE)
+		#if !PS_READ16_SRC && !PS_SHUFFLE_SAME
 			uvec4 denorm_c_after = uvec4(C);
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
 				C.b = float(((denorm_c_after.r >> 3) & 0x1F) | ((denorm_c_after.g << 2) & 0xE0));
@@ -1318,59 +1320,37 @@ void main()
 			#endif
 		#endif
 
-		uvec4 denorm_c = uvec4(C);
-		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
+		
 		
 		// Special case for 32bit input and 16bit output, shuffle used by The Godfather
 		#if PS_SHUFFLE_SAME
 			#if (PS_PROCESS_BA & SHUFFLE_READ)
+				uvec4 denorm_c = uvec4(C);
 				C = vec4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 			#else
 				C.ga = C.rg;
 			#endif
 		// Copy of a 16bit source in to this target
 		#elif PS_READ16_SRC
+			uvec4 denorm_c = uvec4(C);
+			uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
 			C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
-			if ((denorm_c.a & 0x80u) != 0u)
-				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
-			else
-				C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+			C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
 		// Write RB part. Mask will take care of the correct destination
 		#elif PS_SHUFFLE_ACROSS
 			#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 				C.rb = C.br;
-				if ((denorm_c.a & 0x80u) != 0u)
-					C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
-				else
-					C.g = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
-					
-				if ((denorm_c.g & 0x80u) != 0u)
-					C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
-				else
-					C.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
+				float g_temp = C.g;
 				
+				C.g = C.a;
+				C.a = g_temp;
 			#elif(PS_PROCESS_BA & SHUFFLE_READ)
 				C.rb = C.bb;
-				if ((denorm_c.a & 0x80u) != 0u)
-					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = vec2(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.ga = C.aa;
 			#else
 				C.rb = C.rr;
-				if ((denorm_c.g & 0x80u) != 0u)
-					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
-				else
-					C.ga = vec2(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
+				C.ga = C.gg;
 			#endif // PS_PROCESS_BA
-		#else // PS_SHUFFLE_ACROSS
-			if ((denorm_c.g & 0x80u) != 0u)
-				C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u));
-			else
-				C.g = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u));
-			if ((denorm_c.a & 0x80u) != 0u)
-				C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u));
-			else
-				C.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u));
 		#endif // PS_SHUFFLE_ACROSS
 	#endif // PS_SHUFFLE
 
