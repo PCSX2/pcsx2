@@ -30,6 +30,7 @@ protected:
 	bool m_process_texture = false;
 	bool m_copy_16bit_to_target_shuffle = false;
 	bool m_same_group_texture_shuffle = false;
+	bool m_downscale_source = false;
 
 	virtual GSTexture* GetOutput(int i, float& scale, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput(float& scale) { return nullptr; }

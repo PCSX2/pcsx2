@@ -48,6 +48,7 @@ private:
 	float alpha1(int L, int X0, int X1);
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender();
+	bool isDownscaleDraw(GSTextureCache::Source* src, bool no_gaps);
 	bool IsConstantDirectWriteMemClear();
 	u32 GetConstantDirectWriteMemClearColor() const;
 	u32 GetConstantDirectWriteMemClearDepth() const;
