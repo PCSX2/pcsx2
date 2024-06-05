@@ -5925,7 +5925,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	float sx, sy, ox2, oy2;
 	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
 	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && rt->GetScale() > 1.0f)
+	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && (!rt || rt->GetScale() > 1.0f))
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
@@ -7174,11 +7174,18 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 
 bool GSRendererHW::isDownscaleDraw(GSTextureCache::Source* src, bool no_gaps)
 {
+	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
+
+	if (draw_size.x >= PCRTCDisplays.GetResolution().x)
+		return false;
+
+	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
+
 	if (no_gaps && m_vt.m_primclass >= GS_TRIANGLE_CLASS && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && !IsMipMapDraw() && IsDiscardingDstColor() && 
 		src && src->m_from_target && m_context->TEX1.MMAG == 1 &&
-		((m_vt.m_max.t.x - m_vt.m_min.t.x) / 2.0f) >= (m_vt.m_max.p.x - m_vt.m_min.p.x) && ((m_vt.m_max.t.y - m_vt.m_min.t.y) / 2.0f) >= (m_vt.m_max.p.y - m_vt.m_min.p.y))
+		(tex_size.x / 2.0f) >= draw_size.x && (tex_size.y / 2.0f) >= draw_size.y)
 	{
-		DevCon.Warning("Draw %d is a downscale draw", s_n);
+		DevCon.Warning("Draw %d is a downscale draw from %dx%d to %dx%d", s_n, tex_size.x, tex_size.y, draw_size.x, draw_size.y);
 		return true;
 	}
 
