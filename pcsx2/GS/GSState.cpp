@@ -3082,7 +3082,7 @@ bool GSState::PrimitiveCoversWithoutGaps()
 			}
 			else
 			{
-				if (std::abs(dpX - first_dpX) >= 16 || std::abs(this_start_X - last_pX) >= 16)
+				if ((std::abs(dpX - first_dpX) >= 16 && (i + 2) < m_vertex.next) || std::abs(this_start_X - last_pX) >= 16)
 				{
 					m_primitive_covers_without_gaps = false;
 					return false;
