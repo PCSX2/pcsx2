@@ -2792,6 +2792,10 @@ void GSRendererHW::Draw()
 
 				if (m_last_channel_shuffle_end_block < rt->m_TEX0.TBP0)
 					m_last_channel_shuffle_end_block += MAX_BLOCKS;
+
+				// if the RT is bigger, then use that instead.
+				if (m_last_channel_shuffle_end_block < rt->m_end_block)
+					m_last_channel_shuffle_end_block = rt->m_end_block;
 			}
 		}
 		else
