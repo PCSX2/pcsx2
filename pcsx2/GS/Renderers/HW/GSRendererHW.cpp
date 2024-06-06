@@ -5868,7 +5868,16 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	float sx, sy, ox2, oy2;
 	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
 	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
-	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && rt->GetScale() > 1.0f)
+
+	// Bugfix Author:	RaichuBender
+	// Date:			2024/06/06
+	//		Added null pointer guard to fix reproducible crash in KHRe:COM
+	//		Only tested and effective for GL and D3D11 backends.
+	float scale = 0.0f;
+	if (rt != nullptr)
+		scale = rt->GetScale();
+
+	if (GSConfig.UserHacks_HalfPixelOffset != GSHalfPixelOffset::Native && scale > 1.0f)
 	{
 		sx = 2.0f * rtscale / (rtsize.x << 4);
 		sy = 2.0f * rtscale / (rtsize.y << 4);
