@@ -2619,9 +2619,13 @@ void GSRendererHW::Draw()
 	{
 		// 1 == Downscale, so we need to reduce the size of the target also.
 		// 2 == Upscale, so likely putting it over the top of the render target.
-		if(scale_draw == 1)
+		if (scale_draw == 1)
+		{
 			target_scale = 1.0f;
-		m_downscale_source = src->m_from_target->GetScale() > 1.0f;
+			m_downscale_source = src->m_from_target->GetScale() > 1.0f;
+		}
+		else
+			m_downscale_source = false; //src->m_from_target->GetScale() > 1.0f; // Bad for GTA + Full Spectrum Warrior, good for Sacred Blaze + Parappa.
 	}
 	else
 		m_downscale_source = false;
@@ -5213,7 +5217,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	src_copy.reset(src_target->m_texture->IsDepthStencil() ?
 				   g_gs_device->CreateDepthStencil(
 						   scaled_copy_size.x, scaled_copy_size.y, src_target->m_texture->GetFormat(), false) :
-				   (m_downscale_source ? g_gs_device->CreateRenderTarget(scaled_copy_size.x, scaled_copy_size.y, src_target->m_texture->GetFormat(), true,
+					   (m_downscale_source ? g_gs_device->CreateRenderTarget(scaled_copy_size.x, scaled_copy_size.y, src_target->m_texture->GetFormat(), true,
 							 true) : 
 				   g_gs_device->CreateTexture(
 					   scaled_copy_size.x, scaled_copy_size.y, 1, src_target->m_texture->GetFormat(), true)));
@@ -5226,10 +5230,9 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	}
 	if (m_downscale_source)
 	{
-		GL_INS("Rescaling %f -> %f", src_scale, scale);
 		const GSVector4 dst_rect = GSVector4(0, 0, src_unscaled_size.x, src_unscaled_size.y);
 		const GSVector4 src_rect = GSVector4(scaled_copy_range) / GSVector4(src_unscaled_size * src_scale).xyxy();
-		g_gs_device->StretchRect(src_target->m_texture, GSVector4::cxpr(0.0f,0.0f,1.0f,1.0f), src_copy.get(), dst_rect, src_target->m_texture->IsDepthStencil() ? ShaderConvert::DEPTH_COPY : ShaderConvert::COPY, false);
+		g_gs_device->StretchRect(src_target->m_texture, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), src_copy.get(), dst_rect, src_target->m_texture->IsDepthStencil() ? ShaderConvert::DEPTH_COPY : ShaderConvert::COPY, false);
 	}
 	else
 	{
@@ -7210,14 +7213,18 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
 		return 0;
 
+	// Check if we're already downscaled and drawing in current size, try not to rescale it.
+	if (src && src->m_from_target && src->m_from_target->m_downscaled && std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1)
+		return 1;
+
 	const bool is_upscale = (draw_size.x / 2.0f) >= tex_size.x && (draw_size.y / 2.0f) >= tex_size.y;
-	
+	const bool target_scale = is_downscale ? true : false;
 	// DMC does a blit in strips with the scissor to keep it inside page boundaries, so that's not technically full coverage
 	// but good enough for what we want.
-	const bool no_gaps_or_single_sprite = (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && m_index.tail == 2));
-	if (no_gaps_or_single_sprite && m_vt.m_primclass >= GS_TRIANGLE_CLASS && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp > 8 && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && !IsMipMapDraw() && 
-		((is_upscale && !IsDiscardingDstColor()) || (IsDiscardingDstColor() && is_downscale)) && 
-		src && src->m_from_target && !src->m_from_target->m_downscaled && m_context->TEX1.MMAG == 1)
+	const bool no_gaps_or_single_sprite = (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && SpriteDrawWithoutGaps()));
+	if (no_gaps_or_single_sprite && m_vt.m_primclass >= GS_TRIANGLE_CLASS && m_context->TEX1.MMAG == 1 && src && src->m_from_target && 
+		GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp > 8 && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && !IsMipMapDraw() && 
+		((is_upscale && !IsDiscardingDstColor()) || (IsDiscardingDstColor() && is_downscale)))
 	{
 		GL_INS("%s draw detected - from %dx%d to %dx%d", is_downscale ? "Downscale" : "Upscale", tex_size.x, tex_size.y, draw_size.x, draw_size.y);
 		return is_upscale ? 2 : 1;

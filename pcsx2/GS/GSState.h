@@ -410,6 +410,7 @@ public:
 
 	bool TrianglesAreQuads(bool shuffle_check = false) const;
 	PRIM_OVERLAP PrimitiveOverlap();
+	bool SpriteDrawWithoutGaps();
 	bool PrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };

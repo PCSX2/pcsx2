@@ -2398,7 +2398,6 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(GIFRegTEX0 TEX0, const GSVe
 	dst->readbacks_since_draw = 0;
 
 	dst->m_last_draw = GSState::s_n;
-	dst->m_downscaled = scale != GSRendererHW::GetInstance()->GetTextureScaleFactor();
 
 	if (dst->m_dirty.empty() && GSLocalMemory::m_psm[TEX0.PSM].depth == 0 && (GSUtil::GetChannelMask(TEX0.PSM) & 0x8))
 		dst->m_rt_alpha_scale = true;
