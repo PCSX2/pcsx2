@@ -2625,7 +2625,7 @@ void GSRendererHW::Draw()
 			m_downscale_source = src->m_from_target->GetScale() > 1.0f;
 		}
 		else
-			m_downscale_source = false; //src->m_from_target->GetScale() > 1.0f; // Bad for GTA + Full Spectrum Warrior, good for Sacred Blaze + Parappa.
+			m_downscale_source = GSConfig.UserHacks_NativeScaling != GSNativeScaling::Aggressive ? false : src->m_from_target->GetScale() > 1.0f; // Bad for GTA + Full Spectrum Warrior, good for Sacred Blaze + Parappa.
 	}
 	else
 		m_downscale_source = false;
@@ -7211,6 +7211,9 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 	const bool is_downscale = (tex_size.x / 2.0f) >= draw_size.x && (tex_size.y / 2.0f) >= draw_size.y;
 	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
+		return 0;
+
+	if (GSConfig.UserHacks_NativeScaling == GSNativeScaling::Off)
 		return 0;
 
 	// Check if we're already downscaled and drawing in current size, try not to rescale it.

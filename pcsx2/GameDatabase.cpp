@@ -383,6 +383,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"halfBottomOverride",
 	"halfPixelOffset",
 	"roundSprite",
+	"nativeScaling",
 	"texturePreloading",
 	"deinterlace",
 	"cpuSpriteRenderBW",
@@ -638,6 +639,9 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::RoundSprite:
 			return (config.UpscaleMultiplier <= 1.0f || config.UserHacks_RoundSprite == value);
 
+		case GSHWFixId::NativeScaling:
+			return (static_cast<int>(config.UserHacks_NativeScaling) == value);
+
 		case GSHWFixId::TexturePreloading:
 			return (static_cast<int>(config.TexturePreloading) <= value);
 
@@ -808,6 +812,10 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::RoundSprite:
 				config.UserHacks_RoundSprite = value;
+				break;
+
+			case GSHWFixId::NativeScaling:
+				config.UserHacks_NativeScaling = static_cast<GSNativeScaling>(value);
 				break;
 
 			case GSHWFixId::TexturePreloading:

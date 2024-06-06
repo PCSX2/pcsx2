@@ -392,6 +392,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("HPO={} ", static_cast<u32>(GSConfig.UserHacks_HalfPixelOffset));
 		if (GSConfig.UserHacks_RoundSprite > 0)
 			APPEND("RS={} ", GSConfig.UserHacks_RoundSprite);
+		if (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Off)
+			APPEND("NS={} ", static_cast<unsigned>(GSConfig.UserHacks_NativeScaling));
 		if (GSConfig.UserHacks_TCOffsetX != 0 || GSConfig.UserHacks_TCOffsetY != 0)
 			APPEND("TCO={}/{} ", GSConfig.UserHacks_TCOffsetX, GSConfig.UserHacks_TCOffsetY);
 		if (GSConfig.UserHacks_CPUSpriteRenderBW != 0)

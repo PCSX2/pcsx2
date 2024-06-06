@@ -239,6 +239,11 @@
               "minimum": 0,
               "maximum": 4
             },
+            "nativeScaling": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
             "roundSprite": {
               "type": "integer",
               "minimum": 0,
