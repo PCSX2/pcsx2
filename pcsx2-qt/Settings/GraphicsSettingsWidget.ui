@@ -1091,13 +1091,39 @@
         </widget>
        </item>
        <item row="1" column="0">
+        <widget class="QLabel" name="nativeScalingLabel">
+         <property name="text">
+          <string>Native Scaling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="nativeScaling">
+         <item>
+          <property name="text">
+           <string>Off</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Normal</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Aggressive</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
         <widget class="QLabel" name="roundSpriteLabel">
          <property name="text">
           <string>Round Sprite:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QComboBox" name="roundSprite">
          <item>
           <property name="text">
@@ -1117,13 +1143,39 @@
         </widget>
        </item>
        <item row="3" column="0">
+        <widget class="QLabel" name="bilinearHackLabel">
+         <property name="text">
+          <string>Bilinear Dirty Upscale:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="bilinearHack">
+         <item>
+          <property name="text">
+           <string>Automatic (Default)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Bilinear</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Nearest</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
         <widget class="QLabel" name="textureOffsetLabel">
          <property name="text">
           <string>Texture Offsets:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <layout class="QHBoxLayout" name="textureOffsetLayout" stretch="0,1,0,1">
          <item>
           <widget class="QLabel" name="textureOffsetXLabel">
@@ -1155,7 +1207,7 @@
          </item>
         </layout>
        </item>
-       <item row="4" column="0" colspan="2">
+       <item row="5" column="0" colspan="2">
         <layout class="QGridLayout" name="upscalingFixesLayout_2">
          <item row="0" column="0">
           <widget class="QCheckBox" name="alignSprite">
@@ -1171,13 +1223,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="forceEvenSpritePosition">
-           <property name="text">
-            <string>Force Even Sprite Position</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
           <widget class="QCheckBox" name="mergeSprite">
            <property name="text">
@@ -1185,33 +1230,14 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="forceEvenSpritePosition">
+           <property name="text">
+            <string>Force Even Sprite Position</string>
+           </property>
+          </widget>
+         </item>
         </layout>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="bilinearHackLabel">
-         <property name="text">
-          <string>Bilinear Dirty Upscale:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="bilinearHack">
-         <item>
-          <property name="text">
-           <string>Automatic (Default)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Bilinear</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Force Nearest</string>
-          </property>
-         </item>
-        </widget>
        </item>
       </layout>
      </widget>

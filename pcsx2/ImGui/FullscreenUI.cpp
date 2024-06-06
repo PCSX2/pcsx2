@@ -3742,6 +3742,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				FSUI_NSTR("Special (Texture - Aggressive)"),
 				FSUI_NSTR("Align To Native"),
 			};
+			static constexpr const char* s_native_scaling_options[] = {
+				FSUI_NSTR("Normal (Default)"),
+				FSUI_NSTR("Aggressive"),
+				FSUI_NSTR("Off"),
+			};
 			static constexpr const char* s_round_sprite_options[] = {
 				FSUI_NSTR("Off (Default)"),
 				FSUI_NSTR("Half"),
@@ -3807,6 +3812,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			MenuHeading(FSUI_CSTR("Upscaling Fixes"));
 			DrawIntListSetting(bsi, FSUI_CSTR("Half Pixel Offset"), FSUI_CSTR("Adjusts vertices relative to upscaling."), "EmuCore/GS",
 				"UserHacks_HalfPixelOffset", 0, s_half_pixel_offset_options, std::size(s_half_pixel_offset_options), true);
+			DrawIntListSetting(bsi, FSUI_CSTR("Native Scaling"), FSUI_CSTR("Attempt to do rescaling at native resolution."), "EmuCore/GS",
+				"UserHacks_native_scaling", 0, s_native_scaling_options, std::size(s_native_scaling_options), true);
 			DrawIntListSetting(bsi, FSUI_CSTR("Round Sprite"), FSUI_CSTR("Adjusts sprite coordinates."), "EmuCore/GS",
 				"UserHacks_round_sprite_offset", 0, s_round_sprite_options, std::size(s_round_sprite_options), true);
 			DrawIntListSetting(bsi, FSUI_CSTR("Bilinear Upscale"),

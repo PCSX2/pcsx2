@@ -194,6 +194,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	// HW Upscaling Fixes
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.halfPixelOffset, "EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.nativeScaling, "EmuCore/GS", "UserHacks_native_scaling", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.roundSprite, "EmuCore/GS", "UserHacks_round_sprite_offset", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bilinearHack, "EmuCore/GS", "UserHacks_BilinearHack", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureOffsetX, "EmuCore/GS", "UserHacks_TCOffsetX", 0);
@@ -1139,6 +1140,7 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 		check_bool("EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 		check_bool("EmuCore/GS", "paltex", false);
 		check_int("EmuCore/GS", "UserHacks_HalfPixelOffset", 0);
+		check_int("EmuCore/GS", "UserHacks_native_scaling", static_cast<int>(GSNativeScaling::Off));
 		check_int("EmuCore/GS", "UserHacks_round_sprite_offset", 0);
 		check_int("EmuCore/GS", "UserHacks_TCOffsetX", 0);
 		check_int("EmuCore/GS", "UserHacks_TCOffsetY", 0);

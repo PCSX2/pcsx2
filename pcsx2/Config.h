@@ -387,6 +387,14 @@ enum class GSHalfPixelOffset : u8
 	MaxCount
 };
 
+enum class GSNativeScaling : u8
+{
+	Off,
+	Normal,
+	Aggressive,
+	MaxCount
+};
+
 // --------------------------------------------------------------------------------------
 //  TraceFiltersEE
 // --------------------------------------------------------------------------------------
@@ -692,6 +700,7 @@ struct Pcsx2Config
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 		s8 UserHacks_RoundSprite = 0;
+		GSNativeScaling UserHacks_NativeScaling = GSNativeScaling::Off;
 		s32 UserHacks_TCOffsetX = 0;
 		s32 UserHacks_TCOffsetY = 0;
 		u8 UserHacks_CPUSpriteRenderBW = 0;
