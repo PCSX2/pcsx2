@@ -2,7 +2,7 @@
 
 Easy to integrate memory allocation library for Direct3D 12.
 
-**Documentation:** Browse online: [D3D12 Memory Allocator](https://gpuopen-librariesandsdks.github.io/D3D12MemoryAllocator/html/) (generated from Doxygen-style comments in [src/D3D12MemAlloc.h](src/D3D12MemAlloc.h))
+**Documentation:** Browse online: [D3D12 Memory Allocator](https://gpuopen-librariesandsdks.github.io/D3D12MemoryAllocator/html/) (generated from Doxygen-style comments in [include/D3D12MemAlloc.h](include/D3D12MemAlloc.h))
 
 **License:** MIT. See [LICENSE.txt](LICENSE.txt)
 
@@ -36,6 +36,7 @@ Additional features:
 - Customization and integration with custom engines: Predefine appropriate macros to provide your own implementation of external facilities used by the library, like assert, mutex, and atomic.
 - Support for resource aliasing (overlap).
 - Custom memory pools: Create a pool with desired parameters (e.g. fixed or limited maximum size, custom `D3D12_HEAP_PROPERTIES` and `D3D12_HEAP_FLAGS`) and allocate memory out of it.
+- Support for GPU Upload Heaps from preview Agility SDK (needs compilation with `D3D12MA_OPTIONS16_SUPPORTED` macro).
 - Linear allocator: Create a pool with linear algorithm and use it for much faster allocations and deallocations in free-at-once, stack, double stack, or ring buffer fashion.
 - Defragmentation: Let the library move data around to free some memory blocks and make your allocations better compacted.
 - Statistics: Obtain brief or detailed statistics about the amount of memory used, unused, number of allocated heaps, number of allocations etc. - globally and per memory heap type. Current memory usage and budget as reported by the system can also be queried.
