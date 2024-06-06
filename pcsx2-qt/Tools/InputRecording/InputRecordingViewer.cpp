@@ -4,6 +4,7 @@
 #include "InputRecordingViewer.h"
 
 #include "QtUtils.h"
+#include <QtCore/QDir>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/qfiledialog.h>
@@ -89,7 +90,7 @@ void InputRecordingViewer::openFile()
 	}
 	if (!fileNames.isEmpty())
 	{
-		const std::string fileName = fileNames.first().toStdString();
+		const std::string fileName = QDir::toNativeSeparators(fileNames.first()).toStdString();
 		m_file_open = m_file.openExisting(fileName);
 		m_ui.actionClose->setEnabled(m_file_open);
 		if (m_file_open)
