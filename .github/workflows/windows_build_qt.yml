@@ -57,7 +57,7 @@ jobs:
     steps:
       - name: Tempfix Clang
         if: inputs.configuration == 'CMake'
-        run: choco upgrade llvm
+        run: choco uninstall llvm
         
       - name: Checkout Repository
         uses: actions/checkout@v4
