@@ -2672,7 +2672,7 @@ void GSRendererHW::Draw()
 															  GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) ||
 															 IsPossibleChannelShuffle());
 		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block());
+			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block(), scale_draw < 0);
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
@@ -2694,7 +2694,7 @@ void GSRendererHW::Draw()
 				return;
 			}
 
-			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), target_scale, GSTextureCache::RenderTarget, true,
+			rt = g_texture_cache->CreateTarget(FRAME_TEX0, t_size, GetValidSize(src), (scale_draw < 0) ? src->m_from_target->GetScale() : target_scale, GSTextureCache::RenderTarget, true,
 				fm, false, force_preload, preserve_rt_color, m_r, src);
 			if (!rt) [[unlikely]]
 			{
@@ -2703,17 +2703,15 @@ void GSRendererHW::Draw()
 				return;
 			}
 		}
-		else
-		{
-			if (src && src->m_from_target && src->m_target_direct && src->m_from_target == rt)
-			{
-				src->m_texture = rt->m_texture;
-				src->m_scale = rt->m_scale;
-				src->m_unscaled_size = rt->m_unscaled_size;
-			}
 
-			target_scale = rt->GetScale();
+		if (src && src->m_from_target && src->m_target_direct && src->m_from_target == rt)
+		{
+			src->m_texture = rt->m_texture;
+			src->m_scale = rt->GetScale();
+			src->m_unscaled_size = rt->m_unscaled_size;
 		}
+
+		target_scale = rt->GetScale();
 
 		// The target might have previously been a C32 format with valid alpha. If we're switching to C24, we need to preserve it.
 		preserve_rt_alpha |= (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp == 24 && rt->HasValidAlpha());
@@ -4749,6 +4747,10 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	float scale = tex->GetScale();
 	HandleTextureHazards(rt, ds, tex, tmm, source_region, target_region, unscaled_size, scale, src_copy);
 
+	// This is used for reading depth sources, so we should go off the source scale.
+	float scale_factor = scale;
+	m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
+
 	if ((m_conf.ps.tex_is_fb && rt->m_rt_alpha_scale) || (tex->m_target && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
 		m_conf.ps.rta_source_correction = 1;
 
@@ -5426,9 +5428,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	ResetStates();
 
-	const float scale_factor = rt ? rt->GetScale() : ds->GetScale();
 	m_conf.cb_vs.texture_offset = {};
-	m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
 	m_conf.ps.scanmsk = env.SCANMSK.MSK;
 	m_conf.rt = rt ? rt->m_texture : nullptr;
 	m_conf.ds = ds ? ds->m_texture : nullptr;
@@ -6047,6 +6047,9 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 	else
 	{
+		const float scale_factor = rt ? rt->GetScale() : ds->GetScale();
+		m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
+
 		m_conf.ps.tfx = 4;
 	}
 
@@ -7195,28 +7198,28 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 
 int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 {
-	// Try to detect if a game is downscaling/upscaling the image in order to do post processing/bloom effects.
-	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
-	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
-	const bool is_downscale = (tex_size.x / 2.0f) >= draw_size.x && (tex_size.y / 2.0f) >= draw_size.y;
-	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
-		return 0;
-
 	if (GSConfig.UserHacks_NativeScaling == GSNativeScaling::Off)
 		return 0;
 
+	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
+	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 	// Check if we're already downscaled and drawing in current size, try not to rescale it.
-	if (src && src->m_from_target && src->m_from_target->m_downscaled && std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1)
-		return 1;
+	if (src && src->m_from_target && (std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1))
+		return -1;
 
-	const bool is_upscale = (draw_size.x / 2.0f) >= tex_size.x && (draw_size.y / 2.0f) >= tex_size.y;
-	const bool target_scale = is_downscale ? true : false;
+	// Try to detect if a game is downscaling/upscaling the image in order to do post processing/bloom effects.
+	const bool is_downscale = (tex_size.x / 2.0f) >= (draw_size.x - 1) && (tex_size.y / 2.0f) >= (draw_size.y - 1);
+	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
+		return 0;
+
+	const bool is_upscale = (draw_size.x / 2.0f) >= (tex_size.x - 1) && (draw_size.y / 2.0f) >= (tex_size.y - 1);
+
 	// DMC does a blit in strips with the scissor to keep it inside page boundaries, so that's not technically full coverage
 	// but good enough for what we want.
 	const bool no_gaps_or_single_sprite = (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && SpriteDrawWithoutGaps()));
 	if (no_gaps_or_single_sprite && m_vt.m_primclass >= GS_TRIANGLE_CLASS && m_context->TEX1.MMAG == 1 && src && src->m_from_target && 
 		GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp > 8 && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && !IsMipMapDraw() && 
-		((is_upscale && !IsDiscardingDstColor()) || (IsDiscardingDstColor() && is_downscale)))
+		((is_upscale && !IsDiscardingDstColor()) || (((PRIM->ABE && m_context->ALPHA.C == 2 && m_context->ALPHA.FIX == 255) || IsDiscardingDstColor()) && is_downscale)))
 	{
 		GL_INS("%s draw detected - from %dx%d to %dx%d", is_downscale ? "Downscale" : "Upscale", tex_size.x, tex_size.y, draw_size.x, draw_size.y);
 		return is_upscale ? 2 : 1;

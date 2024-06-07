@@ -987,6 +987,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const bool is_depth, c
 		src->m_unscaled_size = dst->m_unscaled_size;
 		src->m_shared_texture = true;
 		src->m_target = true; // So renderer can check if a conversion is required
+		src->m_target_direct = true;
 		src->m_from_target = dst; // avoid complex condition on the renderer
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
@@ -1745,6 +1746,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		if (src->m_target && src->m_from_target)
 		{
 			src->m_valid_alpha_minmax = true;
+			if (src->m_target_direct)
+				src->m_scale = src->m_from_target->GetScale();
 
 			if ((src->m_TEX0.PSM & 0xf) == PSMCT24)
 			{
@@ -1796,7 +1799,7 @@ GSVector2i GSTextureCache::ScaleRenderTargetSize(const GSVector2i& sz, float sca
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type,
-	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect, bool is_shuffle, bool possible_clear)
+	bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb, bool preserve_alpha, const GSVector4i draw_rect, bool is_shuffle, bool possible_clear, bool preserve_scale)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	const u32 bp = TEX0.TBP0;
@@ -1993,7 +1996,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				dst->m_TEX0.TBP0, dst->m_TEX0.TBW, psm_str(dst->m_TEX0.PSM));
 		}
 
-		if (dst->m_scale != scale)
+		if (dst->m_scale != scale && !preserve_scale)
 		{
 			calcRescale(dst);
 			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, clear) :
@@ -2016,6 +2019,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_unscaled_size = new_size;
 			dst->m_downscaled = scale == 1.0f;
 		}
+		else if (dst->m_scale != scale)
+			scale = dst->m_scale;
 
 		// If our RGB was invalidated, we need to pull it from depth.
 		// Terminator 3 will reuse our dst_matched target with the RGB masked, then later use the full ARGB area, so we need to update the depth.
