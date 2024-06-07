@@ -6398,7 +6398,8 @@ SCKA-20003:
   name: "War of the Monsters"
   region: "NTSC-K"
 SCKA-20004:
-  name: "Sly Cooper and the Thievius Raccoonus"
+  name: "Sly Cooper - Jeonseolui Bibeobseoreul Chajaseo"
+  name-en: "Sly Cooper and the Thievius Raccoonus"
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
@@ -6552,7 +6553,11 @@ SCKA-20029:
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post processing.
 SCKA-20030:
   name: "Sly Cooper - Jeonseolui Bibeobseoreul Chajaseo"
+  name-en: "Sly Cooper and the Thievius Raccoonus [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes Sly's shadow definition.
 SCKA-20031:
   name: "Athens 2004"
   region: "NTSC-K"
@@ -7152,8 +7157,12 @@ SCKA-20171:
   name: "Let's Bravo Music"
   region: "NTSC-K"
 SCKA-24004:
-  name: "Sly Cooper and the Thievius Raccoonus"
+  name: "Sly Cooper - Jeonseolui Bibeobseoreul Chajaseo"
+  name-en: "Sly Cooper and the Thievius Raccoonus"
   region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes Sly's shadow definition.
 SCKA-24007:
   name: "Let's Bravo Music"
   region: "NTSC-K"
@@ -7234,7 +7243,11 @@ SCKA-90003:
   region: "NTSC-K"
 SCKA-90004:
   name: "Sly Cooper - Jeonseolui Bibeobseoreul Chajaseo"
+  name-en: "Sly Cooper and the Thievius Raccoonus [Trial]"
   region: "NTSC-K"
+  compat: 5
+  gsHWFixes:
+    autoFlush: 1 # Fixes Sly's shadow definition.
 SCKA-90009:
   name: "R-Type Final"
   region: "NTSC-K"
@@ -28452,6 +28465,8 @@ SLKA-25246:
 SLKA-25247:
   name: "Prince of Persia - Warrior Within"
   region: "NTSC-K"
+  gsHWFixes:
+    autoFlush: 2 # Reduces post-processing misalignment.
 SLKA-25249:
   name: "Ys - The Ark of Napishtim [with Guide Book]"
   region: "NTSC-K"
@@ -29301,6 +29316,15 @@ SLKA-25459:
   compat: 5
   gsHWFixes:
     cpuSpriteRenderBW: 2 # Fixes textures.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
+    autoFlush: 2 # Fixes soft shadows.
+  patches:
+    9E36E023:
+      content: |-
+        //Patched by kozarrov
+        //Fix Pause menu, some hud parts, etc.
+        patch=1,EE,0016ee38,word,3464fff0
+        patch=1,EE,0016ee58,word,3464fffc
 SLKA-25463:
   name: "WWE SmackDown vs. Raw 2010"
   region: "NTSC-K"
