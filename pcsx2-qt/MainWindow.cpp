@@ -1748,6 +1748,12 @@ void MainWindow::onInputRecNewActionTriggered()
 						m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
 					});
 				}
+				else
+				{
+					Host::ReportErrorAsync(
+						TRANSLATE_SV("MainWindow", "Input Recording Failed"),
+						fmt::format(TRANSLATE_FS("MainWindow", "Failed to create file: {}"), filePath));
+				}
 			});
 	}
 
@@ -1800,6 +1806,12 @@ void MainWindow::onInputRecPlayActionTriggered()
 					m_ui.actionReset->setEnabled(!g_InputRecording.isTypeSavestate());
 					m_ui.actionToolbarReset->setEnabled(!g_InputRecording.isTypeSavestate());
 				});
+			}
+			else
+			{
+				Host::ReportErrorAsync(
+					TRANSLATE_SV("MainWindow", "Input Playback Failed"),
+					fmt::format(TRANSLATE_FS("MainWindow", "Failed to open file: {}"), filename));
 			}
 		});
 	}
