@@ -169,28 +169,6 @@ public:
 
 	__forceinline GSVector4i runion(const GSVector4i& a) const
 	{
-		int i = (upl64(a) < uph64(a)).mask();
-
-		if (i == 0xffff)
-		{
-			return runion_ordered(a);
-		}
-
-		if ((i & 0x00ff) == 0x00ff)
-		{
-			return *this;
-		}
-
-		if ((i & 0xff00) == 0xff00)
-		{
-			return a;
-		}
-
-		return GSVector4i::zero();
-	}
-
-	__forceinline GSVector4i runion_ordered(const GSVector4i& a) const
-	{
 		return min_i32(a).upl64(max_i32(a).srl<8>());
 	}
 
