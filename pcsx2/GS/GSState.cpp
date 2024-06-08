@@ -2939,7 +2939,7 @@ GSState::PRIM_OVERLAP GSState::PrimitiveOverlap()
 
 			if (all.rintersect(sprite).rempty())
 			{
-				all = all.runion_ordered(sprite);
+				all = all.runion(sprite);
 			}
 			else
 			{
