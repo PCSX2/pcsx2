@@ -1749,7 +1749,7 @@ void GSState::FlushPrim()
 					GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex.buff[i];
 					GSVector4i v = vert_ptr[1];
 					v = v.xxxx().u16to32().sub32(m_xyof);
-					v = v.blend32<12>(v.sra32(4));
+					v = v.blend32<12>(v.sra32<4>());
 					m_vertex.xy[i & 3] = v;
 					m_vertex.xy_tail = unused;
 				}
