@@ -1172,9 +1172,9 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QCheckBox" name="wildHack">
+          <widget class="QCheckBox" name="forceEvenSpritePosition">
            <property name="text">
-            <string extracomment="Wild Arms: name of a game series. Leave as-is or use an official translation.">Wild Arms Hack</string>
+            <string>Force Even Sprite Position</string>
            </property>
           </widget>
          </item>

@@ -3822,9 +3822,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			DrawToggleSetting(bsi, FSUI_CSTR("Merge Sprite"),
 				FSUI_CSTR("Replaces multiple post-processing sprites with a larger single sprite."), "EmuCore/GS",
 				"UserHacks_merge_pp_sprite", false, manual_hw_fixes);
-			DrawToggleSetting(bsi, FSUI_CSTR("Wild Arms Hack"),
+			DrawToggleSetting(bsi, FSUI_CSTR("Force Even Sprite Position"),
 				FSUI_CSTR("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."),
-				"EmuCore/GS", "UserHacks_WildHack", false, manual_hw_fixes);
+				"EmuCore/GS", "UserHacks_ForceEvenSpritePosition", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("Unscaled Palette Texture Draws"),
 				FSUI_CSTR("Can fix some broken effects which rely on pixel perfect precision."), "EmuCore/GS",
 				"UserHacks_NativePaletteDraw", false, manual_hw_fixes);
@@ -7073,7 +7073,7 @@ TRANSLATE_NOOP("FullscreenUI", "Align Sprite");
 TRANSLATE_NOOP("FullscreenUI", "Fixes issues with upscaling (vertical lines) in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Merge Sprite");
 TRANSLATE_NOOP("FullscreenUI", "Replaces multiple post-processing sprites with a larger single sprite.");
-TRANSLATE_NOOP("FullscreenUI", "Wild Arms Hack");
+TRANSLATE_NOOP("FullscreenUI", "Force Even Sprite Position");
 TRANSLATE_NOOP("FullscreenUI", "Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games.");
 TRANSLATE_NOOP("FullscreenUI", "Unscaled Palette Texture Draws");
 TRANSLATE_NOOP("FullscreenUI", "Can fix some broken effects which rely on pixel perfect precision.");
