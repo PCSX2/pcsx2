@@ -406,8 +406,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("TexRT={} ", static_cast<unsigned>(GSConfig.UserHacks_TextureInsideRt));
 		if (GSConfig.UserHacks_BilinearHack != GSBilinearDirtyMode::Automatic)
 			APPEND("BLU={} ", static_cast<unsigned>(GSConfig.UserHacks_BilinearHack));
-		if (GSConfig.UserHacks_WildHack)
-			APPEND("WA ");
+		if (GSConfig.UserHacks_ForceEvenSpritePosition)
+			APPEND("FESP ");
 		if (GSConfig.UserHacks_NativePaletteDraw)
 			APPEND("NPD ");
 		if (GSConfig.UserHacks_MergePPSprite)

@@ -371,7 +371,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"alignSprite",
 	"mergeSprite",
 	"mipmap",
-	"wildArmsHack",
+	"forceEvenSpritePosition",
 	"bilinearUpscale",
 	"nativePaletteDraw",
 	"estimateTextureRegion",
@@ -602,8 +602,8 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::MergeSprite:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_MergePPSprite) == value);
 
-		case GSHWFixId::WildArmsHack:
-			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_WildHack) == value);
+		case GSHWFixId::ForceEvenSpritePosition:
+			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_ForceEvenSpritePosition) == value);
 
 		case GSHWFixId::BilinearUpscale:
 			return (config.UpscaleMultiplier <= 1.0f || static_cast<int>(config.UserHacks_BilinearHack) == value);
@@ -747,8 +747,8 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				config.UserHacks_MergePPSprite = (value > 0);
 				break;
 
-			case GSHWFixId::WildArmsHack:
-				config.UserHacks_WildHack = (value > 0);
+			case GSHWFixId::ForceEvenSpritePosition:
+				config.UserHacks_ForceEvenSpritePosition = (value > 0);
 				break;
 
 			case GSHWFixId::BilinearUpscale:

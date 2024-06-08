@@ -179,7 +179,7 @@
               "minimum": 0,
               "maximum": 1
             },
-            "wildArmsHack": {
+            "forceEvenSpritePosition": {
               "type": "integer",
               "minimum": 0,
               "maximum": 1

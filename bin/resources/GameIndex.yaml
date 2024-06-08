@@ -708,7 +708,7 @@ PCPX-96320:
     instantVU1: 0 # Fixes noodles.
     mtvu: 0
   gsHWFixes:
-    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    forceEvenSpritePosition: 1 # Fixes misaligment depth of field effect.
 PCPX-96321:
   name: "SkyGunner [Trial]"
   region: "NTSC-J"
@@ -1635,7 +1635,7 @@ SCAJ-20123:
   region: "NTSC-Unk"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
@@ -2146,7 +2146,7 @@ SCAJ-30002:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Imrpvoes cloud rendering.
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCAJ-30003:
   name: "Siren"
@@ -4266,7 +4266,7 @@ SCES-50408:
     instantVU1: 0 # Fixes noodles.
     mtvu: 0
   gsHWFixes:
-    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    forceEvenSpritePosition: 1 # Fixes misaligment depth of field effect.
 SCES-50409:
   name: "MotoGP 2"
   region: "PAL-M5"
@@ -6959,7 +6959,7 @@ SCKA-20093:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SCKA-20094:
   name: "Okami"
@@ -7633,7 +7633,7 @@ SCPS-15017:
     instantVU1: 0 # Fixes noodles.
     mtvu: 0
   gsHWFixes:
-    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    forceEvenSpritePosition: 1 # Fixes misaligment depth of field effect.
 SCPS-15018:
   name: THE 山手線 〜Train Simulator Real
   name-sort: THE やまのてせん Train Simulator Real
@@ -7674,7 +7674,7 @@ SCPS-15023:
   name-en: "Wild ARMs - Advanced 3rd"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-15024:
   name: ワイルドアームズ アドヴァンスドサード
@@ -7682,7 +7682,7 @@ SCPS-15024:
   name-en: "Wild ARMs - Advanced 3rd"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-15025:
   name: サルゲッチュ2
@@ -8186,7 +8186,7 @@ SCPS-15091:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
@@ -8207,7 +8207,7 @@ SCPS-15092:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
@@ -8510,7 +8510,7 @@ SCPS-17002:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Imrpvoes cloud rendering.
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-17008:
   name: NIKE/ GRAN TURISMO Limited Edition (8inch)
@@ -8639,7 +8639,7 @@ SCPS-19201:
     instantVU1: 0 # Fixes noodles.
     mtvu: 0
   gsHWFixes:
-    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    forceEvenSpritePosition: 1 # Fixes misaligment depth of field effect.
 SCPS-19202:
   name: EXTERMINATION PlayStation 2 the Best
   name-sort: EXTERMINATION PlayStation 2 the Best
@@ -8665,7 +8665,7 @@ SCPS-19205:
   name-en: "Wild ARMs - Advanced 3rd [PlayStation 2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-19206:
   name: サルゲッチュ2 PlayStation 2 the Best
@@ -8743,7 +8743,7 @@ SCPS-19251:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Imrpvoes cloud rendering.
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-19252:
   name: グランツーリスモ4 PlayStation 2 the Best
@@ -8775,7 +8775,7 @@ SCPS-19253:
   region: "NTSC-J"
   gsHWFixes:
     recommendedBlendingLevel: 3 # Imrpvoes cloud rendering.
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-19254:
   name: "Rogue Galaxy [PlayStation 2 the Best]"
@@ -8907,7 +8907,7 @@ SCPS-19313:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
@@ -8989,7 +8989,7 @@ SCPS-19322:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
@@ -9010,7 +9010,7 @@ SCPS-19323:
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters:
@@ -9199,7 +9199,7 @@ SCPS-55006:
   name: "Wild ARMs - Advanced 3rd"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCPS-55007:
   name: "Gran Turismo 3 - A-Spec"
@@ -9552,7 +9552,7 @@ SCUS-21295:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SCUS-21494:
   name: "Need for Speed - Carbon Collector's Edition"
@@ -9570,7 +9570,7 @@ SCUS-90174:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    forceEvenSpritePosition: 1 # Reduces the ghosting effect.
 SCUS-90682:
   name: "Gran Turismo 4"
   region: "NTSC-U"
@@ -9870,7 +9870,7 @@ SCUS-97167:
     instantVU1: 0 # Fixes noodles.
     mtvu: 0
   gsHWFixes:
-    wildArmsHack: 1 # Fixes misaligment depth of field effect.
+    forceEvenSpritePosition: 1 # Fixes misaligment depth of field effect.
 SCUS-97169:
   name: "Drakan - The Ancients' Gates [Demo]"
   region: "NTSC-U"
@@ -10002,7 +10002,7 @@ SCUS-97203:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCUS-97204:
   name: "NCAA Final Four 2003"
@@ -10092,7 +10092,7 @@ SCUS-97224:
   name: "Wild ARMs 3 [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SCUS-97225:
   name: "Primal [Demo]"
@@ -11625,7 +11625,7 @@ SLAJ-25018:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLAJ-25019:
   name: "The Lord of the Rings - The Return of the King"
@@ -15763,7 +15763,7 @@ SLES-51307:
   name: "Wild ARMs 3"
   region: "PAL-E"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLES-51308:
   name: "Reel Fishing 3"
@@ -16261,7 +16261,7 @@ SLES-51579:
   gsHWFixes:
     recommendedBlendingLevel: 2 # Provides text shadow definition.
     roundSprite: 1 # Corrects some font artifacts.
-    wildArmsHack: 1 # Corrects some more font artifacts a little.
+    forceEvenSpritePosition: 1 # Corrects some more font artifacts a little.
 SLES-51580:
   name: "London Racer World Challenge"
   region: "PAL-M4"
@@ -17485,7 +17485,7 @@ SLES-52116:
   name: "Sitting Ducks"
   region: "PAL-M6"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
 SLES-52117:
   name: "Go Go Copter"
   region: "PAL-M3"
@@ -17639,7 +17639,7 @@ SLES-52190:
   gsHWFixes:
     autoFlush: 1
     roundSprite: 2 # Aligns bloom effect
-    wildArmsHack: 1 # Aligns bloom effect
+    forceEvenSpritePosition: 1 # Aligns bloom effect
 SLES-52202:
   name: "Downhill Domination"
   region: "PAL-M5"
@@ -18272,7 +18272,7 @@ SLES-52480:
   gsHWFixes:
     recommendedBlendingLevel: 2 # Provides text shadow definition.
     roundSprite: 1 # Corrects some font artifacts.
-    wildArmsHack: 1 # Corrects some more font artifacts a little.
+    forceEvenSpritePosition: 1 # Corrects some more font artifacts a little.
 SLES-52481:
   name: "Hot Wheels - Stunt Track Challenge"
   region: "PAL-E"
@@ -18399,7 +18399,7 @@ SLES-52534:
   name: "Crimson Tears"
   region: "PAL-M3"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
 #    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLES-52535:
@@ -18673,7 +18673,7 @@ SLES-52621:
   gsHWFixes:
     preloadFrameData: 1 # Fixes missing loading screens.
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLES-52622:
   name: "Tony Hawk's Underground 2"
@@ -18683,7 +18683,7 @@ SLES-52622:
   gsHWFixes:
     preloadFrameData: 1 # Fixes missing loading screens.
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLES-52624:
   name: "X-Men Legends"
@@ -20341,13 +20341,13 @@ SLES-53191:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLES-53192:
   name: "The Nightmare Before Christmas - Tim Burton's"
   name-sort: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     mergeSprite: 1 # Fixes misaligned lights.
 SLES-53193:
   name: "Puzzle Party"
@@ -21267,7 +21267,7 @@ SLES-53534:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
@@ -21278,7 +21278,7 @@ SLES-53535:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
@@ -22402,7 +22402,7 @@ SLES-53900:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Storm.
     alignSprite: 1 # Fixes black lines when upscaling.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLES-53901:
   name: "Torino 2006"
   region: "PAL-M5"
@@ -23142,7 +23142,7 @@ SLES-54182:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLES-54183:
   name: "Scarface - The World is Yours"
   region: "PAL-G"
@@ -23151,7 +23151,7 @@ SLES-54183:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLES-54184:
   name: "Scarface - The World is Yours"
   region: "PAL-R"
@@ -23160,7 +23160,7 @@ SLES-54184:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
@@ -23324,7 +23324,7 @@ SLES-54239:
   region: "PAL-E"
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLES-54240:
@@ -23405,7 +23405,7 @@ SLES-54271:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLES-54305:
   name: "Demon Chaos"
   region: "PAL-M5"
@@ -23922,7 +23922,7 @@ SLES-54464:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes HUD artifacts.
-    wildArmsHack: 1 # Lessens the bloom misalignment but still an issue.
+    forceEvenSpritePosition: 1 # Lessens the bloom misalignment but still an issue.
 SLES-54465:
   name: "CSI - 3 Dimensions of Murder"
   region: "PAL-M5"
@@ -24088,7 +24088,7 @@ SLES-54534:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLES-54536:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "PAL-I"
@@ -24570,7 +24570,7 @@ SLES-54714:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLES-54715:
   name: "Tony Hawk's Downhill Jam"
@@ -24578,7 +24578,7 @@ SLES-54715:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLES-54716:
   name: "Skateboard Madness - Xtreme Edition"
@@ -24641,7 +24641,7 @@ SLES-54733:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54734:
   name: "Disney/Pixar Ratatouille"
@@ -24650,7 +24650,7 @@ SLES-54734:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54735:
   name: "Disney/Pixar Ratatouille"
@@ -24660,7 +24660,7 @@ SLES-54735:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54736:
   name: "Disney/Pixar Ratatouille"
@@ -24670,7 +24670,7 @@ SLES-54736:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54737:
   name: "Disney/Pixar Ratatouille"
@@ -24680,7 +24680,7 @@ SLES-54737:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54738:
   name: "Thunderbirds"
@@ -24693,7 +24693,7 @@ SLES-54744:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54745:
   name: "Disney/Pixar Ratatouille"
@@ -24703,7 +24703,7 @@ SLES-54745:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54746:
   name: "Disney/Pixar Ratatouille"
@@ -24713,7 +24713,7 @@ SLES-54746:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54747:
   name: "Disney/Pixar Ratatouille"
@@ -24723,7 +24723,7 @@ SLES-54747:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLES-54755:
   name: "Transformers - The Game"
@@ -25341,7 +25341,7 @@ SLES-54972:
   region: "PAL-M3"
   gsHWFixes:
     cpuFramebufferConversion: 1 # Fixes sepia-tone flashback sequences.
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLES-54973:
   name: "Avventure di Lupin III, Le - Lupin la Morte, Zenigata l'Amore"
@@ -26971,7 +26971,7 @@ SLES-55622:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    forceEvenSpritePosition: 1 # Reduces the ghosting effect.
 SLES-55623:
   name: "Disney/Pixar Toy Story 3"
   region: "PAL-R"
@@ -26979,7 +26979,7 @@ SLES-55623:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    forceEvenSpritePosition: 1 # Reduces the ghosting effect.
 SLES-55625:
   name: "Despicable Me - The Game"
   region: "PAL-M9"
@@ -27753,7 +27753,7 @@ SLKA-25063:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLKA-25064:
   name: "Tenchu - Wrath of Heaven"
   region: "NTSC-K"
@@ -27827,7 +27827,7 @@ SLKA-25084:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLKA-25085:
   name: "Jin Samguk Mussang 3 - Maengjangjeon"
@@ -28061,7 +28061,7 @@ SLKA-25146:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLKA-25148:
   name: "MVP Baseball 2004"
   region: "NTSC-K"
@@ -30700,7 +30700,7 @@ SLPM-60195:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-60197:
   name: "Exciting Pro Wres 4"
   region: "NTSC-J"
@@ -30729,7 +30729,7 @@ SLPM-60206:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-60207:
   name: "Rockman X7"
@@ -30797,7 +30797,7 @@ SLPM-60228:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-60237:
   name: "Densha de Go! Final"
   region: "NTSC-J"
@@ -31231,7 +31231,7 @@ SLPM-61090:
   name: "Tim Burton's The Nightmare Before Christmas [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     mergeSprite: 1 # Fixes misaligned lights.
 SLPM-61091:
   name: "Berserk - Millennium Falcon-hen - Seima Senki no Shou"
@@ -31333,7 +31333,7 @@ SLPM-61115:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-61116:
   name: "Bouken-ou Beet - Darkness Century"
   region: "NTSC-J"
@@ -31371,7 +31371,7 @@ SLPM-61121:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-61122:
   name: "Dengeki PS2 PlayStation D81"
   region: "NTSC-J"
@@ -33472,7 +33472,7 @@ SLPM-62435:
   name: "Tennis no Oujisama - Smash Hit! 2 - Original Anime Game"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-62437:
   name: すいすい Sweet 〜あまい恋のみつけ方〜
   name-sort: すいすい すいーと あまいこいのみつけかた
@@ -34587,7 +34587,7 @@ SLPM-62652:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes HUD artifacts.
-    wildArmsHack: 1 # Lessens the bloom misalignment but still an issue.
+    forceEvenSpritePosition: 1 # Lessens the bloom misalignment but still an issue.
 SLPM-62653:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1945 1-2 [Taito The Best]"
   region: "NTSC-J"
@@ -35593,7 +35593,7 @@ SLPM-65050:
   gsHWFixes:
     recommendedBlendingLevel: 2 # Provides text shadow definition.
     roundSprite: 1 # Corrects some font artifacts.
-    wildArmsHack: 1 # Corrects some more font artifacts a little.
+    forceEvenSpritePosition: 1 # Corrects some more font artifacts a little.
 SLPM-65051:
   name: サイレントヒル2
   name-sort: さいれんとひる2
@@ -36473,7 +36473,7 @@ SLPM-65222:
   gsHWFixes:
     recommendedBlendingLevel: 2 # Provides text shadow definition.
     roundSprite: 1 # Corrects some font artifacts.
-    wildArmsHack: 1 # Corrects some more font artifacts a little.
+    forceEvenSpritePosition: 1 # Corrects some more font artifacts a little.
 SLPM-65223:
   name: トライアングル・アゲイン
   name-sort: とらいあんぐるあげいん
@@ -36632,7 +36632,7 @@ SLPM-65246:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65247:
   name: 三國志戦記2
   name-sort: さんごくしせんき2
@@ -36984,7 +36984,7 @@ SLPM-65308:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-65309:
   name: "Splashdown [PlayStation 2 the Best]"
@@ -37748,17 +37748,17 @@ SLPM-65451:
   name-en: "Prince of Tennis - Smash Hit! 2 [Shokai SP Genteiban A-Type]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65452:
   name: "Tennis no Oujisama - Smash Hit! 2 [Shokai SP Genteiban B-Type]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65453:
   name: "Tennis no Oujisama - Smash Hit! 2 [Shokai SP Genteiban C-Type]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65454:
   name: テニスの王子様 Smash Hit!2
   name-sort: てにすのおうじさま Smash Hit!2
@@ -37766,7 +37766,7 @@ SLPM-65454:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65455:
   name: "Nobunaga no Yabou - Soutenroku [with Power-Up Kit]"
   region: "NTSC-J"
@@ -38083,7 +38083,7 @@ SLPM-65514:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65515:
   name: サクラ大戦物語 〜ミステリアス巴里〜
   name-sort: さくらたいせんものがたり 〜みすてりあすぱり〜
@@ -38387,7 +38387,7 @@ SLPM-65575:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
 #    deinterlace: 6 # Game requires blend tff de-interlacing when auto for 'fixing' shimmer on character models and more flickering or half weaved, though the game suffers from the field order.
 SLPM-65576:
@@ -38781,7 +38781,7 @@ SLPM-65647:
   gsHWFixes:
     recommendedBlendingLevel: 2 # Provides text shadow definition.
     roundSprite: 1 # Corrects some font artifacts.
-    wildArmsHack: 1 # Corrects some more font artifacts a little.
+    forceEvenSpritePosition: 1 # Corrects some more font artifacts a little.
 SLPM-65648:
   name: EA BEST HITS メダルオブオナー 史上最大の作戦
   name-sort: めだるおぶおなー しじょうさいだいのさくせん [EA BEST HITS]
@@ -38924,7 +38924,7 @@ SLPM-65678:
   name-en: "Prince of Tennis - Smash Hit! 2 [Konami The Best]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65679:
   name: テニスの王子様 SWEAT＆TEARS 2 [コナミ ザ ベスト]
   name-sort: てにすのおうじさま SWEAT&TEARS 2 [こなみ ざ べすと]
@@ -39273,7 +39273,7 @@ SLPM-65739:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     mergeSprite: 1 # Fixes misaligned lights.
 SLPM-65740:
   name: Jリーグ ウイニングイレブン8 〜Asia Championship〜
@@ -40159,7 +40159,7 @@ SLPM-65897:
   region: "NTSC-J"
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-65898:
   name: キャッスルファンタジア エレンシア戦記 DXパック
   name-sort: きゃっするふぁんたじあ えれんしあせんき DXぱっく
@@ -40796,7 +40796,7 @@ SLPM-66011:
   name-en: "Tennis no Oji-Sama - Smash-Hit! 2 [Konami Palace Selection]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes screen shake when upscaling.
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-66012:
   name: テニスの王子様SWEAT&TEARS 2(コナミ殿堂セレクション)
   name-sort: てにすのおうじさまSWEAT&TEARS 2 [こなみでんどうせれくしょん]
@@ -40873,7 +40873,7 @@ SLPM-66022:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLPM-66023:
   name: 〜ふしぎ遊戯玄武開伝外伝〜 鏡の巫女 限定版
   name-sort: ふしぎゆうぎげんぶかいでんがいでん かがみのみこ [げんていばん]
@@ -41531,7 +41531,7 @@ SLPM-66131:
   name-en: "Tim Burton's The Nightmare Before Christmas [Premium Pack]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     mergeSprite: 1 # Fixes misaligned lights.
 SLPM-66132:
   name: GLADIATOR ROAD TO FREEDOM REMIX
@@ -44945,7 +44945,7 @@ SLPM-66697:
   name-en: "Nightmare Before Christmas, The [CapKore]"
   region: "NTSC-J"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     mergeSprite: 1 # Fixes misaligned lights.
 SLPM-66698:
   name: 史上最強の弟子ケンイチ 激闘!ラグナレク八拳豪
@@ -45585,7 +45585,7 @@ SLPM-66807:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLPM-66808:
   name: ゴーストリコン アドバンスウォーファイター [ユービーアイソフトベスト]
@@ -47105,7 +47105,7 @@ SLPM-74204:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLPM-74205:
   name: 真・女神転生 III - NOCTURNE PlayStation 2 the Best
@@ -53854,7 +53854,7 @@ SLPS-25691:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes extreme ghosting.
-    wildArmsHack: 1 # Aligns vertical blurring.
+    forceEvenSpritePosition: 1 # Aligns vertical blurring.
 SLPS-25693:
   name: プリンセス・プリンセス 姫たちのアブナい放課後 (初回限定版)
   name-sort: ぷりんせすぷりんせす ひめたちのあぶないほうかご しょかいげんていばん
@@ -58527,7 +58527,7 @@ SLUS-20515:
   gsHWFixes:
     recommendedBlendingLevel: 2 # Provides text shadow definition.
     roundSprite: 1 # Corrects some font artifacts.
-    wildArmsHack: 1 # Corrects some more font artifacts a little.
+    forceEvenSpritePosition: 1 # Corrects some more font artifacts a little.
 SLUS-20516:
   name: "Shrek Super Party"
   region: "NTSC-U"
@@ -60126,7 +60126,7 @@ SLUS-20831:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Improves visual clarity whilst upscaling.
+    forceEvenSpritePosition: 1 # Improves visual clarity whilst upscaling.
     roundSprite: 1 # Reduces graphics garbage on UI whilst upscaling.
 SLUS-20833:
   name: "Mega Man Anniversary Collection"
@@ -60278,7 +60278,7 @@ SLUS-20860:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     mergeSprite: 1 # Fixes misaligned lights.
 SLUS-20861:
   name: "MTV Music Generator 3 - This is the Remix"
@@ -60424,7 +60424,7 @@ SLUS-20886:
   name: "Sitting Ducks"
   region: "NTSC-U"
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
 SLUS-20887:
   name: "The Adventures of Jimmy Neutron - Boy Genius - Attack of the Twonkies"
   name-sort: "Adventures of Jimmy Neutron, The - Boy Genius - Attack of the Twonkies"
@@ -60732,7 +60732,7 @@ SLUS-20937:
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 3 # Imrpvoes cloud rendering.
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
 SLUS-20938:
   name: "Dynasty Warriors 4 - Empires"
@@ -60796,7 +60796,7 @@ SLUS-20948:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    wildArmsHack: 1 # Fixes blurriness.
+    forceEvenSpritePosition: 1 # Fixes blurriness.
     roundSprite: 2 # Reduces misalignment bloom effects.
 SLUS-20949:
   name: "Street Fighter Anniversary Collection"
@@ -60898,7 +60898,7 @@ SLUS-20965:
   gsHWFixes:
     preloadFrameData: 1 # Fixes missing loading screens.
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLUS-20966:
   name: "State of Emergency 2"
@@ -61725,7 +61725,7 @@ SLUS-21111:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLUS-21112:
   name: "L.A. Rush"
   region: "NTSC-U"
@@ -62244,7 +62244,7 @@ SLUS-21208:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
@@ -62433,7 +62433,7 @@ SLUS-21236:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # Fixes double image.
+    forceEvenSpritePosition: 1 # Fixes double image.
 SLUS-21237:
   name: "AND 1 Streetball"
   region: "NTSC-U"
@@ -62830,7 +62830,7 @@ SLUS-21292:
   compat: 5
   gsHWFixes:
     textureInsideRT: 1
-    wildArmsHack: 1 # Fixes font artifacts and out-of-bound 2D textures.
+    forceEvenSpritePosition: 1 # Fixes font artifacts and out-of-bound 2D textures.
     roundSprite: 1 # Fixes font artifacts.
     gpuPaletteConversion: 2 # Fixes micro-stuttering and drops in performance while also reducing hash cache explosions and GS usage.
   memcardFilters: # Allows import of Alter Code F clear data.
@@ -62853,7 +62853,7 @@ SLUS-21295:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
@@ -63499,7 +63499,7 @@ SLUS-21394:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes ghosting during Rain/Storm.
     alignSprite: 1 # Fixes vertical lines.
-    wildArmsHack: 1 # De-blurs the 3D image.
+    forceEvenSpritePosition: 1 # De-blurs the 3D image.
 SLUS-21395:
   name: "Avatar - The Last Airbender"
   region: "NTSC-U"
@@ -63874,7 +63874,7 @@ SLUS-21456:
   roundModes:
     vu1RoundMode: 0 # Crashes without.
   gsHWFixes:
-    wildArmsHack: 1 # Reduces post-processing misalignment.
+    forceEvenSpritePosition: 1 # Reduces post-processing misalignment.
     mergeSprite: 1 # Reduces post-processing misalignment.
 SLUS-21457:
   name: "World Championship Paintball"
@@ -64078,7 +64078,7 @@ SLUS-21492:
   gsHWFixes:
     autoFlush: 2 # Fixes post processing overlay.
     roundSprite: 1 # Greatly reduces chromatic effect when upscaling.
-    wildArmsHack: 1 # Fixes chromatic fringing.
+    forceEvenSpritePosition: 1 # Fixes chromatic fringing.
 SLUS-21493:
   name: "Need for Speed - Carbon"
   region: "NTSC-U"
@@ -64162,7 +64162,7 @@ SLUS-21541:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces blooming misalignment.
-    wildArmsHack: 1 # Reduces blooming misalignment.
+    forceEvenSpritePosition: 1 # Reduces blooming misalignment.
     autoFlush: 2 # Fixes glows.
 SLUS-21542:
   name: "Sega Genesis Collection"
@@ -66105,7 +66105,7 @@ SLUS-21931:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
     halfPixelOffset: 2 # Reduces the ghosting effect.
-    wildArmsHack: 1 # Reduces the ghosting effect.
+    forceEvenSpritePosition: 1 # Reduces the ghosting effect.
 SLUS-21932:
   name: "NCAA Football 11"
   region: "NTSC-U"

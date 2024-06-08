@@ -3389,7 +3389,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy)
 {
 	GL_PUSH("IA");
 
-	if (GSConfig.UserHacks_WildHack && !m_isPackedUV_HackFlag && m_process_texture && PRIM->FST)
+	if (GSConfig.UserHacks_ForceEvenSpritePosition && !m_isPackedUV_HackFlag && m_process_texture && PRIM->FST)
 	{
 		for (u32 i = 0; i < m_vertex.next; i++)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;

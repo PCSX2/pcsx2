@@ -174,7 +174,7 @@ The clamp modes are also numerically based.
 
 * alignSprite                [`0` or `1`]                               {Off or On}                        Default: Off (`0`)
 * mergeSprite                [`0` or `1`]                               {Off or On}                        Default: Off (`0`)
-* wildArmsHack               [`0` or `1`]                               {Off or On}                        Default: Off (`0`)
+* forceEvenSpritePosition    [`0` or `1`]                               {Off or On}                        Default: Off (`0`)
 * bilinearUpscale            [`0` or `1` or `2`]                        {Automatic, Force Bilinear, Force Nearest}     Default: Automatic
 * skipDrawStart              [Value between `0` to `10000`]             {0-10000}                          Default: Off (`0`)
 * skipDrawEnd                [Value between `0` to `10000`]             {0-10000}                          Default: Off (`0`)

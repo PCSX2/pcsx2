@@ -630,7 +630,7 @@ struct Pcsx2Config
 					UserHacks_DisableSafeFeatures : 1,
 					UserHacks_DisableRenderFixes : 1,
 					UserHacks_MergePPSprite : 1,
-					UserHacks_WildHack : 1,
+					UserHacks_ForceEvenSpritePosition : 1,
 					UserHacks_NativePaletteDraw : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					FXAA : 1,

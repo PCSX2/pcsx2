@@ -653,7 +653,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_DisableRenderFixes = false;
 	UserHacks_MergePPSprite = false;
-	UserHacks_WildHack = false;
+	UserHacks_ForceEvenSpritePosition = false;
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	UserHacks_NativePaletteDraw = false;
 
@@ -852,7 +852,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(UserHacks_DisableSafeFeatures, "UserHacks_Disable_Safe_Features");
 	SettingsWrapBitBoolEx(UserHacks_DisableRenderFixes, "UserHacks_DisableRenderFixes");
 	SettingsWrapBitBoolEx(UserHacks_MergePPSprite, "UserHacks_merge_pp_sprite");
-	SettingsWrapBitBoolEx(UserHacks_WildHack, "UserHacks_WildHack");
+	SettingsWrapBitBoolEx(UserHacks_ForceEvenSpritePosition, "UserHacks_ForceEvenSpritePosition");
 	SettingsWrapIntEnumEx(UserHacks_BilinearHack, "UserHacks_BilinearHack");
 	SettingsWrapBitBoolEx(UserHacks_NativePaletteDraw, "UserHacks_NativePaletteDraw");
 	SettingsWrapIntEnumEx(UserHacks_TextureInsideRt, "UserHacks_TextureInsideRt");
@@ -958,7 +958,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
-	UserHacks_WildHack = false;
+	UserHacks_ForceEvenSpritePosition = false;
 	UserHacks_NativePaletteDraw = false;
 	UserHacks_DisableSafeFeatures = false;
 	UserHacks_DisableRenderFixes = false;
@@ -991,7 +991,7 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 
 	UserHacks_AlignSpriteX = false;
 	UserHacks_MergePPSprite = false;
-	UserHacks_WildHack = false;
+	UserHacks_ForceEvenSpritePosition = false;
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	UserHacks_NativePaletteDraw = false;
 	UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;

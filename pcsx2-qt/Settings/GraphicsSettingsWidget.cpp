@@ -200,7 +200,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.textureOffsetY, "EmuCore/GS", "UserHacks_TCOffsetY", 0);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.wildHack, "EmuCore/GS", "UserHacks_WildHack", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceEvenSpritePosition, "EmuCore/GS", "UserHacks_forceEvenSpritePosition", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.nativePaletteDraw, "EmuCore/GS", "UserHacks_NativePaletteDraw", false);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -633,8 +633,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 			//: Namco: a game publisher and development company. Leave the name as-is. Ace Combat, Tekken, Soul Calibur: game names. Leave as-is or use official translations.
 			tr("Fixes issues with upscaling (vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc."));
 
-		//: Wild Arms: name of a game series. Leave as-is or use an official translation.
-		dialog->registerWidgetHelp(m_ui.wildHack, tr("Wild Arms Hack"), tr("Unchecked"),
+		dialog->registerWidgetHelp(m_ui.forceEvenSpritePosition, tr("Force Even Sprite Position"), tr("Unchecked"),
 			//: Wild Arms: name of a game series. Leave as-is or use an official translation.
 			tr("Lowers the GS precision to avoid gaps between pixels when upscaling. Fixes the text on Wild Arms games."));
 
@@ -1145,7 +1144,7 @@ void GraphicsSettingsWidget::resetManualHardwareFixes()
 		check_int("EmuCore/GS", "UserHacks_TCOffsetY", 0);
 		check_bool("EmuCore/GS", "UserHacks_align_sprite_X", false);
 		check_bool("EmuCore/GS", "UserHacks_merge_pp_sprite", false);
-		check_bool("EmuCore/GS", "UserHacks_WildHack", false);
+		check_bool("EmuCore/GS", "UserHacks_ForceEvenSpritePosition", false);
 		check_bool("EmuCore/GS", "UserHacks_BilinearHack", false);
 	}
 
