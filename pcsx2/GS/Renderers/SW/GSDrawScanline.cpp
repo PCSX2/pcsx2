@@ -103,21 +103,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData& data, GSScanlineLocalData
 
 	if (global.sel.mmin && global.sel.lcm)
 	{
-#if defined(__GNUC__) && _M_SSE >= 0x501
-		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80286
-		//
-		// GCC 4.9/5/6 doesn't generate correct AVX2 code for extract32<0>. It is fixed in GCC7
-		// Intrinsic code is _mm_cvtsi128_si32(_mm256_castsi256_si128(m))
-		// It seems recent Clang got _mm256_cvtsi256_si32(m) instead. I don't know about GCC.
-		//
-		// Generated code keep the integer in an XMM register but bit [64:32] aren't cleared.
-		// So the srl16 shift will be huge and v will be 0.
-		//
-		int lod_x = global.lod.i.x0;
-		GSVector4i v = global.t.minmax.srl16(lod_x);
-#else
 		GSVector4i v = global.t.minmax.srl16(global.lod.i.extract32<0>()); //.x);
-#endif
 
 		v = v.upl16(v);
 
