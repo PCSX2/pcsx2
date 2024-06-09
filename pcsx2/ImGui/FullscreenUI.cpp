@@ -3845,7 +3845,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawToggleSetting(bsi, FSUI_CSTR("Precache Replacements"),
 			FSUI_CSTR("Preloads all replacement textures to memory. Not necessary with asynchronous loading."), "EmuCore/GS",
 			"PrecacheTextureReplacements", false, replacement_active);
-		DrawFolderSetting(bsi, FSUI_CSTR("Replacements Directory"), FSUI_CSTR("Folders"), "Textures", EmuFolders::Textures);
+
+		if (!IsEditingGameSettings(bsi))
+		{
+			DrawFolderSetting(bsi, FSUI_CSTR("Replacements Directory"), FSUI_CSTR("Folders"), "Textures", EmuFolders::Textures);
+		}
 
 		MenuHeading(FSUI_CSTR("Texture Dumping"));
 		DrawToggleSetting(bsi, FSUI_CSTR("Dump Textures"), FSUI_CSTR("Dumps replaceable textures to disk. Will reduce performance."),

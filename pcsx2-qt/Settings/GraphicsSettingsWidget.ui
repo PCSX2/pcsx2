@@ -1215,17 +1215,17 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="textureReplacementTab">
       <attribute name="title">
        <string>Texture Replacement</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <layout class="QVBoxLayout" name="textureReplacementLayout">
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="textureOptions">
          <property name="title">
           <string>Options</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_8">
+         <layout class="QGridLayout" name="textureOptionLayout">
           <item row="3" column="0">
            <widget class="QCheckBox" name="precacheTextureReplacements">
             <property name="text">
@@ -1272,11 +1272,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_6">
+        <widget class="QGroupBox" name="texturesDirectoryBox">
          <property name="title">
           <string>Search Directory</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_4">
+         <layout class="QGridLayout" name="textureDirectoryLayout">
           <item row="1" column="0">
            <widget class="QLineEdit" name="texturesDirectory"/>
           </item>
@@ -1302,7 +1302,7 @@
            </widget>
           </item>
           <item row="0" column="0" colspan="4">
-           <widget class="QLabel" name="label_38">
+           <widget class="QLabel" name="textureDescriptionText">
             <property name="text">
              <string>PCSX2 will dump and load texture replacements from this directory.</string>
             </property>
