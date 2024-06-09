@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cpuinfo.h>
-#include <cpuinfo/common.h>
 #include <arm/api.h>
 #include <arm/linux/api.h>
+#include <cpuinfo.h>
+#include <cpuinfo/common.h>
 
 enum cpuinfo_android_chipset_property {
 	cpuinfo_android_chipset_property_proc_cpuinfo_hardware = 0,

@@ -1,77 +1,82 @@
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include <x86/cpuid.h>
 #include <cpuinfo.h>
-
+#include <x86/cpuid.h>
 
 #if CPUINFO_ARCH_X86
-	#ifdef _MSC_VER
-		#pragma pack(push, 2)
-	#endif
-	struct fxsave_region {
-		uint16_t fpu_control_word;
-		uint16_t fpu_status_word;
-		uint16_t fpu_tag_word;
-		uint16_t fpu_opcode;
-		uint32_t fpu_instruction_pointer_offset;
-		uint32_t fpu_instruction_pointer_selector;
-		uint32_t fpu_operand_pointer_offset;
-		uint32_t fpu_operand_pointer_selector;
-		uint32_t mxcsr_state;
-		uint32_t mxcsr_mask;
-		uint64_t fpu_registers[8 * 2];
-		uint64_t xmm_registers[8 * 2];
-		uint64_t padding[28];
-	}
-	#ifndef _MSC_VER
-		__attribute__((__aligned__(16), __packed__))
-	#endif
-	; /* end of fxsave_region structure */
-	#ifdef _MSC_VER
-		#pragma pack(pop, 2)
-	#endif
+#ifdef _MSC_VER
+#pragma pack(push, 2)
+#endif
+struct fxsave_region {
+	uint16_t fpu_control_word;
+	uint16_t fpu_status_word;
+	uint16_t fpu_tag_word;
+	uint16_t fpu_opcode;
+	uint32_t fpu_instruction_pointer_offset;
+	uint32_t fpu_instruction_pointer_selector;
+	uint32_t fpu_operand_pointer_offset;
+	uint32_t fpu_operand_pointer_selector;
+	uint32_t mxcsr_state;
+	uint32_t mxcsr_mask;
+	uint64_t fpu_registers[8 * 2];
+	uint64_t xmm_registers[8 * 2];
+	uint64_t padding[28];
+}
+#ifndef _MSC_VER
+__attribute__((__aligned__(16), __packed__))
+#endif
+; /* end of fxsave_region structure */
+#ifdef _MSC_VER
+#pragma pack(pop, 2)
+#endif
 #endif
 
-
 struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
-	const struct cpuid_regs basic_info, const struct cpuid_regs extended_info,
-	uint32_t max_base_index, uint32_t max_extended_index,
-	enum cpuinfo_vendor vendor, enum cpuinfo_uarch uarch)
-{
-	struct cpuinfo_x86_isa isa = { 0 };
+	const struct cpuid_regs basic_info,
+	const struct cpuid_regs extended_info,
+	uint32_t max_base_index,
+	uint32_t max_extended_index,
+	enum cpuinfo_vendor vendor,
+	enum cpuinfo_uarch uarch) {
+	struct cpuinfo_x86_isa isa = {0};
 
 	const struct cpuid_regs structured_feature_info0 =
-		(max_base_index >= 7) ? cpuidex(7, 0) : (struct cpuid_regs) { 0, 0, 0, 0};
+		(max_base_index >= 7) ? cpuidex(7, 0) : (struct cpuid_regs){0, 0, 0, 0};
 	const struct cpuid_regs structured_feature_info1 =
-		(max_base_index >= 7) ? cpuidex(7, 1) : (struct cpuid_regs) { 0, 0, 0, 0};
+		(max_base_index >= 7) ? cpuidex(7, 1) : (struct cpuid_regs){0, 0, 0, 0};
 
 	const uint32_t processor_capacity_info_index = UINT32_C(0x80000008);
-	const struct cpuid_regs processor_capacity_info =
-		(max_extended_index >= processor_capacity_info_index) ?
-			cpuid(processor_capacity_info_index) : (struct cpuid_regs) { 0, 0, 0, 0 };
+	const struct cpuid_regs processor_capacity_info = (max_extended_index >= processor_capacity_info_index)
+		? cpuid(processor_capacity_info_index)
+		: (struct cpuid_regs){0, 0, 0, 0};
 
 	bool avx_regs = false, avx512_regs = false, mpx_regs = false;
 	/*
-	 * OSXSAVE: Operating system enabled XSAVE instructions for application use:
-	 * - Intel, AMD: ecx[bit 26] in basic info = XSAVE/XRSTOR instructions supported by a chip.
-	 * - Intel, AMD: ecx[bit 27] in basic info = XSAVE/XRSTOR instructions enabled by OS.
+	 * OSXSAVE: Operating system enabled XSAVE instructions for application
+	 * use:
+	 * - Intel, AMD: ecx[bit 26] in basic info = XSAVE/XRSTOR instructions
+	 * supported by a chip.
+	 * - Intel, AMD: ecx[bit 27] in basic info = XSAVE/XRSTOR instructions
+	 * enabled by OS.
 	 */
 	const uint32_t osxsave_mask = UINT32_C(0x0C000000);
 	if ((basic_info.ecx & osxsave_mask) == osxsave_mask) {
 		uint64_t xcr0_valid_bits = 0;
 		if (max_base_index >= 0xD) {
 			const struct cpuid_regs regs = cpuidex(0xD, 0);
-			xcr0_valid_bits = ((uint64_t) regs.edx << 32) | regs.eax;
+			xcr0_valid_bits = ((uint64_t)regs.edx << 32) | regs.eax;
 		}
 
 		const uint64_t xfeature_enabled_mask = xgetbv(0);
 
 		/*
 		 * AVX registers:
-		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 1] for low 128 bits of ymm registers
-		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 2] for high 128 bits of ymm registers
+		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 1] for low 128 bits
+		 * of ymm registers
+		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 2] for high 128 bits
+		 * of ymm registers
 		 */
 		const uint64_t avx_regs_mask = UINT64_C(0x0000000000000006);
 		if ((xcr0_valid_bits & avx_regs_mask) == avx_regs_mask) {
@@ -80,11 +85,16 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 
 		/*
 		 * AVX512 registers:
-		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 1] for low 128 bits of zmm registers
-		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 2] for bits 128-255 of zmm registers
-		 * - Intel: XFEATURE_ENABLED_MASK[bit 5] for 8 64-bit OpMask registers (k0-k7)
-		 * - Intel: XFEATURE_ENABLED_MASK[bit 6] for the high 256 bits of the zmm registers zmm0-zmm15
-		 * - Intel: XFEATURE_ENABLED_MASK[bit 7] for the 512-bit zmm registers zmm16-zmm31
+		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 1] for low 128 bits
+		 * of zmm registers
+		 * - Intel, AMD: XFEATURE_ENABLED_MASK[bit 2] for bits 128-255
+		 * of zmm registers
+		 * - Intel: XFEATURE_ENABLED_MASK[bit 5] for 8 64-bit OpMask
+		 * registers (k0-k7)
+		 * - Intel: XFEATURE_ENABLED_MASK[bit 6] for the high 256 bits
+		 * of the zmm registers zmm0-zmm15
+		 * - Intel: XFEATURE_ENABLED_MASK[bit 7] for the 512-bit zmm
+		 * registers zmm16-zmm31
 		 */
 		const uint64_t avx512_regs_mask = UINT64_C(0x00000000000000E6);
 		if ((xcr0_valid_bits & avx512_regs_mask) == avx512_regs_mask) {
@@ -134,7 +144,8 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 
 	/*
 	 * CLZERO instruction:
-	 * - AMD: ebx[bit 0] in processor capacity info (reserved bit on Intel CPUs).
+	 * - AMD: ebx[bit 0] in processor capacity info (reserved bit on Intel
+	 * CPUs).
 	 */
 	isa.clzero = !!(processor_capacity_info.ebx & UINT32_C(0x00000001));
 
@@ -165,7 +176,8 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 	/*
 	 * FXSAVE/FXRSTOR instructions:
 	 * - Intel, AMD: edx[bit 24] in basic info.
-	 * - AMD: edx[bit 24] in extended info (zero bit on Intel CPUs, EMMX bit on Cyrix CPUs).
+	 * - AMD: edx[bit 24] in extended info (zero bit on Intel CPUs, EMMX bit
+	 * on Cyrix CPUs).
 	 */
 	switch (vendor) {
 #if CPUINFO_ARCH_X86
@@ -230,27 +242,35 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 
 	/*
 	 * PREFETCH instruction:
-	 * - AMD: ecx[bit 8] of extended info (one of 3dnow! prefetch instructions).
-	 *        On Intel this bit indicates PREFETCHW, but not PREFETCH support.
-	 * - AMD: edx[bit 31] of extended info (implied by 3dnow! support). Reserved bit on Intel CPUs.
-	 * - AMD: edx[bit 30] of extended info (implied by 3dnow!+ support). Reserved bit on Intel CPUs.
-	 * - AMD: edx[bit 29] of extended info (x86-64 support). Does not imply PREFETCH support on non-AMD CPUs!!!
+	 * - AMD: ecx[bit 8] of extended info (one of 3dnow! prefetch
+	 * instructions). On Intel this bit indicates PREFETCHW, but not
+	 * PREFETCH support.
+	 * - AMD: edx[bit 31] of extended info (implied by 3dnow! support).
+	 * Reserved bit on Intel CPUs.
+	 * - AMD: edx[bit 30] of extended info (implied by 3dnow!+ support).
+	 * Reserved bit on Intel CPUs.
+	 * - AMD: edx[bit 29] of extended info (x86-64 support). Does not imply
+	 * PREFETCH support on non-AMD CPUs!!!
 	 */
 	switch (vendor) {
 		case cpuinfo_vendor_intel:
 			/*
 			 * Instruction is not documented in the manual,
-			 * and the 3dnow! prefetch CPUID bit indicates PREFETCHW instruction.
+			 * and the 3dnow! prefetch CPUID bit indicates PREFETCHW
+			 * instruction.
 			 */
 			break;
 		case cpuinfo_vendor_amd:
 		case cpuinfo_vendor_hygon:
-			isa.prefetch = !!((extended_info.ecx & UINT32_C(0x00000100)) | (extended_info.edx & UINT32_C(0xE0000000)));
+			isa.prefetch =
+				!!((extended_info.ecx & UINT32_C(0x00000100)) |
+				   (extended_info.edx & UINT32_C(0xE0000000)));
 			break;
 		default:
 			/*
-			 * Conservatively assume, that 3dnow!/3dnow!+ support implies PREFETCH support, but
-			 * 3dnow! prefetch CPUID bit follows Intel spec (PREFETCHW, but not PREFETCH).
+			 * Conservatively assume, that 3dnow!/3dnow!+ support
+			 * implies PREFETCH support, but 3dnow! prefetch CPUID
+			 * bit follows Intel spec (PREFETCHW, but not PREFETCH).
 			 */
 			isa.prefetch = !!(extended_info.edx & UINT32_C(0xC0000000));
 			break;
@@ -258,26 +278,36 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 
 	/*
 	 * PREFETCHW instruction:
-	 * - AMD: ecx[bit 8] of extended info (one of 3dnow! prefetch instructions).
+	 * - AMD: ecx[bit 8] of extended info (one of 3dnow! prefetch
+	 * instructions).
 	 * - Intel: ecx[bit 8] of extended info (PREFETCHW instruction only).
-	 * - AMD: edx[bit 31] of extended info (implied by 3dnow! support). Reserved bit on Intel CPUs.
-	 * - AMD: edx[bit 30] of extended info (implied by 3dnow!+ support). Reserved bit on Intel CPUs.
-	 * - AMD: edx[bit 29] of extended info (x86-64 support). Does not imply PREFETCHW support on non-AMD CPUs!!!
+	 * - AMD: edx[bit 31] of extended info (implied by 3dnow! support).
+	 * Reserved bit on Intel CPUs.
+	 * - AMD: edx[bit 30] of extended info (implied by 3dnow!+ support).
+	 * Reserved bit on Intel CPUs.
+	 * - AMD: edx[bit 29] of extended info (x86-64 support). Does not imply
+	 * PREFETCHW support on non-AMD CPUs!!!
 	 */
 	switch (vendor) {
 		case cpuinfo_vendor_amd:
 		case cpuinfo_vendor_hygon:
-			isa.prefetchw = !!((extended_info.ecx & UINT32_C(0x00000100)) | (extended_info.edx & UINT32_C(0xE0000000)));
+			isa.prefetchw =
+				!!((extended_info.ecx & UINT32_C(0x00000100)) |
+				   (extended_info.edx & UINT32_C(0xE0000000)));
 			break;
 		default:
-			/* Assume, that 3dnow!/3dnow!+ support implies PREFETCHW support, not implications from x86-64 support */
-			isa.prefetchw = !!((extended_info.ecx & UINT32_C(0x00000100)) | (extended_info.edx & UINT32_C(0xC0000000)));
+			/* Assume, that 3dnow!/3dnow!+ support implies PREFETCHW
+			 * support, not implications from x86-64 support */
+			isa.prefetchw =
+				!!((extended_info.ecx & UINT32_C(0x00000100)) |
+				   (extended_info.edx & UINT32_C(0xC0000000)));
 			break;
 	}
 
 	/*
 	 * PREFETCHWT1 instruction:
-	 * - Intel: ecx[bit 0] of structured feature info (ecx = 0). Reserved bit on AMD.
+	 * - Intel: ecx[bit 0] of structured feature info (ecx = 0). Reserved
+	 * bit on AMD.
 	 */
 	isa.prefetchwt1 = !!(structured_feature_info0.ecx & UINT32_C(0x00000001));
 
@@ -311,12 +341,12 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 	} else {
 		/* Detect DAZ support from masked MXCSR bits */
 		if (isa.sse && isa.fxsave) {
-			struct fxsave_region region = { 0 };
-			#ifdef _MSC_VER
-				_fxsave(&region);
-			#else
-				__asm__ __volatile__ ("fxsave %[region];" : [region] "+m" (region));
-			#endif
+			struct fxsave_region region = {0};
+#ifdef _MSC_VER
+			_fxsave(&region);
+#else
+			__asm__ __volatile__("fxsave %[region];" : [region] "+m"(region));
+#endif
 
 			/*
 			 * Denormals-as-zero (DAZ) flag:
@@ -332,7 +362,6 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 	 * - Intel, AMD: ecx[bit 9] in basic info.
 	 */
 	isa.ssse3 = !!(basic_info.ecx & UINT32_C(0x0000200));
-
 
 	/*
 	 * SSE4.1 instructions:
@@ -509,6 +538,48 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 	isa.avx512bf16 = avx512_regs && !!(structured_feature_info1.eax & UINT32_C(0x00000020));
 
 	/*
+	 * AMX_BF16 instructions:
+	 * - Intel: edx[bit 22] in structured feature info (ecx = 0).
+	 */
+	isa.amx_bf16 = avx512_regs && !!(structured_feature_info0.edx & UINT32_C(0x00400000));
+
+	/*
+	 * AMX_TILE instructions:
+	 * - Intel: edx[bit 24] in structured feature info (ecx = 0).
+	 */
+	isa.amx_tile = avx512_regs && !!(structured_feature_info0.edx & UINT32_C(0x01000000));
+
+	/*
+	 * AMX_INT8 instructions:
+	 * - Intel: edx[bit 25] in structured feature info (ecx = 0).
+	 */
+	isa.amx_int8 = avx512_regs && !!(structured_feature_info0.edx & UINT32_C(0x02000000));
+
+	/*
+	 * AMX_FP16 instructions:
+	 * - Intel: eax[bit 21] in structured feature info (ecx = 1).
+	 */
+	isa.amx_fp16 = avx512_regs && !!(structured_feature_info1.eax & UINT32_C(0x00200000));
+
+	/*
+	 * AVX_VNNI_INT8 instructions:
+	 * - Intel: edx[bit 4] in structured feature info (ecx = 1).
+	 */
+	isa.avx_vnni_int8 = avx_regs && !!(structured_feature_info1.edx & UINT32_C(0x00000010));
+
+	/*
+	 * AVX_VNNI_INT16 instructions:
+	 * - Intel: edx[bit 10] in structured feature info (ecx = 1).
+	 */
+	isa.avx_vnni_int16 = avx_regs && !!(structured_feature_info1.edx & UINT32_C(0x00000400));
+
+	/*
+	 * AVX_NE_CONVERT instructions:
+	 * - Intel: edx[bit 5] in structured feature info (ecx = 1).
+	 */
+	isa.avx_ne_convert = avx_regs && !!(structured_feature_info1.edx & UINT32_C(0x00000020));
+
+	/*
 	 * HLE instructions:
 	 * - Intel: ebx[bit 4] in structured feature info (ecx = 0).
 	 */
@@ -569,7 +640,8 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 #if CPUINFO_ARCH_X86_64
 	/*
 	 * Some early x86-64 CPUs lack LAHF & SAHF instructions.
-	 * A special CPU feature bit must be checked to ensure their availability:
+	 * A special CPU feature bit must be checked to ensure their
+	 * availability:
 	 * - Intel, AMD: ecx[bit 0] in extended info.
 	 */
 	isa.lahf_sahf = !!(extended_info.ecx & UINT32_C(0x00000001));
@@ -674,40 +746,50 @@ struct cpuinfo_x86_isa cpuinfo_x86_detect_isa(
 
 			/*
 			 * Padlock RNG extension:
-			 * - VIA: edx[bit 2] in padlock info = RNG exists on chip flag.
-			 * - VIA: edx[bit 3] in padlock info = RNG enabled by OS.
+			 * - VIA: edx[bit 2] in padlock info = RNG exists on
+			 * chip flag.
+			 * - VIA: edx[bit 3] in padlock info = RNG enabled by
+			 * OS.
 			 */
 			const uint32_t padlock_rng_mask = UINT32_C(0x0000000C);
 			isa.rng = (padlock_info.edx & padlock_rng_mask) == padlock_rng_mask;
 
 			/*
 			 * Padlock ACE extension:
-			 * - VIA: edx[bit 6] in padlock info = ACE exists on chip flag.
-			 * - VIA: edx[bit 7] in padlock info = ACE enabled by OS.
+			 * - VIA: edx[bit 6] in padlock info = ACE exists on
+			 * chip flag.
+			 * - VIA: edx[bit 7] in padlock info = ACE enabled by
+			 * OS.
 			 */
 			const uint32_t padlock_ace_mask = UINT32_C(0x000000C0);
 			isa.ace = (padlock_info.edx & padlock_ace_mask) == padlock_ace_mask;
 
 			/*
 			 * Padlock ACE 2 extension:
-			 * - VIA: edx[bit 8] in padlock info = ACE2 exists on chip flag.
-			 * - VIA: edx[bit 9] in padlock info = ACE 2 enabled by OS.
+			 * - VIA: edx[bit 8] in padlock info = ACE2 exists on
+			 * chip flag.
+			 * - VIA: edx[bit 9] in padlock info = ACE 2 enabled by
+			 * OS.
 			 */
 			const uint32_t padlock_ace2_mask = UINT32_C(0x00000300);
 			isa.ace2 = (padlock_info.edx & padlock_ace2_mask) == padlock_ace2_mask;
 
 			/*
 			 * Padlock PHE extension:
-			 * - VIA: edx[bit 10] in padlock info = PHE exists on chip flag.
-			 * - VIA: edx[bit 11] in padlock info = PHE enabled by OS.
+			 * - VIA: edx[bit 10] in padlock info = PHE exists on
+			 * chip flag.
+			 * - VIA: edx[bit 11] in padlock info = PHE enabled by
+			 * OS.
 			 */
 			const uint32_t padlock_phe_mask = UINT32_C(0x00000C00);
 			isa.phe = (padlock_info.edx & padlock_phe_mask) == padlock_phe_mask;
 
 			/*
 			 * Padlock PMM extension:
-			 * - VIA: edx[bit 12] in padlock info = PMM exists on chip flag.
-			 * - VIA: edx[bit 13] in padlock info = PMM enabled by OS.
+			 * - VIA: edx[bit 12] in padlock info = PMM exists on
+			 * chip flag.
+			 * - VIA: edx[bit 13] in padlock info = PMM enabled by
+			 * OS.
 			 */
 			const uint32_t padlock_pmm_mask = UINT32_C(0x00003000);
 			isa.pmm = (padlock_info.edx & padlock_pmm_mask) == padlock_pmm_mask;

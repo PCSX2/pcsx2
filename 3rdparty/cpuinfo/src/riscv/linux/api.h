@@ -22,23 +22,26 @@ struct cpuinfo_riscv_linux_processor {
 	uint32_t flags;
 
 	/**
-	 * Minimum processor ID on the cluster which includes this logical processor.
-	 * This value can serve as an ID for the cluster of logical processors: it is the
-	 * same for all logical processors on the same package.
+	 * Minimum processor ID on the cluster which includes this logical
+	 * processor. This value can serve as an ID for the cluster of logical
+	 * processors: it is the same for all logical processors on the same
+	 * package.
 	 */
 	uint32_t cluster_leader_id;
 
 	/**
-	 * Minimum processor ID on the core which includes this logical processor.
-	 * This value can serve as an ID for the core of logical processors: it
-	 * is the same for all logical processors on the same core.
+	 * Minimum processor ID on the core which includes this logical
+	 * processor. This value can serve as an ID for the core of logical
+	 * processors: it is the same for all logical processors on the same
+	 * core.
 	 */
 	uint32_t core_leader_id;
 
 	/**
-	 * Minimum processor ID on the package which includes this logical processor.
-	 * This value can serve as an ID for the package of logical processors: it
-	 * is the same for all logical processors on the same package.
+	 * Minimum processor ID on the package which includes this logical
+	 * processor. This value can serve as an ID for the package of logical
+	 * processors: it is the same for all logical processors on the same
+	 * package.
 	 */
 	uint32_t package_leader_id;
 };
@@ -49,8 +52,7 @@ struct cpuinfo_riscv_linux_processor {
  *
  * @param[isa] - Reference to cpuinfo_riscv_isa structure to populate.
  */
-CPUINFO_INTERNAL void cpuinfo_riscv_linux_decode_isa_from_hwcap(
-	struct cpuinfo_riscv_isa isa[restrict static 1]);
+CPUINFO_INTERNAL void cpuinfo_riscv_linux_decode_isa_from_hwcap(struct cpuinfo_riscv_isa isa[restrict static 1]);
 
 /**
  * Reads `sys_riscv_hwprobe` and determines the processor vendor and

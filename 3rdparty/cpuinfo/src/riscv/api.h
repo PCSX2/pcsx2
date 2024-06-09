@@ -8,7 +8,7 @@
 /* RISC-V Vendor IDs. */
 enum cpuinfo_riscv_chipset_vendor {
 	cpuinfo_riscv_chipset_vendor_unknown = 0,
-	cpuinfo_riscv_chipset_sifive = 0x489,
+	cpuinfo_riscv_chipset_vendor_sifive = 0x489,
 	cpuinfo_riscv_chipset_vendor_max,
 };
 
@@ -35,8 +35,8 @@ enum cpuinfo_riscv_chipset_impl {
  * @param[uarch] - Reference to the cpuinfo_uarch to populate.
  */
 CPUINFO_INTERNAL void cpuinfo_riscv_decode_vendor_uarch(
-		uint32_t vendor_id,
-		uint32_t arch_id,
-		uint32_t imp_id,
-		enum cpuinfo_vendor vendor[restrict static 1],
-		enum cpuinfo_uarch uarch[restrict static 1]);
+	uint32_t vendor_id,
+	uint32_t arch_id,
+	uint32_t imp_id,
+	enum cpuinfo_vendor vendor[restrict static 1],
+	enum cpuinfo_uarch uarch[restrict static 1]);

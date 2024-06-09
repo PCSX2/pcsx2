@@ -80,45 +80,47 @@ struct cpuinfo_arm_chipset {
 #define CPUINFO_ARM_CHIPSET_NAME_MAX CPUINFO_PACKAGE_NAME_MAX
 
 #ifndef __cplusplus
-	CPUINFO_INTERNAL void cpuinfo_arm_chipset_to_string(
-		const struct cpuinfo_arm_chipset chipset[restrict static 1],
-		char name[restrict static CPUINFO_ARM_CHIPSET_NAME_MAX]);
+CPUINFO_INTERNAL void cpuinfo_arm_chipset_to_string(
+	const struct cpuinfo_arm_chipset chipset[restrict static 1],
+	char name[restrict static CPUINFO_ARM_CHIPSET_NAME_MAX]);
 
-	CPUINFO_INTERNAL void cpuinfo_arm_fixup_chipset(
-		struct cpuinfo_arm_chipset chipset[restrict static 1], uint32_t cores, uint32_t max_cpu_freq_max);
+CPUINFO_INTERNAL void cpuinfo_arm_fixup_chipset(
+	struct cpuinfo_arm_chipset chipset[restrict static 1],
+	uint32_t cores,
+	uint32_t max_cpu_freq_max);
 
-	CPUINFO_INTERNAL void cpuinfo_arm_decode_vendor_uarch(
-		uint32_t midr,
-	#if CPUINFO_ARCH_ARM
-		bool has_vfpv4,
-	#endif
-		enum cpuinfo_vendor vendor[restrict static 1],
-		enum cpuinfo_uarch uarch[restrict static 1]);
+CPUINFO_INTERNAL void cpuinfo_arm_decode_vendor_uarch(
+	uint32_t midr,
+#if CPUINFO_ARCH_ARM
+	bool has_vfpv4,
+#endif
+	enum cpuinfo_vendor vendor[restrict static 1],
+	enum cpuinfo_uarch uarch[restrict static 1]);
 
-	CPUINFO_INTERNAL void cpuinfo_arm_decode_cache(
-		enum cpuinfo_uarch uarch,
-		uint32_t cluster_cores,
-		uint32_t midr,
-		const struct cpuinfo_arm_chipset chipset[restrict static 1],
-		uint32_t cluster_id,
-		uint32_t arch_version,
-		struct cpuinfo_cache l1i[restrict static 1],
-		struct cpuinfo_cache l1d[restrict static 1],
-		struct cpuinfo_cache l2[restrict static 1],
-		struct cpuinfo_cache l3[restrict static 1]);
+CPUINFO_INTERNAL void cpuinfo_arm_decode_cache(
+	enum cpuinfo_uarch uarch,
+	uint32_t cluster_cores,
+	uint32_t midr,
+	const struct cpuinfo_arm_chipset chipset[restrict static 1],
+	uint32_t cluster_id,
+	uint32_t arch_version,
+	struct cpuinfo_cache l1i[restrict static 1],
+	struct cpuinfo_cache l1d[restrict static 1],
+	struct cpuinfo_cache l2[restrict static 1],
+	struct cpuinfo_cache l3[restrict static 1]);
 
-	CPUINFO_INTERNAL uint32_t cpuinfo_arm_compute_max_cache_size(
-		const struct cpuinfo_processor processor[restrict static 1]);
+CPUINFO_INTERNAL uint32_t
+cpuinfo_arm_compute_max_cache_size(const struct cpuinfo_processor processor[restrict static 1]);
 #else /* defined(__cplusplus) */
-	CPUINFO_INTERNAL void cpuinfo_arm_decode_cache(
-		enum cpuinfo_uarch uarch,
-		uint32_t cluster_cores,
-		uint32_t midr,
-		const struct cpuinfo_arm_chipset chipset[1],
-		uint32_t cluster_id,
-		uint32_t arch_version,
-		struct cpuinfo_cache l1i[1],
-		struct cpuinfo_cache l1d[1],
-		struct cpuinfo_cache l2[1],
-		struct cpuinfo_cache l3[1]);
+CPUINFO_INTERNAL void cpuinfo_arm_decode_cache(
+	enum cpuinfo_uarch uarch,
+	uint32_t cluster_cores,
+	uint32_t midr,
+	const struct cpuinfo_arm_chipset chipset[1],
+	uint32_t cluster_id,
+	uint32_t arch_version,
+	struct cpuinfo_cache l1i[1],
+	struct cpuinfo_cache l1d[1],
+	struct cpuinfo_cache l2[1],
+	struct cpuinfo_cache l3[1]);
 #endif

@@ -10,13 +10,13 @@ void cpuinfo_riscv_decode_vendor_uarch(
 	enum cpuinfo_vendor vendor[restrict static 1],
 	enum cpuinfo_uarch uarch[restrict static 1]) {
 	/* The vendor ID is sufficient to determine the cpuinfo_vendor. */
-	switch(vendor_id) {
-		case cpuinfo_riscv_chipset_sifive:
+	switch (vendor_id) {
+		case cpuinfo_riscv_chipset_vendor_sifive:
 			*vendor = cpuinfo_vendor_sifive;
 			break;
 		default:
 			*vendor = cpuinfo_vendor_unknown;
-			cpuinfo_log_warning("unknown vendor ID: %"PRIu32, vendor_id);
+			cpuinfo_log_warning("unknown vendor ID: %" PRIu32, vendor_id);
 			break;
 	}
 	/**

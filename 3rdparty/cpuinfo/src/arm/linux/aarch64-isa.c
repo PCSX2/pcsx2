@@ -3,14 +3,12 @@
 #include <arm/linux/api.h>
 #include <cpuinfo/log.h>
 
-
 void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 	uint32_t features,
 	uint32_t features2,
 	uint32_t midr,
 	const struct cpuinfo_arm_chipset chipset[restrict static 1],
-	struct cpuinfo_arm_isa isa[restrict static 1])
-{
+	struct cpuinfo_arm_isa isa[restrict static 1]) {
 	if (features & CPUINFO_ARM_LINUX_FEATURE_AES) {
 		isa->aes = true;
 	}
@@ -31,8 +29,10 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 	}
 
 	/*
-	 * Some phones ship with an old kernel configuration that doesn't report NEON FP16 compute extension and SQRDMLAH/SQRDMLSH/UQRDMLAH/UQRDMLSH instructions.
-	 * Use a MIDR-based heuristic to whitelist processors known to support it:
+	 * Some phones ship with an old kernel configuration that doesn't report
+	 * NEON FP16 compute extension and SQRDMLAH/SQRDMLSH/UQRDMLAH/UQRDMLSH
+	 * instructions. Use a MIDR-based heuristic to whitelist processors
+	 * known to support it:
 	 * - Processors with Cortex-A55 cores
 	 * - Processors with Cortex-A65 cores
 	 * - Processors with Cortex-A75 cores
@@ -46,8 +46,10 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 	 * - Neoverse V2 cores
 	 */
 	if (chipset->series == cpuinfo_arm_chipset_series_samsung_exynos && chipset->model == 9810) {
-		/* Exynos 9810 reports that it supports FP16 compute, but in fact only little cores do */
-		cpuinfo_log_warning("FP16 arithmetics and RDM disabled: only little cores in Exynos 9810 support these extensions");
+		/* Exynos 9810 reports that it supports FP16 compute, but in
+		 * fact only little cores do */
+		cpuinfo_log_warning(
+			"FP16 arithmetics and RDM disabled: only little cores in Exynos 9810 support these extensions");
 	} else {
 		const uint32_t fp16arith_mask = CPUINFO_ARM_LINUX_FEATURE_FPHP | CPUINFO_ARM_LINUX_FEATURE_ASIMDHP;
 		switch (midr & (CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK)) {
@@ -75,9 +77,11 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 				if ((features & fp16arith_mask) == fp16arith_mask) {
 					isa->fp16arith = true;
 				} else if (features & CPUINFO_ARM_LINUX_FEATURE_FPHP) {
-					cpuinfo_log_warning("FP16 arithmetics disabled: detected support only for scalar operations");
+					cpuinfo_log_warning(
+						"FP16 arithmetics disabled: detected support only for scalar operations");
 				} else if (features & CPUINFO_ARM_LINUX_FEATURE_ASIMDHP) {
-					cpuinfo_log_warning("FP16 arithmetics disabled: detected support only for SIMD operations");
+					cpuinfo_log_warning(
+						"FP16 arithmetics disabled: detected support only for SIMD operations");
 				}
 				if (features & CPUINFO_ARM_LINUX_FEATURE_ASIMDRDM) {
 					isa->rdm = true;
@@ -90,8 +94,9 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 	}
 
 	/*
-	 * Many phones ship with an old kernel configuration that doesn't report UDOT/SDOT instructions.
-	 * Use a MIDR-based heuristic to whitelist processors known to support it.
+	 * Many phones ship with an old kernel configuration that doesn't report
+	 * UDOT/SDOT instructions. Use a MIDR-based heuristic to whitelist
+	 * processors known to support it.
 	 */
 	switch (midr & (CPUINFO_ARM_MIDR_IMPLEMENTER_MASK | CPUINFO_ARM_MIDR_PART_MASK)) {
 		case UINT32_C(0x4100D060): /* Cortex-A65 */
@@ -137,8 +142,9 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 	if (features2 & CPUINFO_ARM_LINUX_FEATURE2_SVE2) {
 		isa->sve2 = true;
 	}
-	// SVEBF16 is set iff SVE and BF16 are both supported, but the SVEBF16 feature flag
-	// was added in Linux kernel before the BF16 feature flag, so we check for either.
+	// SVEBF16 is set iff SVE and BF16 are both supported, but the SVEBF16
+	// feature flag was added in Linux kernel before the BF16 feature flag,
+	// so we check for either.
 	if (features2 & (CPUINFO_ARM_LINUX_FEATURE2_BF16 | CPUINFO_ARM_LINUX_FEATURE2_SVEBF16)) {
 		isa->bf16 = true;
 	}
@@ -146,4 +152,3 @@ void cpuinfo_arm64_linux_decode_isa_from_proc_cpuinfo(
 		isa->fhm = true;
 	}
 }
-
