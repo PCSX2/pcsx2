@@ -251,72 +251,54 @@ static void cdvdWriteNVM(const u8* src, int offset, int bytes)
 		std::memcpy(&s_nvram[offset], src, to_write);
 }
 
-void getNvmData(u8* buffer, s32 offset, s32 size, s32 fmtOffset)
-{
-	// find the correct bios version
-	const NVMLayout* nvmLayout = getNvmLayout();
-
-	// get data from eeprom
-	cdvdReadNVM(buffer, *reinterpret_cast<const s32*>((reinterpret_cast<const u8*>(nvmLayout)) + fmtOffset) + offset, size);
-}
-
-void setNvmData(const u8* buffer, s32 offset, s32 size, s32 fmtOffset)
-{
-	// find the correct bios version
-	const NVMLayout* nvmLayout = getNvmLayout();
-
-	// set data in eeprom
-	cdvdWriteNVM(buffer, GetBufferU32(&reinterpret_cast<const u8*>(nvmLayout)[0], fmtOffset) + offset, size);
-}
-
 static void cdvdReadConsoleID(u8* id)
 {
-	getNvmData(id, 0, 8, offsetof(NVMLayout, consoleId));
+	cdvdReadNVM(id, getNvmLayout()->consoleId, 8);
 }
 static void cdvdWriteConsoleID(const u8* id)
 {
-	setNvmData(id, 0, 8, offsetof(NVMLayout, consoleId));
+	cdvdWriteNVM(id, getNvmLayout()->consoleId, 8);
 }
 
 static void cdvdReadILinkID(u8* id)
 {
-	getNvmData(id, 0, 8, offsetof(NVMLayout, ilinkId));
+	cdvdReadNVM(id, getNvmLayout()->ilinkId, 8);
 }
 static void cdvdWriteILinkID(const u8* id)
 {
-	setNvmData(id, 0, 8, offsetof(NVMLayout, ilinkId));
+	cdvdWriteNVM(id, getNvmLayout()->ilinkId, 8);
 }
 
 static void cdvdReadModelNumber(u8* num, s32 part)
 {
-	getNvmData(num, part, 8, offsetof(NVMLayout, modelNum));
+	cdvdReadNVM(num, getNvmLayout()->modelNum + part, 8);
 }
 static void cdvdWriteModelNumber(const u8* num, s32 part)
 {
-	setNvmData(num, part, 8, offsetof(NVMLayout, modelNum));
+	cdvdWriteNVM(num, getNvmLayout()->modelNum + part, 8);
 }
 
 static void cdvdReadRegionParams(u8* num)
 {
-	getNvmData(num, 0, 8, offsetof(NVMLayout, regparams));
+	cdvdReadNVM(num, getNvmLayout()->regparams, 8);
 }
 static void cdvdWriteRegionParams(const u8* num)
 {
-	setNvmData(num, 0, 8, offsetof(NVMLayout, regparams));
+	cdvdWriteNVM(num, getNvmLayout()->regparams, 8);
 }
 
 static void cdvdReadMAC(u8* num)
 {
-	getNvmData(num, 0, 8, offsetof(NVMLayout, mac));
+	cdvdReadNVM(num, getNvmLayout()->mac, 8);
 }
 static void cdvdWriteMAC(const u8* num)
 {
-	setNvmData(num, 0, 8, offsetof(NVMLayout, mac));
+	cdvdWriteNVM(num, getNvmLayout()->mac, 8);
 }
 
 void cdvdReadLanguageParams(u8* config)
 {
-	getNvmData(config, 0xF, 16, offsetof(NVMLayout, config1));
+	cdvdReadNVM(config, getNvmLayout()->config1 + 0xF, 16);
 }
 
 s32 cdvdReadConfig(u8* config)
@@ -341,16 +323,17 @@ s32 cdvdReadConfig(u8* config)
 	}
 
 	// get config data
+	const NVMLayout* nvmLayout = getNvmLayout();
 	switch (cdvd.COffset)
 	{
 		case 0:
-			getNvmData(config, (cdvd.CBlockIndex++) * 16, 16, offsetof(NVMLayout, config0));
+			cdvdReadNVM(config, nvmLayout->config0 + ((cdvd.CBlockIndex++) * 16), 16);
 			break;
 		case 2:
-			getNvmData(config, (cdvd.CBlockIndex++) * 16, 16, offsetof(NVMLayout, config2));
+			cdvdReadNVM(config, nvmLayout->config2 + ((cdvd.CBlockIndex++) * 16), 16);
 			break;
 		default:
-			getNvmData(config, (cdvd.CBlockIndex++) * 16, 16, offsetof(NVMLayout, config1));
+			cdvdReadNVM(config, nvmLayout->config1 + ((cdvd.CBlockIndex++) * 16), 16);
 	}
 	return 0;
 }
@@ -366,16 +349,18 @@ s32 cdvdWriteConfig(const u8* config)
 		return 0;
 
 	// get config data
+	const NVMLayout* nvmLayout = getNvmLayout();
 	switch (cdvd.COffset)
 	{
 		case 0:
-			setNvmData(config, (cdvd.CBlockIndex++) * 16, 16, offsetof(NVMLayout, config0));
+			cdvdWriteNVM(config, nvmLayout->config0 + ((cdvd.CBlockIndex++) * 16), 16);
 			break;
 		case 2:
-			setNvmData(config, (cdvd.CBlockIndex++) * 16, 16, offsetof(NVMLayout, config2));
+			cdvdWriteNVM(config, nvmLayout->config2 + ((cdvd.CBlockIndex++) * 16), 16);
 			break;
 		default:
-			setNvmData(config, (cdvd.CBlockIndex++) * 16, 16, offsetof(NVMLayout, config1));
+			cdvdWriteNVM(config, nvmLayout->config1 + ((cdvd.CBlockIndex++) * 16), 16);
+			break;
 	}
 	return 0;
 }
