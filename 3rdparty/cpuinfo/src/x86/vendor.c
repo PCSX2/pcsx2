@@ -3,7 +3,6 @@
 #include <cpuinfo.h>
 #include <x86/api.h>
 
-
 /* Intel vendor string: "GenuineIntel" */
 #define Genu UINT32_C(0x756E6547)
 #define ineI UINT32_C(0x49656E69)
@@ -15,8 +14,8 @@
 #define cAMD UINT32_C(0x444D4163)
 #define AMDi UINT32_C(0x69444D41)
 #define sbet UINT32_C(0x74656273)
-#define ter  UINT32_C(0x21726574)
-#define AMD  UINT32_C(0x20444D41)
+#define ter UINT32_C(0x21726574)
+#define AMD UINT32_C(0x20444D41)
 #define ISBE UINT32_C(0x45425349)
 #define TTER UINT32_C(0x52455454)
 
@@ -24,7 +23,7 @@
 #define Cent UINT32_C(0x746E6543)
 #define aurH UINT32_C(0x48727561)
 #define auls UINT32_C(0x736C7561)
-#define VIA  UINT32_C(0x20414956)
+#define VIA UINT32_C(0x20414956)
 
 /* Hygon vendor string: "HygonGenuine" */
 #define Hygo UINT32_C(0x6F677948)
@@ -49,10 +48,10 @@
 /* NSC vendor string: "Geode by NSC" */
 #define Geod UINT32_C(0x646F6547)
 #define e_by UINT32_C(0x79622065)
-#define NSC  UINT32_C(0x43534E20)
+#define NSC UINT32_C(0x43534E20)
 
 /* SiS vendor string: "SiS SiS SiS " */
-#define SiS  UINT32_C(0x20536953)
+#define SiS UINT32_C(0x20536953)
 
 /* NexGen vendor string: "NexGenDriven" */
 #define NexG UINT32_C(0x4778654E)
@@ -60,17 +59,16 @@
 #define iven UINT32_C(0x6E657669)
 
 /* UMC vendor string: "UMC UMC UMC " */
-#define UMC  UINT32_C(0x20434D55)
+#define UMC UINT32_C(0x20434D55)
 
 /* RDC vendor string: "Genuine  RDC" */
-#define ine  UINT32_C(0x20656E69)
-#define RDC  UINT32_C(0x43445220)
+#define ine UINT32_C(0x20656E69)
+#define RDC UINT32_C(0x43445220)
 
 /* D&MP vendor string: "Vortex86 SoC" */
 #define Vort UINT32_C(0x74726F56)
 #define ex86 UINT32_C(0x36387865)
-#define SoC  UINT32_C(0x436F5320)
-
+#define SoC UINT32_C(0x436F5320)
 
 enum cpuinfo_vendor cpuinfo_x86_decode_vendor(uint32_t ebx, uint32_t ecx, uint32_t edx) {
 	switch (ebx) {

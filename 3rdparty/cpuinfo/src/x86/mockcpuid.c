@@ -1,12 +1,11 @@
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #if !CPUINFO_MOCK
-	#error This file should be built only in mock mode
+#error This file should be built only in mock mode
 #endif
 
 #include <cpuinfo-mock.h>
-
 
 static struct cpuinfo_mock_cpuid* cpuinfo_mock_cpuid_data = NULL;
 static uint32_t cpuinfo_mock_cpuid_entries = 0;
@@ -56,8 +55,7 @@ void CPUINFO_ABI cpuinfo_mock_get_cpuidex(uint32_t eax, uint32_t ecx, uint32_t r
 	if (cpuinfo_mock_cpuid_data != NULL && cpuinfo_mock_cpuid_entries != 0) {
 		for (uint32_t i = 0; i < cpuinfo_mock_cpuid_entries; i++) {
 			if (eax == cpuinfo_mock_cpuid_data[i].input_eax &&
-				ecx == cpuinfo_mock_cpuid_data[i].input_ecx)
-			{
+			    ecx == cpuinfo_mock_cpuid_data[i].input_ecx) {
 				regs[0] = cpuinfo_mock_cpuid_data[i].eax;
 				regs[1] = cpuinfo_mock_cpuid_data[i].ebx;
 				regs[2] = cpuinfo_mock_cpuid_data[i].ecx;

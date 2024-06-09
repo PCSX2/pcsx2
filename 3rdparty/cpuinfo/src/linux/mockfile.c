@@ -1,29 +1,27 @@
+#include <errno.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stddef.h>
 #include <string.h>
-#include <errno.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <sched.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #if !CPUINFO_MOCK
-	#error This file should be built only in mock mode
+#error This file should be built only in mock mode
 #endif
 
-#include <cpuinfo-mock.h>
 #include <arm/linux/api.h>
 #include <arm/midr.h>
+#include <cpuinfo-mock.h>
 #include <cpuinfo/log.h>
-
 
 static struct cpuinfo_mock_file* cpuinfo_mock_files = NULL;
 static uint32_t cpuinfo_mock_file_count = 0;
-
 
 void CPUINFO_ABI cpuinfo_mock_filesystem(struct cpuinfo_mock_file* files) {
 	cpuinfo_log_info("filesystem mocking enabled");
@@ -54,7 +52,7 @@ int CPUINFO_ABI cpuinfo_mock_open(const char* path, int oflag) {
 				return -1;
 			}
 			cpuinfo_mock_files[i].offset = 0;
-			return (int) i;
+			return (int)i;
 		}
 	}
 	errno = ENOENT;
@@ -67,7 +65,7 @@ int CPUINFO_ABI cpuinfo_mock_close(int fd) {
 		return close(fd);
 	}
 
-	if ((unsigned int) fd >= cpuinfo_mock_file_count) {
+	if ((unsigned int)fd >= cpuinfo_mock_file_count) {
 		errno = EBADF;
 		return -1;
 	}
@@ -85,7 +83,7 @@ ssize_t CPUINFO_ABI cpuinfo_mock_read(int fd, void* buffer, size_t capacity) {
 		return read(fd, buffer, capacity);
 	}
 
-	if ((unsigned int) fd >= cpuinfo_mock_file_count) {
+	if ((unsigned int)fd >= cpuinfo_mock_file_count) {
 		errno = EBADF;
 		return -1;
 	}
@@ -99,7 +97,7 @@ ssize_t CPUINFO_ABI cpuinfo_mock_read(int fd, void* buffer, size_t capacity) {
 	if (count > capacity) {
 		count = capacity;
 	}
-	memcpy(buffer, (void*) cpuinfo_mock_files[fd].content + offset, count);
+	memcpy(buffer, (void*)cpuinfo_mock_files[fd].content + offset, count);
 	cpuinfo_mock_files[fd].offset += count;
-	return (ssize_t) count;
+	return (ssize_t)count;
 }
