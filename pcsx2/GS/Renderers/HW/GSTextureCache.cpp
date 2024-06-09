@@ -1997,7 +1997,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				dst->m_TEX0.TBP0, dst->m_TEX0.TBW, psm_str(dst->m_TEX0.PSM));
 		}
 
-		if (dst->m_scale != scale && !preserve_scale)
+		if (dst->m_scale != scale && (!preserve_scale || is_shuffle || !dst->m_downscaled || TEX0.TBW != dst->m_TEX0.TBW))
 		{
 			calcRescale(dst);
 			GSTexture* tex = type == RenderTarget ? g_gs_device->CreateRenderTarget(new_scaled_size.x, new_scaled_size.y, GSTexture::Format::Color, clear) :
@@ -2018,7 +2018,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 			dst->m_texture = tex;
 			dst->m_scale = scale;
 			dst->m_unscaled_size = new_size;
-			dst->m_downscaled = scale == 1.0f;
+			dst->m_downscaled = scale == 1.0f && g_gs_renderer->GetUpscaleMultiplier() > 1.0f;
 		}
 		else if (dst->m_scale != scale)
 			scale = dst->m_scale;
@@ -6069,6 +6069,7 @@ GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unsc
 	m_unscaled_size = unscaled_size;
 	m_scale = scale;
 	m_texture = texture;
+	m_downscaled = scale == 1.0f && g_gs_renderer->GetUpscaleMultiplier() > 1.0f;
 
 	if ((m_TEX0.PSM & 0xf) == PSMCT24)
 	{
