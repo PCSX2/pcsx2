@@ -2626,6 +2626,11 @@ bool VMManager::ShouldAllowPresentThrottle()
 	return (!valid_vm || (!s_target_speed_synced_to_host && s_target_speed != 1.0f));
 }
 
+bool VMManager::Internal::WasFastBooted()
+{
+	return s_fast_boot_requested;
+}
+
 bool VMManager::Internal::IsFastBootInProgress()
 {
 	return s_fast_boot_requested && !HasBootedELF();
