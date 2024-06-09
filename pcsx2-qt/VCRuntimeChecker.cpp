@@ -7,10 +7,10 @@
 #include "fmt/format.h"
 
 // Minimum version is 14.38.33135.0.
-static constexpr u32 MIN_VERSION_V0 = 14;
-static constexpr u32 MIN_VERSION_V1 = 38;
-static constexpr u32 MIN_VERSION_V2 = 33135;
-static constexpr u32 MIN_VERSION_V3 = 0;
+static constexpr DWORD MIN_VERSION_V0 = 14;
+static constexpr DWORD MIN_VERSION_V1 = 38;
+static constexpr DWORD MIN_VERSION_V2 = 33135;
+static constexpr DWORD MIN_VERSION_V3 = 0;
 static constexpr const char* DOWNLOAD_URL = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
 
 struct VCRuntimeCheckObject
