@@ -402,6 +402,18 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 		onVideoCaptureAutoResolutionChanged();
 		onEnableAudioCaptureChanged();
 		onEnableAudioCaptureArgumentsChanged();
+
+		if (m_dialog->isPerGameSettings())
+		{
+			m_ui.recordingTabLayout->removeWidget(m_ui.videoDumpDirectory);
+			m_ui.videoDumpDirectory->deleteLater();
+			m_ui.videoDumpDirectory = nullptr;
+			m_ui.videoDumpLayout = nullptr;
+			m_ui.videoDumpingDirectory = nullptr;
+			m_ui.videoDumpingDirectoryBrowse = nullptr;
+			m_ui.videoDumpingDirectoryOpen = nullptr;
+			m_ui.videoDumpingDirectoryReset = nullptr;
+		}
 	}
 
 	// Display tab
