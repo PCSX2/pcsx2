@@ -44,7 +44,7 @@
 
 struct ProcessorFeatures
 {
-	enum class VectorISA { None, SSE4, AVX, AVX2 };
+	enum class VectorISA { SSE4, AVX, AVX2 };
 	VectorISA vectorISA;
 	bool hasFMA;
 	bool hasSlowGather;
