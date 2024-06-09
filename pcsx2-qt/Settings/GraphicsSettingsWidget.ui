@@ -1922,7 +1922,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <layout class="QHBoxLayout" name="videoDumpLayout">
             <item>
              <widget class="QLineEdit" name="videoDumpingDirectory"/>
             </item>
