@@ -9,6 +9,7 @@ target_link_libraries(updater PRIVATE common fmt::fmt)
 target_include_directories(updater PRIVATE .)
 
 if(WIN32)
+	target_sources(updater PRIVATE ../pcsx2-qt/VCRuntimeChecker.cpp)
 	target_link_libraries(updater PRIVATE
 		LZMA::LZMA
 		Comctl32.lib

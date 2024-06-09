@@ -53,6 +53,7 @@
   <ItemGroup>
     <ClCompile Include="Updater.cpp" />
     <ClCompile Include="Windows\WindowsUpdater.cpp" />
+	<ClCompile Include="$(SolutionDir)pcsx2-qt\VCRuntimeChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SZErrors.h" />
