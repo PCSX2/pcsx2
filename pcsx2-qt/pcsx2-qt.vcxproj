@@ -151,6 +151,7 @@
     <ClCompile Include="QtKeyCodes.cpp" />
     <ClCompile Include="QtUtils.cpp" />
     <ClCompile Include="Translations.cpp" />
+    <ClCompile Include="VCRuntimeChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="SetupWizardDialog.h" />
