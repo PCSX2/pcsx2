@@ -3,6 +3,8 @@
 
 #pragma once
 #include "Pcsx2Defs.h"
+
+#include <memory>
 #include <string>
 
 /**
@@ -59,6 +61,8 @@ public:
 
 public:
 	static ProgressCallback* NullProgressCallback;
+
+	static std::unique_ptr<ProgressCallback> CreateNullProgressCallback();
 };
 
 class BaseProgressCallback : public ProgressCallback

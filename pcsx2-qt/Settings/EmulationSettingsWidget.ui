@@ -98,10 +98,17 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="2" column="1">
          <widget class="QCheckBox" name="fastCDVD">
           <property name="text">
            <string>Enable Fast CDVD</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="precacheCDVD">
+          <property name="text">
+           <string>Enable CDVD Precaching</string>
           </property>
          </widget>
         </item>

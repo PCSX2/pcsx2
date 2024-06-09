@@ -8,6 +8,7 @@
 #include <string>
 
 class Error;
+class ProgressCallback;
 
 typedef struct _cdvdSubQ
 {
@@ -79,6 +80,7 @@ typedef struct _cdvdTN
 
 // CDVD
 typedef bool (*_CDVDopen)(std::string filename, Error* error);
+typedef bool (*_CDVDprecache)(ProgressCallback* progress, Error* error);
 
 // Initiates an asynchronous track read operation.
 // Returns -1 on error (invalid track)
@@ -118,6 +120,7 @@ struct CDVD_API
 	// Don't need init or shutdown.  iso/nodisc have no init/shutdown.
 
 	_CDVDopen open;
+	_CDVDprecache precache;
 	_CDVDreadTrack readTrack;
 	_CDVDgetBuffer getBuffer;
 	_CDVDreadSubQ readSubQ;
@@ -152,6 +155,7 @@ extern CDVD_SourceType CDVDsys_GetSourceType();
 extern void CDVDsys_ClearFiles();
 
 extern bool DoCDVDopen(Error* error);
+extern bool DoCDVDprecache(ProgressCallback* progress, Error* error);
 extern void DoCDVDclose();
 extern s32 DoCDVDreadSector(u8* buffer, u32 lsn, int mode);
 extern s32 DoCDVDreadTrack(u32 lsn, int mode);

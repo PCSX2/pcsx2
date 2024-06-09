@@ -114,7 +114,7 @@ public Q_SLOTS:
 	void endCapture();
 	void setAudioOutputVolume(int volume, int fast_forward_volume);
 	void setAudioOutputMuted(bool muted);
-
+	
 Q_SIGNALS:
 	bool messageConfirmed(const QString& title, const QString& message);
 	void statusMessage(const QString& message);

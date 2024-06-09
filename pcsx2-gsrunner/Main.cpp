@@ -20,6 +20,7 @@
 #include "common/FileSystem.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
 
@@ -163,6 +164,11 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 void Host::SetDefaultUISettings(SettingsInterface& si)
 {
 	// nothing
+}
+
+std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
+{
+	return ProgressCallback::CreateNullProgressCallback();
 }
 
 void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)

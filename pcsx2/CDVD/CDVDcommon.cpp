@@ -12,8 +12,10 @@
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/EnumOps.h"
+#include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
 
 #include <ctype.h>
@@ -413,6 +415,13 @@ bool DoCDVDopen(Error* error)
 	return true;
 }
 
+bool DoCDVDprecache(ProgressCallback* progress, Error* error)
+{
+	CheckNullCDVD();
+	progress->SetTitle(TRANSLATE("CDVD", "Precaching CDVD"));
+	return CDVD->precache(progress, error);
+}
+
 void DoCDVDclose()
 {
 	CheckNullCDVD();
@@ -525,6 +534,11 @@ static bool NODISCopen(std::string filename, Error* error)
 	return true;
 }
 
+static bool NODISCprecache(ProgressCallback* progress, Error* error)
+{
+	return true;
+}
+
 static void NODISCclose()
 {
 }
@@ -592,6 +606,7 @@ const CDVD_API CDVDapi_NoDisc =
 	{
 		NODISCclose,
 		NODISCopen,
+		NODISCprecache,
 		NODISCreadTrack,
 		NODISCgetBuffer,
 		NODISCreadSubQ,

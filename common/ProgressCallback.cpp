@@ -101,39 +101,47 @@ void ProgressCallback::DisplayFormattedModalInformation(const char* format, ...)
 	ModalInformation(str.c_str());
 }
 
-class NullProgressCallbacks final : public ProgressCallback
+namespace
 {
-public:
-	void PushState() override {}
-	void PopState() override {}
-
-	bool IsCancelled() const override { return false; }
-	bool IsCancellable() const override { return false; }
-
-	void SetCancellable(bool cancellable) override {}
-	void SetTitle(const char* title) override {}
-	void SetStatusText(const char* statusText) override {}
-	void SetProgressRange(u32 range) override {}
-	void SetProgressValue(u32 value) override {}
-	void IncrementProgressValue() override {}
-	void SetProgressState(ProgressState state) override {}
-
-	void DisplayError(const char* message) override { Console.Error("%s", message); }
-	void DisplayWarning(const char* message) override { Console.Warning("%s", message); }
-	void DisplayInformation(const char* message) override { Console.WriteLn("%s", message); }
-	void DisplayDebugMessage(const char* message) override { DevCon.WriteLn("%s", message); }
-
-	void ModalError(const char* message) override { Console.Error(message); }
-	bool ModalConfirmation(const char* message) override
+	class NullProgressCallbacks final : public ProgressCallback
 	{
-		Console.WriteLn("%s", message);
-		return false;
-	}
-	void ModalInformation(const char* message) override { Console.WriteLn("%s", message); }
-};
+	public:
+		void PushState() override {}
+		void PopState() override {}
+
+		bool IsCancelled() const override { return false; }
+		bool IsCancellable() const override { return false; }
+
+		void SetCancellable(bool cancellable) override {}
+		void SetTitle(const char* title) override {}
+		void SetStatusText(const char* statusText) override {}
+		void SetProgressRange(u32 range) override {}
+		void SetProgressValue(u32 value) override {}
+		void IncrementProgressValue() override {}
+		void SetProgressState(ProgressState state) override {}
+
+		void DisplayError(const char* message) override { Console.Error("%s", message); }
+		void DisplayWarning(const char* message) override { Console.Warning("%s", message); }
+		void DisplayInformation(const char* message) override { Console.WriteLn("%s", message); }
+		void DisplayDebugMessage(const char* message) override { DevCon.WriteLn("%s", message); }
+
+		void ModalError(const char* message) override { Console.Error(message); }
+		bool ModalConfirmation(const char* message) override
+		{
+			Console.WriteLn("%s", message);
+			return false;
+		}
+		void ModalInformation(const char* message) override { Console.WriteLn("%s", message); }
+	};
+} // namespace
 
 static NullProgressCallbacks s_nullProgressCallbacks;
 ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;
+
+std::unique_ptr<ProgressCallback> ProgressCallback::CreateNullProgressCallback()
+{
+	return std::make_unique<NullProgressCallbacks>();
+}
 
 BaseProgressCallback::BaseProgressCallback()
 {
@@ -171,8 +179,8 @@ void BaseProgressCallback::PopState()
 	// impose the current position into the previous range
 	const u32 new_progress_value =
 		(m_progress_range != 0) ?
-            static_cast<u32>(((float)m_progress_value / (float)m_progress_range) * (float)state->progress_range) :
-            state->progress_value;
+			static_cast<u32>(((float)m_progress_value / (float)m_progress_range) * (float)state->progress_range) :
+			state->progress_value;
 
 	m_cancellable = state->cancellable;
 	m_status_text = std::move(state->status_text);

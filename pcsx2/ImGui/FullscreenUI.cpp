@@ -3330,6 +3330,9 @@ void FullscreenUI::DrawEmulationSettingsPage()
 			"EmuCore/Speedhacks", "fastCDVD", false);
 	}
 
+	DrawToggleSetting(bsi, FSUI_CSTR("Enable CDVD Precaching"), FSUI_CSTR("Loads the disc image into RAM before starting the virtual machine."),
+		"EmuCore", "CdvdPrecache", false);
+
 	MenuHeading(FSUI_CSTR("Frame Pacing/Latency Control"));
 
 	bool optimal_frame_pacing = (bsi->GetIntValue("EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY) == 0);
@@ -6949,6 +6952,8 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Host Filesystem");
 TRANSLATE_NOOP("FullscreenUI", "Enables access to files from the host: namespace in the virtual machine.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast CDVD");
 TRANSLATE_NOOP("FullscreenUI", "Fast disc access, less loading times. Not recommended.");
+TRANSLATE_NOOP("FullscreenUI", "Enable CDVD Precaching");
+TRANSLATE_NOOP("FullscreenUI", "Loads the disc image into RAM before starting the virtual machine.");
 TRANSLATE_NOOP("FullscreenUI", "Frame Pacing/Latency Control");
 TRANSLATE_NOOP("FullscreenUI", "Maximum Frame Latency");
 TRANSLATE_NOOP("FullscreenUI", "Sets the number of frames which can be queued.");

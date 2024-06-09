@@ -84,6 +84,31 @@ bool CsoFileReader::Open2(std::string filename, Error* error)
 	return true;
 }
 
+bool CsoFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	if (!m_src)
+		return false;
+
+	const s64 size = FileSystem::FSize64(m_src);
+	if (size < 0 || !CheckAvailableMemoryForPrecaching(static_cast<u64>(size), error))
+		return false;
+
+	m_file_cache_size = static_cast<size_t>(size);
+	m_file_cache = std::make_unique_for_overwrite<u8[]>(m_file_cache_size);
+	if (FileSystem::FSeek64(m_src, 0, SEEK_SET) != 0 ||
+		FileSystem::ReadFileWithProgress(
+			m_src, m_file_cache.get(), m_file_cache_size, progress, error) != m_file_cache_size)
+	{
+		m_file_cache.reset();
+		return false;
+	}
+
+	m_readBuffer.reset();
+	std::fclose(m_src);
+	m_src = nullptr;
+	return true;
+}
+
 bool CsoFileReader::ReadFileHeader(Error* error)
 {
 	CsoHeader hdr;
@@ -141,11 +166,7 @@ bool CsoFileReader::InitializeBuffers(Error* error)
 	// initialize zlib if not a ZSO
 	if (!m_uselz4)
 	{
-		m_z_stream = std::make_unique<z_stream>();
-		m_z_stream->zalloc = Z_NULL;
-		m_z_stream->zfree = Z_NULL;
-		m_z_stream->opaque = Z_NULL;
-		if (inflateInit2(m_z_stream.get(), -15) != Z_OK)
+		if (inflateInit2(&m_z_stream, -15) != Z_OK)
 		{
 			Error::SetString(error, "Unable to initialize zlib for CSO decompression.");
 			return false;
@@ -164,11 +185,10 @@ void CsoFileReader::Close2()
 		fclose(m_src);
 		m_src = nullptr;
 	}
-	if (m_z_stream)
-	{
-		inflateEnd(m_z_stream.get());
-		m_z_stream.reset();
-	}
+	if (m_file_cache)
+		m_file_cache.reset();
+	if (!m_uselz4)
+		inflateEnd(&m_z_stream);
 
 	m_readBuffer.reset();
 	m_index.reset();
@@ -213,6 +233,16 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 
 	if (!compressed)
 	{
+		if (m_file_cache)
+		{
+			if (frameRawPos >= m_file_cache_size)
+				return 0;
+
+			const size_t read_count = std::min<size_t>(m_file_cache_size - frameRawPos, frameRawSize);
+			std::memcpy(dst, &m_file_cache[frameRawPos], read_count);
+			return static_cast<int>(read_count);
+		}
+
 		// Just read directly, easy.
 		if (FileSystem::FSeek64(m_src, frameRawPos, SEEK_SET) != 0)
 		{
@@ -223,21 +253,36 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 	}
 	else
 	{
-		if (FileSystem::FSeek64(m_src, frameRawPos, SEEK_SET) != 0)
-		{
-			Console.Error("Unable to seek to compressed CSO data.");
-			return 0;
-		}
 		// This might be less bytes than frameRawSize in case of padding on the last frame.
 		// This is because the index positions must be aligned.
-		const u32 readRawBytes = fread(m_readBuffer.get(), 1, frameRawSize, m_src);
+		u32 readRawBytes;
+		u8* readBuffer;
+		if (m_file_cache)
+		{
+			if (frameRawPos >= m_file_cache_size)
+				return 0;
+
+			readRawBytes = static_cast<u32>(std::min<size_t>(m_file_cache_size - frameRawPos, frameRawSize));
+			readBuffer = &m_file_cache[frameRawPos];
+		}
+		else
+		{
+			if (FileSystem::FSeek64(m_src, frameRawPos, SEEK_SET) != 0)
+			{
+				Console.Error("Unable to seek to compressed CSO data.");
+				return 0;
+			}
+			readBuffer = m_readBuffer.get();
+			readRawBytes = fread(m_readBuffer.get(), 1, frameRawSize, m_src);
+		}
+
 		bool success = false;
 
 		if (m_uselz4)
 		{
 			const int src_size = static_cast<int>(readRawBytes);
 			const int dst_size = static_cast<int>(m_frameSize);
-			const char* src_buf = reinterpret_cast<const char*>(m_readBuffer.get());
+			const char* src_buf = reinterpret_cast<const char*>(readBuffer);
 			char* dst_buf = static_cast<char*>(dst);
 			
 			const int res = LZ4_decompress_safe_partial(src_buf, dst_buf, src_size, dst_size, dst_size);
@@ -245,20 +290,20 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 		}
 		else
 		{
-			m_z_stream->next_in = m_readBuffer.get();
-			m_z_stream->avail_in = readRawBytes;
-			m_z_stream->next_out = static_cast<Bytef*>(dst);
-			m_z_stream->avail_out = m_frameSize;
+			m_z_stream.next_in = readBuffer;
+			m_z_stream.avail_in = readRawBytes;
+			m_z_stream.next_out = static_cast<Bytef*>(dst);
+			m_z_stream.avail_out = m_frameSize;
 
-			const int status = inflate(m_z_stream.get(), Z_FINISH);
-			success = (status == Z_STREAM_END && m_z_stream->total_out == m_frameSize);
+			const int status = inflate(&m_z_stream, Z_FINISH);
+			success = (status == Z_STREAM_END && m_z_stream.total_out == m_frameSize);
 		}
 
 		if (!success)
 			Console.Error(fmt::format("Unable to decompress CSO frame using {}", (m_uselz4)? "lz4":"zlib"));
 		
 		if (!m_uselz4)
-			inflateReset(m_z_stream.get());
+			inflateReset(&m_z_stream);
 
 		return success ? m_frameSize : 0;
 	}

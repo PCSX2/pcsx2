@@ -221,6 +221,11 @@ bool InputIsoFile::Open(std::string srcfile, Error* error)
 	return true;
 }
 
+bool InputIsoFile::Precache(ProgressCallback* progress, Error* error)
+{
+	return m_reader->Precache(progress, error);
+}
+
 void InputIsoFile::Close()
 {
 	if (m_reader)

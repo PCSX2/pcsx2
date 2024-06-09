@@ -2,8 +2,15 @@
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "ThreadedFileReader.h"
+#include "Host.h"
 
+#include "common/Error.h"
+#include "common/HostSys.h"
+#include "common/Path.h"
+#include "common/ProgressCallback.h"
+#include "common/SmallString.h"
 #include "common/Threading.h"
+
 #include <cstring>
 
 // Make sure buffer size is bigger than the cutoff where PCSX2 emulates a seek
@@ -242,6 +249,36 @@ bool ThreadedFileReader::TryCachedRead(void*& buffer, u64& offset, u32& size, co
 			allDone = true;
 	}
 	return allDone;
+}
+
+bool ThreadedFileReader::Precache(ProgressCallback* progress, Error* error)
+{
+	CancelAndWaitUntilStopped();
+	progress->SetStatusText(SmallString::from_format("Precaching {}...", Path::GetFileName(m_filename)).c_str());
+	return Precache2(progress, error);
+}
+
+bool ThreadedFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	Error::SetStringView(error, "Precaching is not supported for this file format.");
+	return false;
+}
+
+bool ThreadedFileReader::CheckAvailableMemoryForPrecaching(u64 required_size, Error* error)
+{
+	// Don't allow precaching to use more than 50% of system memory.
+	// Hopefully nobody's running 2-4GB potatoes anymore....
+	const u64 memory_size = GetPhysicalMemory();
+	const u64 max_precache_size = memory_size / 2;
+	if (required_size > max_precache_size)
+	{
+		Error::SetStringFmt(error,
+			TRANSLATE_FS("CDVD", "Required memory ({}GB) is the above the maximum allowed ({}GB)."),
+			required_size / _1gb, max_precache_size / _1gb);
+		return false;
+	}
+
+	return true;
 }
 
 bool ThreadedFileReader::Open(std::string filename, Error* error)

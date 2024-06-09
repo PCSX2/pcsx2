@@ -10,6 +10,7 @@
 #include <vector>
 
 class Error;
+class ProgressCallback;
 
 enum isoType
 {
@@ -65,6 +66,7 @@ public:
 	}
 
 	bool Open(std::string srcfile, Error* error);
+	bool Precache(ProgressCallback* progress, Error* error);
 	void Close();
 	bool Detect(bool readType = true);
 

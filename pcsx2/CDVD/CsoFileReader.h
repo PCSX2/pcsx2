@@ -7,7 +7,6 @@
 #include <zlib.h>
 
 struct CsoHeader;
-typedef struct z_stream_s z_stream;
 
 class CsoFileReader final : public ThreadedFileReader
 {
@@ -18,6 +17,8 @@ public:
 	~CsoFileReader() override;
 
 	bool Open2(std::string filename, Error* error) override;
+
+	bool Precache2(ProgressCallback* progress, Error* error) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void* dst, s64 chunkID) override;
@@ -44,5 +45,7 @@ private:
 	u64 m_totalSize = 0;
 	// The actual source cso file handle.
 	std::FILE* m_src = nullptr;
-	std::unique_ptr<z_stream> m_z_stream;
+	std::unique_ptr<u8[]> m_file_cache;
+	size_t m_file_cache_size = 0;
+	z_stream m_z_stream = {};
 };

@@ -38,6 +38,25 @@ bool FlatFileReader::Open2(std::string filename, Error* error)
 	return true;
 }
 
+bool FlatFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	if (!m_file || !CheckAvailableMemoryForPrecaching(m_file_size, error))
+		return false;
+
+	m_file_cache = std::make_unique_for_overwrite<u8[]>(m_file_size);
+	if (FileSystem::FSeek64(m_file, 0, SEEK_SET) != 0 ||
+		FileSystem::ReadFileWithProgress(
+			m_file, m_file_cache.get(), m_file_size, progress, error) != m_file_size)
+	{
+		m_file_cache.reset();
+		return false;
+	}
+
+	std::fclose(m_file);
+	m_file = nullptr;
+	return true;
+}
+
 ThreadedFileReader::Chunk FlatFileReader::ChunkForOffset(u64 offset)
 {
 	ThreadedFileReader::Chunk chunk = {};
@@ -61,6 +80,16 @@ int FlatFileReader::ReadChunk(void* dst, s64 blockID)
 		return -1;
 
 	const u64 file_offset = static_cast<u64>(blockID) * CHUNK_SIZE;
+	if (m_file_cache)
+	{
+		if (file_offset >= m_file_size)
+			return -1;
+
+		const u64 read_size = std::min<u64>(m_file_size - file_offset, CHUNK_SIZE);
+		std::memcpy(dst, &m_file_cache[file_offset], read_size);
+		return static_cast<int>(read_size);
+	}
+
 	if (FileSystem::FSeek64(m_file, file_offset, SEEK_SET) != 0)
 		return -1;
 

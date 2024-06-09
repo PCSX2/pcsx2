@@ -113,6 +113,7 @@ namespace VMManager
 	static void ReportGameChangeToHost();
 	static bool HasBootedELF();
 	static bool HasValidOrInitializingVM();
+	static void PrecacheCDVDFile();
 
 	static std::string GetCurrentSaveStateFileName(s32 slot);
 	static bool DoLoadState(const char* filename);
@@ -1223,6 +1224,27 @@ bool VMManager::AutoDetectSource(const std::string& filename)
 	}
 }
 
+void VMManager::PrecacheCDVDFile()
+{
+	Error error;
+	std::unique_ptr<ProgressCallback> progress = Host::CreateHostProgressCallback();
+	if (!DoCDVDprecache(progress.get(), &error))
+	{
+		if (progress->IsCancelled())
+		{
+			Host::AddIconOSDMessage("PrecacheCDVDFile", ICON_FA_COMPACT_DISC,
+				TRANSLATE_STR("VMManager", "CDVD precaching was cancelled."),
+				Host::OSD_WARNING_DURATION);
+		}
+		else
+		{
+			Host::AddIconOSDMessage("PrecacheCDVDFile", ICON_FA_EXCLAMATION_TRIANGLE,
+				fmt::format(TRANSLATE_FS("VMManager", "CDVD precaching failed: {}"), error.GetDescription()),
+				Host::OSD_ERROR_DURATION);
+		}
+	}
+}
+
 bool VMManager::Initialize(VMBootParameters boot_params)
 {
 	const Common::Timer init_timer;
@@ -1518,6 +1540,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	close_cdvd.Cancel();
 	close_cdvd_files.Cancel();
 	close_state.Cancel();
+
+	if (EmuConfig.CdvdPrecache)
+		PrecacheCDVDFile();
 
 	hwReset();
 

@@ -8,6 +8,8 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
+#include "common/ProgressCallback.h"
+#include "common/SmallString.h"
 #include "common/StringUtil.h"
 
 #include "libchdr/chd.h"
@@ -183,6 +185,32 @@ bool ChdFileReader::Open2(std::string filename, Error* error)
 	{
 		Console.Warning("Failed to parse CHD TOC, file size may be incorrect.");
 		file_size = static_cast<u64>(chd_header->unitbytes) * chd_header->unitcount;
+	}
+
+	return true;
+}
+
+bool ChdFileReader::Precache2(ProgressCallback* progress, Error* error)
+{
+	if (!CheckAvailableMemoryForPrecaching(chd_get_compressed_size(ChdFile), error))
+		return false;
+
+	progress->SetProgressRange(100);
+
+	const auto callback = [](size_t pos, size_t total, void* param) -> bool {
+		ProgressCallback* progress = static_cast<ProgressCallback*>(param);
+		const u32 percent = static_cast<u32>((pos * 100) / total);
+		progress->SetProgressValue(std::min<u32>(percent, 100));
+		return !progress->IsCancelled();
+	};
+
+	const chd_error cerror = chd_precache_progress(ChdFile, callback, progress);
+	if (cerror != CHDERR_NONE)
+	{
+		if (cerror != CHDERR_CANCELLED)
+			Error::SetStringView(error, "Failed to read part of the file.");
+
+		return false;
 	}
 
 	return true;
