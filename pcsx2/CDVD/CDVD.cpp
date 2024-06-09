@@ -41,6 +41,9 @@ static constexpr u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255
 static constexpr size_t NVRAM_SIZE = 1024;
 static u8 s_nvram[NVRAM_SIZE];
 
+static constexpr u32 DEFAULT_MECHA_VERSION = 0x00020603;
+static u32 s_mecha_version = 0;
+
 static __fi void SetSCMDResultSize(u8 size) noexcept
 {
 	cdvd.SCMDResultCnt = size;
@@ -114,32 +117,6 @@ static int mg_BIToffset(u8* buffer)
 	return ofs + 0x20;
 }
 
-static void cdvdGetMechaVer(u8* ver)
-{
-	std::string mecfile(Path::ReplaceExtension(BiosPath, "mec"));
-	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
-	if (!fp || FileSystem::FSize64(fp.get()) < 4)
-	{
-		Console.Warning("MEC File Not Found, creating substitute...");
-
-		fp.reset();
-		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "w+b");
-		if (!fp)
-		{
-			Console.Error("Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.");
-			return;
-		}
-
-		constexpr u8 version[4] = {0x3, 0x6, 0x2, 0x0};
-		std::fwrite(&version[0], sizeof(version), 1, fp.get());
-		FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
-	}
-
-	const auto ret = std::fread(ver, 1, 4, fp.get());
-	if (ret != 4)
-		Console.Error("Failed to read from %s. Did only %zu/4 bytes", mecfile.c_str(), ret);
-}
-
 const NVMLayout* getNvmLayout() noexcept
 {
 	return (nvmlayouts[1].biosVer <= BiosVersion) ? &nvmlayouts[1] : &nvmlayouts[0];
@@ -198,6 +175,22 @@ void cdvdLoadNVRAM()
 			cdvdCreateNewNVM();
 		}
 	}
+
+	// Also load the mechacon version while we're here.
+	const std::string mecfile = Path::ReplaceExtension(BiosPath, "mec");
+	fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb", &error);
+	if (!fp || std::fread(&s_mecha_version, sizeof(s_mecha_version), 1, fp.get()) != 1)
+	{
+		s_mecha_version = DEFAULT_MECHA_VERSION;
+
+		ERROR_LOG("Failed to open or read MEC file at {}: {}, creating default.", Path::GetFileName(nvmfile),
+			error.GetDescription());
+		fp.reset();
+		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "wb");
+		if (!fp || std::fwrite(&s_mecha_version, sizeof(s_mecha_version), 1, fp.get()) != 1)
+			Host::ReportErrorAsync("Error", "Failed to write MEC file. Check your BIOS setup/permission settings.");
+	}
+	DEV_LOG("Mechacon version: 0x{:08X}", s_mecha_version);
 }
 
 void cdvdSaveNVRAM()
@@ -2375,7 +2368,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				{
 					case 0x00: // get mecha version (1:4)
 						SetSCMDResultSize(4);
-						cdvdGetMechaVer(&cdvd.SCMDResultBuff[0]);
+						std::memcpy(&cdvd.SCMDResultBuff[0], &s_mecha_version, sizeof(u32));
 						break;
 					case 0x30:
 						SetSCMDResultSize(2);
@@ -2697,7 +2690,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 			case 0x36: //cdvdman_call189 [__sceCdReadRegionParams - made up name] (0:15) i think it is 16, not 15
 				SetSCMDResultSize(15);
 
-				cdvdGetMechaVer(&cdvd.SCMDResultBuff[1]);
+				std::memcpy(&cdvd.SCMDResultBuff[1], &s_mecha_version, sizeof(u32));
 				cdvdReadRegionParams(&cdvd.SCMDResultBuff[3]); //size==8
 				DevCon.WriteLn("REGION PARAMS = %s %s", mg_zones[cdvd.SCMDResultBuff[1] & 7], &cdvd.SCMDResultBuff[3]);
 				cdvd.SCMDResultBuff[1] = 1 << cdvd.SCMDResultBuff[1]; //encryption zone; see offset 0x1C in encrypted headers
