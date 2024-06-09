@@ -8,6 +8,7 @@
 #include "Console.h"
 #include "StringUtil.h"
 #include "Path.h"
+#include "ProgressCallback.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -1181,6 +1182,31 @@ bool FileSystem::WriteStringToFile(const char* filename, const std::string_view 
 		return false;
 
 	return true;
+}
+
+size_t FileSystem::ReadFileWithProgress(std::FILE* fp, void* dst, size_t length,
+	ProgressCallback* progress, Error* error, size_t chunk_size)
+{
+	progress->SetProgressRange(100);
+
+	size_t done = 0;
+	while (done < length)
+	{
+		if (progress->IsCancelled())
+			break;
+
+		const size_t read_size = std::min(length - done, chunk_size);
+		if (std::fread(static_cast<u8*>(dst)+ done, read_size, 1, fp) != 1)
+		{
+			Error::SetErrno(error, "fread() failed: ", errno);
+			break;
+		}
+
+		progress->SetProgressValue((done * 100) / length);
+		done += read_size;
+	}
+
+	return done;
 }
 
 bool FileSystem::EnsureDirectoryExists(const char* path, bool recursive, Error* error)
