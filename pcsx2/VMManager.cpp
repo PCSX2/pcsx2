@@ -1320,6 +1320,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 					"Please consult the FAQs and Guides for further instructions."));
 			return false;
 		}
+
+		// Must happen after BIOS load, depends on BIOS version.
+		cdvdLoadNVRAM();
 	}
 
 	Error error;
@@ -1619,6 +1622,8 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	if (GSDumpReplayer::IsReplayingDump())
 		GSDumpReplayer::Shutdown();
+	else
+		cdvdSaveNVRAM();
 
 	s_state.store(VMState::Shutdown, std::memory_order_release);
 	FullscreenUI::OnVMDestroyed();

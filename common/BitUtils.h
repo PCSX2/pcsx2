@@ -87,14 +87,14 @@ namespace Common
 } // namespace Common
 
 template <typename T>
-[[maybe_unused]] __fi static T GetBufferT(u8* buffer, u32 offset)
+[[maybe_unused]] __fi static T GetBufferT(const u8* buffer, u32 offset)
 {
 	T value;
 	std::memcpy(&value, buffer + offset, sizeof(value));
 	return value;
 }
 
-[[maybe_unused]] __fi static u8 GetBufferU8(u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
-[[maybe_unused]] __fi static u16 GetBufferU16(u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
-[[maybe_unused]] __fi static u32 GetBufferU32(u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
-[[maybe_unused]] __fi static u64 GetBufferU64(u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }
+[[maybe_unused]] __fi static u8 GetBufferU8(const u8* buffer, u32 offset) { return GetBufferT<u8>(buffer, offset); }
+[[maybe_unused]] __fi static u16 GetBufferU16(const u8* buffer, u32 offset) { return GetBufferT<u16>(buffer, offset); }
+[[maybe_unused]] __fi static u32 GetBufferU32(const u8* buffer, u32 offset) { return GetBufferT<u32>(buffer, offset); }
+[[maybe_unused]] __fi static u64 GetBufferU64(const u8* buffer, u32 offset) { return GetBufferT<u64>(buffer, offset); }

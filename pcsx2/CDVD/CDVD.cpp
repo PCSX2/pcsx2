@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVD/CDVD.h"
@@ -34,9 +34,12 @@ cdvdStruct cdvd;
 
 s64 PSXCLK = 36864000;
 
-u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+static constexpr u8 monthmap[13] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
+static constexpr u8 cdvdParamLength[16] = { 0, 0, 0, 0, 0, 4, 11, 11, 11, 1, 255, 255, 7, 2, 11, 1 };
+
+static constexpr size_t NVRAM_SIZE = 1024;
+static u8 s_nvram[NVRAM_SIZE];
 
 static __fi void SetSCMDResultSize(u8 size) noexcept
 {
@@ -137,134 +140,140 @@ static void cdvdGetMechaVer(u8* ver)
 		Console.Error("Failed to read from %s. Did only %zu/4 bytes", mecfile.c_str(), ret);
 }
 
-NVMLayout* getNvmLayout() noexcept
+const NVMLayout* getNvmLayout() noexcept
 {
-	NVMLayout* nvmLayout = NULL;
-
-	if (nvmlayouts[1].biosVer <= BiosVersion)
-		nvmLayout = &nvmlayouts[1];
-	else
-		nvmLayout = &nvmlayouts[0];
-
-	return nvmLayout;
+	return (nvmlayouts[1].biosVer <= BiosVersion) ? &nvmlayouts[1] : &nvmlayouts[0];
 }
 
-static void cdvdCreateNewNVM(std::FILE* fp)
+static void cdvdCreateNewNVM()
 {
-	u8 zero[1024] = {};
-	std::fwrite(&zero[0], sizeof(zero), 1, fp);
+	std::memset(s_nvram, 0, sizeof(s_nvram));
 
 	// Write NVM ILink area with dummy data (Age of Empires 2)
 	// Also write language data defaulting to English (Guitar Hero 2)
 	// Also write PStwo region defaults
-
-	NVMLayout* nvmLayout = getNvmLayout();
-
+	const NVMLayout* nvmLayout = getNvmLayout();
 	if (((BiosVersion >> 8) == 2) && ((BiosVersion & 0xff) != 10)) // bios >= 200, except of 0x210 for PSX2 DESR
-	{
-		u8 RegParams[12] = { 0 };
-		memcpy(&RegParams[0], &PStwoRegionDefaults[BiosRegion][0], 12);
-		std::fseek(fp, nvmLayout->regparams, SEEK_SET);
-		std::fwrite(&RegParams[0], sizeof(RegParams), 1, fp);
-	}
+		std::memcpy(&s_nvram[nvmLayout->regparams], PStwoRegionDefaults[BiosRegion], 12);
 
-	constexpr u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
-	std::fseek(fp, nvmLayout->ilinkId, SEEK_SET);
-	std::fwrite(&ILinkID_Data[0], sizeof(ILinkID_Data), 1, fp);
+	static constexpr u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
+	std::memcpy(&s_nvram[nvmLayout->ilinkId], ILinkID_Data, sizeof(ILinkID_Data));
 	if (nvmlayouts[1].biosVer <= BiosVersion)
 	{
-		constexpr u8 ILinkID_checksum[2] = {0x00, 0x18};
-		std::fseek(fp, nvmLayout->ilinkId + 0x08, SEEK_SET);
-		std::fwrite(&ILinkID_checksum[0], sizeof(ILinkID_checksum), 1, fp);
+		static constexpr u8 ILinkID_checksum[2] = {0x00, 0x18};
+		std::memcpy(&s_nvram[nvmLayout->ilinkId + 0x08], ILinkID_checksum, sizeof(ILinkID_checksum));
 	}
 
-	u8 biosLanguage[16] = { 0 };
-	memcpy(&biosLanguage[0], &biosLangDefaults[BiosRegion][0], 16);
 	// Config sections first 16 bytes are generally blank expect the last byte which is PS1 mode stuff
 	// So let's ignore that and just write the PS2 mode stuff
-	std::fseek(fp, nvmLayout->config1 + 0x10, SEEK_SET);
-	std::fwrite(&biosLanguage[0], sizeof(biosLanguage), 1, fp);
+	std::memcpy(&s_nvram[nvmLayout->config1 + 0x10], biosLangDefaults[BiosRegion], 16);
 }
 
-static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
+static std::string cdvdGetNVRAMPath()
 {
-	std::string nvmfile(Path::ReplaceExtension(BiosPath, "nvm"));
-	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
-	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
-	{
-		fp.reset();
-		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b");
-		if (!fp)
-		{
-			Console.Error("Failed to open NVM file '%s' for writing", nvmfile.c_str());
-			if (read)
-				std::memset(buffer, 0, bytes);
-			return;
-		}
+	return Path::ReplaceExtension(BiosPath, "nvm");
+}
 
-		cdvdCreateNewNVM(fp.get());
+void cdvdLoadNVRAM()
+{
+	Error error;
+	const std::string nvmfile = cdvdGetNVRAMPath();
+	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "rb", &error);
+	if (!fp || std::fread(s_nvram, sizeof(s_nvram), 1, fp.get()) != 1)
+	{
+		ERROR_LOG("Failed to open or read NVRAM at {}: {}", Path::GetFileName(nvmfile), error.GetDescription());
+		cdvdCreateNewNVM();
 	}
 	else
 	{
-		constexpr u8 zero[16] = { 0 };
-		u8 LanguageParams[16] = { 0 };
-		u8 RegParams[12] = { 0 };
-		NVMLayout* nvmLayout = getNvmLayout();
+		// Verify NVRAM is sane.
+		const NVMLayout* nvmLayout = getNvmLayout();
+		constexpr u8 zero[16] = {0};
 
-		if (std::fseek(fp.get(), nvmLayout->config1 + 0x10, SEEK_SET) != 0 ||
-			std::fread(&LanguageParams[0], 16, 1, fp.get()) != 1 ||
-			std::memcmp(&LanguageParams[0], zero, sizeof(LanguageParams)) == 0 ||
+		if (std::memcmp(&s_nvram[nvmLayout->config1 + 0x10], zero, 16) == 0 ||
 			(((BiosVersion >> 8) == 2) && ((BiosVersion & 0xff) != 10) &&
-				(std::fseek(fp.get(), nvmLayout->regparams, SEEK_SET) != 0 ||
-					std::fread(&RegParams[0], 12, 1, fp.get()) != 1 ||
-					std::memcmp(&RegParams[0], zero, sizeof(RegParams)) == 0)))
+				(std::memcmp(&s_nvram[nvmLayout->regparams], zero, 12) == 0)))
 		{
-			Console.Warning("Language or Region Parameters missing, filling in defaults");
-
-			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
-			cdvdCreateNewNVM(fp.get());
+			ERROR_LOG("Language or Region Parameters missing, filling in defaults");
+			cdvdCreateNewNVM();
 		}
 	}
+}
 
-	std::fseek(fp.get(), offset, SEEK_SET);
+void cdvdSaveNVRAM()
+{
+	Error error;
+	const std::string nvmfile = cdvdGetNVRAMPath();
+	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b", &error);
+	if (!fp)
+	{
+		ERROR_LOG("Failed to open NVRAM at {} for updating: {}", Path::GetFileName(nvmfile), error.GetDescription());
+		return;
+	}
 
-	size_t ret;
-	if (read)
-		ret = std::fread(buffer, 1, bytes, fp.get());
+	u8 existing_nvram[NVRAM_SIZE];
+	if (std::fread(existing_nvram, sizeof(existing_nvram), 1, fp.get()) == 1 &&
+		std::memcmp(existing_nvram, s_nvram, NVRAM_SIZE) == 0)
+	{
+		DEV_LOG("NVRAM has not changed, not writing to disk.");
+		return;
+	}
+
+	if (FileSystem::FSeek64(fp.get(), 0, SEEK_SET) == 0 &&
+		std::fwrite(s_nvram, NVRAM_SIZE, 1, fp.get()) == 1)
+	{
+		INFO_LOG("NVRAM saved to {}.", Path::GetFileName(nvmfile));
+	}
 	else
-		ret = std::fwrite(buffer, 1, bytes, fp.get());
-
-	if (ret != bytes)
-		Console.Error("Failed to %s %s. Did only %zu/%zu bytes",
-					  read ? "read from" : "write to", nvmfile.c_str(), ret, bytes);
+	{
+		ERROR_LOG("Failed to save NVRAM to {}: {}", Path::GetFileName(nvmfile), Error::CreateErrno(errno).GetDescription());
+	}
 }
 
 static void cdvdReadNVM(u8* dst, int offset, int bytes)
 {
-	cdvdNVM(dst, offset, bytes, true);
+	int to_read = bytes;
+	if ((offset + bytes) > sizeof(s_nvram)) [[unlikely]]
+	{
+		WARNING_LOG("CDVD: Out of bounds NVRAM read: offset={}, bytes={}", offset, bytes);
+		to_read = std::max(static_cast<int>(sizeof(s_nvram)) - offset, 0);
+		pxAssert((bytes - to_read) > 0);
+		std::memset(dst + to_read, 0, bytes - to_read);
+	}
+
+	if (to_read > 0) [[likely]]
+		std::memcpy(dst, &s_nvram[offset], to_read);
 }
 
 static void cdvdWriteNVM(const u8* src, int offset, int bytes)
 {
-	cdvdNVM(const_cast<u8*>(src), offset, bytes, false);
+	int to_write = bytes;
+	if ((offset + bytes) > sizeof(s_nvram)) [[unlikely]]
+	{
+		WARNING_LOG("CDVD: Out of bounds NVRAM write: offset={}, bytes={}", offset, bytes);
+		to_write = std::max(static_cast<int>(sizeof(s_nvram)) - offset, 0);
+	}
+
+	if (to_write > 0) [[likely]]
+		std::memcpy(&s_nvram[offset], src, to_write);
 }
 
 void getNvmData(u8* buffer, s32 offset, s32 size, s32 fmtOffset)
 {
 	// find the correct bios version
-	NVMLayout* nvmLayout = getNvmLayout();
+	const NVMLayout* nvmLayout = getNvmLayout();
 
 	// get data from eeprom
-	cdvdReadNVM(buffer, *reinterpret_cast<s32*>((reinterpret_cast<u8*>(nvmLayout)) + fmtOffset) + offset, size);
+	cdvdReadNVM(buffer, *reinterpret_cast<const s32*>((reinterpret_cast<const u8*>(nvmLayout)) + fmtOffset) + offset, size);
 }
 
 void setNvmData(const u8* buffer, s32 offset, s32 size, s32 fmtOffset)
 {
 	// find the correct bios version
-	NVMLayout* nvmLayout = getNvmLayout();
+	const NVMLayout* nvmLayout = getNvmLayout();
 
 	// set data in eeprom
-	cdvdWriteNVM(buffer, GetBufferU32(&reinterpret_cast<u8*>(nvmLayout)[0], fmtOffset) + offset, size);
+	cdvdWriteNVM(buffer, GetBufferU32(&reinterpret_cast<const u8*>(nvmLayout)[0], fmtOffset) + offset, size);
 }
 
 static void cdvdReadConsoleID(u8* id)
