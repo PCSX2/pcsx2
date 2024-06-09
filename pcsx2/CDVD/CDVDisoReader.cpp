@@ -55,6 +55,11 @@ static bool ISOopen(std::string filename, Error* error)
 	return true;
 }
 
+static bool ISOprecache(ProgressCallback* progress, Error* error)
+{
+	return iso.Precache(progress, error);
+}
+
 static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	// fake it
@@ -400,6 +405,7 @@ const CDVD_API CDVDapi_Iso =
 		ISOclose,
 
 		ISOopen,
+		ISOprecache,
 		ISOreadTrack,
 		ISOgetBuffer,
 		ISOreadSubQ,

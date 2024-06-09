@@ -45,6 +45,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.MTVU, "EmuCore/Speedhacks", "vuThread", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.instantVU1, "EmuCore/Speedhacks", "vu1Instant", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastCDVD, "EmuCore/Speedhacks", "fastCDVD", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheCDVD, "EmuCore", "CdvdPrecache", false);
 
 	if (m_dialog->isPerGameSettings())
 	{
@@ -124,6 +125,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		   "Safe for most games, but a few games may exhibit graphical errors."));
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
 		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
+	dialog->registerWidgetHelp(m_ui.precacheCDVD, tr("Enable CDVD Precaching"), tr("Unchecked"),
+		tr("Loads the disc image into RAM before starting the virtual machine. Can reduce stutter on systems with hard drives that "
+		   "have long wake times, but significantly increases boot times."));
 	dialog->registerWidgetHelp(m_ui.cheats, tr("Enable Cheats"), tr("Unchecked"),
 		tr("Automatically loads and applies cheats on game start."));
 	dialog->registerWidgetHelp(m_ui.hostFilesystem, tr("Enable Host Filesystem"), tr("Unchecked"),

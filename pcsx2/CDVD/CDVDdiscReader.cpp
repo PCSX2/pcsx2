@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "CDVDdiscReader.h"
 #include "CDVD/CDVD.h"
+#include "Host.h"
 
 #include "common/Error.h"
 
@@ -190,6 +191,12 @@ static bool DISCopen(std::string filename, Error* error)
 
 	cdvdRefreshData();
 	return true;
+}
+
+static bool DISCprecache(ProgressCallback* progress, Error* error)
+{
+	Error::SetStringView(error, TRANSLATE_SV("CDVD", "Precaching is not supported for discs."));
+	return false;
 }
 
 static void DISCclose()
@@ -531,6 +538,7 @@ const CDVD_API CDVDapi_Disc =
 	{
 		DISCclose,
 		DISCopen,
+		DISCprecache,
 		DISCreadTrack,
 		DISCgetBuffer,
 		DISCreadSubQ,

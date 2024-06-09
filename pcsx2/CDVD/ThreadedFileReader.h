@@ -11,6 +11,7 @@
 #include <condition_variable>
 
 class Error;
+class ProgressCallback;
 
 /// A file reader for use with compressed formats
 /// Calls decompression code on a separate thread to make a synchronous decompression API async
@@ -42,8 +43,12 @@ protected:
 	virtual int ReadChunk(void* dst, s64 chunkID) = 0;
 	/// AsyncFileReader open but ThreadedFileReader needs prep work first
 	virtual bool Open2(std::string filename, Error* error) = 0;
+	/// AsyncFileReader precache but ThreadedFileReader needs prep work first
+	virtual bool Precache2(ProgressCallback* progress, Error* error);
 	/// AsyncFileReader close but ThreadedFileReader needs prep work first
 	virtual void Close2() = 0;
+	/// Checks system memory, to ensure that precaching would not exceed a reasonable amount.
+	bool CheckAvailableMemoryForPrecaching(u64 required_size, Error* error);
 
 	ThreadedFileReader();
 
@@ -109,7 +114,9 @@ public:
 
 	virtual u32 GetBlockCount() const = 0;
 
+
 	bool Open(std::string filename, Error* error);
+	bool Precache(ProgressCallback* progress, Error* error);
 	int ReadSync(void* pBuffer, u32 sector, u32 count);
 	void BeginRead(void* pBuffer, u32 sector, u32 count);
 	int FinishRead();

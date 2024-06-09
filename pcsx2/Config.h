@@ -1111,6 +1111,7 @@ struct Pcsx2Config
 	bool
 		CdvdVerboseReads : 1, // enables cdvd read activity verbosely dumped to the console
 		CdvdDumpBlocks : 1, // enables cdvd block dumping
+		CdvdPrecache : 1, // enables cdvd precaching of compressed images
 		EnablePatches : 1, // enables patch detection and application
 		EnableCheats : 1, // enables cheat detection and application
 		EnablePINE : 1, // enables inter-process communication

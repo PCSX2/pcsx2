@@ -11,6 +11,7 @@
 #include "pcsx2/ImGui/ImGuiManager.h"
 #include "pcsx2/Input/InputManager.h"
 #include "pcsx2/VMManager.h"
+#include "common/ProgressCallback.h"
 
 void Host::CommitBaseSettingChanges()
 {
@@ -31,6 +32,11 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 
 void Host::SetDefaultUISettings(SettingsInterface& si)
 {
+}
+
+std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
+{
+	return ProgressCallback::CreateNullProgressCallback();
 }
 
 void Host::ReportErrorAsync(const std::string_view title, const std::string_view message)

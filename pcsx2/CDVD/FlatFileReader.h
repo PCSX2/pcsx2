@@ -12,6 +12,7 @@ class FlatFileReader final : public ThreadedFileReader
 	DeclareNoncopyableObject(FlatFileReader);
 
 	std::FILE* m_file = nullptr;
+	std::unique_ptr<u8[]> m_file_cache;
 	u64 m_file_size = 0;
 
 public:
@@ -19,6 +20,8 @@ public:
 	~FlatFileReader() override;
 
 	bool Open2(std::string filename, Error* error) override;
+
+	bool Precache2(ProgressCallback* progress, Error* error) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void* dst, s64 blockID) override;

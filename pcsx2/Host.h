@@ -16,6 +16,7 @@
 #include <string_view>
 #include <vector>
 
+class ProgressCallback;
 class SettingsInterface;
 
 namespace Host
@@ -130,6 +131,9 @@ namespace Host
 
 	/// Sets host-specific default settings.
 	void SetDefaultUISettings(SettingsInterface& si);
+
+	/// Creates a progress callback that displays in the host.
+	std::unique_ptr<ProgressCallback> CreateHostProgressCallback();
 
 	namespace Internal
 	{

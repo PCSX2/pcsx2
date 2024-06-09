@@ -16,6 +16,8 @@ public:
 	~ChdFileReader() override;
 
 	bool Open2(std::string filename, Error* error) override;
+	
+	bool Precache2(ProgressCallback* progress, Error* error) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void* dst, s64 blockID) override;
