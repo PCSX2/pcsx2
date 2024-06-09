@@ -220,6 +220,18 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 	onTextureDumpChanged();
 	onTextureReplacementChanged();
 
+	if (m_dialog->isPerGameSettings())
+	{
+		m_ui.textureReplacementLayout->removeWidget(m_ui.texturesDirectoryBox);
+		m_ui.texturesDirectoryBox->deleteLater();
+		m_ui.texturesDirectoryBox = nullptr;
+		m_ui.texturesDirectory = nullptr;
+		m_ui.texturesBrowse = nullptr;
+		m_ui.texturesOpen = nullptr;
+		m_ui.texturesReset = nullptr;
+		m_ui.textureDescriptionText = nullptr;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// Advanced Settings
 	//////////////////////////////////////////////////////////////////////////
