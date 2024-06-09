@@ -261,6 +261,9 @@ namespace VMManager
 		/// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
 		void UpdateEmuFolders();
 
+		/// Returns true if the VM was fast booted.
+		bool WasFastBooted();
+
 		/// Returns true if fast booting is active (requested but ELF not started).
 		bool IsFastBootInProgress();
 
