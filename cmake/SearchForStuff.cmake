@@ -77,14 +77,6 @@ endif()
 
 set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
 
-set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
-if(ENABLE_TESTS)
-	if(NOT EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/gtest/CMakeLists.txt")
-		message(WARNING "ENABLE_TESTS was on but gtest was not found, unit tests will not be enabled")
-		set(ACTUALLY_ENABLE_TESTS Off)
-	endif()
-endif()
-
 add_subdirectory(3rdparty/rapidyaml/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
