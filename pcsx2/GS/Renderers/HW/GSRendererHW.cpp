@@ -2674,8 +2674,8 @@ void GSRendererHW::Draw()
 															  GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) ||
 															 IsPossibleChannelShuffle());
 
-		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, ((src && src->m_scale != 1) && GSConfig.UserHacks_NativeScaling != GSNativeScaling::Aggressive && !possible_shuffle) ? GetTextureScaleFactor() : target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block(), scale_draw != 1);
+		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, ((src && src->m_scale != 1) && GSConfig.UserHacks_NativeScaling == GSNativeScaling::Normal && !possible_shuffle) ? GetTextureScaleFactor() : target_scale, GSTextureCache::RenderTarget, true,
+			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, unclamped_draw_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block(), GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && scale_draw != 1);
 
 		// Draw skipped because it was a clear and there was no target.
 		if (!rt)
@@ -5234,7 +5234,6 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	if (m_downscale_source)
 	{
 		const GSVector4 dst_rect = GSVector4(0, 0, src_unscaled_size.x, src_unscaled_size.y);
-		const GSVector4 src_rect = GSVector4(scaled_copy_range) / GSVector4(src_unscaled_size * src_scale).xyxy();
 		g_gs_device->StretchRect(src_target->m_texture, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), src_copy.get(), dst_rect, src_target->m_texture->IsDepthStencil() ? ShaderConvert::DEPTH_COPY : ShaderConvert::COPY, false);
 	}
 	else
@@ -7213,27 +7212,36 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	if (GSConfig.UserHacks_NativeScaling == GSNativeScaling::Off)
 		return 0;
 
+	if (m_context->TEX1.MMAG != 1 || m_vt.m_primclass < GS_TRIANGLE_CLASS || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 ||
+		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8 || !src || !src->m_from_target)
+		return 0;
+
 	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
 	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
-	// Check if we're already downscaled and drawing in current size, try not to rescale it.
-	if (src && src->m_from_target && (std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1))
+
+	// Try to catch cases of stupid draws like Manhunt and Syphon Filter where they sample a single pixel.
+	if(tex_size.x == 0 || tex_size.y == 0 || draw_size.x == 0 || draw_size.y == 0)
+		return 0;
+
+	if (std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1)
 		return -1;
 
-	// Try to detect if a game is downscaling/upscaling the image in order to do post processing/bloom effects.
-	const bool is_downscale = (tex_size.x / 2.0f) >= (draw_size.x - 1) && (tex_size.y / 2.0f) >= (draw_size.y - 1);
+	// Should usually be 2x but some games like Monster House goes from 512x448 -> 128x128
+	const bool is_downscale = draw_size.x <= (tex_size.x * 0.75f) && draw_size.y <= (tex_size.y * 0.75f);
+
 	if (is_downscale && draw_size.x >= PCRTCDisplays.GetResolution().x)
 		return 0;
 
-	const bool is_upscale = (draw_size.x / 2.0f) >= (tex_size.x - 1) && (draw_size.y / 2.0f) >= (tex_size.y - 1);
-
+	const bool is_upscale = (draw_size.x / tex_size.x) >= 4 || (draw_size.y / tex_size.y) >= 4;
 	// DMC does a blit in strips with the scissor to keep it inside page boundaries, so that's not technically full coverage
 	// but good enough for what we want.
-	const bool no_gaps_or_single_sprite = (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && SpriteDrawWithoutGaps()));
-	if (no_gaps_or_single_sprite && m_vt.m_primclass >= GS_TRIANGLE_CLASS && m_context->TEX1.MMAG == 1 && src && src->m_from_target && 
-		GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp > 8 && m_cached_ctx.FRAME.Block() != m_cached_ctx.TEX0.TBP0 && !IsMipMapDraw() && 
-		((is_upscale && !IsDiscardingDstColor()) || (((PRIM->ABE && m_context->ALPHA.C == 2 && m_context->ALPHA.FIX == 255) || IsDiscardingDstColor()) && is_downscale)))
+	const bool no_gaps_or_single_sprite = (is_downscale || is_upscale) && (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && SpriteDrawWithoutGaps()));
+
+	const bool dst_discarded = IsDiscardingDstColor();
+	if (no_gaps_or_single_sprite && ((is_upscale && !dst_discarded) ||
+		(is_downscale && (dst_discarded || (PRIM->ABE && m_context->ALPHA.C == 2 && m_context->ALPHA.FIX == 255)))))
 	{
-		GL_INS("%s draw detected - from %dx%d to %dx%d", is_downscale ? "Downscale" : "Upscale", tex_size.x, tex_size.y, draw_size.x, draw_size.y);
+		GL_INS("%s draw detected - from %dx%d to %dx%d draw %d", is_downscale ? "Downscale" : "Upscale", tex_size.x, tex_size.y, draw_size.x, draw_size.y, s_n);
 		return is_upscale ? 2 : 1;
 	}
 
