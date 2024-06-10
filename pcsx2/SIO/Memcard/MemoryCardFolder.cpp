@@ -64,7 +64,7 @@ static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 {
 	auto file = FileSystem::OpenCFile(filename, "w");
-	ryml::emit(node, file);
+	ryml::emit_yaml(node, file);
 	std::fflush(file);
 	std::fclose(file);
 }
@@ -1755,7 +1755,7 @@ void FolderMemoryCard::AttemptToRecreateIndexFile(const std::string& directory) 
 
 	auto file = FileSystem::OpenManagedCFile(Path::Combine(directory, "_pcsx2_index").c_str(), "w");
 	if (file)
-		ryml::emit(tree, file.get());
+		ryml::emit_yaml(tree, file.get());
 }
 
 std::string FolderMemoryCard::GetDisabledMessage(uint slot) const
