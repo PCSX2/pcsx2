@@ -2,7 +2,3 @@
 	path = 3rdparty/wil
 	url = https://github.com/microsoft/wil.git
 	branch = master
-[submodule "3rdparty/rapidyaml/rapidyaml"]
-	path = 3rdparty/rapidyaml/rapidyaml
-	url = https://github.com/biojppm/rapidyaml.git
-	branch = master

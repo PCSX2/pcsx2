@@ -1087,7 +1087,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	common
 	imgui
 	fmt::fmt
-	ryml
+	rapidyaml::rapidyaml
 	libchdr
 	libzip::zip
 	cpuinfo
