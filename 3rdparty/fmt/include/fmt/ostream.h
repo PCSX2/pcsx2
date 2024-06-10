@@ -73,7 +73,7 @@ auto get_file(std::filebuf&) -> FILE*;
 inline auto write_ostream_unicode(std::ostream& os, fmt::string_view data)
     -> bool {
   FILE* f = nullptr;
-#if FMT_MSC_VERSION
+#if FMT_MSC_VERSION && false
   if (auto* buf = dynamic_cast<std::filebuf*>(os.rdbuf()))
     f = get_file(*buf);
   else
