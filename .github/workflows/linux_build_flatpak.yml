@@ -57,7 +57,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
 
       # Work around container ownership issue
