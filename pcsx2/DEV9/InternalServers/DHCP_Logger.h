@@ -6,6 +6,7 @@
 #include "DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 #include <winsock2.h>
 #include <iphlpapi.h>
 #elif defined(__POSIX__)
