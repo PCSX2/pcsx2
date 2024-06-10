@@ -6,6 +6,3 @@
 	path = 3rdparty/rapidyaml/rapidyaml
 	url = https://github.com/biojppm/rapidyaml.git
 	branch = master
-[submodule "3rdparty/vulkan-headers"]
-	path = 3rdparty/vulkan-headers
-	url = https://github.com/KhronosGroup/Vulkan-Headers.git
