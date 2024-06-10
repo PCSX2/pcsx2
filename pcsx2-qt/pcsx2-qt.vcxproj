@@ -36,7 +36,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)\SDL2</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\fmt\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\fmt\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\lzma\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\simpleini\include</AdditionalIncludeDirectories>
