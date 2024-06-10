@@ -1056,7 +1056,7 @@ static bool parseHashDatabaseEntry(const c4::yml::NodeRef& node)
 		node["serial"] >> entry.serial;
 
 	const u32 index = static_cast<u32>(s_hash_database.size());
-	for (const ryml::NodeRef& n : node["hashes"].children())
+	for (const ryml::ConstNodeRef& n : node["hashes"].children())
 	{
 		if (!n.is_map() || !n.has_child("size") || !n.has_child("md5"))
 		{

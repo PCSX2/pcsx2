@@ -6,6 +6,7 @@
 #include "common/ProgressCallback.h"
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 #include "7z.h"
 #include "7zFile.h"
 #endif

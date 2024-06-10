@@ -25,7 +25,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpleini", "3rdparty\simpl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cubeb", "3rdparty\cubeb\cubeb.vcxproj", "{BF74C473-DC04-44B3-92E8-4145F4E77342}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ryml", "3rdparty\rapidyaml\ryml.vcxproj", "{DE9653B6-17DD-356A-9EE0-28A731772587}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rapidyaml", "3rdparty\rapidyaml\rapidyaml.vcxproj", "{DE9653B6-17DD-356A-9EE0-28A731772587}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzip", "3rdparty\libzip\libzip.vcxproj", "{20B2E9FE-F020-42A0-B324-956F5B06EA68}"
 EndProject

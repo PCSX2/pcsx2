@@ -9,7 +9,6 @@
 #include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
-#include "common/RedtapeWindows.h"
 #include "common/RedtapeWilCom.h"
 
 #include <CommCtrl.h>
