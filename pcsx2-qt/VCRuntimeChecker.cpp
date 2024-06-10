@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team
 // SPDX-License-Identifier: LGPL-3.0+
 
 #include "common/RedtapeWindows.h"
@@ -6,11 +6,13 @@
 
 #include "fmt/format.h"
 
+#define MAKE_VERSION64(v0, v1, v2, v3) \
+	(static_cast<DWORD64>(v3) | (static_cast<DWORD64>(v2) << 16) | (static_cast<DWORD64>(v1) << 32) | \
+		(static_cast<DWORD64>(v0) << 48))
+#define VERSION64_PART(v, p) (static_cast<WORD>(((v) >> (48 - ((p) * 16))) & 0xFFFFu))
+
 // Minimum version is 14.38.33135.0.
-static constexpr DWORD MIN_VERSION_V0 = 14;
-static constexpr DWORD MIN_VERSION_V1 = 38;
-static constexpr DWORD MIN_VERSION_V2 = 33135;
-static constexpr DWORD MIN_VERSION_V3 = 0;
+static constexpr DWORD64 MIN_VERSION = MAKE_VERSION64(14, 38, 33135, 0);
 static constexpr const char* DOWNLOAD_URL = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
 
 struct VCRuntimeCheckObject
@@ -66,15 +68,13 @@ struct VCRuntimeCheckObject
 			return;
 		}
 
-		const DWORD v0 = (fi->dwFileVersionMS >> 16) & 0xFFFFu;
-		const DWORD v1 = fi->dwFileVersionMS & 0xFFFFu;
-		const DWORD v2 = (fi->dwFileVersionLS >> 16) & 0xFFFFu;
-		const DWORD v3 = fi->dwFileVersionLS & 0xFFFFu;
+		const DWORD64 version = MAKE_VERSION64((fi->dwFileVersionMS >> 16) & 0xFFFFu, fi->dwFileVersionMS & 0xFFFFu,
+			(fi->dwFileVersionLS >> 16) & 0xFFFFu, fi->dwFileVersionLS & 0xFFFFu);
 
 		HeapFree(heap, 0, version_block);
 		HeapFree(heap, 0, filename);
 
-		if (v0 >= MIN_VERSION_V0 && v1 >= MIN_VERSION_V1 && v2 >= MIN_VERSION_V2)
+		if (version >= MIN_VERSION)
 			return;
 
 		// fmt is self-contained, hopefully it'll be okay.
@@ -87,7 +87,9 @@ struct VCRuntimeCheckObject
 				"You can download the latest version from {}.\n\n"
 				"Do you want to exit and download this version now?\n"
 				"If you select No, PCSX2 will likely crash.",
-				v0, v1, v2, v3, MIN_VERSION_V0, MIN_VERSION_V1, MIN_VERSION_V2, MIN_VERSION_V3, DOWNLOAD_URL);
+				VERSION64_PART(version, 0), VERSION64_PART(version, 1), VERSION64_PART(version, 2),
+				VERSION64_PART(version, 3), VERSION64_PART(MIN_VERSION, 0), VERSION64_PART(MIN_VERSION, 1),
+				VERSION64_PART(MIN_VERSION, 2), VERSION64_PART(MIN_VERSION, 3), DOWNLOAD_URL);
 		message[(fmt_result.size > (sizeof(message) - 1)) ? (sizeof(message) - 1) : fmt_result.size] = 0;
 
 		if (MessageBoxA(NULL, message, "Old Visual C++ Runtime Detected", MB_ICONERROR | MB_YESNO) == IDNO)
