@@ -23,6 +23,5 @@ macro(add_pcsx2_test target)
 	endif()
 endmacro()
 
-add_subdirectory(gtest)
 add_subdirectory(common)
 add_subdirectory(core)

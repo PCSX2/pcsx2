@@ -55,7 +55,8 @@ if (WIN32)
 endif()
 
 # tests
-if(ACTUALLY_ENABLE_TESTS)
+if(ENABLE_TESTS)
+	add_subdirectory(3rdparty/googletest)
 	add_subdirectory(tests/ctest)
 endif()
 
