@@ -81,7 +81,7 @@ namespace Vulkan
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
 			MAX_ATTACHMENTS = 2,
-			MAX_DYNAMIC_STATE = 8
+			MAX_DYNAMIC_STATE = 10
 		};
 
 		GraphicsPipelineBuilder();
@@ -106,6 +106,7 @@ namespace Vulkan
 		void SetMultisamples(u32 multisamples, bool per_sample_shading);
 		void SetNoCullRasterizationState();
 
+		// TODO: PURGE ME
 		void SetDepthState(bool depth_test, bool depth_write, VkCompareOp compare_op);
 		void SetStencilState(bool stencil_test, const VkStencilOpState& front, const VkStencilOpState& back);
 		void SetNoDepthTestState();

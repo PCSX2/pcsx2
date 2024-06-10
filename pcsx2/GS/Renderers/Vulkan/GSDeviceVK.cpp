@@ -81,6 +81,9 @@ static std::mutex s_instance_mutex;
 
 // Device extensions that are required for PCSX2.
 static constexpr const char* s_required_device_extensions[] = {
+	VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,
+	VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
+	VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME,
 	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
 	VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
 };
@@ -112,7 +115,7 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, bool enable_de
 	app_info.applicationVersion = VK_MAKE_VERSION(1, 7, 0);
 	app_info.pEngineName = "PCSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(1, 7, 0);
-	app_info.apiVersion = VK_API_VERSION_1_1;
+	app_info.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo instance_create_info = {};
 	instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -245,9 +248,9 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		VkPhysicalDeviceProperties props = {};
 		vkGetPhysicalDeviceProperties(device, &props);
 
-		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
+		// Skip GPUs which don't support Vulkan 1.3, since we won't be able to create a device with them anyway.
 		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-			VK_API_VERSION_MINOR(props.apiVersion) < 1)
+			VK_API_VERSION_MINOR(props.apiVersion) < 3)
 		{
 			Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
@@ -361,23 +364,13 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 			return false;
 	}
 
-	// MoltenVK does not support VK_EXT_line_rasterization. We want it for other platforms,
-	// but on Mac, the implicit line rasterization apparently matches Bresenham anyway.
-#ifdef __APPLE__
-	static constexpr bool require_line_rasterization = false;
-#else
-	static constexpr bool require_line_rasterization = true;
-#endif
-
-	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_calibrated_timestamps =
 		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME,
-		require_line_rasterization);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_maintenance5 = SupportsExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME, false);
 
 	// glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug info
 	// is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging until
@@ -566,29 +559,37 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		device_info.ppEnabledLayerNames = layer_names;
 	}
 
-	// provoking vertex
+	VkPhysicalDeviceMaintenance4Features maintenance_4_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, .maintenance4 = VK_TRUE};
+	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamic_state_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+		.extendedDynamicState = VK_TRUE};
+	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamic_state_3_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+		.extendedDynamicState3ColorBlendEnable = VK_TRUE,
+		.extendedDynamicState3ColorBlendEquation = VK_TRUE,
+		.extendedDynamicState3ColorWriteMask = VK_TRUE};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
-	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT, .provokingVertexLast = VK_TRUE};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT, .bresenhamLines = VK_TRUE};
+	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
+		.rasterizationOrderColorAttachmentAccess = VK_TRUE};
+	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_5_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR,
+		.maintenance5 = VK_TRUE};
 
-	if (m_optional_extensions.vk_ext_provoking_vertex)
-	{
-		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
-		Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
-	}
-	if (m_optional_extensions.vk_ext_line_rasterization)
-	{
-		line_rasterization_feature.bresenhamLines = VK_TRUE;
-		Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
-	}
+	Vulkan::AddPointerToChain(&device_info, &maintenance_4_feature);
+	Vulkan::AddPointerToChain(&device_info, &dynamic_state_feature);
+	Vulkan::AddPointerToChain(&device_info, &dynamic_state_3_feature);
+	Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
+	Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
+
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
-	{
-		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
-	}
+	if (m_optional_extensions.vk_khr_maintenance5)
+		Vulkan::AddPointerToChain(&device_info, &maintenance_5_feature);
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
 	if (res != VK_SUCCESS)
@@ -647,31 +648,58 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 bool GSDeviceVK::ProcessDeviceExtensions()
 {
 	// advanced feature checks
-	VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	VkPhysicalDeviceFeatures2 features2 = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	VkPhysicalDeviceMaintenance4Features maintenance_4_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES};
+	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamic_state_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT};
+	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamic_state_3_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+	VkPhysicalDeviceMaintenance5FeaturesKHR maintenance_5_feature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR};
 
 	// add in optional feature structs
-	if (m_optional_extensions.vk_ext_provoking_vertex)
-		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
-	if (m_optional_extensions.vk_ext_line_rasterization)
-		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
+	Vulkan::AddPointerToChain(&features2, &maintenance_4_feature);
+	Vulkan::AddPointerToChain(&features2, &dynamic_state_feature);
+	Vulkan::AddPointerToChain(&features2, &dynamic_state_3_feature);
+	Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
+	Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
+
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
+	if (m_optional_extensions.vk_khr_maintenance5)
+		Vulkan::AddPointerToChain(&features2, &maintenance_5_feature);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
 
 	// confirm we actually support it
-	m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
+#define CHECK_MANDATORY_FEATURE(var, field, expected_value) \
+	if (var.field != expected_value) \
+	{ \
+		ERROR_LOG("Required Vulkan feature {} is not supported.", #field); \
+		return false; \
+	}
+	CHECK_MANDATORY_FEATURE(maintenance_4_feature, maintenance4, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(dynamic_state_feature, extendedDynamicState, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(dynamic_state_3_feature, extendedDynamicState3ColorBlendEnable, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(dynamic_state_3_feature, extendedDynamicState3ColorBlendEquation, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(dynamic_state_3_feature, extendedDynamicState3ColorWriteMask, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(provoking_vertex_features, provokingVertexLast, VK_TRUE);
+	CHECK_MANDATORY_FEATURE(line_rasterization_feature, bresenhamLines, VK_TRUE);
+#undef CHECK_MANDATORY_FEATURE
+
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+	m_optional_extensions.vk_khr_maintenance5 &= (maintenance_5_feature.maintenance5 == VK_TRUE);
 
-	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+	VkPhysicalDeviceProperties2 properties2 = { .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
 
 	if (m_optional_extensions.vk_khr_driver_properties)
 	{
@@ -680,29 +708,17 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	}
 
 	VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR};
+	.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR };
 	Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
 
-	// query
+	// confirm we actually support it
 	vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
-	// confirm we actually support it
 	if (push_descriptor_properties.maxPushDescriptors < NUM_TFX_TEXTURES)
 	{
-		Console.Error("maxPushDescriptors (%u) is below required (%u)", push_descriptor_properties.maxPushDescriptors,
-			NUM_TFX_TEXTURES);
+		ERROR_LOG("maxPushDescriptors ({}) is below required ({})",
+			push_descriptor_properties.maxPushDescriptors, static_cast<u32>(NUM_TFX_TEXTURES));
 		return false;
-	}
-
-	if (!line_rasterization_feature.bresenhamLines)
-	{
-		// See note in SelectDeviceExtensions().
-		Console.Error("bresenhamLines is not supported.");
-#ifndef __APPLE__
-		return false;
-#else
-		m_optional_extensions.vk_ext_line_rasterization = false;
-#endif
 	}
 
 	// VK_EXT_calibrated_timestamps checking
@@ -739,18 +755,14 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 			m_optional_extensions.vk_ext_calibrated_timestamps = false;
 	}
 
-	Console.WriteLn(
-		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
-	Console.WriteLn(
-		"VK_EXT_memory_budget is %s", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
-		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
-		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_full_screen_exclusive is %s",
-		m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
-	Console.WriteLn("VK_KHR_driver_properties is %s",
-		m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
+	// clang-format off
+	INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_calibrated_timestamps is {}", m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}", m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+	INFO_LOG("VK_EXT_full_screen_exclusive is {}", m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
+	INFO_LOG("VK_KHR_driver_properties is {}", m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
+	INFO_LOG("VK_KHR_maintenance5 is {}", m_optional_extensions.vk_khr_maintenance5 ? "supported" : "NOT supported");
+	// clang-format on
 
 	return true;
 }
@@ -758,14 +770,13 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 bool GSDeviceVK::CreateAllocator()
 {
 	VmaAllocatorCreateInfo ci = {};
-	ci.vulkanApiVersion = VK_API_VERSION_1_1;
-	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+	ci.vulkanApiVersion = VK_API_VERSION_1_3;
+	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT | VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT;
+	ci.flags |= (m_optional_extensions.vk_ext_memory_budget) ? VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT : 0;
+	ci.flags |= (m_optional_extensions.vk_khr_maintenance5) ? VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT : 0;
 	ci.physicalDevice = m_physical_device;
 	ci.device = m_device;
 	ci.instance = m_instance;
-
-	if (m_optional_extensions.vk_ext_memory_budget)
-		ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
 	// Limit usage of the DEVICE_LOCAL upload heap when we're using a debug device.
 	// On NVIDIA drivers, it results in frequently running out of device memory when trying to
@@ -2552,7 +2563,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.primitive_id = m_device_features.geometryShader;
 
 	m_features.prefer_new_textures = true;
-	m_features.provoking_vertex_last = m_optional_extensions.vk_ext_provoking_vertex;
+	m_features.provoking_vertex_last = true;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 
 	if (!m_features.texture_barrier)
@@ -2924,11 +2935,10 @@ void GSDeviceVK::DoMultiStretchRects(
 	if (!InRenderPass())
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
-
 	pxAssert(shader == ShaderConvert::COPY || shader == ShaderConvert::RTA_CORRECTION || rects[0].wmask.wrgba == 0xf);
-	int rta_bit = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
-	SetPipeline(
-		(rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba | rta_bit] : m_convert[static_cast<int>(shader)]);
+  int rta_bit = (shader == ShaderConvert::RTA_CORRECTION) ? 16 : 0;
+  SetPipeline(
+      (rects[0].wmask.wrgba != 0xf) ? m_color_copy[rects[0].wmask.wrgba | rta_bit] : m_convert[static_cast<int>(shader)]);
 
 	if (ApplyUtilityState())
 		DrawIndexedPrimitive();
@@ -4004,6 +4014,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 	return true;
 }
 
+
 bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
@@ -4722,17 +4733,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // Triangle
 	}};
 
-	GSHWDrawConfig::BlendState pbs{p.bs};
-	GSHWDrawConfig::PSSelector pps{p.ps};
-	if (!p.bs.IsEffective(p.cms))
-	{
-		// disable blending when colours are masked
-		pbs = {};
-		pps.no_color1 = true;
-	}
-
-	VkShaderModule vs = GetTFXVertexShader(p.vs);
-	VkShaderModule fs = GetTFXFragmentShader(pps);
+	const VkShaderModule vs = GetTFXVertexShader(p.vs);
+	const VkShaderModule fs = GetTFXFragmentShader(p.ps);
 	if (vs == VK_NULL_HANDLE || fs == VK_NULL_HANDLE)
 		return VK_NULL_HANDLE;
 
@@ -4749,7 +4751,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	else
 	{
 		gpb.SetRenderPass(
-			GetTFXRenderPass(p.rt, p.ds, p.ps.hdr, p.dss.date,
+			GetTFXRenderPass(p.rt, p.ds, p.ps.hdr, false,
 				p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
 				p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
@@ -4757,14 +4759,24 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-	if (m_optional_extensions.vk_ext_line_rasterization &&
-		p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
-	{
+	if (p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
 		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT);
-	}
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
+
+	if (p.rt || true) //TODO: Can we allow this, YES, but we need to bake it into the pipeline, and set dirty.
+	{
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT);
+	}
+	if (p.ds || true)//TODO: Can we allow this
+	{
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_DEPTH_COMPARE_OP);
+	}
 
 	// Shaders
 	gpb.SetVertexShader(vs);
@@ -4781,48 +4793,6 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		gpb.AddVertexAttribute(4, 0, VK_FORMAT_R32_UINT, 20); // Z
 		gpb.AddVertexAttribute(5, 0, VK_FORMAT_R16G16_UINT, 24); // UV
 		gpb.AddVertexAttribute(6, 0, VK_FORMAT_R8G8B8A8_UNORM, 28); // FOG
-	}
-
-	// DepthStencil
-	static const VkCompareOp ztst[] = {
-		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER};
-	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
-	if (p.dss.date)
-	{
-		const VkStencilOpState sos{VK_STENCIL_OP_KEEP, p.dss.date_one ? VK_STENCIL_OP_ZERO : VK_STENCIL_OP_KEEP,
-			VK_STENCIL_OP_KEEP, VK_COMPARE_OP_EQUAL, 1u, 1u, 1u};
-		gpb.SetStencilState(true, sos, sos);
-	}
-
-	// Blending
-	if (IsDATEModePrimIDInit(p.ps.date))
-	{
-		// image DATE prepass
-		gpb.SetBlendAttachment(0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_MIN, VK_BLEND_FACTOR_ONE,
-			VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT);
-	}
-	else if (pbs.enable)
-	{
-		// clang-format off
-		static constexpr std::array<VkBlendFactor, 16> vk_blend_factors = { {
-			VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
-			VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-			VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-			VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
-		}};
-		static constexpr std::array<VkBlendOp, 3> vk_blend_ops = {{
-				VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
-		}};
-		// clang-format on
-
-		gpb.SetBlendAttachment(0, true, vk_blend_factors[pbs.src_factor], vk_blend_factors[pbs.dst_factor],
-			vk_blend_ops[pbs.op], vk_blend_factors[pbs.src_factor_alpha], vk_blend_factors[pbs.dst_factor_alpha],
-			VK_BLEND_OP_ADD, p.cms.wrgba);
-	}
-	else
-	{
-		gpb.SetBlendAttachment(0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
-			VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 
 	// Tests have shown that it's faster to just enable rast order on the entire pass, rather than alternating
@@ -5006,13 +4976,52 @@ void GSDeviceVK::SetIndexBuffer(VkBuffer buffer)
 	m_dirty_flags |= DIRTY_FLAG_INDEX_BUFFER;
 }
 
-void GSDeviceVK::SetBlendConstants(u8 color)
+void GSDeviceVK::SetDepthStencilSelector(DepthStencilSelector sel)
 {
-	if (m_blend_constant_color == color)
+	if (m_current_depth_selector.key == sel.key)
 		return;
 
-	m_blend_constant_color = color;
-	m_dirty_flags |= DIRTY_FLAG_BLEND_CONSTANTS;
+	// Don't need to test compare op if depth is disabled.
+	sel.ztst = sel.IsDepthTestEnabled() ? sel.ztst : m_current_depth_selector.ztst;
+
+	m_dirty_flags |= ((m_current_depth_selector.IsDepthTestEnabled() != sel.IsDepthTestEnabled()) ? DIRTY_FLAG_DEPTH_TEST_ENABLE : 0) |
+					 ((m_current_depth_selector.ztst != sel.ztst) ? DIRTY_FLAG_DEPTH_COMPARE_OP : 0) |
+					 ((m_current_depth_selector.zwe != sel.zwe) ? DIRTY_FLAG_DEPTH_WRITE_ENABLE : 0) |
+					 ((m_current_depth_selector.date != sel.date || m_current_depth_selector.date_one != sel.date_one) ? DIRTY_FLAG_DEPTH_STENCIL_STATE : 0); // TODO: Check date_one, might not be necessary here.
+
+	m_current_depth_selector = sel;
+}
+
+void GSDeviceVK::SetBlendAndColorSelectors(BlendSelector bsel, ColorMaskSelector cmsel)
+{
+	m_dirty_flags |= ((m_current_colormask_selector.key != cmsel.key) ? DIRTY_FLAG_COLOR_WRITE_MASK : 0);
+	m_current_colormask_selector = cmsel;
+
+	// Avoid testing equation if it's not used.
+	if (!bsel.enable || !bsel.IsEffective(cmsel))
+	{
+		m_dirty_flags |= (m_current_blend_selector.enable ? DIRTY_FLAG_BLEND_ENABLE : 0);
+		m_current_blend_selector.enable = false;
+	}
+	else
+	{
+		// Avoid updating constant if it's not used.
+		bsel.constant = bsel.constant_enable ? bsel.constant : m_current_blend_selector.constant;
+
+		// TODO: Make sure this turns into a masked test... it does not. thanks clang.
+		m_dirty_flags |= ((!m_current_blend_selector.enable) ? DIRTY_FLAG_BLEND_ENABLE : 0) |
+						   /*((bsel.op != m_current_blend_selector.op ||
+								bsel.src_factor != m_current_blend_selector.src_factor ||
+								bsel.dst_factor != m_current_blend_selector.dst_factor ||
+								bsel.src_factor_alpha != m_current_blend_selector.src_factor_alpha ||
+								bsel.dst_factor_alpha != m_current_blend_selector.dst_factor_alpha)*/
+			(((bsel.key & 0xFFFFFC) != (m_current_blend_selector.key & 0xFFFFFC)) ?
+								   DIRTY_FLAG_BLEND_EQUATION :
+								   0) |
+						   ((bsel.constant != m_current_blend_selector.constant) ? DIRTY_FLAG_BLEND_CONSTANTS : 0);
+
+		m_current_blend_selector = bsel;
+	}
 }
 
 void GSDeviceVK::SetLineWidth(float width)
@@ -5228,15 +5237,6 @@ __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 			{m_scissor.x, m_scissor.y}, {static_cast<u32>(m_scissor.width()), static_cast<u32>(m_scissor.height())}};
 		vkCmdSetScissor(cmdbuf, 0, 1, &vscissor);
 	}
-
-	if (flags & DIRTY_FLAG_BLEND_CONSTANTS)
-	{
-		const GSVector4 col(static_cast<float>(m_blend_constant_color) / 128.0f);
-		vkCmdSetBlendConstants(cmdbuf, col.v);
-	}
-
-	if (flags & DIRTY_FLAG_LINE_WIDTH)
-		vkCmdSetLineWidth(cmdbuf, m_current_line_width);
 }
 
 bool GSDeviceVK::ApplyTFXState(bool already_execed)
@@ -5252,7 +5252,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	if (flags & DIRTY_FLAG_VS_CONSTANT_BUFFER)
 	{
 		if (!m_vertex_uniform_stream_buffer.ReserveMemory(
-				sizeof(m_vs_cb_cache), static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment)))
+			sizeof(m_vs_cb_cache), static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment)))
 		{
 			if (already_execed)
 			{
@@ -5273,7 +5273,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER)
 	{
 		if (!m_fragment_uniform_stream_buffer.ReserveMemory(
-				sizeof(m_ps_cb_cache), static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment)))
+			sizeof(m_ps_cb_cache), static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment)))
 		{
 			if (already_execed)
 			{
@@ -5346,8 +5346,94 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
 	}
 
+	// pipeline has to be bound first for dynamic state
 	ApplyBaseState(flags, cmdbuf);
+	if (flags & DIRTY_DYNAMIC_STATE)
+		ApplyDynamicState(cmdbuf);
+
 	return true;
+}
+
+__ri void GSDeviceVK::ApplyDynamicState(VkCommandBuffer cmdbuf)
+{
+	u32 flags = m_dirty_flags;
+	if (flags & DIRTY_FLAG_LINE_WIDTH)
+	{
+		flags &= ~DIRTY_FLAG_LINE_WIDTH;
+		vkCmdSetLineWidth(cmdbuf, m_current_line_width);
+	}
+
+	if (m_current_render_target || true)//TODO: Can we allow this
+	{
+		const BlendSelector bsel = m_current_blend_selector;
+		if (flags & DIRTY_FLAG_BLEND_ENABLE)
+		{
+			const VkBool32 enable = bsel.enable;
+			vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &enable);
+		}
+
+		// TODO: Primid date init needs to go in here
+		if (flags & DIRTY_FLAG_BLEND_EQUATION)
+		{
+			// clang-format off
+			static constexpr std::array<VkBlendFactor, 16> vk_blend_factors = { {
+				VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
+				VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+				VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
+				VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
+			} };
+			static constexpr std::array<VkBlendOp, 3> vk_blend_ops = { {
+					VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
+			} };
+			// clang-format on
+
+			const VkColorBlendEquationEXT equation = {
+				vk_blend_factors[bsel.src_factor], vk_blend_factors[bsel.dst_factor], vk_blend_ops[bsel.op],
+				vk_blend_factors[bsel.src_factor_alpha], vk_blend_factors[bsel.dst_factor_alpha], VK_BLEND_OP_ADD};
+			vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &equation);
+		}
+
+		if (flags & DIRTY_FLAG_BLEND_CONSTANTS)
+		{
+			const GSVector4 col(static_cast<float>(bsel.constant) / 128.0f);
+			vkCmdSetBlendConstants(cmdbuf, col.v);
+		}
+
+		if (flags & DIRTY_FLAG_COLOR_WRITE_MASK)
+		{
+			flags &= ~DIRTY_FLAG_COLOR_WRITE_MASK;
+
+			const VkColorComponentFlags flags = m_current_colormask_selector.wrgba;
+			vkCmdSetColorWriteMaskEXT(cmdbuf, 0, 1, &flags);
+		}
+
+		flags &= ~(DIRTY_FLAG_BLEND_ENABLE | DIRTY_FLAG_BLEND_EQUATION | DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_COLOR_WRITE_MASK);
+	}
+
+	if (m_current_depth_target || true)//TODO: Can we allow this
+	{
+		const DepthStencilSelector dss = m_current_depth_selector;
+
+		if (flags & DIRTY_FLAG_DEPTH_TEST_ENABLE)
+			vkCmdSetDepthTestEnable(cmdbuf, dss.IsDepthTestEnabled());
+
+		if (flags & DIRTY_FLAG_DEPTH_WRITE_ENABLE)
+			vkCmdSetDepthWriteEnable(cmdbuf, dss.zwe);
+
+		if (flags & DIRTY_FLAG_DEPTH_COMPARE_OP)
+		{
+			static const VkCompareOp ztst[] = {
+				VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER};
+
+			vkCmdSetDepthCompareOp(cmdbuf, ztst[dss.ztst]);
+		}
+
+		// TODO: Stencil
+
+		flags &= ~(DIRTY_FLAG_DEPTH_TEST_ENABLE | DIRTY_FLAG_DEPTH_WRITE_ENABLE | DIRTY_FLAG_DEPTH_COMPARE_OP);
+	}
+
+	m_dirty_flags = flags;
 }
 
 bool GSDeviceVK::ApplyUtilityState(bool already_execed)
@@ -5369,8 +5455,11 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, false);
 	}
 
-
 	ApplyBaseState(flags, cmdbuf);
+
+	// Dynamic state must be reset.
+	// TODO: Potentially avoid this by checking if we have RT/DS on the pipeline.
+	m_dirty_flags |= DIRTY_DYNAMIC_STATE;
 	return true;
 }
 
@@ -5473,11 +5562,12 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	PSSetShaderResource(3, m_null_texture.get(), false);
 
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
+	// TODO: no_color on PS
+	// TODO: fix blend state
 	PipelineSelector& pipe = m_pipeline_selector;
 	UpdateHWPipelineSelector(config, pipe);
-	pipe.dss.zwe = false;
-	pipe.cms.wrgba = 0;
-	pipe.bs = {};
+	SetDepthStencilSelector();
+	SetBlendAndColorSelectors(BlendSelector(), ColorMaskSelector{0});
 	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
 	pipe.rt = true;
 	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
@@ -5536,12 +5626,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 	if (config.pal)
 		PSSetShaderResource(1, config.pal, true);
-
-	if (config.blend.constant_enable)
-		SetBlendConstants(config.blend.constant);
-
-	if (config.topology == GSHWDrawConfig::Topology::Line)
-		SetLineWidth(config.line_expand ? config.cb_ps.ScaleFactor.z : 1.0f);
 
 	// Primitive ID tracking DATE setup.
 	GSTextureVK* date_image = nullptr;
@@ -5742,6 +5826,13 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (!date_image || hdr_rt)
 		UploadHWDrawVerticesAndIndices(config);
 
+	// dynamic pipeline config
+	SetDepthStencilSelector(config.depth);
+	SetBlendAndColorSelectors(config.blend, config.colormask);
+
+	if (config.topology == GSHWDrawConfig::Topology::Line)
+		SetLineWidth(config.line_expand ? config.cb_ps.ScaleFactor.z : 1.0f);
+
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
 		SendHWDraw(config, draw_rt, config.require_one_barrier, config.require_full_barrier, skip_first_barrier);
@@ -5749,14 +5840,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// blend second pass
 	if (config.blend_second_pass.enable)
 	{
-		if (config.blend_second_pass.blend.constant_enable)
-			SetBlendConstants(config.blend_second_pass.blend.constant);
-
-		pipe.bs = config.blend_second_pass.blend;
 		pipe.ps.blend_hw = config.blend_second_pass.blend_hw;
 		pipe.ps.dither = config.blend_second_pass.dither;
 		if (BindDrawPipeline(pipe))
 		{
+			SetBlendAndColorSelectors(config.blend_second_pass.blend, config.colormask);
+
 			// TODO: This probably should have barriers, in case we want to use it conditionally.
 			DrawIndexedPrimitive();
 		}
@@ -5773,11 +5862,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 
 		pipe.ps = config.alpha_second_pass.ps;
-		pipe.cms = config.alpha_second_pass.colormask;
-		pipe.dss = config.alpha_second_pass.depth;
-		pipe.bs = config.blend;
 		if (BindDrawPipeline(pipe))
 		{
+			SetDepthStencilSelector(config.alpha_second_pass.depth);
+			SetBlendAndColorSelectors(config.blend, config.alpha_second_pass.colormask);
 			SendHWDraw(config, draw_rt, config.alpha_second_pass.require_one_barrier,
 				config.alpha_second_pass.require_full_barrier, false);
 		}
@@ -5839,14 +5927,9 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.vs.key = config.vs.key;
 	pipe.ps.key_hi = config.ps.key_hi;
 	pipe.ps.key_lo = config.ps.key_lo;
-	pipe.dss.key = config.depth.key;
-	pipe.bs.key = config.blend.key;
-	pipe.bs.constant = 0; // don't dupe states with different alpha values
-	pipe.cms.key = config.colormask.key;
 	pipe.topology = static_cast<u32>(config.topology);
 	pipe.rt = config.rt != nullptr;
 	pipe.ds = config.ds != nullptr;
-	pipe.line_width = config.line_expand;
 	pipe.feedback_loop_flags =
 		(m_features.texture_barrier &&
 			(config.ps.IsFeedbackLoop() || config.require_one_barrier || config.require_full_barrier)) ?
