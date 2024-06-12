@@ -24,30 +24,30 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="rendererLayout">
      <property name="title">
       <string/>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="rendererText">
         <property name="text">
          <string>Renderer:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="renderer"/>
+       <widget class="QComboBox" name="rendererDropdown"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="adapterText">
         <property name="text">
          <string>Adapter:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="adapter"/>
+       <widget class="QComboBox" name="adapterDropdown"/>
       </item>
      </layout>
     </widget>
@@ -66,7 +66,7 @@
       </attribute>
       <layout class="QFormLayout" name="formLayout_7">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_28">
+        <widget class="QLabel" name="fsModeLabel">
          <property name="text">
           <string>Fullscreen Mode:</string>
          </property>
@@ -76,7 +76,7 @@
         <widget class="QComboBox" name="fullscreenModes"/>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_27">
+        <widget class="QLabel" name="aspectRatioLabel">
          <property name="text">
           <string>Aspect Ratio:</string>
          </property>
@@ -107,7 +107,7 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_22">
+        <widget class="QLabel" name="fmvAspectRatioLabel">
          <property name="text">
           <string>FMV Aspect Ratio:</string>
          </property>
@@ -138,7 +138,7 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_23">
+        <widget class="QLabel" name="interlacingLabel">
          <property name="text">
           <string>Deinterlacing:</string>
          </property>
@@ -199,7 +199,7 @@
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_18">
+        <widget class="QLabel" name="billinearLabel">
          <property name="text">
           <string>Bilinear Filtering:</string>
          </property>
@@ -225,14 +225,14 @@
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="label_21">
+        <widget class="QLabel" name="screenshotSizeLabel">
          <property name="text">
           <string>Screenshot Size:</string>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
+        <layout class="QHBoxLayout" name="screenshotLayout" stretch="1,0,0,0">
          <item>
           <widget class="QComboBox" name="screenshotSize">
            <item>
@@ -272,7 +272,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_44">
+          <widget class="QLabel" name="screenshotQualityLabel">
            <property name="text">
             <string>Quality:</string>
            </property>
@@ -294,7 +294,7 @@
         </layout>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label_24">
+        <widget class="QLabel" name="verticalStretchLabel">
          <property name="text">
           <string>Vertical Stretch:</string>
          </property>
@@ -314,16 +314,16 @@
         </widget>
        </item>
        <item row="7" column="0">
-        <widget class="QLabel" name="label_26">
+        <widget class="QLabel" name="cropLabel">
          <property name="text">
           <string>Crop:</string>
          </property>
         </widget>
        </item>
        <item row="7" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0,1,0,1,0,1">
+        <layout class="QHBoxLayout" name="cropLayout" stretch="0,1,0,1,0,1,0,1">
          <item>
-          <widget class="QLabel" name="label_39">
+          <widget class="QLabel" name="cropLeftLabel">
            <property name="text">
             <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Left:</string>
            </property>
@@ -340,7 +340,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_25">
+          <widget class="QLabel" name="cropTopLabel">
            <property name="text">
             <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Top:</string>
            </property>
@@ -357,7 +357,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_40">
+          <widget class="QLabel" name="cropRightLabel">
            <property name="text">
             <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Right:</string>
            </property>
@@ -374,7 +374,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_41">
+          <widget class="QLabel" name="cropBottomLabel">
            <property name="text">
             <string extracomment="Warning: short space constraints. Abbreviate if necessary.">Bottom:</string>
            </property>
@@ -456,7 +456,7 @@
       </attribute>
       <layout class="QFormLayout" name="formLayout_4">
        <item row="0" column="0">
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="internalResLabel">
          <property name="text">
           <string>Internal Resolution:</string>
          </property>
@@ -466,7 +466,7 @@
         <widget class="QComboBox" name="upscaleMultiplier"/>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_13">
+        <widget class="QLabel" name="textureFilteringLabel">
          <property name="text">
           <string>Texture Filtering:</string>
          </property>
@@ -497,7 +497,7 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_11">
+        <widget class="QLabel" name="trilinearFilterLabel">
          <property name="text">
           <string>Trilinear Filtering:</string>
          </property>
@@ -528,7 +528,7 @@
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="anisotropicFilteringLabel">
          <property name="text">
           <string>Anisotropic Filtering:</string>
          </property>
@@ -538,7 +538,7 @@
         <widget class="QComboBox" name="anisotropicFiltering"/>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="ditheringLabel">
          <property name="text">
           <string>Dithering:</string>
          </property>
@@ -569,7 +569,7 @@
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="blendingLabel">
          <property name="text">
           <string>Blending Accuracy:</string>
          </property>
@@ -610,7 +610,7 @@
         </widget>
        </item>
        <item row="7" column="0">
-        <widget class="QLabel" name="label_20">
+        <widget class="QLabel" name="texturePreloadingLabel">
          <property name="text">
           <string>Texture Preloading:</string>
          </property>
@@ -675,7 +675,7 @@
       </attribute>
       <layout class="QFormLayout" name="formLayout_9">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_37">
+        <widget class="QLabel" name="swTextureFilteringLabel">
          <property name="text">
           <string>Texture Filtering:</string>
          </property>
@@ -718,7 +718,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
+        <widget class="QLabel" name="extraSWThreadsLabel">
          <property name="text">
           <string>Software Rendering Threads:</string>
          </property>
@@ -757,14 +757,14 @@
       </attribute>
       <layout class="QFormLayout" name="hardwareFixesLayout">
        <item row="1" column="0">
-        <widget class="QLabel" name="label_36">
+        <widget class="QLabel" name="cpuCLUTRenderLabel">
          <property name="text">
           <string>CPU Sprite Render Size:</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0">
+        <layout class="QHBoxLayout" name="cpuCLUTRenderLayout" stretch="1,0">
          <item>
           <widget class="QComboBox" name="cpuSpriteRenderBW">
            <item>
@@ -846,7 +846,7 @@
         </layout>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_16">
+        <widget class="QLabel" name="swCLUTLabel">
          <property name="text">
           <string>Software CLUT Render:</string>
          </property>
@@ -878,7 +878,7 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_47">
+        <widget class="QLabel" name="gpuTargetCLUTLabel">
          <property name="text">
           <string extracomment="CLUT: Color Look Up Table, often referred to as a palette in non-PS2 things.  GPU Target CLUT: GPU handling of when a game uses data from a render target as a CLUT.">GPU Target CLUT:</string>
          </property>
@@ -904,7 +904,7 @@
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_30">
+        <widget class="QLabel" name="hwAutoFlushLabel">
          <property name="text">
           <string>Auto Flush:</string>
          </property>
@@ -930,7 +930,7 @@
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QLabel" name="label_45">
+        <widget class="QLabel" name="texInRTLabel">
          <property name="text">
           <string>Texture Inside RT:</string>
          </property>
@@ -956,14 +956,14 @@
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label_12">
+        <widget class="QLabel" name="skipDrawLabel">
          <property name="text">
           <string>Skip Draw Range:</string>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="skipDrawLayout">
          <item>
           <widget class="QSpinBox" name="skipDrawStart">
            <property name="maximum">
@@ -981,7 +981,7 @@
         </layout>
        </item>
        <item row="7" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout">
+        <layout class="QGridLayout" name="hwFixesLayout">
          <item row="0" column="0">
           <widget class="QCheckBox" name="disableDepthEmulation">
            <property name="text">
@@ -1055,7 +1055,7 @@
       </attribute>
       <layout class="QFormLayout" name="upscalingFixesLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_14">
+        <widget class="QLabel" name="halfPixelOffsetLabel">
          <property name="text">
           <string>Half Pixel Offset:</string>
          </property>
@@ -1091,7 +1091,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_15">
+        <widget class="QLabel" name="roundSpriteLabel">
          <property name="text">
           <string>Round Sprite:</string>
          </property>
@@ -1156,7 +1156,7 @@
         </layout>
        </item>
        <item row="4" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout_3">
+        <layout class="QGridLayout" name="upscalingFixesLayout_2">
          <item row="0" column="0">
           <widget class="QCheckBox" name="alignSprite">
            <property name="text">
@@ -1188,7 +1188,7 @@
         </layout>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="bilinearHackLabel">
          <property name="text">
           <string>Bilinear Dirty Upscale:</string>
          </property>
@@ -1338,7 +1338,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_17">
+           <widget class="QLabel" name="casModeLabel">
             <property name="text">
              <string extracomment="You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx">Contrast Adaptive Sharpening:</string>
             </property>
@@ -1368,7 +1368,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
-               <widget class="QLabel" name="label_43">
+               <widget class="QLabel" name="casSharpnessLabel">
                 <property name="text">
                  <string>Sharpness:</string>
                 </property>
@@ -1408,7 +1408,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout_5">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_35">
+           <widget class="QLabel" name="tvShaderLabel">
             <property name="text">
              <string>TV Shader:</string>
             </property>
@@ -1481,7 +1481,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QLabel" name="label_31">
+             <widget class="QLabel" name="brightnessLabel">
               <property name="text">
                <string>Brightness:</string>
               </property>
@@ -1498,7 +1498,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_32">
+             <widget class="QLabel" name="contrastLabel">
               <property name="text">
                <string>Contrast:</string>
               </property>
@@ -1515,7 +1515,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_33">
+             <widget class="QLabel" name="saturationLabel">
               <property name="text">
                <string>Saturation:</string>
               </property>
@@ -1563,7 +1563,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout_8">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_29">
+           <widget class="QLabel" name="osdScaleLabel">
             <property name="text">
              <string>OSD Scale:</string>
             </property>
@@ -1692,13 +1692,16 @@
       <attribute name="title">
        <string>Recording</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
+      <layout class="QVBoxLayout" name="recordingTabLayout">
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="captureTabGroupBox">
+         <property name="statusTip">
+          <string>capture</string>
+         </property>
          <property name="title">
           <string>Capture Setup</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_3">
+         <layout class="QFormLayout" name="captureTabGroupBoxLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="captureContainerLabel">
             <property name="text">
@@ -1710,7 +1713,7 @@
            <widget class="QComboBox" name="captureContainer"/>
           </item>
           <item row="1" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_10" columnstretch="1,1">
+           <layout class="QGridLayout" name="captureOptionLayout" columnstretch="1,1">
             <property name="horizontalSpacing">
              <number>20</number>
             </property>
@@ -1859,7 +1862,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_46">
+                  <widget class="QLabel" name="xLabel">
                    <property name="text">
                     <string>x</string>
                    </property>
@@ -1920,7 +1923,7 @@
          <property name="title">
           <string>Video Dumping Directory</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
+         <layout class="QVBoxLayout" name="videoDumpDirectoryLayout">
           <item>
            <layout class="QHBoxLayout" name="videoDumpLayout">
             <item>
@@ -1971,7 +1974,7 @@
       <attribute name="title">
        <string extracomment="Advanced here refers to the advanced graphics options.">Advanced</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="advancedTabLayout">
        <item>
         <widget class="QGroupBox" name="advancedOptions">
          <property name="title">
@@ -1979,7 +1982,7 @@
          </property>
          <layout class="QFormLayout" name="advancedOptionsFormLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_42">
+           <widget class="QLabel" name="hwDownloadModeLabel">
             <property name="text">
              <string>Hardware Download Mode:</string>
             </property>
@@ -2010,7 +2013,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_34">
+           <widget class="QLabel" name="gsDumpCompressionLabel">
             <property name="text">
              <string>GS Dump Compression:</string>
             </property>
@@ -2061,7 +2064,7 @@
            </layout>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_48">
+           <widget class="QLabel" name="exclussiveFSLabel">
             <property name="text">
              <string>Allow Exclusive Fullscreen:</string>
             </property>
@@ -2096,7 +2099,7 @@
          </property>
          <layout class="QFormLayout" name="debuggingOptionsFormLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_19">
+           <widget class="QLabel" name="barriersLabel">
             <property name="text">
              <string>Override Texture Barriers:</string>
             </property>
@@ -2122,7 +2125,7 @@
            </widget>
           </item>
           <item row="2" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_7">
+           <layout class="QGridLayout" name="debuggingOptionsLayout">
             <item row="0" column="1">
              <widget class="QCheckBox" name="disableFramebufferFetch">
               <property name="text">
