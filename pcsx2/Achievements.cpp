@@ -1108,7 +1108,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 			TRANSLATE_FS("Achievements", "{0}, {1}"),
 			TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
 				s_game_summary.num_unlocked_achievements),
-			TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.num_unlocked_achievements));
+			TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.points_unlocked));
 
 		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
 			if (ImGuiManager::InitializeFullscreenUI())
