@@ -4296,7 +4296,7 @@ void GSTextureCache::IncAge()
 
 	AgeHashCache();
 
-	// As of 04/15/2024 this is s et to 60 (just 1 second of targets), which should be fine now as it doesn't destroy targets which haven't been coevred.
+	// As of 04/15/2024 this is s et to 60 (just 1 second of targets), which should be fine now as it doesn't destroy targets which haven't been covered.
 	// 
 	// For reference, here are some games sensitive to killing old targets:
 	// Original maxage was 4 here, Xenosaga 2 needs at least 240, else it flickers on scene transitions.
@@ -4318,7 +4318,7 @@ void GSTextureCache::IncAge()
 			{
 				const Target* overlapping_tgt = FindOverlappingTarget(t);
 
-				if (!t->m_dirty.empty() || overlapping_tgt != nullptr)
+				if (overlapping_tgt != nullptr || t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(t->m_valid.width(), t->m_valid.height())).rintersect(t->m_valid).eq(t->m_valid))
 				{
 					i = list.erase(i);
 					GL_CACHE("TC: Remove Target(%s): (0x%x) due to age", to_string(type),
