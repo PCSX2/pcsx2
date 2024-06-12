@@ -544,7 +544,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 	const bool matched_format = (src_info->bpp == dst_info->bpp);
 	const bool block_matched_format = matched_format && block_aligned_rect;
 	const bool req_depth_offset = (src_info->depth > 0 && !page_aligned_rect);
-
+	bool address_offset = block_offset > 0;
 	// If there is block offset left over, try to adjust to that.
 	if (block_matched_format && (block_offset || req_depth_offset))
 	{
@@ -586,6 +586,7 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 
 						b2a_offset.x = 0;
 					}
+					address_offset = false;
 					in_rect = (in_rect + b2a_offset.xyxy()).max_i32(GSVector4i(0));
 
 					if (block_offset > 0 && !req_depth_offset)
@@ -647,6 +648,17 @@ void GSTextureCache::DirtyRectByPage(u32 sbp, u32 spsm, u32 sbw, Target* t, GSVe
 			const int block_y = in_rect.y & (src_info->pgs.y - 1);
 			x_offset += block_x;
 			y_offset += block_y;
+
+			if (address_offset)
+			{
+				const int blocks_wide = src_info->pgs.x / src_info->bs.x;
+				const int block_x_offset = (block_offset % blocks_wide) * src_info->bs.x;
+				const int block_y_offset = (block_offset / blocks_wide) * src_info->bs.y;
+
+				x_offset += block_x_offset;
+				y_offset += block_y_offset;
+			}
+
 			if (block_x)
 				in_rect = GSVector4i(in_rect.x - block_x, in_rect.y, in_rect.z - block_x, in_rect.w);
 			if (block_y)
