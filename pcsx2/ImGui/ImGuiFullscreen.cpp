@@ -846,8 +846,8 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_pad
 
 	if (y_align != 0.0f)
 	{
-		const float total_size =
-			static_cast<float>(num_items) * LayoutScale(item_height + (y_padding * 2.0f)) + LayoutScale(y_padding * 2.0f);
+		const float real_item_height = LayoutScale(item_height) + (LayoutScale(y_padding) * 2.0f);
+		const float total_size = (static_cast<float>(num_items) * real_item_height) + (LayoutScale(y_padding) * 2.0f);
 		const float window_height = ImGui::GetWindowHeight();
 		if (window_height > total_size)
 			ImGui::SetCursorPosY((window_height - total_size) * y_align);
