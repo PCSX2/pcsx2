@@ -132,13 +132,15 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
-	u32 z = v[0].XYZ.Z;
 
-	// ought to check only 1/2 for sprite
+	const int sprite_step = (m_primclass == GS_SPRITE_CLASS) ? 1 : 0;
+
+	u32 z = v[sprite_step].XYZ.Z;
+
 	if (z & 1)
 	{
 		// Check that first bit is always 1
-		for (int i = 0; i < count; i++)
+		for (int i = sprite_step; i < count; i += (sprite_step + 1))
 		{
 			z &= v[i].XYZ.Z;
 		}
@@ -146,13 +148,13 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 	else
 	{
 		// Check that first bit is always 0
-		for (int i = 0; i < count; i++)
+		for (int i = sprite_step; i < count; i += (sprite_step + 1))
 		{
 			z |= v[i].XYZ.Z;
 		}
 	}
 
-	if (z == v[0].XYZ.Z)
+	if (z == v[sprite_step].XYZ.Z)
 	{
 		m_eq.z = 1;
 	}
