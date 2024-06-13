@@ -17,6 +17,7 @@
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/CrashHandler.h"
 #include "common/FileSystem.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/Path.h"
@@ -93,6 +94,8 @@ bool GSRunner::InitializeConfig()
 	EmuFolders::SetAppRoot();
 	if (!EmuFolders::SetResourcesDirectory() || !EmuFolders::SetDataDirectory(nullptr))
 		return false;
+
+	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
 	const char* error;
 	if (!VMManager::PerformEarlyHardwareChecks(&error))
@@ -675,6 +678,7 @@ void GSRunner::DumpStats()
 
 int main(int argc, char* argv[])
 {
+	CrashHandler::Install();
 	GSRunner::InitializeConsole();
 
 	if (!GSRunner::InitializeConfig())
