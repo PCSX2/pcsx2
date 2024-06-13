@@ -225,10 +225,15 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	if (!m_buff)
 	{
 		const u32 pitch = (1 << m_tw) << shift;
+		const size_t size = pitch * th * 4;
 
-		m_buff = _aligned_malloc(pitch * th * 4, VECTOR_ALIGNMENT);
+		m_buff = _aligned_malloc(size, VECTOR_ALIGNMENT);
 		if (!m_buff)
 			return false;
+
+		// This _shouldn't_ be necessary, but apparently our texture min/max is wrong somewhere,
+		// and we end up sampling from "random" malloc memory, which breaks GS dump runs.
+		std::memset(m_buff, 0, size);
 	}
 
 	GSLocalMemory& mem = g_gs_renderer->m_mem;
