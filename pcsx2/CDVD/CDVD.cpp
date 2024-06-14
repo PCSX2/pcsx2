@@ -197,7 +197,7 @@ void cdvdSaveNVRAM()
 {
 	Error error;
 	const std::string nvmfile = cdvdGetNVRAMPath();
-	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b", &error);
+	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "wb", &error);
 	if (!fp)
 	{
 		ERROR_LOG("Failed to open NVRAM at {} for updating: {}", Path::GetFileName(nvmfile), error.GetDescription());
