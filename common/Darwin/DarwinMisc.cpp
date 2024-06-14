@@ -87,17 +87,19 @@ static std::string sysctl_str(int category, int name)
 	return std::string(buf, len > 0 ? len - 1 : 0);
 }
 
-static std::optional<u32> sysctlbyname_u32(const char* name)
+template <typename T>
+static std::optional<T> sysctlbyname_T(const char* name)
 {
-	u32 output;
+	T output = 0;
 	size_t output_size = sizeof(output);
-	if (0 != sysctlbyname(name, &output, &output_size, nullptr, 0))
+	if (sysctlbyname(name, &output, &output_size, nullptr, 0) != 0)
 		return std::nullopt;
 	if (output_size != sizeof(output))
 	{
-		DevCon.WriteLn("(DarwinMisc) sysctl %s gave unexpected size %zd", name, output_size);
+		ERROR_LOG("(DarwinMisc) sysctl {} gave unexpected size {}", name, output_size);
 		return std::nullopt;
 	}
+
 	return output;
 }
 
@@ -151,15 +153,15 @@ std::vector<DarwinMisc::CPUClass> DarwinMisc::GetCPUClasses()
 {
 	std::vector<CPUClass> out;
 
-	if (std::optional<u32> nperflevels = sysctlbyname_u32("hw.nperflevels"))
+	if (std::optional<u32> nperflevels = sysctlbyname_T<u32>("hw.nperflevels"))
 	{
 		char name[64];
 		for (u32 i = 0; i < *nperflevels; i++)
 		{
 			snprintf(name, sizeof(name), "hw.perflevel%u.physicalcpu", i);
-			std::optional<u32> physicalcpu = sysctlbyname_u32(name);
+			std::optional<u32> physicalcpu = sysctlbyname_T<u32>(name);
 			snprintf(name, sizeof(name), "hw.perflevel%u.logicalcpu", i);
-			std::optional<u32> logicalcpu = sysctlbyname_u32(name);
+			std::optional<u32> logicalcpu = sysctlbyname_T<u32>(name);
 
 			char levelname[64];
 			size_t levelname_size = sizeof(levelname);
@@ -177,9 +179,9 @@ std::vector<DarwinMisc::CPUClass> DarwinMisc::GetCPUClasses()
 			out.push_back({levelname, *physicalcpu, *logicalcpu});
 		}
 	}
-	else if (std::optional<u32> physcpu = sysctlbyname_u32("hw.physicalcpu"))
+	else if (std::optional<u32> physcpu = sysctlbyname_T<u32>("hw.physicalcpu"))
 	{
-		out.push_back({"Default", *physcpu, sysctlbyname_u32("hw.logicalcpu").value_or(0)});
+		out.push_back({"Default", *physcpu, sysctlbyname_T<u32>("hw.logicalcpu").value_or(0)});
 	}
 	else
 	{
@@ -187,17 +189,6 @@ std::vector<DarwinMisc::CPUClass> DarwinMisc::GetCPUClasses()
 	}
 
 	return out;
-}
-
-template <typename T>
-static std::optional<T> sysctlbyname_T(const char* name)
-{
-	T output = 0;
-	size_t output_size = sizeof(output);
-	if (sysctlbyname(name, &output, &output_size, nullptr, 0) != 0)
-		return std::nullopt;
-
-	return output;
 }
 
 size_t HostSys::GetRuntimePageSize()
