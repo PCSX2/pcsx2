@@ -29,6 +29,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0Recompiler, "EmuCore/CPU/Recompiler", "EnableVU0", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1Recompiler, "EmuCore/CPU/Recompiler", "EnableVU1", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vuFlagHack, "EmuCore/Speedhacks", "vuFlagHack", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.instantVU1, "EmuCore/Speedhacks", "vu1Instant", true);
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeRoundingMode, "EmuCore/CPU", "FPU.Roundmode", static_cast<int>(FPRoundMode::ChopZero));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeDivRoundingMode, "EmuCore/CPU", "FPUDiv.Roundmode", static_cast<int>(FPRoundMode::Nearest));
@@ -100,6 +101,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 	"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
 	dialog->registerWidgetHelp(m_ui.vu1ClampMode, tr("VU1 Clamping Mode"), tr("Normal (Default)"), tr("Changes how PCSX2 handles keeping floats in a standard x86 range in the Emotion Engine's Vector Unit 1 (EE VU1). "
 	"The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
+
+	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Enable Instant VU1"), tr("Checked"), tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
+		   "Safe for most games, but a few games may exhibit graphical errors."));
 
 	//: VU0 = Vector Unit 0. One of the PS2's processors.
 	dialog->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));

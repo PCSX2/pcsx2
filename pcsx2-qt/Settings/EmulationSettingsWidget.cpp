@@ -40,10 +40,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 	m_ui.optimalFramePacing->setTristate(dialog->isPerGameSettings());
 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.eeCycleSkipping, "EmuCore/Speedhacks", "EECycleSkip", DEFAULT_EE_CYCLE_SKIP);
-	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.affinityControl, "EmuCore/CPU", "AffinityControlMode", 0);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.MTVU, "EmuCore/Speedhacks", "vuThread", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.instantVU1, "EmuCore/Speedhacks", "vu1Instant", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadPinning, "EmuCore", "EnableThreadPinning", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastCDVD, "EmuCore/Speedhacks", "fastCDVD", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.precacheCDVD, "EmuCore", "CdvdPrecache", false);
 
@@ -113,16 +112,13 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   //: SOTC = Shadow of the Colossus. A game's title, should not be translated unless an official translation exists.
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));
-	dialog->registerWidgetHelp(m_ui.affinityControl, tr("Affinity Control"), tr("Disabled"),
+	dialog->registerWidgetHelp(m_ui.threadPinning, tr("Enable Thread Pinning"), tr("Unchecked"),
 		tr("Sets the priority for specific threads in a specific order ignoring the system scheduler. "
 		   //: P-Core = Performance Core, E-Core = Efficiency Core. See if Intel has official translations for these terms.
 		   "May help CPUs with big (P) and little (E) cores (e.g. Intel 12th or newer generation CPUs from Intel or other vendors such as AMD)."));
 	dialog->registerWidgetHelp(m_ui.MTVU, tr("Enable Multithreaded VU1 (MTVU1)"), tr("Checked"),
 		tr("Generally a speedup on CPUs with 4 or more cores. "
 		   "Safe for most games, but a few are incompatible and may hang."));
-	dialog->registerWidgetHelp(m_ui.instantVU1, tr("Enable Instant VU1"), tr("Checked"),
-		tr("Runs VU1 instantly. Provides a modest speed improvement in most games. "
-		   "Safe for most games, but a few games may exhibit graphical errors."));
 	dialog->registerWidgetHelp(m_ui.fastCDVD, tr("Enable Fast CDVD"), tr("Unchecked"),
 		tr("Fast disc access, less loading times. Check HDLoader compatibility lists for known games that have issues with this."));
 	dialog->registerWidgetHelp(m_ui.precacheCDVD, tr("Enable CDVD Precaching"), tr("Unchecked"),

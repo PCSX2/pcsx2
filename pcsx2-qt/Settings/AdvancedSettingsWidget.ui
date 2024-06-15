@@ -33,8 +33,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>807</width>
-        <height>723</height>
+        <width>790</width>
+        <height>765</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -202,7 +202,7 @@
             </item>
             <item row="3" column="0">
              <widget class="QCheckBox" name="extraMemory">
-              <property	name="text">
+              <property name="text">
                <string>Enable 128MB RAM (Dev Console)</string>
               </property>
              </widget>
@@ -269,6 +269,13 @@
              <widget class="QCheckBox" name="vu0Recompiler">
               <property name="text">
                <string>Enable VU0 Recompiler (Micro Mode)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="instantVU1">
+              <property name="text">
+               <string>Enable Instant VU1</string>
               </property>
              </widget>
             </item>
@@ -494,7 +501,7 @@
        <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
