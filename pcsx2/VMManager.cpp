@@ -3097,35 +3097,62 @@ void VMManager::WarnAboutUnsafeSettings()
 		append(ICON_FA_TACHOMETER_ALT,
 			TRANSLATE_SV("VMManager", "Cycle rate/skip is not at default, this may crash or make games run too slow."));
 	}
-	if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
-		append(ICON_FA_TV, TRANSLATE_SV("VMManager", "Upscale multiplier is below native, this will break rendering."));
-	if (!EmuConfig.GS.HWMipmap)
+	
+	const bool is_sw_renderer = EmuConfig.GS.Renderer == GSRendererType::SW;
+	if (!is_sw_renderer)
 	{
-		append(ICON_FA_IMAGES,
-			TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
+		// HW renderer settings.
+		if (EmuConfig.GS.UpscaleMultiplier < 1.0f)
+		{
+			append(ICON_FA_TV,
+				TRANSLATE_SV("VMManager", "Upscale multiplier is below native, this will break rendering."));
+		}
+		if (EmuConfig.GS.TriFilter != TriFiltering::Automatic)
+		{
+			append(ICON_FA_PAGER,
+				TRANSLATE_SV("VMManager", "Trilinear filtering is not set to automatic. This may break rendering in some games."));
+		}
+		if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
+		{
+			append(ICON_FA_PAINT_BRUSH,
+				TRANSLATE_SV("VMManager", "Blending Accuracy is below Basic, this may break effects in some games."));
+		}
+		if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+		{
+			append(ICON_FA_DOWNLOAD,
+				TRANSLATE_SV("VMManager", "Hardware Download Mode is not set to Accurate, this may break rendering in some games."));
+		}
+		if (EmuConfig.GS.GPUPaletteConversion)
+		{
+			append(ICON_FA_EXCLAMATION_CIRCLE,
+				TRANSLATE_SV("VMManager", "GPU Palette Conversion is enabled, this may reduce performance."));
+		}
+		if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full)
+		{
+			append(ICON_FA_EXCLAMATION_CIRCLE,
+				TRANSLATE_SV("VMManager", "Texture Preloading is not Full, this may reduce performance."));
+		}
+		if (EmuConfig.GS.UserHacks_EstimateTextureRegion)
+		{
+			append(ICON_FA_EXCLAMATION_CIRCLE,
+				TRANSLATE_SV("VMManager", "Estimate texture region is enabled, this may reduce performance."));
+		}
+		if (EmuConfig.GS.DumpReplaceableTextures)
+		{
+			append(ICON_FA_EXCLAMATION_CIRCLE,
+				TRANSLATE_SV("VMManager", "Texture dumping is enabled, this will continually dump textures to disk."));
+		}
+		if (!EmuConfig.GS.HWMipmap)
+		{
+			append(ICON_FA_IMAGES,
+				TRANSLATE_SV("VMManager", "Mipmapping is disabled. This may break rendering in some games."));
+		}
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 	{
 		append(ICON_FA_FILTER,
 			TRANSLATE_SV("VMManager",
 				"Texture filtering is not set to Bilinear (PS2). This will break rendering in some games."));
-	}
-	if (EmuConfig.GS.TriFilter != TriFiltering::Automatic)
-	{
-		append(
-			ICON_FA_PAGER, TRANSLATE_SV("VMManager",
-							   "Trilinear filtering is not set to automatic. This may break rendering in some games."));
-	}
-	if (EmuConfig.GS.AccurateBlendingUnit <= AccBlendLevel::Minimum)
-	{
-		append(ICON_FA_PAINT_BRUSH,
-			TRANSLATE_SV("VMManager", "Blending Accuracy is below Basic, this may break effects in some games."));
-	}
-	if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
-	{
-		append(ICON_FA_DOWNLOAD,
-			TRANSLATE_SV(
-				"VMManager", "Hardware Download Mode is not set to Accurate, this may break rendering in some games."));
 	}
 	if (EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::ChopZero)
 	{
@@ -3236,26 +3263,6 @@ void VMManager::WarnAboutUnsafeSettings()
 	{
 		append(ICON_FA_EXCLAMATION_CIRCLE,
 			TRANSLATE_SV("VMManager", "mVU Flag Hack is not enabled, this may reduce performance."));
-	}
-	if (EmuConfig.GS.GPUPaletteConversion)
-	{
-		append(ICON_FA_EXCLAMATION_CIRCLE,
-			TRANSLATE_SV("VMManager", "GPU Palette Conversion is enabled, this may reduce performance."));
-	}
-	if (EmuConfig.GS.TexturePreloading != TexturePreloadingLevel::Full)
-	{
-		append(ICON_FA_EXCLAMATION_CIRCLE,
-			TRANSLATE_SV("VMManager", "Texture Preloading is not Full, this may reduce performance."));
-	}
-	if (EmuConfig.GS.UserHacks_EstimateTextureRegion)
-	{
-		append(ICON_FA_EXCLAMATION_CIRCLE,
-			TRANSLATE_SV("VMManager", "Estimate texture region is enabled, this may reduce performance."));
-	}
-	if (EmuConfig.GS.DumpReplaceableTextures)
-	{
-		append(ICON_FA_EXCLAMATION_CIRCLE,
-			TRANSLATE_SV("VMManager", "Texture dumping is enabled, this will continually dump textures to disk."));
 	}
 
 	if (!messages.empty())
