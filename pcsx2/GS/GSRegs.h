@@ -531,6 +531,7 @@ REG_END2
 
 	// output will be Cd, Cs is discarded
 	__forceinline bool IsCdOutput() const { return (C == 2 && D != 1 && FIX == 0x00); }
+	__forceinline bool IsCdInBlend() const { return (A == 1 || B == 1 || D == 1); }
 	__forceinline bool IsUsingCs() const { return (A == 0 || B == 0 || D == 0); }
 	__forceinline bool IsUsingAs() const { return (A != B && C == 0); }
 
