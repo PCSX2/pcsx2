@@ -197,11 +197,15 @@ void cdvdSaveNVRAM()
 {
 	Error error;
 	const std::string nvmfile = cdvdGetNVRAMPath();
-	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "wb", &error);
+	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b", &error);
 	if (!fp)
 	{
-		ERROR_LOG("Failed to open NVRAM at {} for updating: {}", Path::GetFileName(nvmfile), error.GetDescription());
-		return;
+		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b", &error);
+		if (!fp) [[unlikely]]
+		{
+			ERROR_LOG("Failed to open NVRAM at {} for updating: {}", Path::GetFileName(nvmfile), error.GetDescription());
+			return;
+		}
 	}
 
 	u8 existing_nvram[NVRAM_SIZE];
