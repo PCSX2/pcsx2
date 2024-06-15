@@ -339,7 +339,6 @@ s32 cdvdReadConfig(u8* config)
 		default:
 		{
 			cdvdReadNVM(config, nvmLayout->config1 + (cdvd.CBlockIndex * 16), 16);
-			DEV_LOG("CONF1: {:02X} {:02X} {:02X} {:02X} {:02X} {:02X}", config[0], config[1], config[2], config[3], config[4], config[5]);
 			if (cdvd.CBlockIndex == 1 && (NoOSD || VMManager::Internal::WasFastBooted()))
 			{
 				// HACK: Set the "initialized" flag when fast booting, otherwise some games crash (e.g. Jak 1).
