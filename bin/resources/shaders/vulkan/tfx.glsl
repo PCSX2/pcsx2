@@ -30,6 +30,14 @@ layout(location = 0) out VSOutput
 	#endif
 } vsOut;
 
+#define VS_DEPTH_BASE 0
+#define VS_DEPTH_SHIFT 0
+
+uint convert_depth(uint z)
+{
+	return ((z - (VS_DEPTH_BASE)) >> (VS_DEPTH_SHIFT)) & 0xFFFFFFu;
+}
+
 #if VS_EXPAND == 0
 
 layout(location = 0) in vec2 a_st;
@@ -50,7 +58,7 @@ void main()
 	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
 
-	gl_Position = vec4(a_p, float(z), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
+	gl_Position = vec4(a_p, float(convert_depth(z)), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
 	gl_Position.xy = gl_Position.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	gl_Position.z *= exp2(-32.0f);		// integer->float depth
 	gl_Position.y = -gl_Position.y;
@@ -127,7 +135,7 @@ ProcessedVertex load_vertex(uint index)
 	ProcessedVertex vtx;
 
 	uint z = min(a_z, MaxDepth);
-	vtx.p = vec4(a_p, float(z), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
+	vtx.p = vec4(a_p, float(convert_depth(z)), 1.0f) - vec4(0.05f, 0.05f, 0, 0);
 	vtx.p.xy = vtx.p.xy * vec2(VertexScale.x, -VertexScale.y) - vec2(VertexOffset.x, -VertexOffset.y);
 	vtx.p.z *= exp2(-32.0f);		// integer->float depth
 	vtx.p.y = -vtx.p.y;
@@ -361,6 +369,8 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 #if PS_DATE > 0
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
+
+layout(depth_less) out float gl_FragDepth;
 
 #if NEEDS_TEX
 
@@ -1299,6 +1309,7 @@ void main()
 #elif (PS_DST_FMT == FMT_32) && (PS_FBA != 0)
 	if(C.a < 128.0f) C.a += 128.0f;
 #endif
+	gl_FragDepth = floor(gl_FragCoord.z * exp2(32.0f)) * exp2(-32.0f);
 
 	// Get first primitive that will write a failling alpha value
 #if PS_DATE == 1
@@ -1391,7 +1402,7 @@ void main()
 	#endif
 
 	#if PS_ZCLAMP
-		gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+		gl_FragDepth = min(gl_FragDepth, MaxDepthPS);
 	#endif
 
 #endif // PS_DATE
