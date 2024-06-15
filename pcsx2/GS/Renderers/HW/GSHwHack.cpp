@@ -194,10 +194,12 @@ bool GSHwHack::GSC_Tekken5(GSRendererHW& r, int& skip)
 			return true;
 		}
 
-		if (!s_nativeres && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && std::abs(static_cast<int>(RFBP - RTBP0)) == 0x180 && RTPSM == PSMCT32 && RFBMSK == 0xFF000000)
+		if (!s_nativeres && r.PRIM->PRIM == GS_SPRITE && RTME && RTEX0.TFX == 1 && RFPSM == RTPSM && RTPSM == PSMCT32 && RFBMSK == 0xFF000000 && r.m_index.tail > 2)
 		{
 			// Don't enable hack on native res.
 			// Fixes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
+			// Game copies the framebuffer as individual page rects with slight offsets (like 1/16 of a pixel etc) which doesn't wokr well with upscaling.
+			// This should catch all the scenarios, maybe overdoes it, but it's for 1 game and it's non-detrimental, it's better than squares all over the screen.
 			const GSVector4i draw_size(r.m_vt.m_min.p.x, r.m_vt.m_min.p.y, r.m_vt.m_max.p.x + 1.0f, r.m_vt.m_max.p.y + 1.0f);
 			const GSVector4i read_size(r.m_vt.m_min.t.x, r.m_vt.m_min.t.y, r.m_vt.m_max.t.x + 0.5f, r.m_vt.m_max.t.y + 0.5f);
 			r.ReplaceVerticesWithSprite(draw_size, read_size, GSVector2i(read_size.width(), read_size.height()), draw_size);
