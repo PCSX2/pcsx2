@@ -2612,7 +2612,7 @@ void GSRendererHW::Draw()
 		m_r = m_r.rintersect(t_size_rect);
 
 	float target_scale = GetTextureScaleFactor();
-	const int scale_draw = IsScalingDraw(src, no_gaps);
+	int scale_draw = IsScalingDraw(src, no_gaps);
 	if (target_scale > 1.0f && scale_draw > 0)
 	{
 		// 1 == Downscale, so we need to reduce the size of the target also.
@@ -2626,7 +2626,17 @@ void GSRendererHW::Draw()
 			m_downscale_source = GSConfig.UserHacks_NativeScaling != GSNativeScaling::Aggressive ? false : src->m_from_target->GetScale() > 1.0f; // Bad for GTA + Full Spectrum Warrior, good for Sacred Blaze + Parappa.
 	}
 	else
+	{
+		// if it's directly copying keep the scale - Ratchet and clank hits this, stops edge garbage happening.
+		if (scale_draw == -1 && src && src->m_from_target && src->m_from_target->m_downscaled &&
+			(GSVector4i(m_vt.m_min.p).xyxy() == GSVector4i(m_vt.m_min.t).xyxy()).alltrue() && (GSVector4i(m_vt.m_max.p).xyxy() == GSVector4i(m_vt.m_max.t).xyxy()).alltrue())
+		{
+			target_scale = src->m_from_target->GetScale();
+			scale_draw = 1;
+		}
+
 		m_downscale_source = false;
+	}
 
 	if (IsPossibleChannelShuffle() && src && src->m_from_target && src->m_from_target->GetScale() != target_scale)
 	{
@@ -7201,10 +7211,6 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	if (GSConfig.UserHacks_NativeScaling == GSNativeScaling::Off)
 		return 0;
 
-	if (m_context->TEX1.MMAG != 1 || m_vt.m_primclass < GS_TRIANGLE_CLASS || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 ||
-		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8 || !src || !src->m_from_target)
-		return 0;
-
 	const GSVector2i draw_size = GSVector2i(m_vt.m_max.p.x - m_vt.m_min.p.x, m_vt.m_max.p.y - m_vt.m_min.p.y);
 	const GSVector2i tex_size = GSVector2i(m_vt.m_max.t.x - m_vt.m_min.t.x, m_vt.m_max.t.y - m_vt.m_min.t.y);
 
@@ -7212,8 +7218,14 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	if(tex_size.x == 0 || tex_size.y == 0 || draw_size.x == 0 || draw_size.y == 0)
 		return 0;
 
-	if (std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1)
+	const bool is_target_src = src && src->m_from_target;
+
+	if (is_target_src && src->m_from_target->m_downscaled && std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1)
 		return -1;
+
+	if (m_context->TEX1.MMAG != 1 || m_vt.m_primclass < GS_TRIANGLE_CLASS || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 ||
+		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8 || !src || !src->m_from_target)
+		return 0;
 
 	// Should usually be 2x but some games like Monster House goes from 512x448 -> 128x128
 	const bool is_downscale = draw_size.x <= (tex_size.x * 0.75f) && draw_size.y <= (tex_size.y * 0.75f);
