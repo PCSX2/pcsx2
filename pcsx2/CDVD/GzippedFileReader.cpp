@@ -223,7 +223,7 @@ ThreadedFileReader::Chunk GzippedFileReader::ChunkForOffset(u64 offset)
 	else
 	{
 		chunk.chunkID = static_cast<s64>(offset) / m_index->span;
-		chunk.length = static_cast<u32>(std::min<u64>(m_index->uncompressed_size - offset, m_index->span));
+		chunk.length = m_index->span;
 		chunk.offset = static_cast<u64>(chunk.chunkID) * m_index->span;
 	}
 
