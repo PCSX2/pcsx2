@@ -688,6 +688,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 	// Only apply GS HW fixes if the user hasn't manually enabled HW fixes.
 	const bool apply_auto_fixes = !config.ManualUserHacks;
+	const bool is_sw_renderer = EmuConfig.GS.Renderer == GSRendererType::SW;
 	if (!apply_auto_fixes)
 		Console.Warning("[GameDB] Manual GS hardware renderer fixes are enabled, not using automatic hardware renderer fixes from GameDB.");
 
@@ -873,7 +874,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::RecommendedBlendingLevel:
 			{
-				if (value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
+				if (!is_sw_renderer && value >= 0 && value <= static_cast<int>(AccBlendLevel::Maximum) && static_cast<int>(EmuConfig.GS.AccurateBlendingUnit) < value)
 				{
 					Host::AddKeyedOSDMessage("HWBlendingWarning",
 						fmt::format(TRANSLATE_FS("GameDatabase",
@@ -916,7 +917,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 	// fixup skipdraw range just in case the db has a bad range (but the linter should catch this)
 	config.SkipDrawEnd = std::max(config.SkipDrawStart, config.SkipDrawEnd);
 
-	if (!disabled_fixes.empty())
+	if (!is_sw_renderer && !disabled_fixes.empty())
 	{
 		Host::AddKeyedOSDMessage("HWFixesWarning",
 			fmt::format(ICON_FA_MAGIC " {}\n{}",
