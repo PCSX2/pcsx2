@@ -545,8 +545,6 @@ struct Pcsx2Config
 		FPControlRegister VU0FPCR;
 		FPControlRegister VU1FPCR;
 
-		u32 AffinityControlMode;
-
 		CpuOptions();
 		void LoadSave(SettingsWrapper& wrap);
 		void ApplySanityCheck();
@@ -1119,6 +1117,7 @@ struct Pcsx2Config
 		EnableNoInterlacingPatches : 1,
 		EnableFastBoot : 1,
 		EnableFastBootFastForward : 1,
+		EnableThreadPinning : 1,
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 		EnableGameFixes : 1, // enables automatic game fixes

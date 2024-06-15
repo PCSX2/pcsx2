@@ -499,7 +499,7 @@ bool Pcsx2Config::CpuOptions::operator!=(const CpuOptions& right) const
 
 bool Pcsx2Config::CpuOptions::operator==(const CpuOptions& right) const
 {
-	return OpEqu(FPUFPCR) && OpEqu(FPUDivFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
+	return OpEqu(FPUFPCR) && OpEqu(FPUDivFPCR) && OpEqu(VU0FPCR) && OpEqu(VU1FPCR) && OpEqu(Recompiler);
 }
 
 Pcsx2Config::CpuOptions::CpuOptions()
@@ -512,14 +512,11 @@ Pcsx2Config::CpuOptions::CpuOptions()
 
 	VU0FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
 	VU1FPCR = DEFAULT_VU_FP_CONTROL_REGISTER;
-	AffinityControlMode = 0;
 	ExtraMemory = false;
 }
 
 void Pcsx2Config::CpuOptions::ApplySanityCheck()
 {
-	AffinityControlMode = std::min<u32>(AffinityControlMode, 6);
-
 	Recompiler.ApplySanityCheck();
 }
 
@@ -544,7 +541,6 @@ void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 	read_fpcr(VU0FPCR, "VU0");
 	read_fpcr(VU1FPCR, "VU1");
 
-	SettingsWrapEntry(AffinityControlMode);
 	SettingsWrapBitBool(ExtraMemory);
 
 	Recompiler.LoadSave(wrap);
@@ -1714,6 +1710,7 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableNoInterlacingPatches);
 	SettingsWrapBitBool(EnableFastBoot);
 	SettingsWrapBitBool(EnableFastBootFastForward);
+	SettingsWrapBitBool(EnableThreadPinning);
 	SettingsWrapBitBool(EnableRecordingTools);
 	SettingsWrapBitBool(EnableGameFixes);
 	SettingsWrapBitBool(SaveStateOnShutdown);

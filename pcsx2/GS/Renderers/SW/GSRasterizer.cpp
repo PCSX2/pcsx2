@@ -1209,23 +1209,15 @@ GSRasterizerList::~GSRasterizerList()
 	_aligned_free(m_scanline);
 }
 
-void GSRasterizerList::OnWorkerStartup(int i)
+void GSRasterizerList::OnWorkerStartup(int i, u64 affinity)
 {
 	Threading::SetNameOfCurrentThread(StringUtil::StdStringFromFormat("GS-SW-%d", i).c_str());
 
 	Threading::ThreadHandle handle(Threading::ThreadHandle::GetForCallingThread());
-
-	if (EmuConfig.Cpu.AffinityControlMode != 0)
+	if (affinity != 0)
 	{
-		const std::vector<u32>& procs = VMManager::GetSortedProcessorList();
-		const u32 processor_index = (THREAD_VU1 ? 3 : 2) + i;
-		if (processor_index < procs.size())
-		{
-			const u32 procid = procs[processor_index];
-			const u64 affinity = static_cast<u64>(1) << procid;
-			Console.WriteLn("Pinning GS thread %d to CPU %u (0x%llx)", i, procid, affinity);
-			handle.SetAffinity(affinity);
-		}
+		INFO_LOG("Pinning GS thread {} to CPU {} (0x{:x})", i, std::countr_zero(affinity), affinity);
+		handle.SetAffinity(affinity);
 	}
 
 	PerformanceMetrics::SetGSSWThread(i, std::move(handle));
@@ -1306,11 +1298,18 @@ std::unique_ptr<IRasterizer> GSRasterizerList::Create(int threads)
 
 	std::unique_ptr<GSRasterizerList> rl(new GSRasterizerList(threads));
 
+	const std::vector<u32>& procs = VMManager::Internal::GetSoftwareRendererProcessorList();
+	const bool pin = (EmuConfig.EnableThreadPinning && static_cast<size_t>(threads) <= procs.size());
+	if (EmuConfig.EnableThreadPinning && !pin)
+		WARNING_LOG("Not pinning SW threads, we need {} processors, but only have {}", threads, procs.size());
+
 	for (int i = 0; i < threads; i++)
 	{
+		const u64 affinity = pin ? (static_cast<u64>(1u) << procs[i]) : 0;
 		rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(&rl->m_ds, i, threads)));
 		auto& r = *rl->m_r[i];
-		rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker([i]() { GSRasterizerList::OnWorkerStartup(i); },
+		rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
+			[i, affinity]() { GSRasterizerList::OnWorkerStartup(i, affinity); },
 			[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(*item.get()); },
 			[i]() { GSRasterizerList::OnWorkerShutdown(i); })));
 	}

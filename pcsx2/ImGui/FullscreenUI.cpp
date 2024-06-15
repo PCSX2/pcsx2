@@ -3275,15 +3275,6 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		FSUI_NSTR("Moderate Underclock"),
 		FSUI_NSTR("Maximum Underclock"),
 	};
-	static constexpr const char* affinity_control_settings[] = {
-		FSUI_NSTR("Disabled"),
-		FSUI_NSTR("EE > VU > GS"),
-		FSUI_NSTR("EE > GS > VU"),
-		FSUI_NSTR("VU > EE > GS"),
-		FSUI_NSTR("VU > GS > EE"),
-		FSUI_NSTR("GS > EE > VU"),
-		FSUI_NSTR("GS > VU > EE"),
-	};
 	static constexpr const char* queue_entries[] = {
 		FSUI_NSTR("0 Frames (Hard Sync)"),
 		FSUI_NSTR("1 Frame"),
@@ -3311,14 +3302,11 @@ void FullscreenUI::DrawEmulationSettingsPage()
 	DrawIntListSetting(bsi, FSUI_CSTR("EE Cycle Skipping"),
 		FSUI_CSTR("Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it's harmful to performance."), "EmuCore/Speedhacks", "EECycleSkip", 0,
 		ee_cycle_skip_settings, std::size(ee_cycle_skip_settings), true);
-	DrawIntListSetting(bsi, FSUI_CSTR("Affinity Control Mode"),
-		FSUI_CSTR("Pins emulation threads to CPU cores to potentially improve performance/frame time variance."), "EmuCore/CPU",
-		"AffinityControlMode", 0, affinity_control_settings, std::size(affinity_control_settings), true);
 	DrawToggleSetting(bsi, FSUI_CSTR("Enable MTVU (Multi-Threaded VU1)"),
 		FSUI_CSTR("Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang."), "EmuCore/Speedhacks", "vuThread", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Enable Instant VU1"),
-		FSUI_CSTR("Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors."),
-		"EmuCore/Speedhacks", "vu1Instant", true);
+	DrawToggleSetting(bsi, FSUI_CSTR("Thread Pinning"),
+		FSUI_CSTR("Pins emulation threads to CPU cores to potentially improve performance/frame time variance."), "EmuCore",
+		"EnableThreadPinning", false);
 	DrawToggleSetting(
 		bsi, FSUI_CSTR("Enable Cheats"), FSUI_CSTR("Enables loading cheats from pnach files."), "EmuCore", "EnableCheats", false);
 	DrawToggleSetting(bsi, FSUI_CSTR("Enable Host Filesystem"),
@@ -4769,6 +4757,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			true);
 		DrawToggleSetting(bsi, FSUI_CSTR("Enable VU Flag Optimization"),
 			FSUI_CSTR("Good speedup and high compatibility, may cause graphical errors."), "EmuCore/Speedhacks", "vuFlagHack", true);
+		DrawToggleSetting(bsi, FSUI_CSTR("Enable Instant VU1"),
+			FSUI_CSTR("Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors."),
+			"EmuCore/Speedhacks", "vu1Instant", true);
 
 		MenuHeading(FSUI_CSTR("I/O Processor"));
 		DrawToggleSetting(bsi, FSUI_CSTR("Enable IOP Recompiler"),
@@ -6944,12 +6935,10 @@ TRANSLATE_NOOP("FullscreenUI", "EE Cycle Rate");
 TRANSLATE_NOOP("FullscreenUI", "Underclocks or overclocks the emulated Emotion Engine CPU.");
 TRANSLATE_NOOP("FullscreenUI", "EE Cycle Skipping");
 TRANSLATE_NOOP("FullscreenUI", "Makes the emulated Emotion Engine skip cycles. Helps a small subset of games like SOTC. Most of the time it's harmful to performance.");
-TRANSLATE_NOOP("FullscreenUI", "Affinity Control Mode");
-TRANSLATE_NOOP("FullscreenUI", "Pins emulation threads to CPU cores to potentially improve performance/frame time variance.");
 TRANSLATE_NOOP("FullscreenUI", "Enable MTVU (Multi-Threaded VU1)");
 TRANSLATE_NOOP("FullscreenUI", "Generally a speedup on CPUs with 4 or more cores. Safe for most games, but a few are incompatible and may hang.");
-TRANSLATE_NOOP("FullscreenUI", "Enable Instant VU1");
-TRANSLATE_NOOP("FullscreenUI", "Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.");
+TRANSLATE_NOOP("FullscreenUI", "Thread Pinning");
+TRANSLATE_NOOP("FullscreenUI", "Pins emulation threads to CPU cores to potentially improve performance/frame time variance.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading cheats from pnach files.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Host Filesystem");
@@ -7224,6 +7213,8 @@ TRANSLATE_NOOP("FullscreenUI", "New Vector Unit recompiler with much improved co
 TRANSLATE_NOOP("FullscreenUI", "Enable VU1 Recompiler");
 TRANSLATE_NOOP("FullscreenUI", "Enable VU Flag Optimization");
 TRANSLATE_NOOP("FullscreenUI", "Good speedup and high compatibility, may cause graphical errors.");
+TRANSLATE_NOOP("FullscreenUI", "Enable Instant VU1");
+TRANSLATE_NOOP("FullscreenUI", "Runs VU1 instantly. Provides a modest speed improvement in most games. Safe for most games, but a few games may exhibit graphical errors.");
 TRANSLATE_NOOP("FullscreenUI", "I/O Processor");
 TRANSLATE_NOOP("FullscreenUI", "Enable IOP Recompiler");
 TRANSLATE_NOOP("FullscreenUI", "Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code.");
@@ -7391,13 +7382,6 @@ TRANSLATE_NOOP("FullscreenUI", "Normal (Default)");
 TRANSLATE_NOOP("FullscreenUI", "Mild Underclock");
 TRANSLATE_NOOP("FullscreenUI", "Moderate Underclock");
 TRANSLATE_NOOP("FullscreenUI", "Maximum Underclock");
-TRANSLATE_NOOP("FullscreenUI", "Disabled");
-TRANSLATE_NOOP("FullscreenUI", "EE > VU > GS");
-TRANSLATE_NOOP("FullscreenUI", "EE > GS > VU");
-TRANSLATE_NOOP("FullscreenUI", "VU > EE > GS");
-TRANSLATE_NOOP("FullscreenUI", "VU > GS > EE");
-TRANSLATE_NOOP("FullscreenUI", "GS > EE > VU");
-TRANSLATE_NOOP("FullscreenUI", "GS > VU > EE");
 TRANSLATE_NOOP("FullscreenUI", "0 Frames (Hard Sync)");
 TRANSLATE_NOOP("FullscreenUI", "1 Frame");
 TRANSLATE_NOOP("FullscreenUI", "2 Frames");
@@ -7491,6 +7475,7 @@ TRANSLATE_NOOP("FullscreenUI", "Sprites/Triangles");
 TRANSLATE_NOOP("FullscreenUI", "Blended Sprites/Triangles");
 TRANSLATE_NOOP("FullscreenUI", "1 (Normal)");
 TRANSLATE_NOOP("FullscreenUI", "2 (Aggressive)");
+TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Inside Target");
 TRANSLATE_NOOP("FullscreenUI", "Merge Targets");
 TRANSLATE_NOOP("FullscreenUI", "Normal (Vertex)");

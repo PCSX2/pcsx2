@@ -224,10 +224,6 @@ namespace VMManager
 	/// Initializes default configuration in the specified file for the specified categories.
 	void SetDefaultSettings(SettingsInterface& si, bool folders, bool core, bool controllers, bool hotkeys, bool ui);
 
-	/// Returns a list of processors in the system, and their corresponding affinity mask.
-	/// This list is ordered by most performant to least performant for pinning threads to.
-	const std::vector<u32>& GetSortedProcessorList();
-
 	/// Returns the time elapsed in the current play session.
 	u64 GetSessionPlayedTime();
 
@@ -284,6 +280,9 @@ namespace VMManager
 
 		/// Resets/clears all execution/code caches.
 		void ClearCPUExecutionCaches();
+
+		/// Returns a list of processors in the system, suitable for pinning for the software renderer.
+		const std::vector<u32>& GetSoftwareRendererProcessorList();
 
 		const std::string& GetELFOverride();
 		bool IsExecutionInterrupted();
