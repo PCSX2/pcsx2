@@ -489,7 +489,9 @@ void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba,
 			// Dogs will reuse the Z in a different size format for a completely unrelated draw with an FBW of 2, then go back to using it in full width
 			const bool size_is_wrong = tex->m_target ? (static_cast<int>(tex->m_from_target_TEX0.TBW * 64) < tex->m_from_target->m_valid.z / 2) : false;
 			const u32 draw_page_width = std::max(static_cast<int>(m_vt.m_max.p.x + (!(process_ba & SHUFFLE_WRITE) ? 8.9f : 0.9f)) / 64, 1);
-			if (size_is_wrong || (rt && (rt->m_TEX0.TBW % draw_page_width) == 0))
+			const bool single_direction_doubled = (m_vt.m_max.p.y > rt->m_valid.w) != (m_vt.m_max.p.x > rt->m_valid.z);
+
+			if (size_is_wrong || (rt && ((rt->m_TEX0.TBW % draw_page_width) == 0 || single_direction_doubled)))
 			{
 				unsigned int max_tex_draw_width = std::min(static_cast<int>(floor(m_vt.m_max.t.x + (!(process_ba & SHUFFLE_READ) ? 8.9f : 0.9f))), 1 << m_cached_ctx.TEX0.TW);
 				const unsigned int clamp_minu = m_context->CLAMP.MINU;
