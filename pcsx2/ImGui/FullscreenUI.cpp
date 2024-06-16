@@ -2649,7 +2649,7 @@ void FullscreenUI::DrawSettingInfoSetting(SettingsInterface* bsi, const char* se
 
 		case SettingInfo::Type::IntegerList:
 			DrawIntListSetting(
-				bsi, title.c_str(), si.description, section, key, si.IntegerDefaultValue(), si.options, 0, si.IntegerMinValue(), true);
+				bsi, title.c_str(), si.description, section, key, si.IntegerDefaultValue(), si.options, 0, true, si.IntegerMinValue());
 			break;
 
 		case SettingInfo::Type::Float:
