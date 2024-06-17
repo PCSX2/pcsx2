@@ -1443,7 +1443,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				}
 				// Make sure the texture actually is INSIDE the RT, it's possibly not valid if it isn't.
 				// Also check BP >= TBP, create source isn't equpped to expand it backwards and all data comes from the target. (GH3)
-				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && GSLocalMemory::m_psm[color_psm].bpp >= 16 && 
+				else if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets &&
+					(GSLocalMemory::m_psm[color_psm].bpp >= 16 || (possible_shuffle && GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32)) && // Channel shuffles or non indexed lookups.
 					t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) && CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW))
 				{
 
@@ -1476,7 +1477,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 					}
 					if (bp > t->m_TEX0.TBP0)
 					{
-						GSVector4i new_rect = rect;
+						GSVector4i new_rect = possible_shuffle ? block_boundary_rect : rect;
 						if (linear)
 						{
 							new_rect.z -= 1;
@@ -4461,6 +4462,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_texture = dst->m_texture;
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
+
+			channel_shuffle = GSRendererHW::GetInstance()->TestChannelShuffle(dst);
 		}
 
 		// Invalidate immediately on recursive draws, because if we don't here, InvalidateVideoMem() will.

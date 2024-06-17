@@ -25872,9 +25872,9 @@ SLES-55169:
   name: "Monster Lab"
   region: "PAL-M5"
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes black with rainbow screen.
     gpuPaletteConversion: 2 # Fixes HC size and eliminates most texture uploads.
     halfPixelOffset: 2 # Fixes offset bloom.
+    textureInsideRT: 1 # Crowd textures.
 SLES-55170:
   name: "Margot's Word Brain"
   region: "PAL-M5"
@@ -65671,9 +65671,9 @@ SLUS-21838:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    cpuFramebufferConversion: 1 # Fixes black with rainbow screen.
     gpuPaletteConversion: 2 # Fixes HC size and eliminates most texture uploads.
     halfPixelOffset: 2 # Fixes offset bloom.
+    textureInsideRT: 1 # Crowd textures.
 SLUS-21839:
   name: "Ski and Shoot"
   region: "NTSC-U"

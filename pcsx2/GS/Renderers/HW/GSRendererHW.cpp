@@ -3923,10 +3923,19 @@ __ri bool GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool 
 		// We can use the minimum UV to work out which channel it's grabbing.
 		// Used by Ape Escape 2, Everybody's Tennis/Golf, Okage, and Valkyrie Profile 2.
 		// Page align test to limit false detections (there is a few).
-		const GSVector4i min_uv = GSVector4i(m_vt.m_min.t.upld(GSVector4::zero()));
+		GSVector4i min_uv = GSVector4i(m_vt.m_min.t.upld(GSVector4::zero()));
 		ChannelFetch channel = ChannelFetch_NONE;
+		const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];;
+		const GSLocalMemory::psm_t& f_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
+		GSVector4i block_offset = GSVector4i(min_uv.x / t_psm.bs.x, min_uv.y / t_psm.bs.y).xyxy();
+		GSVector4i m_r_block_offset = GSVector4i((m_r.x & (f_psm.pgs.x - 1)) / f_psm.bs.x, (m_r.y & (f_psm.pgs.y - 1)) / f_psm.bs.y);
+
+		// Adjust it back to the page boundary
+		min_uv.x -= block_offset.x * t_psm.bs.x;
+		min_uv.y -= block_offset.y * t_psm.bs.y;
+
 		if (GSLocalMemory::IsPageAligned(src->m_TEX0.PSM, m_r) &&
-			m_r.upl64(GSVector4i::zero()).eq(GSVector4i::zero()))
+			block_offset.eq(m_r_block_offset))
 		{
 			if (min_uv.eq(GSVector4i::cxpr(0, 0, 0, 0)))
 				channel = ChannelFetch_RED;
