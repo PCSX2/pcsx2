@@ -3288,11 +3288,11 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Speed Control"));
 
-	DrawFloatListSetting(bsi, FSUI_CSTR("Normal Speed"), FSUI_CSTR("Sets the speed when running without fast forwarding."), "Framerate",
+	DrawFloatListSetting(bsi, FSUI_ICONSTR(ICON_FA_PLAY,"Normal Speed"), FSUI_CSTR("Sets the speed when running without fast forwarding."), "Framerate",
 		"NominalScalar", 1.00f, speed_entries, speed_values, std::size(speed_entries), true);
-	DrawFloatListSetting(bsi, FSUI_CSTR("Fast Forward Speed"), FSUI_CSTR("Sets the speed when using the fast forward hotkey."), "Framerate",
+	DrawFloatListSetting(bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD,"Fast Forward Speed"), FSUI_CSTR("Sets the speed when using the fast forward hotkey."), "Framerate",
 		"TurboScalar", 2.00f, speed_entries, speed_values, std::size(speed_entries), true);
-	DrawFloatListSetting(bsi, FSUI_CSTR("Slow Motion Speed"), FSUI_CSTR("Sets the speed when using the slow motion hotkey."), "Framerate",
+	DrawFloatListSetting(bsi, FSUI_ICONSTR(ICON_PF_SLOW_MOTION,"Slow Motion Speed"), FSUI_CSTR("Sets the speed when using the slow motion hotkey."), "Framerate",
 		"SlomoScalar", 0.50f, speed_entries, speed_values, std::size(speed_entries), true);
 
 	MenuHeading(FSUI_CSTR("System Settings"));
@@ -3594,7 +3594,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	BeginMenuButtons();
 
 	MenuHeading(FSUI_CSTR("Renderer"));
-	DrawStringListSetting(bsi, FSUI_CSTR("Renderer"), FSUI_CSTR("Selects the API used to render the emulated GS."), "EmuCore/GS",
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH,"Renderer"), FSUI_CSTR("Selects the API used to render the emulated GS."), "EmuCore/GS",
 		"Renderer", "-1", s_renderer_names, s_renderer_values, std::size(s_renderer_names), true);
 
 	MenuHeading(FSUI_CSTR("Display"));
@@ -3933,45 +3933,45 @@ void FullscreenUI::DrawAudioSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Audio Control"));
 
-	DrawIntRangeSetting(bsi, FSUI_CSTR("Output Volume"),
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_VOLUME_UP, "Output Volume"),
 		FSUI_CSTR("Controls the volume of the audio played on the host."), "SPU2/Output", "OutputVolume", 100,
 		0, 100, "%d%%");
-	DrawIntRangeSetting(bsi, FSUI_CSTR("Fast Forward Volume"),
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD,"Fast Forward Volume"),
 		FSUI_CSTR("Controls the volume of the audio played on the host when fast forwarding."), "SPU2/Output",
 		"FastForwardVolume", 100, 0, 100, "%d%%");
-	DrawToggleSetting(bsi, FSUI_CSTR("Mute All Sound"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VOLUME_MUTE, "Mute All Sound"),
 		FSUI_CSTR("Prevents the emulator from producing any audible sound."), "SPU2/Output", "OutputMuted",
 		false);
 
 	MenuHeading(FSUI_CSTR("Backend Settings"));
 
 	DrawEnumSetting(
-		bsi, FSUI_CSTR("Audio Backend"),
+		bsi, FSUI_ICONSTR(ICON_FA_VOLUME_OFF, "Audio Backend"),
 		FSUI_CSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "SPU2/Output",
 		"Backend", Pcsx2Config::SPU2Options::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
 		&AudioStream::GetBackendDisplayName, AudioBackend::Count);
-	DrawEnumSetting(bsi, FSUI_CSTR("Expansion"),
+	DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_PF_SPEAKER_ALT, "Expansion"),
 		FSUI_CSTR("Determines how audio is expanded from stereo to surround for supported games."), "SPU2/Output",
 		"ExpansionMode", AudioStreamParameters::DEFAULT_EXPANSION_MODE, &AudioStream::ParseExpansionMode,
 		&AudioStream::GetExpansionModeName, &AudioStream::GetExpansionModeDisplayName,
 		AudioExpansionMode::Count);
-	DrawEnumSetting(bsi, FSUI_CSTR("Synchronization"),
+	DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_SYNC, "Synchronization"),
 		FSUI_CSTR("Changes when SPU samples are generated relative to system emulation."),
 		"SPU2/Output", "SyncMode", Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE,
 		&Pcsx2Config::SPU2Options::ParseSyncMode, &Pcsx2Config::SPU2Options::GetSyncModeName,
 		&Pcsx2Config::SPU2Options::GetSyncModeDisplayName, Pcsx2Config::SPU2Options::SPU2SyncMode::Count);
-	DrawIntRangeSetting(bsi, FSUI_CSTR("Buffer Size"),
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER, "Buffer Size"),
 		FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
 		"SPU2/Output", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));
 	if (!GetEffectiveBoolSetting(bsi, "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL))
 	{
 		DrawIntRangeSetting(
-			bsi, FSUI_CSTR("Output Latency"),
+			bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
 			FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
 					  "played through speakers."),
 			"SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
 	}
-	DrawToggleSetting(bsi, FSUI_CSTR("Minimal Output Latency"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Minimal Output Latency"),
 		FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
 		"SPU2/Output", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
 
@@ -4681,7 +4681,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
 	if (!IsEditingGameSettings(bsi))
 	{
-		DrawToggleSetting(bsi, FSUI_CSTR("Show Advanced Settings"),
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BIOHAZARD, "Show Advanced Settings"),
 			FSUI_CSTR("Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not "
 					  "provide support for configurations with these settings changed."),
 			"UI", "ShowAdvancedSettings", false);
@@ -4689,23 +4689,23 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
 	MenuHeading(FSUI_CSTR("Logging"));
 
-	DrawToggleSetting(bsi, FSUI_CSTR("System Console"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TERMINAL, "System Console"),
 		FSUI_CSTR("Writes log messages to the system console (console window/standard output)."), "Logging", "EnableSystemConsole", false);
 	DrawToggleSetting(
-		bsi, FSUI_CSTR("File Logging"), FSUI_CSTR("Writes log messages to emulog.txt."), "Logging", "EnableFileLogging", false);
-	DrawToggleSetting(bsi, FSUI_CSTR("Verbose Logging"), FSUI_CSTR("Writes dev log messages to log sinks."), "Logging", "EnableVerbose",
+		bsi, FSUI_ICONSTR(ICON_FA_SCROLL, "File Logging"), FSUI_CSTR("Writes log messages to emulog.txt."), "Logging", "EnableFileLogging", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SCROLL, "Verbose Logging"), FSUI_CSTR("Writes dev log messages to log sinks."), "Logging", "EnableVerbose",
 		false, !IsDevBuild);
 
 	if (show_advanced_settings)
 	{
 		DrawToggleSetting(
-			bsi, FSUI_CSTR("Log Timestamps"), FSUI_CSTR("Writes timestamps alongside log messages."), "Logging", "EnableTimestamps", true);
-		DrawToggleSetting(bsi, FSUI_CSTR("EE Console"), FSUI_CSTR("Writes debug messages from the game's EE code to the console."),
+			bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Log Timestamps"), FSUI_CSTR("Writes timestamps alongside log messages."), "Logging", "EnableTimestamps", true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "EE Console"), FSUI_CSTR("Writes debug messages from the game's EE code to the console."),
 			"Logging", "EnableEEConsole", true);
-		DrawToggleSetting(bsi, FSUI_CSTR("IOP Console"), FSUI_CSTR("Writes debug messages from the game's IOP code to the console."),
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "IOP Console"), FSUI_CSTR("Writes debug messages from the game's IOP code to the console."),
 			"Logging", "EnableIOPConsole", true);
 		DrawToggleSetting(
-			bsi, FSUI_CSTR("CDVD Verbose Reads"), FSUI_CSTR("Logs disc reads from games."), "EmuCore", "CdvdVerboseReads", false);
+			bsi, FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "CDVD Verbose Reads"), FSUI_CSTR("Logs disc reads from games."), "EmuCore", "CdvdVerboseReads", false);
 	}
 
 	if (show_advanced_settings)
@@ -6924,11 +6924,8 @@ TRANSLATE_NOOP("FullscreenUI", "BIOS Selection");
 TRANSLATE_NOOP("FullscreenUI", "Options and Patches");
 TRANSLATE_NOOP("FullscreenUI", "Skips the intro screen, and bypasses region checks.");
 TRANSLATE_NOOP("FullscreenUI", "Speed Control");
-TRANSLATE_NOOP("FullscreenUI", "Normal Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when running without fast forwarding.");
-TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the fast forward hotkey.");
-TRANSLATE_NOOP("FullscreenUI", "Slow Motion Speed");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the slow motion hotkey.");
 TRANSLATE_NOOP("FullscreenUI", "System Settings");
 TRANSLATE_NOOP("FullscreenUI", "EE Cycle Rate");
@@ -7120,25 +7117,16 @@ TRANSLATE_NOOP("FullscreenUI", "Prevents the loading and saving of shaders/pipel
 TRANSLATE_NOOP("FullscreenUI", "Disable Vertex Shader Expand");
 TRANSLATE_NOOP("FullscreenUI", "Falls back to the CPU for expanding sprites/lines.");
 TRANSLATE_NOOP("FullscreenUI", "Audio Control");
-TRANSLATE_NOOP("FullscreenUI", "Output Volume");
 TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host.");
-TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
 TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host when fast forwarding.");
-TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
 TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
-TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
 TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
-TRANSLATE_NOOP("FullscreenUI", "Expansion");
 TRANSLATE_NOOP("FullscreenUI", "Determines how audio is expanded from stereo to surround for supported games.");
-TRANSLATE_NOOP("FullscreenUI", "Synchronization");
 TRANSLATE_NOOP("FullscreenUI", "Changes when SPU samples are generated relative to system emulation.");
-TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
 TRANSLATE_NOOP("FullscreenUI", "%d ms");
-TRANSLATE_NOOP("FullscreenUI", "Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
-TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
 TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
@@ -7169,22 +7157,14 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the pressure required to activate the
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
 TRANSLATE_NOOP("FullscreenUI", "Clears all bindings for this USB controller.");
 TRANSLATE_NOOP("FullscreenUI", "Data Save Locations");
-TRANSLATE_NOOP("FullscreenUI", "Show Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.");
 TRANSLATE_NOOP("FullscreenUI", "Logging");
-TRANSLATE_NOOP("FullscreenUI", "System Console");
 TRANSLATE_NOOP("FullscreenUI", "Writes log messages to the system console (console window/standard output).");
-TRANSLATE_NOOP("FullscreenUI", "File Logging");
 TRANSLATE_NOOP("FullscreenUI", "Writes log messages to emulog.txt.");
-TRANSLATE_NOOP("FullscreenUI", "Verbose Logging");
 TRANSLATE_NOOP("FullscreenUI", "Writes dev log messages to log sinks.");
-TRANSLATE_NOOP("FullscreenUI", "Log Timestamps");
 TRANSLATE_NOOP("FullscreenUI", "Writes timestamps alongside log messages.");
-TRANSLATE_NOOP("FullscreenUI", "EE Console");
 TRANSLATE_NOOP("FullscreenUI", "Writes debug messages from the game's EE code to the console.");
-TRANSLATE_NOOP("FullscreenUI", "IOP Console");
 TRANSLATE_NOOP("FullscreenUI", "Writes debug messages from the game's IOP code to the console.");
-TRANSLATE_NOOP("FullscreenUI", "CDVD Verbose Reads");
 TRANSLATE_NOOP("FullscreenUI", "Logs disc reads from games.");
 TRANSLATE_NOOP("FullscreenUI", "Emotion Engine");
 TRANSLATE_NOOP("FullscreenUI", "Rounding Mode");
@@ -7577,6 +7557,18 @@ TRANSLATE_NOOP("FullscreenUI", "Warn About Unsafe Settings");
 TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
 TRANSLATE_NOOP("FullscreenUI", "Change Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Normal Speed");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
+TRANSLATE_NOOP("FullscreenUI", "Slow Motion Speed");
+TRANSLATE_NOOP("FullscreenUI", "Output Volume");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
+TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
+TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
+TRANSLATE_NOOP("FullscreenUI", "Expansion");
+TRANSLATE_NOOP("FullscreenUI", "Synchronization");
+TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
+TRANSLATE_NOOP("FullscreenUI", "Output Latency");
+TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Folder Memory Card Filter");
@@ -7621,6 +7613,14 @@ TRANSLATE_NOOP("FullscreenUI", "Cheats Directory");
 TRANSLATE_NOOP("FullscreenUI", "Patches Directory");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements Directory");
 TRANSLATE_NOOP("FullscreenUI", "Video Dumping Directory");
+TRANSLATE_NOOP("FullscreenUI", "Show Advanced Settings");
+TRANSLATE_NOOP("FullscreenUI", "System Console");
+TRANSLATE_NOOP("FullscreenUI", "File Logging");
+TRANSLATE_NOOP("FullscreenUI", "Verbose Logging");
+TRANSLATE_NOOP("FullscreenUI", "Log Timestamps");
+TRANSLATE_NOOP("FullscreenUI", "EE Console");
+TRANSLATE_NOOP("FullscreenUI", "IOP Console");
+TRANSLATE_NOOP("FullscreenUI", "CDVD Verbose Reads");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Frame Limit");
 TRANSLATE_NOOP("FullscreenUI", "Game Properties");
