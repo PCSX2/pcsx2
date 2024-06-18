@@ -2630,7 +2630,8 @@ void GSRendererHW::Draw()
 	else
 	{
 		// if it's directly copying keep the scale - Ratchet and clank hits this, stops edge garbage happening.
-		if (scale_draw == -1 && src && src->m_from_target && src->m_from_target->m_downscaled &&
+		// Keep it to small targets of 256 or lower.
+		if (scale_draw == -1 && src && src->m_from_target && src->m_from_target->m_downscaled && static_cast<int>(m_cached_ctx.FRAME.FBW * 64) <= (PCRTCDisplays.GetResolution().x >> 1) &&
 			(GSVector4i(m_vt.m_min.p).xyxy() == GSVector4i(m_vt.m_min.t).xyxy()).alltrue() && (GSVector4i(m_vt.m_max.p).xyxy() == GSVector4i(m_vt.m_max.t).xyxy()).alltrue())
 		{
 			target_scale = src->m_from_target->GetScale();
