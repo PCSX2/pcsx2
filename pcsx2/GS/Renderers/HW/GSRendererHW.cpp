@@ -3339,6 +3339,7 @@ void GSRendererHW::Draw()
 	}
 
 	//
+	const GSVector4i real_rect = m_r;
 
 	if (!skip_draw)
 		DrawPrims(rt, ds, src, tmm);
@@ -3358,9 +3359,9 @@ void GSRendererHW::Draw()
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
-		rt->UpdateValidity(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
+		rt->UpdateValidity(real_rect, can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle));
 
-		g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false);
+		g_texture_cache->InvalidateVideoMem(context->offset.fb, real_rect, false);
 
 		// Remove overwritten Zs at the FBP.
 		g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil, m_cached_ctx.FRAME.Block(),
@@ -3371,9 +3372,9 @@ void GSRendererHW::Draw()
 	{
 		//ds->m_valid = ds->m_valid.runion(r);
 		// Limit to 2x the vertical height of the resolution (for double buffering)
-		ds->UpdateValidity(m_r, can_update_size || (m_r.w <= (resolution.y * 2) && !m_texture_shuffle));
+		ds->UpdateValidity(real_rect, can_update_size || (real_rect.w <= (resolution.y * 2) && !m_texture_shuffle));
 
-		g_texture_cache->InvalidateVideoMem(context->offset.zb, m_r, false);
+		g_texture_cache->InvalidateVideoMem(context->offset.zb, real_rect, false);
 
 		// Remove overwritten RTs at the ZBP.
 		g_texture_cache->InvalidateVideoMemType(
@@ -3415,7 +3416,7 @@ void GSRendererHW::Draw()
 
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if (rt)
-		g_texture_cache->Read(rt, m_r);
+		g_texture_cache->Read(rt, real_rect);
 #endif
 
 	//
