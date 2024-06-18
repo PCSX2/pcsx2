@@ -1992,6 +1992,7 @@ SCAJ-20177:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -2098,6 +2099,7 @@ SCAJ-20197:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 the Best]"
   region: "NTSC-Unk"
@@ -6981,6 +6983,7 @@ SCKA-20079:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -24809,6 +24812,7 @@ SLES-54644:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
@@ -24819,6 +24823,7 @@ SLES-54645:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
@@ -24830,6 +24835,7 @@ SLES-54646:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
@@ -24841,6 +24847,7 @@ SLES-54647:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
@@ -24851,6 +24858,7 @@ SLES-54648:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -43947,6 +43955,7 @@ SLPM-66419:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLPM-66420:
   name: フロントミッション4 [アルティメットヒッツ]
   name-sort: ふろんとみっしょん4 [あるてぃめっとひっつ]
@@ -46167,6 +46176,7 @@ SLPM-66782:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLPM-66783:
   name: アイドル雀士 スーチーパイIV 「完全限定版・コレクターズエディション」
   name-sort: あいどるじゃんし すーちーぱい4 [かんぜんげんていばん・これくたーずえでぃしょん]
@@ -64793,6 +64803,7 @@ SLUS-21452:
     textureInsideRT: 1 # Required for swirl battle transition.
     nativePaletteDraw: 1
     nativeScaling: 2 # Fixes depth of field effects and bloom.
+    roundSprite: 1 # Fixes lines in transitions.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
