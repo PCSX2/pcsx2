@@ -52,7 +52,7 @@ void SimpleQueue<T>::Enqueue(T entry)
 	SimpleQueueEntry* newEntry = head.exchange(newHead);
 
 	//Fill in
-	newEntry->value = entry;
+	newEntry->value = std::move(entry);
 	newEntry->next = newHead;
 
 	//Set ready (can be dequeued)
@@ -68,7 +68,7 @@ bool SimpleQueue<T>::Dequeue(T* entry)
 	SimpleQueueEntry* retEntry = tail;
 	tail = retEntry->next;
 
-	*entry = retEntry->value;
+	*entry = std::move(retEntry->value);
 	delete retEntry;
 	return true;
 }
