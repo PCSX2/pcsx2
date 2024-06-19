@@ -220,13 +220,13 @@ bool SocketAdapter::recv(NetPacket* pkt)
 			if (!connections.TryGetValue(key, &session))
 				continue;
 
-			IP_Payload* pl = session->Recv();
+			std::optional<ReceivedPayload> pl = session->Recv();
 
-			if (pl != nullptr)
+			if (pl.has_value())
 			{
-				IP_Packet* ipPkt = new IP_Packet(pl);
+				IP_Packet* ipPkt = new IP_Packet(pl->payload.release());
 				ipPkt->destinationIP = session->sourceIP;
-				ipPkt->sourceIP = session->destIP;
+				ipPkt->sourceIP = pl->sourceIP;
 
 				EthernetFrame frame(ipPkt);
 				frame.sourceMAC = internalMAC;

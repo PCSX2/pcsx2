@@ -40,7 +40,7 @@ namespace Sessions
 
 		void Init();
 
-		virtual PacketReader::IP::IP_Payload* Recv();
+		virtual std::optional<ReceivedPayload> Recv();
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
 		virtual void Reset();
 

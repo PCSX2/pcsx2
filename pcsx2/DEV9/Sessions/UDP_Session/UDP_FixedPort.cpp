@@ -109,10 +109,10 @@ namespace Sessions
 		open.store(true);
 	}
 
-	IP_Payload* UDP_FixedPort::Recv()
+	std::optional<ReceivedPayload> UDP_FixedPort::Recv()
 	{
 		if (!open.load())
-			return nullptr;
+			return std::nullopt;
 
 		int ret;
 		fd_set sReady;
@@ -191,31 +191,30 @@ namespace Sessions
 					errno);
 #endif
 				RaiseEventConnectionClosed();
-				return nullptr;
+				return std::nullopt;
 			}
 
 			recived = new PayloadData(ret);
 			memcpy(recived->data.get(), buffer.get(), ret);
 
-			UDP_Packet* iRet = new UDP_Packet(recived);
+			std::unique_ptr<UDP_Packet> iRet = std::make_unique<UDP_Packet>(recived);
 			iRet->destinationPort = port;
-
-			destIP = std::bit_cast<IP_Address>(endpoint.sin_addr);
 			iRet->sourcePort = ntohs(endpoint.sin_port);
+
+			IP_Address srvIP = std::bit_cast<IP_Address>(endpoint.sin_addr);
 			{
 				std::lock_guard numberlock(connectionSentry);
 
 				for (size_t i = 0; i < connections.size(); i++)
 				{
 					UDP_BaseSession* s = connections[i];
-					if (s->WillRecive(destIP))
-						return iRet;
+					if (s->WillRecive(srvIP))
+						return ReceivedPayload{srvIP, std::move(iRet)};
 				}
 			}
 			Console.Error("DEV9: UDP: Unexpected packet, dropping");
-			delete iRet;
 		}
-		return nullptr;
+		return std::nullopt;
 	}
 
 	bool UDP_FixedPort::Send(PacketReader::IP::IP_Payload* payload)

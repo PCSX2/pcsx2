@@ -18,13 +18,13 @@ using namespace PacketReader::IP::TCP;
 
 namespace Sessions
 {
-	void TCP_Session::PushRecvBuff(TCP_Packet* tcp)
+	void TCP_Session::PushRecvBuff(std::unique_ptr<TCP_Packet> tcp)
 	{
-		_recvBuff.Enqueue(tcp);
+		_recvBuff.Enqueue(std::move(tcp));
 	}
-	TCP_Packet* TCP_Session::PopRecvBuff()
+	std::unique_ptr<TCP_Packet> TCP_Session::PopRecvBuff()
 	{
-		TCP_Packet* ret;
+		std::unique_ptr<TCP_Packet> ret;
 		if (_recvBuff.Dequeue(&ret))
 			return ret;
 		else
@@ -102,13 +102,13 @@ namespace Sessions
 		return delta;
 	}
 
-	TCP_Packet* TCP_Session::CreateBasePacket(PayloadData* data)
+	std::unique_ptr<TCP_Packet> TCP_Session::CreateBasePacket(PayloadData* data)
 	{
 		//DevCon.WriteLn("Creating base packet");
 		if (data == nullptr)
 			data = new PayloadData(0);
 
-		TCP_Packet* ret = new TCP_Packet(data);
+		std::unique_ptr<TCP_Packet> ret = std::make_unique<TCP_Packet>(data);
 
 		// Setup common packet infomation
 		ret->sourcePort = destPort;
@@ -159,15 +159,13 @@ namespace Sessions
 		// Clear out _recvBuff
 		while (!_recvBuff.IsQueueEmpty())
 		{
-			TCP_Packet* retPay;
+			std::unique_ptr<TCP_Packet> retPay;
 			if (!_recvBuff.Dequeue(&retPay))
 			{
 				using namespace std::chrono_literals;
 				std::this_thread::sleep_for(1ms);
 				continue;
 			}
-
-			delete retPay;
 		}
 	}
 } // namespace Sessions

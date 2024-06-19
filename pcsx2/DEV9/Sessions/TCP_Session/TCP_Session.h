@@ -42,7 +42,7 @@ namespace Sessions
 			Bad
 		};
 
-		SimpleQueue<PacketReader::IP::TCP::TCP_Packet*> _recvBuff;
+		SimpleQueue<std::unique_ptr<PacketReader::IP::TCP::TCP_Packet>> _recvBuff;
 
 #ifdef _WIN32
 		SOCKET client = INVALID_SOCKET;
@@ -77,7 +77,7 @@ namespace Sessions
 	public:
 		TCP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP);
 
-		virtual PacketReader::IP::IP_Payload* Recv();
+		virtual std::optional<ReceivedPayload> Recv();
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
 		virtual void Reset();
 
@@ -85,8 +85,8 @@ namespace Sessions
 
 	private:
 		// Async functions
-		void PushRecvBuff(PacketReader::IP::TCP::TCP_Packet* tcp);
-		PacketReader::IP::TCP::TCP_Packet* PopRecvBuff();
+		void PushRecvBuff(std::unique_ptr<PacketReader::IP::TCP::TCP_Packet> tcp);
+		std::unique_ptr<PacketReader::IP::TCP::TCP_Packet> PopRecvBuff();
 
 		void IncrementMyNumber(u32 amount);
 		void UpdateReceivedAckNumber(u32 ack);
@@ -104,7 +104,7 @@ namespace Sessions
 		bool ValidateEmptyPacket(PacketReader::IP::TCP::TCP_Packet* tcp, bool ignoreOld = true);
 
 		// PS2 sent SYN
-		PacketReader::IP::TCP::TCP_Packet* ConnectTCPComplete(bool success);
+		std::unique_ptr<PacketReader::IP::TCP::TCP_Packet> ConnectTCPComplete(bool success);
 		bool SendConnect(PacketReader::IP::TCP::TCP_Packet* tcp);
 		bool SendConnected(PacketReader::IP::TCP::TCP_Packet* tcp);
 
@@ -120,7 +120,7 @@ namespace Sessions
 		 * S4: PS2 then Sends ACK
 		 */
 		bool CloseByPS2Stage1_2(PacketReader::IP::TCP::TCP_Packet* tcp);
-		PacketReader::IP::TCP::TCP_Packet* CloseByPS2Stage3();
+		std::unique_ptr<PacketReader::IP::TCP::TCP_Packet> CloseByPS2Stage3();
 		bool CloseByPS2Stage4(PacketReader::IP::TCP::TCP_Packet* tcp);
 
 		/*
@@ -132,7 +132,7 @@ namespace Sessions
 		 * Closing_ClosedByRemoteThenPS2_WaitingForAck
 		 * we then check if S3 has been completed
 		 */
-		PacketReader::IP::TCP::TCP_Packet* CloseByRemoteStage1();
+		std::unique_ptr<PacketReader::IP::TCP::TCP_Packet> CloseByRemoteStage1();
 		bool CloseByRemoteStage2_ButAfter4(PacketReader::IP::TCP::TCP_Packet* tcp);
 		bool CloseByRemoteStage3_4(PacketReader::IP::TCP::TCP_Packet* tcp);
 
@@ -140,7 +140,7 @@ namespace Sessions
 		void CloseByRemoteRST();
 
 		// Returned TCP_Packet takes ownership of data
-		PacketReader::IP::TCP::TCP_Packet* CreateBasePacket(PacketReader::PayloadData* data = nullptr);
+		std::unique_ptr<PacketReader::IP::TCP::TCP_Packet> CreateBasePacket(PacketReader::PayloadData* data = nullptr);
 
 		void CloseSocket();
 	};

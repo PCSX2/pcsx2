@@ -59,10 +59,10 @@ namespace Sessions
 	{
 	}
 
-	IP_Payload* UDP_Session::Recv()
+	std::optional<ReceivedPayload> UDP_Session::Recv()
 	{
 		if (!open.load())
-			return nullptr;
+			return std::nullopt;
 
 		if (isFixedPort)
 		{
@@ -72,7 +72,7 @@ namespace Sessions
 				open.store(false);
 				RaiseEventConnectionClosed();
 			}
-			return nullptr;
+			return std::nullopt;
 		}
 
 		int ret;
@@ -152,19 +152,19 @@ namespace Sessions
 					errno);
 #endif
 				RaiseEventConnectionClosed();
-				return nullptr;
+				return std::nullopt;
 			}
 
 			recived = new PayloadData(ret);
 			memcpy(recived->data.get(), buffer.get(), ret);
 
-			UDP_Packet* iRet = new UDP_Packet(recived);
+			std::unique_ptr<UDP_Packet> iRet = std::make_unique<UDP_Packet>(recived);
 			iRet->destinationPort = srcPort;
 			iRet->sourcePort = destPort;
 
 			deathClockStart.store(std::chrono::steady_clock::now());
 
-			return iRet;
+			return ReceivedPayload{destIP, std::move(iRet)};
 		}
 
 		if (std::chrono::steady_clock::now() - deathClockStart.load() > MAX_IDLE)
@@ -173,7 +173,7 @@ namespace Sessions
 			RaiseEventConnectionClosed();
 		}
 
-		return nullptr;
+		return std::nullopt;
 	}
 
 	bool UDP_Session::WillRecive(IP_Address parDestIP)
