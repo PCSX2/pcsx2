@@ -5,6 +5,7 @@
 
 #include "DEV9/PacketReader/IP/IP_Packet.h"
 #include <functional>
+#include <optional>
 #include <vector>
 
 namespace Sessions
@@ -22,6 +23,12 @@ namespace Sessions
 
 		bool operator==(const ConnectionKey& other) const;
 		bool operator!=(const ConnectionKey& other) const;
+	};
+
+	struct ReceivedPayload
+	{
+		PacketReader::IP::IP_Address sourceIP;
+		std::unique_ptr<PacketReader::IP::IP_Payload> payload;
 	};
 
 	class BaseSession
@@ -42,7 +49,7 @@ namespace Sessions
 
 		void AddConnectionClosedHandler(ConnectionClosedEventHandler handler);
 
-		virtual PacketReader::IP::IP_Payload* Recv() = 0;
+		virtual std::optional<ReceivedPayload> Recv() = 0;
 		virtual bool Send(PacketReader::IP::IP_Payload* payload) = 0;
 		virtual void Reset() = 0;
 

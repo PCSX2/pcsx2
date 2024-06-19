@@ -46,7 +46,7 @@ namespace Sessions
 		UDP_Session(ConnectionKey parKey, PacketReader::IP::IP_Address parAdapterIP, bool parIsBroadcast, bool parIsMulticast, int parClient);
 #endif
 
-		virtual PacketReader::IP::IP_Payload* Recv();
+		virtual std::optional<ReceivedPayload> Recv();
 		virtual bool WillRecive(PacketReader::IP::IP_Address parDestIP);
 		virtual bool Send(PacketReader::IP::IP_Payload* payload);
 		virtual void Reset();

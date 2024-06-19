@@ -363,10 +363,10 @@ namespace Sessions
 			}
 			// ACK data
 			//DevCon.WriteLn("[SRV] ACK data: %u", expectedSeqNumber);
-			TCP_Packet* ret = CreateBasePacket();
+			std::unique_ptr<TCP_Packet> ret = CreateBasePacket();
 			ret->SetACK(true);
 
-			PushRecvBuff(ret);
+			PushRecvBuff(std::move(ret));
 		}
 		return true;
 	}
@@ -521,10 +521,10 @@ namespace Sessions
 #endif
 
 		// Connection close part 2, send ACK to PS2
-		TCP_Packet* ret = CreateBasePacket();
+		std::unique_ptr<TCP_Packet> ret = CreateBasePacket();
 
 		ret->SetACK(true);
-		PushRecvBuff(ret);
+		PushRecvBuff(std::move(ret));
 
 		return true;
 	}
@@ -587,11 +587,11 @@ namespace Sessions
 				errno);
 #endif
 
-		TCP_Packet* ret = CreateBasePacket();
+		std::unique_ptr<TCP_Packet> ret = CreateBasePacket();
 
 		ret->SetACK(true);
 
-		PushRecvBuff(ret);
+		PushRecvBuff(std::move(ret));
 
 		if (myNumberACKed.load())
 		{
@@ -609,9 +609,9 @@ namespace Sessions
 	// Error on sending data
 	void TCP_Session::CloseByRemoteRST()
 	{
-		TCP_Packet* reterr = CreateBasePacket();
+		std::unique_ptr<TCP_Packet> reterr = CreateBasePacket();
 		reterr->SetRST(true);
-		PushRecvBuff(reterr);
+		PushRecvBuff(std::move(reterr));
 
 		CloseSocket();
 		state = TCP_State::CloseCompletedFlushBuffer;

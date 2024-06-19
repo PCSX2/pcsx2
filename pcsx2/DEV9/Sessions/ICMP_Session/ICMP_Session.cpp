@@ -659,7 +659,7 @@ namespace Sessions
 		connections = parConnections;
 	}
 
-	IP_Payload* ICMP_Session::Recv()
+	std::optional<ReceivedPayload> ICMP_Session::Recv()
 	{
 		std::unique_lock lock(ping_mutex);
 
@@ -675,7 +675,7 @@ namespace Sessions
 				lock.unlock();
 
 				//Create return ICMP packet
-				ICMP_Packet* ret = nullptr;
+				std::optional<ReceivedPayload> ret;
 				if (pingRet->type >= 0)
 				{
 					PayloadData* data;
@@ -704,13 +704,12 @@ namespace Sessions
 						delete[] temp;
 					}
 
-					ret = new ICMP_Packet(data);
-					ret->type = pingRet->type;
-					ret->code = pingRet->code;
-					memcpy(ret->headerData, ping->headerData, 4);
+					std::unique_ptr<ICMP_Packet> pRet = std::make_unique<ICMP_Packet>(data);
+					pRet->type = pingRet->type;
+					pRet->code = pingRet->code;
+					memcpy(pRet->headerData, ping->headerData, 4);
 
-					if (destIP != pingRet->address)
-						destIP = pingRet->address;
+					ret = {pingRet->address, std::move(pRet)};
 				}
 				else if (pingRet->type == -1)
 					Console.Error("DEV9: ICMP: Unexpected ICMP status %d", pingRet->code);
@@ -723,7 +722,7 @@ namespace Sessions
 				if (--open == 0)
 					RaiseEventConnectionClosed();
 
-				if (ret != nullptr)
+				if (ret.has_value())
 					DevCon.WriteLn("DEV9: ICMP: Return Ping");
 
 				//Return packet
@@ -732,7 +731,7 @@ namespace Sessions
 		}
 
 		lock.unlock();
-		return nullptr;
+		return std::nullopt;
 	}
 
 	bool ICMP_Session::Send(PacketReader::IP::IP_Payload* payload)
