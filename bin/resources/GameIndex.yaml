@@ -55161,6 +55161,8 @@ SLPS-25784:
   name-sort: Another Century’s Episode 3 THE FINAL
   name-en: "Another Century's Episode 3 - The Final"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixed strong flickering on the title screen.
   clampModes:
     vuClampMode: 3 # Was used to fix game crash, but not sure it's required anymore.
 SLPS-25786:
