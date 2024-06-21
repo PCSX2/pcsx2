@@ -1579,7 +1579,7 @@ SCAJ-20111:
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
+    roundSprite: 1 # Fixes depth lines + shadows misalignment.
 SCAJ-20112:
   name: "Tales of Rebirth"
   region: "NTSC-Unk"
@@ -12454,7 +12454,7 @@ SLED-52574:
   gameFixes:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
+    roundSprite: 1 # Fixes depth lines + shadows misalignment.
 SLED-52597:
   name: "Burnout 3 - Takedown [Demo]"
   region: "PAL-E"
@@ -18852,7 +18852,7 @@ SLES-52568:
   gameFixes:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
+    roundSprite: 1 # Fixes depth lines + shadows misalignment.
     PCRTCOverscan: 1 # Fixes offscreen image.
 SLES-52569:
   name: "Spyro - A Hero's Tail"
@@ -40312,7 +40312,7 @@ SLPM-65801:
   gameFixes:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
+    roundSprite: 1 # Fixes depth lines + shadows misalignment.
 SLPM-65802:
   name: EA BEST HITS DEF JAM VENDETTA
   name-sort: DEF JAM VENDETTA [EA BEST HITS]
@@ -61445,7 +61445,7 @@ SLUS-20909:
   gameFixes:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
+    roundSprite: 1 # Fixes depth lines + shadows misalignment.
 SLUS-20910:
   name: "Test Drive - Eve of Destruction"
   region: "NTSC-U"
@@ -67741,7 +67741,7 @@ SLUS-29101:
   gameFixes:
     - XGKickHack # Fixes bad geometry.
   gsHWFixes:
-    halfPixelOffset: 2 # Fixes depth lines.
+    roundSprite: 1 # Fixes depth lines + shadows misalignment.
 SLUS-29104:
   name: "Galactic Wrestling - Featuring Ultimate Muscle [Demo]"
   region: "NTSC-U"
