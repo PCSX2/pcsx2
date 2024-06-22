@@ -288,6 +288,8 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 			downsample_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
 			state = 3;
 			GL_INS("GSC_BurnoutGames(): Downsampling.");
+			// Fix up the texture width so the native scaling code can properly detect it as a downscale.
+			RTBW = RFBW * 2;
 			return true;
 		}
 
