@@ -233,41 +233,48 @@ void MapTLB(const tlbs& t, int i)
 		i, t.VPN2, t.PFN0, t.PFN1, t.S >> 31, t.G, t.ASID,
 		t.Mask, t.EntryLo0 >> 6, (t.EntryLo0 & 0x38) >> 3, t.EntryLo1 >> 6, (t.EntryLo1 & 0x38) >> 3, t.VPN2);
 
+	// According to the manual
+	// 'It [SPR] must be mapped into a contiguous 16 KB of virtual address space that is
+	// aligned on a 16KB boundary.Results are not guaranteed if this restriction is not followed.'
+	// Assume that the game isn't doing anything less-than-ideal with the scratchpad mapping and map it directly to eeMem->Scratch.
 	if (t.S)
 	{
+		if (t.VPN2 != 0x70000000)
+			Console.Warning("COP0: Mapping Scratchpad to non-default address 0x%08X", t.VPN2);
+
 		vtlb_VMapBuffer(t.VPN2, eeMem->Scratch, Ps2MemSize::Scratch);
 	}
-
-	if (t.VPN2 == 0x70000000)
-		return; //uh uhh right ...
-	if (t.EntryLo0 & 0x2)
+	else
 	{
-		mask = ((~t.Mask) << 1) & 0xfffff;
-		saddr = t.VPN2 >> 12;
-		eaddr = saddr + t.Mask + 1;
-
-		for (addr = saddr; addr < eaddr; addr++)
+		if (t.EntryLo0 & 0x2)
 		{
-			if ((addr & mask) == ((t.VPN2 >> 12) & mask))
-			{ //match
-				memSetPageAddr(addr << 12, t.PFN0 + ((addr - saddr) << 12));
-				Cpu->Clear(addr << 12, 0x400);
+			mask = ((~t.Mask) << 1) & 0xfffff;
+			saddr = t.VPN2 >> 12;
+			eaddr = saddr + t.Mask + 1;
+
+			for (addr = saddr; addr < eaddr; addr++)
+			{
+				if ((addr & mask) == ((t.VPN2 >> 12) & mask))
+				{ //match
+					memSetPageAddr(addr << 12, t.PFN0 + ((addr - saddr) << 12));
+					Cpu->Clear(addr << 12, 0x400);
+				}
 			}
 		}
-	}
 
-	if (t.EntryLo1 & 0x2)
-	{
-		mask = ((~t.Mask) << 1) & 0xfffff;
-		saddr = (t.VPN2 >> 12) + t.Mask + 1;
-		eaddr = saddr + t.Mask + 1;
-
-		for (addr = saddr; addr < eaddr; addr++)
+		if (t.EntryLo1 & 0x2)
 		{
-			if ((addr & mask) == ((t.VPN2 >> 12) & mask))
-			{ //match
-				memSetPageAddr(addr << 12, t.PFN1 + ((addr - saddr) << 12));
-				Cpu->Clear(addr << 12, 0x400);
+			mask = ((~t.Mask) << 1) & 0xfffff;
+			saddr = (t.VPN2 >> 12) + t.Mask + 1;
+			eaddr = saddr + t.Mask + 1;
+
+			for (addr = saddr; addr < eaddr; addr++)
+			{
+				if ((addr & mask) == ((t.VPN2 >> 12) & mask))
+				{ //match
+					memSetPageAddr(addr << 12, t.PFN1 + ((addr - saddr) << 12));
+					Cpu->Clear(addr << 12, 0x400);
+				}
 			}
 		}
 	}
