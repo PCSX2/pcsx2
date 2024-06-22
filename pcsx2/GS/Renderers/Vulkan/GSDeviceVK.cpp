@@ -96,10 +96,11 @@ GSDeviceVK::GSDeviceVK()
 
 GSDeviceVK::~GSDeviceVK() = default;
 
-VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, bool enable_debug_utils, bool enable_validation_layer)
+VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
+	bool enable_validation_layer)
 {
 	ExtensionList enabled_extensions;
-	if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_utils))
+	if (!SelectInstanceExtensions(&enabled_extensions, wi, oe, enable_debug_utils))
 		return VK_NULL_HANDLE;
 
 	// Remember to manually update this every release. We don't pull in svnrev.h here, because
@@ -143,7 +144,8 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, bool enable_de
 	return instance;
 }
 
-bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils)
+bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
+	bool enable_debug_utils)
 {
 	u32 extension_count = 0;
 	VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -203,6 +205,9 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 	// VK_EXT_debug_utils
 	if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
 		Console.Warning("Vulkan: Debug report requested, but extension is not available.");
+
+	oe->vk_ext_swapchain_maintenance1 = (wi.type != WindowInfo::Type::Surfaceless &&
+										 SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
 
 	// Needed for exclusive fullscreen control.
 	SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
@@ -276,7 +281,7 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		{
 			if (std::find_if(available_extension_list.begin(), available_extension_list.end(), [required_extension_name](const VkExtensionProperties& ext) {
 					return (std::strcmp(required_extension_name, ext.extensionName) == 0);
-			}) == available_extension_list.end())
+				}) == available_extension_list.end())
 			{
 				Console.Warning(fmt::format("Ignoring Vulkan GPU '{}' because is is missing required extension {}",
 					props.deviceName, required_extension_name));
@@ -387,6 +392,10 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		m_optional_extensions.vk_khr_shader_non_semantic_info =
 			SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
 	}
+
+	m_optional_extensions.vk_ext_swapchain_maintenance1 =
+		m_optional_extensions.vk_ext_swapchain_maintenance1 &&
+		SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
 
 #ifdef _WIN32
 	m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -573,6 +582,8 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+	VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchain_maintenance1_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT};
 
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
@@ -588,6 +599,11 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	{
 		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
+	}
+	if (m_optional_extensions.vk_ext_swapchain_maintenance1)
+	{
+		swapchain_maintenance1_feature.swapchainMaintenance1 = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &swapchain_maintenance1_feature);
 	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -654,6 +670,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+	VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchain_maintenance1_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_TRUE};
 
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
@@ -662,6 +680,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
+	if (m_optional_extensions.vk_ext_swapchain_maintenance1)
+		Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -739,6 +759,9 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 			m_optional_extensions.vk_ext_calibrated_timestamps = false;
 	}
 
+	m_optional_extensions.vk_ext_swapchain_maintenance1 &=
+		(swapchain_maintenance1_feature.swapchainMaintenance1 == VK_TRUE);
+
 	Console.WriteLn(
 		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	Console.WriteLn(
@@ -747,6 +770,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_swapchain_maintenance1 is %s",
+		m_optional_extensions.vk_ext_swapchain_maintenance1 ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_full_screen_exclusive is %s",
 		m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
 	Console.WriteLn("VK_KHR_driver_properties is %s",
@@ -1197,16 +1222,17 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 			present_swap_chain->GetRenderingFinishedSemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
 			present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
 
-		present_swap_chain->ReleaseCurrentImage();
+		present_swap_chain->ResetImageAcquireResult();
 
 		const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
-		if (res != VK_SUCCESS)
+		if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
 		{
 			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
-			if (res != VK_ERROR_OUT_OF_DATE_KHR && res != VK_SUBOPTIMAL_KHR)
+			if (res == VK_ERROR_OUT_OF_DATE_KHR)
+				ResizeWindow(0, 0, m_window_info.surface_scale);
+			else
 				LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
 
-			m_last_present_failed = true;
 			return;
 		}
 
@@ -1926,7 +1952,8 @@ void GSDeviceVK::GetAdaptersAndFullscreenModes(
 	{
 		if (Vulkan::LoadVulkanLibrary(nullptr))
 		{
-			const VkInstance instance = CreateVulkanInstance(WindowInfo(), false, false);
+			OptionalExtensions oe = {};
+			const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
 			if (instance != VK_NULL_HANDLE)
 			{
 				if (Vulkan::LoadVulkanInstanceFunctions(instance))
@@ -2136,7 +2163,7 @@ bool GSDeviceVK::UpdateWindow()
 void GSDeviceVK::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
 {
 	if (!m_swap_chain || (m_swap_chain->GetWidth() == static_cast<u32>(new_window_width) &&
-		m_swap_chain->GetHeight() == static_cast<u32>(new_window_height)))
+							 m_swap_chain->GetHeight() == static_cast<u32>(new_window_height)))
 	{
 		// skip unnecessary resizes
 		m_window_info.surface_scale = new_window_scale;
@@ -2413,7 +2440,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	if (!AcquireWindow(true))
 		return false;
 
-	m_instance = CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+	m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
 	if (m_instance == VK_NULL_HANDLE)
 	{
 		if (enable_debug_utils || enable_validation_layer)
@@ -2421,7 +2448,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 			// Try again without the validation layer.
 			enable_debug_utils = false;
 			enable_validation_layer = false;
-			m_instance = CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+			m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
 			if (m_instance == VK_NULL_HANDLE)
 			{
 				Host::ReportErrorAsync(
@@ -5714,7 +5741,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			BeginRenderPass(rp, render_area);
 		}
 	}
-	
+
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
 	{
 		const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, {.depthStencil = {0.0f, 1u}}};

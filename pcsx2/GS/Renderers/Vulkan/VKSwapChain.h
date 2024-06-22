@@ -68,6 +68,7 @@ public:
 	VkFormat GetTextureFormat() const;
 	VkResult AcquireNextImage();
 	void ReleaseCurrentImage();
+	void ResetImageAcquireResult();
 
 	bool RecreateSurface(const WindowInfo& new_wi);
 	bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
