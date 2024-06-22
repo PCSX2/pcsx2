@@ -4789,9 +4789,9 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	// we keep the shader clamp. See #5851 on github, and the note in Draw().
 	[[maybe_unused]] static constexpr const char* clamp_modes[] = {"REPEAT", "CLAMP", "REGION_CLAMP", "REGION_REPEAT"};
 	const bool redundant_wms = IsRedundantClamp(m_cached_ctx.CLAMP.WMS, m_cached_ctx.CLAMP.MINU,
-													 m_cached_ctx.CLAMP.MAXU, tex->m_TEX0.TW);
+													 m_cached_ctx.CLAMP.MAXU, m_cached_ctx.TEX0.TW);
 	const bool redundant_wmt = IsRedundantClamp(m_cached_ctx.CLAMP.WMT, m_cached_ctx.CLAMP.MINV,
-													 m_cached_ctx.CLAMP.MAXV, tex->m_TEX0.TH);
+													 m_cached_ctx.CLAMP.MAXV, m_cached_ctx.TEX0.TH);
 	const u8 wms = EffectiveClamp(m_cached_ctx.CLAMP.WMS, !tex->m_target && (source_region.HasX() || redundant_wms));
 	const u8 wmt = EffectiveClamp(m_cached_ctx.CLAMP.WMT, !tex->m_target && (source_region.HasY() || redundant_wmt));
 	const bool complex_wms_wmt = !!((wms | wmt) & 2) || target_region;
