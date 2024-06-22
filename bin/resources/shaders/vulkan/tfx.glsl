@@ -316,6 +316,7 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	uvec4 FbMask;
 	vec4 HalfTexel;
 	vec4 MinMax;
+	vec4 LODParams;
 	vec4 STRange;
 	ivec4 ChannelShuffle;
 	vec2 TC_OffsetHack;
@@ -399,10 +400,10 @@ vec4 sample_c(vec2 uv)
 	return texture(Texture, uv);
 #elif PS_MANUAL_LOD == 1
 	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
-	float K = MinMax.x;
-	float L = MinMax.y;
-	float bias = MinMax.z;
-	float max_lod = MinMax.w;
+	float K = LODParams.x;
+	float L = LODParams.y;
+	float bias = LODParams.z;
+	float max_lod = LODParams.w;
 
 	float gs_lod = K - log2(abs(vsIn.t.w)) * L;
 	// FIXME max useful ?

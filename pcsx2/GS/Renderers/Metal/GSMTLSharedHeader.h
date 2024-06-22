@@ -111,6 +111,7 @@ struct GSMTLMainPSUniform
 		vector_float4 uv_min_max;
 		vector_uint4 uv_msk_fix;
 	};
+	vector_float4 lod_params;
 	vector_float4 st_range;
 	struct
 	{

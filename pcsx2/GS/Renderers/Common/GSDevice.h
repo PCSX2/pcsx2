@@ -585,6 +585,7 @@ struct alignas(16) GSHWDrawConfig
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
+		GSVector4 LODParams;
 		GSVector4 STRange;
 		GSVector4i ChannelShuffle;
 		GSVector2 TCOffsetHack;

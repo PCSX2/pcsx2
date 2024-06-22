@@ -162,6 +162,7 @@ cbuffer cb1
 	uint4 FbMask;
 	float4 HalfTexel;
 	float4 MinMax;
+	float4 LODParams;
 	float4 STRange;
 	int4 ChannelShuffle;
 	float2 TC_OffsetHack;
@@ -207,10 +208,10 @@ float4 sample_c(float2 uv, float uv_w)
 	return Texture.Sample(TextureSampler, uv);
 #elif PS_MANUAL_LOD == 1
 	// FIXME add LOD: K - ( LOG2(Q) * (1 << L))
-	float K = MinMax.x;
-	float L = MinMax.y;
-	float bias = MinMax.z;
-	float max_lod = MinMax.w;
+	float K = LODParams.x;
+	float L = LODParams.y;
+	float bias = LODParams.z;
+	float max_lod = LODParams.w;
 
 	float gs_lod = K - log2(abs(uv_w)) * L;
 	// FIXME max useful ?
