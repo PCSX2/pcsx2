@@ -499,6 +499,8 @@ void MainWindow::createRendererSwitchMenu()
 
 void MainWindow::recreate()
 {
+	destroySubWindows();
+
 	const bool was_display_created = m_display_created;
 	if (was_display_created)
 	{
@@ -1722,6 +1724,37 @@ void MainWindow::updateLanguage()
 	recreate();
 }
 
+void MainWindow::onThemeChanged()
+{
+	[[maybe_unused]] const QString old_style_name = qApp->style()->name();
+
+	updateTheme();
+
+#ifdef _WIN32
+	// Work around a bug where the background colour of menus is broken when changing to/from the windowsvista theme.
+	const QString new_style_name = qApp->style()->name();
+	if ((old_style_name == QStringLiteral("windowsvista")) != (new_style_name == QStringLiteral("windowsvista")))
+		recreate();
+#endif
+
+	// Reopen settings dialog after it applies.  If you doSettings now, on macOS, the window will somehow end up
+	// underneath the main window that was created above. Delay it slightly...
+	QtHost::RunOnUIThread([] {
+		g_main_window->doSettings("Interface");
+	});
+}
+
+void MainWindow::onLanguageChanged()
+{
+	// reopen settings dialog after it applies
+	updateLanguage();
+	// If you doSettings now, on macOS, the window will somehow end up underneath the main window that was created above
+	// Delay it slightly...
+	QtHost::RunOnUIThread([] {
+		g_main_window->doSettings("Interface");
+	});
+}
+
 void MainWindow::onInputRecNewActionTriggered()
 {
 	const bool wasPaused = s_vm_paused;
@@ -2499,16 +2532,8 @@ SettingsWindow* MainWindow::getSettingsWindow()
 	if (!m_settings_window)
 	{
 		m_settings_window = new SettingsWindow();
-		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::updateTheme);
-		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, [this]() {
-			// reopen settings dialog after it applies
-			updateLanguage();
-			// If you doSettings now, on macOS, the window will somehow end up underneath the main window that was created above
-			// Delay it slightly...
-			QtHost::RunOnUIThread([] {
-				g_main_window->doSettings("Interface");
-			});
-		});
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this, &MainWindow::onThemeChanged);
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::languageChanged, this, &MainWindow::onLanguageChanged);
 		connect(m_settings_window->getGameListSettingsWidget(), &GameListSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
 		});
