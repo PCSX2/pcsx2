@@ -165,6 +165,8 @@ private Q_SLOTS:
 	void updateTheme();
 	void reloadThemeSpecificImages();
 	void updateLanguage();
+	void onThemeChanged();
+	void onLanguageChanged();
 	void onScreenshotActionTriggered();
 	void onSaveGSDumpActionTriggered();
 	void onBlockDumpActionToggled(bool checked);
