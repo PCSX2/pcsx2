@@ -1930,6 +1930,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 				// Make sure the target is inside the texture
 				if (t->m_TEX0.TBP0 <= bp && bp <= t->m_end_block && t->Inside(bp, TEX0.TBW, TEX0.PSM, GSVector4i::loadh(size)))
 				{
+					if (dst && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw))
+						continue;
+
 					if (TEX0.TBW != t->m_TEX0.TBW && t->m_TEX0.TBW > 1 && t->m_age > 0)
 					{
 						// If frame is old and dirty, probably modified by the EE, so kill the wrong dimension version.
@@ -1949,7 +1952,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(GIFRegTEX0 TEX0, const GSVe
 					if (size.x > 0 || size.y > 0)
 						ScaleTargetForDisplay(dst, TEX0, size.x, size.y);
 
-					break;
+					continue;
 				}
 			}
 		}
@@ -2596,17 +2599,20 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								continue;
 							}
 
-							if (!hw_clear && (preserve_target || preload) && dst->GetScale() == t->GetScale())
+							const int dst_offset = ((((t->m_TEX0.TBP0 - dst->m_TEX0.TBP0) >> 5) / dst->m_TEX0.TBW) * GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y);
+							const int dst_offset_scaled = dst_offset * dst->m_scale;
+							const GSVector4i dst_rect = GSVector4i(t->m_valid.x, dst_offset, t->m_valid.z, dst_offset + overlapping_pages_height);
+							if (((!hw_clear && (preserve_target || preload)) || dst_rect.rintersect(draw_rect).rempty()) && dst->GetScale() == t->GetScale())
 							{
 								const int copy_width = (t->m_texture->GetWidth()) > (dst->m_texture->GetWidth()) ? (dst->m_texture->GetWidth()) : t->m_texture->GetWidth();
 								const int copy_height = overlapping_pages_height * t->m_scale;
-								const int dst_offset = (dst->m_valid.w - overlapping_pages_height) * dst->m_scale;
-								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset);
+
+								GL_INS("RT double buffer copy from FBP 0x%x, %dx%d => %d,%d", t->m_TEX0.TBP0, copy_width, copy_height, 0, dst_offset_scaled);
 
 								pxAssert(copy_width <= dst->GetTexture()->GetWidth() && copy_height <= dst->GetTexture()->GetHeight() &&
 										 copy_width <= t->GetTexture()->GetWidth() && copy_height <= t->GetTexture()->GetHeight());
 
-								pxAssert(dst_offset > 0);
+								pxAssert(dst_offset_scaled > 0);
 
 								// Clear the dirty first
 								dst->Update();
@@ -2620,7 +2626,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 								else
 								{
 									// Invalidate has been moved to after DrawPrims(), because we might kill the current sources' backing.
-									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, dst_offset);
+									g_gs_device->CopyRect(t->m_texture, dst->m_texture, GSVector4i(0, 0, copy_width, copy_height), 0, dst_offset_scaled);
 								}
 							}
 
