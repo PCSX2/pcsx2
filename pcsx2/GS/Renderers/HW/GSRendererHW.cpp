@@ -4771,8 +4771,11 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	HandleTextureHazards(rt, ds, tex, tmm, source_region, target_region, unscaled_size, scale, src_copy);
 
 	// This is used for reading depth sources, so we should go off the source scale.
-	float scale_factor = scale;
-	m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_factor, 0.0f);
+	// the Z vector contains line width which will be based on the target draw, where XY are used for source reading.
+	const float scale_factor = scale;
+	const float scale_rt = rt ? rt->GetScale() : ds->GetScale();
+
+	m_conf.cb_ps.ScaleFactor = GSVector4(scale_factor * (1.0f / 16.0f), 1.0f / scale_factor, scale_rt, 0.0f);
 
 	if ((m_conf.ps.tex_is_fb && rt->m_rt_alpha_scale) || (tex->m_target && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
 		m_conf.ps.rta_source_correction = 1;
