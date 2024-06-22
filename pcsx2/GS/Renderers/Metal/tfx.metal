@@ -356,10 +356,10 @@ struct PSMain
 		}
 		else if (PS_MANUAL_LOD)
 		{
-			float K = cb.uv_min_max.x;
-			float L = cb.uv_min_max.y;
-			float bias = cb.uv_min_max.z;
-			float max_lod = cb.uv_min_max.w;
+			float K = cb.lod_params.x;
+			float L = cb.lod_params.y;
+			float bias = cb.lod_params.z;
+			float max_lod = cb.lod_params.w;
 
 			float gs_lod = K - log2(abs(in.t.w)) * L;
 			// FIXME max useful ?
