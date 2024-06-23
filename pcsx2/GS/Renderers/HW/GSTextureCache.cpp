@@ -5366,8 +5366,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	if (lod)
 	{
 		const int basemip = lod->x;
-		const int nmips = lod->y - lod->x + 1;
-		for (int mip = 1; mip < nmips; mip++)
+		for (int mip = 1; mip < tlevels; mip++)
 		{
 			const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + mip)};
 			std::pair<u8, u8> mip_alpha_minmax;
@@ -5379,6 +5378,8 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 				alpha_minmax.second = std::max(alpha_minmax.second, mip_alpha_minmax.second);
 			}
 		}
+
+		tex->ClearMipmapGenerationFlag();
 	}
 
 	// remove the palette hash when using paltex/indexed
