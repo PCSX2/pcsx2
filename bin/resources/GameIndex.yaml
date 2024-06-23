@@ -13106,6 +13106,7 @@ SLES-50072:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_SFEX3"
+    halfPixelOffset: 4 # Aligns post effects.
 SLES-50073:
   name: "Driving Emotion Type-S"
   region: "PAL-M5"
@@ -31048,6 +31049,7 @@ SLPM-60105:
   region: "NTSC-J"
   gsHWFixes:
     getSkipCount: "GSC_SFEX3"
+    halfPixelOffset: 4 # Aligns post effects.
 SLPM-60106:
   name: "Koei PlayStation 2 Line-Up"
   region: "NTSC-J"
@@ -48481,6 +48483,7 @@ SLPS-20003:
   region: "NTSC-J"
   gsHWFixes:
     getSkipCount: "GSC_SFEX3"
+    halfPixelOffset: 4 # Aligns post effects.
 SLPS-20004:
   name: "Kakinoki Shougi IV"
   region: "NTSC-J"
@@ -57501,6 +57504,7 @@ SLUS-20130:
   compat: 5
   gsHWFixes:
     getSkipCount: "GSC_SFEX3"
+    halfPixelOffset: 4 # Aligns post effects.
 SLUS-20131:
   name: "Dark Angel - Vampire Apocalypse"
   region: "NTSC-U"
