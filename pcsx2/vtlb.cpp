@@ -29,6 +29,7 @@
 
 #include "fmt/core.h"
 
+#include <bit>
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
@@ -108,6 +109,15 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 	}
 }
 
+__inline int ConvertPageMask(u32 PageMask)
+{
+	const u32 mask = std::popcount(PageMask >> 13);
+
+	pxAssertMsg (!((mask & 1) || mask > 12), "Invalid page mask for this TLB entry. EE cache doesn't know what to do here.");
+
+	return (1 << (12 + mask)) - 1;
+}
+
 __inline int CheckCache(u32 addr)
 {
 	u32 mask;
@@ -122,8 +132,7 @@ __inline int CheckCache(u32 addr)
 	{
 		if (((tlb[i].EntryLo1 & 0x38) >> 3) == 0x3)
 		{
-			mask = tlb[i].PageMask;
-
+			mask = ConvertPageMask(tlb[i].PageMask);
 			if ((addr >= tlb[i].PFN1) && (addr <= tlb[i].PFN1 + mask))
 			{
 				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
@@ -132,8 +141,7 @@ __inline int CheckCache(u32 addr)
 		}
 		if (((tlb[i].EntryLo0 & 0x38) >> 3) == 0x3)
 		{
-			mask = tlb[i].PageMask;
-
+			mask = ConvertPageMask(tlb[i].PageMask);
 			if ((addr >= tlb[i].PFN0) && (addr <= tlb[i].PFN0 + mask))
 			{
 				//DevCon.Warning("Yay! Cache check cache addr=%x, mask=%x, addr+mask=%x, VPN2=%x PFN0=%x", addr, mask, (addr & mask), tlb[i].VPN2, tlb[i].PFN0);
