@@ -16717,6 +16717,12 @@ SLES-51588:
 SLES-51589:
   name: "Resident Evil - Outbreak"
   region: "PAL-M5"
+  patches:
+    47C231CC:
+      content: |-
+        //Patched by Refraction.
+        //Removes silly mask causing high barriers on draws (Requires game restart).
+        patch=0,EE,001972D0,word,24050000
 SLES-51590:
   name: "Cabela's Big Game Hunter"
   region: "PAL-E"
@@ -61286,6 +61292,12 @@ SLUS-20765:
   name: "Resident Evil - Outbreak"
   region: "NTSC-U"
   compat: 5
+  patches:
+    0245EF6D:
+      content: |-
+        //Patched by Refraction.
+        //Removes silly mask causing high barriers on draws (Requires game restart).
+        patch=0,EE,0019FF60,word,24050000
 SLUS-20766:
   name: "Fatal Frame II - Crimson Butterfly"
   region: "NTSC-U"
@@ -62492,6 +62504,12 @@ SLUS-20984:
   name: "Resident Evil Outbreak - File #2"
   region: "NTSC-U"
   compat: 5
+  patches:
+    1E65A50E:
+      content: |-
+        //Patched by Refraction.
+        //Removes silly mask causing high barriers on draws (Requires game restart).
+        patch=0,EE,001EE550,word,24050000
   memcardFilters:
     - "SLUS-20984"
     - "SLUS-20765"
