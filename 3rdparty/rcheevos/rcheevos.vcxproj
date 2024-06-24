@@ -52,7 +52,6 @@
     <ClCompile Include="src\rc_client.c" />
     <ClCompile Include="src\rc_compat.c" />
     <ClCompile Include="src\rc_util.c" />
-    <ClCompile Include="src\rhash\hash.c" />
     <ClCompile Include="src\rhash\md5.c" />
     <ClCompile Include="src\rurl\url.c" />
   </ItemGroup>
