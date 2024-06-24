@@ -3,6 +3,8 @@
 
 #include "rc_runtime_types.h"
 
+#include "../rc_compat.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -369,5 +371,93 @@ int rc_api_process_fetch_games_list_server_response(rc_api_fetch_games_list_resp
 }
 
 void rc_api_destroy_fetch_games_list_response(rc_api_fetch_games_list_response_t* response) {
+  rc_buffer_destroy(&response->response.buffer);
+}
+
+/* --- Fetch Game Titles --- */
+
+int rc_api_init_fetch_game_titles_request(rc_api_request_t* request, const rc_api_fetch_game_titles_request_t* api_params) {
+  rc_api_url_builder_t builder;
+  char num[16];
+  uint32_t i;
+
+  rc_api_url_build_dorequest_url(request);
+
+  if (api_params->num_game_ids == 0)
+    return RC_INVALID_STATE;
+
+  rc_url_builder_init(&builder, &request->buffer, 48);
+  rc_url_builder_append_str_param(&builder, "r", "gameinfolist");
+  rc_url_builder_append_unum_param(&builder, "g", api_params->game_ids[0]);
+
+  for (i = 1; i < api_params->num_game_ids; i++) {
+    int chars = snprintf(num, sizeof(num), "%u", api_params->game_ids[i]);
+    rc_url_builder_append(&builder, ",", 1);
+    rc_url_builder_append(&builder, num, chars);
+  }
+
+  request->post_data = rc_url_builder_finalize(&builder);
+  request->content_type = RC_CONTENT_TYPE_URLENCODED;
+
+  return builder.result;
+}
+
+int rc_api_process_fetch_game_titles_server_response(rc_api_fetch_game_titles_response_t* response, const rc_api_server_response_t* server_response) {
+  rc_api_game_title_entry_t* entry;
+  rc_json_iterator_t iterator;
+  rc_json_field_t array_field;
+  int result;
+
+  rc_json_field_t fields[] = {
+    RC_JSON_NEW_FIELD("Success"),
+    RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("Response")
+  };
+
+  rc_json_field_t entry_fields[] = {
+    RC_JSON_NEW_FIELD("ID"),
+    RC_JSON_NEW_FIELD("Title"),
+    RC_JSON_NEW_FIELD("ImageIcon")
+  };
+
+  memset(response, 0, sizeof(*response));
+  rc_buffer_init(&response->response.buffer);
+
+  result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
+  if (result != RC_OK)
+    return result;
+
+  if (!rc_json_get_required_array(&response->num_entries, &array_field, &response->response, &fields[2], "Response"))
+    return RC_MISSING_VALUE;
+
+  if (response->num_entries) {
+    response->entries = (rc_api_game_title_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_game_title_entry_t));
+    if (!response->entries)
+      return RC_OUT_OF_MEMORY;
+
+    memset(&iterator, 0, sizeof(iterator));
+    iterator.json = array_field.value_start;
+    iterator.end = array_field.value_end;
+
+    entry = response->entries;
+    while (rc_json_get_array_entry_object(entry_fields, sizeof(entry_fields) / sizeof(entry_fields[0]), &iterator)) {
+      if (!rc_json_get_required_unum(&entry->id, &response->response, &entry_fields[0], "ID"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_string(&entry->title, &response->response, &entry_fields[1], "Title"))
+        return RC_MISSING_VALUE;
+
+      /* ImageIcon will be '/Images/0123456.png' - only return the '0123456' */
+      rc_json_extract_filename(&entry_fields[2]);
+      if (!rc_json_get_required_string(&entry->image_name, &response->response, &entry_fields[2], "ImageIcon"))
+        return RC_MISSING_VALUE;
+
+      ++entry;
+    }
+  }
+
+  return RC_OK;
+}
+
+void rc_api_destroy_fetch_game_titles_response(rc_api_fetch_game_titles_response_t* response) {
   rc_buffer_destroy(&response->response.buffer);
 }

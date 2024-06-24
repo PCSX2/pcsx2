@@ -69,6 +69,7 @@ static const rc_disallowed_setting_t _rc_disallowed_ecwolf_settings[] = {
 static const rc_disallowed_setting_t _rc_disallowed_fbneo_settings[] = {
   { "fbneo-allow-patched-romsets", "enabled" },
   { "fbneo-cheat-*", "!,Disabled,0 - Disabled" },
+  { "fbneo-cpu-speed-adjust", "??%" }, /* disallow speeds under 100% */
   { "fbneo-dipswitch-*", "Universe BIOS*" },
   { "fbneo-neogeo-mode", "UNIBIOS" },
   { NULL, NULL }
@@ -178,7 +179,7 @@ static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
 static int rc_libretro_string_equal_nocase_wildcard(const char* test, const char* value) {
   char c1, c2;
   while ((c1 = *test++)) {
-    if (tolower(c1) != tolower(c2 = *value++))
+    if (tolower(c1) != tolower(c2 = *value++) && c2 != '?')
       return (c2 == '*');
   }
 

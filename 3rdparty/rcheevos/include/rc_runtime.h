@@ -143,9 +143,15 @@ typedef int (RC_CCONV *rc_runtime_validate_address_t)(uint32_t address);
 RC_EXPORT void RC_CCONV rc_runtime_validate_addresses(rc_runtime_t* runtime, rc_runtime_event_handler_t event_handler, rc_runtime_validate_address_t validate_handler);
 RC_EXPORT void RC_CCONV rc_runtime_invalidate_address(rc_runtime_t* runtime, uint32_t address);
 
-RC_EXPORT int RC_CCONV rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L);
+RC_EXPORT uint32_t RC_CCONV rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L);
+
+/* [deprecated] use rc_runtime_serialize_progress_sized instead */
 RC_EXPORT int RC_CCONV rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, lua_State* L);
+RC_EXPORT int RC_CCONV rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, lua_State* L);
+
+/* [deprecated] use rc_runtime_deserialize_progress_sized instead */
 RC_EXPORT int RC_CCONV rc_runtime_deserialize_progress(rc_runtime_t* runtime, const uint8_t* serialized, lua_State* L);
+RC_EXPORT int RC_CCONV rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* serialized, uint32_t serialized_size, lua_State* L);
 
 RC_END_C_DECLS
 

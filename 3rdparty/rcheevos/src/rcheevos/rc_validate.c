@@ -143,6 +143,31 @@ static uint32_t rc_scale_value(uint32_t value, uint8_t oper, const rc_operand_t*
     case RC_OPERATOR_XOR:
       return value | rc_max_value(operand);
 
+    case RC_OPERATOR_MOD:
+    {
+      const uint32_t divisor = (operand->type == RC_OPERAND_CONST) ? operand->value.num : 1;
+      return (divisor >= value) ? (divisor - 1) : value;
+    }
+
+    case RC_OPERATOR_ADD:
+    {
+      unsigned long scaled = ((unsigned long)value) + rc_max_value(operand);
+      if (scaled > 0xFFFFFFFF)
+        return 0xFFFFFFFF;
+
+      return (uint32_t)scaled;
+    }
+
+    case RC_OPERATOR_SUB:
+    {
+      if (operand->type == RC_OPERAND_CONST)
+        return value - operand->value.num;
+      else if (value > rc_max_value(operand))
+        return value - rc_max_value(operand);
+
+      return 0xFFFFFFFF;
+    }
+
     default:
       return value;
   }
@@ -241,6 +266,8 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
   int in_add_hits = 0;
   int in_add_address = 0;
   int is_combining = 0;
+  int remember_used = 0;
+  int remember_used_in_pause = 0;
 
   if (!condset) {
     *result = '\0';
@@ -251,6 +278,7 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
     uint32_t max = rc_max_value(&cond->operand1);
     const int is_memref1 = rc_operand_is_memref(&cond->operand1);
     const int is_memref2 = rc_operand_is_memref(&cond->operand2);
+    const int uses_recall = rc_operand_is_recall(&cond->operand1) || rc_operand_is_recall(&cond->operand2);
 
     if (!in_add_address) {
       if (is_memref1 && !rc_validate_memref(cond->operand1.value.memref, buffer, sizeof(buffer), console_id, max_address)) {
@@ -264,6 +292,28 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
     }
     else {
       in_add_address = 0;
+    }
+
+    if (!remember_used && uses_recall) {
+      if (!cond->pause && condset->has_pause) {
+        /* pause conditions will be processed before non-pause conditions.
+         * scan forward for any remembers in yet-to-be-processed pause conditions */
+        const rc_condition_t* cond_rem_pause_check = cond->next;
+        for (; cond_rem_pause_check; cond_rem_pause_check = cond_rem_pause_check->next) {
+          if (cond_rem_pause_check->type == RC_CONDITION_REMEMBER && cond_rem_pause_check->pause) {
+            remember_used = 1; /* do not set remember_used_in_pause here because we don't know at which poing in the pause processing this remember is occurring. */
+            break;
+          }
+        }
+      }
+      if (!remember_used) {
+        snprintf(result, result_size, "Condition %d: Recall used before Remember", index);
+        return 0;
+      }
+    }
+    else if (cond->pause && uses_recall && !remember_used_in_pause) {
+      snprintf(result, result_size, "Condition %d: Recall used in Pause processing before Remember was used in Pause processing", index);
+      return 0;
     }
 
     switch (cond->type) {
@@ -287,6 +337,12 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
         }
         in_add_address = 1;
         is_combining = 1;
+        continue;
+
+      case RC_CONDITION_REMEMBER:
+        is_combining = 1;
+        remember_used = 1;
+        remember_used_in_pause += cond->pause;
         continue;
 
       case RC_CONDITION_ADD_HITS:
@@ -337,48 +393,67 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
       return 0;
     }
 
-    /* if either side is a memref, or there's a running add source chain, check for impossible comparisons */
-    if (is_memref1 || is_memref2 || add_source_max) {
+    if (is_memref1 && rc_operand_is_float(&cond->operand1)) {
+      /* if left side is a float, right side will be converted to a float, so don't do range validation */
+    }
+    else if (is_memref1 || is_memref2 || add_source_max) {
+      /* if either side is a memref, or there's a running add source chain, check for impossible comparisons */
       const size_t prefix_length = snprintf(result, result_size, "Condition %d: ", index);
-
+      const rc_operand_t* operand1 = &cond->operand1;
+      const rc_operand_t* operand2 = &cond->operand2;
+      uint8_t oper = cond->oper;
       uint32_t min_val;
-      switch (cond->operand2.type) {
+
+      if (!is_memref1 && !add_source_max) {
+        /* pretend constant was on right side */
+        operand1 = &cond->operand2;
+        operand2 = &cond->operand1;
+        max = max_val;
+        switch (oper) {
+          case RC_OPERATOR_LT: oper = RC_OPERATOR_GT; break;
+          case RC_OPERATOR_LE: oper = RC_OPERATOR_GE; break;
+          case RC_OPERATOR_GT: oper = RC_OPERATOR_LT; break;
+          case RC_OPERATOR_GE: oper = RC_OPERATOR_LE; break;
+        }
+      }
+
+      switch (operand2->type) {
         case RC_OPERAND_CONST:
-          min_val = cond->operand2.value.num;
+          min_val = operand2->value.num;
           break;
 
         case RC_OPERAND_FP:
-          min_val = (int)cond->operand2.value.dbl;
+          min_val = (int)operand2->value.dbl;
 
           /* cannot compare an integer memory reference to a non-integral floating point value */
-          /* assert: is_memref1 (because operand2==FP means !is_memref2) */
-          if (!add_source_max && !rc_operand_is_float_memref(&cond->operand1) &&
-              (float)min_val != cond->operand2.value.dbl) {
-            snprintf(result + prefix_length, result_size - prefix_length, "Comparison is never true");
-            return 0;
+          if (!add_source_max && !rc_operand_is_float_memref(operand1) &&
+              (float)min_val != operand2->value.dbl) {
+            switch (oper) {
+              case RC_OPERATOR_EQ:
+                snprintf(result + prefix_length, result_size - prefix_length, "Comparison is never true");
+                return 0;
+              case RC_OPERATOR_NE:
+                snprintf(result + prefix_length, result_size - prefix_length, "Comparison is always true");
+                return 0;
+              case RC_OPERATOR_GT: /* value could be greater than floor(float) */
+              case RC_OPERATOR_LE: /* value could be less than or equal to floor(float) */
+                break;
+              case RC_OPERATOR_GE: /* value could be greater than or equal to ceil(float) */
+              case RC_OPERATOR_LT: /* value could be less than ceil(float) */
+                ++min_val;
+                break;
+            }
           }
 
           break;
 
-        default:
+        default: /* right side is memref or add source chain */
           min_val = 0;
-
-          /* cannot compare an integer memory reference to a non-integral floating point value */
-          /* assert: is_memref2 (because operand1==FP means !is_memref1) */
-          if (cond->operand1.type == RC_OPERAND_FP && !add_source_max && !rc_operand_is_float_memref(&cond->operand2) &&
-              (float)((int)cond->operand1.value.dbl) != cond->operand1.value.dbl) {
-            snprintf(result + prefix_length, result_size - prefix_length, "Comparison is never true");
-            return 0;
-          }
-
           break;
       }
 
-      if (rc_operand_is_float(&cond->operand2) && rc_operand_is_float(&cond->operand1)) {
-        /* both sides are floats, don't validate range*/
-      } else if (!rc_validate_range(min_val, max_val, cond->oper, max, result + prefix_length, result_size - prefix_length)) {
+      if (!rc_validate_range(min_val, max_val, oper, max, result + prefix_length, result_size - prefix_length))
         return 0;
-      }
     }
 
     add_source_max = 0;
@@ -416,27 +491,12 @@ static int rc_validate_is_combining_condition(const rc_condition_t* condition)
     case RC_CONDITION_RESET_NEXT_IF:
     case RC_CONDITION_SUB_HITS:
     case RC_CONDITION_SUB_SOURCE:
+    case RC_CONDITION_REMEMBER:
       return 1;
 
     default:
       return 0;
   }
-}
-
-static const rc_condition_t* rc_validate_next_non_combining_condition(const rc_condition_t* condition)
-{
-  int is_combining = rc_validate_is_combining_condition(condition);
-  for (condition = condition->next; condition != NULL; condition = condition->next)
-  {
-    if (rc_validate_is_combining_condition(condition))
-      is_combining = 1;
-    else if (is_combining)
-      is_combining = 0;
-    else
-      return condition;
-  }
-
-  return NULL;
 }
 
 static int rc_validate_get_opposite_comparison(int oper)
@@ -637,6 +697,24 @@ static int rc_validate_comparison_overlap(int comparison1, uint32_t value1, int 
   return RC_OVERLAP_NONE;
 }
 
+static int rc_validate_are_operands_equal(const rc_operand_t* oper1, const rc_operand_t* oper2)
+{
+  if (oper1->type != oper2->type)
+    return 0;
+
+  switch (oper1->type)
+  {
+  case RC_OPERAND_CONST:
+    return (oper1->value.num == oper2->value.num);
+  case RC_OPERAND_FP:
+    return (oper1->value.dbl == oper2->value.dbl);
+  case RC_OPERAND_RECALL:
+    return (oper2->type == RC_OPERAND_RECALL);
+  default:
+    return (oper1->value.memref->address == oper2->value.memref->address && oper1->size == oper2->size);
+  }
+}
+
 static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, const rc_condset_t* compare_conditions,
     const char* prefix, const char* compare_prefix, char result[], const size_t result_size)
 {
@@ -646,6 +724,7 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
   const rc_operand_t* operand2;
   const rc_condition_t* compare_condition;
   const rc_condition_t* condition;
+  const rc_condition_t* condition_chain_start;
   int overlap;
 
   /* empty group */
@@ -653,9 +732,14 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
     return 1;
 
   /* outer loop is the source conditions */
-  for (condition = conditions->conditions; condition != NULL;
-      condition = rc_validate_next_non_combining_condition(condition))
+  for (condition = conditions->conditions; condition != NULL; condition = condition->next)
   {
+    condition_chain_start = condition;
+    while (rc_condition_is_combining(condition))
+      condition = condition->next;
+    if (!condition)
+      break;
+
     /* hits can be captured at any time, so any potential conflict will not be conflicting at another time */
     if (condition->required_hits)
       continue;
@@ -680,11 +764,62 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
     }
 
     /* inner loop is the potentially conflicting conditions */
-    for (compare_condition = compare_conditions->conditions; compare_condition != NULL;
-        compare_condition = rc_validate_next_non_combining_condition(compare_condition))
+    for (compare_condition = compare_conditions->conditions; compare_condition != NULL; compare_condition = compare_condition->next)
     {
-      if (compare_condition == condition)
+      if (compare_condition == condition_chain_start)
+      {
+        /* skip condition we're already looking at */
+        while (compare_condition != condition)
+          compare_condition = compare_condition->next;
+
         continue;
+      }
+
+      /* if combining conditions exist, make sure the same combining conditions exist in the
+       * compare logic. conflicts can only occur if the combinining conditions match. */
+      if (condition_chain_start != condition)
+      {
+        int chain_matches = 1;
+        const rc_condition_t* condition_chain_iter = condition_chain_start;
+        while (condition_chain_iter != condition)
+        {
+          if (compare_condition->type != condition_chain_iter->type ||
+            compare_condition->oper != condition_chain_iter->oper ||
+            compare_condition->required_hits != condition_chain_iter->required_hits ||
+            !rc_validate_are_operands_equal(&compare_condition->operand1, &condition_chain_iter->operand1))
+          {
+            chain_matches = 0;
+            break;
+          }
+
+          if (compare_condition->oper != RC_OPERATOR_NONE &&
+            !rc_validate_are_operands_equal(&compare_condition->operand2, &condition_chain_iter->operand2))
+          {
+            if (compare_condition->operand2.type != condition_chain_iter->operand2.type)
+            {
+              chain_matches = 0;
+              break;
+            }
+          }
+
+          if (!compare_condition->next)
+          {
+            chain_matches = 0;
+            break;
+          }
+
+          compare_condition = compare_condition->next;
+          condition_chain_iter = condition_chain_iter->next;
+        }
+
+        /* combining field didn't match, or there's more unmatched combining fields. ignore this condition */
+        if (!chain_matches || rc_validate_is_combining_condition(compare_condition))
+        {
+          while (compare_condition->next && rc_validate_is_combining_condition(compare_condition))
+            compare_condition = compare_condition->next;
+          continue;
+        }
+      }
 
       if (compare_condition->required_hits)
         continue;
@@ -801,8 +936,7 @@ static int rc_validate_trigger_internal(const rc_trigger_t* trigger, char result
   const rc_condset_t* alt;
   int index;
 
-  if (!trigger->alternative)
-  {
+  if (!trigger->alternative) {
     if (!rc_validate_condset_internal(trigger->requirement, result, result_size, console_id, max_address))
       return 0;
 

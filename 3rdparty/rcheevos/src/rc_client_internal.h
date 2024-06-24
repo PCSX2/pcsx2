@@ -26,6 +26,8 @@ typedef void (RC_CCONV *rc_client_post_process_game_data_response_t)(const rc_ap
 typedef int (RC_CCONV *rc_client_can_submit_achievement_unlock_t)(uint32_t achievement_id, rc_client_t* client);
 typedef int (RC_CCONV *rc_client_can_submit_leaderboard_entry_t)(uint32_t leaderboard_id, rc_client_t* client);
 typedef int (RC_CCONV *rc_client_rich_presence_override_t)(rc_client_t* client, char buffer[], size_t buffersize);
+typedef uint32_t (RC_CCONV* rc_client_identify_hash_func_t)(uint32_t console_id, const char* hash,
+                  rc_client_t* client, void* callback_userdata);
 
 typedef struct rc_client_callbacks_t {
   rc_client_read_memory_func_t read_memory;
@@ -33,6 +35,7 @@ typedef struct rc_client_callbacks_t {
   rc_client_server_call_t server_call;
   rc_client_message_callback_t log_call;
   rc_get_time_millisecs_func_t get_time_millisecs;
+  rc_client_identify_hash_func_t identify_unknown_hash;
   rc_client_post_process_game_data_response_t post_process_game_data_response;
   rc_client_can_submit_achievement_unlock_t can_submit_achievement_unlock;
   rc_client_can_submit_leaderboard_entry_t can_submit_leaderboard_entry;
@@ -266,16 +269,6 @@ void rc_client_update_active_leaderboards(rc_client_game_info_t* game);
 \*****************************************************************************/
 
 enum {
-  RC_CLIENT_LOAD_STATE_NONE,
-  RC_CLIENT_LOAD_STATE_IDENTIFYING_GAME,
-  RC_CLIENT_LOAD_STATE_AWAIT_LOGIN,
-  RC_CLIENT_LOAD_STATE_FETCHING_GAME_DATA,
-  RC_CLIENT_LOAD_STATE_STARTING_SESSION,
-  RC_CLIENT_LOAD_STATE_DONE,
-  RC_CLIENT_LOAD_STATE_UNKNOWN_GAME
-};
-
-enum {
   RC_CLIENT_USER_STATE_NONE,
   RC_CLIENT_USER_STATE_LOGIN_REQUESTED,
   RC_CLIENT_USER_STATE_LOGGED_IN
@@ -375,8 +368,10 @@ int rc_value_contains_memref(const rc_value_t* value, const rc_memref_t* memref)
 /* end runtime.c internals */
 
 /* helper functions for unit tests */
+#ifdef RC_CLIENT_SUPPORTS_HASH
 struct rc_hash_iterator;
 struct rc_hash_iterator* rc_client_get_load_state_hash_iterator(rc_client_t* client);
+#endif
 /* end helper functions for unit tests */
 
 enum {
@@ -387,6 +382,7 @@ enum {
 
 void rc_client_set_legacy_peek(rc_client_t* client, int method);
 
+void rc_client_allocate_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard);
 void rc_client_release_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard);
 
 RC_END_C_DECLS
