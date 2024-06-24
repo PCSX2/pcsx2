@@ -4098,7 +4098,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 		((m_vt.m_max.c == GSVector4i::zero()).mask() & 0xfff) == 0xfff)
 	{
 		// If using modulate or is HIGHLIGHT by the vertex alpha is zero, we should be safe to kill it.
-		if (m_cached_ctx.TEX0.TFX == TFX_MODULATE || m_vt.m_max.c.a == 0)
+		if (!PRIM->TME || m_cached_ctx.TEX0.TFX == TFX_MODULATE || m_vt.m_max.c.a == 0)
 		{
 			if (m_conf.ps.blend_a == 0)
 				m_conf.ps.blend_a = 2;
