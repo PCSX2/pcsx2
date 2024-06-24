@@ -1097,14 +1097,16 @@ void VMManager::UpdateDiscDetails(bool booting)
 	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, true, false, false);
 
 	ReportGameChangeToHost();
-	Achievements::GameChanged(s_disc_crc, s_current_crc);
 	if (MTGS::IsOpen())
 		MTGS::GameChanged();
-	ReloadPINE();
-	UpdateDiscordPresence(s_state.load(std::memory_order_relaxed) == VMState::Initializing);
 
 	if (!GSDumpReplayer::IsReplayingDump())
+	{
+		Achievements::GameChanged(s_disc_crc, s_current_crc);
+		ReloadPINE();
+		UpdateDiscordPresence(s_state.load(std::memory_order_relaxed) == VMState::Initializing);
 		FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
+	}
 }
 
 void VMManager::ClearDiscDetails()
@@ -1399,13 +1401,13 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 	// Why do we need the boot param? Because we need some way of telling BootSystem() that
 	// the user allowed HC mode to be disabled, because otherwise we'll ResetHardcoreMode()
 	// and send ourselves into an infinite loop.
-	if (boot_params.disable_achievements_hardcore_mode)
+	if (boot_params.disable_achievements_hardcore_mode || GSDumpReplayer::IsReplayingDump())
 		Achievements::DisableHardcoreMode();
 	else
 		Achievements::ResetHardcoreMode(true);
 	if (Achievements::IsHardcoreModeActive())
 	{
-		auto confirmHardcoreModeDisable = [&boot_params, &state_to_load](const char* trigger) mutable {
+		auto confirm_hc_mode_disable = [&boot_params, &state_to_load](const char* trigger) mutable {
 			if (FullscreenUI::IsInitialized())
 			{
 				boot_params.elf_override = std::move(s_elf_override);
@@ -1415,9 +1417,9 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 				Achievements::ConfirmHardcoreModeDisableAsync(trigger,
 					[boot_params = std::move(boot_params)](bool approved) mutable {
-						if (approved && Initialize(std::move(boot_params)))
-							SetState(VMState::Running);
-					});
+					if (approved && Initialize(std::move(boot_params)))
+						SetState(VMState::Running);
+				});
 
 				return false;
 			}
@@ -1430,17 +1432,13 @@ bool VMManager::Initialize(VMBootParameters boot_params)
 
 		if (!state_to_load.empty())
 		{
-			if (!confirmHardcoreModeDisable(TRANSLATE("VMManager", "Resuming state")))
-			{
+			if (!confirm_hc_mode_disable(TRANSLATE("VMManager", "Resuming state")))
 				return false;
-			}
 		}
 		if (DebugInterface::getPauseOnEntry())
 		{
-			if (!confirmHardcoreModeDisable(TRANSLATE("VMManager", "Boot and Debug")))
-			{
+			if (!confirm_hc_mode_disable(TRANSLATE("VMManager", "Boot and Debug")))
 				return false;
-			}
 		}
 	}
 
@@ -1686,7 +1684,7 @@ void VMManager::Reset()
 		return;
 
 	// Re-enforce hardcode mode constraints if we're now enabling it.
-	if (Achievements::ResetHardcoreMode(false))
+	if (!GSDumpReplayer::IsReplayingDump() && Achievements::ResetHardcoreMode(false))
 		ApplySettings();
 
 	vu1Thread.WaitVU();
