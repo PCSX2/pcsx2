@@ -425,8 +425,8 @@ bool ImGuiFullscreen::UpdateLayoutScale()
 	static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
 	const ImGuiIO& io = ImGui::GetIO();
 
-	const float screen_width = io.DisplaySize.x;
-	const float screen_height = io.DisplaySize.y;
+	const float screen_width = std::max(io.DisplaySize.x, 1.0f);
+	const float screen_height = std::max(io.DisplaySize.y, 1.0f);
 	const float screen_ratio = screen_width / screen_height;
 	const float old_scale = g_layout_scale;
 
