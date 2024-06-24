@@ -2059,7 +2059,13 @@ void GSRendererHW::Draw()
 	const GSDrawingEnvironment& env = *m_draw_env;
 	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	if (PRIM->TME && tex_psm.pal > 0)
+	{
 		m_mem.m_clut.Read32(m_cached_ctx.TEX0, env.TEXA);
+		if (m_mem.m_clut.GetGPUTexture())
+		{
+			CalcAlphaMinMax(0, 255);
+		}
+	}
 
 	//  Test if we can optimize Alpha Test as a NOP
 	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
@@ -4087,6 +4093,23 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 	GL_INS("Draw AlphaMinMax: %d-%d, RT AlphaMinMax: %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max, rt_alpha_min, rt_alpha_max);
 #endif
 
+	// If the colour is modulated to zero or we're not using a texture and the color is zero, we can replace any Cs with 0
+	if ((!PRIM->TME || m_cached_ctx.TEX0.TFX != TFX_DECAL) && (!PRIM->FGE || m_draw_env->FOGCOL.U32[0] == 0) && 
+		((m_vt.m_max.c == GSVector4i::zero()).mask() & 0xfff) == 0xfff)
+	{
+		// If using modulate or is HIGHLIGHT by the vertex alpha is zero, we should be safe to kill it.
+		if (m_cached_ctx.TEX0.TFX == TFX_MODULATE || m_vt.m_max.c.a == 0)
+		{
+			if (m_conf.ps.blend_a == 0)
+				m_conf.ps.blend_a = 2;
+
+			if (m_conf.ps.blend_b == 0)
+				m_conf.ps.blend_b = 2;
+
+			if (m_conf.ps.blend_d == 0)
+				m_conf.ps.blend_d = 2;
+		}
+	}
 	// When AA1 is enabled and Alpha Blending is disabled, alpha blending done with coverage instead of alpha.
 	// We use a COV value of 128 (full coverage) in triangles (except the edge geometry, which we can't do easily).
 	if (IsCoverageAlpha())
@@ -4108,6 +4131,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, bool& DAT
 			AFIX = 128;
 			m_conf.ps.blend_c = 2;
 		}
+	}
+	else if (m_conf.ps.blend_c == 0 && GetAlphaMinMax().min == GetAlphaMinMax().max)
+	{
+		AFIX = GetAlphaMinMax().max;
+		m_conf.ps.blend_c = 2;
 	}
 
 	// Get alpha value
