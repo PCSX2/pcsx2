@@ -19,7 +19,11 @@ namespace
 	struct CacheTag
 	{
 		uptr rawValue;
-
+		// You are able to configure a TLB entry with non-existant physical address without causing a bus error.
+		// When this happens, the cache still fills with the data and when it gets evicted the data is lost.
+		// We don't emulate memory access on a logic level, so we need to ensure that we don't try to load/store to a non-existant physical address.
+		// This fixes the Find My Own Way demo.
+		bool validPFN = true;
 		// The lower parts of a cache tags structure is as follows:
 		// 31 - 12: The physical address cache tag.
 		// 11 - 7: Unused.
@@ -99,7 +103,8 @@ namespace
 			uptr target = addr();
 
 			CACHE_LOG("Write back at %zx", target);
-			*reinterpret_cast<CacheData*>(target) = data;
+			if (tag.validPFN)
+				*reinterpret_cast<CacheData*>(target) = data;
 			tag.clearDirty();
 		}
 
@@ -108,7 +113,16 @@ namespace
 			pxAssertMsg(!tag.isDirtyAndValid(), "Loaded a value into cache without writing back the old one!");
 
 			tag.setAddr(ppf);
-			std::memcpy(&data, reinterpret_cast<void*>(ppf & ~0x3FULL), sizeof(data));
+			if (!tag.validPFN)
+			{
+				// Reading from invalid physical addresses seems to return 0 on hardware
+				std::memset(&data, 0, sizeof(data));
+			}
+			else
+			{
+				std::memcpy(&data, reinterpret_cast<void*>(ppf & ~0x3FULL), sizeof(data));
+			}
+
 			tag.setValid();
 			tag.clearDirty();
 		}
@@ -163,29 +177,58 @@ static bool findInCache(const CacheSet& set, uptr ppf, int* way)
 	return check(0) || check(1);
 }
 
-static int getFreeCache(u32 mem, int* way)
+static int getFreeCache(u32 mem, int* way, bool validPFN)
 {
 	const int setIdx = cache.setIdxFor(mem);
 	CacheSet& set = cache.sets[setIdx];
 	VTLBVirtual vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-	pxAssertMsg(!vmv.isHandler(mem), "Cache currently only supports non-handler addresses!");
+
+	*way = set.tags[0].lrf() ^ set.tags[1].lrf();
+	if (validPFN)
+		pxAssertMsg(!vmv.isHandler(mem), "Cache currently only supports non-handler addresses!");
+
 	uptr ppf = vmv.assumePtr(mem);
 
-	if((cpuRegs.CP0.n.Config & 0x10000) == 0)
+	[[unlikely]]
+	if ((cpuRegs.CP0.n.Config & 0x10000) == 0)
 		CACHE_LOG("Cache off!");
 
 	if (findInCache(set, ppf, way))
 	{
+		[[unlikely]]
 		if (set.tags[*way].isLocked())
-			CACHE_LOG("Index %x Way %x Locked!!", setIdx, *way);
+		{
+			// Check the other way
+			if (set.tags[*way ^ 1].isLocked())
+			{
+				Console.Error("CACHE: SECOND WAY IS LOCKED.", setIdx, *way);
+			}
+			else
+			{
+				// Force the unlocked way
+				*way ^= 1;
+			}
+		}
 	}
 	else
 	{
 		int newWay = set.tags[0].lrf() ^ set.tags[1].lrf();
+		[[unlikely]]
+		if (set.tags[newWay].isLocked())
+		{
+			// If the new way is locked, we force the unlocked way, ignoring the lrf bits.
+			newWay = newWay ^ 1;
+			[[unlikely]]
+			if (set.tags[newWay].isLocked())
+			{
+				Console.Warning("CACHE: SECOND WAY IS LOCKED.", setIdx, *way);
+			}
+		}
 		*way = newWay;
-		CacheLine line = cache.lineAt(setIdx, newWay);
 
+		CacheLine line = cache.lineAt(setIdx, newWay);
 		line.writeBackIfNeeded();
+		line.tag.validPFN = validPFN;
 		line.load(ppf);
 		line.tag.toggleLRF();
 	}
@@ -194,10 +237,10 @@ static int getFreeCache(u32 mem, int* way)
 }
 
 template <bool Write, int Bytes>
-void* prepareCacheAccess(u32 mem, int* way, int* idx)
+void* prepareCacheAccess(u32 mem, int* way, int* idx, bool validPFN = true)
 {
 	*way = 0;
-	*idx = getFreeCache(mem, way);
+	*idx = getFreeCache(mem, way, validPFN);
 	CacheLine line = cache.lineAt(*idx, *way);
 	if (Write)
 		line.tag.setDirty();
@@ -206,49 +249,49 @@ void* prepareCacheAccess(u32 mem, int* way, int* idx)
 }
 
 template <typename Int>
-void writeCache(u32 mem, Int value)
+void writeCache(u32 mem, Int value, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<true, sizeof(Int)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<true, sizeof(Int)>(mem, &way, &idx, validPFN);
 
 	CACHE_LOG("writeCache%d %8.8x adding to %d, way %d, value %llx", 8 * sizeof(value), mem, idx, way, value);
 	*reinterpret_cast<Int*>(addr) = value;
 }
 
-void writeCache8(u32 mem, u8 value)
+void writeCache8(u32 mem, u8 value, bool validPFN)
 {
-	writeCache<u8>(mem, value);
+	writeCache<u8>(mem, value, validPFN);
 }
 
-void writeCache16(u32 mem, u16 value)
+void writeCache16(u32 mem, u16 value, bool validPFN)
 {
-	writeCache<u16>(mem, value);
+	writeCache<u16>(mem, value, validPFN);
 }
 
-void writeCache32(u32 mem, u32 value)
+void writeCache32(u32 mem, u32 value, bool validPFN)
 {
-	writeCache<u32>(mem, value);
+	writeCache<u32>(mem, value, validPFN);
 }
 
-void writeCache64(u32 mem, const u64 value)
+void writeCache64(u32 mem, const u64 value, bool validPFN)
 {
-	writeCache<u64>(mem, value);
+	writeCache<u64>(mem, value, validPFN);
 }
 
-void writeCache128(u32 mem, const mem128_t* value)
+void writeCache128(u32 mem, const mem128_t* value, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<true, sizeof(mem128_t)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<true, sizeof(mem128_t)>(mem, &way, &idx, validPFN);
 
 	CACHE_LOG("writeCache128 %8.8x adding to %d, way %x, lo %llx, hi %llx", mem, idx, way, value->lo, value->hi);
 	*reinterpret_cast<mem128_t*>(addr) = *value;
 }
 
 template <typename Int>
-Int readCache(u32 mem)
+Int readCache(u32 mem, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<false, sizeof(Int)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<false, sizeof(Int)>(mem, &way, &idx, validPFN);
 
 	Int value = *reinterpret_cast<Int*>(addr);
 	CACHE_LOG("readCache%d %8.8x from %d, way %d, value %llx", 8 * sizeof(value), mem, idx, way, value);
@@ -256,30 +299,30 @@ Int readCache(u32 mem)
 }
 
 
-u8 readCache8(u32 mem)
+u8 readCache8(u32 mem, bool validPFN)
 {
-	return readCache<u8>(mem);
+	return readCache<u8>(mem, validPFN);
 }
 
-u16 readCache16(u32 mem)
+u16 readCache16(u32 mem, bool validPFN)
 {
-	return readCache<u16>(mem);
+	return readCache<u16>(mem, validPFN);
 }
 
-u32 readCache32(u32 mem)
+u32 readCache32(u32 mem, bool validPFN)
 {
-	return readCache<u32>(mem);
+	return readCache<u32>(mem, validPFN);
 }
 
-u64 readCache64(u32 mem)
+u64 readCache64(u32 mem, bool validPFN)
 {
-	return readCache<u64>(mem);
+	return readCache<u64>(mem, validPFN);
 }
 
-RETURNS_R128 readCache128(u32 mem)
+RETURNS_R128 readCache128(u32 mem, bool validPFN)
 {
 	int way, idx;
-	void* addr = prepareCacheAccess<false, sizeof(mem128_t)>(mem, &way, &idx);
+	void* addr = prepareCacheAccess<false, sizeof(mem128_t)>(mem, &way, &idx, validPFN);
 	r128 value = r128_load(addr);
 	u64* vptr = reinterpret_cast<u64*>(&value);
 	CACHE_LOG("readCache128 %8.8x from %d, way %d, lo %llx, hi %llx", mem, idx, way, vptr[0], vptr[1]);
@@ -402,11 +445,11 @@ void CACHE()
 			const int way = addr & 0x1;
 			CacheLine line = cache.lineAt(index, way);
 
+        	line.tag.setAddr(cpuRegs.CP0.n.TagLo);
 			line.tag.rawValue &= ~CacheTag::ALL_FLAGS;
 			line.tag.rawValue |= (cpuRegs.CP0.n.TagLo & CacheTag::ALL_FLAGS);
 
 			CACHE_LOG("CACHE DXSTG addr %x, index %d, way %d, DATA %x OP %x", addr, index, way, cpuRegs.CP0.n.TagLo, cpuRegs.code);
-			CACHE_LOG("WARNING: DXSTG emulation supports flags only, things will probably break");
 			break;
 		}
 
