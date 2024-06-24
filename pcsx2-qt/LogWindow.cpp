@@ -37,10 +37,7 @@ LogWindow::LogWindow(bool attach_to_main)
 	Log::SetHostOutputLevel(GetWindowLogLevel(), &LogWindow::logCallback);
 }
 
-LogWindow::~LogWindow()
-{
-	Log::SetHostOutputLevel(LOGLEVEL_NONE, nullptr);
-}
+LogWindow::~LogWindow() = default;
 
 void LogWindow::updateSettings()
 {
