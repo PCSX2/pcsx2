@@ -235,7 +235,8 @@ void ImGuiManager::WindowResized()
 
 void ImGuiManager::RequestScaleUpdate()
 {
-	s_scale_changed = true;
+	if (s_window_width > 0 && s_window_height > 0)
+		s_scale_changed = true;
 }
 
 void ImGuiManager::UpdateScale()
