@@ -9,11 +9,14 @@
 
 #include <functional>
 #include <mutex>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
 class Error;
+
+class SaveStateBase;
 
 namespace Achievements
 {
@@ -51,8 +54,8 @@ namespace Achievements
 	void IdleUpdate();
 
 	/// Saves/loads state.
-	void LoadState(const u8* state_data, u32 state_data_size);
-	std::vector<u8> SaveState();
+	void LoadState(std::span<const u8> data);
+	void SaveState(SaveStateBase& writer);
 
 	/// Attempts to log in to RetroAchievements using the specified credentials.
 	/// If the login is successful, the token returned by the server will be saved.

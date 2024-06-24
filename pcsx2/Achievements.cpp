@@ -14,6 +14,7 @@
 #include "IopMem.h"
 #include "MTGS.h"
 #include "Memory.h"
+#include "SaveState.h"
 #include "VMManager.h"
 #include "svnrev.h"
 #include "vtlb.h"
@@ -23,6 +24,7 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/HTTPDownloader.h"
+#include "common/HeapArray.h"
 #include "common/MD5Digest.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
@@ -1466,7 +1468,7 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 	Host::OnAchievementsHardcoreModeChanged(enabled);
 }
 
-void Achievements::LoadState(const u8* state_data, u32 state_data_size)
+void Achievements::LoadState(std::span<const u8> data)
 {
 	const auto lock = GetLock();
 
@@ -1479,14 +1481,14 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())
 	{
-		if (state_data_size == 0)
+		if (data.empty())
 		{
 			Console.Warning("State is missing cheevos data, resetting RAIntegration");
 			RA_OnReset();
 		}
 		else
 		{
-			RA_RestoreState(reinterpret_cast<const char*>(state_data));
+			RA_RestoreState(reinterpret_cast<const char*>(data.data()));
 		}
 
 		return;
@@ -1503,7 +1505,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 		EndLoadingScreen(was_running_idle);
 	}
 
-	if (state_data_size == 0)
+	if (data.empty())
 	{
 		// reset runtime, no data (state might've been created without cheevos)
 		Console.Warning("State is missing cheevos data, resetting runtime");
@@ -1513,7 +1515,7 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 
 	// These routines scare me a bit.. the data isn't bounds checked.
 	// Really hope that nobody puts any thing malicious in a save state...
-	const int result = rc_client_deserialize_progress(s_client, state_data);
+	const int result = rc_client_deserialize_progress_sized(s_client, data.data(), data.size());
 	if (result != RC_OK)
 	{
 		Console.Warning("Failed to deserialize cheevos state (%d), resetting", result);
@@ -1521,10 +1523,8 @@ void Achievements::LoadState(const u8* state_data, u32 state_data_size)
 	}
 }
 
-std::vector<u8> Achievements::SaveState()
+void Achievements::SaveState(SaveStateBase& writer)
 {
-	std::vector<u8> ret;
-
 	const auto lock = GetLock();
 
 #ifdef ENABLE_RAINTEGRATION
@@ -1533,16 +1533,18 @@ std::vector<u8> Achievements::SaveState()
 		const int size = RA_CaptureState(nullptr, 0);
 
 		const u32 data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-		ret.resize(data_size);
-
-		const int result = RA_CaptureState(reinterpret_cast<char*>(ret.data()), static_cast<int>(data_size));
-		if (result != static_cast<int>(data_size))
+		if (data_size > 0)
 		{
-			Console.Warning("Failed to serialize cheevos state from RAIntegration.");
-			ret.clear();
+			writer.PrepBlock(static_cast<int>(data_size));
+
+			const int result = RA_CaptureState(reinterpret_cast<char*>(writer.GetBlockPtr()), static_cast<int>(data_size));
+			if (result != static_cast<int>(data_size))
+				Console.Warning("Failed to serialize cheevos state from RAIntegration.");
+			else
+				writer.CommitBlock(static_cast<int>(data_size));
 		}
 
-		return ret;
+		return;
 	}
 #endif
 
@@ -1550,18 +1552,17 @@ std::vector<u8> Achievements::SaveState()
 	{
 		// internally this happens twice.. not great.
 		const size_t data_size = rc_client_progress_size(s_client);
-		ret.resize(data_size);
-
-		const int result = rc_client_serialize_progress(s_client, ret.data());
-		if (result != RC_OK)
+		if (data_size > 0)
 		{
-			// set data to zero, effectively serializing nothing
-			Console.Warning("Failed to serialize cheevos state (%d)", result);
-			ret.clear();
+			writer.PrepBlock(static_cast<int>(data_size));
+
+			const int result = rc_client_serialize_progress_sized(s_client, writer.GetBlockPtr(), data_size);
+			if (result != RC_OK)
+				Console.Warning("Failed to serialize cheevos state (%d)", result);
+			else
+				writer.CommitBlock(static_cast<int>(data_size));
 		}
 	}
-
-	return ret;
 }
 
 
