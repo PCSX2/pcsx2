@@ -33,9 +33,6 @@
     <ClCompile Include="src\rapi\rc_api_common.c">
       <Filter>rapi</Filter>
     </ClCompile>
-    <ClCompile Include="src\rhash\hash.c">
-      <Filter>rhash</Filter>
-    </ClCompile>
     <ClCompile Include="src\rhash\md5.c">
       <Filter>rhash</Filter>
     </ClCompile>
