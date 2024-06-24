@@ -656,10 +656,10 @@ class SaveStateEntry_Achievements final : public BaseSavestateEntry
 		if (zf)
 			data = ReadBinaryFileInZip(zf);
 
-		if (data.has_value() && !data->empty())
-			Achievements::LoadState(data->data(), data->size());
+		if (data.has_value())
+			Achievements::LoadState(data.value());
 		else
-			Achievements::LoadState(nullptr, 0);
+			Achievements::LoadState(std::span<const u8>());
 
 		return true;
 	}
@@ -669,14 +669,7 @@ class SaveStateEntry_Achievements final : public BaseSavestateEntry
 		if (!Achievements::IsActive())
 			return true;
 
-		std::vector<u8> data(Achievements::SaveState());
-		if (!data.empty())
-		{
-			writer.PrepBlock(static_cast<int>(data.size()));
-			std::memcpy(writer.GetBlockPtr(), data.data(), data.size());
-			writer.CommitBlock(static_cast<int>(data.size()));
-		}
-
+		Achievements::SaveState(writer);
 		return writer.IsOkay();
 	}
 
