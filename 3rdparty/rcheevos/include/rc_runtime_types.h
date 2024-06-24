@@ -59,6 +59,8 @@ enum {
   RC_MEMSIZE_MBF32,
   RC_MEMSIZE_MBF32_LE,
   RC_MEMSIZE_FLOAT_BE,
+  RC_MEMSIZE_DOUBLE32,
+  RC_MEMSIZE_DOUBLE32_BE,
   RC_MEMSIZE_VARIABLE
 };
 
@@ -104,7 +106,8 @@ enum {
   RC_OPERAND_LUA,            /* A Lua function that provides the value. */
   RC_OPERAND_PRIOR,          /* The last differing value at this address. */
   RC_OPERAND_BCD,            /* The BCD-decoded value of a live address in RAM. */
-  RC_OPERAND_INVERTED        /* The twos-complement value of a live address in RAM. */
+  RC_OPERAND_INVERTED,       /* The twos-complement value of a live address in RAM. */
+  RC_OPERAND_RECALL          /* The value captured by the last RC_CONDITION_REMEMBER condition */
 };
 
 typedef struct rc_operand_t {
@@ -152,6 +155,7 @@ enum {
   RC_CONDITION_ADD_SOURCE, /* everything from this point on affects the condition after it */
   RC_CONDITION_SUB_SOURCE,
   RC_CONDITION_ADD_ADDRESS,
+  RC_CONDITION_REMEMBER,
 
   /* logic flags (second switch) */
   RC_CONDITION_ADD_HITS,
@@ -173,7 +177,10 @@ enum {
   RC_OPERATOR_MULT,
   RC_OPERATOR_DIV,
   RC_OPERATOR_AND,
-  RC_OPERATOR_XOR
+  RC_OPERATOR_XOR,
+  RC_OPERATOR_MOD,
+  RC_OPERATOR_ADD,
+  RC_OPERATOR_SUB
 };
 
 typedef struct rc_condition_t rc_condition_t;
@@ -283,6 +290,8 @@ RC_EXPORT void RC_CCONV rc_reset_trigger(rc_trigger_t* self);
 /*****************************************************************************\
 | Values                                                                      |
 \*****************************************************************************/
+
+#define RC_VALUE_MAX_NAME_LENGTH 15
 
 struct rc_value_t {
   /* The current value of the variable. */

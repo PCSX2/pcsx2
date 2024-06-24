@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
+#include <string.h>
 
 #ifndef RC_DISABLE_LUA
 
@@ -60,6 +61,37 @@ static int rc_parse_operand_lua(rc_operand_t* self, const char** memaddr, rc_par
 #endif /* RC_DISABLE_LUA */
 
   self->type = RC_OPERAND_LUA;
+  *memaddr = aux;
+  return RC_OK;
+}
+
+static int rc_parse_operand_variable(rc_operand_t* self, const char** memaddr) {
+  const char* aux = *memaddr;
+  size_t i;
+  char varName[RC_VALUE_MAX_NAME_LENGTH + 1] = { 0 };
+
+  for (i = 0; i < RC_VALUE_MAX_NAME_LENGTH && *aux != '}'; i++) {
+    if (!rc_is_valid_variable_character(*aux, i == 0))
+      return RC_INVALID_VARIABLE_NAME;
+
+    varName[i] = *aux++;
+  }
+
+  if (i == 0)
+    return RC_INVALID_VARIABLE_NAME;
+
+  if (*aux != '}')
+    return RC_INVALID_VARIABLE_NAME;
+
+  ++aux;
+
+  if (strcmp(varName, "recall") == 0) {
+    self->type = RC_OPERAND_RECALL;
+  }
+  else { /* process named variable when feature is available.*/
+    return RC_UNKNOWN_VARIABLE_NAME;
+  }
+
   *memaddr = aux;
   return RC_OK;
 }
@@ -231,6 +263,13 @@ int rc_parse_operand(rc_operand_t* self, const char** memaddr, uint8_t is_indire
           self->value.num = (unsigned)value;
       }
       break;
+    case '{': /* variable */
+      ++aux;
+      ret = rc_parse_operand_variable(self, &aux);
+      if (ret < 0)
+        return ret;
+
+      break;
 
     case '0':
       if (aux[1] == 'x' || aux[1] == 'X') { /* hex integer constant */
@@ -297,6 +336,8 @@ int rc_operand_is_float_memref(const rc_operand_t* self) {
   switch (self->size) {
     case RC_MEMSIZE_FLOAT:
     case RC_MEMSIZE_FLOAT_BE:
+    case RC_MEMSIZE_DOUBLE32:
+    case RC_MEMSIZE_DOUBLE32_BE:
     case RC_MEMSIZE_MBF32:
     case RC_MEMSIZE_MBF32_LE:
       return 1;
@@ -311,10 +352,21 @@ int rc_operand_is_memref(const rc_operand_t* self) {
     case RC_OPERAND_CONST:
     case RC_OPERAND_FP:
     case RC_OPERAND_LUA:
+    case RC_OPERAND_RECALL:
       return 0;
 
     default:
       return 1;
+  }
+}
+
+int rc_operand_is_recall(const rc_operand_t* self) {
+  switch (self->type) {
+    case RC_OPERAND_RECALL:
+      return 1;
+
+    default:
+      return 0;
   }
 }
 
@@ -459,6 +511,11 @@ void rc_evaluate_operand(rc_typed_value_t* result, rc_operand_t* self, rc_eval_s
 #endif /* RC_DISABLE_LUA */
 
       break;
+
+    case RC_OPERAND_RECALL:
+      result->type = eval_state->recall_value.type;
+      result->value = eval_state->recall_value.value;
+      return;
 
     default:
       result->type = RC_VALUE_TYPE_UNSIGNED;

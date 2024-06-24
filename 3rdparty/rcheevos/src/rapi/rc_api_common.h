@@ -67,6 +67,8 @@ int rc_json_get_array_entry_object(rc_json_field_t* fields, size_t field_count, 
 int rc_json_get_next_object_field(rc_json_iterator_t* iterator, rc_json_field_t* field);
 int rc_json_get_object_string_length(const char* json);
 
+void rc_json_extract_filename(rc_json_field_t* field);
+
 void rc_url_builder_append_encoded_str(rc_api_url_builder_t* builder, const char* str);
 void rc_url_builder_append_num_param(rc_api_url_builder_t* builder, const char* param, int32_t value);
 void rc_url_builder_append_unum_param(rc_api_url_builder_t* builder, const char* param, uint32_t value);

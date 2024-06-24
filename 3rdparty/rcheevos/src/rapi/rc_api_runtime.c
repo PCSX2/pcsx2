@@ -111,7 +111,6 @@ int rc_api_process_fetch_game_data_server_response(rc_api_fetch_game_data_respon
   rc_api_leaderboard_definition_t* leaderboard;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  const char* str;
   const char* last_author = "";
   const char* last_author_field = "";
   size_t last_author_len = 0;
@@ -180,17 +179,7 @@ int rc_api_process_fetch_game_data_server_response(rc_api_fetch_game_data_respon
     return RC_MISSING_VALUE;
 
   /* ImageIcon will be '/Images/0123456.png' - only return the '0123456' */
-  if (patchdata_fields[3].value_end) {
-    str = patchdata_fields[3].value_end - 5;
-    if (memcmp(str, ".png\"", 5) == 0) {
-      patchdata_fields[3].value_end -= 5;
-
-      while (str > patchdata_fields[3].value_start && str[-1] != '/')
-        --str;
-
-      patchdata_fields[3].value_start = str;
-    }
-  }
+  rc_json_extract_filename(&patchdata_fields[3]);
   rc_json_get_optional_string(&response->image_name, &response->response, &patchdata_fields[3], "ImageIcon", "");
 
   /* estimate the amount of space necessary to store the rich presence script, achievements, and leaderboards.
@@ -248,9 +237,15 @@ int rc_api_process_fetch_game_data_server_response(rc_api_fetch_game_data_respon
         if (!rc_json_get_required_string(&achievement->author, &response->response, &achievement_fields[6], "Author"))
           return RC_MISSING_VALUE;
 
-        last_author = achievement->author;
-        last_author_field = achievement_fields[6].value_start;
-        last_author_len = len;
+        if (achievement->author == NULL) {
+          /* ensure we don't pass NULL out to client */
+          last_author = achievement->author = "";
+          last_author_len = 0;
+        } else {
+          last_author = achievement->author;
+          last_author_field = achievement_fields[6].value_start;
+          last_author_len = len;
+        }
       }
 
       if (!rc_json_get_required_unum(&timet, &response->response, &achievement_fields[8], "Created"))

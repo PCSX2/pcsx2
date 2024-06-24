@@ -53,6 +53,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
         case RC_CONDITION_ADD_ADDRESS:
         case RC_CONDITION_ADD_SOURCE:
         case RC_CONDITION_SUB_SOURCE:
+        case RC_CONDITION_REMEMBER:
           /* these conditions don't require a right hand size (implied *1) */
           break;
 
@@ -87,6 +88,9 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse, in
           case RC_OPERATOR_XOR:
           case RC_OPERATOR_DIV:
           case RC_OPERATOR_MULT:
+          case RC_OPERATOR_MOD:
+          case RC_OPERATOR_ADD:
+          case RC_OPERATOR_SUB:
           case RC_OPERATOR_NONE:
             /* measuring value. leave required_hits at 0 */
             break;
@@ -219,6 +223,15 @@ static int rc_test_condset_internal(rc_condset_t* self, int processing_pause, rc
         rc_evaluate_condition_value(&value, condition, eval_state);
         rc_typed_value_convert(&value, RC_VALUE_TYPE_UNSIGNED);
         eval_state->add_address = value.value.u32;
+        continue;
+
+      case RC_CONDITION_REMEMBER:
+        rc_evaluate_condition_value(&value, condition, eval_state);
+        rc_typed_value_add(&value, &eval_state->add_value);
+        eval_state->recall_value.type = value.type;
+        eval_state->recall_value.value = value.value;
+        eval_state->add_value.type = RC_VALUE_TYPE_NONE;
+        eval_state->add_address = 0;
         continue;
 
       case RC_CONDITION_MEASURED:
@@ -415,6 +428,10 @@ int rc_test_condset(rc_condset_t* self, rc_eval_state_t* eval_state) {
     /* important: empty group must evaluate true */
     return 1;
   }
+
+  /* initialize recall value so each condition set has a functionally new recall accumulator */
+  eval_state->recall_value.type = RC_VALUE_TYPE_UNSIGNED;
+  eval_state->recall_value.value.u32 = 0;
 
   if (self->has_pause) {
     /* one or more Pause conditions exists, if any of them are true, stop processing this group */
