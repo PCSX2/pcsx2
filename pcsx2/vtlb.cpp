@@ -113,7 +113,7 @@ __inline int ConvertPageMask(u32 PageMask)
 {
 	const u32 mask = std::popcount(PageMask >> 13);
 
-	pxAssertMsg (!((mask & 1) || mask > 12), "Invalid page mask for this TLB entry. EE cache doesn't know what to do here.");
+	pxAssertMsg(!((mask & 1) || mask > 12), "Invalid page mask for this TLB entry. EE cache doesn't know what to do here.");
 
 	return (1 << (12 + mask)) - 1;
 }
