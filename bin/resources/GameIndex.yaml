@@ -2066,7 +2066,7 @@ SCAJ-20190:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -2282,7 +2282,7 @@ SCAJ-30011:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -4161,7 +4161,7 @@ SCED-54680:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -5815,7 +5815,7 @@ SCES-54206:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -7394,7 +7394,7 @@ SCKA-30006:
   compat: 5
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -7405,7 +7405,7 @@ SCKA-30007:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -11246,7 +11246,7 @@ SCUS-97481:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -11257,7 +11257,7 @@ SCUS-97482:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -32567,7 +32567,7 @@ SLPM-61161:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -47909,7 +47909,7 @@ SLPM-67013:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
@@ -47928,7 +47928,7 @@ SLPM-67017:
     mvuFlag: 0 # Fixes enemies attacks turning into squares.
   gsHWFixes:
     alignSprite: 1 # Fixes water vertical lines.
-    halfPixelOffset: 4 # Fixes misaligned bloom.
+    halfPixelOffset: 2 # Fixes misaligned bloom.
     roundSprite: 1 # Fixes chromatic effect.
     autoFlush: 1 # Fixes sun occlusion.
     nativeScaling: 1 # Fixes light blooms.
